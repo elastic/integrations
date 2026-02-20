@@ -270,17 +270,9 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
-| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |
-| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
-| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |
-| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| related.description | Array of `description` derived from `threat[.enrichments].indicator.description` | keyword |
-| related.indicator_type | Array of `indicator_type` derived from `threat[.enrichments].indicator.type` | keyword |
-| related.location | Array of `location` derived from `related.ip` | geo_point |
 | threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 

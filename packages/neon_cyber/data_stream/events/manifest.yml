@@ -1,0 +1,46 @@
+title: 'Neon Cyber Events'
+type: logs
+streams:
+    - input: cel
+      title: 'Collect Neon Cyber Events'
+      description: |-
+          Collect workforce events from the Neon Cyber Platform
+      template_path: cel.yml.hbs
+      vars:
+          - name: interval
+            type: text
+            title: 'Events Endpoint Interval'
+            description: |-
+                How often the API is polled, supports seconds, minutes and hours.
+            required: true
+            show_user: true
+            default: 1h
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+          - name: tags
+            type: text
+            title: 'Tags'
+            multi: true
+            show_user: false
+            default:
+                - forwarded
+                - neon_cyber-events
+          - name: preserve_original_event
+            required: true
+            show_user: true
+            title: Preserve original event
+            description: Preserves a raw copy of the original event, added to the field `event.original`.
+            type: bool
+            multi: false
+            default: false
+          - name: processors
+            type: yaml
+            title: 'Processors'
+            description: |-
+                Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

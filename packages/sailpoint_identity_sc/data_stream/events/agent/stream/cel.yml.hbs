@@ -31,11 +31,12 @@ state:
   want_more: false
   limit: {{limit}}
   initial_interval: {{initial_interval}}
+  api_version: {{api_version}}
 program: |-
   {"startTime": state.?cursor.searchAfter.orValue(timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339))}.as(timeframe,
   	request(
   		"POST",
-  		state.url.trim_right("/") + "/v2024/search/events?" + {
+  		state.url.trim_right("/") + "/" + state.api_version + "/search?" + {
   			"limit": [string(state.limit)],
   		}.format_query()
   	).with(
@@ -44,6 +45,7 @@ program: |-
   				"Content-Type": ["application/json"],
   			},
   			"Body": {
+  				"indices": ["events"],
   				"searchAfter": [string(timeframe.startTime)],
   				"queryType": "SAILPOINT",
   				"sort": ["created"],
@@ -51,14 +53,13 @@ program: |-
   				"queryResultFilter": {},
   			}.encode_json(),
   		}
-  	).do_request().as(resp,
-  		bytes(resp.Body).decode_json().as(body,
+  	).do_request().as(resp, resp.StatusCode == 200 ?
+  		resp.Body.decode_json().as(body,
   			state.with(
   				{
   					"events": body.map(e,
   						{
-  							"message": e,
-  							?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  							"message": e.encode_json(),
   						}
   					),
   					"want_more": size(body) == state.limit,
@@ -66,6 +67,22 @@ program: |-
   				}
   			)
   		)
+  	:
+  		{
+  			"events": {
+  				"error": {
+  				  "code": string(resp.StatusCode),
+  				  "id": string(resp.Status),
+  				  "message": "POST " + state.url.trim_right("/") + "/" + state.api_version + "/search: "+(
+  				    size(resp.Body) != 0 ?
+  				      string(resp.Body)
+  				    :
+  				      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  				  ),
+  				},
+  			},
+  			"want_more": false,
+  		}
   	)
   )
 tags:

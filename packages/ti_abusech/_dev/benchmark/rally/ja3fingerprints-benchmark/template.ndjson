@@ -1,0 +1,46 @@
+{{- $timestamp := generate "timestamp" -}}
+{{- $expireDur := generate "expire_dur" -}}
+{{- $hostname := generate "host.name" -}}
+{{- $agentId := generate "agent.id" -}}
+{{- $id := generate "id" -}}
+{{- $duration_start := generate "duration_start" -}}
+{{- $duration_end := generate "duration_end" -}}
+{{- $first_ts := ($timestamp | date_modify (print $duration_start)).Format "2006-01-02T15:04:05Z" -}}
+{{- $last_ts := ($timestamp | date_modify (print $duration_end)).Format "2006-01-02T15:04:05Z" -}}
+{{- $ja3 := sha1sum (generate "ja3") }}{{/* md5sum does not exist, so use sha1sum */ -}}
+{{- $reason := generate "reason" -}}
+{
+  "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+  "_conf": {
+    "interval": "{{ $expireDur }}h"
+  },
+  "agent": {
+    "id": "{{$agentId}}",
+    "name": "{{$hostname}}",
+    "type": "filebeat",
+    "version": "8.19.0",
+    "ephemeral_id": "{{$agentId}}"
+  },
+  "data_stream": {
+    "namespace": "ep",
+    "type": "logs",
+    "dataset": "ti_abusech.ja3_fingerprints"
+  },
+  "elastic_agent": {
+    "id": "60a22c30-4c80-4e95-b5b1-87ff540d8afd",
+    "snapshot": false,
+    "version": "8.19.0"
+  },
+  "message": "{\"first_ts\":\"{{$first_ts}}\",\"ja3\":\"{{$ja3}}\",\"last_ts\":\"{{$last_ts}}\",\"reason\":\"{{$reason}}\"}",
+  "event": {
+    "dataset": "ti_abusech.ja3_fingerprints"
+  },
+  "input": {
+    "type": "cel"
+  },
+  "tags": [
+    "preserve_original_event",
+    "forwarded",
+    "abusech-ja3_fingerprints"
+  ]
+}

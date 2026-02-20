@@ -13,32 +13,40 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
-      value: '8.11.0'
+      value: '9.3.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_ee497bfd
       field: event.category
       value: [iam]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - fingerprint:
+      tag: fingerprint_ff462919
       fields:
         - json.createdAt
         - json.updatedAt
@@ -46,15 +54,18 @@ processors:
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_updatedAt_27d2f750
       field: json.updatedAt
       if: ctx.json?.updatedAt != null
       formats:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_6e8dd88b
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_createdAt_to_sentinel_one_group_created_at_29ef9b0a
       field: json.createdAt
       if: ctx.json?.createdAt != null
       target_field: sentinel_one.group.created_at
@@ -62,102 +73,132 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_86334f8b
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_creator_to_user_full_name_ae852648
       field: json.creator
       target_field: user.full_name
       ignore_missing: true
   - append:
+      tag: append_related_user_a621a20e
       field: related.user
       value: '{{{user.full_name}}}'
       if: ctx.user?.full_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_creatorId_to_sentinel_one_group_creator_id_a42cb400
       field: json.creatorId
       target_field: sentinel_one.group.creator.id
       ignore_missing: true
   - rename:
+      tag: rename_json_filterId_to_sentinel_one_group_filter_id_54122930
       field: json.filterId
       target_field: sentinel_one.group.filter.id
       ignore_missing: true
   - rename:
+      tag: rename_json_filterName_to_sentinel_one_group_filter_name_eb32d2f8
       field: json.filterName
       target_field: sentinel_one.group.filter.name
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_group_id_c82ca5f7
       field: json.id
       target_field: group.id
       ignore_missing: true
+  - set:
+      tag: set_event_id_df99e97e
+      field: event.id
+      copy_from: sentinel_one.agent.agent.id
+      ignore_empty_value: true
   - convert:
+      tag: convert_json_inherits_to_sentinel_one_group_inherits_6a371a11
       field: json.inherits
       target_field: sentinel_one.group.inherits
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_inherits_fee04422
             field: json.inherits
             ignore_missing: true
         - append:
+            tag: append_error_message_c83a72d2
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_isDefault_to_sentinel_one_group_is_default_c0273ad3
       field: json.isDefault
       target_field: sentinel_one.group.is_default
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_isDefault_8b959687
             field: json.isDefault
             ignore_missing: true
         - append:
+            tag: append_error_message_447bf538
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_name_to_group_name_ce7bdd93
       field: json.name
       target_field: group.name
       ignore_missing: true
   - convert:
+      tag: convert_json_rank_to_sentinel_one_group_rank_b3faaa33
       field: json.rank
       target_field: sentinel_one.group.rank
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_rank_beaddc60
             field: json.rank
             ignore_missing: true
         - append:
+            tag: append_error_message_96eb3b7a
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_registrationToken_to_sentinel_one_group_registration_token_d52e0c67
       field: json.registrationToken
       target_field: sentinel_one.group.registration_token
       ignore_missing: true
   - rename:
+      tag: rename_json_siteId_to_sentinel_one_site_id_82ffc1d5
       field: json.siteId
-      target_field: sentinel_one.group.site.id
+      target_field: sentinel_one.site.id
       ignore_missing: true
   - convert:
+      tag: convert_json_totalAgents_to_sentinel_one_group_agent_count_8198396b
       field: json.totalAgents
       target_field: sentinel_one.group.agent.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_totalAgents_1286c52e
             field: json.totalAgents
             ignore_missing: true
         - append:
+            tag: append_error_message_02cd0560
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_type_to_sentinel_one_group_type_14c48402
       field: json.type
       target_field: sentinel_one.group.type
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -184,4 +225,8 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

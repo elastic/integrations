@@ -1,6 +1,10 @@
 ---
 description: Pipeline for parsing Abuse.ch Threat Fox Threat Intel
 processors:
+  - terminate:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - remove:
       field:
         - organization
@@ -16,34 +20,42 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
   ######################
   # General ECS fields #
   ######################
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_abusech_threatfox_9ba5327e
       field: event.original
       target_field: abusech.threatfox
   - rename:
+      tag: rename_abusech_threatfox_id_to_event_id_2d1c8b8e
       field: abusech.threatfox.id
       target_field: event.id
       ignore_missing: true
@@ -51,6 +63,7 @@ processors:
   # Threat ECS Fields #
   #####################
   - date:
+      tag: date_abusech_threatfox_first_seen_to_threat_indicator_first_seen_f422281f
       field: abusech.threatfox.first_seen
       target_field: threat.indicator.first_seen
       formats:
@@ -59,6 +72,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ss"
       if: "ctx.abusech?.threatfox?.first_seen != null"
   - date:
+      tag: date_abusech_threatfox_last_seen_to_threat_indicator_last_seen_b73b2f5b
       field: abusech.threatfox.last_seen
       target_field: threat.indicator.last_seen
       formats:
@@ -72,38 +86,50 @@ processors:
       copy_from: abusech.threatfox.ioc
       tag: set-indicator-name
   - rename:
+      tag: rename_abusech_threatfox_ioc_type_desc_to_threat_indicator_description_e9cdc7ed
       field: abusech.threatfox.ioc_type_desc
       target_field: threat.indicator.description
       ignore_missing: true
   - rename:
+      tag: rename_abusech_threatfox_reporter_to_threat_indicator_provider_2ca3d1db
       field: abusech.threatfox.reporter
       target_field: threat.indicator.provider
       ignore_missing: true
   - split:
+      tag: split_abusech_threatfox_malware_alias_to_threat_software_alias_4d0bfde6
       field: abusech.threatfox.malware_alias
       target_field: threat.software.alias
       separator: ","
       ignore_missing: true
   - rename:
+      tag: rename_abusech_threatfox_reporter_to_threat_indicator_provider_583dbfbf
       field: abusech.threatfox.reporter
       target_field: threat.indicator.provider
       ignore_missing: true
   - rename:
+      tag: rename_abusech_threatfox_reference_to_threat_indicator_reference_de55f4e5
       field: abusech.threatfox.reference
       target_field: threat.indicator.reference
       ignore_missing: true
   - rename:
+      tag: rename_abusech_threatfox_malware_printable_to_threat_software_name_e86edf4f
       field: abusech.threatfox.malware_printable
       target_field: threat.software.name
       ignore_missing: true
   - rename:
+      tag: rename_abusech_threatfox_malware_malpedia_to_threat_software_reference_afc22281
       field: abusech.threatfox.malware_malpedia
       target_field: threat.software.reference
       ignore_missing: true
+  - set:
+      tag: set_threat_indicator_marking_tlp
+      field: threat.indicator.marking.tlp
+      value: WHITE
   #
   # Convert confidence field (-1..100) to ECS confidence (0..10).
   #
   - script:
+      tag: script_7d76bdf8
       lang: painless
       if: ctx.abusech?.threatfox?.confidence_level != null
       description: Normalize confidence level.
@@ -118,12 +144,19 @@ processors:
           confidence = "High";
         }
         ctx.threat.indicator.put("confidence", confidence)
+  - set:
+      field: threat.indicator.confidence
+      tag: set_confidence_to_not_specified
+      value: Not Specified
+      override: false
   ## URL/URI indicator operations
   - set:
+      tag: set_threat_indicator_type_5dc2ee5d
       field: threat.indicator.type
       value: url
       if: "ctx.abusech?.threatfox?.ioc_type != null && ['url'].contains(ctx.abusech.threatfox.ioc_type)"
   - uri_parts:
+      tag: uri_parts_abusech_threatfox_ioc_to_threat_indicator_url_cf0815d2
       field: abusech.threatfox.ioc
       target_field: threat.indicator.url
       keep_original: true
@@ -131,45 +164,54 @@ processors:
       if: ctx.abusech?.threatfox?.ioc_type == 'url'
   ## IP/Port indicator operations
   - set:
+      tag: set_threat_indicator_type_e5944dad
       field: threat.indicator.type
       value: domain-name
       if: "ctx.abusech?.threatfox?.ioc_type != null && ['domain'].contains(ctx.abusech.threatfox.ioc_type)"
   - rename:
+      tag: rename_abusech_threatfox_ioc_to_threat_indicator_url_domain_263f5d7f
       field: abusech.threatfox.ioc
       target_field: threat.indicator.url.domain
       ignore_missing: true
       if: "ctx.abusech?.threatfox?.ioc_type != null && ['domain'].contains(ctx.abusech.threatfox.ioc_type)"
   - set:
+      tag: set_threat_indicator_type_8e84514a
       field: threat.indicator.type
       value: ipv4-addr
       if: "ctx.abusech?.threatfox?.ioc_type != null && ['ip:port'].contains(ctx.abusech.threatfox.ioc_type)"
   - grok:
+      tag: grok_abusech_threatfox_ioc_91bf82b9
       field: abusech.threatfox.ioc
       patterns:
         - "%{IP:threat.indicator.ip}:%{NUMBER:threat.indicator.port:long}"
       ignore_missing: true
       if: "ctx.abusech?.threatfox?.ioc_type == 'ip:port'"
   - set:
+      tag: set_threat_indicator_type_ed255eb2
       field: threat.indicator.type
       value: ipv6-addr
       if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(':')
   ## File/Hash indicator operations
   - set:
+      tag: set_threat_indicator_type_9430a614
       field: threat.indicator.type
       value: file
       if: "ctx.abusech?.threatfox?.ioc_type != null && ['md5_hash', 'sha1_hash', 'sha256_hash'].contains(ctx.abusech.threatfox.ioc_type)"
   - grok:
+      tag: grok_abusech_threatfox_ioc_type_b972aa94
       field: abusech.threatfox.ioc_type
       patterns:
         - "%{DATA:_tmp.hashtype}_hash"
       ignore_missing: true
       if: ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech?.threatfox?.ioc_type.endsWith('_hash')
   - rename:
+      tag: rename_abusech_threatfox_ioc_to_threat_indicator_file_hash_{{{_tmp_hashtype}}}_c573a933
       field: abusech.threatfox.ioc
       target_field: threat.indicator.file.hash.{{{_tmp.hashtype}}}
       if: "ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech.threatfox.ioc_type.endsWith('_hash') && ctx._tmp.hashtype != null"
   # Copy tags (either as list or comma-separated string) and remove
   - foreach:
+      tag: foreach_abusech_threatfox_tags_dffd2bdb
       field: abusech.threatfox.tags
       if: ctx.abusech?.threatfox?.tags instanceof List
       processor:
@@ -178,6 +220,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
+      tag: remove_abusech_threatfox_tags_e448ec7d
       field: abusech.threatfox.tags
       ignore_missing: true
   ######################
@@ -233,10 +276,12 @@ processors:
   # Cleanup processors #
   ######################
   - set:
+      tag: set_threat_indicator_type_b27d7280
       field: threat.indicator.type
       value: unknown
       if: ctx?.threat?.indicator?.type == null
   - script:
+      tag: script_34cbedfa
       lang: painless
       if: ctx?.abusech != null
       source: |
@@ -261,6 +306,7 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_64fddf32
       field:
         - abusech.threatfox.first_seen
         - abusech.threatfox.last_seen
@@ -273,6 +319,7 @@ processors:
         - _conf
       ignore_missing: true
   - script:
+      tag: script_85ca118b
       description: Remove null/empty values recursively.
       lang: painless
       source: |-

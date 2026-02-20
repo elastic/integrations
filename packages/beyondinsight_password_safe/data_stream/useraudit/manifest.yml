@@ -2,15 +2,15 @@ title: BeyondInsight and Password Safe User Audit Events
 type: logs
 streams:
   - input: cel
-    title: BeyondInsight and Password Safe User Audit Events
-    description: Request settings for BeyondInsight and Password Safe user audit events.
+    title: BeyondInsight User Audit Events
+    description: User audit activity tracking with authentication events.
     enabled: true
     template_path: cel.yml.hbs
     vars:
       - name: interval
         type: text
         title: Interval
-        description: Go Duration syntax (e.g., '5m') for how often to fetch user audits.
+        description: Interval at which new audit events will be fetched. The supported time units are "h", "m", "s".
         show_user: false
         required: true
         default: "5m"
@@ -21,7 +21,7 @@ streams:
         required: true
         show_user: false
         default: "2160h"
-        description: How far back to pull BeyondInsight user audit events from the BeyondInsight user audit API(90 days). Supported units for this parameter are h/m/s.
+        description: How far back to collect BeyondInsight user audit events from the API. The supported time units are "h", "m", "s".
       - name: limit
         type: integer
         title: Limit
@@ -34,7 +34,7 @@ streams:
         title: Tags
         multi: true
         show_user: false
-        description: Tags to be applied to the events, such as 'forwarded', 'BeyondInsight User Audit Event'.
+        description: Tags to be applied to the events.
         default:
           - forwarded
           - beyondinsight_password_safe.useraudit
@@ -53,3 +53,12 @@ streams:
         required: false
         show_user: false
         description: Processors can be used to reduce the number of fields in the exported event, or to enhance the event with additional metadata. This is executed in the agent before the logs are parsed.
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.

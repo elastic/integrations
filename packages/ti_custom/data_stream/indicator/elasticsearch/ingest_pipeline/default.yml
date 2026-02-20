@@ -2,9 +2,10 @@
 description: Pipeline for processing STIX 2.1 IOCs
 processors:
   # Fail if error during the CEL program evaluation
-  - fail:
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null
-      message: "Error during CEL program evaluation"
+      description: error message set and no data to process.
 
   - set:
       field: ecs.version
@@ -318,7 +319,7 @@ processors:
       processor:
         pipeline:
           name: '{{ IngestPipeline "indicator-file" }}'
-  
+
   - foreach:
       field: stix._patterns
       if: ctx.threat?.indicator?.type?.startsWith('ip') == true
@@ -334,7 +335,7 @@ processors:
       processor:
         pipeline:
           name: '{{ IngestPipeline "indicator-url" }}'
-  
+
   - foreach:
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'windows-registry-key'
@@ -342,7 +343,7 @@ processors:
       processor:
         pipeline:
           name: '{{ IngestPipeline "indicator-windows-registry" }}'
-  
+
   - foreach:
       field: stix._patterns
       if: ctx.threat?.indicator?.type == 'x509-certificate'

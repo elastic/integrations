@@ -10,7 +10,7 @@ streams:
       - name: url
         type: url
         title: URL
-        description: URL of ServiceNow instance. It should follow the given format, https://\<instance_id\>.service-now.
+        description: URL of ServiceNow instance. It should follow the given format, https://\<instance_id\>.service-now.com
         required: true
         show_user: true
       - name: username
@@ -18,16 +18,55 @@ streams:
         title: Username
         description: The username to be used with Basic Auth headers.
         multi: false
-        required: true
+        required: false
         show_user: true
       - name: password
         type: password
         title: Password
         description: The password to be used with Basic Auth headers.
         multi: false
-        required: true
+        required: false
         show_user: true
         secret: true
+      - name: client_id
+        type: text
+        title: Client ID
+        description: The client ID for OAuth2 authentication.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: The client secret for OAuth2 authentication.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: token_url
+        type: text
+        title: OAuth2 Token URL
+        description: The OAuth2 token endpoint URL (e.g., https://instance.service-now.com/oauth2/token).
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: token_scopes
+        type: text
+        title: OAuth2 Scopes
+        description: OAuth2 scopes to request.
+        multi: true
+        required: false
+        show_user: false
+        secret: false
+      - name: oauth_endpoint_params
+        type: yaml
+        title: OAuth2 Endpoint Params
+        description: Additional OAuth2 endpoint parameters as key-value pairs.
+        multi: false
+        required: false
+        show_user: false
       - name: initial_interval
         type: text
         title: Initial Interval
@@ -88,8 +127,7 @@ streams:
         type: text
         title: Sysparm Query
         description: >-
-          Encoded query for filtering result sets with operators like `=`, `!=`, `^`, `^OR`, `LIKE`, `ORDERBY`, `ORDERBYDESC`
-          (e.g. `active=true^ORDERBYname`). Note: Avoid using the timestamp field in the query, as it may affect pagination and cursor logic.
+          Encoded query for filtering result sets with operators like `=`, `!=`, `^`, `^OR`, `LIKE`, `ORDERBY`, `ORDERBYDESC` (e.g. `active=true^ORDERBYname`). Note: Avoid using the timestamp field in the query, as it may affect pagination and cursor logic.
         multi: false
         required: false
         show_user: false
@@ -109,11 +147,7 @@ streams:
         required: false
         show_user: false
         description: >-
-          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
-          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
-          tracer will delete any stored traces.
-          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
-          for details.
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
       - name: tags
         type: text
         title: Tags

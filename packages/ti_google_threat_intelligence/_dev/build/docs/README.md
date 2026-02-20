@@ -4,16 +4,28 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
+Google Threat Intelligence integration offers support for two APIs:
+1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
+2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to enrich the IOCs.
 
 ## Threat List API Feeds
 
 The Threat List API provides the following types of threat feeds:
 
 - **Cryptominers**
+- **Daily Top Trending**
 - **First Stage Delivery Vectors**
 - **Infostealers**
 - **Internet of Things (IoT)**
+- **Linux**
+- **Malicious Network Infrastructure**
+- **Malware**
+- **Mobile**
+- **OS X**
+- **Phishing**
+- **Ransomware**
+- **Threat Actor**
+- **Vulnerability Weaponization**
 
 ## GTI Subscription Tiers
 
@@ -25,10 +37,16 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-Data collection is available for four feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, and `iot`, each provided through a separate data stream. Users can enable data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+Data collection is available for all threat feeds and IOC Stream, each with a separate data stream. By default, **Ransomware**  and **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
+### Agentless-enabled integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
@@ -39,7 +57,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
   - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
-**Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
+**Note:** Please make sure both initial interval and interval are in hours and the initial interval is greater than 2 hours.
 
 ### Enabling the integration in Elastic:
 
@@ -52,7 +70,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - Access Token
    - Initial Interval
    - Interval
-   - (Optional) Query to add custom query filtering on relationship, GTI score, and positives.
+   - (Optional) Query to add custom query filtering on relationship, GTI score, and positives. (not applicable to IOC Stream)
 6. Click on **Save and Continue** to save the integration.
 **Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
@@ -62,24 +80,30 @@ To keep the collected data up to date, **Transforms** are used.
 
 Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
 
-Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` dashboard.
-
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
+
+Currently, 10 transforms are available across all GTI integration data streams.
+
+The following list contains the transforms and their associated pipelines:
+
+| Transform Name                                                                                                                                                                      | Description                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| IP Transform (ID: `logs-ti_google_threat_intelligence.ip_ioc`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline`)                                          | Keeps IP entity type data up to date.                                           |
+| URL Transform (ID: `logs-ti_google_threat_intelligence.url_ioc`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc-transform-pipeline`)                                       | Keeps URL entity type data up to date.                                          |
+| Domain Transform (ID: `logs-ti_google_threat_intelligence.domain_ioc`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc-transform-pipeline`)                              | Keeps Domain entity type data up to date.                                       |
+| File Transform (ID: `logs-ti_google_threat_intelligence.file_ioc`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc-transform-pipeline`)                                    | Keeps File entity type data up to date.                                         |
+| IP IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.ip_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline`)                        | Keeps IP entity type data up to date for IOC Stream.                            |
+| URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc_st-transform-pipeline`)                     | Keeps URL entity type data up to date for IOC Stream.                           |
+| Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc_st-transform-pipeline`)            | Keeps Domain entity type data up to date for IOC Stream.                        |
+| File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc_st-transform-pipeline`)                  | Keeps File entity type data up to date for IOC Stream.                          |
+| Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule-pipeline`)                               | Filters and extracts necessary information from Detected IOCs from threat feed. |
+| Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline`) | Filters and extracts necessary information from Detected IOCs from IOC stream.  |
+
+All the GTI transforms are automatically started and the dashboards `Threat Feed Overview` and `IOC Stream Overview` are populated.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
-
-Currently, four transforms are available across all 4 data streams.
-
-The following are four transforms along with their associated pipelines:
-
-| Transform Name                                                                                                                                                           | Description                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| IP Transform (ID: `logs-ti_google_threat_intelligence.ip_ioc`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline`)                               | Keeps IP entity type data up to date.                    |
-| URL Transform (ID: `logs-ti_google_threat_intelligence.url_ioc`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc-transform-pipeline`)                            | Keeps URL entity type data up to date.                   |
-| Domain Transform (ID: `logs-ti_google_threat_intelligence.domain_ioc`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc-transform-pipeline`)                   | Keeps Domain entity type data up to date.                |
-| File Transform (ID: `logs-ti_google_threat_intelligence.file_ioc`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc-transform-pipeline`)                         | Keeps File entity type data up to date.                  |
 
 For example:
 
@@ -112,40 +136,25 @@ To tailor a rule based on Elastic environment:
 
 Once saved, successfully executed rules will generate alerts. Users can view these alerts in the **Alerts** section.
 
-**Note:** A transform runs in the background to filter relevant data from alerts. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
+The following are the names of the eight sample rules:
 
-The following are the names of the four sample rules:
+| Sample Rule Name                                             | Description                                                                                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Google Threat Intelligence URL IOC Correlation               | Detects and alerts on matches between URL IOCs collected by GTI data with user's selected Elastic environment data.                   |
+| Google Threat Intelligence Domain IOC Correlation            | Detects and alerts on matches between Domain IOCs collected by GTI data with user's selected Elastic environment data.                |
+| Google Threat Intelligence File IOC Correlation              | Detects and alerts on matches between File IOCs collected by GTI data with user's selected Elastic environment data.                  |
+| Google Threat Intelligence IP Address IOC Correlation        | Detects and alerts on matches between IP Address IOCs collected by GTI data with user's selected Elastic environment data.            |
+| Google Threat Intelligence URL IOC Stream Correlation        | Detects and alerts on matches between URL IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.        |
+| Google Threat Intelligence Domain IOC Stream Correlation     | Detects and alerts on matches between Domain IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.     |
+| Google Threat Intelligence File IOC Stream Correlation       | Detects and alerts on matches between File IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.       |
+| Google Threat Intelligence IP Address IOC Stream Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI IOC Stream data with user's selected Elastic environment data. |
 
-| Sample Rule Name                                      | Description                                                                                                                |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Google Threat Intelligence URL IOC Correlation        | Detects and alerts on matches between URL IOCs collected by GTI data with user's selected Elastic environment data.        |
-| Google Threat Intelligence Domain IOC Correlation     | Detects and alerts on matches between Domain IOCs collected by GTI data with user's selected Elastic environment data.     |
-| Google Threat Intelligence File IOC Correlation       | Detects and alerts on matches between File IOCs collected by GTI data with user's selected Elastic environment data.       |
-| Google Threat Intelligence IP Address IOC Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI data with user's selected Elastic environment data. |
+**Note:** The following two transforms are available to filter relevant data from alerts.
 
-The following transform and its associated pipelines are used to filter relevant data from alerts. Follow **Steps to enable transforms** to enable these transforms and populate `Threat Intelligence` and `Adversary Intelligence` dashboards.
+- Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`)
+- Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`)
 
-| Transform Name                                                                                                                                          | Description                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Detected IOC Transform  (ID: `logs-ti_google_threat_intelligence.rule`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule-pipeline`)  | Filters and extracts necessary information from Detected IOCs from threat feed. |
-
-### Steps to enable transforms
-
-1. Navigate to **Stack Management > Transforms** in Kibana.
-2. Locate the transform you want to enable by searching for its **Transform ID**.
-3. Click the **three dots** next to the transform, then select **Edit**.
-4. Under the **Destination configuration** section, set the **Ingest Pipeline**:
-   - Each transform in the **Google Threat Intelligence** integration has a corresponding ingest pipeline.
-   - Refer to the **Transforms table** above for the appropriate pipeline name associated with transform.
-   - Prefix the pipeline name with the integration version.  
-     For example:  
-     ```
-     0.1.0-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
-     ```
-   - Click **Update** to save the changes.
-5. Click the **three dots** again next to the transform and select **Start** to activate it.
-
-**Note:** After updating the integration, make sure to update the pipeline prefix accordingly.
+These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence` and `IOC Stream Threat Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` and `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
 
 ## Limitations
 
@@ -154,15 +163,14 @@ The following transform and its associated pipelines are used to filter relevant
 
 ## Troubleshooting
 
-1. If you encounter a privilege error for a threat feed type, such as: `You are not authorized to perform the requested operation`, verify your privilege level and enable only the threat feeds you have access to.
-2. If you see an error like `Package 2025031310 is not available until 2025-03-13 at 11:00 UTC because of privacy policy.`, ensure that your initial interval and interval are set in hours and are greater than one hour.
-3. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
-4. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
+1. If you see an error like `Package 2025031310 is not available until 2025-03-13 at 11:00 UTC because of privacy policy.`, ensure that your initial interval and interval are set in hours and the initial interval is greater than two hours.
+2. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
+3. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
    **Note:** More events in index patterns mean more time needed for detection rules to run.
 5. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields, keyword fields like file hash SHA256 to corresponding file hash SHA256 fields) are accurately configured.
 6. If any transform is not in a **Healthy** state, try resetting it:
    - Click the **three dots** next to the transform, then select **Reset**.
-   - After resetting, follow the **Steps to enable transforms** above to reconfigure and restart the transform.
+   - After resetting, restart the transform if they are not automatically started.
 
 ## Logs Reference
 
@@ -196,6 +204,16 @@ This is the `Infostealers` dataset.
 
 {{fields "infostealer"}}
 
+### IOC Stream
+
+This is the `IOC Stream` dataset.
+
+#### Example
+
+{{event "ioc_stream"}}
+
+{{fields "ioc_stream"}}
+
 ### Internet of Things
 
 This is the `Internet of Things` dataset.
@@ -205,3 +223,103 @@ This is the `Internet of Things` dataset.
 {{event "iot"}}
 
 {{fields "iot"}}
+
+### Linux
+
+This is the `Linux` dataset.
+
+#### Example
+
+{{event "linux"}}
+
+{{fields "linux"}}
+
+### Malicious Network Infrastructure
+
+This is the `Malicious Network Infrastructure` dataset.
+
+#### Example
+
+{{event "malicious_network_infrastructure"}}
+
+{{fields "malicious_network_infrastructure"}}
+
+### Malware
+
+This is the `Malware` dataset.
+
+#### Example
+
+{{event "malware"}}
+
+{{fields "malware"}}
+
+### Mobile
+
+This is the `Mobile` dataset.
+
+#### Example
+
+{{event "mobile"}}
+
+{{fields "mobile"}}
+
+### OS X
+
+This is the `OS X` dataset.
+
+#### Example
+
+{{event "osx"}}
+
+{{fields "osx"}}
+
+### Phishing
+
+This is the `Phishing` dataset.
+
+#### Example
+
+{{event "phishing"}}
+
+{{fields "phishing"}}
+
+### Ransomware
+
+This is the `Ransomware` dataset.
+
+#### Example
+
+{{event "ransomware"}}
+
+{{fields "ransomware"}}
+
+### Threat Actor
+
+This is the `Threat Actor` dataset.
+
+#### Example
+
+{{event "threat_actor"}}
+
+{{fields "threat_actor"}}
+
+### Daily Top trending
+
+This is the `Daily Top trending` dataset.
+
+#### Example
+
+{{event "trending"}}
+
+{{fields "trending"}}
+
+### Vulnerability Weaponization
+
+This is the `Vulnerability Weaponization` dataset.
+
+#### Example
+
+{{event "vulnerability_weaponization"}}
+
+{{fields "vulnerability_weaponization"}}

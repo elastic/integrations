@@ -1,0 +1,47 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: cel
+      name: test-default-cel
+      streams:
+        - data_stream:
+            dataset: cel.cel
+          interval: 1m
+          program: |-
+            get("https://api.ipify.org/?format=json").Body.as(body, {
+            "events": [body.decode_json().with({
+            ?"last_requested_at": state.?cursor.last_requested_at
+            })],
+            "cursor": {"last_requested_at": now}
+            })
+          publisher_pipeline.disable_host: true
+          redact.delete: false
+          regexp: null
+          resource.headers: null
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://server.example.com:8089/api
+          tags:
+            - forwarded
+          xsd: null
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

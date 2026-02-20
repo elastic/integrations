@@ -42,12 +42,6 @@ elastic-package stack up -d
 
 To view a list of the available options for this command, run `elastic-package stack up -h` or `elastic-package help stack up`.
 
-Next, set the environment variables that are required for additional `elastic-package` commands.
-
-```bash
-$(elastic-package stack shellinit)
-```
-
 Next, invoke the asset loading test runner. This step corresponds to steps 3 to 5 in the [Conceptual process](#asset-testing-concepts) section.
 
 Navigate to the root folder of the package, or any sub-folder under it, and run the following command.

@@ -1,3 +1,4 @@
+id: nginx-ingress-controller-access-${kubernetes.container.id}
 paths:
 {{#each paths}}
   - {{this}}
@@ -20,6 +21,13 @@ processors:
 {{/if}}
 condition: {{ condition }}
 prospector.scanner.symlinks: {{ symlinks }}
+{{#if useFingerprint}}
+file_identity.fingerprint: ~
+prospector:
+  scanner:
+    fingerprint:
+      {{ fingerprintYaml }}
+{{/if}}
 parsers:
 - container:
     stream: stdout

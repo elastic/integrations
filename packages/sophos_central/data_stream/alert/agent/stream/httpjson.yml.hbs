@@ -37,14 +37,16 @@ response.pagination:
       fail_on_template_error: true
   - set:
       target: url.params.cursor
-      value: '[[if (.last_response.body.has_more)]][[.last_response.body.next_cursor]][[end]]'
+      value: '[[if index .last_response.body "has_more"]][[if (.last_response.body.has_more)]][[.last_response.body.next_cursor]][[end]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 response.split:
   target: body.items
   ignore_empty_value: true
 cursor:
   from_date:
-    value: '[[if not (.last_response.body.has_more)]][[(now).Unix]][[end]]'
+    value: '[[if index .last_response.body "has_more"]][[if not (.last_response.body.has_more)]][[(now).Unix]][[end]][[end]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

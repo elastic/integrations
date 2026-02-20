@@ -5,10 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - fail:
-      tag: cel_failure
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process
+      description: error message set and no data to process.
   - set:
       field: event.kind
       tag: set_event_kind_1
@@ -280,6 +280,8 @@ processors:
       tag: remove_json
       field:
         - json
+  
+  # Cleanup
   - script:
       tag: script_to_drop_null_values
       lang: painless

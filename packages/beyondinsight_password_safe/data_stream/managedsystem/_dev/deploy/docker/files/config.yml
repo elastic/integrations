@@ -1,0 +1,204 @@
+# BeyondInsight Password Safe - Managed Systems Test Mock Configuration
+#
+# Test Scenario: Simulates paginated retrieval of managed systems with session expiration and re-authentication:
+# 1. Initial authentication via SignAppin endpoint (returns 200, sets session cookie)
+# 2. First ManagedSystems request with limit=1&offset=0 (returns 200, first session)
+# 3. Second ManagedSystems request with limit=1&offset=1 (returns 401, session expired)
+# 4. Re-authentication via SignAppin endpoint (returns 200, new session cookie)
+# 5. Retry ManagedSystems request with limit=1&offset=1 (returns 200, second session)
+# 6. Final ManagedSystems request with limit=1&offset=2 (returns 200, empty data array - no more data)
+#
+# This tests the integration's ability to handle:
+# - Session-based authentication with BeyondTrust API
+# - Paginated data retrieval with limit/offset parameters
+# - Session expiration (401) and automatic re-authentication
+# - Proper handling of empty result sets indicating end of pagination
+
+rules:
+  # Auth
+  - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key; runas=testuser; pwd=\[password\];']
+      Content-Type: ['application/json']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+        body: |
+          {{ minify_json `
+          {
+            "UserId": 1,
+            "SID": null,
+            "EmailAddress": "test.user@example.com",
+            "UserName": "testuser",
+            "Name": "Test User"
+          }
+          `}}
+
+  - path: "/BeyondTrust/api/public/v3/ManagedSystems"
+    methods: ["GET"]
+    query_params:
+      offset: '0'
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "ManagedSystemID": 13,
+                      "EntityTypeID": 1,
+                      "AssetID": 13,
+                      "DatabaseID": 5,
+                      "DirectoryID": 3,
+                      "CloudID": 1,
+                      "WorkgroupID": 1,
+                      "HostName": "AardvarkAgreement",
+                      "DNSName": "AardvarkAgreement.example.com",
+                      "IPAddress": "198.51.100.10",
+                      "InstanceName": "InstanceOne",
+                      "IsDefaultInstance": true,
+                      "Template": "ServerTemplate",
+                      "ForestName": "PrimaryForest",
+                      "UseSSL": true,
+                      "OracleInternetDirectoryID": "550e8400-e29b-41d4-a716-446655440000",
+                      "OracleInternetDirectoryServiceName": "OiDService",
+                      "SystemName": "AardvarkAgreement",
+                      "PlatformID": 4,
+                      "NetBiosName": "AardvarkNet",
+                      "Port": 8080,
+                      "Timeout": 30,
+                      "Description": "Primary Managed System for AardvarkAgreement",
+                      "ContactEmail": "admin@aardvarkagreement.com",
+                      "PasswordRuleID": 0,
+                      "DSSKeyRuleID": 0,
+                      "ReleaseDuration": 120,
+                      "MaxReleaseDuration": 525600,
+                      "ISAReleaseDuration": 120,
+                      "AutoManagementFlag": true,
+                      "FunctionalAccountID": 14,
+                      "LoginAccountID": 20,
+                      "ElevationCommand": "sudo",
+                      "SshKeyEnforcementMode": 1,
+                      "CheckPasswordFlag": false,
+                      "ChangePasswordAfterAnyReleaseFlag": false,
+                      "ResetPasswordOnMismatchFlag": false,
+                      "ChangeFrequencyType": "first",
+                      "ChangeFrequencyDays": 30,
+                      "ChangeTime": "23:30",
+                      "AccountNameFormat": 0,
+                      "RemoteClientType": "None",
+                      "ApplicationHostID": 2,
+                      "IsApplicationHost": false,
+                      "AccessURL": "http://aardvarkagreement.com/manage"
+                  }
+              ],
+              "TotalCount": 2
+          }
+          `}}
+
+  - path: "/BeyondTrust/api/public/v3/ManagedSystems"
+    methods: ["GET"]
+    query_params:
+      offset: '1'
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type: ['application/json']
+        body: >-
+          "User not authenticated"
+
+  - path: "/BeyondTrust/api/public/v3/ManagedSystems"
+    methods: ["GET"]
+    query_params:
+      offset: '1'
+      limit: '1'
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "ManagedSystemID": 14,
+                      "EntityTypeID": 1,
+                      "AssetID": 14,
+                      "DatabaseID": 6,
+                      "DirectoryID": 4,
+                      "CloudID": 2,
+                      "WorkgroupID": 2,
+                      "HostName": "SecondSystem",
+                      "DNSName": "secondsystem.example.com",
+                      "IPAddress": "198.51.100.20",
+                      "InstanceName": "Primary",
+                      "IsDefaultInstance": true,
+                      "Template": "ServerTemplate",
+                      "ForestName": "SecondaryForest",
+                      "UseSSL": true,
+                      "OracleInternetDirectoryID": "550e8400-e29b-41d4-a716-446655440001",
+                      "OracleInternetDirectoryServiceName": "OiDService2",
+                      "SystemName": "SecondSystem",
+                      "PlatformID": 5,
+                      "NetBiosName": "SecondNet",
+                      "Port": 8081,
+                      "Timeout": 60,
+                      "Description": "Secondary Managed System",
+                      "ContactEmail": "admin@secondsystem.com",
+                      "PasswordRuleID": 1,
+                      "DSSKeyRuleID": 1,
+                      "ReleaseDuration": 240,
+                      "MaxReleaseDuration": 525600,
+                      "ISAReleaseDuration": 240,
+                      "AutoManagementFlag": false,
+                      "FunctionalAccountID": 15,
+                      "LoginAccountID": 21,
+                      "ElevationCommand": "su",
+                      "SshKeyEnforcementMode": 2,
+                      "CheckPasswordFlag": true,
+                      "ChangePasswordAfterAnyReleaseFlag": true,
+                      "ResetPasswordOnMismatchFlag": true,
+                      "ChangeFrequencyType": "daily",
+                      "ChangeFrequencyDays": 1,
+                      "ChangeTime": "02:00",
+                      "AccountNameFormat": 1,
+                      "RemoteClientType": "SSH",
+                      "ApplicationHostID": 3,
+                      "IsApplicationHost": true,
+                      "AccessURL": "https://secondsystem.example.com/manage"
+                  }
+              ],
+              "TotalCount": 2
+          }
+          `}}
+
+  - path: "/BeyondTrust/api/public/v3/ManagedSystems"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [],
+              "TotalCount": 2
+          }
+          `}}

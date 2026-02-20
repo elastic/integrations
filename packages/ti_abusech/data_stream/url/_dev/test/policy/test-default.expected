@@ -1,0 +1,96 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_abusech
+      name: test-default-ti_abusech
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_abusech.url
+            type: logs
+          fields:
+            _conf:
+                interval: 1h
+          fields_under_root: true
+          interval: 1h
+          program: |
+            state.with(
+              request("GET", state.url).with({
+                "Header":{
+                  "Content-Type": ["application/zip"],
+                  ?"Auth-Key": has(state.auth_key) ?
+                    optional.of([state.auth_key])
+                  :
+                    optional.none(),
+                }
+              })
+              .do_request()
+              .as(resp, resp.StatusCode == 200 ?
+                resp.Body.mime("application/zip").File.as(file, file.size() > 0 ?
+                  file[0].Data.as(data, bytes(data).decode_json().as(body, {
+                    "events": body.map(id, body[id].size() > 0 ?
+                      {"message": body[id][0].with({"id": id}).encode_json()}
+                    :
+                      {"message": ""}
+                    ),
+                    "url": state.url
+                  }))
+                :
+                  {
+                    "events": [],
+                    "url": state.url
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET "+ state.url.trim_right("/") + ":" + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - auth_key
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://urlhaus.abuse.ch/downloads/json
+          state:
+            auth_key: ${SECRET_0}
+          tags:
+            - forwarded
+            - abusech-url
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_abusech.url-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

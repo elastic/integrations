@@ -2,12 +2,15 @@
 description: Pipeline for processing Hashicorp Vault operational logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_message_to_event_original_86cdcc50
       field: message
       target_field: event.original
       ignore_failure: true
@@ -17,20 +20,36 @@ processors:
   # JSON logs
   #
   - pipeline:
+      tag: pipeline_e73534a9
       if: ctx?.event?.original != null && ctx.event.original.startsWith("{")
       name: '{{ IngestPipeline "json" }}'
   #
   # Non-JSON logs
   #
   - set:
+      tag: set_message_e46300a8
       if: ctx?.event?.original != null && !ctx.event.original.startsWith("{")
       field: message
       copy_from: event.original
       ignore_failure: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

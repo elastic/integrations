@@ -1,0 +1,287 @@
+---
+description: Pipeline for processing investigation logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: extrahop.investigation
+  - append:
+      field: event.type
+      tag: set_event_type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: related.user
+      tag: append_investigation_assignee_into_related_user
+      value: '{{{extrahop.investigation.assignee}}}'
+      allow_duplicates: false
+      if: ctx.extrahop?.investigation?.assignee != null
+  - dissect:
+      field: extrahop.investigation.created_by
+      tag: dissect_created_by
+      description: Extract username and domain from created_by.
+      pattern: '%{user.name}@%{user.domain}'
+      if: ctx.extrahop?.investigation?.created_by != null
+      ignore_failure: true
+  - append:
+      field: related.user
+      tag: append_investigation_created_by_into_related_user
+      value: '{{{extrahop.investigation.created_by}}}'
+      allow_duplicates: false
+      if: ctx.extrahop?.investigation?.created_by != null
+  - date:
+      field: extrahop.investigation.creation_time
+      tag: date_creation_time
+      target_field: extrahop.investigation.creation_time
+      formats:
+        - UNIX_MS
+      if: ctx.extrahop?.investigation.creation_time != null && ctx.extrahop.investigation.creation_time != ''
+      on_failure:
+        - remove:
+            field: extrahop.investigation.creation_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_investigation_creation_time
+      copy_from: extrahop.investigation.creation_time
+      ignore_empty_value: true
+  - convert:
+      field: extrahop.investigation.detections
+      tag: convert_class_uid_to_string
+      if: ctx.extrahop?.investigation.detections != null && !ctx.extrahop.investigation.detections.contains(null)
+      type: string
+      target_field: extrahop.investigation.detections
+      ignore_missing: true
+  - date:
+      field: extrahop.investigation.end_time
+      tag: date_end_time
+      target_field: extrahop.investigation.end_time
+      formats:
+        - UNIX_MS
+      if: ctx.extrahop?.investigation.end_time != null && ctx.extrahop.investigation.end_time != ''
+      on_failure:
+        - remove:
+            field: extrahop.investigation.end_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_investigation_end_time
+      copy_from: extrahop.investigation.end_time
+      ignore_empty_value: true
+  - convert:
+      field: extrahop.investigation.id
+      tag: convert_id_to_string
+      target_field: extrahop.investigation.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: temp.ingest_time
+      tag: set_temp_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      ignore_empty_value: true
+  - script:
+      description: Set event.id using extrahop.investigation.id and _ingest.timestamp.
+      lang: painless
+      tag: set_event_id_from_ID_and_ingest_timestamp
+      if: ctx.extrahop?.investigation.id != null && ctx.temp?.ingest_time != null
+      source: |
+        def isoString = ctx.temp.ingest_time;
+        def formatter = java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+        def instant = java.time.Instant.from(formatter.parse(isoString));
+        def epochMillis = instant.toEpochMilli();
+
+        def jsonId = ctx.extrahop.investigation.id;
+        ctx.event = ctx.event ?: [:];
+        ctx.event.id = jsonId + '-' + epochMillis;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: temp
+      tag: remove_tempfield
+      ignore_missing: true
+  - convert:
+      field: extrahop.investigation.is_user_created
+      tag: convert_is_user_created_to_boolean
+      target_field: extrahop.investigation.is_user_created
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_investigation_last_interaction_by_into_related_user
+      value: '{{{extrahop.investigation.last_interaction_by}}}'
+      allow_duplicates: false
+      if: ctx.extrahop?.investigation?.last_interaction_by != null
+  - date:
+      field: extrahop.investigation.last_interaction_time
+      tag: date_last_interaction_time
+      target_field: extrahop.investigation.last_interaction_time
+      formats:
+        - UNIX_MS
+      if: ctx.extrahop?.investigation.last_interaction_time != null && ctx.extrahop.investigation.last_interaction_time != ''
+      on_failure:
+        - remove:
+            field: extrahop.investigation.last_interaction_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: message
+      tag: set_message_from_investigation_name
+      copy_from: extrahop.investigation.name
+      ignore_empty_value: true
+  - date:
+      field: extrahop.investigation.start_time
+      tag: date_start_time
+      target_field: extrahop.investigation.start_time
+      formats:
+        - UNIX_MS
+      if: ctx.extrahop?.investigation.start_time != null && ctx.extrahop.investigation.start_time != ''
+      on_failure:
+        - remove:
+            field: extrahop.investigation.start_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_investigation_start_time
+      copy_from: extrahop.investigation.start_time
+      ignore_empty_value: true
+  # Calculate event.duration from event.start and event.end
+  - script:
+      lang: painless
+      tag: calculate_event_duration
+      if: ctx.event?.start != null && ctx.event?.end != null
+      source: >-
+        Instant eventstart = Instant.parse(ctx.event?.start);
+        Instant eventend = Instant.parse(ctx.event?.end);
+        ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
+  - date:
+      field: extrahop.investigation.update_time
+      tag: date_update_time
+      target_field: extrahop.investigation.update_time
+      formats:
+        - UNIX_MS
+      if: ctx.extrahop?.investigation.update_time != null && ctx.extrahop.investigation.update_time != ''
+      on_failure:
+        - remove:
+            field: extrahop.investigation.update_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.url
+      tag: set_event_url_from_investigation_url
+      copy_from: extrahop.investigation.url
+      ignore_empty_value: true
+  - remove:
+      field:
+        - extrahop.investigation.creation_time
+        - extrahop.investigation.end_time
+        - extrahop.investigation.name
+        - extrahop.investigation.start_time
+        - extrahop.investigation.url
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

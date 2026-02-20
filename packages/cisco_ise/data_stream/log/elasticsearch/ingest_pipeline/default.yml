@@ -2,9 +2,11 @@
 description: Pipeline for Cisco ISE logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -21,6 +23,7 @@ processors:
         TIMEONLYSTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
       on_failure:
         - append:
+            tag: append_error_message_62c1fc01
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - grok:
@@ -35,12 +38,15 @@ processors:
         NOTCOLON: '[^:]*?'
       on_failure:
         - append:
+            tag: append_error_message_0a0a0ab3
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - trim:
+      tag: trim_message_c88e4c4f
       field: message
       ignore_failure: true
   - convert:
+      tag: convert_host_hostname_to_host_ip_b25507a4
       if: ctx.host?.hostname != null && ctx.host.hostname != ''
       field: host.hostname
       target_field: host.ip
@@ -48,15 +54,18 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - remove:
+      tag: remove_host_hostname_57825f9d
       field: host.hostname
       if: ctx.host?.ip != null
   - append:
+      tag: append_related_ip_3c5161f0
       field: related.ip
       value: '{{{host.ip}}}'
       if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
@@ -81,9 +90,11 @@ processors:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_e73f754f
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_8c829a08
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - date:
@@ -96,66 +107,87 @@ processors:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_bfd835fe
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_5fa15a33
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - pipeline:
+      tag: pipeline_d30ae327
       name: '{{ IngestPipeline "pipeline_policy_diagnostics" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Policy_Diagnostics'
   - pipeline:
+      tag: pipeline_3ce6a6a5
       name: '{{ IngestPipeline "pipeline_guest" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Guest'
   - pipeline:
+      tag: pipeline_34ad8573
       name: '{{ IngestPipeline "pipeline_mydevices" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_MyDevices'
   - pipeline:
+      tag: pipeline_af633fa7
       name: '{{ IngestPipeline "pipeline_internal_operations_diagnostics" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Internal_Operations_Diagnostics'
   - pipeline:
+      tag: pipeline_cac68b3f
       name: '{{ IngestPipeline "pipeline_threat_centric_nac" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Threat_Centric_NAC'
   - pipeline:
+      tag: pipeline_be37a40d
       name: '{{ IngestPipeline "pipeline_posture_and_client_provisioning_audit" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Posture_and_Client_Provisioning_Audit'
   - pipeline:
+      tag: pipeline_19bd2235
       name: '{{ IngestPipeline "pipeline_radius_accounting" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_RADIUS_Accounting'
   - pipeline:
+      tag: pipeline_b02e9ff1
       name: '{{ IngestPipeline "pipeline_failed_attempts" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Failed_Attempts'
   - pipeline:
+      tag: pipeline_d4c7b7f3
       name: '{{ IngestPipeline "pipeline_passed_authentications" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Passed_Authentications'
   - pipeline:
+      tag: pipeline_a00633e7
       name: '{{ IngestPipeline "pipeline_radius_diagnostics" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_RADIUS_Diagnostics'
   - pipeline:
+      tag: pipeline_0dbdd883
       name: '{{ IngestPipeline "pipeline_ad_connector" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_AD_Connector'
   - pipeline:
+      tag: pipeline_a47fa6a1
       name: '{{ IngestPipeline "pipeline_authentication_flow_diagnostics" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Authentication_Flow_Diagnostics'
   - pipeline:
+      tag: pipeline_dcf1c2d7
       name: '{{ IngestPipeline "pipeline_administrative_and_operational_audit" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Administrative_and_Operational_Audit'
   - pipeline:
+      tag: pipeline_bd039cd3
       name: '{{ IngestPipeline "pipeline_system_statistics" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_System_Statistics'
   - pipeline:
+      tag: pipeline_5538c187
       name: '{{ IngestPipeline "pipeline_tacacs_accounting" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_TACACS_Accounting'
   - pipeline:
+      tag: pipeline_1aeeac49
       name: '{{ IngestPipeline "pipeline_identity_stores_diagnostics" }}'
       if: ctx.cisco_ise?.log?.category?.name == "CISE_Identity_Stores_Diagnostics"
   - pipeline:
+      tag: pipeline_e94dc8d5
       name: '{{ IngestPipeline "pipeline_alarm" }}'
       if: ctx.cisco_ise?.log?.category?.name == "CISE_Alarm"
   - pipeline:
+      tag: pipeline_a51ce810
       name: '{{ IngestPipeline "pipeline_monitoring_data_purge_audit" }}'
       if: ctx.cisco_ise?.log?.category?.name?.toUpperCase() == 'CISE_MONITORING_DATA_PURGE_AUDIT'
   - set:
+      tag: set_host_ip_1d72afcb
       field: host.ip
       value: ['{{{host.ip}}}']
       if: ctx.host?.ip instanceof String
@@ -172,50 +204,60 @@ processors:
       ignore_failure: true
       if: ctx.client?.user?.name == null
   - append:
+      tag: append_related_user_2353f6bb
       field: related.user
       value: '{{{client.user.name}}}'
       if: ctx.client?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_7577f3af
       field: related.user
       value: '{{{client.user.email}}}'
       if: ctx.client?.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_ConfigVersionId_to_cisco_ise_log_config_version_id_ca41f4e8
       field: cisco_ise.log.log_details.ConfigVersionId
       target_field: cisco_ise.log.config_version.id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_75ad9459
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
   - remove:
+      tag: remove_cisco_ise_log_log_details_ConfigVersionId_1541aee9
       field: cisco_ise.log.log_details.ConfigVersionId
       ignore_missing: true
   - lowercase:
+      tag: lowercase_log_syslog_severity_name_8199098d
       field: log.syslog.severity.name
       ignore_failure: true
       ignore_missing: true
   - set:
+      tag: set_log_level_0fe20f2e
       field: log.level
       copy_from: log.syslog.severity.name
       ignore_empty_value: true
   - remove:
+      tag: remove_25df5c8b
       field:
         - _tmp
         - cisco_ise.log.log_details_raw
       ignore_missing: true
   - set:
+      tag: set_event_code_8f539d1f
       field: event.code
       copy_from: cisco_ise.log.message.code
       if: ctx.cisco_ise?.log?.message?.code != null
       ignore_failure: true
   - script:
+      tag: script_26df8eab
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;
@@ -229,10 +271,24 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

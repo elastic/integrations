@@ -40,6 +40,30 @@ a value greater than 0.
 Both `log_connections` and `log_disconnections` can cause a lot of events if you don't have
 persistent connections, so enable with care.
 
+#### Timezone for logs (Optional)
+
+User can specify a timezone when logging messages by using the `tz_map` parameter. This feature is particularly useful for ensuring logs are recorded in the specified timezone, making it easier to troubleshoot issues based on the time of occurrence in different time zones.
+
+Note: If the tz_map parameter is not specified, it will be default to the timezone of the logs and map it with timestamp accordingly.
+
+#### Supported Timezones
+User can set the `tz_map` to any valid timezone identifier. Here are a few examples of supported timezones:
+
+- `tz_short: 'EDT'`
+- `tz_long: 'America/New_York'`
+- `tz_short: 'IST'`
+- `tz_long: 'Asia/Kolkata'`
+
+#### Example Usage
+
+When logging an event, user can pass the `timezone` parameter to ensure the time is recorded in the desired timezone. Here's an example of how you can use this parameter:
+
+```yaml
+tz_map:
+  - tz_short: 'IST'
+  - tz_long: 'Asia/Kolkata'
+```
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
@@ -721,4 +745,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | postgresql.statement.query.time.total.ms | The total amount of time in milliseconds spent running query. | float | gauge |
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[PostgreSQL] Buffer Cache Hit Ratio above threshold**
+
+
+
+**[PostgreSQL] Latency high**
+
+
 

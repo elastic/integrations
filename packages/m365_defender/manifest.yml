@@ -1,21 +1,23 @@
-format_version: "3.3.2"
+format_version: "3.4.0"
 name: m365_defender
-title: Microsoft M365 Defender
-version: "3.10.0"
-description: Collect logs from Microsoft M365 Defender with Elastic Agent.
+title: Microsoft Defender XDR
+version: "5.8.0"
+description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
   - "edr_xdr"
+  - "vulnerability_workflow"
+  - "cloudsecurity_cdr"
 type: integration
 conditions:
   elastic:
     subscription: basic
   kibana:
-    version: "^8.18.0 || ^9.0.0"
+    version: "^8.19.4 || ^9.1.4"
 policy_templates:
   - name: m365_defender
-    title: M365 Defender Logs
-    description: Collect logs from M365 Defender API
+    title: Microsoft Defender XDR Logs
+    description: Collect logs from Microsoft Defender XDR.
     deployment_modes:
       default:
         enabled: true
@@ -29,16 +31,16 @@ policy_templates:
             memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
     inputs:
       - type: httpjson
-        title: "Collect logs from M365 Defender API"
-        description: "Collect logs from M365 Defender via API"
+        title: "Collect alerts and incidents using Microsoft Graph Security API"
+        description: "Collect alerts and incidents from Microsoft Defender XDR using Microsoft Graph Security API"
         vars:
           - name: login_url
             type: text
-            title: OAuth Server URL
+            title: Oauth2 Token URL
             required: true
             show_user: false
             default: https://login.microsoftonline.com
-            description: "URL of Login Server 'tenant-id and token endpoint added automatically'."
+            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Tenant ID` will be used for oauth2 token generation.
           - name: token_endpoint
             type: text
             title: OAuth Token endpoint
@@ -58,19 +60,19 @@ policy_templates:
               The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
               Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
               tracer will delete any stored traces.
-              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)
+              Refer to [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)
               for details.
           - name: client_id
             type: text
             title: Client ID
-            description: The client ID related to creating a new application on Azure.
+            description: Client ID for Azure AD application.
             multi: false
             required: true
             show_user: true
           - name: client_secret
             type: password
             title: Client Secret
-            description: The secret related to the client ID.
+            description: Client Secret for Azure AD application.
             multi: false
             required: true
             show_user: true
@@ -78,21 +80,28 @@ policy_templates:
           - name: tenant_id
             type: text
             title: Tenant ID
-            description: The tenant ID related to creating a new application on Azure.
+            description: Tenant ID of the Azure.
             multi: false
             required: true
             show_user: true
+          - name: oauth_endpoint_params
+            type: yaml
+            title: OAuth2 Endpoint Params
+            description: Set of values that will be sent on each resource to the OAuth Server URL. Each param key can have multiple values and they are appended to the URL as query parameters.
+            show_user: false
+            multi: false
+            required: false
           - name: proxy_url
             type: text
             title: Proxy URL
             multi: false
             required: false
             show_user: false
-            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            description: SSL configuration options. Refer to [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false
@@ -119,20 +128,20 @@ policy_templates:
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
       - type: azure-eventhub
-        title: "Collect logs from Azure Event Hub"
-        description: "Collect logs from Azure Event Hub"
+        title: "Collect events using Azure Event Hub"
+        description: "Collect events from Microsoft Defender XDR using Azure Event Hub"
       - type: cel
-        title: "Collect logs from Microsoft Defender for Endpoint API"
-        description: "Collecting logs via Microsoft Defender for Endpoint API."
+        title: "Collect vulnerabilities using Microsoft Defender for Endpoint API"
+        description: "Collect vulnerabilities from Microsoft Defender XDR using Microsoft Defender for Endpoint API."
         vars: 
           - name: url
             type: text
             title: URL
-            description: By default, the URL is set to `https://api.securitycenter.microsoft.com`. It is observed that M365 Defender Base URL changes based on location so find your own base URL.
+            description: By default, the URL is set to `https://api.security.microsoft.com`. For better performance, use a server closer to your geolocation. Refer to [documentation](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list#versioning) for details.
             multi: false
             required: true
             show_user: false
-            default: https://api.securitycenter.microsoft.com
+            default: https://api.security.microsoft.com
           - name: client_id
             type: text
             title: Client ID
@@ -150,7 +159,7 @@ policy_templates:
             show_user: true
           - name: azure_tenant_id
             type: text
-            title: Azure Tenant ID 
+            title: Tenant ID 
             description: Tenant ID of the Azure.
             multi: false
             required: true
@@ -158,7 +167,7 @@ policy_templates:
           - name: token_url
             type: text
             title: Oauth2 Token URL
-            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Azure Tenant ID` will be used for oauth2 token generation.
+            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Tenant ID` will be used for oauth2 token generation.
             show_user: true
             required: false
             default: https://login.microsoftonline.com
@@ -166,13 +175,25 @@ policy_templates:
           - name: token_scopes
             type: text
             title: Token Scopes
-            description: Defines the level of access granted to the API. This scope is required to authenticate and authorize API requests in M365 Defender Vulnerability Management.
+            description: Defines the level of access granted to the API. This scope is required to authenticate and authorize API requests in Microsoft Defender XDR Vulnerability Management.
             multi: true
             secret: false
             required: true
             show_user: false
             default: 
               - "https://securitycenter.onmicrosoft.com/windowsatpservice/.default"
+          - name: oauth_endpoint_params
+            type: yaml
+            title: OAuth2 Endpoint Params
+            description: Set of values that will be sent on each resource to the OAuth Server URL. Each param key can have multiple values and they are appended to the URL as query parameters.
+            show_user: false
+            multi: false
+            required: false
+            default: |
+              #grant_type: client_credentials
+              #refresh_token:
+              #  - refresh_token_1
+              #  - refresh_token_2
           - name: proxy_url
             type: text
             title: Proxy URL
@@ -183,7 +204,7 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            description: SSL configuration options. Refer to [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false
@@ -215,32 +236,32 @@ icons:
     size: 32x32
     type: image/svg+xml
 screenshots:
-  - src: /img/m365-defender-alert.png
-    title: Microsoft 365 Defender Alert Dashboard
+  - src: /img/m365_defender-alert-api.png
+    title: Microsoft Defender XDR Alert Dashboard
     size: 600x600
     type: image/png
-  - src: /img/m365-defender-incidents.png
-    title: Microsoft 365 Defender (Incidents) Incidents Dashboard
+  - src: /img/m365_defender-incident.png
+    title: Microsoft Defender XDR (Incidents) Incidents Dashboard
     size: 600x600
     type: image/png
-  - src: /img/m365-defender-events-alerts1.png
-    title: Microsoft 365 Defender (Events) Alerts Dashboard
+  - src: /img/m365_defender-alert-eventhub.png
+    title: Microsoft Defender XDR (Events) Alerts Dashboard
     size: 600x600
     type: image/png
-  - src: /img/m365-defender-events-device1.png
-    title: Microsoft 365 Defender (Events) Device Dashboard
+  - src: /img/m365_defender-device.png
+    title: Microsoft Defender XDR (Events) Device Dashboard
     size: 600x600
     type: image/png
-  - src: /img/m365-defender-events-email1.png
-    title: Microsoft 365 Defender (Events) Email Dashboard
+  - src: /img/m365_defender-email.png
+    title: Microsoft Defender XDR (Events) Email Dashboard
     size: 600x600
     type: image/png
-  - src: /img/m365-defender-events-app1.png
-    title: Microsoft 365 Defender (Events) App & Identity Dashboard
+  - src: /img/m365_defender-app_and_identity.png
+    title: Microsoft Defender XDR (Events) App & Identity Dashboard
     size: 600x600
     type: image/png
-  - src: /img/m365-defender-vulnerability.png
-    title: Microsoft 365 Defender Vulnerability
+  - src: /img/m365_defender-vulnerability.png
+    title: Microsoft Defender XDR Vulnerability
     size: 600x600
     type: image/png
 owner:

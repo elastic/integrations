@@ -1,0 +1,125 @@
+---
+description: Pipeline for processing Kafka log manager metrics
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: jolokia.metrics
+      target_field: kafka.log_manager
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: service.type
+      value: kafka
+  # Add metric fingerprint list
+  - script:
+      lang: painless
+      source: |
+        def queue = new ArrayList();
+        def fingerprint = new ArrayList();
+
+        if (ctx.containsKey('kafka') && ctx.kafka.containsKey('log_manager')) {
+            queue.add(['p': 'kafka.log_manager', 'v': ctx.kafka.log_manager]);
+
+            while (!queue.isEmpty()) {
+                def item = queue.remove(0);
+                def path = item.p;
+                def val = item.v;
+
+                if (val instanceof Map) {
+                    for (entry in val.entrySet()) {
+                        def key = entry.getKey();
+                        def child = entry.getValue();
+                        def childPath = path + '.' + key;
+                        queue.add(['p': childPath, 'v': child]);
+                    }
+                } else {
+                    fingerprint.add(path);
+                }
+            }
+
+            ctx.kafka_log_manager_metric_fingerprint = fingerprint;
+        }
+  
+  - fingerprint:
+      fields: [kafka_log_manager_metric_fingerprint]
+      target_field: kafka.log_manager.metric_fingerprint
+      ignore_failure: true
+
+  # Extract log_directory from LogDirectoryOffline MBean
+  - grok:
+      field: "kafka.log_manager.mbean"
+      patterns:
+        - 'kafka.log:type=LogManager,name=LogDirectoryOffline,logDirectory="%{DATA:directory_offline_count_log_directory}"'
+      if: "ctx.kafka?.log_manager?.mbean != null && ctx.kafka.log_manager.mbean.contains('LogDirectoryOffline')"
+      ignore_failure: true
+
+  - set:
+      field: "kafka.log_manager.directory_offline_count.log_directory"
+      copy_from: "directory_offline_count_log_directory"
+      if: "ctx.directory_offline_count_log_directory != null"
+    
+
+  # Extract log_directory from uncleanable-partitions-count MBean
+  - grok:
+      field: "kafka.log_manager.mbean"
+      patterns:
+        - 'kafka.log:type=LogCleanerManager,name=uncleanable-partitions-count,logDirectory="%{DATA:uncleanable_partitions_count_log_directory}"'
+      if: "ctx.kafka?.log_manager?.mbean != null && ctx.kafka.log_manager.mbean.contains('uncleanable-partitions-count')"
+      ignore_failure: true
+  
+  - set:
+      field: "kafka.log_manager.cleaner_manager.uncleanable_partitions_count.log_directory"
+      copy_from: "uncleanable_partitions_count_log_directory"
+      if: "ctx.uncleanable_partitions_count_log_directory != null"
+
+
+  # Extract log_directory from uncleanable-bytes MBean
+  - grok:
+      field: "kafka.log_manager.mbean"
+      patterns:
+        - 'kafka.log:type=LogCleanerManager,name=uncleanable-bytes,logDirectory="%{DATA:uncleanable_bytes_log_directory}"'
+      if: "ctx.kafka?.log_manager?.mbean != null && ctx.kafka.log_manager.mbean.contains('uncleanable-bytes')"
+      ignore_failure: true
+
+  - set:
+      field: "kafka.log_manager.cleaner_manager.uncleanable_bytes.log_directory"
+      copy_from: "uncleanable_bytes_log_directory"
+      if: "ctx.uncleanable_bytes_log_directory != null"
+
+  # Cleanup  
+  - remove:
+      field: directory_offline_count_log_directory
+      ignore_missing: true
+
+  - remove:
+      field: uncleanable_partitions_count_log_directory
+      ignore_missing: true
+
+  - remove:
+      field: uncleanable_bytes_log_directory
+      ignore_missing: true
+
+  - remove:
+      field: kafka.log_manager.mbean
+      ignore_missing: true
+
+  - remove:
+     field: kafka_log_manager_metric_fingerprint
+     ignore_missing: true
+
+
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'

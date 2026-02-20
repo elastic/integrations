@@ -1,8 +1,13 @@
 source:
   index:
     - "logs-aws.securityhub_findings_full_posture-*"
+  query:
+    bool:
+      must_not:
+        exists:
+          field: error.message
 dest:
-  index: "security_solution-aws.misconfiguration_latest-v2"
+  index: "security_solution-aws.misconfiguration_latest-v3"
   aliases:
     - alias: "security_solution-aws.misconfiguration_latest"
       move_on_creation: true
@@ -12,7 +17,7 @@ latest:
     - resource.id
     - data_stream.namespace
   sort: "@timestamp"
-description: Latest SecurityHub Findings from AWS
+description: Latest Security Hub CSPM Findings from AWS.
 frequency: 5m
 sync:
   time:
@@ -27,4 +32,4 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.2.0
+  fleet_transform_version: 0.3.0

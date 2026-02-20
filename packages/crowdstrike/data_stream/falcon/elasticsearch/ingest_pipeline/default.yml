@@ -126,7 +126,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_utc_timestamp
+      tag: date_utc_timestamp_ms
       if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() >= 12'
   - date:
       field: crowdstrike.event.UTCTimestamp
@@ -149,7 +149,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_creation_time
+      tag: date_event_creation_time_ms
       if: 'ctx.crowdstrike?.metadata?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.metadata.eventCreationTime).length() >= 12'
   - set:
       field: '@timestamp'
@@ -170,7 +170,7 @@ processors:
       source: |-
         ctx.event = ctx.event ?: [:];
         String name = ctx.crowdstrike.event.SeverityName;
-        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("info")) {
+        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("info") || name.equalsIgnoreCase("informational")) {
           ctx.event.severity = 21;
         } else if (name.equalsIgnoreCase("medium")) {
           ctx.event.severity = 47;
@@ -245,7 +245,15 @@ processors:
             'executable': args.get(0)
           ]
         }
-
+  
+  - pipeline:
+      name: '{{ IngestPipeline "customer_ioc_event" }}'
+      tag: pipeline_customer_ioc_event
+      if: ctx.crowdstrike?.metadata?.eventType == "CustomerIOCEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "data_protection_detection_summary" }}'
+      tag: pipeline_data_protection_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "DataProtectionDetectionSummaryEvent"
   - pipeline:
       name: '{{ IngestPipeline "detection_summary" }}'
       tag: pipeline_detection_summary
@@ -386,7 +394,7 @@ processors:
       ignore_missing: true
   - geoip:
       field: destination.ip
-      target_field: source.geo
+      target_field: destination.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb

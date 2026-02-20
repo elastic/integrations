@@ -1,0 +1,73 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{url}}
+{{#if proxy_url }}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+state:
+  push_notification_configuration_id: {{push_notification_configuration_id}}
+  api_key: {{api_key}}
+  method: getPushEventSettings
+redact:
+  fields:
+    - api_key
+program: |-
+  state.with(
+    request("POST", state.url).with(
+      {
+        "Header": {
+          "Authorization": ["Basic "+base64(state.api_key+":")],
+          "Content-Type": ["application/json"],
+          "Accept": ["application/json"],
+        },
+        "Body": {
+          "jsonrpc": "2.0",
+          "method": state.method,
+          "id": state.push_notification_configuration_id,
+        }.encode_json()
+      }
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      dyn({
+        "events": [{"message":string(resp.Body)}],
+      })
+    :
+      dyn({
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST: "+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+      })
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

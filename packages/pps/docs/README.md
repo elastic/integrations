@@ -135,4 +135,10 @@ An example event for `log` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
+| pps.entry.name | The name of an entry in the password manager | keyword |
+| pps.entry.path | Password Path | keyword |
+| pps.entry.reason | Reason the user interacted with a password | keyword |
+| pps.entry.target.name | The new name of an entry in the password manager if it was changed | keyword |
+| pps.entry.target.username | The new username of an entry in the password manager if it was changed | keyword |
+| pps.entry.username | The username of an entry in the password manager | keyword |
 

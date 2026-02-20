@@ -1,0 +1,321 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  query: {{query}}
+  offset: 0
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+  max_executions: 1000
+{{#if field_mapping}}
+  field_mapping: {{field_mapping}}
+{{/if}}
+{{#if default_fields}}
+  defaults: {{default_fields}}
+{{/if}}
+redact:
+  fields: ~
+program: |-
+  (int(state.?count.orValue(0)) >= int(state.max_executions)) ?
+    dyn(state.with({"events": [], "want_more": false}))
+  :
+    state.with(
+      (
+        has(state.?cursor.sid) ?
+          state
+        :
+          (
+            state.?want_more.orValue(false) ?
+              state.cursor.time_range
+            :
+              {
+                "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                "end_time": now.format(time_layout.RFC3339),
+              }
+          ).as(time_range,
+            // To perform search and get search id.
+            post(
+              state.url.trim_right("/") + "/services/search/v2/jobs",
+              "application/x-www-form-urlencoded",
+              {
+                "output_mode": ["json"],
+                "search": [
+                  state.query + (
+                    (state.?field_mapping.optMap(m, size(m) != 0)).orValue(false) ?
+                      (
+                        // Copy fields to new names and delete originals.
+                        // Dynamic query construction issues obviously exist;
+                        // fields cannot contain "=" or ",". There may be
+                        // other constraints.
+                        // We do not include "-" which is invalid or "_time"
+                        // which we need.
+                        sprintf(
+                          "|eval %s|fields - %s",
+                          state.field_mapping.transformMapEntry(f, v,
+                            {
+                              "'" + f.replace_all("\\", "\\\\").replace_all("'", "\\'") + "'": "'@ecs." + v.replace_all("\\", "\\\\").replace_all("'", "\\'") + "'",
+                            }
+                          ).as(bt,
+                            [
+                              bt.map(f, f != "'_time'", bt[f] + "=" + f).join(","),
+                              bt.map(f, f != "'_time'", f).join(","),
+                            ]
+                          )
+                        )
+                      )
+                    :
+                      ""
+                  ),
+                ],
+                "earliest_time": [time_range.start_time],
+                "latest_time": [time_range.end_time],
+              }.format_query()
+            ).as(resp, (resp.StatusCode == 201) ?
+              resp.Body.decode_json().as(body,
+                {
+                  "cursor": {
+                    "sid": body.sid,
+                    "time_range": time_range,
+                    ?"last_timestamp": state.?cursor.last_timestamp,
+                  },
+                }
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "POST " + state.url.trim_right("/") + "/services/search/v2/jobs: " + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+                "want_more": false,
+                "offset": 0,
+                "cursor": {
+                  ?"last_timestamp": state.?cursor.last_timestamp,
+                },
+              }
+            )
+          )
+      ).as(search_state,
+        (has(search_state.events) && type(search_state.events) == map && has(search_state.events.error)) ?
+          search_state
+        : (search_state.?cursor.dispatchState == optional.of("FAILED")) ?
+          {
+            "events": {
+              "error": {
+                "message": "search failed: see previous logging for details",
+              },
+            },
+            "want_more": false,
+            "offset": 0,
+            "cursor": {
+              ?"last_timestamp": state.?cursor.last_timestamp,
+            },
+          }
+        : (search_state.?cursor.dispatchState == optional.of("DONE") || !has(search_state.?cursor.sid)) ? // If more pages are still needs to be fetched.
+          state.with(
+            {
+              "cursor": {
+                ?"author": search_state.?cursor.author,
+                ?"dispatchState": search_state.?cursor.dispatchState,
+                ?"sid": search_state.?cursor.sid,
+                ?"last_timestamp": search_state.?cursor.last_timestamp,
+              },
+            }
+          )
+        :
+          get(
+            state.url.trim_right("/") + "/services/search/v2/jobs/" + string(search_state.cursor.sid) + "?output_mode=json"
+          ).as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                "cursor": {
+                  ?"sid": search_state.?cursor.sid,
+                  ?"author": body.entry[?0].author,
+                  ?"dispatchState": body.entry[?0].content.dispatchState,
+                  ?"time_range": search_state.?cursor.time_range,
+                  ?"last_timestamp": search_state.?cursor.last_timestamp,
+                },
+                "body": body,
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + string(search_state.cursor.sid) + ":" + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "offset": 0,
+              "cursor": {
+                ?"last_timestamp": search_state.?cursor.last_timestamp,
+              },
+            }
+          )
+      ).as(status_state,
+        (has(status_state.events) && type(status_state.events) == map && has(status_state.events.error)) ?
+          status_state
+        : (status_state.?cursor.dispatchState == optional.of("FAILED")) ?
+          {
+            "events": {
+              "error": {
+                "message": sprintf(
+                  "search failed: %q%s",
+                  (
+                    status_state.body.entry[?0].optMap(e,
+                      e.content.as(c,
+                        [
+                          c.search,
+                          [
+                            ?c.messages.filter(m, m.type == "FATAL")[?0],
+                            ?c.messages[?0],
+                          ][?0].optMap(m, ": " + m.text).orValue(""),
+                        ]
+                      )
+                    )
+                  ).orValue([status_state.body.encode_json(), ""])
+                ),
+              },
+            },
+            "want_more": false,
+            "offset": 0,
+            "cursor": {
+              ?"last_timestamp": state.?cursor.last_timestamp,
+            },
+          }
+        : (status_state.?cursor.dispatchState == optional.of("DONE")) ? // To fetch the events from the respective search id.
+          get(
+            state.url.trim_right("/") + "/services/search/v2/jobs/" + string(status_state.cursor.sid) + "/events?" + {
+              "output_mode": ["json"],
+              "count": [string(state.batch_size)],
+              "offset": [string(state.offset)],
+            }.format_query()
+          ).as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                "events": body.results.map(e,
+                  {
+                    "message": {
+                      ?"author": status_state.?cursor.author,
+                      "query": state.query,
+                      ?"mapping": state.?field_mapping.optMap(m, m.drop(["_time", "-"])),
+                      "result": e.transformMapEntry(k, v,
+                        {
+                          ?k: k.has_prefix("'@ecs.") ?
+                            optional.none()
+                          :
+                            optional.of(v),
+                        }
+                      ),
+                      "ecs_result": state.?defaults.orValue({}).with(
+                        e.transformMapEntry(k, v,
+                          {
+                            ?k.trim_prefix("'@ecs.").trim_suffix("'").replace_all("\\'", "'").replace_all("\\\\", "\\"): k.has_prefix("'@ecs.") ?
+                              optional.of(v)
+                            :
+                              optional.none(),
+                          }
+                        )
+                      ),
+                    }.encode_json(),
+                  }
+                ),
+                "cursor": {
+                  ?"sid": (body.results.size() == state.batch_size) ? optional.of(status_state.cursor.sid) : optional.none(),
+                  ?"author": status_state.?cursor.author,
+                  ?"dispatchState": (body.results.size() == state.batch_size) ? optional.of(status_state.cursor.dispatchState) : optional.none(),
+                  ?"time_range": status_state.?cursor.time_range,
+                  ?"last_timestamp": (has(body.results) && body.results.size() > 0) ?
+                    (
+                      (has(status_state.?cursor.last_timestamp) && body.results.map(e, e._time).max() < status_state.cursor.last_timestamp) ?
+                        optional.of(status_state.cursor.last_timestamp)
+                      :
+                        optional.of(body.results.map(e, e._time).max())
+                    )
+                  :
+                    status_state.?cursor.last_timestamp,
+                },
+                "offset": (body.results.size() == state.batch_size) ? (int(state.offset) + body.results.size()) : 0,
+                "want_more": body.results.size() == state.batch_size,
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + status_state.cursor.sid + "/events:" + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "offset": 0,
+              "cursor": {
+                ?"last_timestamp": state.?cursor.last_timestamp,
+              },
+            }
+          )
+        :
+          {
+            "events": [{"retry": true}],
+            "want_more": true,
+            "cursor": status_state.cursor,
+          }
+      )
+    ).with(
+      {
+        "count": int(state.?count.orValue(0)) + 1,
+      }
+    )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

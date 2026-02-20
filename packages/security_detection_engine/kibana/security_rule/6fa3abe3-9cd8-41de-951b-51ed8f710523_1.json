@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects unusual spikes in error response codes (500, 502, 503, 504) from web servers, which may indicate reconnaissance activities such as vulnerability scanning or fuzzing attempts by adversaries. These activities often generate a high volume of error responses as they probe for weaknesses in web applications. Error response codes may potentially indicate server-side issues that could be exploited.",
+        "from": "now-9m",
+        "interval": "10m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Web Server Potential Spike in Error Response Codes",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Web Server Potential Spike in Error Response Codes\n\nThis rule detects bursts of 5xx errors (500\u2013504) from GET traffic, highlighting abnormal server behavior that accompanies active scanning or fuzzing and exposes fragile code paths or misconfigured proxies. Attackers sweep common and generated endpoints while mutating query params and headers\u2014path traversal, template syntax, large payloads\u2014to repeatedly force backend exceptions and gateway timeouts, enumerate which routes fail, and pinpoint inputs that leak stack traces or crash components for follow-on exploitation.\n\n### Possible investigation steps\n\n- Plot error rates per minute by server and client around the alert window to confirm the spike, determine scope, and separate a single noisy client from a platform-wide issue.\n- Aggregate the failing URL paths and query strings from the flagged client and look for enumeration sequences, traversal encoding, template injection markers, or oversized inputs indicative of fuzzing.\n- Examine User-Agent, Referer, header mix, and TLS JA3 for generic scanner signatures or reuse across multiple clients, and enrich the originating IP with reputation and hosting-provider attribution.\n- Correlate the timeframe with reverse proxy/WAF/IDS and application error logs or stack traces to identify which routes threw exceptions or timeouts and whether they align with the client\u2019s input patterns.\n- Validate backend and dependency health (upstreams, databases, caches, deployments) to rule out infrastructure regressions, then compare whether only the suspicious client experiences disproportionate failures.\n\n### False positive analysis\n\n- A scheduled deployment or upstream dependency issue can cause normal GET traffic to fail with 502/503/504, and many users egressing through a shared NAT or reverse proxy may be aggregated as one source IP that triggers the spike.\n- An internal health-check, load test, or site crawler running from a single host can rapidly traverse endpoints and induce 500 errors on fragile routes, mimicking scanner-like behavior without malicious intent.\n\n### Response and remediation\n\n- Immediately rate-limit or block the originating client(s) at the edge (reverse proxy/WAF) using the observed source IPs, User-Agent/TLS fingerprints, and the failing URL patterns generating 5xx bursts.\n- Drain the origin upstream(s) showing repeated 500/502/503/504 on the probed routes, roll back the latest deployment or config change for those services, and disable any unstable endpoint or plugin that is crashing under input fuzzing.\n- Restart affected application workers and proxies, purge bad cache entries, re-enable traffic gradually with canary percentage, and confirm normal response rates via synthetic checks against the previously failing URLs.\n- Escalate to Security Operations and Incident Response if 5xx spikes persist after blocking or if error pages expose stack traces, credentials, or admin route disclosures, or if traffic originates from multiple global hosting ASNs.\n- Deploy targeted WAF rules for path traversal and injection markers seen in the URLs, enforce per-IP and per-route rate limits, tighten upstream timeouts/circuit breakers, and replace verbose error pages with generic responses that omit stack details.\n- Add bot management and IP reputation blocking at the CDN/edge, lock down unauthenticated access to admin/debug routes, and instrument alerts that trigger on sustained 5xx bursts per client and per route with automatic edge throttling.\n",
+        "query": "from logs-network_traffic.http-*, logs-network_traffic.tls-*, logs-nginx.access-*, logs-apache.access-*, logs-apache_tomcat.access-*, logs-iis.access-*\n| where\n    (url.original is not null or url.full is not null) and\n    http.request.method == \"GET\" and\n    http.response.status_code in (\n      500, // Internal Server Error\n      502, // Bad Gateway\n      503, // Service Unavailable\n      504 // Gateway Timeout\n    )\n| eval Esql.url_text  = case(url.original is not null, url.original, url.full)\n| eval Esql.url_lower = to_lower(Esql.url_text)\n\n| keep\n    @timestamp,\n    event.dataset,\n    http.request.method,\n    http.response.status_code,\n    source.ip,\n    agent.id,\n    host.name,\n    Esql.url_lower\n| stats\n    Esql.event_count = count(),\n    Esql.http_response_status_code_count = count(http.response.status_code),\n    Esql.http_response_status_code_values = values(http.response.status_code),\n    Esql.host_name_values = values(host.name),\n    Esql.agent_id_values = values(agent.id),\n    Esql.http_request_method_values = values(http.request.method),\n    Esql.http_response_status_code_values = values(http.response.status_code),\n    Esql.url_path_values = values(Esql.url_lower),\n    Esql.event_dataset_values = values(event.dataset)\n    by source.ip, agent.id\n| where\n    Esql.http_response_status_code_count > 10\n",
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            },
+            {
+                "package": "nginx",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "apache",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "apache_tomcat",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "iis",
+                "version": "^1.21.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.agent_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_dataset_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.http_request_method_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.http_response_status_code_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.http_response_status_code_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.url_path_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "6fa3abe3-9cd8-41de-951b-51ed8f710523",
+        "severity": "low",
+        "tags": [
+            "Domain: Web",
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Tactic: Reconnaissance",
+            "Data Source: Network Packet Capture",
+            "Data Source: Nginx",
+            "Data Source: Apache",
+            "Data Source: Apache Tomcat",
+            "Data Source: IIS",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1595",
+                        "name": "Active Scanning",
+                        "reference": "https://attack.mitre.org/techniques/T1595/",
+                        "subtechnique": [
+                            {
+                                "id": "T1595.002",
+                                "name": "Vulnerability Scanning",
+                                "reference": "https://attack.mitre.org/techniques/T1595/002/"
+                            },
+                            {
+                                "id": "T1595.003",
+                                "name": "Wordlist Scanning",
+                                "reference": "https://attack.mitre.org/techniques/T1595/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "6fa3abe3-9cd8-41de-951b-51ed8f710523_1",
+    "type": "security-rule"
+}

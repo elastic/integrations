@@ -26,6 +26,26 @@ The following Azure API permissions are required:
 | User.Read.All        | Application |
 | Device.Read.All      | Application |
 
+#### Additional permissions for Intune-managed device properties
+
+If you want to collect device properties that are managed by Microsoft Intune, the following additional permission is required:
+
+| Permission                            | Type        |
+|---------------------------------------|-------------|
+| DeviceManagementManagedDevices.Read.All | Application |
+
+Without this permission, the following device fields will return `null` values even if the devices are enrolled in Intune:
+
+- `entityanalytics_entra_id.device.is_compliant`
+- `entityanalytics_entra_id.device.is_managed`
+- `entityanalytics_entra_id.device.compliance_expiration_date_time`
+- `entityanalytics_entra_id.device.category`
+- `entityanalytics_entra_id.device.ownership`
+- `entityanalytics_entra_id.device.enrollment_profile_name`
+- `entityanalytics_entra_id.device.mdm_app_id`
+
+**Note:** An active Microsoft Intune license is also required for the tenant for these properties to be populated.
+
 For more details on how to set up the necessary App Registration, permission granting, and secret configuration, refer to this [guide](https://learn.microsoft.com/en-us/graph/auth-v2-service).
 
 ### Enable the integration in Elastic
@@ -290,6 +310,7 @@ An example event for `entity` looks as following:
 | entityanalytics_entra_id.device.version | For internal use only. | keyword |
 | entityanalytics_entra_id.user.account_enabled | true if the account is enabled; otherwise, false. | boolean |
 | entityanalytics_entra_id.user.business_phones | The telephone numbers for the user. | keyword |
+| entityanalytics_entra_id.user.department | The name of the department in which the user works. | keyword |
 | entityanalytics_entra_id.user.display_name | The name displayed in the address book for the user. This is usually the combination of the user's first name, middle initial and last name. | keyword |
 | entityanalytics_entra_id.user.given_name | The given name (first name) of the user. Maximum length is 64 characters. | keyword |
 | entityanalytics_entra_id.user.group.id | The unique identifier for the group. | keyword |

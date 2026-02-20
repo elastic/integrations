@@ -1,15 +1,15 @@
 # Infoblox NIOS
 
-The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP or logfile.
+The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios/) via TCP/UDP or logfile.
 
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
 2. Log in to the NIOS appliance.
-3. Configure the NIOS appliance to send messages to a Syslog server using the following steps. For further information, refer to [Using a Syslog Server](https://docs.infoblox.com/display/NAG8/Using+a+Syslog+Server#UsingaSyslogServer-SpecifyingSyslogServers).
+3. Configure the NIOS appliance to send messages to a Syslog server using the following steps. For further information, refer to [Using a Syslog Server](https://docs.infoblox.com/space/nios90/1380844672/Specifying+Syslog+Servers).
     1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
     2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
     3. Click the **Add** icon to define a new Syslog server.
-    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
+    4. Enter the IP **Address** or the **FQDN** of the Elastic Agent that is running the integration.
     5. Select **Transport** to connect to the external Syslog server.
     6. If you are using Secure TCP transport, upload a self-signed or a CA-signed **Server Certificate**.
     7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
@@ -38,7 +38,7 @@ The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data coll
 
 ## Compatibility
 
-This module has been tested against `Infoblox NIOS version 8.6.1` with the below-given logs pattern.
+This module has been tested against `Infoblox NIOS version 9.0.3` with the below-given logs pattern.
 
 ## Log samples
 Below are the samples logs of the respective category:

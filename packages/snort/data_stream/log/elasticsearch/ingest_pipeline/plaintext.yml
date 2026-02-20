@@ -2,6 +2,7 @@
 description: Pipeline for parsing Snort Plaintext logs
 processors:
   - grok:
+      tag: grok_event_original_24037a01
       field: event.original
       patterns:
         # Syslog
@@ -30,6 +31,7 @@ processors:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
         SYSLOGPROG: '%{PROG:process.name}(?:\[%{POSINT:process.pid:int}\])?'
   - script:
+      tag: script_1acc7cc9
       lang: painless
       source: >-
         if (ctx.snort?.ip?.tos != null && ctx.snort.ip.tos instanceof String) {
@@ -53,4 +55,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

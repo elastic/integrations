@@ -1,11 +1,12 @@
 version: '2.3'
 services:
   test-webhook-http:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
       - STREAM_ADDR=http://elastic-agent:9515/json
       - STREAM_WEBHOOK_HEADER=Content-Type=application/json
       - STREAM_WEBHOOK_USERNAME=abc123
@@ -14,11 +15,12 @@ services:
       - STREAM_DELAY=10s
     command: log /sample_logs/test-webhook.log
   test-webhook-http-ack:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
       - STREAM_ADDR=http://elastic-agent:9516/json?wait_for_completion_timeout=1m
       - STREAM_WEBHOOK_HEADER=Content-Type=application/json
       - STREAM_WEBHOOK_USERNAME=abc123

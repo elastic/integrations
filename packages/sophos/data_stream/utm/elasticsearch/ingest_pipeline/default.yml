@@ -36,10 +36,12 @@ processors:
       tag: grok_syslog_header
       on_failure:
         - append:
+            tag: append_error_message_0e0667da
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
         - set:
+            tag: set_event_kind_795f04d8
             field: event.kind
             value: pipeline_error
   - lowercase:
@@ -50,6 +52,7 @@ processors:
       tag: set_host_name
   # Process syslog parameters
   - script:
+      tag: script_36f87397
       description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
       lang: painless
       source: |
@@ -62,6 +65,7 @@ processors:
           ctx.log.syslog['facility'] = facility;
         }
   - script:
+      tag: script_75865bea
       description: Translate log.syslog.facility.code to log.syslog.facility.name
       lang: painless
       params:
@@ -95,6 +99,7 @@ processors:
         }
         ctx.log.syslog.facility.name = params[(ctx.log.syslog.facility.code).toString()];
   - script:
+      tag: script_ac58ee9e
       description: Translate log.syslog.severity.code to log.syslog.severity.name
       lang: painless
       params:
@@ -132,10 +137,12 @@ processors:
       tag: date_set_timestamp
       on_failure:
         - append:
+            tag: append_error_message_6ccd9b54
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
         - set:
+            tag: set_event_kind_43729006
             field: event.kind
             value: pipeline_error
   # Choose the pipeline based on the log source
@@ -219,11 +226,24 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

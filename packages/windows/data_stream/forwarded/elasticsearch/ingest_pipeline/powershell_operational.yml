@@ -107,6 +107,11 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx.winlog?.event_data?.HostName != ""
+  - set:
+      field: process.pid
+      copy_from: winlog.process.pid
+      ignore_failure: true
+      ignore_empty_value: true
 
   ## User fields.
 
@@ -115,29 +120,28 @@ processors:
       copy_from: winlog.user.identifier
       ignore_failure: true
       ignore_empty_value: true
-  - split:
-      field: winlog.event_data.User
-      target_field: "_temp.user_parts"
-      separator: '\\'
-      if: ctx.winlog?.event_data?.User != null
   - set:
       field: user.domain
-      value: "{{_temp.user_parts.0}}"
+      copy_from: winlog.user.domain
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
       field: user.name
-      value: "{{_temp.user_parts.1}}"
+      copy_from: winlog.user.name
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - append:
       field: related.user
       value: "{{user.name}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.name != null
+  - append:
+      field: related.hosts
+      value: "{{user.domain}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.domain != null
   - split:
       field: winlog.event_data.ConnectedUser
       target_field: "_temp.connected_user_parts"
@@ -298,16 +302,6 @@ processors:
   - trim:
       field: powershell.file.script_block_text
       ignore_missing: true
-  - dissect:
-      field: powershell.file.script_block_text
-      pattern: "# SIG # Begin signature block%{powershell.file.script_block_signature}# SIG # End signature block"
-      ignore_missing: true
-      ignore_failure: true
-  - gsub:
-      field: powershell.file.script_block_signature
-      pattern: "\\n# "
-      replacement: ""
-      ignore_missing: true
   - gsub:
       field: powershell.file.script_block_text
       target_field: _temp.script_block_no_space
@@ -319,6 +313,143 @@ processors:
         - _temp.script_block_no_space
       target_field: powershell.file.script_block_hash
       ignore_missing: true
+  - gsub:
+      field: powershell.file.script_block_text
+      target_field: _temp.script_block_no_signature
+      pattern: "(?s)# SIG # Begin signature block.+"
+      replacement: ""
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: >
+        Compute Shannon entropy of script block text using Unicode character distribution.
+        Entropy (0-20 bits) measures randomness; surprisal_stdev measures distribution uniformity.
+      if: ctx._temp?.script_block_no_signature != null
+      source: |-
+        // Entropy Variance from: https://github.com/elastic/toutoumomoma/blob/be287c9c0d0e435572e3889a6584199983c688f0/toutoumomoma.go#L326-L363.
+        String script = ctx._temp.script_block_no_signature;
+
+        int length = script.length();
+        if (length == 0) {
+          return;
+        }
+
+        // Skip signature only scripts:
+        // - Inspect only line 2 (line 1 can be truncated mid-signature).
+        // - Match "# " + base64-ish content at the fixed signature line length (64 chars).
+        int lf = 10;    // '\n'
+        int cr = 13;    // '\r'
+        int hash = 35;  // '#'
+        int space = 32; // ' '
+        int sigLineLen = 64; // Content length, excluding "# " prefix.
+
+        int firstLineEnd = -1;
+        for (int idx = 0; idx < length; idx++) {
+          if (script.charAt(idx) == lf) {
+            firstLineEnd = idx;
+            break;
+          }
+        }
+
+        if (firstLineEnd > 0) {
+          int secondLineStart = firstLineEnd + 1;
+          if (secondLineStart < length) {
+            int secondLineEnd = length;
+            for (int idx = secondLineStart; idx < length; idx++) {
+              if (script.charAt(idx) == lf) {
+                secondLineEnd = idx;
+                break;
+              }
+            }
+
+            if (secondLineEnd > secondLineStart && script.charAt(secondLineEnd - 1) == cr) {
+              secondLineEnd--;
+            }
+
+            if (secondLineStart < secondLineEnd && script.charAt(secondLineStart) == hash) {
+              int contentStart = secondLineStart + 1;
+              if (contentStart < secondLineEnd && script.charAt(contentStart) == space) {
+                contentStart++;
+              }
+              int lineLen = secondLineEnd - contentStart;
+              if (lineLen == sigLineLen) {
+                boolean base64Line = true;
+                for (int i = contentStart; i < secondLineEnd; i++) {
+                  int c = (int) script.charAt(i);
+                  if (!((c >= 65 && c <= 90) || (c >= 97 && c <= 122) ||
+                        (c >= 48 && c <= 57) || c == 43 || c == 47 || c == 61)) {
+                    base64Line = false;
+                    break;
+                  }
+                }
+                if (base64Line) {
+                  return;
+                }
+              }
+            }
+          }
+        }
+        
+        script = java.text.Normalizer.normalize(script, java.text.Normalizer.Form.NFC);
+        
+        length = script.length();
+        if (length == 0) {
+          return;
+        }
+
+        int[] counts = new int[65536];
+        int[] seen = new int[length];
+        int seenCount = 0;
+        int uniqueSymbols = 0;
+        for (int i = 0; i < length; i++) {
+            int ch = script.charAt(i);
+            if (counts[ch] == 0) {
+                counts[ch] = 1;
+                seen[seenCount++] = ch;
+                uniqueSymbols++;
+            } else {
+                counts[ch]++;
+            }
+        }
+
+        double invLog2 = 1.0 / Math.log(2.0);
+        double entropy = 0.0;
+        double surprisalVar = 0.0;
+        double pSum = 0.0;
+
+        for (int i = 0; i < seenCount; i++) {
+            int code = seen[i];
+            double cnt = (double) counts[code];
+            double p = cnt / (double) length;
+            double l2p = Math.log(p) * invLog2;
+
+            pSum += p;
+            double tmp = entropy;
+            entropy = tmp + (p / pSum) * (l2p - tmp);
+            surprisalVar += p * (l2p - tmp) * (l2p - entropy);
+        }
+        
+        surprisalVar = Math.max(0.0, surprisalVar);
+        double surprisalSd = Math.sqrt(surprisalVar);
+        double entropyBits = -entropy;
+        if (entropyBits == -0.0) {
+            entropyBits = 0.0;
+        }
+
+        double normalizedEntropy = 0.0;
+        if (length > 1) {
+            double maxEntropy = Math.log((double) length) * invLog2; // max bits if every character is unique
+            normalizedEntropy = entropyBits / maxEntropy;           // scale 0..1 against script length
+            if (normalizedEntropy < 0.0) normalizedEntropy = 0.0;
+            else if (normalizedEntropy > 1.0) normalizedEntropy = 1.0;
+        }
+        
+        ctx.powershell.file.script_block_entropy_bits = entropyBits;
+        ctx.powershell.file.script_block_entropy_normalized = normalizedEntropy;
+        ctx.powershell.file.script_block_surprisal_stdev = surprisalSd;
+        ctx.powershell.file.script_block_length = length;
+        ctx.powershell.file.script_block_unique_symbols = uniqueSymbols;
 
   - split:
       description: Split Event 4103 command invocation details.

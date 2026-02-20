@@ -49,75 +49,71 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-22T16:19:09.000Z",
+    "@timestamp": "2025-04-28T15:01:42.000Z",
     "agent": {
-        "ephemeral_id": "97d1a7b2-9413-428f-8969-4f5f62d5432f",
-        "id": "d1133e80-f6c0-4944-b3c2-426cddf483b7",
-        "name": "elastic-agent-18048",
+        "ephemeral_id": "505a3770-450a-4300-b325-f9e2c6caa79e",
+        "id": "1fa84ff2-0b52-47f7-80a0-edbc73168926",
+        "name": "elastic-agent-78603",
         "type": "filebeat",
         "version": "8.15.3"
     },
     "data_stream": {
         "dataset": "varonis.logs",
-        "namespace": "72531",
+        "namespace": "57343",
         "type": "logs"
     },
     "destination": {
-        "domain": "10.100.20.12",
+        "domain": "AD-contosofoo.com",
         "user": {
             "group": {
-                "name": "Everyone"
+                "name": "contosofoo.com\\Group Admins-Region_200"
             },
-            "name": "zta.local\\Dani Lulli (ADMIN)"
+            "name": "contosofoo.com\\Bourne Jr., Jason"
         }
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d1133e80-f6c0-4944-b3c2-426cddf483b7",
+        "id": "1fa84ff2-0b52-47f7-80a0-edbc73168926",
         "snapshot": false,
         "version": "8.15.3"
     },
     "event": {
-        "action": "Folder permissions added",
+        "action": "DS object permission added",
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "code": "6000",
+        "code": "5015",
         "dataset": "varonis.logs",
-        "end": "2024-11-22T16:19:05.000Z",
-        "ingested": "2025-03-28T17:00:05Z",
+        "end": "2025-04-28T14:53:02.000Z",
+        "ingested": "2025-09-11T06:42:47Z",
         "kind": "event",
         "module": "varonis",
-        "original": "CEF:0|Varonis Inc.|DatAdvantage|8.6.51|6000|Folder permissions added|3|rt=Nov 22 2024 16:19:09 cat=Alert cs2=Permissions granted to Global Access Groups cs2Label=RuleName cn1=132 cn1Label=RuleID end=Nov 22 2024 16:19:05 duser=zta.local\\\\Dani Lulli (ADMIN) dhost=10.100.20.12 filePath=E:\\\\Share\\\\Share\\\\Finance fname=Finance act=Folder permissions added dvchost= outcome=Success msg=Read & Execute permissions for This folder, subfolders and files (not inherited) was added to  Everyone on E:\\\\Share\\\\Share\\\\Finance cs3= cs3Label=AttachmentName cs4=test cs4Label=ClientAccessType deviceCustomDate1= fileType=csv cs1=admin@test.com cs1Label=MailRecipient suser=Admin cs5=test cs5Label=MailboxAccessType cnt=10 cs6=Read & Execute cs6Label=ChangedPermissions oldFilePermission=Read filePermission=Read & Execute dpriv=Everyone start=",
+        "original": "<14>Apr 28 15:59:01 VARONISSRVR1 CEF:0|Varonis Inc.|DatAdvantage|8.7.1|5015|DS object permission added|3|rt=Apr 28 2025 15:01:42 cat=Alert cs2=Permission changes on OU cs2Label=RuleName cn1=142 cn1Label=RuleID end=Apr 28 2025 14:53:02 duser=contosofoo.com\\Bourne Jr., Jason dhost=AD-contosofoo.com filePath=contosofoo.com\\Home Office Site\\Computers\\Containered fname=Containered act=DS object permission added dvchost=Compute outcome=Success msg=Permissions were added to \"Containered\" for group \"contosofoo.com\\Group Admins-Region_200\" cs3= cs3Label=AttachmentName cs4= cs4Label=ClientAccessType deviceCustomDate1= fileType= cs1= cs1Label=MailRecipient suser= cs5= cs5Label=MailboxAccessType cnt= cs6= cs6Label=ChangedPermissions oldFilePermission= filePermission=Write dpriv=contosofoo.com\\Group Admins-Region_200 start=Apr 28 2025 14:53:02",
         "outcome": "success",
         "severity": 3,
         "severity_label": "error",
+        "start": "2025-04-28T14:53:02.000Z",
         "type": [
             "info"
         ]
     },
     "file": {
-        "group": "Read & Execute",
-        "name": "Finance",
-        "path": "E:\\Share\\Share\\Finance",
-        "type": "csv"
+        "group": "Write",
+        "name": "Containered",
+        "path": "contosofoo.com\\Home Office Site\\Computers\\Containered"
     },
     "input": {
         "type": "udp"
     },
-    "message": "Read & Execute permissions for This folder, subfolders and files (not inherited) was added to  Everyone on E:\\Share\\Share\\Finance",
+    "message": "Permissions were added to \"Containered\" for group \"contosofoo.com\\Group Admins-Region_200\"",
     "observer": {
+        "hostname": "Compute",
         "product": "DatAdvantage",
         "vendor": "Varonis Inc.",
-        "version": "8.6.51"
-    },
-    "source": {
-        "user": {
-            "name": "Admin"
-        }
+        "version": "8.7.1"
     },
     "tags": [
         "preserve_original_event",
@@ -125,15 +121,10 @@ An example event for `logs` looks as following:
     ],
     "varonis": {
         "logs": {
-            "base_event_count": 10,
-            "changed_permissions": "Read & Execute",
-            "client_access_type": "test",
             "device_event_category": "Alert",
-            "mail_recipient": "admin@test.com",
-            "mailbox_access_type": "test",
-            "old_file_permission": "Read",
-            "rule_id": 132,
-            "rule_name": "Permissions granted to Global Access Groups"
+            "device_host_name": "Compute",
+            "rule_id": 142,
+            "rule_name": "Permission changes on OU"
         }
     }
 }
@@ -150,12 +141,12 @@ The following non-ECS fields are used in events documents:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset |  | constant_keyword |
-| event.module |  | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.severity_label |  | keyword |
 | input.type | Input type | keyword |
 | varonis.logs.attachment_name | The name of the attachment involved in the event. | keyword |

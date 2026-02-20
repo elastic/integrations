@@ -6,7 +6,9 @@ request.tracer.maxbackups: 5
 {{/if}}
 request.method: GET
 request.url: {{url}}/rest/plugin
-request.timeout: 60s
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
@@ -54,6 +56,7 @@ response.pagination:
       target: url.params.startOffset
       value: '[[if (ne (len .last_response.body.response) 0)]][[toInt (.last_response.url.params.Get "endOffset")]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.endOffset
       value: '[[add (toInt (.last_response.url.params.Get "endOffset")) {{batch_size}}]]'
@@ -64,6 +67,7 @@ response.split:
 cursor:
   last_event_ts:
     value: '[[if (lt (len .last_response.body.response) {{batch_size}})]][[.last_event.pluginModDate]][[end]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

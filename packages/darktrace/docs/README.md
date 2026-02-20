@@ -1086,7 +1086,7 @@ An example event for `model_breach_alert` looks as following:
 | darktrace.model_breach_alert.model.defeats.arguments.value | The value(s) that must match for the defeat to take effect. | keyword |
 | darktrace.model_breach_alert.model.defeats.comparator | The comparator that the value is compared against the create the defeat. | keyword |
 | darktrace.model_breach_alert.model.defeats.filtertype | The filter the defeat is made from. | keyword |
-| darktrace.model_breach_alert.model.defeats.id | A unique ID for the defeat. | long |
+| darktrace.model_breach_alert.model.defeats.id | A unique ID for the defeat. | keyword |
 | darktrace.model_breach_alert.model.delay | Minimum delay in seconds after a positive-scoring component has fired before the overall model score is calculated. Only applicable in target score models. | long |
 | darktrace.model_breach_alert.model.description | The optional description of the model. | keyword |
 | darktrace.model_breach_alert.model.edited.by | Username that last edited the model. | keyword |

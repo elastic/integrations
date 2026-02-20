@@ -5,49 +5,61 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - set:
+    tag: set_event_outcome_58dd3751
     field: event.outcome
     value: success
     if: 'ctx.sophos?.xg?.log_subtype == "Authentication" && ctx.sophos?.xg?.status == "Successful"'
 - set:
+    tag: set_event_outcome_ca1c1223
     field: event.outcome
     value: failure
     if: 'ctx.sophos?.xg?.log_subtype == "Authentication" && ctx.sophos?.xg?.status == "Failed"'
 - set:
+    tag: set_event_outcome_f0f3ae2d
     field: event.outcome
     value: success
     if: 'ctx.sophos?.xg?.log_subtype == "Admin" && ctx.sophos?.xg?.status == "Successful" && ctx.event?.code == "17507"'
 - set:
+    tag: set_event_outcome_7e3ea5bf
     field: event.outcome
     value: failure
     if: 'ctx.sophos?.xg?.log_subtype == "Admin" && ctx.sophos?.xg?.status == "Failed" && ctx.event?.code == "17507"'
 - append:
+    tag: append_event_type_7c53c608
     field: event.type
     value: start
     if: "['17701', '17704', '17707', '17710', '17713'].contains(ctx.event?.code)"
 - append:
+    tag: append_event_type_e5c55a5d
     field: event.type
     value: end
     if: "['17703', '17706', '17709', '17712', '17715'].contains(ctx.event?.code)"
 - append:
+    tag: append_event_type_1f273054
     field: event.type
     value: connection
     if: "['SSLVPN', 'IPSec', 'Thin Client', 'Radius SSO'].contains(ctx.sophos?.xg?.auth_client)"
 - append:
+    tag: append_event_category_c98b91ce
     field: event.category
     value: network
     if: "['SSLVPN', 'IPSec', 'Thin Client', 'Radius SSO'].contains(ctx.sophos?.xg?.auth_client)"
 - append:
+    tag: append_event_category_c6eb83ac
     field: event.category
     value: authentication
     if: 'ctx.sophos?.xg?.log_subtype == "Authentication"'
 - append:
+    tag: append_event_type_18009f1c
     field: event.type
     value: info
     if: 'ctx.event?.code == "17819"'
 - append:
+    tag: append_event_category_44e28e31
     field: event.category
     value:
     - host
@@ -58,11 +70,13 @@ processors:
 ## ECS Server/Destination Mapping ##
 ####################################
 - rename:
+    tag: rename_sophos_xg_dst_ip_to_destination_ip_17b8be30
     field: sophos.xg.dst_ip
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
 - rename:
+    tag: rename_sophos_xg_localinterfaceip_to_destination_ip_60cded20
     field: sophos.xg.localinterfaceip
     target_field: destination.ip
     ignore_missing: true
@@ -72,30 +86,36 @@ processors:
 ## ECS Client/Source Mapping ##
 ###############################
 - rename:
+    tag: rename_sophos_xg_src_ip_to_source_ip_db814f5f
     field: sophos.xg.src_ip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_ip != null"
 - rename:
+    tag: rename_sophos_xg_remoteinterfaceip_to_source_ip_dc015af5
     field: sophos.xg.remoteinterfaceip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.remoteinterfaceip != null"
 - rename:
+    tag: rename_sophos_xg_user_name_to_source_user_name_98774918
     field: sophos.xg.user_name
     target_field: source.user.name
     ignore_missing: true
     if: "ctx.sophos?.xg?.user_name != null"
 - set:
+    tag: set_source_user_name_af583f24
     field: source.user.name
     value: '{{{sophos.xg.name}}}'
     if: "ctx.sophos?.xg?.name != null"
 - set:
+    tag: set_user_name_57648d0f
     field: user.name
     value: '{{{source.user.name}}}'
     ignore_empty_value: true
     if: 'ctx.sophos?.xg?.log_subtype == "Authentication"'
 - rename:
+    tag: rename_sophos_xg_usergroupname_to_source_user_group_name_21d46cb1
     field: sophos.xg.usergroupname
     target_field: source.user.group.name
     ignore_missing: true
@@ -105,6 +125,7 @@ processors:
 ## ECS Message Mapping ##
 #########################
 - rename:
+    tag: rename_sophos_xg_message_to_message_d1857ba5
     field: sophos.xg.message
     target_field: message
     ignore_missing: true
@@ -113,6 +134,7 @@ processors:
 ## Cleanup ##
 #############
 - remove:
+    tag: remove_65c8ccfb
     field:
         - sophos.xg.dst_port
         - sophos.xg.src_port
@@ -124,4 +146,12 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

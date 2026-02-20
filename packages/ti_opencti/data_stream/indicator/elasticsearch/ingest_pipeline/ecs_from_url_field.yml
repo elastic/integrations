@@ -26,13 +26,13 @@ processors:
       copy_from: _tmp_url.original
 
   # append object
-  - append:
-      field: threat.indicator.url
-      value: []
   - script:
       description: Append to the destination
       lang: painless
       source: |
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.url = ctx.threat.indicator.url ?: [];
         ctx.threat.indicator.url.add(ctx._tmp_url);
 
   - remove:

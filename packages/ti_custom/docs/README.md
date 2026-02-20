@@ -55,7 +55,7 @@ To configure the integration to pull threat intelligence from an ISAC feed, foll
 1. Ensure ISAC Membership: Confirm that you are a member of the desired ISAC (e.g., MS-ISAC, FS-ISAC) and have access to its TAXII server credentials. Some ISACs require registration and approval before providing TAXII feed access.
 
 2. Obtain the following information from your ISAC:
-    - Server URL: The endpoint for the ISAC’s TAXII server (e.g. https://example-isac.org/taxii/).
+    - Server URL: The endpoint for the ISAC’s TAXII server (for example, `https://example.org/taxii/`).
     - Collection Name: The specific collection containing the threat intelligence you want to retrieve.
     - Authentication Credentials: Username, password, API Key, or client certificate, as required by the ISAC.
 
@@ -99,24 +99,24 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2020-03-24T14:31:50.000Z",
     "agent": {
-        "ephemeral_id": "e82cb16e-47ab-41c6-a2ab-aa35eff2b7bc",
-        "id": "d99709cd-2211-496e-8b4e-7f3065444cff",
-        "name": "elastic-agent-48140",
+        "ephemeral_id": "43af6da1-b18c-4817-8688-f525c200d434",
+        "id": "8257fe94-2ac6-48cf-bd18-2ded67e2c463",
+        "name": "elastic-agent-58386",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_custom.indicator",
-        "namespace": "67549",
+        "namespace": "43369",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d99709cd-2211-496e-8b4e-7f3065444cff",
+        "id": "8257fe94-2ac6-48cf-bd18-2ded67e2c463",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -124,9 +124,9 @@ An example event for `indicator` looks as following:
             "threat"
         ],
         "dataset": "ti_custom.indicator",
-        "ingested": "2025-06-02T07:13:32Z",
+        "ingested": "2025-07-09T06:39:52Z",
         "kind": "enrichment",
-        "original": "{\"confidence\":20,\"created\":\"2020-03-24T14:31:50.000Z\",\"created_by_ref\":\"identity--4f347cc9-4658-59ee-9707-134f434f9d1c\",\"description\":\"RiskIQ expansion\",\"id\":\"indicator--33041420-b509-504c-b30d-9a8ec505d7ee\",\"labels\":[\"certainty-50\",\"perpetual\",\"osint\"],\"lang\":\"en\",\"modified\":\"2023-10-18T07:51:59.171Z\",\"name\":\"abbbe10e3c6e5ed480a0743c540dbaba62ecaaf6\",\"object_marking_refs\":[\"marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9\"],\"pattern\":\"[file:hashes.'SHA-1' = 'abbbe10e3c6e5ed480a0743c540dbaba62ecaaf6']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2020-03-24T14:31:50.000Z\",\"valid_until\":\"2021-03-24T14:31:50.000Z\"}",
+        "original": "{\"confidence\":20,\"created\":\"2020-03-24T14:31:50.000Z\",\"created_by_ref\":\"identity--4f347cc9-4658-59ee-9707-134f434f9d1c\",\"description\":\"RiskIQ expansion\",\"id\":\"indicator--33041420-b509-504c-b30d-9a8ec505d7ea\",\"labels\":[\"certainty-50\",\"perpetual\",\"osint\"],\"lang\":\"en\",\"modified\":\"2023-10-18T07:51:59.171Z\",\"name\":\"abbbe10e3c6e5ed480a0743c540dbaba62ecaaf6\",\"object_marking_refs\":[\"marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9\"],\"pattern\":\"[file:hashes.'SHA-1' = 'abbbe10e3c6e5ed480a0743c540dbaba62ecaaf6']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2020-03-24T14:31:50.000Z\",\"valid_until\":\"2021-03-24T14:31:50.000Z\"}",
         "type": [
             "indicator"
         ]
@@ -143,7 +143,7 @@ An example event for `indicator` looks as following:
         "confidence": 20,
         "created": "2020-03-24T14:31:50.000Z",
         "created_by_ref": "identity--4f347cc9-4658-59ee-9707-134f434f9d1c",
-        "id": "indicator--33041420-b509-504c-b30d-9a8ec505d7ee",
+        "id": "indicator--33041420-b509-504c-b30d-9a8ec505d7ea",
         "ioc_expiration_date": "2021-03-24T14:31:50.000Z",
         "ioc_expiration_duration": "5d",
         "ioc_expiration_reason": "Expiration set from valid_until field",

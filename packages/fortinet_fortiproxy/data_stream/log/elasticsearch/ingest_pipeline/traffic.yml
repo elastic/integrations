@@ -1,8 +1,8 @@
 ---
 description: Pipeline for processing traffic logs from Fortinet Fortiproxy.
 processors:
-# ------------------------------------------------------------------------------
-# Convert fields.
+  # ------------------------------------------------------------------------------
+  # Convert fields.
   - convert:
       tag: convert_clientip
       field: _fields_.clientip
@@ -184,9 +184,8 @@ processors:
       type: long
       ignore_missing: true
 
-# ------------------------------------------------------------------------------
-# Format fields.
-
+  # ------------------------------------------------------------------------------
+  # Format fields.
   - gsub:
       tag: convert_dstmac
       field: _fields_.dstmac
@@ -208,8 +207,8 @@ processors:
       field: _fields_.srcmac
       ignore_missing: true
 
-# ------------------------------------------------------------------------------
-# Move fields to ECS.
+  # ------------------------------------------------------------------------------
+  # Move fields to ECS.
   - rename:
       tag: rename_dstmac
       field: _fields_.dstmac
@@ -279,7 +278,15 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

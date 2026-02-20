@@ -8,10 +8,9 @@ The AWS Health integration collects one type of data: metrics.
 
 Metrics provide insight into the operational health of your AWS environment, including the status of AWS services, scheduled changes, and notifications about potential issues that could impact your resources. Metrics are gathered with the [AWS Health API](https://docs.aws.amazon.com/health/latest/APIReference/Welcome.html)
 
-See more details in the [Metrics reference](#metrics-reference).
+Check more details in the [Metrics reference](#metrics-reference).
 
-
-## Requirements
+## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -21,7 +20,7 @@ Before using any AWS integration you will need:
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, please take a look at the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
+For more details about these requirements, refer to the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 To collect AWS Health metrics, you would need specific AWS permissions to access the necessary data. Here's a list of permissions required for an IAM user to collect AWS Health metrics:
 
@@ -29,13 +28,12 @@ To collect AWS Health metrics, you would need specific AWS permissions to access
 - `health:DescribeEventDetails`
 - `health:DescribeEvents`
 
-
 ## Setup
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration. When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
-For step-by-step instructions on how to set up an integration, see the
-{{ url "getting-started-observability" "Getting started" }} guide.
+For step-by-step instructions on how to set up an integration, refer to the
+[Quickstart: Monitor hosts with Elastic Agent](docs-content://solutions/observability/get-started/quickstart-monitor-hosts-with-elastic-agent.md).
 
 ### Data stream specific configuration notes
 

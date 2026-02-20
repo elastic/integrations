@@ -2,89 +2,108 @@
 description: Pipeline for processing outbound network details
 processors:
   - set:
-      field: source.ip
+      tag: source_ip_from_currentlocalip_dc8d0d2d
       if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP != null
+      field: source.ip
       value: '{{{crowdstrike.CurrentLocalIP}}}'
   - set:
+      tag: source_ip_from_localip_005159a1
+      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalIP != null
       field: source.ip
-      if: ctx.source?.ip == null && ctx.crowdstrike.LocalIP != null
       value: '{{{crowdstrike.LocalIP}}}'
   - set:
-      field: source.ip
+      tag: source_ip_from_localaddressip4_bf550fb1
       if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      field: source.ip
       value: '{{{crowdstrike.LocalAddressIP4.0}}}'
   - set:
-      field: source.ip
+      tag: source_ip_from_localaddressip6_615c3693
       if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      field: source.ip
       value: '{{{crowdstrike.LocalAddressIP6.0}}}'
   - convert:
-      tag: convert_source_ip
+      tag: convert_source_ip_to_ip_4084ea08
       field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            field: source.ip
+            tag: remove_source_ip_178b5ee1
+            field:
+              - source.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_b943fc68
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_address_070d27e8
       field: source.address
       copy_from: source.ip
       ignore_empty_value: true
   - rename:
+      tag: rename_crowdstrike_LocalPort_to_source_port_38b3032d
       field: crowdstrike.LocalPort
       target_field: source.port
       ignore_missing: true
-
   - rename:
+      tag: rename_crowdstrike_MAC_to_source_mac_41d0f60c
       field: crowdstrike.MAC
       target_field: source.mac
       ignore_missing: true
   - rename:
+      tag: rename_crowdstrike_PhysicalAddress_to_source_mac_92994720
       if: ctx.source?.mac == null
       field: crowdstrike.PhysicalAddress
       target_field: source.mac
       ignore_missing: true
-
   - convert:
-      tag: convert_RemoteAddressIP4_ip
+      tag: convert_crowdstrike_RemoteAddressIP4_to_ip_913ca686
       field: crowdstrike.RemoteAddressIP4
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            field: crowdstrike.RemoteAddressIP4
+            tag: remove_crowdstrike_RemoteAddressIP4_578bef43
+            field:
+              - crowdstrike.RemoteAddressIP4
             ignore_missing: true
         - append:
+            tag: append_error_message_263c65c6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_crowdstrike_RemoteAddressIP4_to_destination_ip_92030b2f
       field: crowdstrike.RemoteAddressIP4
       target_field: destination.ip
       ignore_missing: true
   - convert:
-      tag: convert_RemoteAddressIP6_ip
+      tag: convert_crowdstrike_RemoteAddressIP6_to_ip_96d0c7bc
       field: crowdstrike.RemoteAddressIP6
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            field: crowdstrike.RemoteAddressIP6
+            tag: remove_crowdstrike_RemoteAddressIP6_810cbb5b
+            field:
+              - crowdstrike.RemoteAddressIP6
             ignore_missing: true
         - append:
+            tag: append_error_message_85851e5c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_crowdstrike_RemoteAddressIP6_to_destination_ip_437bcd59
       field: crowdstrike.RemoteAddressIP6
       target_field: destination.ip
       ignore_missing: true
   - set:
+      tag: set_destination_address_a940017a
       field: destination.address
       copy_from: destination.ip
       ignore_empty_value: true
   - rename:
+      tag: rename_crowdstrike_RemotePort_to_destination_port_4c4d0f5d
       field: crowdstrike.RemotePort
       target_field: destination.port
       ignore_missing: true

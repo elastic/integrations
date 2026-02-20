@@ -9,23 +9,17 @@ ignore_older: {{ignore_older}}
 {{#if language}}
 language: {{language}}
 {{/if}}
-{{#if tags.length}}
 tags:
-{{#each tags as |tag|}}
+{{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{else}}
-{{#if preserve_original_event}}
-tags:
-  - preserve_original_event
-{{/if}}
-{{/if}}
-{{#if preserve_original_event}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 include_xml: true
-{{/if}}
 {{#if processors.length}}
 processors:
 {{processors}}

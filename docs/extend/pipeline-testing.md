@@ -3,193 +3,408 @@ mapped_pages:
   - https://www.elastic.co/guide/en/integrations-developer/current/pipeline-testing.html
 ---
 
-# Pipeline testing [pipeline-testing]
+# Pipeline Testing Guide [pipeline-testing]
 
-Elastic Packages comprise of data streams. A pipeline test exercises {{es}} Ingest Node pipelines defined for a package’s data stream.
+Pipeline tests validate your Elasticsearch ingest pipelines by feeding them test data and comparing the output against expected results. This is essential for ensuring your data transformation logic works correctly before deploying to production.
+Input to the tests are log or json files at the point that they would be ingested into elasticsearch, after any agent processors would run on a real integration. Output for the tests are documents after they have been processed by the ingest pipeline, and would be written to Elasticsearch indices in a real integration.
 
+For more information on pipeline tests, refer to [https://github.com/elastic/elastic-package/blob/main/docs/howto/pipeline_testing.md](https://github.com/elastic/elastic-package/blob/main/docs/howto/pipeline_testing.md).
 
-## Conceptual process [pipeline-concepts]
-
-Conceptually, running a pipeline test involves the following steps:
-
-1. Deploy the {{es}} instance (part of the {{stack}}). This step takes time, so you should typically do it once as a prerequisite to running pipeline tests on multiple data streams.
-2. Upload ingest pipelines to be tested.
-3. Use the [Simulate API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-ingest-simulate) to process logs/metrics with the ingest pipeline.
-4. Compare generated results with expected ones.
-
-
-## Limitations [pipeline-limitations]
-
-At the moment, pipeline tests have limitations. The main ones are:
-* As you’re only testing the ingest pipeline, you can prepare mocked documents with imaginary fields, different from ones collected in {{beats}}. Also, the other way round, you can skip most of the example fields and use tiny documents with a minimal set of fields just to satisfy the pipeline validation.
-* There might be integrations that transform data mainly using {{beats}} processors instead of ingest pipelines. In such cases, ingest pipelines are rather plain.
-
-
-## Defining a pipeline test [pipeline-defining-test]
-
-Packages have a specific folder structure (only relevant parts shown).
+## Quick Start [pipeline-quickstart]
 
 ```bash
-<package root>/
-  data_stream/
-    <data stream>/
-      manifest.yml
-  manifest.yml
+# Start Elasticsearch
+elastic-package stack up -d --services=elasticsearch
+
+# Run pipeline tests
+cd packages/your-package
+elastic-package test pipeline
+
+# Generate expected results (first time setup)
+elastic-package test pipeline --generate
+
+# Clean up
+elastic-package stack down
 ```
 
-To define a pipeline test we must define configuration at each dataset’s level:
+## What Pipeline Tests Validate [pipeline-validation]
 
-```bash
-<package root>/
+Pipeline tests verify:
+- Field extraction and parsing logic
+- Data type conversions and formatting
+- ECS field mapping compliance
+- Error handling and edge cases
+
+## Test Structure [test-structure]
+
+Pipeline tests live in the data stream's test directory:
+
+```
+packages/your-package/
   data_stream/
-    <data stream>/
+    your-stream/
       _dev/
         test/
           pipeline/
-            (test case definitions, both raw files and input events, optional configuration)
-      manifest.yml
-  manifest.yml
+            test-sample.log                # Raw log input
+            test-sample.log-config.yml     # Test configuration (optional)
+            test-sample.log-expected.json  # Expected output
+            test-events.json               # JSON event input
+            test-events.json-expected.json # Expected output
 ```
 
+## Test Input Types [input-types]
 
-### Test case definitions [pipeline-test-case]
+There are two input types for pipeline tests, raw log files and JSON event files. They are differentiated by their extension; raw log files use `.log` and JSON event files use `.json`.
 
-There are two types of test case definitions - **raw files** and **input events**.
+### Raw Log Files [raw-logs]
 
+Best for testing log-based integrations. Use actual log samples from your application.
 
-#### Raw files [pipeline-raw-files]
-
-The raw files simplify preparing test cases using real application `.log` files. A sample log (e.g. `test-access-sample.log`) file may look like the following one for Nginx:
-
-```bash
-127.0.0.1 - - [07/Dec/2016:11:04:37 +0100] "GET /test1 HTTP/1.1" 404 571 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36"
+**Example: `test-access.log`**
+```
+127.0.0.1 - - [07/Dec/2016:11:04:37 +0100] "GET /test1 HTTP/1.1" 404 571 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36"
 127.0.0.1 - - [07/Dec/2016:11:04:58 +0100] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:49.0) Gecko/20100101 Firefox/49.0"
-127.0.0.1 - - [07/Dec/2016:11:04:59 +0100] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:49.0) Gecko/20100101 Firefox/49.0"
 ```
 
+**Advantages:**
+- Use real application logs
+- Natural multiline handling
+- Easy to collect samples from production
+- Good for regression testing
 
-#### Input events [pipeline-input-events]
+### JSON Events [json-events]
 
-The input events contain mocked JSON events that are ready to be passed to the ingest pipeline as-is. Such events can be helpful in situations in which an input event can’t be serialized to a standard log file, e.g. Redis input. A sample file with input events  (e.g. `test-access-event.json`) looks as follows:
+Best for testing structured data inputs or when you need precise control over input fields.
 
+**Example: `test-metrics.json`**
 ```json
 {
-    "events": [
-        {
-            "@timestamp": "2016-10-25T12:49:34.000Z",
-            "message": "127.0.0.1 - - [07/Dec/2016:11:04:37 +0100] \"GET /test1 HTTP/1.1\" 404 571 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36\"\n"
-        },
-        {
-            "@timestamp": "2016-10-25T12:49:34.000Z",
-            "message": "127.0.0.1 - - [07/Dec/2016:11:05:07 +0100] \"GET /taga HTTP/1.1\" 404 169 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:49.0) Gecko/20100101 Firefox/49.0\"\n"
-        }
-    ]
+  "events": [
+    {
+      "@timestamp": "2024-01-15T10:30:00.000Z",
+      "message": "{\"cpu_usage\": 85.2, \"memory_usage\": 1024}",
+      "agent": {
+        "hostname": "web-server-01"
+      }
+    },
+    {
+      "@timestamp": "2024-01-15T10:31:00.000Z", 
+      "message": "{\"cpu_usage\": 72.8, \"memory_usage\": 896}",
+      "agent": {
+        "hostname": "web-server-01"
+      }
+    }
+  ]
 }
 ```
 
+**Advantages:**
+- Precise control over input data
+- Perfect for metrics and structured data
+- Easy to test edge cases
+- Good for mocking complex scenarios
 
-#### Test configuration [pipeline-test-config]
+## Test Configuration [test-config]
 
-Before sending log events to the ingest pipeline, a data transformation process is applied. The process can be customized using an optional configuration stored as a YAML file with the suffix `-config.yml` (e.g. `test-access-sample.log-config.yml`):
+Configure test behavior with optional `-config.yml` files:
 
+### Basic Configuration [basic-config]
+
+**Example: `test-access.log-config.yml`**
 ```yaml
-multiline:
-  first_line_pattern: "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}"
+# Add static fields to all events
 fields:
   "@timestamp": "2020-04-28T11:07:58.223Z"
-  ecs:
-    version: "1.5.0"
-  event.category:
-    - "web"
+  ecs.version: "8.0.0"
+  event.dataset: "nginx.access"
+  event.category: ["web"]
+
+# Handle dynamic/variable fields
 dynamic_fields:
-  url.original: "^/.*$"
+  url.original: "^/.*$"        # Regex pattern matching
+  user_agent.original: ".*"    # Any user agent
+  source.ip: "^\\d+\\.\\d+\\.\\d+\\.\\d+$"  # IP addresses
+
+# Fields that should be keywords despite numeric values
 numeric_keyword_fields:
+  - http.response.status_code
   - network.iana_number
 ```
 
-The `multiline` section [raw files only](#pipeline-raw-files) configures the log file reader to detect multiline log entries using the `first_line_pattern`. Use this property if you may split your logs into multiple lines, e.g. Java stack traces.
+The `fields` section defines fields which will be added to all events _before_ the ingest pipeline is run on test data.
 
-The `fields` section allows for customizing extra fields to be added to every read log entry (e.g. `@timestamp`, `ecs`). Use this property to extend your logs with data that can’t be extracted from log content, but it’s fine to have the same field values for every record (e.g. timezone, hostname).
-
-The `dynamic_fields` section allows for marking fields as dynamic (every time they have different non-static values), so that pattern matching instead of strict value check is applied.
+The `dynamic_fields` allows pipeline tests to handle dynamically changing test results, by comparing the actual results for the field to the specified pattern, rather than static values.
 
 The `numeric_keyword_fields` section identifies fields whose values are numbers but are expected to be stored in {{es}} as `keyword` fields.
 
+### Multiline Configuration [multiline-config]
 
-#### Expected results [pipeline-expected-results]
+For logs that span multiple lines:
 
-Once the Simulate API processes the input data, the pipeline test runner will compare them with expected results. Test results are stored as JSON files with the suffix `-expected.json`. A sample test results file is shown below.
+**Example: `test-java-stacktrace.log-config.yml`**
+```yaml
+multiline:
+  first_line_pattern: "^\\d{4}-\\d{2}-\\d{2}"  # Date at start of new entry
 
+fields:
+  "@timestamp": "2024-01-15T10:30:00.000Z"
+  log.level: "ERROR"
+```
+
+### Advanced Configuration [advanced-config]
+
+**Example: `test-complex.log-config.yml`**
+```yaml
+# Static fields
+fields:
+  "@timestamp": "2024-01-15T10:30:00.000Z"
+  event.dataset: "myapp.logs"
+  tags: ["test", "development"]
+
+# Dynamic patterns
+dynamic_fields:
+  # Match any UUID format
+  user.id: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+  # Match any session ID
+  session.id: "^[A-Za-z0-9]{32}$"
+  # Match timestamps in different formats
+  "@timestamp": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+
+# Convert these numeric values to keywords
+numeric_keyword_fields:
+  - process.pid
+  - http.response.status_code
+
+# Multiline Java stack traces
+multiline:
+  first_line_pattern: "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"
+  max_lines: 50
+```
+
+## Expected Results [expected-results]
+
+Define expected output in `-expected.json` files:
+
+**Example: `test-access.log-expected.json`**
 ```json
 {
-    "expected": [
-        {
-            "@timestamp": "2016-12-07T10:04:37.000Z",
-            "nginx": {
-                "access": {
-                    "remote_ip_list": [
-                        "127.0.0.1"
-                    ]
-                }
-            },
-            ...
+  "expected": [
+    {
+      "@timestamp": "2016-12-07T10:04:37.000Z",
+      "event": {
+        "category": ["web"],
+        "dataset": "nginx.access",
+        "outcome": "failure"
+      },
+      "http": {
+        "request": {
+          "method": "GET"
         },
-        {
-            "@timestamp": "2016-12-07T10:05:07.000Z",
-            "nginx": {
-                "access": {
-                    "remote_ip_list": [
-                        "127.0.0.1"
-                    ]
-                }
-            },
-            ...
-        }
-    ]
+        "response": {
+          "status_code": 404,
+          "body": {
+            "bytes": 571
+          }
+        },
+        "version": "1.1"
+      },
+      "source": {
+        "ip": "127.0.0.1"
+      },
+      "url": {
+        "original": "/test1"
+      },
+      "user_agent": {
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36"
+      }
+    }
+  ]
 }
 ```
 
-It’s possible to generate the expected test results from the output of the Simulate API. To do so, use the `--generate` switch:
+## Running Pipeline Tests [running-tests]
+
+### Environment Setup [env-setup]
 
 ```bash
-elastic-package test pipeline --generate
-```
-
-
-## Running a pipeline test [pipeline-running-test]
-
-Once the configurations are defined as described in the previous section, you are ready to run pipeline tests for a package’s data streams.
-
-First, you must deploy the {{es}} instance. This corresponds to step 1 as described in the [Conceptual-process](#pipeline-concepts) section.
-
-```bash
+# Start only Elasticsearch (faster than full stack)
 elastic-package stack up -d --services=elasticsearch
+
+# Verify Elasticsearch is running
+curl -X GET "https://localhost:9200/_cluster/health"
 ```
 
-For a complete listing of options available for this command, run `elastic-package stack up -h` or `elastic-package help stack up`.
-
-Next, you must set environment variables needed for further `elastic-package` commands.
+### Basic Test Execution [basic-execution]
 
 ```bash
-$(elastic-package stack shellinit)
-```
-
-Next, you must invoke the pipeline tests runner. This corresponds to steps 2 through 4 as described in the [Conceptual-process](#pipeline-concepts) section.
-
-If you want to run pipeline tests for **all data streams** in a package, navigate to the package’s root folder (or any sub-folder under it) and run the following command.
-
-```bash
+# Run all pipeline tests in current package
 elastic-package test pipeline
+
+# Run tests for specific data streams
+elastic-package test pipeline --data-streams access,error
+
+# Run with verbose output
+elastic-package test pipeline -v
+
+# Run tests and show detailed diff on failure
+elastic-package test pipeline --report-format human
 ```
 
-If you want to run pipeline tests for **specific data streams** in a package, navigate to the package’s root folder (or any sub-folder under it) and run the following command.
+### Generating Expected Results [generating-results]
+
+Use this for initial test setup or when updating pipelines. `--generate` will write (or overwrite) the expected files with the output from the current ingest pipelines.
 
 ```bash
-elastic-package test pipeline --data-streams <data stream 1>[,<data stream 2>,...]
+# Generate expected results for all tests
+elastic-package test pipeline --generate
+
+# Generate for specific data streams
+elastic-package test pipeline --data-streams access --generate
+
+# Review generated files before committing
+git diff _dev/test/pipeline/
 ```
 
-Finally, when you are done running all pipeline tests, bring down the {{stack}}. This corresponds to step 4 as described in the [Conceptual-process](#pipeline-concepts) section.
+Verify the correctness of the generated expected files. `elastic-package` will create the expected files from the output of the current ingest pipeline. It cannot know if this is actually correct; you will need to verify this.
+If the expected files are not correct, you'll need to iterate by updating the ingest pipeline and regenerating the expected files until they are correct.
+
+**Workflow tip:**
+1. Create test input files first
+2. Run with `--generate` to create expected results
+3. Review generated output for correctness
+4. Commit both input and expected files
+5. Future runs will validate against these expectations
+
+### Test Development Workflow [test-workflow]
 
 ```bash
-elastic-package stack down
+# 1. Create test input
+echo 'error log entry here' > _dev/test/pipeline/test-error.log
+
+# 2. Generate expected results
+elastic-package test pipeline --data-streams your-stream --generate
+
+# 3. Review generated output
+cat _dev/test/pipeline/test-error.log-expected.json
+
+# 4. Run tests to validate
+elastic-package test pipeline --data-streams your-stream
+
+# 5. Iterate on pipeline, then regenerate when needed
+elastic-package test pipeline --data-streams your-stream --generate
 ```
+
+### Troubleshooting [troubleshooting]
+
+**Common issues and solutions:**
+
+**Test failures with field value mismatches:**
+```bash
+# Run with verbose output to see detailed diffs
+elastic-package test pipeline -v --report-format human
+
+# Check for dynamic fields that need configuration
+# Add patterns to dynamic_fields in config file
+```
+
+**Pipeline not found errors:**
+```bash
+# Verify pipeline files exist
+ls -la data_stream/*/elasticsearch/ingest_pipeline/
+
+# Check pipeline syntax
+elastic-package lint
+
+# Manually test pipeline upload
+curl -X PUT "https://localhost:9200/_ingest/pipeline/your-pipeline" \
+  -H "Content-Type: application/json" \
+  -d @data_stream/your-stream/elasticsearch/ingest_pipeline/default.yml
+```
+If using curl on localhost, `--insecure` flag may be required, or the CA certificate can be specified with
+`--cacert ~/.elastic-package/profiles/default/stack/certs/ca-cert.pem`.
+
+**Multiline parsing issues:**
+```bash
+# Test multiline patterns separately
+echo -e "line1\nline2\nline3" | grep -P "^your-pattern"
+
+# Validate regex patterns
+python3 -c "import re; print(re.match(r'^your-pattern', 'test-line'))"
+```
+
+**Field type mismatches:**
+```bash
+# Check mapping definitions
+cat data_stream/*/fields/fields.yml
+
+# Add numeric fields to config if needed
+# numeric_keyword_fields: [field.name]
+```
+
+## Best Practices [best-practices]
+
+### Test Design [test-design]
+
+1. **Test real data**: Use actual log samples from production. Be sure to sanitize any sensitive data before committing to source control.
+2. **Cover edge cases**: Include malformed, empty, and unusual inputs
+3. **Test error conditions**: Verify graceful handling of bad data
+4. **Keep tests focused**: One test file per scenario
+5. **Use descriptive names**: `test-successful-login.log` vs `test1.log`
+
+### Test Coverage [test-coverage]
+
+Ensure comprehensive coverage by writing tests that can cover as many different scenarios and types of data as possible:
+```bash
+# Test different log levels
+test-debug.log
+test-info.log  
+test-warn.log
+test-error.log
+
+# Test different formats
+test-json-format.log
+test-plain-format.log
+test-multiline-stacktrace.log
+
+# Test edge cases
+test-empty-lines.log
+test-malformed.log
+test-unicode.log
+```
+
+### Configuration Management [config-management]
+
+1. **Minimize static fields**: Only add what's necessary
+2. **Use dynamic patterns carefully**: Too broad patterns may hide real issues
+3. **Document regex patterns**: Add comments explaining complex patterns
+
+## Debugging Tips [debugging-tips]
+
+### Interactive Testing [interactive-testing]
+
+```bash
+# Test individual pipeline components
+curl -X POST "https://localhost:9200/_ingest/pipeline/_simulate" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pipeline": {"processors": [{"grok": {"field": "message", "patterns": ["your-pattern"]}}]},
+    "docs": [{"_source": {"message": "test log line"}}]
+  }'
+```
+
+### Field Inspection [field-inspection]
+
+```bash
+# Check what fields are actually generated
+elastic-package test pipeline --generate
+jq '.expected[0] | keys' test-sample.log-expected.json
+```
+
+## Under the hood
+
+Pipeline tests work by uploading the ingest pipelines to be tested to the configured Elasticsearch instance. The [Simulate API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-ingest-simulate)
+is used to process the logs/metrics from the test data files, and then compares the actual results in Elasticsearch to the expected results defined in the test files.
+
+For more information, refer to [https://github.com/elastic/elastic-package/blob/main/docs/howto/pipeline_testing.md](https://github.com/elastic/elastic-package/blob/main/docs/howto/pipeline_testing.md).
+

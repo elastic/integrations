@@ -1,0 +1,20 @@
+config_version: 2
+interval: 20s
+resource.timeout: 15s
+resource.url: "{{url}}"
+state:
+  url: "{{url}}"
+program: |
+  request("GET", state.url)
+    .do_request()
+    .as(resp, {
+        "events": [{
+            "http": {
+              "response": {
+                "status_code": resp.StatusCode
+            }
+          }
+        }]
+    })
+tags:
+  - agentless-hello-world

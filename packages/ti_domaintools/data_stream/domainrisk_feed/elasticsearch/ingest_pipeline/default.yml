@@ -1,0 +1,71 @@
+---
+description: Pipeline for processing domaindiscovery feed
+processors:
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: domaintools
+
+    ############################
+    # Generic indicator fields #
+    ############################
+
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+  - set:
+      if: ctx.domaintools?.domain != null
+      field: threat.indicator.name
+      copy_from: domaintools.domain
+
+    ####################
+    # Event ECS fields #
+    ####################
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: ['threat']
+  - set:
+      field: event.type
+      value: ['indicator']
+  - set:
+      field: source.domain
+      copy_from: domaintools.domain
+      ignore_empty_value: true
+
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+- append:
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,95 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  api_key: {{api_key}}
+{{!--
+  The API does not support specifying a batch_size parameter; however, the documentation states
+  that a maximum of 10,000 events can be returned in a single response.
+  Reference Link: https://api.airlockdigital.com/#8643f2cc-4930-44d5-a7cb-21395b33ab62
+--}}
+  max_batch_size: 10000
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    post_request(
+      state.url.trim_right("/") + "/v1/logging/svractivities",
+      "application/json",
+      {
+        ?"checkpoint": state.?cursor.checkpoint,
+      }.encode_json()
+    ).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"],
+          "X-ApiKey": [state.api_key],
+        },
+      }
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": body.response.svractivities.map(e,
+            {
+              "message": e.encode_json(),
+            }
+          ),
+          "want_more": size(body.response.svractivities) >= state.max_batch_size,
+          "cursor": {
+            ?"checkpoint": (has(body.?response.svractivities) && size(body.response.svractivities) > 0) ?
+              optional.of(body.response.svractivities[size(body.response.svractivities) - 1].checkpoint)
+            :
+              state.?cursor.checkpoint,
+          },
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/v1/logging/svractivities " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

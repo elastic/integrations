@@ -1,15 +1,17 @@
-format_version: "3.0.2"
+format_version: "3.3.2"
 name: snyk
 title: "Snyk"
-version: "2.0.0"
+version: "3.4.1"
 description: Collect logs from Snyk with Elastic Agent.
 type: integration
 categories:
   - security
   - cloudsecurity_cdr
+  # Added vulnerability_management category as Snyk identifies and tracks vulnerabilities in code and dependencies
+  - vulnerability_management
 conditions:
   kibana:
-    version: "^8.13.0 || ^9.0.0"
+    version: "^9.3.0"
 icons:
   - src: /img/snyk-logo.svg
     title: Snyk logo
@@ -19,11 +21,42 @@ policy_templates:
   - name: snyk
     title: Snyk Events
     description: Collect data from Snyk API
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: cel
         title: Collect data from Snyk API
         description: Collect Audit Logs and Issues data from the Snyk REST API
         vars:
+          - name: oauth_enable
+            type: bool
+            title: Enable OAuth2
+            multi: false
+            required: false
+            show_user: false
+            default: false
+            description: Enable OAuth2 authentication. Client ID and client secret are required.
+          - name: client_id
+            type: text
+            title: Client ID
+            multi: false
+            required: false
+            show_user: false
+            description: Client ID for OAuth2 authentication. Required if Enable OAuth2 toggle is on.
+          - name: client_secret
+            type: password
+            title: Client secret
+            multi: false
+            required: false
+            show_user: false
+            description: Client secret for OAuth2 authentication. Required if Enable OAuth2 toggle is on.
+            secret: true
           - name: url
             type: text
             title: Base URL of Snyk API Server
@@ -44,8 +77,9 @@ policy_templates:
             title: Snyk API Token
             multi: false
             show_user: true
-            required: true
+            required: false
             secret: true
+            description: API token for authentication. Required if Enable OAuth2 toggle is off.
           - name: http_client_timeout
             type: text
             title: HTTP Client Timeout

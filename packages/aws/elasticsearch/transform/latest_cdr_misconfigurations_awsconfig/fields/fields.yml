@@ -1,0 +1,126 @@
+- name: aws
+  type: group
+  fields:
+    - name: config
+      type: group
+      fields:
+        - name: annotation
+          type: keyword
+          description: Supplementary information about how the evaluation determined the compliance.
+        - name: compliance_type
+          type: keyword
+          description: Indicates whether the AWS resource complies with the AWS Config rule that evaluated it.
+        - name: rule_info
+          type: group
+          fields:
+            - name: config_rule_arn
+              type: keyword
+              description: The Amazon Resource Name (ARN) of the AWS Config rule.
+            - name: config_rule_id
+              type: keyword
+              description: The ID of the AWS Config rule.
+            - name: config_rule_name
+              type: keyword
+              description: The name that you assign to the AWS Config rule. The name is required if you are adding a new rule.
+            - name: config_rule_state
+              type: keyword
+              description: Indicates whether the AWS Config rule is active or is currently being deleted by AWS Config.
+            - name: created_by
+              type: keyword
+              description: Service principal name of the service that created the rule.
+            - name: description
+              type: keyword
+              description: The description that you provide for the AWS Config rule.
+            - name: evaluation_modes
+              type: group
+              fields:
+                - name: mode
+                  type: keyword
+                  description: The mode of an evaluation.
+            - name: input_parameters
+              type: flattened
+              description: A string, in JSON format, that is passed to the AWS Config rule Lambda function.
+            - name: maximum_execution_frequency
+              type: keyword
+              description: The maximum frequency with which AWS Config runs evaluations for a rule.
+            - name: scope
+              type: group
+              fields:
+                - name: compliance_resource_id
+                  type: keyword
+                  description: The ID of the only AWS resource that you want to trigger an evaluation for the rule.
+                - name: compliance_resource_types
+                  type: keyword
+                  description: The resource types of only those AWS resources that you want to trigger an evaluation for the rule.
+                - name: tag_key
+                  type: keyword
+                  description: The tag key that is applied to only those AWS resources that you want to trigger an evaluation for the rule.
+                - name: tag_value
+                  type: keyword
+                  description: The tag value applied to only those AWS resources that you want to trigger an evaluation for the rule.
+            - name: source
+              type: group
+              fields:
+                - name: custom_policy_details
+                  type: group
+                  fields:
+                    - name: enable_debug_log_delivery
+                      type: boolean
+                      description: The boolean expression for enabling debug logging for your AWS Config Custom Policy rule.
+                    - name: policy_runtime
+                      type: keyword
+                      description: The runtime system for your AWS Config Custom Policy rule.
+                    - name: policy_text
+                      type: keyword
+                      description: The policy definition containing the logic for your AWS Config Custom Policy rule.
+                - name: owner
+                  type: keyword
+                  description: Indicates whether AWS or the customer owns and manages the AWS Config rule.
+                - name: source_details
+                  type: group
+                  fields:
+                    - name: event_source
+                      type: keyword
+                      description: The source of the event, such as an AWS service, that triggers AWS Config to evaluate your AWS resources.
+                    - name: maximum_execution_frequency
+                      type: keyword
+                      description: The frequency at which you want AWS Config to run evaluations for a custom rule with a periodic trigger.
+                    - name: message_type
+                      type: keyword
+                      description: The type of notification that triggers AWS Config to run an evaluation for a rule.
+                - name: source_identifier
+                  type: keyword
+                  description: For AWS Config Managed rules, a predefined identifier from a list.
+        - name: config_rule_invoked_time
+          type: date
+          description: The time when the AWS Config rule evaluated the AWS resource.
+        - name: evaluation_result_identifier
+          type: group
+          fields:
+            - name: evaluation_result_qualifier
+              type: group
+              fields:
+                - name: config_rule_name
+                  type: keyword
+                  description: The name of the AWS Config rule that was used in the evaluation.
+                - name: evaluation_mode
+                  type: keyword
+                  description: The mode of an evaluation. The valid values are Detective or Proactive.
+                - name: resource_id
+                  type: keyword
+                  description: The ID of the evaluated AWS resource.
+                - name: resource_type
+                  type: keyword
+                  description: The type of AWS resource that was evaluated.
+            - name: ordering_timestamp
+              type: date
+              description: The time of the event that triggered the evaluation of your AWS resources.
+            - name: resource_evaluation_id
+              type: keyword
+              description: A Unique ID for an evaluation result.
+        - name: result_recorded_time
+          type: date
+          description: The time when AWS Config recorded the evaluation result.
+        - name: result_token
+          type: keyword
+          description: An encrypted token that associates an evaluation with an AWS Config rule.

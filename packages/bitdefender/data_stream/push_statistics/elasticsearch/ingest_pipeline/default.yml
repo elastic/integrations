@@ -1,15 +1,19 @@
 ---
 description: Pipeline for BitDefender push notification stats
 processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
   - json:
       field: message
       target_field: json
   - fail:
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: missing json object in input document
-  - set:
-      field: ecs.version
-      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original

@@ -5,17 +5,21 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - set:
+    tag: set_event_outcome_1af271cd
     field: event.outcome
     value: success
 - convert:
+    tag: convert_sophos_xg_clients_conn_ssid_772f218b
     field: sophos.xg.clients_conn_ssid
     type: long
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_sophos_xg_clients_conn_ssid_3149c56f
           field: sophos.xg.clients_conn_ssid
 
 #############
@@ -27,4 +31,12 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

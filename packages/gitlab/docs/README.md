@@ -1260,24 +1260,24 @@ An example event for `production` looks as following:
 {
     "@timestamp": "2024-04-03T20:44:09.068Z",
     "agent": {
-        "ephemeral_id": "544273c0-df04-4221-a197-b035f2d1324c",
-        "id": "17c671c5-a6b8-4a0c-81da-9b28df04db4a",
-        "name": "elastic-agent-82712",
+        "ephemeral_id": "5e3266e6-1683-472c-b68e-97afddd62b19",
+        "id": "dd2a540e-7123-426f-9411-ebd886dff325",
+        "name": "elastic-agent-43077",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.18.2"
     },
     "data_stream": {
         "dataset": "gitlab.production",
-        "namespace": "43648",
+        "namespace": "65177",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "17c671c5-a6b8-4a0c-81da-9b28df04db4a",
+        "id": "dd2a540e-7123-426f-9411-ebd886dff325",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.18.2"
     },
     "event": {
         "action": "index",
@@ -1285,7 +1285,7 @@ An example event for `production` looks as following:
         "dataset": "gitlab.production",
         "duration": 24200000,
         "id": "0bb7a10d-8da7-4499-8759-99ebe323f4b1",
-        "ingested": "2025-01-13T14:47:49Z",
+        "ingested": "2025-07-10T11:48:57Z",
         "kind": "event",
         "original": "{\"method\":\"GET\",\"path\":\"/\",\"format\":\"html\",\"controller\":\"RootController\",\"action\":\"index\",\"status\":302,\"location\":\"http://example.org/users/sign_in\",\"time\":\"2024-04-03T20:44:09.068Z\",\"params\":[],\"correlation_id\":\"0bb7a10d-8da7-4499-8759-99ebe323f4b1\",\"meta.caller_id\":\"RootController#index\",\"meta.feature_category\":\"groups_and_projects\",\"meta.client_id\":\"ip/\",\"request_urgency\":\"low\",\"target_duration_s\":5,\"redis_calls\":26,\"redis_duration_s\":0.005135,\"redis_read_bytes\":26,\"redis_write_bytes\":4284,\"redis_feature_flag_calls\":26,\"redis_feature_flag_duration_s\":0.005135,\"redis_feature_flag_read_bytes\":26,\"redis_feature_flag_write_bytes\":4284,\"db_count\":13,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":13,\"db_main_count\":13,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.01,\"db_main_duration_s\":0.01,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.047579,\"mem_objects\":32870,\"mem_bytes\":2376584,\"mem_mallocs\":11255,\"mem_total_bytes\":3691384,\"pid\":857,\"worker_id\":\"puma_master\",\"rate_limiting_gates\":[],\"db_duration_s\":0.00158,\"view_duration_s\":0.0,\"duration_s\":0.0242}",
         "provider": "RootController#index",
@@ -1380,11 +1380,11 @@ An example event for `production` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "32",
-            "inode": "1872537",
+            "device_id": "37",
+            "inode": "289",
             "path": "/tmp/service_logs/test-gitlab-production.log"
         },
-        "offset": 9771
+        "offset": 9793
     },
     "process": {
         "name": "puma_master",
@@ -1447,24 +1447,24 @@ An example event for `sidekiq` looks as following:
 {
     "@timestamp": "2018-04-03T22:57:22.071Z",
     "agent": {
-        "ephemeral_id": "cc5ea64a-1be7-4bf7-ac2e-a934734ba7d0",
-        "id": "d0298772-a948-4edb-95bf-6b9152967f34",
-        "name": "elastic-agent-16126",
+        "ephemeral_id": "0f0e4d1b-e9ae-4838-a977-c6c5126e05c4",
+        "id": "7963dc7d-539d-44df-84f6-9c8e5c85cd39",
+        "name": "elastic-agent-20780",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "gitlab.sidekiq",
-        "namespace": "99205",
+        "namespace": "22209",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d0298772-a948-4edb-95bf-6b9152967f34",
+        "id": "7963dc7d-539d-44df-84f6-9c8e5c85cd39",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1472,9 +1472,9 @@ An example event for `sidekiq` looks as following:
             "web"
         ],
         "dataset": "gitlab.sidekiq",
-        "duration": 0.139,
+        "duration": 139000000,
         "end": "2018-04-03T22:57:22.071Z",
-        "ingested": "2024-09-23T21:03:08Z",
+        "ingested": "2025-06-23T23:00:47Z",
         "kind": "event",
         "original": "{\"severity\": \"INFO\",\"time\": \"2018-04-03T22:57:22.071Z\",\"queue\": \"cronjob:update_all_mirrors\",\"args\": [],\"class\": \"UpdateAllMirrorsWorker\",\"retry\": false,\"queue_namespace\": \"cronjob\",\"jid\": \"06aeaa3b0aadacf9981f368e\",\"created_at\": \"2018-04-03T22:57:21.930Z\",\"enqueued_at\": \"2018-04-03T22:57:21.931Z\",\"pid\": 10077,\"worker_id\": \"sidekiq_0\",\"message\": \"UpdateAllMirrorsWorker JID-06aeaa3b0aadacf9981f368e: done: 0.139 sec\",\"job_status\": \"done\",\"duration\": 0.139,\"completed_at\": \"2018-04-03T22:57:22.071Z\",\"db_duration\": 0.05,\"db_duration_s\": 0.0005,\"gitaly_duration\": 0,\"gitaly_calls\": 0}",
         "severity": 6,
@@ -1508,8 +1508,8 @@ An example event for `sidekiq` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "30",
-            "inode": "215",
+            "device_id": "38",
+            "inode": "1451225",
             "path": "/tmp/service_logs/test-gitlab-sidekiq.log"
         },
         "offset": 0

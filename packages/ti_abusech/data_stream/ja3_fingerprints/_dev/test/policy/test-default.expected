@@ -1,0 +1,93 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_abusech
+      name: test-default-ti_abusech
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_abusech.ja3_fingerprints
+            type: logs
+          fields:
+            _conf:
+                interval: 1h
+          fields_under_root: true
+          interval: 1h
+          program: |-
+            state.with(
+              get(state.url).as(resp,
+                (resp.StatusCode == 200) ?
+                  dyn(
+                    {
+                      "events": string(resp.Body).split("\n").map(l,
+                        !l.has_prefix("#"),
+                        {
+                          "message": l.trim_space().split(",").transformMapEntry(i, e,
+                            {
+                              state.column[i]: state.column[i].has_suffix("ts") ?
+                                string(e.parse_time(time_layout.DateTime))
+                              :
+                                e,
+                            }
+                          ).encode_json(),
+                        }
+                      ),
+                    }
+                  )
+                :
+                  dyn(
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + state.url + ":" + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                    }
+                  )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv
+          state:
+            column:
+                - ja3
+                - first_ts
+                - last_ts
+                - reason
+          tags:
+            - forwarded
+            - abusech-ja3_fingerprints
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_abusech.ja3_fingerprints-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

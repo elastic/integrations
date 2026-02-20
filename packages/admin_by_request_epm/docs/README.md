@@ -2,7 +2,7 @@
 
 The Elastic integration for [Admin By Request EPM](https://www.adminbyrequest.com/en/endpoint-privilege-management) enables real-time monitoring and analysis of audit logging of privilege elevations, software installations and administrative actions through user portal. This integration collects, processes, and visualizes audit logs and events to enhance security posture, compliance, and operational efficiency.
 
-## Data Streams
+## What data does this integration collect?
 
 - **`auditlog`**: Provides audit data that includes elevation requests, approvals, application installations, and scan results.
 - [Auditlog](https://www.adminbyrequest.com/en/docs/auditlog-api) are records generated when user takes action such as installing a software, running an application with admin privileges, requesting for admin session, approval or denial of requests and scan results.
@@ -12,7 +12,7 @@ The Elastic integration for [Admin By Request EPM](https://www.adminbyrequest.co
 - [Events](https://www.adminbyrequest.com/en/docs/events-api) are records that are generated on various actions done by users and administrators. These include group modifications, policy changes, security violations, and other administrative activities.
 - This data stream leverages the Admin By Request EPM API [`/events`](https://www.adminbyrequest.com/en/docs/events-api) endpoint to retrieve data.
 
-## Requirements
+## What do I need to use this integration?
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
@@ -135,7 +135,7 @@ An example event for `auditlog` looks as following:
     
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in events documents:
 
@@ -310,7 +310,7 @@ An example event for `events` looks as following:
     
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in events documents:
 
@@ -360,4 +360,4 @@ The following non-ECS fields are used in events documents:
 | input.type | Input type | keyword |
 
 
-Events Data stream has field `eventCode` which is a unique identifier for each event type. Please refer to the Event Codes table given on the [Events API documentation](https://www.adminbyrequest.com/en/docs/events-api) for more information on event codes.
+Events Data stream has field `eventCode` which is a unique identifier for each event type. Refer to the Event Codes table given on the [Events API documentation](https://www.adminbyrequest.com/en/docs/events-api) for more information on event codes.

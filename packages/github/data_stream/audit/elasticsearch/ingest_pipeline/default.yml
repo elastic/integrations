@@ -2,9 +2,6 @@
 description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
-      field: event.kind
-      value: event
-  - set:
       field: ecs.version
       value: '8.11.0'
   - append:
@@ -14,9 +11,17 @@ processors:
         - web
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
@@ -68,6 +73,14 @@ processors:
       field: github.action
       target_field: event.action
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.event?.action?.equalsIgnoreCase('code_scanning.alert_created') == true || ctx.event?.action?.equalsIgnoreCase('secret_scanning_alert.create') == true
+  - set:
+      field: event.kind
+      value: event
+      if: ctx.event?.kind == null
   - rename:
       field: github.actor
       target_field: user.name
@@ -405,6 +418,13 @@ processors:
         - _temp
         - github.created_at
         - github.@timestamp
+      ignore_missing: true
+  - remove:
+      field:
+        - log.file.path
+        - log.offset
+      tag: remove_log_fields
+      if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null
       ignore_missing: true
   - script:
       lang: painless

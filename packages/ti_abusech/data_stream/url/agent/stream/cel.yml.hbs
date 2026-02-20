@@ -19,24 +19,24 @@ state:
   auth_key: {{auth_key}}
 {{/if}}
 redact:
-  fields: 
+  fields:
     - auth_key
 program: |
   state.with(
     request("GET", state.url).with({
       "Header":{
         "Content-Type": ["application/zip"],
-        ?"Auth-Key": has(state.auth_key) ? 
-          optional.of([state.auth_key]) 
+        ?"Auth-Key": has(state.auth_key) ?
+          optional.of([state.auth_key])
         :
           optional.none(),
       }
     })
     .do_request()
     .as(resp, resp.StatusCode == 200 ?
-      resp.Body.mime("application/zip").File.as(file, file.size() > 0 ? 
+      resp.Body.mime("application/zip").File.as(file, file.size() > 0 ?
         file[0].Data.as(data, bytes(data).decode_json().as(body, {
-          "events": body.map(id, body[id].size() > 0 ? 
+          "events": body.map(id, body[id].size() > 0 ?
             {"message": body[id][0].with({"id": id}).encode_json()}
           :
             {"message": ""}

@@ -9,6 +9,8 @@
       type: keyword
     - name: __mv_discoverer_aid
       type: keyword
+    - name: aid
+      type: keyword
     - name: AccessType
       type: keyword
     - name: AccountDomain
@@ -61,6 +63,13 @@
       type: long
     - name: AssociatedFile
       type: keyword
+    - name: Attacks
+      type: group
+      fields:
+        - name: Tactic
+          type: keyword
+        - name: Technique
+          type: keyword
     - name: AttemptNumber
       type: long
     - name: AuthenticationActivityId
@@ -145,6 +154,14 @@
       type: keyword
     - name: CapPrm
       type: keyword
+    - name: CertificateIssuer
+      type: keyword
+    - name: CertificatePublisher
+      type: keyword
+    - name: CertificateSignatureHash
+      type: keyword
+    - name: CertificateSignatureHashAlgorithm
+      type: keyword
     - name: CLICreationCount
       type: long
     - name: CallStackModuleNames
@@ -153,6 +170,8 @@
       type: version
     - name: ChangedPcrBitmap
       type: match_only_text
+    - name: ChangeTime
+      type: date
     - name: ChannelDiffStatus
       type: keyword
     - name: ChannelId
@@ -169,6 +188,8 @@
       type: keyword
     - name: ClientId
       type: match_only_text
+    - name: CloudIndicator
+      type: boolean
     - name: CNAMERecords
       type: keyword
     # - name: crowdstrike.CommandCount
@@ -296,6 +317,10 @@
       type: keyword
     - name: DnsRequestCount
       type: long
+    - name: DnsRequests
+      type: nested
+      description: |
+        Detected DNS requests done by a process.
     - name: DnsResponseType
       type: keyword
     - name: DocumentFileWrittenCount
@@ -438,6 +463,15 @@
       type: match_only_text
     - name: FileVersion
       type: keyword
+    - name: FilesAccessed
+      type: group
+      fields:
+        - name: FileName
+          type: keyword
+        - name: FilePath
+          type: keyword
+        - name: Timestamp
+          type: date
     - name: FilesWritten
       type: group
       fields:
@@ -518,6 +552,8 @@
       type: keyword
     - name: HandleCreated
       type: keyword
+    - name: HashAlgorithm
+      type: keyword
     - name: HostGroups
       type: keyword
     - name: HostHiddenStatus
@@ -543,6 +579,10 @@
     - name: ImageEntryPoint
       type: keyword
     - name: ImageFileName
+      type: keyword
+    - name: ImageSignatureLevel
+      type: keyword
+    - name: ImageSignatureType
       type: keyword
     - name: ImageTimeStamp
       type: keyword
@@ -629,6 +669,8 @@
     - name: IsOnNetwork
       type: keyword
     - name: IsOnRemovableDisk
+      type: keyword
+    - name: IsProcessInitializing
       type: keyword
     - name: IsTransactedFile
       type: keyword
@@ -764,6 +806,8 @@
       type: keyword
     - name: ModuleLoadCount
       type: long
+    - name: ModuleLoadTelemetryClassification
+      type: keyword
     - name: NDRoot
       type: keyword
     - name: NegateInterface
@@ -778,6 +822,27 @@
       type: keyword
     - name: NetLuidIndex
       type: long
+    - name: NetworkAccesses
+      type: group
+      fields:
+        - name: AccessTimestamp
+          type: keyword
+        - name: AccessType
+          type: keyword
+        - name: ConnectionDirection
+          type: keyword
+        - name: IsIPV6
+          type: keyword
+        - name: LocalAddress
+          type: keyword
+        - name: LocalPort
+          type: keyword
+        - name: Protocol
+          type: keyword
+        - name: RemoteAddress
+          type: keyword
+        - name: RemotePort
+          type: keyword
     - name: NetworkBindCount
       type: long
     - name: NetworkCapableAsepWriteCount
@@ -807,7 +872,7 @@
     - name: NlMtu
       type: keyword
     - name: Nonce
-      type: integer
+      type: unsigned_long
     - name: Object1Type
       type: keyword
     - name: OnLinkPrefixLength
@@ -863,6 +928,8 @@
     - name: OciContainerHostConfigPublishAllPorts
       type: match_only_text
     - name: OciContainerHostConfigReadOnlyRootfs
+      type: match_only_text
+    - name: OciContainerId
       type: match_only_text
     - name: OciContainerImageId
       type: match_only_text
@@ -938,6 +1005,8 @@
     - name: PatternDispositionFlags
       type: group
       fields:
+        - name: ContainmentFileSystem
+          type: boolean
         - name: BlockingUnsupportedOrDisabled
           type: boolean
         - name: BootupSafeguardEnabled
@@ -1044,6 +1113,10 @@
       type: long
     - name: PhysicalMediumType
       type: keyword
+    - name: PlatformId
+      type: keyword
+    - name: PlatformName
+      type: keyword
     - name: PointerSize
       type: keyword
     - name: PreferredLifetime
@@ -1104,6 +1177,8 @@
       type: keyword
     - name: ReceiveLinkSpeed
       type: keyword
+    - name: ReferrerUrl
+      type: keyword
     - name: RegClassification
       type: keyword
     - name: RegClassificationFlags
@@ -1141,6 +1216,8 @@
     - name: RFMState
       type: keyword
     - name: RGID
+      type: keyword
+    - name: RootPath
       type: keyword
     - name: RouteAge
       type: keyword
@@ -1593,6 +1670,80 @@
       type: keyword
     - name: VolumeUUID
       type: keyword
+    - name: AntiTamperStateFlag
+      type: keyword
+    - name: AssemblyFlags
+      type: keyword
+    - name: AssemblyId
+      type: keyword
+    - name: AssemblyName
+      type: keyword
+    - name: BatchDataNumber
+      type: keyword
+    - name: BatchDataTotal
+      type: keyword
+    - name: BatchTimestamp
+      type: date
+    - name: BrowserExtensionId
+      type: keyword
+    - name: BrowserExtensionInstallMethod
+      type: keyword
+    - name: BrowserExtensionStatusEnabled
+      type: keyword
+    - name: BrowserFileHash
+      type: keyword
+    - name: BrowserFilePath
+      type: keyword
+    - name: BrowserName
+      type: keyword
+    - name: BrowserProfileId
+      type: keyword
+    - name: BrowserProfileName
+      type: keyword
+    - name: BrowserVersion
+      type: keyword
+    - name: ClientProcessStartKey
+      type: keyword
+    - name: ContextProcessTagsAsString
+      type: keyword
+    - name: DotnetModuleFlags
+      type: keyword
+    - name: DotnetModuleId
+      type: keyword
+    - name: EtwProviderType
+      type: keyword
+    - name: EtwRawRpcClientProcessId
+      type: keyword
+    - name: GrandparentProcessId
+      type: keyword
+    - name: HandleOperationType
+      type: keyword
+    - name: ImageBaseName
+      type: keyword
+    - name: IsHosted
+      type: keyword
+    - name: ModuleILPath
+      type: keyword
+    - name: MountedVolumeAction
+      type: keyword
+    - name: ParentProcessPatternIdList
+      type: keyword
+    - name: RTRState
+      type: keyword
+    - name: ServiceCurrentState
+      type: keyword
+    - name: ShannonEntropy
+      type: keyword
+    - name: TargetAuthenticationId
+      type: keyword
+    - name: TargetIntegrityLevel
+      type: keyword
+    - name: TargetProcessCommandLine
+      type: keyword
+    - name: TargetProcessImageFileName
+      type: keyword
+    - name: UpdateFlag
+      type: keyword
     - name: WindowFlags
       type: keyword
     - name: WmiNamespaceName
@@ -1603,6 +1754,80 @@
       type: keyword
     - name: WmiQuery
       type: keyword
+    - name: AnodeIndicators
+      type: nested
+    - name: ContentPatterns
+      type: group
+      fields:
+        - name: ID
+          type: keyword
+        - name: Name
+          type: keyword
+        - name: ConfidenceLevel
+          type: long
+        - name: MatchCount
+          type: long
+    - name: Destination
+      type: nested
+    - name: Destination.Channel
+      type: keyword
+    - name: EventTimestamp
+      type: date
+    - name: FileType.Type
+      type: group
+      fields:
+        - name: CategoryID
+          type: keyword
+        - name: CategoryName
+          type: keyword
+        - name: Description
+          type: keyword
+        - name: ID
+          type: keyword
+        - name: Name
+          type: keyword
+    - name: FilesEgressedCount
+      type: long
+    - name: FileCategoryCounts
+      type: nested
+    - name: ContentPatternCounts
+      type: nested
+    - name: DetectionType
+      type: keyword
+    - name: EgressEventId
+      type: keyword
+    - name: EgressSessionId
+      type: keyword
+    - name: IsClipboard
+      type: boolean
+    - name: MatchedClassification
+      type: group
+      fields:
+        - name: ID
+          type: keyword
+        - name: Name
+          type: keyword
+    - name: OriginWebLocations
+      type: flattened
+    - name: RelatedClassifications
+      type: group
+      fields:
+        - name: ID
+          type: keyword
+        - name: Name
+          type: keyword
+    - name: ResponseAction
+      type: keyword
+    - name: RuleId
+      type: keyword
+    - name: UserNotified
+      type: boolean
+    - name: UserTitle
+      type: keyword
+    - name: UserDepartment
+      type: keyword
+    - name: UserMapped
+      type: boolean
     - name: aipCount
       type: integer
     - name: assessments
@@ -1654,9 +1879,176 @@
           type: keyword
     - name: subnet
       type: keyword
+    - name: finding
+      type: keyword
+    - name: disposition
+      type: keyword
+    - name: cis_benchmark_ids
+      type: keyword
+    - name: cisa_benchmark_ids
+      type: keyword
+    - name: cloud_asset_type
+      type: long
+    - name: cloudplatform
+      type: keyword
+    - name: internal_only
+      type: boolean
+    - name: iso_benchmark_ids
+      type: keyword
+    - name: nist_benchmark_ids
+      type: keyword
+    - name: pci_benchmark_ids
+      type: keyword
+    - name: policy_severity
+      type: long
+    - name: ResourceCreateTime
+      type: date
+    - name: ResourceAttributes
+      type: flattened
+    - name: ResourceId
+      type: keyword
+    - name: ResourceIdType
+      type: keyword
+    - name: resource_url
+      type: keyword
+    - name: service
+      type: keyword
+    - name: soc2_benchmark_ids
+      type: keyword
+    - name: aws_account_id
+      type: keyword
+    - name: attack_types
+      type: keyword
+    - name: event_category
+      type: keyword
+    - name: management_event
+      type: boolean
+    - name: read_only
+      type: boolean
+    - name: request_id
+      type: keyword
+    - name: request_parameters
+      type: keyword
+    - name: response_elements
+      type: keyword
+    - name: user_identity_access_key_id
+      type: keyword
+    - name: user_identity_account_id
+      type: keyword
+    - name: user_identity_arn
+      type: keyword
+    - name: user_identity_mfa_authenticated
+      type: boolean
+    - name: vertex_id
+      type: keyword
+    - name: vertex_type
+      type: keyword
+    - name: event-type
+      type: keyword
+    - name: compliance
+      type: group
+      fields:
+        - name: benchmarkNames
+          type: keyword
+        - name: frameworks
+          type: keyword
+        - name: requirements
+          type: keyword
+        - name: sections
+          type: keyword
+        - name: versions
+          type: keyword
+    - name: created
+      type: date
+    - name: crn
+      type: keyword
+    - name: firstDetected
+      type: date
+    - name: lastDetected
+      type: date
+    - name: legacyPolicyId
+      type: long
+    - name: resource
+      type: group
+      fields:
+        - name: captured
+          type: date
+        - name: legacyResourceId
+          type: keyword
+        - name: legacyResourceTypeId
+          type: long
+        - name: resourceId
+          type: keyword
+        - name: resourceType
+          type: keyword
+    - name: revision
+      type: long
+    - name: status
+      type: keyword
+    - name: url
+      type: keyword
+    - name: findings
+      type: group
+      fields:
+        - name: name
+          type: keyword
+        - name: value
+          type: keyword
+    - name: ChangeId
+      type: keyword
+    - name: ContentDiff
+      type: group
+      fields:
+        - name: Exists
+          type: boolean
+    - name: Prevalence
+      type: group
+      fields:
+        - name: Key
+          type: keyword
+    - name: Suppression
+      type: group
+      fields:
+        - name: Suppressed
+          type: boolean
+    - name: Policy
+      type: group
+      fields:
+        - name: ID
+          type: keyword
+        - name: Name
+          type: keyword
+    - name: IsEBPF
+      type: keyword
+    - name: IsFromDifferentMountNamespace
+      type: keyword
+    - name: ObjectAccessOperationType
+      type: keyword
+    - name: ObjectType
+      type: keyword
+    - name: PolicyRuleSeverity
+      type: long
+    - name: FileAttributesNew
+      type: keyword
+    - name: FileAttributesPrevious
+      type: keyword
+    - name: NewFileAttributesLinux
+      type: keyword
+    - name: NewUnixPermissions
+      type: keyword
+    - name: PreviousFileAttributesLinux
+      type: keyword
+    - name: PreviousUnixPermissions
+      type: keyword
+    - name: SecurityInformationLinux
+      type: keyword
 - name: dll.Ext.size
   type: long
   description: Size of DLL.
+- name: file.Ext.original.name
+  type: keyword
+- name: file.Ext.original.path
+  type: keyword
 - name: process.Ext.token.integrity_level_name
   type: keyword
   description: Human readable integrity level.

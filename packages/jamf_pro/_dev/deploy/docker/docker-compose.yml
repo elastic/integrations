@@ -1,16 +1,17 @@
 version: "2.3"
 services:
   jamf_pro_events:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
       - ./events:/events:ro
     environment:
       - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
       - STREAM_ADDR=http://elastic-agent:9202/jamf-pro-events
       - STREAM_WEBHOOK_HEADER=Authorization=mysecrettoken
     command: log --start-signal=SIGHUP --delay=5s /events/computer_added.log
   jamf_pro_api_stub:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     ports:
       - 8080
     volumes:

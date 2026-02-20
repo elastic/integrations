@@ -1,0 +1,95 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_abusech
+      name: test-default-ti_abusech
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_abusech.threatfox
+            type: logs
+          fields:
+            _conf:
+                ioc_expiration_duration: 90d
+          fields_under_root: true
+          interval: 24h
+          program: |
+            state.with(
+              request("POST", state.url, '{ "query": "get_iocs", "days": ' + state.?cursor.days.orValue(state.initial_interval) + ' }'
+              ).with({
+                  "Header":{
+                    "Content-Type": ["application/json"],
+                    ?"Auth-Key": has(state.auth_key) ?
+                      optional.of([state.auth_key])
+                    :
+                      optional.none(),
+                    }
+              }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?
+                resp.Body.decode_json().as(body, {
+                  "events": (has(body.data) ?
+                    body.data.map(ind, {
+                      "message": ind.encode_json()
+                    })
+                  :
+                    []
+                  ),
+                  "cursor": {
+                    "days": "1"
+                  },
+                  "initial_interval": state.initial_interval,
+                  "url": state.url
+                })
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "POST "+ state.url.trim_right("/") + ":" + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              ))
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - auth_key
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://threatfox-api.abuse.ch/api/v1/
+          state:
+            auth_key: ${SECRET_0}
+            initial_interval: "7"
+          tags:
+            - forwarded
+            - abusech-threatfox
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_abusech.threatfox-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
