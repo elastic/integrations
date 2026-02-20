@@ -1,6 +1,6 @@
 # Custom TCP Logs Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -178,10 +178,6 @@ When you're managing high-volume data streams, consider the following factors to
 
 ## Reference
 
-### Inputs used
-
-
-
 ### Vendor documentation links
 
 The following links provide additional information about the protocols and configurations supported by this integration:
@@ -189,20 +185,4 @@ The following links provide additional information about the protocols and confi
 - [RFC 5424: The Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc5424)
 - [RFC 6587: Transmission of Syslog Messages over TCP](https://datatracker.ietf.org/doc/html/rfc6587)
 - [Filebeat SSL Configuration](https://www.elastic.co/docs/reference/beats/filebeat/configuration-ssl#ssl-common-config)
-
-### Data streams
-
-#### generic
-
-The `generic` data stream provides events from any source sending text-based data over TCP. It's the default destination for ingested logs and captures the raw message payload alongside connection metadata like `source.ip` and `source.port`.
-
-The `generic` data stream supports the following types of data:
-- Raw TCP streams: Any text-based data stream sent over a TCP connection, typically separated by newline characters or other delimiters.
-- Syslog messages: Structured messages following RFC 3164 or RFC 5424, which include metadata such as facility, severity, and timestamps.
-
-##### generic fields
-
-**Exported fields**
-
-(no fields available)
 
