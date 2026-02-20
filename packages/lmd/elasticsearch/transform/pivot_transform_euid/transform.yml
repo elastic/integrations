@@ -1,0 +1,135 @@
+source:
+  index: logs-*
+  query:
+    bool:
+      must_not:
+      - term:
+          user.name:
+            value: system
+      - terms:
+          process.name:
+          - elastic-agent.exe
+          - elastic-agent
+          - elastic-endpoint.exe
+          - elastic-endpoint
+          - metricbeat.exe
+          - metricbeat
+          - filebeat.exe
+          - filebeat
+          - packetbeat.exe
+          - packetbeat
+          - winlogbeat.exe
+          - winlogbeat
+      - terms:
+          _tier:
+          - data_cold
+          - data_frozen
+      filter:
+      - exists:
+          field: process.Ext.session_info.client_address
+      - exists:
+          field: process.Ext.authentication_id
+      - exists:
+          field: host.ip
+      - term:
+          event.category:
+            value: process
+      - term:
+          process.Ext.session_info.logon_type:
+            value: RemoteInteractive
+  runtime_mappings:
+    destination.ip:
+      type: ip
+      script:
+        source: if (doc['host.ip'].size() != 0){emit(doc['host.ip'][0]);}
+    user.entity.id_computed:
+      type: keyword
+      script:
+        source: "String read(def doc, String field) {\n  if (!doc.containsKey(field))\
+          \ return null;\n  def dv = doc[field];\n  if (dv == null || dv.size() ==\
+          \ 0) return null;\n  String v = dv.value.toString();\n  String l = v.toLowerCase();\n\
+          \  if (l == '' || l == '-' || l == 'unknown' || l == 'n/a') return null;\n\
+          \  return v;\n}\n\nString ueid = read(doc, 'user.entity.id');\nif (ueid\
+          \ != null) { emit(ueid); return; }\n\nString uname = read(doc, 'user.name');\n\
+          String heid  = read(doc, 'host.entity.id');\nif (uname != null && heid !=\
+          \ null) { emit(uname + '@' + heid); return; }\n\nString hid = read(doc,\
+          \ 'host.id');\nif (uname != null && hid != null) { emit(uname + '@' + hid);\
+          \ return; }\n\nString hname = read(doc, 'host.name');\nif (uname != null\
+          \ && hname != null) { emit(uname + '@' + hname); return; }\n\nString uid\
+          \ = read(doc, 'user.id');\nif (uid != null) { emit(uid); return; }\n\nString\
+          \ email = read(doc, 'user.email');\nif (email != null) { emit(email); return;\
+          \ }\n\nString udom = read(doc, 'user.domain');\nif (uname != null && udom\
+          \ != null) { emit(uname + '@' + udom); return; }\n\nif (uname != null) {\
+          \ emit(uname); return; }"
+    host.entity.id_computed:
+      type: keyword
+      script:
+        source: "String read(def doc, String field) {\n  if (!doc.containsKey(field))\
+          \ return null;\n  def dv = doc[field];\n  if (dv == null || dv.size() ==\
+          \ 0) return null;\n  String v = dv.value.toString();\n  String l = v.toLowerCase();\n\
+          \  if (l == '' || l == '-' || l == 'unknown' || l == 'n/a') return null;\n\
+          \  return v;\n}\n\nString heid = read(doc, 'host.entity.id');\nif (heid\
+          \ != null) { emit(heid); return; }\n\nString hid = read(doc, 'host.id');\n\
+          if (hid != null) { emit(hid); return; }\n\nString hname = read(doc, 'host.name');\n\
+          String hdom  = read(doc, 'host.domain');\nif (hname != null && hdom != null)\
+          \ { emit(hname + '.' + hdom); return; }\n\nString hhostname = read(doc,\
+          \ 'host.hostname');\nif (hhostname != null && hdom != null) { emit(hhostname\
+          \ + '.' + hdom); return; }\n\nif (hhostname != null) { emit(hhostname);\
+          \ return; }\nif (hname != null) { emit(hname); return; }"
+dest:
+  index: ml-rdp-lmd
+description: This transform runs hourly and collects windows RDP session information
+  for Lateral Movement Detection package.
+frequency: 1h
+pivot:
+  aggregations:
+    number_processes_per_session:
+      value_count:
+        field: process.name
+    total_length_process_args:
+      sum:
+        field: process.args_count
+    session.start_time:
+      min:
+        field: '@timestamp'
+    session.complete_time:
+      max:
+        field: '@timestamp'
+    session.duration:
+      bucket_script:
+        buckets_path:
+          start_time: session.start_time.value
+          complete_time: session.complete_time.value
+        script: Math.round((params.complete_time - params.start_time)/1000)
+  group_by:
+    host.entity.id_computed:
+      terms:
+        field: host.entity.id_computed
+    host.name:
+      terms:
+        field: host.name
+    destination.ip:
+      terms:
+        field: destination.ip
+    user.entity.id_computed:
+      terms:
+        field: user.entity.id_computed
+    user.name:
+      terms:
+        field: user.name
+    source.ip:
+      terms:
+        field: process.Ext.session_info.client_address
+    process.Ext.authentication_id:
+      terms:
+        field: process.Ext.authentication_id
+settings:
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    delay: 60s
+    field: '@timestamp'
+_meta:
+  fleet_transform_version: 2.6.0
+  run_as_kibana_system: false

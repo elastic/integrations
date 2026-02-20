@@ -1,0 +1,173 @@
+dest:
+  index: ml_network_ded-2.4.1
+  aliases:
+  - alias: ml_network_ded.latest
+    move_on_creation: true
+  - alias: ml_network_ded.all
+    move_on_creation: false
+  pipeline: 2.4.1-ml_ded_ingest_pipeline
+description: This transform runs every 30 minutes and collects network logs to detect
+  data exfiltration in your environment for the past month up to the runtime.
+frequency: 30m
+pivot:
+  aggregations:
+    '@timestamp':
+      max:
+        field: '@timestamp'
+    avg_source_bytes:
+      avg:
+        field: source.bytes
+  group_by:
+    host.entity.id_computed:
+      terms:
+        field: host.entity.id_computed
+    host.name:
+      terms:
+        field: host.name
+    user.entity.id_computed:
+      terms:
+        field: user.entity.id_computed
+    user.name:
+      terms:
+        field: user.name
+    network.direction:
+      terms:
+        field: network.direction
+    event.category:
+      terms:
+        field: event.category
+    source.ip:
+      terms:
+        field: source.ip
+    destination.ip:
+      terms:
+        field: destination.ip
+    destination.port:
+      terms:
+        field: destination.port
+    destination.geo.continent_name:
+      terms:
+        field: destination.geo.continent_name
+    destination.geo.country_name:
+      terms:
+        field: destination.geo.country_name
+    destination.geo.country_iso_code:
+      terms:
+        field: destination.geo.country_iso_code
+    destination.geo.region_name:
+      terms:
+        field: destination.geo.region_name
+    destination.geo.city_name:
+      terms:
+        field: destination.geo.city_name
+    process.name:
+      terms:
+        field: process.name
+source:
+  index: logs-*
+  query:
+    bool:
+      filter:
+      - range:
+          '@timestamp':
+            gte: now-1M
+      - term:
+          event.category:
+            value: network
+      - exists:
+          field: source.bytes
+      - exists:
+          field: destination.port
+      - terms:
+          source.ip:
+          - 192.168.0.0/16
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+      must_not:
+      - term:
+          source.bytes:
+            value: 0
+      - term:
+          host.os.type:
+            value: macos
+      - terms:
+          _tier:
+          - data_cold
+          - data_frozen
+      - terms:
+          network.direction:
+          - internal
+          - inbound
+      - terms:
+          process.name:
+          - elastic-agent.exe
+          - elastic-agent
+          - metricbeat.exe
+          - metricbeat
+          - filebeat.exe
+          - filebeat
+          - packetbeat.exe
+          - packetbeat
+          - winlogbeat.exe
+          - winlogbeat
+      - terms:
+          destination.ip:
+          - 0.0.0.0/8
+          - 10.0.0.0/8
+          - 100.64.0.0/10
+          - 127.0.0.0/8
+          - 169.254.0.0/16
+          - 172.16.0.0/12
+          - 192.0.0.0/24
+          - 192.0.2.0/24
+          - 192.88.99.0/24
+          - 192.168.0.0/16
+          - 198.18.0.0/15
+          - 198.51.100.0/24
+          - 203.0.113.0/24
+          - 224.0.0.0/4
+          - 233.252.0.0/24
+          - 240.0.0.0/4
+          - 255.255.255.255/32
+  runtime_mappings:
+    user.entity.id_computed:
+      type: keyword
+      script:
+        source: "String read(def doc, String field) {\n  if (!doc.containsKey(field))\
+          \ return null;\n  def dv = doc[field];\n  if (dv == null || dv.size() ==\
+          \ 0) return null;\n  String v = dv.value.toString();\n  String l = v.toLowerCase();\n\
+          \  if (l == '' || l == '-' || l == 'unknown' || l == 'n/a') return null;\n\
+          \  return v;\n}\n\nString ueid = read(doc, 'user.entity.id');\nif (ueid\
+          \ != null) { emit(ueid); return; }\n\nString uname = read(doc, 'user.name');\n\
+          String heid  = read(doc, 'host.entity.id');\nif (uname != null && heid !=\
+          \ null) { emit(uname + '@' + heid); return; }\n\nString hid = read(doc,\
+          \ 'host.id');\nif (uname != null && hid != null) { emit(uname + '@' + hid);\
+          \ return; }\n\nString hname = read(doc, 'host.name');\nif (uname != null\
+          \ && hname != null) { emit(uname + '@' + hname); return; }\n\nString uid\
+          \ = read(doc, 'user.id');\nif (uid != null) { emit(uid); return; }\n\nString\
+          \ email = read(doc, 'user.email');\nif (email != null) { emit(email); return;\
+          \ }\n\nString udom = read(doc, 'user.domain');\nif (uname != null && udom\
+          \ != null) { emit(uname + '@' + udom); return; }\n\nif (uname != null) {\
+          \ emit(uname); return; }"
+    host.entity.id_computed:
+      type: keyword
+      script:
+        source: "String read(def doc, String field) {\n  if (!doc.containsKey(field))\
+          \ return null;\n  def dv = doc[field];\n  if (dv == null || dv.size() ==\
+          \ 0) return null;\n  String v = dv.value.toString();\n  String l = v.toLowerCase();\n\
+          \  if (l == '' || l == '-' || l == 'unknown' || l == 'n/a') return null;\n\
+          \  return v;\n}\n\nString heid = read(doc, 'host.entity.id');\nif (heid\
+          \ != null) { emit(heid); return; }\n\nString hid = read(doc, 'host.id');\n\
+          if (hid != null) { emit(hid); return; }\n\nString hname = read(doc, 'host.name');\n\
+          String hdom  = read(doc, 'host.domain');\nif (hname != null && hdom != null)\
+          \ { emit(hname + '.' + hdom); return; }\n\nString hhostname = read(doc,\
+          \ 'host.hostname');\nif (hhostname != null && hdom != null) { emit(hhostname\
+          \ + '.' + hdom); return; }\n\nif (hhostname != null) { emit(hhostname);\
+          \ return; }\nif (hname != null) { emit(hname); return; }"
+sync:
+  time:
+    delay: 120s
+    field: '@timestamp'
+_meta:
+  fleet_transform_version: 2.4.1
+  run_as_kibana_system: false

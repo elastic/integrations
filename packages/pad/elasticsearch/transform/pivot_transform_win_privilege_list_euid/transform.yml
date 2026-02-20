@@ -1,0 +1,129 @@
+source:
+  index: logs-*
+  query:
+    bool:
+      filter:
+      - range:
+          '@timestamp':
+            gte: now-1M
+      - exists:
+          field: winlog.event_data.PrivilegeList
+      - terms:
+          host.os.type:
+          - windows
+          - Windows
+      - terms:
+          event.action:
+          - logged-in-special
+          - privileged-service-called
+          - privileged-operation
+      - terms:
+          winlog.event_data.PrivilegeList:
+          - SeDebugPrivilege
+          - SeTakeOwnershipPrivilege
+          - SeBackupPrivilege
+          - SeRestorePrivilege
+          - SeImpersonatePrivilege
+          - SeAssignPrimaryTokenPrivilege
+      must_not:
+      - terms:
+          process.name:
+          - elastic-agent.exe
+          - elastic-agent
+          - metricbeat.exe
+          - metricbeat
+          - filebeat.exe
+          - filebeat
+          - packetbeat.exe
+          - packetbeat
+          - winlogbeat.exe
+          - winlogbeat
+      - terms:
+          _tier:
+          - data_cold
+          - data_frozen
+  runtime_mappings:
+    user.entity.id_computed:
+      type: keyword
+      script:
+        source: "String read(def doc, String field) {\n  if (!doc.containsKey(field))\
+          \ return null;\n  def dv = doc[field];\n  if (dv == null || dv.size() ==\
+          \ 0) return null;\n  String v = dv.value.toString();\n  String l = v.toLowerCase();\n\
+          \  if (l == '' || l == '-' || l == 'unknown' || l == 'n/a') return null;\n\
+          \  return v;\n}\n\nString ueid = read(doc, 'user.entity.id');\nif (ueid\
+          \ != null) { emit(ueid); return; }\n\nString uname = read(doc, 'user.name');\n\
+          String heid  = read(doc, 'host.entity.id');\nif (uname != null && heid !=\
+          \ null) { emit(uname + '@' + heid); return; }\n\nString hid = read(doc,\
+          \ 'host.id');\nif (uname != null && hid != null) { emit(uname + '@' + hid);\
+          \ return; }\n\nString hname = read(doc, 'host.name');\nif (uname != null\
+          \ && hname != null) { emit(uname + '@' + hname); return; }\n\nString uid\
+          \ = read(doc, 'user.id');\nif (uid != null) { emit(uid); return; }\n\nString\
+          \ email = read(doc, 'user.email');\nif (email != null) { emit(email); return;\
+          \ }\n\nString udom = read(doc, 'user.domain');\nif (uname != null && udom\
+          \ != null) { emit(uname + '@' + udom); return; }\n\nif (uname != null) {\
+          \ emit(uname); return; }"
+    host.entity.id_computed:
+      type: keyword
+      script:
+        source: "String read(def doc, String field) {\n  if (!doc.containsKey(field))\
+          \ return null;\n  def dv = doc[field];\n  if (dv == null || dv.size() ==\
+          \ 0) return null;\n  String v = dv.value.toString();\n  String l = v.toLowerCase();\n\
+          \  if (l == '' || l == '-' || l == 'unknown' || l == 'n/a') return null;\n\
+          \  return v;\n}\n\nString heid = read(doc, 'host.entity.id');\nif (heid\
+          \ != null) { emit(heid); return; }\n\nString hid = read(doc, 'host.id');\n\
+          if (hid != null) { emit(hid); return; }\n\nString hname = read(doc, 'host.name');\n\
+          String hdom  = read(doc, 'host.domain');\nif (hname != null && hdom != null)\
+          \ { emit(hname + '.' + hdom); return; }\n\nString hhostname = read(doc,\
+          \ 'host.hostname');\nif (hhostname != null && hdom != null) { emit(hhostname\
+          \ + '.' + hdom); return; }\n\nif (hhostname != null) { emit(hhostname);\
+          \ return; }\nif (hname != null) { emit(hname); return; }"
+dest:
+  index: ml_windows_privilege_type_pad-1.1.1
+  aliases:
+  - alias: ml_windows_privilege_type_pad.latest
+    move_on_creation: true
+  - alias: ml_windows_privilege_type_pad.all
+    move_on_creation: false
+description: This transform runs hourly and collects special privileges assigned to
+  a user in the Windows events for the Privileged Access Detection package.
+frequency: 1h
+pivot:
+  aggregations:
+    '@timestamp':
+      max:
+        field: '@timestamp'
+  group_by:
+    host.entity.id_computed:
+      terms:
+        field: host.entity.id_computed
+    host.name:
+      terms:
+        field: host.name
+    user.entity.id_computed:
+      terms:
+        field: user.entity.id_computed
+    user.name:
+      terms:
+        field: user.name
+    privilege_type:
+      terms:
+        field: winlog.event_data.PrivilegeList
+    event.action:
+      terms:
+        field: event.action
+    event.category:
+      terms:
+        field: event.category
+    event.code:
+      terms:
+        field: event.code
+settings:
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    delay: 60s
+    field: '@timestamp'
+_meta:
+  fleet_transform_version: 1.1.1
+  run_as_kibana_system: false
