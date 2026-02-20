@@ -85,7 +85,7 @@ Authentication method for Event Hub and Storage Account. **Connection String** (
 
 `eventhub` :
 _string_
-The fully qualified, real-time data ingestion service. The event hub name (not the namespace).
+Is the fully managed, real-time data ingestion service.
 
 `consumer_group` :
 _string_
