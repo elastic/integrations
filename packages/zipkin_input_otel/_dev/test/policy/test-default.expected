@@ -19,13 +19,22 @@ output_permissions:
                   privileges:
                     - auto_configure
                     - create_doc
+                - names:
+                    - logs-generic.otel-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
 processors:
     transform/componentid-0:
         trace_statements:
             - context: span
               statements:
                 - set(attributes["data_stream.type"], "traces")
-                - set(attributes["data_stream.dataset"], "zipkin_input_otel.zipkinreceiver")
+                - set(attributes["data_stream.dataset"], "zipkinreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+            - context: spanevent
+              statements:
+                - set(attributes["data_stream.type"], "logs")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     zipkin/componentid-0:
