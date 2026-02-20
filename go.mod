@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.13.0
-	github.com/elastic/elastic-package v0.119.0
+	github.com/elastic/elastic-package v0.120.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.9.0
 	github.com/elastic/package-registry v1.36.0
