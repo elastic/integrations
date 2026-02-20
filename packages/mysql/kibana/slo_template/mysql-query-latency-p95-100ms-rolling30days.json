@@ -1,0 +1,46 @@
+{
+  "attributes": {
+    "name": "[Mysql] Query latency p95 100ms rolling 30 days",
+    "description": "This SLO tracks the query latency of MySQL, ensuring that 95% of queries complete within 100 milliseconds over a rolling period of 30 days to maintain responsive database operations for applications.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"mysql.performance\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "percentile",
+              "field": "mysql.performance.events_statements.quantile.95",
+              "filter": "",
+              "percentile": 95
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 100000000000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.95,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "MYSQL"
+    ],
+    "groupBy": [
+      "mysql.performance.events_statements.schemaname"
+    ]
+  },
+  "id": "mysql-query-latency-p95-100ms-rolling30days",
+  "type": "slo_template"
+}
