@@ -46,3 +46,9 @@ The SQL Server receiver can collect log events when a direct database connection
 Both event types require a direct database connection (server, port, username, and password must be configured). The `query_sample_collection` and `top_query_collection` settings control the behavior of each event type.
 
 For a complete list of log attributes, refer to the [SQL Server Receiver logs documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/sqlserverreceiver/logs-documentation.md) in the upstream OpenTelemetry Collector repository.
+
+## Known limitations
+
+### Feature gate: `receiver.sqlserver.RemoveServerResourceAttribute`
+
+Starting with EDOT Collector versions based on OpenTelemetry Collector Contrib v0.129.0+, the upstream receiver includes a feature gate `receiver.sqlserver.RemoveServerResourceAttribute` that removes `server.address` and `server.port` from resource attributes, as they are not identified as resource attributes in the semantic conventions. This feature gate is currently opt-in. Refer to the [upstream documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/sqlserverreceiver#feature-gate) for details.

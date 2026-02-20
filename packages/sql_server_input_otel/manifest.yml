@@ -23,8 +23,8 @@ icons:
 policy_templates:
   - name: sqlserverreceiver
     type: metrics
-    title: SQL Server Metrics (OpenTelemetry)
-    description: Collect SQL Server metrics using OpenTelemetry Collector
+    title: SQL Server Metrics and Logs (OpenTelemetry)
+    description: Collect SQL Server metrics and logs using OpenTelemetry Collector
     input: otelcol
     template_path: input.yml.hbs
     dynamic_signal_types: true
@@ -34,15 +34,19 @@ policy_templates:
         type: text
         required: false
         title: Server
-        description: IP Address or hostname of SQL Server instance to connect to.
-        default: localhost
+        description: >-
+          IP Address or hostname of SQL Server instance to connect to.
+          All connection settings (server, port, username, password) must be provided together for a direct connection.
+          Cannot be used together with datasource.
         show_user: true
       - name: port
         type: integer
         required: false
         title: Port
-        description: Port of the SQL Server instance to connect to.
-        default: 1433
+        description: >-
+          Port of the SQL Server instance to connect to.
+          All connection settings (server, port, username, password) must be provided together for a direct connection.
+          Cannot be used together with datasource.
         show_user: true
       - name: username
         type: text
@@ -59,6 +63,15 @@ policy_templates:
         # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
         secret: false
         show_user: true
+      - name: datasource
+        type: text
+        required: false
+        title: Data Source (Connection String)
+        description: >-
+          ADO connection string for direct connection to SQL Server.
+          Use as an alternative to the individual server, port, username, and password settings.
+          Cannot be used together with server, port, username, or password.
+        show_user: false
       # Instance settings
       - name: instance_name
         type: text
@@ -112,11 +125,11 @@ policy_templates:
         show_user: false
       # Top query collection settings (only applicable if enable_top_query_events is true)
       - name: top_query_lookback_time
-        type: integer
+        type: duration
         required: false
-        title: Top Query Lookback Time (seconds)
-        description: The time window in seconds to query for top queries.
-        default: 60
+        title: Top Query Lookback Time
+        description: The time window to query for top queries (e.g., 60s, 2m).
+        default: 60s
         show_user: false
       - name: top_query_max_query_sample_count
         type: integer
@@ -139,7 +152,16 @@ policy_templates:
         description: The interval at which top queries should be emitted.
         default: 60s
         show_user: false
-      # Metrics settings (only applicable if metrics is true)
+      # Resource attributes settings
+      - name: resource_attributes
+        type: yaml
+        title: Resource Attributes
+        description: >-
+          Enable or disable resource attributes on collected data.
+          Available attributes: sqlserver.computer.name, sqlserver.instance.name, server.address, server.port, service.instance.id, host.name, sqlserver.database.name.
+        required: false
+        show_user: false
+      # Metrics settings
       - name: metrics
         type: yaml
         title: Metrics

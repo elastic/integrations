@@ -4,4 +4,4 @@ FROM mcr.microsoft.com/mssql/server:${MSSQL_VERSION}
 ENV ACCEPT_EULA='Y'
 ENV SA_PASSWORD='1234_asdf'
 
-HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 CMD /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P ${SA_PASSWORD} -No -Q "SELECT 1" || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 CMD /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P ${SA_PASSWORD} -No -Q "SELECT 1" 2>/dev/null || /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${SA_PASSWORD} -Q "SELECT 1" 2>/dev/null || exit 1
