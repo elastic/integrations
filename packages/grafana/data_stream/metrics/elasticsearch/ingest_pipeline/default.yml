@@ -10,12 +10,18 @@ processors:
       field: event.kind
       value: metric
 
-  # The prometheus/metrics input type sets event.module to "prometheus", which conflicts
-  # with the constant_keyword mapping value "grafana". Remove it so the mapping default applies.
-  - remove:
-      tag: remove_event_module
+  # The prometheus/metrics input type sets event.module to "prometheus", which
+  # conflicts with the constant_keyword mapping value "grafana" in TSDB indices.
+  # Override it explicitly — constant_keyword only provides a default when the
+  # field is absent, it rejects mismatched values.
+  - set:
+      tag: set_event_module
       field: event.module
-      ignore_missing: true
+      value: grafana
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: grafana.metrics
 
   # Map prometheus.labels to ECS fields (use set+remove since agent may pre-populate these)
   - set:
