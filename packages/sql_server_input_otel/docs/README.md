@@ -37,7 +37,7 @@ For a complete list of all available metrics and their detailed descriptions, re
 
 ## Logs reference
 
-The SQL Server receiver can collect log events when a direct database connection is configured. Two event types are available, both disabled by default:
+The SQL Server receiver can collect log events when a direct database connection is configured. Two event types are available, both turned off by default:
 
 - **Query Sample Events** (`db.server.query_sample`): Captures currently executing queries at scrape time, including session details, wait information, and resource consumption. Enable by setting **Enable Query Sample Events** to `true`.
 
