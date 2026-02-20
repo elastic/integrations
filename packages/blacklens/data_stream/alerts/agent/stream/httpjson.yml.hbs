@@ -44,13 +44,14 @@ response.pagination:
       target: url.params.page
       value: '[[if (and .last_response.body.pagination.next (ne .last_response.body.pagination.next ""))]][[add (toInt .last_response.body.pagination.page) 1]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 
 response.split:
   target: body.results
   ignore_empty_value: true
 cursor:
   last_created_date:
-    value: '[[.last_event.created_date]]'
+    value: '[[if index .last_event "created_date"]][[.last_event.created_date]][[end]]'
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

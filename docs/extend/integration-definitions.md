@@ -36,6 +36,8 @@ Unlike integrations, content packages do not include data streams or Agent polic
 
 An input package is a type of package that exposes the raw configuration of an Elastic Agent input for custom use cases. Unlike integrations that provide pre-configured data collection for specific technologies, input packages allow users to configure inputs directly for their unique requirements.
 
+A special type of input package is the **OTel Input Package**, which configures OpenTelemetry Collector receivers within EDOT (Elastic Distribution of OpenTelemetry). See [OTel Input Packages](./otel-input-packages.md) for details on creating these packages.
+
 
 ## Data stream [_data_stream]
 

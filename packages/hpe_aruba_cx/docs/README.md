@@ -1,42 +1,1026 @@
-# HPE Aruba CX Integration
+# HPE Aruba CX Integration for Elastic
 
-The HPE Aruba CX integration allows you to monitor the HPE Aruba Networking CX Switch. The switch series is modern, flexible, and intelligent stackable switch series ideally for enterprise network access, aggregation, core, and data center top of rack (ToR) deployments.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
-Use the HPE Aruba integration and follow the setup steps listed below to forward the CX Switch logging to a deployed standalone or managed Beat at a specific port listening for TCP or UDP data. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `log` when troubleshooting data/error issue encountered in the field.
+## Overview
 
+The HPE Aruba CX integration for Elastic enables you to collect logs from HPE Aruba Networking CX Switch series, providing visibility into network operations, security events, and hardware health. By ingesting these logs into the Elastic Stack, you can monitor network stability, audit configuration changes, and maintain security compliance across your infrastructure.
 
-## Compatibility
+### Compatibility
 
-This package follows the [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360** on the 10.15 version of the specification. As new appliances and OSes are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new/old version of the product line.
-The integration ONLY supports logs in ENGLISH, internationalization of logs to other languages are NOT supported.
+This integration is compatible with the following:
+- Tested models: HPE Aruba Networking CX Switch series 6000, 6300, and 8360.
+- AOS-CX version: Tested against AOS-CX version 10.15 and compatible with the AOS-CX 10.15 Event Log Message Reference Guide.
+- Language: This integration strictly supports logs in the English language.
 
+### How it works
 
-## Data streams
+This integration collects logs from Aruba CX switches by acting as a syslog receiver or by reading log files. You can deploy an Elastic Agent and configure it to receive data through one of the following methods:
+- TCP: The `log` data stream receives syslog messages over a TCP port. This is the recommended method for reliable delivery of system, security, and protocol logs.
+- UDP: The `log` data stream receives syslog messages over a UDP port. This method is designed for high-volume log ingest where minimal overhead on the source switch is required.
+- Filestream: The `log` data stream reads logs from files on the local host. This is typically used for ingesting audit logs or files stored on a management server.
 
-The HPE Aruba CX integration collects events into data stream: `log`
+Once the logs are received, the Elastic Agent parses and enriches the data before forwarding it to your Elastic deployment, where you can monitor it using the provided dashboards.
 
+## What data does this integration collect?
 
+The HPE Aruba CX integration collects log messages of the following types:
+* System and security logs: These include logs covering AAA (Authentication, Authorization, and Accounting), ACLs (Access Control Lists), port security, and user management events.
+* Protocol events: These provide detailed state change and error information for networking protocols including BGP, OSPF, ARP, BFD, and LACP.
+* Hardware health metrics: These are log-based health indicators for physical components such as fans, power supplies, and temperature sensors.
+* Configuration and management logs: These provide audit trails of configuration changes, firmware updates, and REST API interactions.
 
-## Requirements
+### Supported use cases
 
-Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-We recommend using our hosted Elasticsearch Service on Elastic Cloud, or self-manage the Elastic Stack on your own hardware.
+You can use the HPE Aruba CX integration for several operational and security use cases:
+* Security monitoring: You can monitor authentication and authorization events to identify unauthorized access attempts or suspicious configuration changes.
+* Network troubleshooting: You'll be able to analyze protocol events and state changes to diagnose connectivity issues and network instability.
+* Infrastructure health: You can track hardware-related log messages to proactively identify failing components like power supplies or fans.
+* Audit and compliance: You can maintain a record of configuration changes and administrative actions for regulatory compliance and internal security audits.
 
+## What do I need to use this integration?
+
+To use this integration, you'll need to meet the following Elastic and vendor-specific prerequisites:
+
+### Vendor prerequisites
+
+Before you begin, ensure your HPE Aruba CX switch is set up with these configurations:
+- Administrative access to the HPE Aruba CX switch via the Command Line Interface (CLI) using SSH or a console connection.
+- Network connectivity between the switch and the Elastic Agent host. The switch must be able to reach the IP address of the Elastic Agent on the configured syslog port, such as `1470` for TCP or `1024` for UDP.
+- AOS-CX switch logging configured to forward logs in English.
+- Network Time Protocol (NTP) synchronized on all switches to ensure that timestamps are accurate and synchronized.
+- Sufficient privileges to enter configuration mode with `configure terminal` and save the configuration with `write memory`.
+
+### Elastic prerequisites
+
+You'll also need to prepare your Elastic environment with the following:
+- An Elastic Agent installed and enrolled in a Fleet policy.
+- The HPE Aruba CX integration added to the relevant Agent policy.
+- Firewall rules on the Elastic Agent host that allow inbound traffic on the ports you specify in the integration configuration.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed on a host that can receive syslog data or has access to log files from your HPE Aruba CX switches. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Set up steps in HPE Aruba CX
+
+You can configure your AOS-CX switches to send logs to the Elastic Agent using either the CLI or the Web UI.
+
+#### Syslog (CLI method)
+
+To configure remote logging via the CLI:
+
+1. Log in to the AOS-CX switch CLI via SSH or console.
+2. Enter global configuration mode:
+   `switch# configure terminal`
+3. Configure the remote logging target with the transport protocol and port. Replace `<elastic_agent_ip>` (replace with your actual value) with your agent's IP.
+   For TCP (recommended for reliable delivery, default integration port `1470`):
+   `switch(config)# logging <elastic_agent_ip> port 1470 transport tcp`
+   For UDP (default integration port `1024`):
+   `switch(config)# logging <elastic_agent_ip> port 1024 transport udp`
+4. Specify the VRF if you use a dedicated management network:
+   `switch(config)# logging <elastic_agent_ip> vrf mgmt port 1470 transport tcp`
+5. Set the severity level to filter events sent to the agent (e.g., `informational` or `notice`):
+   `switch(config)# logging <elastic_agent_ip> severity informational`
+6. Exit and save the configuration to the startup config:
+   `switch(config)# end`
+   `switch# write memory`
+
+#### Syslog (Web UI method)
+
+To configure remote logging via the Web UI:
+
+1. Log in to the AOS-CX Web UI using administrative credentials.
+2. Navigate to **System > Logging** in the sidebar.
+3. Locate the **Logging Servers** section and click the **+ (Add)** button.
+4. Enter the **IP Address** of the Elastic Agent.
+5. Select the appropriate **VRF** (e.g., `mgmt`) that has connectivity to the agent.
+6. Set the **Severity Level** to `Informational` or higher.
+7. Click **Apply** to activate the settings and click the **Save** icon at the top of the UI to persist across reboots.
+
+#### Filestream (logfile) collection
+
+If you prefer to collect logs from a file:
+
+1. Ensure the Elastic Agent has read permissions for the directory containing the AOS-CX logs.
+2. Configure the switch or an intermediate collector to write AOS-CX logs to a specific directory (e.g., `/var/log/audit/`).
+3. Ensure your log rotation mechanism allows the Elastic Agent to monitor both active and rotated files if you require historical data.
+
+#### Vendor resources
+
+The following resources provide more information about AOS-CX configuration:
+- [AOS-CX Switch Software Documentation Portal](https://arubanetworking.hpe.com/techdocs/AOS-CX/help_portal/Content/home.htm)
+- [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm)
+
+### Set up steps in Kibana
+
+To set up the integration in Kibana:
+
+1. In Kibana, navigate to **Management > Integrations**.
+2. Search for **HPE Aruba CX** and select the integration.
+3. Click **Add HPE Aruba CX**.
+4. Configure the integration settings based on your chosen input type.
+
+#### TCP input configuration
+
+This input collects logs over a TCP socket:
+
+- **Listen Address** (`listen_address`): The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
+- **Listen Port** (`listen_port`): The TCP port number to listen on. Default: `1470`.
+- **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`.
+- **Tags** (`tags`): List of tags to add to the events.
+- **SSL Configuration** (`ssl`): Provide SSL certificate and key information if you use encrypted transport.
+- **Custom TCP Options** (`tcp_options`): Specify options like `max_connections`, `framing`, or `line_delimiter`.
+
+#### UDP input configuration
+
+This input collects logs over a UDP socket:
+
+- **Listen Address** (`listen_address`): The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
+- **Listen Port** (`listen_port`): The UDP port number to listen on. Default: `1024`.
+- **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`.
+- **Custom UDP Options** (`udp_options`): Specify options such as `read_buffer`, `max_message_size`, or `timeout`.
+
+#### Log file input configuration
+
+This input collects logs directly from log files. This input is disabled by default and you must explicitly enable it:
+
+- **Paths** (`paths`): Provide the list of paths to the log files (e.g., `/var/log/audit/*.log`).
+- **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`.
+
+After configuring your input, assign the integration to an agent policy and click **Save and continue**.
+
+### Validation
+
+To verify the integration is working and data is flowing:
+
+1. Trigger data flow on the HPE Aruba CX device using one of these actions:
+    - Enter and exit global configuration mode to trigger a `CONFIG_MGMT` log: `configure terminal` then `exit`.
+    - Log out and log back into the switch CLI via SSH to trigger AAA and SSH session logs.
+    - Toggle a non-critical, unused interface: `interface 1/1/1` (replace with your actual value), `shutdown`, then `no shutdown`.
+2. In Kibana, navigate to **Analytics > Discover**.
+3. Select the `logs-*` data view.
+4. Enter the KQL filter `data_stream.dataset : "hpe_aruba_cx.log"` and check for incoming documents.
+5. Verify that logs appear with recent timestamps and that fields like `event.code`, `log.level`, and `aruba.hardware.device` are correctly populated.
+6. Navigate to **Analytics > Dashboards** and search for "HPE Aruba CX" to verify that visualizations are populated with data.
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Common configuration issues
+
+This section addresses common issues you might encounter while setting up or running the HPE Aruba CX integration:
+- VRF routing mismatch: If you configure the switch to send logs but they never arrive at the destination, verify the `vrf` parameter in the `logging` command. If the Elastic Agent is on the management network, your command must include `vrf mgmt`.
+- Port conflicts: Ensure the port configured in the integration settings (for example, `1470` for TCP or `1024` for UDP) is not being used by another process on the Elastic Agent host. You can use `ss -tlnp | grep <port>` (replace `<port>` with your actual value) on Linux or `netstat -ano | findstr <port>` (replace `<port>` with your actual value) on Windows to verify port availability.
+- ACL or firewall blocks: Check the outbound access control lists (ACLs) on the switch and the local firewall on the Elastic Agent host (such as `iptables` or `firewalld`) to ensure traffic is allowed on the specified UDP or TCP ports.
+- English-only requirement: If logs appear garbled or fail to parse correctly, verify that the switch isn't configured for internationalized logging. This integration only supports the standard English log format.
+- Parsing failures: If logs appear in Discover but have a `tags: [_grokparsefailure]` entry, the log format might differ from the expected AOS-CX standard. You can check the `error.message` field for specific details.
+- Timestamp mismatches: If logs don't appear in the default time range, check the Network Time Protocol (NTP) status on the switch. Large time drifts can cause logs to be indexed into the past or future relative to the current Kibana view.
+- Field mapping mismatches: Review the `event.original` field against the parsed fields. If critical information is missing, verify that the switch is sending the full log header according to the AOS-CX specification.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+To ensure optimal performance in high-volume environments, consider the following settings:
+- While UDP (default port `1024`) is faster for syslog transmission and places less load on the switch CPU, TCP (default port `1470`) is recommended for environments where delivery guarantees are required.
+- For TCP connections, you should enable SSL if logs transit over public or untrusted networks to ensure data confidentiality.
+- You can configure the HPE Aruba CX switch to forward only necessary events by setting the severity per remote server. For example, use the command `logging <elastic_agent_ip> severity informational` (replace `<elastic_agent_ip>` with your actual value).
+- Don't forward `debug` level logs in production environments as they can overwhelm the ingest pipeline and increase storage requirements.
+
+## Reference
+
+### Inputs used
+
+These inputs can be used with this integration:
+<details>
+<summary>filestream</summary>
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For more details about the Filestream input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream).
 
 
-## Logs
-### Exported fields
+### Collecting logs from Filestream
 
-Below are the fields from the different event types and their mapping into ECS supported fields or customer Aruba fields
+To collect logs via Filestream, select **Collect logs via Filestream** and configure the following parameters:
+
+- Filestream paths: The full path to the related log file.
+</details>
+<details>
+<summary>tcp</summary>
+
+## Setup
+
+For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
+
+### Collecting logs from TCP
+
+To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of incoming messages
+- Max Connections - Maximum number of concurrent connections
+- Timeout - How long to wait for data before closing idle connections
+- Line Delimiter - Character(s) that separate log messages
+
+## SSL/TLS Configuration
+
+To enable encrypted connections, configure the following SSL settings:
+
+**SSL Settings:**
+- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
+- Certificate Key - Path to the private key file (`.key`)
+- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
+- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
+- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
+
+**Example SSL Configuration:**
+```yaml
+ssl.enabled: true
+ssl.certificate: "/path/to/server.crt"
+ssl.key: "/path/to/server.key"
+ssl.certificate_authorities: ["/path/to/ca.crt"]
+ssl.client_authentication: "optional"
+```
+</details>
+<details>
+<summary>udp</summary>
+
+## Setup
+
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
+
+
+### Data streams
+
+The HPE Aruba CX integration provides a data stream for collecting event logs.
+
+#### log
+
+The `log` data stream provides events from HPE Aruba CX switches of the following types:
+- System and hardware status messages
+- Configuration and management activity
+- Network protocol and routing events
+- Security and authentication logs
+
+##### log fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
+| aruba.aaa.config_event |  | keyword |
+| aruba.aaa.config_type |  | keyword |
+| aruba.aaa.radius_action |  | keyword |
+| aruba.aaa.radius_event |  | keyword |
+| aruba.aaa.radius_type |  | keyword |
+| aruba.aaa.tacacs_action |  | keyword |
+| aruba.aaa.tacacs_event |  | keyword |
+| aruba.aaa.tacacs_type |  | keyword |
+| aruba.acc_abp.client |  | keyword |
+| aruba.acc_abp.operation |  | keyword |
+| aruba.acc_abp.pac_abp_name |  | keyword |
+| aruba.acc_abp.result |  | keyword |
+| aruba.acl.ace_string | TBD for all description fields - need to be filled in | keyword |
+| aruba.acl.application |  | keyword |
+| aruba.acl.direction |  | keyword |
+| aruba.acl.hit_delta |  | long |
+| aruba.acl.name |  | keyword |
+| aruba.acl.type |  | keyword |
+| aruba.alarm.log_and_trap |  | keyword |
+| aruba.alarm.name |  | keyword |
+| aruba.alarm.relay |  | keyword |
+| aruba.alarm.trigger |  | keyword |
+| aruba.alarm.type |  | keyword |
+| aruba.arc.log |  | keyword |
+| aruba.asic.prefix_list |  | keyword |
+| aruba.asic.route_prefix |  | keyword |
+| aruba.bfd.applied_interval |  | long |
+| aruba.bfd.direction |  | keyword |
+| aruba.bfd.from |  | keyword |
+| aruba.bfd.invalid_ip |  | ip |
+| aruba.bfd.ip_version |  | keyword |
+| aruba.bfd.local_diag |  | keyword |
+| aruba.bfd.local_state |  | keyword |
+| aruba.bfd.op_mode |  | keyword |
+| aruba.bfd.remote_diag |  | keyword |
+| aruba.bfd.remote_state |  | keyword |
+| aruba.bfd.requested_interval |  | long |
+| aruba.bgp.as_number |  | long |
+| aruba.bgp.error_subcode |  | keyword |
+| aruba.bgp.id |  | keyword |
+| aruba.bgp.peer_grp |  | keyword |
+| aruba.bgp.pg_name |  | keyword |
+| aruba.bgp.vtep_ip |  | ip |
+| aruba.cm.cert_name |  | keyword |
+| aruba.cm.days |  | long |
+| aruba.cm.est_name |  | keyword |
+| aruba.cm.profile_name |  | keyword |
+| aruba.component.category |  | keyword |
+| aruba.component.name |  | keyword |
+| aruba.config.from |  | keyword |
+| aruba.config.name |  | keyword |
+| aruba.config.to |  | keyword |
+| aruba.config.type |  | keyword |
+| aruba.config.value |  | keyword |
+| aruba.container.params |  | keyword |
+| aruba.copp.class | Control Plane Policing (CoPP) class | keyword |
+| aruba.count |  | long |
+| aruba.cpu_rx.filter_description |  | keyword |
+| aruba.dhcp.bindings_imported |  | keyword |
+| aruba.dhcp.config |  | keyword |
+| aruba.dhcp.gateway_ip |  | ip |
+| aruba.dhcp.ipv6_address |  | keyword |
+| aruba.dhcp.lease |  | keyword |
+| aruba.dhcp.lease_ip_address |  | ip |
+| aruba.dhcp.message_type |  | keyword |
+| aruba.dhcp.nameserver_ip |  | ip |
+| aruba.dhcp.new_port |  | keyword |
+| aruba.dhcp.server_ip_address |  | ip |
+| aruba.dhcp.source_mac |  | keyword |
+| aruba.dhcp.volume_name |  | keyword |
+| aruba.distributed.active_coordinates |  | keyword |
+| aruba.distributed.configured_coordinates |  | keyword |
+| aruba.dns.type |  | keyword |
+| aruba.dns.vrf_name |  | keyword |
+| aruba.dot1x.policy |  | keyword |
+| aruba.dpse.linecard_name |  | keyword |
+| aruba.dpse.operation_name |  | keyword |
+| aruba.dpse.plugin_name |  | keyword |
+| aruba.ecmp.egressid |  | keyword |
+| aruba.ecmp.err |  | keyword |
+| aruba.ecmp.route |  | keyword |
+| aruba.erps.ring_id |  | keyword |
+| aruba.error.count |  | long |
+| aruba.error.description |  | keyword |
+| aruba.event_type |  | keyword |
+| aruba.evpn.esi |  | keyword |
+| aruba.evpn.eth_tag |  | keyword |
+| aruba.evpn.rd |  | keyword |
+| aruba.evpn.rt |  | keyword |
+| aruba.evpn.rtt |  | keyword |
+| aruba.evpn.vni |  | keyword |
+| aruba.evpn.vtep_ip |  | ip |
+| aruba.fan.air_flow_direction |  | keyword |
+| aruba.fan.compare_mode |  | keyword |
+| aruba.fan.count |  | long |
+| aruba.fan.en_dis |  | keyword |
+| aruba.fan.fan_index |  | long |
+| aruba.fan.fmod_num |  | keyword |
+| aruba.fan.ft_air_curr |  | keyword |
+| aruba.fan.ft_air_req |  | keyword |
+| aruba.fan.ft_dir |  | keyword |
+| aruba.fan.ft_name |  | keyword |
+| aruba.fan.function |  | keyword |
+| aruba.fan.index |  | long |
+| aruba.fan.minimum |  | long |
+| aruba.fan.module_idx |  | long |
+| aruba.fan.name |  | keyword |
+| aruba.fan.new_status |  | keyword |
+| aruba.fan.old_status |  | keyword |
+| aruba.fan.speedval |  | keyword |
+| aruba.fan.tray_idx |  | long |
+| aruba.fan.value |  | keyword |
+| aruba.fan.zone_idx |  | long |
+| aruba.fault.da_diff_count |  | long |
+| aruba.fault.sa_diff_count |  | long |
+| aruba.fault.type |  | keyword |
+| aruba.feature_pack.device_parameter |  | keyword |
+| aruba.feature_pack.device_serial |  | keyword |
+| aruba.feature_pack.expiry_date |  | keyword |
+| aruba.feature_pack.feature_name |  | keyword |
+| aruba.feature_pack.mode |  | keyword |
+| aruba.feature_pack.name |  | keyword |
+| aruba.feature_pack.parameter_type |  | keyword |
+| aruba.feature_pack.parameter_type_mismatch |  | keyword |
+| aruba.feature_pack.subscription_parameter |  | keyword |
+| aruba.feature_pack.type |  | keyword |
+| aruba.firmware.after |  | keyword |
+| aruba.firmware.before |  | keyword |
+| aruba.firmware.dnld_type |  | keyword |
+| aruba.firmware.hotpatch_name |  | keyword |
+| aruba.firmware.image_profile |  | keyword |
+| aruba.fqtss.classA_ded |  | keyword |
+| aruba.fqtss.classA_max |  | keyword |
+| aruba.fqtss.classB_ded |  | keyword |
+| aruba.fqtss.classB_max |  | keyword |
+| aruba.fqtss.dedicate_mem_status |  | keyword |
+| aruba.fqtss.per_port_consolidate_status |  | keyword |
+| aruba.fqtss.per_port_per_stream_consolidate_status |  | keyword |
+| aruba.fqtss.per_port_status |  | keyword |
+| aruba.fqtss.per_stream_consolidate_status |  | keyword |
+| aruba.fqtss.per_stream_status |  | keyword |
+| aruba.fqtss.request_type |  | keyword |
+| aruba.fqtss.stream_hw_status |  | keyword |
+| aruba.fqtss.stream_meter_id |  | keyword |
+| aruba.hardware.addr |  | keyword |
+| aruba.hardware.bus |  | keyword |
+| aruba.hardware.cap |  | keyword |
+| aruba.hardware.cecount |  | long |
+| aruba.hardware.channel |  | keyword |
+| aruba.hardware.cpus |  | long |
+| aruba.hardware.device |  | keyword |
+| aruba.hardware.function |  | keyword |
+| aruba.hardware.impact_statement |  | keyword |
+| aruba.hardware.level |  | keyword |
+| aruba.hardware.location |  | keyword |
+| aruba.hardware.mcgstatus |  | keyword |
+| aruba.hardware.misc |  | keyword |
+| aruba.hardware.offlined |  | long |
+| aruba.hardware.origin |  | keyword |
+| aruba.hardware.page |  | keyword |
+| aruba.hardware.seg |  | keyword |
+| aruba.hardware.socket |  | keyword |
+| aruba.hardware.test_name |  | keyword |
+| aruba.hardware.type |  | keyword |
+| aruba.hardware.vni |  | keyword |
+| aruba.hotpatch.ss |  | keyword |
+| aruba.injected_view.name |  | keyword |
+| aruba.insight.arp_end_ts |  | keyword |
+| aruba.insight.auth_latency |  | keyword |
+| aruba.insight.auth_type |  | keyword |
+| aruba.insight.dhcp_client |  | keyword |
+| aruba.insight.dhcp_latency |  | keyword |
+| aruba.insight.dhcp_server |  | keyword |
+| aruba.insight.dns_end_ts |  | keyword |
+| aruba.insight.dns_latency |  | keyword |
+| aruba.insight.dns_server |  | keyword |
+| aruba.insight.dot1x_auth_failure_reason |  | keyword |
+| aruba.insight.failed_vlans |  | keyword |
+| aruba.insight.failure_phase_id |  | keyword |
+| aruba.insight.l2_end_ts |  | keyword |
+| aruba.insight.l2_failure_reason |  | keyword |
+| aruba.insight.l2_ob_state |  | keyword |
+| aruba.insight.l3_end_ts |  | keyword |
+| aruba.insight.l3_failure_reason |  | keyword |
+| aruba.insight.l3_ob_state |  | keyword |
+| aruba.insight.mac_auth_failure_reason |  | keyword |
+| aruba.insight.ob_start_ts |  | keyword |
+| aruba.insight.radius_server |  | keyword |
+| aruba.insight.role_type |  | keyword |
+| aruba.insight.successfulvlan |  | keyword |
+| aruba.instance.id |  | keyword |
+| aruba.interface.id |  | keyword |
+| aruba.interface.name |  | keyword |
+| aruba.interface.port_speed |  | long |
+| aruba.interface.prev_id |  | keyword |
+| aruba.ip_ra.route |  | keyword |
+| aruba.ip_sla.name |  | keyword |
+| aruba.issu.active_bank |  | keyword |
+| aruba.issu.condition |  | keyword |
+| aruba.issu.feature |  | keyword |
+| aruba.issu.location |  | keyword |
+| aruba.issu.new_software_version |  | keyword |
+| aruba.issu.operation |  | keyword |
+| aruba.issu.previous_software_version |  | keyword |
+| aruba.issu.wait_time |  | long |
+| aruba.l3.encaps_allocated |  | keyword |
+| aruba.l3.encaps_free |  | keyword |
+| aruba.l3.nexthop |  | keyword |
+| aruba.l3.object |  | keyword |
+| aruba.l3.percent |  | long |
+| aruba.l3.resource |  | keyword |
+| aruba.l3.vtep |  | keyword |
+| aruba.lacp.actor_state |  | keyword |
+| aruba.lacp.fallback |  | keyword |
+| aruba.lacp.fallback_mode |  | keyword |
+| aruba.lacp.fsm_state |  | keyword |
+| aruba.lacp.lag_number |  | long |
+| aruba.lacp.lag_speed |  | long |
+| aruba.lacp.mode |  | keyword |
+| aruba.lacp.partner_state |  | keyword |
+| aruba.lacp.partner_sys_id |  | keyword |
+| aruba.lacp.port_speed |  | long |
+| aruba.lacp.rate |  | keyword |
+| aruba.lacp.system_id |  | keyword |
+| aruba.lacp.system_priority |  | keyword |
+| aruba.lag.mode |  | keyword |
+| aruba.lag.psc |  | keyword |
+| aruba.launchd.daemon |  | keyword |
+| aruba.len |  | long |
+| aruba.limit.read_value |  | long |
+| aruba.limit.threshold |  | keyword |
+| aruba.lldp.ninterface |  | keyword |
+| aruba.lldp.npvid |  | long |
+| aruba.lldp.pvid |  | long |
+| aruba.lldp.reinit_delay |  | long |
+| aruba.lldp.tx_delay |  | long |
+| aruba.lldp.tx_hold |  | long |
+| aruba.lldp.tx_timer |  | long |
+| aruba.loop.rx_port |  | keyword |
+| aruba.loop.tx_port |  | keyword |
+| aruba.mac.ckn |  | keyword |
+| aruba.mac.feature |  | keyword |
+| aruba.mac.latest_an |  | keyword |
+| aruba.mac.latest_kn |  | keyword |
+| aruba.mac.new_mode |  | keyword |
+| aruba.mac.old_an |  | keyword |
+| aruba.mac.old_kn |  | keyword |
+| aruba.mac.old_mode |  | keyword |
+| aruba.mac.sci |  | keyword |
+| aruba.management.config_param |  | keyword |
+| aruba.mgmd.l3_port |  | keyword |
+| aruba.mgmd.mgmd_type |  | keyword |
+| aruba.mgmd.pkt_type |  | keyword |
+| aruba.mgmd.port1 |  | keyword |
+| aruba.mgmd.protocol |  | keyword |
+| aruba.mgmd.ring_id |  | keyword |
+| aruba.mgmd.type |  | keyword |
+| aruba.mgmt.config_crit |  | object |
+| aruba.mgmt.config_err |  | object |
+| aruba.mgmt.config_param |  | object |
+| aruba.module.name |  | keyword |
+| aruba.module.new_part |  | keyword |
+| aruba.module.old_part |  | keyword |
+| aruba.module.type |  | keyword |
+| aruba.mpls.local_ldp_id |  | keyword |
+| aruba.mpls.peer_ldp_id |  | keyword |
+| aruba.msdp.grp_ip |  | ip |
+| aruba.msdp.rp_ip |  | ip |
+| aruba.msdp.tcp_entity |  | keyword |
+| aruba.msrp.decl_type |  | keyword |
+| aruba.mstp.config_parameter |  | keyword |
+| aruba.mstp.config_value |  | keyword |
+| aruba.mstp.new_mode |  | keyword |
+| aruba.mstp.old_mac |  | keyword |
+| aruba.mstp.old_mode |  | keyword |
+| aruba.mstp.old_port |  | keyword |
+| aruba.mstp.old_priority |  | keyword |
+| aruba.mstp.pkt_type |  | keyword |
+| aruba.mstp.priority_mac |  | keyword |
+| aruba.mstp.proto |  | keyword |
+| aruba.mstp.reconfig_parameter |  | keyword |
+| aruba.mtu |  | keyword |
+| aruba.multicast.encap_type |  | keyword |
+| aruba.multicast.flood_group_ip |  | ip |
+| aruba.multicast.flood_group_range |  | keyword |
+| aruba.multicast.ip_assign_method |  | keyword |
+| aruba.multicast.isl_rule |  | keyword |
+| aruba.multicast.mgmd_type |  | keyword |
+| aruba.multicast.override_group_ip |  | keyword |
+| aruba.multicast.rep_mode |  | keyword |
+| aruba.multicast.ulay_l2_port |  | keyword |
+| aruba.multicast.ulay_l3_port |  | keyword |
+| aruba.multicast.vni_id |  | keyword |
+| aruba.nae.action_type |  | keyword |
+| aruba.nae.condition |  | keyword |
+| aruba.nae.description |  | keyword |
+| aruba.nae.monitor_name |  | keyword |
+| aruba.nae.name |  | keyword |
+| aruba.nd.type |  | keyword |
+| aruba.ndm.new_mac |  | keyword |
+| aruba.ndm.old_mac |  | keyword |
+| aruba.ndm.old_role |  | keyword |
+| aruba.ntp.event |  | keyword |
+| aruba.ntp.old |  | keyword |
+| aruba.ntp.server_info |  | keyword |
+| aruba.ntp.trusted_keys |  | keyword |
+| aruba.ntp.untrusted_keys |  | keyword |
+| aruba.ospf.area |  | keyword |
+| aruba.ospf.event |  | keyword |
+| aruba.ospf.external |  | keyword |
+| aruba.ospf.fp_id |  | keyword |
+| aruba.ospf.input |  | keyword |
+| aruba.ospf.inter |  | keyword |
+| aruba.ospf.intra |  | keyword |
+| aruba.ospf.link_local |  | ip |
+| aruba.ospf.nexthops |  | keyword |
+| aruba.ospf.old_router_id |  | keyword |
+| aruba.ospf.old_state |  | keyword |
+| aruba.ospf.router_id |  | keyword |
+| aruba.ospf.stats_id |  | keyword |
+| aruba.pac_gbp.client |  | keyword |
+| aruba.pac_gbp.line_card |  | keyword |
+| aruba.pac_gbp.name |  | keyword |
+| aruba.pac_gbp.operation |  | keyword |
+| aruba.pac_gbp.result |  | keyword |
+| aruba.packet_capture.session_name |  | keyword |
+| aruba.packet_capture.value |  | keyword |
+| aruba.pim.callerid |  | keyword |
+| aruba.pim.capacity_type |  | keyword |
+| aruba.pim.dip0 |  | keyword |
+| aruba.pim.dip1 |  | keyword |
+| aruba.pim.dip2 |  | keyword |
+| aruba.pim.dip3 |  | keyword |
+| aruba.pim.ebsr_ip |  | ip |
+| aruba.pim.error_value |  | keyword |
+| aruba.pim.event |  | keyword |
+| aruba.pim.fd |  | keyword |
+| aruba.pim.flowtype |  | keyword |
+| aruba.pim.ip_version |  | keyword |
+| aruba.pim.mode |  | keyword |
+| aruba.pim.pkt_type |  | keyword |
+| aruba.pim.qsize |  | long |
+| aruba.pim.sip0 |  | keyword |
+| aruba.pim.sip1 |  | keyword |
+| aruba.pim.sip2 |  | keyword |
+| aruba.pim.sip3 |  | keyword |
+| aruba.pim.totalvid |  | long |
+| aruba.pim.type |  | keyword |
+| aruba.poe.assigned_class |  | keyword |
+| aruba.poe.assigned_class_a |  | keyword |
+| aruba.poe.assigned_class_b |  | keyword |
+| aruba.poe.available |  | keyword |
+| aruba.poe.cntrl_name |  | keyword |
+| aruba.poe.duration |  | keyword |
+| aruba.poe.fault_type |  | keyword |
+| aruba.poe.pair |  | keyword |
+| aruba.poe.paira_class |  | keyword |
+| aruba.poe.pairb_class |  | keyword |
+| aruba.poe.pd_class |  | keyword |
+| aruba.poe.pd_type |  | keyword |
+| aruba.poe.req_class |  | keyword |
+| aruba.poe.req_class_a |  | keyword |
+| aruba.poe.req_class_b |  | keyword |
+| aruba.poe.subsys_name |  | keyword |
+| aruba.policy.application |  | keyword |
+| aruba.policy.name |  | keyword |
+| aruba.port |  | keyword |
+| aruba.port_access.auth_method |  | keyword |
+| aruba.port_access.feature |  | keyword |
+| aruba.port_access.mode |  | keyword |
+| aruba.port_access.monitor_name |  | keyword |
+| aruba.port_access.name |  | keyword |
+| aruba.port_access.num_cached_clients |  | long |
+| aruba.port_access.old_limit |  | keyword |
+| aruba.port_access.old_mode |  | keyword |
+| aruba.port_access.old_name |  | keyword |
+| aruba.port_access.request_id |  | keyword |
+| aruba.port_access.request_pkt |  | keyword |
+| aruba.port_access.server_list |  | keyword |
+| aruba.power.alert |  | keyword |
+| aruba.power.available |  | keyword |
+| aruba.power.fanidx |  | long |
+| aruba.power.fault |  | keyword |
+| aruba.power.name |  | keyword |
+| aruba.power.redund |  | keyword |
+| aruba.power.sensorid |  | keyword |
+| aruba.power.support |  | keyword |
+| aruba.power.type |  | keyword |
+| aruba.power.value |  | keyword |
+| aruba.prefix |  | keyword |
+| aruba.priority |  | keyword |
+| aruba.ptp.clock_step |  | keyword |
+| aruba.ptp.curr_offset |  | keyword |
+| aruba.ptp.delay_mechanism |  | keyword |
+| aruba.ptp.grandsource |  | keyword |
+| aruba.ptp.high_limit |  | keyword |
+| aruba.ptp.lag_name |  | keyword |
+| aruba.ptp.low_limit |  | keyword |
+| aruba.ptp.new |  | keyword |
+| aruba.ptp.old |  | keyword |
+| aruba.ptp.parent |  | keyword |
+| aruba.ptp.priority1 |  | keyword |
+| aruba.ptp.priority2 |  | keyword |
+| aruba.ptp.profile |  | keyword |
+| aruba.ptp.quality |  | keyword |
+| aruba.ptp.transport |  | keyword |
+| aruba.ptp.type |  | keyword |
+| aruba.ptp.value |  | keyword |
+| aruba.qos.new_slot |  | keyword |
+| aruba.qos.queue |  | keyword |
+| aruba.redundant.mgmt_module |  | keyword |
+| aruba.rest.activate_address |  | keyword |
+| aruba.rest.added_user |  | keyword |
+| aruba.rest.autztype |  | keyword |
+| aruba.rest.central_location |  | keyword |
+| aruba.rest.central_source |  | keyword |
+| aruba.rest.command |  | keyword |
+| aruba.rest.config_from_name |  | keyword |
+| aruba.rest.config_name |  | keyword |
+| aruba.rest.config_to_name |  | keyword |
+| aruba.rest.deleted_user |  | keyword |
+| aruba.rest.dns |  | keyword |
+| aruba.rest.dns_nameserver |  | keyword |
+| aruba.rest.identity |  | keyword |
+| aruba.rest.match |  | keyword |
+| aruba.rest.mode |  | keyword |
+| aruba.rest.name |  | keyword |
+| aruba.rest.operation |  | keyword |
+| aruba.rest.resource |  | keyword |
+| aruba.rest.subscriber |  | keyword |
+| aruba.rest.subscription |  | keyword |
+| aruba.rest.type |  | keyword |
+| aruba.role |  | keyword |
+| aruba.rpvst.new_mode |  | keyword |
+| aruba.rpvst.npvid |  | keyword |
+| aruba.rpvst.old_mac |  | keyword |
+| aruba.rpvst.old_mode |  | keyword |
+| aruba.rpvst.old_port |  | keyword |
+| aruba.rpvst.old_priority |  | keyword |
+| aruba.rpvst.pkt_type |  | keyword |
+| aruba.rpvst.proto |  | keyword |
+| aruba.rpvst.pvid |  | keyword |
+| aruba.scheduler.datetime |  | keyword |
+| aruba.scheduler.details |  | keyword |
+| aruba.scheduler.job_name |  | keyword |
+| aruba.scheduler.name |  | keyword |
+| aruba.self_test.stack |  | keyword |
+| aruba.sequence |  | keyword |
+| aruba.server.mode |  | keyword |
+| aruba.server.sessions |  | long |
+| aruba.session.id |  | keyword |
+| aruba.session.name |  | keyword |
+| aruba.sflow.bridge |  | keyword |
+| aruba.sflow.chain |  | keyword |
+| aruba.sflow.dgramsize |  | long |
+| aruba.sflow.intvl |  | keyword |
+| aruba.sflow.mode |  | keyword |
+| aruba.sflow.new_rate |  | keyword |
+| aruba.sflow.old_rate |  | keyword |
+| aruba.sflow.operation |  | keyword |
+| aruba.slot |  | long |
+| aruba.snmp.truth_value |  | keyword |
+| aruba.ssh.key_name |  | keyword |
+| aruba.ssh.new_ip |  | keyword |
+| aruba.state |  | keyword |
+| aruba.status |  | keyword |
+| aruba.storage.name |  | keyword |
+| aruba.storage.usage |  | long |
+| aruba.subsystem |  | keyword |
+| aruba.supportability.alarm_index |  | keyword |
+| aruba.supportability.daemons |  | keyword |
+| aruba.supportability.log_type |  | keyword |
+| aruba.supportability.module |  | keyword |
+| aruba.supportability.oid |  | keyword |
+| aruba.sys.module |  | keyword |
+| aruba.sys.name |  | keyword |
+| aruba.sysmon.mem_usage |  | long |
+| aruba.sysmon.module_name |  | keyword |
+| aruba.sysmon.module_num |  | long |
+| aruba.sysmon.partition_name |  | keyword |
+| aruba.sysmon.poll |  | keyword |
+| aruba.sysmon.unit |  | keyword |
+| aruba.sysmon.unit_count |  | long |
+| aruba.sysmon.utilization |  | long |
+| aruba.system.devicespec |  | keyword |
+| aruba.system.line |  | long |
+| aruba.system.modspec |  | keyword |
+| aruba.system.numdevs |  | long |
+| aruba.system.pass |  | keyword |
+| aruba.system.time |  | long |
+| aruba.tcam.table_name |  | keyword |
+| aruba.temp.celsius |  | long |
+| aruba.temp.limit_type |  | keyword |
+| aruba.temp.module |  | keyword |
+| aruba.temp.name |  | keyword |
+| aruba.temp.new |  | keyword |
+| aruba.temp.old |  | keyword |
+| aruba.temp.t_high |  | long |
+| aruba.temp.t_low |  | long |
+| aruba.temp.type |  | keyword |
+| aruba.throttle_count |  | long |
+| aruba.time.new_time |  | keyword |
+| aruba.time.new_tz |  | keyword |
+| aruba.time.old_time |  | keyword |
+| aruba.time.old_tz |  | keyword |
+| aruba.time.seconds |  | long |
+| aruba.timeout |  | long |
+| aruba.tpm.reboot_num |  | keyword |
+| aruba.traffic.monitor_name |  | keyword |
+| aruba.tunnel.ecmp_id |  | keyword |
+| aruba.tunnel.gre_key |  | keyword |
+| aruba.tunnel.name |  | keyword |
+| aruba.tunnel.nfd_id |  | keyword |
+| aruba.tunnel.ttl |  | keyword |
+| aruba.tunnel.type |  | keyword |
+| aruba.tunnel.zone |  | keyword |
+| aruba.udld.intvl_a |  | keyword |
+| aruba.udld.intvl_b |  | keyword |
+| aruba.ufd.from_state |  |  |
+| aruba.unit |  | keyword |
+| aruba.user.added_user |  | keyword |
+| aruba.user.deleted_user |  | keyword |
+| aruba.user.role |  | keyword |
+| aruba.vlan.from |  | keyword |
+| aruba.vlan.local_node |  | keyword |
+| aruba.vlan.orig_vlan |  | keyword |
+| aruba.vlan.prim_admin |  | keyword |
+| aruba.vlan.prim_vid |  | keyword |
+| aruba.vlan.remote_node |  | keyword |
+| aruba.vlan.sec_admin |  | keyword |
+| aruba.vlan.sec_type |  | keyword |
+| aruba.vlan.sec_vid |  | keyword |
+| aruba.vlan.to |  | keyword |
+| aruba.vlan.trans_vlan |  | keyword |
+| aruba.vrf.id |  | keyword |
+| aruba.vrf.name |  | keyword |
+| aruba.vrrp.delay |  | long |
+| aruba.vrrp.inet_type |  | keyword |
+| aruba.vrrp.interval |  | long |
+| aruba.vrrp.mode |  | keyword |
+| aruba.vrrp.old_state |  | keyword |
+| aruba.vrrp.track |  | keyword |
+| aruba.vrrp.type |  |  |
+| aruba.vsf.link |  | keyword |
+| aruba.vsf.lowest_speed |  | keyword |
+| aruba.vsf.mac_addr1 |  | keyword |
+| aruba.vsf.mac_addr2 |  | keyword |
+| aruba.vsf.mbr_id |  | keyword |
+| aruba.vsf.member_id |  | keyword |
+| aruba.vsf.new_standby_id |  | keyword |
+| aruba.vsf.old_standby_id |  | keyword |
+| aruba.vsf.operation |  | keyword |
+| aruba.vsf.port2 |  | keyword |
+| aruba.vsf.product_id |  | keyword |
+| aruba.vsf.product_type |  | keyword |
+| aruba.vsf.topo_type |  | keyword |
+| aruba.vsx.bank_name |  | keyword |
+| aruba.vsx.local_device_type |  | keyword |
+| aruba.vsx.local_sw_ver |  | keyword |
+| aruba.vsx.local_vsx_role |  | keyword |
+| aruba.vsx.peer_device_type |  | keyword |
+| aruba.vsx.peer_sw_ver |  | keyword |
+| aruba.vsx.peer_vsx_role |  | keyword |
+| aruba.vsx.prev_state |  | keyword |
+| aruba.vsx.primary_version |  | keyword |
+| aruba.vsx.secondary_version |  | keyword |
+| aruba.vsx.sub_state |  | keyword |
+| aruba.vxlan.ecmp_id |  | keyword |
+| aruba.vxlan.tunnel_id |  | keyword |
+| aruba.vxlan.vni_id |  | keyword |
+| aruba.vxlan.vtep |  | keyword |
+| aruba.vxlan.vtep_peer |  | keyword |
+| aruba.xcvr.desc |  | keyword |
+| aruba.xcvr.list |  | keyword |
+| aruba.xcvr.path |  | keyword |
+| aruba.ztp.alt_aruba_central_loc |  | keyword |
+| aruba.ztp.central_location |  | keyword |
+| aruba.ztp.http_proxy_location |  | keyword |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.message | Error message. | match_only_text |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.type | File type (file, dir, or symlink). | keyword |
+| host.boot.id | Linux boot uuid taken from /proc/sys/kernel/random/boot_id. Note the boot_id value from /proc may or may not be the same in containers as on the host. Some container runtimes will bind mount a new boot_id value onto the proc file in each container. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| input.type | Input type | keyword |
+| log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.inode | Inode of the log file this event came from. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| log.origin.file.line | The line number of the file containing the source code which originated the log event. | long |
+| log.origin.file.name | The name of the file containing the source code which originated the log event. Note that this field is not meant to capture the log file. The correct field to capture the log file is `log.file.path`. | keyword |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.procid | The process name or ID that originated the Syslog message, if available. | keyword |
+| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.vlan.id | VLAN ID as reported by the observer. | keyword |
+| observer.egress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
+| package.installed | Time when package was installed. | date |
+| package.name | Package name | keyword |
+| package.version | Package version | keyword |
+| process.end | The time the process ended. | date |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.pid | Process id. | long |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| server.port | Port of the server. | long |
+| server.user.name | Short name or login of the user. | keyword |
+| server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
+| service.target.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
+| url.port | Port of the request, such as 443. | long |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
+##### log sample event
+
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2024-09-26T20:44:39.385Z",
+    "agent": {
+        "ephemeral_id": "15a5da12-525e-4fdb-bd1f-512fedb1363d",
+        "id": "67fa41e7-b040-4f84-a354-12d4d757d731",
+        "name": "elastic-agent-34773",
+        "type": "filebeat",
+        "version": "8.14.3"
+    },
+    "data_stream": {
+        "dataset": "hpe_aruba_cx.log",
+        "namespace": "10580",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "67fa41e7-b040-4f84-a354-12d4d757d731",
+        "snapshot": false,
+        "version": "8.14.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "hpe_aruba_cx.log",
+        "ingested": "2024-09-26T20:44:41Z",
+        "original": "2024-07-31T15:40:13.958990-05:00 8360-Primaire lldpd[2864192]: Event|104|LOG_INFO|AMM|1/1|LLDP neighbor d4:c1:9e:55:2b:e0 added on 1/1/15"
+    },
+    "host": {
+        "name": "elastic-agent-34773"
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "36",
+            "inode": "157",
+            "path": "/tmp/service_logs/8360.log"
+        },
+        "offset": 0
+    },
+    "tags": [
+        "preserve_original_event",
+        "aruba-log",
+        "forwarded"
+    ]
+}
+```
+
+### Exported fields by Aruba event type
+
+Below are the fields from the different Aruba event types and their mapping into ECS supported fields or customer Aruba fields
 
 To Be Removed
 Note: Field types are defined within `fields.yml`
 Note: Descriptions have not been filled out
+
+<details>
+<summary>Exported fields</summary>
 
 #### [AAA events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/AAA.htm)
 | Doc Fields           | Schema Mapping               |
@@ -1823,672 +2807,9 @@ Note: Descriptions have not been filled out
 | `<image_file>`            | file.name                        |
 | `<reason>`                | event.reason                     |
 | `<tftp_ip>`               | server.ip                        |
+</details>
+### Vendor documentation links
 
-## Generated Logs
-
-The `log` dataset collects the HPE Aruba CX logs.
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
-| aruba.aaa.config_event |  | keyword |
-| aruba.aaa.config_type |  | keyword |
-| aruba.aaa.radius_action |  | keyword |
-| aruba.aaa.radius_event |  | keyword |
-| aruba.aaa.radius_type |  | keyword |
-| aruba.aaa.tacacs_action |  | keyword |
-| aruba.aaa.tacacs_event |  | keyword |
-| aruba.aaa.tacacs_type |  | keyword |
-| aruba.acc_abp.client |  | keyword |
-| aruba.acc_abp.operation |  | keyword |
-| aruba.acc_abp.pac_abp_name |  | keyword |
-| aruba.acc_abp.result |  | keyword |
-| aruba.acl.ace_string | TBD for all description fields - need to be filled in | keyword |
-| aruba.acl.application |  | keyword |
-| aruba.acl.direction |  | keyword |
-| aruba.acl.hit_delta |  | long |
-| aruba.acl.name |  | keyword |
-| aruba.acl.type |  | keyword |
-| aruba.alarm.log_and_trap |  | keyword |
-| aruba.alarm.name |  | keyword |
-| aruba.alarm.relay |  | keyword |
-| aruba.alarm.trigger |  | keyword |
-| aruba.alarm.type |  | keyword |
-| aruba.arc.log |  | keyword |
-| aruba.asic.prefix_list |  | keyword |
-| aruba.asic.route_prefix |  | keyword |
-| aruba.bfd.applied_interval |  | long |
-| aruba.bfd.direction |  | keyword |
-| aruba.bfd.from |  | keyword |
-| aruba.bfd.invalid_ip |  | ip |
-| aruba.bfd.ip_version |  | keyword |
-| aruba.bfd.local_diag |  | keyword |
-| aruba.bfd.local_state |  | keyword |
-| aruba.bfd.op_mode |  | keyword |
-| aruba.bfd.remote_diag |  | keyword |
-| aruba.bfd.remote_state |  | keyword |
-| aruba.bfd.requested_interval |  | long |
-| aruba.bgp.as_number |  | long |
-| aruba.bgp.error_subcode |  | keyword |
-| aruba.bgp.id |  | keyword |
-| aruba.bgp.peer_grp |  | keyword |
-| aruba.bgp.pg_name |  | keyword |
-| aruba.bgp.vtep_ip |  | ip |
-| aruba.cm.cert_name |  | keyword |
-| aruba.cm.days |  | long |
-| aruba.cm.est_name |  | keyword |
-| aruba.cm.profile_name |  | keyword |
-| aruba.component.category |  | keyword |
-| aruba.component.name |  | keyword |
-| aruba.config.from |  | keyword |
-| aruba.config.name |  | keyword |
-| aruba.config.to |  | keyword |
-| aruba.config.type |  | keyword |
-| aruba.config.value |  | keyword |
-| aruba.container.params |  | keyword |
-| aruba.copp.class | Control Plane Policing (CoPP) class | keyword |
-| aruba.count |  | long |
-| aruba.cpu_rx.filter_description |  | keyword |
-| aruba.dhcp.bindings_imported |  | keyword |
-| aruba.dhcp.config |  | keyword |
-| aruba.dhcp.gateway_ip |  | ip |
-| aruba.dhcp.ipv6_address |  | keyword |
-| aruba.dhcp.lease |  | keyword |
-| aruba.dhcp.lease_ip_address |  | ip |
-| aruba.dhcp.message_type |  | keyword |
-| aruba.dhcp.nameserver_ip |  | ip |
-| aruba.dhcp.new_port |  | keyword |
-| aruba.dhcp.server_ip_address |  | ip |
-| aruba.dhcp.source_mac |  | keyword |
-| aruba.dhcp.volume_name |  | keyword |
-| aruba.distributed.active_coordinates |  | keyword |
-| aruba.distributed.configured_coordinates |  | keyword |
-| aruba.dns.type |  | keyword |
-| aruba.dns.vrf_name |  | keyword |
-| aruba.dot1x.policy |  | keyword |
-| aruba.dpse.linecard_name |  | keyword |
-| aruba.dpse.operation_name |  | keyword |
-| aruba.dpse.plugin_name |  | keyword |
-| aruba.ecmp.egressid |  | keyword |
-| aruba.ecmp.err |  | keyword |
-| aruba.ecmp.route |  | keyword |
-| aruba.erps.ring_id |  | keyword |
-| aruba.error.count |  | long |
-| aruba.error.description |  | keyword |
-| aruba.event_type |  | keyword |
-| aruba.evpn.esi |  | keyword |
-| aruba.evpn.eth_tag |  | keyword |
-| aruba.evpn.rd |  | keyword |
-| aruba.evpn.rt |  | keyword |
-| aruba.evpn.rtt |  | keyword |
-| aruba.evpn.vni |  | keyword |
-| aruba.evpn.vtep_ip |  | ip |
-| aruba.fan.air_flow_direction |  | keyword |
-| aruba.fan.compare_mode |  | keyword |
-| aruba.fan.count |  | long |
-| aruba.fan.en_dis |  | keyword |
-| aruba.fan.fan_index |  | long |
-| aruba.fan.fmod_num |  | keyword |
-| aruba.fan.ft_air_curr |  | keyword |
-| aruba.fan.ft_air_req |  | keyword |
-| aruba.fan.ft_dir |  | keyword |
-| aruba.fan.ft_name |  | keyword |
-| aruba.fan.function |  | keyword |
-| aruba.fan.index |  | long |
-| aruba.fan.minimum |  | long |
-| aruba.fan.module_idx |  | long |
-| aruba.fan.name |  | keyword |
-| aruba.fan.new_status |  | keyword |
-| aruba.fan.old_status |  | keyword |
-| aruba.fan.speedval |  | keyword |
-| aruba.fan.tray_idx |  | long |
-| aruba.fan.value |  | keyword |
-| aruba.fan.zone_idx |  | long |
-| aruba.fault.da_diff_count |  | long |
-| aruba.fault.sa_diff_count |  | long |
-| aruba.fault.type |  | keyword |
-| aruba.feature_pack.device_parameter |  | keyword |
-| aruba.feature_pack.device_serial |  | keyword |
-| aruba.feature_pack.expiry_date |  | keyword |
-| aruba.feature_pack.feature_name |  | keyword |
-| aruba.feature_pack.mode |  | keyword |
-| aruba.feature_pack.name |  | keyword |
-| aruba.feature_pack.parameter_type |  | keyword |
-| aruba.feature_pack.parameter_type_mismatch |  | keyword |
-| aruba.feature_pack.subscription_parameter |  | keyword |
-| aruba.feature_pack.type |  | keyword |
-| aruba.firmware.after |  | keyword |
-| aruba.firmware.before |  | keyword |
-| aruba.firmware.dnld_type |  | keyword |
-| aruba.firmware.hotpatch_name |  | keyword |
-| aruba.firmware.image_profile |  | keyword |
-| aruba.fqtss.classA_ded |  | keyword |
-| aruba.fqtss.classA_max |  | keyword |
-| aruba.fqtss.classB_ded |  | keyword |
-| aruba.fqtss.classB_max |  | keyword |
-| aruba.fqtss.dedicate_mem_status |  | keyword |
-| aruba.fqtss.per_port_consolidate_status |  | keyword |
-| aruba.fqtss.per_port_per_stream_consolidate_status |  | keyword |
-| aruba.fqtss.per_port_status |  | keyword |
-| aruba.fqtss.per_stream_consolidate_status |  | keyword |
-| aruba.fqtss.per_stream_status |  | keyword |
-| aruba.fqtss.request_type |  | keyword |
-| aruba.fqtss.stream_hw_status |  | keyword |
-| aruba.fqtss.stream_meter_id |  | keyword |
-| aruba.hardware.addr |  | keyword |
-| aruba.hardware.bus |  | keyword |
-| aruba.hardware.cap |  | keyword |
-| aruba.hardware.cecount |  | long |
-| aruba.hardware.channel |  | keyword |
-| aruba.hardware.cpus |  | long |
-| aruba.hardware.device |  | keyword |
-| aruba.hardware.function |  | keyword |
-| aruba.hardware.impact_statement |  | keyword |
-| aruba.hardware.level |  | keyword |
-| aruba.hardware.location |  | keyword |
-| aruba.hardware.mcgstatus |  | keyword |
-| aruba.hardware.misc |  | keyword |
-| aruba.hardware.offlined |  | long |
-| aruba.hardware.origin |  | keyword |
-| aruba.hardware.page |  | keyword |
-| aruba.hardware.seg |  | keyword |
-| aruba.hardware.socket |  | keyword |
-| aruba.hardware.test_name |  | keyword |
-| aruba.hardware.type |  | keyword |
-| aruba.hardware.vni |  | keyword |
-| aruba.hotpatch.ss |  | keyword |
-| aruba.injected_view.name |  | keyword |
-| aruba.insight.arp_end_ts |  | keyword |
-| aruba.insight.auth_latency |  | keyword |
-| aruba.insight.auth_type |  | keyword |
-| aruba.insight.dhcp_client |  | keyword |
-| aruba.insight.dhcp_latency |  | keyword |
-| aruba.insight.dhcp_server |  | keyword |
-| aruba.insight.dns_end_ts |  | keyword |
-| aruba.insight.dns_latency |  | keyword |
-| aruba.insight.dns_server |  | keyword |
-| aruba.insight.dot1x_auth_failure_reason |  | keyword |
-| aruba.insight.failed_vlans |  | keyword |
-| aruba.insight.failure_phase_id |  | keyword |
-| aruba.insight.l2_end_ts |  | keyword |
-| aruba.insight.l2_failure_reason |  | keyword |
-| aruba.insight.l2_ob_state |  | keyword |
-| aruba.insight.l3_end_ts |  | keyword |
-| aruba.insight.l3_failure_reason |  | keyword |
-| aruba.insight.l3_ob_state |  | keyword |
-| aruba.insight.mac_auth_failure_reason |  | keyword |
-| aruba.insight.ob_start_ts |  | keyword |
-| aruba.insight.radius_server |  | keyword |
-| aruba.insight.role_type |  | keyword |
-| aruba.insight.successfulvlan |  | keyword |
-| aruba.instance.id |  | keyword |
-| aruba.interface.id |  | keyword |
-| aruba.interface.name |  | keyword |
-| aruba.interface.port_speed |  | long |
-| aruba.interface.prev_id |  | keyword |
-| aruba.ip_ra.route |  | keyword |
-| aruba.ip_sla.name |  | keyword |
-| aruba.issu.active_bank |  | keyword |
-| aruba.issu.condition |  | keyword |
-| aruba.issu.feature |  | keyword |
-| aruba.issu.location |  | keyword |
-| aruba.issu.new_software_version |  | keyword |
-| aruba.issu.operation |  | keyword |
-| aruba.issu.previous_software_version |  | keyword |
-| aruba.issu.wait_time |  | long |
-| aruba.l3.encaps_allocated |  | keyword |
-| aruba.l3.encaps_free |  | keyword |
-| aruba.l3.nexthop |  | keyword |
-| aruba.l3.object |  | keyword |
-| aruba.l3.percent |  | long |
-| aruba.l3.resource |  | keyword |
-| aruba.l3.vtep |  | keyword |
-| aruba.lacp.actor_state |  | keyword |
-| aruba.lacp.fallback |  | keyword |
-| aruba.lacp.fallback_mode |  | keyword |
-| aruba.lacp.fsm_state |  | keyword |
-| aruba.lacp.lag_number |  | long |
-| aruba.lacp.lag_speed |  | long |
-| aruba.lacp.mode |  | keyword |
-| aruba.lacp.partner_state |  | keyword |
-| aruba.lacp.partner_sys_id |  | keyword |
-| aruba.lacp.port_speed |  | long |
-| aruba.lacp.rate |  | keyword |
-| aruba.lacp.system_id |  | keyword |
-| aruba.lacp.system_priority |  | keyword |
-| aruba.lag.mode |  | keyword |
-| aruba.lag.psc |  | keyword |
-| aruba.launchd.daemon |  | keyword |
-| aruba.len |  | long |
-| aruba.limit.read_value |  | long |
-| aruba.limit.threshold |  | keyword |
-| aruba.lldp.ninterface |  | keyword |
-| aruba.lldp.npvid |  | long |
-| aruba.lldp.pvid |  | long |
-| aruba.lldp.reinit_delay |  | long |
-| aruba.lldp.tx_delay |  | long |
-| aruba.lldp.tx_hold |  | long |
-| aruba.lldp.tx_timer |  | long |
-| aruba.loop.rx_port |  | keyword |
-| aruba.loop.tx_port |  | keyword |
-| aruba.mac.ckn |  | keyword |
-| aruba.mac.feature |  | keyword |
-| aruba.mac.latest_an |  | keyword |
-| aruba.mac.latest_kn |  | keyword |
-| aruba.mac.new_mode |  | keyword |
-| aruba.mac.old_an |  | keyword |
-| aruba.mac.old_kn |  | keyword |
-| aruba.mac.old_mode |  | keyword |
-| aruba.mac.sci |  | keyword |
-| aruba.management.config_param |  | keyword |
-| aruba.mgmd.l3_port |  | keyword |
-| aruba.mgmd.mgmd_type |  | keyword |
-| aruba.mgmd.pkt_type |  | keyword |
-| aruba.mgmd.port1 |  | keyword |
-| aruba.mgmd.protocol |  | keyword |
-| aruba.mgmd.ring_id |  | keyword |
-| aruba.mgmd.type |  | keyword |
-| aruba.mgmt.config_crit |  | object |
-| aruba.mgmt.config_err |  | object |
-| aruba.mgmt.config_param |  | object |
-| aruba.module.name |  | keyword |
-| aruba.module.new_part |  | keyword |
-| aruba.module.old_part |  | keyword |
-| aruba.module.type |  | keyword |
-| aruba.mpls.local_ldp_id |  | keyword |
-| aruba.mpls.peer_ldp_id |  | keyword |
-| aruba.msdp.grp_ip |  | ip |
-| aruba.msdp.rp_ip |  | ip |
-| aruba.msdp.tcp_entity |  | keyword |
-| aruba.msrp.decl_type |  | keyword |
-| aruba.mstp.config_parameter |  | keyword |
-| aruba.mstp.config_value |  | keyword |
-| aruba.mstp.new_mode |  | keyword |
-| aruba.mstp.old_mac |  | keyword |
-| aruba.mstp.old_mode |  | keyword |
-| aruba.mstp.old_port |  | keyword |
-| aruba.mstp.old_priority |  | keyword |
-| aruba.mstp.pkt_type |  | keyword |
-| aruba.mstp.priority_mac |  | keyword |
-| aruba.mstp.proto |  | keyword |
-| aruba.mstp.reconfig_parameter |  | keyword |
-| aruba.mtu |  | keyword |
-| aruba.multicast.encap_type |  | keyword |
-| aruba.multicast.flood_group_ip |  | ip |
-| aruba.multicast.flood_group_range |  | keyword |
-| aruba.multicast.ip_assign_method |  | keyword |
-| aruba.multicast.isl_rule |  | keyword |
-| aruba.multicast.mgmd_type |  | keyword |
-| aruba.multicast.override_group_ip |  | keyword |
-| aruba.multicast.rep_mode |  | keyword |
-| aruba.multicast.ulay_l2_port |  | keyword |
-| aruba.multicast.ulay_l3_port |  | keyword |
-| aruba.multicast.vni_id |  | keyword |
-| aruba.nae.action_type |  | keyword |
-| aruba.nae.condition |  | keyword |
-| aruba.nae.description |  | keyword |
-| aruba.nae.monitor_name |  | keyword |
-| aruba.nae.name |  | keyword |
-| aruba.nd.type |  | keyword |
-| aruba.ndm.new_mac |  | keyword |
-| aruba.ndm.old_mac |  | keyword |
-| aruba.ndm.old_role |  | keyword |
-| aruba.ntp.event |  | keyword |
-| aruba.ntp.old |  | keyword |
-| aruba.ntp.server_info |  | keyword |
-| aruba.ntp.trusted_keys |  | keyword |
-| aruba.ntp.untrusted_keys |  | keyword |
-| aruba.ospf.area |  | keyword |
-| aruba.ospf.event |  | keyword |
-| aruba.ospf.external |  | keyword |
-| aruba.ospf.fp_id |  | keyword |
-| aruba.ospf.input |  | keyword |
-| aruba.ospf.inter |  | keyword |
-| aruba.ospf.intra |  | keyword |
-| aruba.ospf.link_local |  | ip |
-| aruba.ospf.nexthops |  | keyword |
-| aruba.ospf.old_router_id |  | keyword |
-| aruba.ospf.old_state |  | keyword |
-| aruba.ospf.router_id |  | keyword |
-| aruba.ospf.stats_id |  | keyword |
-| aruba.pac_gbp.client |  | keyword |
-| aruba.pac_gbp.line_card |  | keyword |
-| aruba.pac_gbp.name |  | keyword |
-| aruba.pac_gbp.operation |  | keyword |
-| aruba.pac_gbp.result |  | keyword |
-| aruba.packet_capture.session_name |  | keyword |
-| aruba.packet_capture.value |  | keyword |
-| aruba.pim.callerid |  | keyword |
-| aruba.pim.capacity_type |  | keyword |
-| aruba.pim.dip0 |  | keyword |
-| aruba.pim.dip1 |  | keyword |
-| aruba.pim.dip2 |  | keyword |
-| aruba.pim.dip3 |  | keyword |
-| aruba.pim.ebsr_ip |  | ip |
-| aruba.pim.error_value |  | keyword |
-| aruba.pim.event |  | keyword |
-| aruba.pim.fd |  | keyword |
-| aruba.pim.flowtype |  | keyword |
-| aruba.pim.ip_version |  | keyword |
-| aruba.pim.mode |  | keyword |
-| aruba.pim.pkt_type |  | keyword |
-| aruba.pim.qsize |  | long |
-| aruba.pim.sip0 |  | keyword |
-| aruba.pim.sip1 |  | keyword |
-| aruba.pim.sip2 |  | keyword |
-| aruba.pim.sip3 |  | keyword |
-| aruba.pim.totalvid |  | long |
-| aruba.pim.type |  | keyword |
-| aruba.poe.assigned_class |  | keyword |
-| aruba.poe.assigned_class_a |  | keyword |
-| aruba.poe.assigned_class_b |  | keyword |
-| aruba.poe.available |  | keyword |
-| aruba.poe.cntrl_name |  | keyword |
-| aruba.poe.duration |  | keyword |
-| aruba.poe.fault_type |  | keyword |
-| aruba.poe.pair |  | keyword |
-| aruba.poe.paira_class |  | keyword |
-| aruba.poe.pairb_class |  | keyword |
-| aruba.poe.pd_class |  | keyword |
-| aruba.poe.pd_type |  | keyword |
-| aruba.poe.req_class |  | keyword |
-| aruba.poe.req_class_a |  | keyword |
-| aruba.poe.req_class_b |  | keyword |
-| aruba.poe.subsys_name |  | keyword |
-| aruba.policy.application |  | keyword |
-| aruba.policy.name |  | keyword |
-| aruba.port |  | keyword |
-| aruba.port_access.auth_method |  | keyword |
-| aruba.port_access.feature |  | keyword |
-| aruba.port_access.mode |  | keyword |
-| aruba.port_access.monitor_name |  | keyword |
-| aruba.port_access.name |  | keyword |
-| aruba.port_access.num_cached_clients |  | long |
-| aruba.port_access.old_limit |  | keyword |
-| aruba.port_access.old_mode |  | keyword |
-| aruba.port_access.old_name |  | keyword |
-| aruba.port_access.request_id |  | keyword |
-| aruba.port_access.request_pkt |  | keyword |
-| aruba.port_access.server_list |  | keyword |
-| aruba.power.alert |  | keyword |
-| aruba.power.available |  | keyword |
-| aruba.power.fanidx |  | long |
-| aruba.power.fault |  | keyword |
-| aruba.power.name |  | keyword |
-| aruba.power.redund |  | keyword |
-| aruba.power.sensorid |  | keyword |
-| aruba.power.support |  | keyword |
-| aruba.power.type |  | keyword |
-| aruba.power.value |  | keyword |
-| aruba.prefix |  | keyword |
-| aruba.priority |  | keyword |
-| aruba.ptp.clock_step |  | keyword |
-| aruba.ptp.curr_offset |  | keyword |
-| aruba.ptp.delay_mechanism |  | keyword |
-| aruba.ptp.grandsource |  | keyword |
-| aruba.ptp.high_limit |  | keyword |
-| aruba.ptp.lag_name |  | keyword |
-| aruba.ptp.low_limit |  | keyword |
-| aruba.ptp.new |  | keyword |
-| aruba.ptp.old |  | keyword |
-| aruba.ptp.parent |  | keyword |
-| aruba.ptp.priority1 |  | keyword |
-| aruba.ptp.priority2 |  | keyword |
-| aruba.ptp.profile |  | keyword |
-| aruba.ptp.quality |  | keyword |
-| aruba.ptp.transport |  | keyword |
-| aruba.ptp.type |  | keyword |
-| aruba.ptp.value |  | keyword |
-| aruba.qos.new_slot |  | keyword |
-| aruba.qos.queue |  | keyword |
-| aruba.redundant.mgmt_module |  | keyword |
-| aruba.rest.activate_address |  | keyword |
-| aruba.rest.added_user |  | keyword |
-| aruba.rest.autztype |  | keyword |
-| aruba.rest.central_location |  | keyword |
-| aruba.rest.central_source |  | keyword |
-| aruba.rest.command |  | keyword |
-| aruba.rest.config_from_name |  | keyword |
-| aruba.rest.config_name |  | keyword |
-| aruba.rest.config_to_name |  | keyword |
-| aruba.rest.deleted_user |  | keyword |
-| aruba.rest.dns |  | keyword |
-| aruba.rest.dns_nameserver |  | keyword |
-| aruba.rest.identity |  | keyword |
-| aruba.rest.match |  | keyword |
-| aruba.rest.mode |  | keyword |
-| aruba.rest.name |  | keyword |
-| aruba.rest.operation |  | keyword |
-| aruba.rest.resource |  | keyword |
-| aruba.rest.subscriber |  | keyword |
-| aruba.rest.subscription |  | keyword |
-| aruba.rest.type |  | keyword |
-| aruba.role |  | keyword |
-| aruba.rpvst.new_mode |  | keyword |
-| aruba.rpvst.npvid |  | keyword |
-| aruba.rpvst.old_mac |  | keyword |
-| aruba.rpvst.old_mode |  | keyword |
-| aruba.rpvst.old_port |  | keyword |
-| aruba.rpvst.old_priority |  | keyword |
-| aruba.rpvst.pkt_type |  | keyword |
-| aruba.rpvst.proto |  | keyword |
-| aruba.rpvst.pvid |  | keyword |
-| aruba.scheduler.datetime |  | keyword |
-| aruba.scheduler.details |  | keyword |
-| aruba.scheduler.job_name |  | keyword |
-| aruba.scheduler.name |  | keyword |
-| aruba.self_test.stack |  | keyword |
-| aruba.sequence |  | keyword |
-| aruba.server.mode |  | keyword |
-| aruba.server.sessions |  | long |
-| aruba.session.id |  | keyword |
-| aruba.session.name |  | keyword |
-| aruba.sflow.bridge |  | keyword |
-| aruba.sflow.chain |  | keyword |
-| aruba.sflow.dgramsize |  | long |
-| aruba.sflow.intvl |  | keyword |
-| aruba.sflow.mode |  | keyword |
-| aruba.sflow.new_rate |  | keyword |
-| aruba.sflow.old_rate |  | keyword |
-| aruba.sflow.operation |  | keyword |
-| aruba.slot |  | long |
-| aruba.snmp.truth_value |  | keyword |
-| aruba.ssh.key_name |  | keyword |
-| aruba.ssh.new_ip |  | keyword |
-| aruba.state |  | keyword |
-| aruba.status |  | keyword |
-| aruba.storage.name |  | keyword |
-| aruba.storage.usage |  | long |
-| aruba.subsystem |  | keyword |
-| aruba.supportability.alarm_index |  | keyword |
-| aruba.supportability.daemons |  | keyword |
-| aruba.supportability.log_type |  | keyword |
-| aruba.supportability.module |  | keyword |
-| aruba.supportability.oid |  | keyword |
-| aruba.sys.module |  | keyword |
-| aruba.sys.name |  | keyword |
-| aruba.sysmon.mem_usage |  | long |
-| aruba.sysmon.module_name |  | keyword |
-| aruba.sysmon.module_num |  | long |
-| aruba.sysmon.partition_name |  | keyword |
-| aruba.sysmon.poll |  | keyword |
-| aruba.sysmon.unit |  | keyword |
-| aruba.sysmon.unit_count |  | long |
-| aruba.sysmon.utilization |  | long |
-| aruba.system.devicespec |  | keyword |
-| aruba.system.line |  | long |
-| aruba.system.modspec |  | keyword |
-| aruba.system.numdevs |  | long |
-| aruba.system.pass |  | keyword |
-| aruba.system.time |  | long |
-| aruba.tcam.table_name |  | keyword |
-| aruba.temp.celsius |  | long |
-| aruba.temp.limit_type |  | keyword |
-| aruba.temp.module |  | keyword |
-| aruba.temp.name |  | keyword |
-| aruba.temp.new |  | keyword |
-| aruba.temp.old |  | keyword |
-| aruba.temp.t_high |  | long |
-| aruba.temp.t_low |  | long |
-| aruba.temp.type |  | keyword |
-| aruba.throttle_count |  | long |
-| aruba.time.new_time |  | keyword |
-| aruba.time.new_tz |  | keyword |
-| aruba.time.old_time |  | keyword |
-| aruba.time.old_tz |  | keyword |
-| aruba.time.seconds |  | long |
-| aruba.timeout |  | long |
-| aruba.tpm.reboot_num |  | keyword |
-| aruba.traffic.monitor_name |  | keyword |
-| aruba.tunnel.ecmp_id |  | keyword |
-| aruba.tunnel.gre_key |  | keyword |
-| aruba.tunnel.name |  | keyword |
-| aruba.tunnel.nfd_id |  | keyword |
-| aruba.tunnel.ttl |  | keyword |
-| aruba.tunnel.type |  | keyword |
-| aruba.tunnel.zone |  | keyword |
-| aruba.udld.intvl_a |  | keyword |
-| aruba.udld.intvl_b |  | keyword |
-| aruba.ufd.from_state |  |  |
-| aruba.unit |  | keyword |
-| aruba.user.added_user |  | keyword |
-| aruba.user.deleted_user |  | keyword |
-| aruba.user.role |  | keyword |
-| aruba.vlan.from |  | keyword |
-| aruba.vlan.local_node |  | keyword |
-| aruba.vlan.orig_vlan |  | keyword |
-| aruba.vlan.prim_admin |  | keyword |
-| aruba.vlan.prim_vid |  | keyword |
-| aruba.vlan.remote_node |  | keyword |
-| aruba.vlan.sec_admin |  | keyword |
-| aruba.vlan.sec_type |  | keyword |
-| aruba.vlan.sec_vid |  | keyword |
-| aruba.vlan.to |  | keyword |
-| aruba.vlan.trans_vlan |  | keyword |
-| aruba.vrf.id |  | keyword |
-| aruba.vrf.name |  | keyword |
-| aruba.vrrp.delay |  | long |
-| aruba.vrrp.inet_type |  | keyword |
-| aruba.vrrp.interval |  | long |
-| aruba.vrrp.mode |  | keyword |
-| aruba.vrrp.old_state |  | keyword |
-| aruba.vrrp.track |  | keyword |
-| aruba.vrrp.type |  |  |
-| aruba.vsf.link |  | keyword |
-| aruba.vsf.lowest_speed |  | keyword |
-| aruba.vsf.mac_addr1 |  | keyword |
-| aruba.vsf.mac_addr2 |  | keyword |
-| aruba.vsf.mbr_id |  | keyword |
-| aruba.vsf.member_id |  | keyword |
-| aruba.vsf.new_standby_id |  | keyword |
-| aruba.vsf.old_standby_id |  | keyword |
-| aruba.vsf.operation |  | keyword |
-| aruba.vsf.port2 |  | keyword |
-| aruba.vsf.product_id |  | keyword |
-| aruba.vsf.product_type |  | keyword |
-| aruba.vsf.topo_type |  | keyword |
-| aruba.vsx.bank_name |  | keyword |
-| aruba.vsx.local_device_type |  | keyword |
-| aruba.vsx.local_sw_ver |  | keyword |
-| aruba.vsx.local_vsx_role |  | keyword |
-| aruba.vsx.peer_device_type |  | keyword |
-| aruba.vsx.peer_sw_ver |  | keyword |
-| aruba.vsx.peer_vsx_role |  | keyword |
-| aruba.vsx.prev_state |  | keyword |
-| aruba.vsx.primary_version |  | keyword |
-| aruba.vsx.secondary_version |  | keyword |
-| aruba.vsx.sub_state |  | keyword |
-| aruba.vxlan.ecmp_id |  | keyword |
-| aruba.vxlan.tunnel_id |  | keyword |
-| aruba.vxlan.vni_id |  | keyword |
-| aruba.vxlan.vtep |  | keyword |
-| aruba.vxlan.vtep_peer |  | keyword |
-| aruba.xcvr.desc |  | keyword |
-| aruba.xcvr.list |  | keyword |
-| aruba.xcvr.path |  | keyword |
-| aruba.ztp.alt_aruba_central_loc |  | keyword |
-| aruba.ztp.central_location |  | keyword |
-| aruba.ztp.http_proxy_location |  | keyword |
-| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.code | Error code describing the error. | keyword |
-| error.message | Error message. | match_only_text |
-| error.type | The type of the error, for example the class name of the exception. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
-| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.path.text | Multi-field of `file.path`. | match_only_text |
-| file.type | File type (file, dir, or symlink). | keyword |
-| host.boot.id | Linux boot uuid taken from /proc/sys/kernel/random/boot_id. Note the boot_id value from /proc may or may not be the same in containers as on the host. Some container runtimes will bind mount a new boot_id value onto the proc file in each container. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| input.type | Input type | keyword |
-| log.file.device_id | Device Id of the log file this event came from. | keyword |
-| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
-| log.file.inode | Inode of the log file this event came from. | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| log.offset | Offset of the entry in the log file. | long |
-| log.origin.file.line | The line number of the file containing the source code which originated the log event. | long |
-| log.origin.file.name | The name of the file containing the source code which originated the log event. Note that this field is not meant to capture the log file. The correct field to capture the log file is `log.file.path`. | keyword |
-| log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
-| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
-| log.syslog.procid | The process name or ID that originated the Syslog message, if available. | keyword |
-| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.vlan.id | VLAN ID as reported by the observer. | keyword |
-| observer.egress.interface.name | Interface name as reported by the system. | keyword |
-| observer.ingress.interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
-| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
-| package.installed | Time when package was installed. | date |
-| package.name | Package name | keyword |
-| package.version | Package version | keyword |
-| process.end | The time the process ended. | date |
-| process.name | Process name. Sometimes called program name or similar. | keyword |
-| process.name.text | Multi-field of `process.name`. | match_only_text |
-| process.pid | Process id. | long |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| server.ip | IP address of the server (IPv4 or IPv6). | ip |
-| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| server.port | Port of the server. | long |
-| server.user.name | Short name or login of the user. | keyword |
-| server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
-| service.target.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
-| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| url.full.text | Multi-field of `url.full`. | match_only_text |
-| url.port | Port of the request, such as 443. | long |
-| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
+For more information about HPE Aruba CX logs and event mnemonics, refer to the following vendor documentation:
+- [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm)
+- [Official HPE Aruba Networking CX documentation](https://arubanetworking.hpe.com/techdocs/AOS-CX/help_portal/Content/home.htm)

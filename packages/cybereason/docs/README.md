@@ -66,6 +66,13 @@ An example event for `logon_session` looks as following:
 ```json
 {
     "@timestamp": "2024-03-13T12:20:35.086Z",
+    "agent": {
+        "ephemeral_id": "07dcd4ef-af68-446f-8671-6dd7829fb915",
+        "id": "e51f11c7-bcb2-4892-913a-7b52358df1c5",
+        "name": "elastic-agent-37291",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
     "cybereason": {
         "logon_session": {
             "element_values": {
@@ -136,10 +143,8 @@ An example event for `logon_session` looks as following:
                     "element_values": [
                         {
                             "element_type": "User",
-                            "guid": "AAAAGKxw2bFBmcGU",
                             "has_malops": false,
                             "has_suspicions": false,
-                            "name": "desktop-f2nf4st\\eden",
                             "object": {
                                 "user": "myd"
                             },
@@ -161,17 +166,13 @@ An example event for `logon_session` looks as following:
                 "group_by_value": "{guid=AAAAGKxw2bFBmcGU, __typename=User, elementDisplayName=desktop-f2nf4st\\eden, group=7af5074f-ab26-43b3-b0f1-acc962920615, hasSuspicions=false, hasMalops=false}",
                 "sort_in_group_value": "hyefilter"
             },
-            "guid_string": "_MlzC6rnLebZ2aBh",
             "is_malicious": false,
             "labels_ids": "l1",
             "malicious": false,
             "malop_priority": "HIGH",
             "simple_values": {
                 "creation_time": {
-                    "total_values": 1,
-                    "values": [
-                        "2024-03-13T12:20:35.086Z"
-                    ]
+                    "total_values": 1
                 },
                 "element_display_name": {
                     "total_values": 1,
@@ -202,19 +203,34 @@ An example event for `logon_session` looks as following:
             }
         }
     },
+    "data_stream": {
+        "dataset": "cybereason.logon_session",
+        "namespace": "12691",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "e51f11c7-bcb2-4892-913a-7b52358df1c5",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "malware"
         ],
+        "dataset": "cybereason.logon_session",
         "id": "_MlzC6rnLebZ2aBh",
+        "ingested": "2026-01-19T11:24:20Z",
         "kind": "alert",
-        "original": "[{\"simpleValues\":{\"logonType\":{\"totalValues\":1,\"values\":[\"SLT_RemoteInteractive\"]},\"creationTime\":{\"totalValues\":1,\"values\":[\"1710332435086\"]},\"group\":{\"totalValues\":1,\"values\":[\"00000000-0000-0000-0000-000000000000\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"Unknown host > desktop-f2nf4st\"]}},\"elementValues\":{\"user\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"User\",\"guid\":\"AAAAGKxw2bFBmcGU\",\"name\":\"desktop-f2nf4st\\\\eden\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"user\":\"myd\"},\"simpleValues\":{\"usersimple\":\"value\"}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"remoteMachine\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Remote\",\"guid\":\"AAAAGKxw2bFBmcGUssss\",\"name\":\"desktop-f2nf4stmjremote\",\"hasSuspicions\":true,\"hasMalops\":false,\"elementValues\":{\"remote\":\"myd\"},\"simpleValues\":{\"remotesimple\":\"value\"}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"ownerMachine\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Machine\",\"guid\":\"_MlzCxCi55eyTiwX\",\"name\":\"desktop-f2nf4st\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"ownermachine\":\"myd\"},\"simpleValues\":{\"machinesimple\":\"value\"}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"processes\":{\"totalValues\":320,\"elementValues\":[{\"elementType\":\"MachineProcess\",\"guid\":\"_MlzCxCi55eyTiwXYX\",\"name\":\"desktop-f2nf4stgy\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{\"process\":\"myd\"},\"simpleValues\":{\"processsimple\":\"value\"}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0}},\"suspicions\":{\"xyz\":\"dhyg\"},\"filterData\":{\"sortInGroupValue\":\"hyefilter\",\"groupByValue\":\"{guid=AAAAGKxw2bFBmcGU, __typename=User, elementDisplayName=desktop-f2nf4st\\\\eden, group=7af5074f-ab26-43b3-b0f1-acc962920615, hasSuspicions=false, hasMalops=false}\"},\"isMalicious\":false,\"suspicionCount\":0,\"guidString\":\"_MlzC6rnLebZ2aBh\",\"labelsIds\":\"l1\",\"malopPriority\":\"HIGH\",\"suspect\":false,\"malicious\":false}, {\"suspicions\":\"map\"}, {\"evidence\":\"map\"}]",
         "type": [
             "info"
         ]
+    },
+    "input": {
+        "type": "cel"
     },
     "related": {
         "user": [
@@ -223,8 +239,8 @@ An example event for `logon_session` looks as following:
         ]
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "cybereason-logon_session"
     ],
     "user": {
         "id": [
@@ -326,6 +342,13 @@ An example event for `malop_connection` looks as following:
 ```json
 {
     "@timestamp": "2024-03-13T11:54:39.973Z",
+    "agent": {
+        "ephemeral_id": "2b3b5a2e-e781-44e3-bd05-aace5f649e7e",
+        "id": "5e2db3f9-88ca-42de-a8f3-fdc7b4eef616",
+        "name": "elastic-agent-27544",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
     "cybereason": {
         "malop_connection": {
             "element_values": {
@@ -348,10 +371,8 @@ An example event for `malop_connection` looks as following:
                     "element_values": [
                         {
                             "element_type": "Machine",
-                            "guid": "7vCmFBCi55eyTiwX",
                             "has_malops": false,
                             "has_suspicions": false,
-                            "name": "dim-win10",
                             "object": {
                                 "pole": "bye"
                             }
@@ -420,7 +441,6 @@ An example event for `malop_connection` looks as following:
                 "group_by_value": "81.2.69.192:50394 > 81.2.69.142:443",
                 "sort_in_group_value": "filter"
             },
-            "guid_string": "7vCmFD3khy-bwG9X",
             "is_malicious": false,
             "labels_ids": "labelids",
             "malicious": false,
@@ -445,10 +465,7 @@ An example event for `malop_connection` looks as following:
                     ]
                 },
                 "calculated_creation_time": {
-                    "total_values": 1,
-                    "values": [
-                        "2024-03-13T11:54:39.973Z"
-                    ]
+                    "total_values": 1
                 },
                 "direction": {
                     "total_values": 1,
@@ -463,10 +480,7 @@ An example event for `malop_connection` looks as following:
                     ]
                 },
                 "end_time": {
-                    "total_values": 1,
-                    "values": [
-                        "2024-03-13T11:55:40.803Z"
-                    ]
+                    "total_values": 1
                 },
                 "group": {
                     "total_values": 1,
@@ -499,16 +513,10 @@ An example event for `malop_connection` looks as following:
                     ]
                 },
                 "server_address": {
-                    "total_values": 1,
-                    "values": [
-                        "0.0.0.0"
-                    ]
+                    "total_values": 1
                 },
                 "server_port": {
-                    "total_values": 1,
-                    "values": [
-                        443
-                    ]
+                    "total_values": 1
                 },
                 "state": {
                     "total_values": 1,
@@ -517,10 +525,7 @@ An example event for `malop_connection` looks as following:
                     ]
                 },
                 "transport_protocol": {
-                    "total_values": 1,
-                    "values": [
-                        "TCP"
-                    ]
+                    "total_values": 1
                 }
             },
             "suspect": false,
@@ -533,20 +538,35 @@ An example event for `malop_connection` looks as following:
             }
         }
     },
+    "data_stream": {
+        "dataset": "cybereason.malop_connection",
+        "namespace": "20774",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "5e2db3f9-88ca-42de-a8f3-fdc7b4eef616",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "network"
         ],
+        "dataset": "cybereason.malop_connection",
         "end": "2024-03-13T11:55:40.803Z",
         "id": "7vCmFD3khy-bwG9X",
+        "ingested": "2026-01-19T11:28:48Z",
         "kind": "alert",
-        "original": "[{\"simpleValues\":{\"remoteAddressCountryName\":{\"totalValues\":1,\"values\":[\"United States\"]},\"aggregatedReceivedBytesCount\":{\"totalValues\":1,\"values\":[\"6811\"]},\"endTime\":{\"totalValues\":1,\"values\":[\"1710330940803\"]},\"state\":{\"totalValues\":1,\"values\":[\"CONNECTION_OPEN\"]},\"portType\":{\"totalValues\":1,\"values\":[\"SERVICE_HTTP\"]},\"transportProtocol\":{\"totalValues\":1,\"values\":[\"TCP\"]},\"accessedByMalwareEvidence\":{\"totalValues\":1,\"values\":[\"false\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"81.2.69.192:50394 > 81.2.69.142:443\"]},\"aggregatedTransmittedBytesCount\":{\"totalValues\":1,\"values\":[\"4098\"]},\"localPort\":{\"totalValues\":1,\"values\":[\"50394\"]},\"serverAddress\":{\"totalValues\":1,\"values\":[\"0.0.0.0\"]},\"serverPort\":{\"totalValues\":1,\"values\":[\"443\"]},\"calculatedCreationTime\":{\"totalValues\":1,\"values\":[\"1710330879973\"]},\"remotePort\":{\"totalValues\":1,\"values\":[\"443\"]},\"direction\":{\"totalValues\":1,\"values\":[\"OUTGOING\"]}},\"elementValues\":{\"ownerMachine\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Machine\",\"guid\":\"7vCmFBCi55eyTiwX\",\"name\":\"dim-win10\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"pole\":\"bye\"},\"simpleValues\":{}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"dnsQuery\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Machine\",\"guid\":\"7vCmFBCi55eyTiwX\",\"name\":\"dim-win10\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"ownerProcess\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Process\",\"guid\":\"7vCmFPstj36nuaBO\",\"name\":\"backgroundtaskhost.exe\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"user\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"User\",\"guid\":\"AAAAGGZ3xLXVm27e\",\"name\":\"cy\\\\cymulator\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"ok\":\"lope\"}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0}},\"simpleValues\":{}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"ownerProcess.user\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"User\",\"guid\":\"AAAAGGZ3xLXVm27e\",\"name\":\"cy\\\\cymulator\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0}},\"suspicions\":{\"malop\":\"connection\"},\"filterData\":{\"sortInGroupValue\":\"filter\",\"groupByValue\":\"81.2.69.192:50394 > 81.2.69.142:443\"},\"isMalicious\":false,\"suspicionCount\":0,\"guidString\":\"7vCmFD3khy-bwG9X\",\"labelsIds\":\"labelids\",\"malopPriority\":\"MEDIUM\",\"suspect\":false,\"malicious\":false}, {\"suspicions\":\"map\"}, {\"evidence\":\"map\"}]",
         "type": [
             "connection"
         ]
+    },
+    "input": {
+        "type": "cel"
     },
     "network": {
         "transport": "TCP"
@@ -578,8 +598,8 @@ An example event for `malop_connection` looks as following:
         "port": 443
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "cybereason-malop_connection"
     ]
 }
 ```
@@ -697,6 +717,13 @@ An example event for `malop_process` looks as following:
 ```json
 {
     "@timestamp": "2023-12-28T19:03:51.785Z",
+    "agent": {
+        "ephemeral_id": "179ce7de-f541-473f-a8bd-d658e77323c5",
+        "id": "1d155bfd-3b0e-434f-90a2-20752394d10d",
+        "name": "elastic-agent-50879",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
     "cybereason": {
         "malop_process": {
             "element_values": {
@@ -1821,7 +1848,6 @@ An example event for `malop_process` looks as following:
                 "group_by_value": "NONE_MALOP_ACTIVITY_TYPE",
                 "sort_in_group_value": "hello"
             },
-            "guid_string": "AAAA0xquIk3X9oQ_",
             "is_malicious": false,
             "labels_ids": "lbl2",
             "malicious": false,
@@ -1834,10 +1860,7 @@ An example event for `malop_process` looks as following:
                     ]
                 },
                 "creation_time": {
-                    "total_values": 1,
-                    "values": [
-                        "2023-12-28T19:01:46.501Z"
-                    ]
+                    "total_values": 1
                 },
                 "decision_feature": {
                     "total_values": 1,
@@ -1884,10 +1907,7 @@ An example event for `malop_process` looks as following:
                         ]
                     },
                     "last_update_time": {
-                        "total_values": 1,
-                        "values": [
-                            "2023-12-28T19:03:51.785Z"
-                        ]
+                        "total_values": 1
                     },
                     "start_time": {
                         "total_values": 1,
@@ -1938,16 +1958,10 @@ An example event for `malop_process` looks as following:
                         }
                     },
                     "received_bytes": {
-                        "total_values": 1,
-                        "values": [
-                            76
-                        ]
+                        "total_values": 1
                     },
                     "transmitted_bytes": {
-                        "total_values": 1,
-                        "values": [
-                            90
-                        ]
+                        "total_values": 1
                     }
                 }
             },
@@ -1961,23 +1975,38 @@ An example event for `malop_process` looks as following:
             }
         }
     },
+    "data_stream": {
+        "dataset": "cybereason.malop_process",
+        "namespace": "16645",
+        "type": "logs"
+    },
     "destination": {
         "bytes": 76
     },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "1d155bfd-3b0e-434f-90a2-20752394d10d",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "malware"
         ],
         "created": "2023-12-28T19:01:46.501Z",
+        "dataset": "cybereason.malop_process",
         "id": "AAAA0xquIk3X9oQ_",
+        "ingested": "2026-01-19T11:33:47Z",
         "kind": "alert",
-        "original": "[{\"simpleValues\":{\"hasRansomwareSuspendedProcesses\":{\"totalValues\":1,\"values\":[\"false\"]},\"decisionFeatureSet\":{\"totalValues\":1,\"values\":[\"Process.maliciousByCodeInjection(Malop decision)\"]},\"decisionFeature\":{\"totalValues\":1,\"values\":[\"Process.maliciousByCodeInjection(Malop decision)\"]},\"detectionType\":{\"totalValues\":1,\"values\":[\"PROCESS_INJECTION\"]},\"malopActivityTypes\":{\"totalValues\":2,\"values\":[\"NONE_MALOP_ACTIVITY_TYPE\",\"MALICIOUS_INFECTION\"]},\"creationTime\":{\"totalValues\":1,\"values\":[\"1703790106501\"]},\"isBlocked\":{\"totalValues\":1,\"values\":[\"false\"]},\"rootCauseElementTypes\":{\"totalValues\":1,\"values\":[\"Process\"]},\"rootCauseElementCompanyProduct\":{\"totalValues\":1,\"values\":[\"product\"]},\"rootCauseElementHashes\":{\"totalValues\":1,\"values\":[\"nbvgyui765tghnxxx\"]},\"iconBase64\":{\"totalValues\":1,\"values\":[\"base\"]},\"malopStartTime\":{\"totalValues\":1,\"values\":[\"1703789975356\"]},\"rootCauseElementNames\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]},\"totalNumberOfIncomingConnections\":{\"totalValues\":1,\"values\":[768]},\"totalNumberOfOutgoingConnections\":{\"totalValues\":1,\"values\":[23]},\"totalReceivedBytes\":{\"totalValues\":1,\"values\":[76]},\"totalTransmittedBytes\":{\"totalValues\":1,\"values\":[90]},\"malopLastUpdateTime\":{\"totalValues\":1,\"values\":[\"1703790231785\"]},\"allRansomwareProcessesSuspended\":{\"totalValues\":1,\"values\":[\"false\"]}},\"elementValues\":{\"suspects\":{\"totalValues\":10,\"elementValues\":[{\"elementType\":\"Process\",\"guid\":\"zpP735vQl83mbAFk\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{\"type\":\"suspects\"},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP735vQl83mbAFk\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP733MJZQ5ua9PD\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP733MJZQ5ua9PD\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73wfcKRFKvnZa\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP73wfcKRFKvnZa\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73yUewMOXCNBN\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP73yUewMOXCNBN\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73wdciiw3CcZ9\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP73wdciiw3CcZ9\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73-slLQbqr1eb\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP73-slLQbqr1eb\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73xTlNawf6qox\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP73xTlNawf6qox\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP736adtvfQP86p\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP736adtvfQP86p\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP732Q23xdwLJhh\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP732Q23xdwLJhh\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73zlRSCV3N9Si\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":true,\"hasMalops\":true,\"elementValues\":{},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"true\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP73zlRSCV3N9Si\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}}],\"totalSuspicious\":10,\"totalMalicious\":10,\"guessedTotal\":0},\"filesToRemediate\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"File\",\"guid\":\"zpP7358Lbsf7z787\",\"name\":\"x64cymulateprocesshider.exe\",\"hasSuspicions\":true,\"hasMalops\":false,\"elementValues\":{\"files\":\"remediate\"},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"false\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP7358Lbsf7z787\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"true\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"x64cymulateprocesshider.exe\"]}}}],\"totalSuspicious\":1,\"totalMalicious\":0,\"guessedTotal\":0},\"primaryRootCauseElements\":{\"totalValues\":10,\"elementValues\":[{\"elementType\":\"Process\",\"guid\":\"zpP73wfcKRFKvnZa\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73wfcKRFKvnZa\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73yUewMOXCNBN\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"values\":\"primaryroot\"},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73yUewMOXCNBN\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73wdciiw3CcZ9\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73wdciiw3CcZ9\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73zALshBfA7mQ\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73zALshBfA7mQ\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP736Yq9t-ujawF\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP736Yq9t-ujawF\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP736adtvfQP86p\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP736adtvfQP86p\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73yUHiaZd-JI6\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73yUHiaZd-JI6\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP733Hfwc2Ol2KV\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP733Hfwc2Ol2KV\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73zlRSCV3N9Si\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73zlRSCV3N9Si\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73-Mvct_YhLo2\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73-Mvct_YhLo2\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"affectedUsers\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"User\",\"guid\":\"AAAAGAJYAICT5xYW\",\"name\":\"cybereason\\\\theavengers\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"values\":\"element\"},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"false\"]},\"guid\":{\"totalValues\":1,\"values\":[\"AAAAGAJYAICT5xYW\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"false\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"cybereason\\\\theavengers\"]}}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"rootCauseElements\":{\"totalValues\":10,\"elementValues\":[{\"elementType\":\"Process\",\"guid\":\"zpP735vQl83mbAFk\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"element\":\"root\"},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP735vQl83mbAFk\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP733MJZQ5ua9PD\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP733MJZQ5ua9PD\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73wfcKRFKvnZa\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73wfcKRFKvnZa\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73yUewMOXCNBN\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73yUewMOXCNBN\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73wdciiw3CcZ9\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73wdciiw3CcZ9\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73-slLQbqr1eb\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73-slLQbqr1eb\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73xTlNawf6qox\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73xTlNawf6qox\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP736adtvfQP86p\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP736adtvfQP86p\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP732Q23xdwLJhh\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP732Q23xdwLJhh\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}},{\"elementType\":\"Process\",\"guid\":\"zpP73zlRSCV3N9Si\",\"name\":\"injected (chain of injections)\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"guid\":{\"totalValues\":1,\"values\":[\"zpP73zlRSCV3N9Si\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"injected (chain of injections)\"]}}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"affectedMachines\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Machine\",\"guid\":\"zpP73xCi55eyTiwX\",\"name\":\"cybereason\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"element\":\"values\"},\"simpleValues\":{\"hasMalops\":{\"totalValues\":1,\"values\":[\"false\"]},\"guid\":{\"totalValues\":1,\"values\":[\"zpP73xCi55eyTiwX\"]},\"hasSuspicions\":{\"totalValues\":1,\"values\":[\"false\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"cybereason\"]}}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0}},\"suspicions\":{\"connectingToBlackListAddressSuspicion\":1710261170916},\"filterData\":{\"sortInGroupValue\":\"hello\",\"groupByValue\":\"NONE_MALOP_ACTIVITY_TYPE\"},\"isMalicious\":false,\"suspicionCount\":0,\"guidString\":\"AAAA0xquIk3X9oQ_\",\"labelsIds\":\"lbl2\",\"malopPriority\":\"LOW\",\"suspect\":false,\"malicious\":false}, {\"suspicions\":\"map\"}, {\"evidence\":\"map\"}]",
         "type": [
             "info"
         ]
+    },
+    "input": {
+        "type": "cel"
     },
     "related": {
         "hash": [
@@ -1988,8 +2017,8 @@ An example event for `malop_process` looks as following:
         "bytes": 90
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "cybereason-malop_process"
     ]
 }
 ```
@@ -2181,6 +2210,13 @@ An example event for `malware` looks as following:
 ```json
 {
     "@timestamp": "2024-03-11T08:56:57.000Z",
+    "agent": {
+        "ephemeral_id": "c2d057d4-1aca-4983-b656-c41004115e84",
+        "id": "3b6ceef7-4273-4cba-84da-2a9a2354ac68",
+        "name": "elastic-agent-72453",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
     "cybereason": {
         "malware": {
             "data_model": {
@@ -2211,7 +2247,6 @@ An example event for `malware` looks as following:
                 "malware_type": "UnknownMalware",
                 "timestamp": "2024-03-11T08:56:57.000Z"
             },
-            "machine_name": "dim-win10",
             "name": "cymulatelm64.exe",
             "needs_attention": false,
             "reference": {
@@ -2221,19 +2256,30 @@ An example event for `malware` looks as following:
             "scheduler_scan": false,
             "score": 0.7721870783056456,
             "status": "Detected",
-            "timestamp": "2024-03-11T08:56:57.000Z",
             "type": "UnknownMalware"
         }
+    },
+    "data_stream": {
+        "dataset": "cybereason.malware",
+        "namespace": "58750",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "3b6ceef7-4273-4cba-84da-2a9a2354ac68",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "malware"
         ],
+        "dataset": "cybereason.malware",
+        "ingested": "2026-01-20T05:31:37Z",
         "kind": "alert",
-        "original": "{ \"guid\": \"-286218732.7910817006083139531\", \"timestamp\": 1710147417000, \"name\": \"cymulatelm64.exe\", \"type\": \"UnknownMalware\", \"elementType\": \"File\", \"machineName\": \"dim-win10\", \"status\": \"Detected\", \"needsAttention\": false, \"referenceGuid\": \"-286218732.7910817006083139531\", \"referenceElementType\": \"File\", \"score\": 0.7721870783056456, \"detectionValue\": \"62b9e0dfd0ef2cd88fdcd412523c7d9f\", \"detectionValueType\": \"DVT_FILE\", \"detectionEngine\": \"StaticAnalysis\", \"malwareDataModel\": { \"@class\": \".BaseFileMalwareDataModel\", \"type\": \"UnknownMalware\", \"detectionName\": \"IL:Trojan.MSILZilla.30425\", \"filePath\": \"c:\\\\programdata\\\\cymulate\\\\hopper\\\\boot64_1da739212534cbd666bc903c25b812e0\\\\cymulatelm64.exe\" , \"processName\": \"remotefxvgpudisablement.exe\", \"url\": \"https://malware_data_model\", \"detectionRule\": \"Formatting (1106)\", \"module\": \"Formatting (1106)\", \"description\": \"EXECUTE_MALICIOUS_ACTIVITY\"}, \"id\": { \"guid\": \"-286218732.7910817006083139531\", \"timestamp\": 1710147417000, \"malwareType\": \"UnknownMalware\", \"elementType\": \"File\" }, \"schedulerScan\": false }",
         "type": [
             "info"
         ]
@@ -2241,14 +2287,17 @@ An example event for `malware` looks as following:
     "host": {
         "hostname": "dim-win10"
     },
+    "input": {
+        "type": "cel"
+    },
     "related": {
         "hosts": [
             "dim-win10"
         ]
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "cybereason-malware"
     ]
 }
 ```
@@ -2306,6 +2355,13 @@ An example event for `poll_malop` looks as following:
 ```json
 {
     "@timestamp": "2024-03-04T19:12:56.110Z",
+    "agent": {
+        "ephemeral_id": "f3064f3b-9f53-4b80-a86a-403dcecb96a3",
+        "id": "76c22ab0-d551-4b40-b2cd-68f4ad690db9",
+        "name": "elastic-agent-64090",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
     "cybereason": {
         "poll_malop": {
             "class": ".MalopInboxModel",
@@ -2314,7 +2370,6 @@ An example event for `poll_malop` looks as following:
             "containers": [
                 "Testing"
             ],
-            "creation_time": "2023-09-15T23:52:35.604Z",
             "data": {
                 "close_time": "2023-11-23T06:45:15.015Z",
                 "detection_type": "CUSTOM_RULE",
@@ -2338,44 +2393,32 @@ An example event for `poll_malop` looks as following:
             "edr": true,
             "empty": true,
             "escalated": false,
-            "group": "72a61eac-6f79-4670-8607-a1334ddd2ff0",
-            "guid": "AAAA05JzW7vmNhCD",
             "icon_base64": "muhk",
             "labels": [
                 "IT-Pending",
                 "Testing"
             ],
-            "last_update_time": "2024-03-04T19:12:56.110Z",
             "machines": [
                 {
                     "class": ".MachineInboxModel",
                     "connected": false,
-                    "display_name": "d3dock-poc",
                     "empty": true,
-                    "guid": "lbnnvBCi55eyTiwX",
                     "isolated": false,
-                    "last_connected": "2024-01-07T06:23:30.725Z",
-                    "os_type": "WINDOWS"
+                    "last_connected": "2024-01-07T06:23:30.725Z"
                 },
                 {
                     "class": ".MachineInboxModel",
                     "connected": true,
-                    "display_name": "cybereason",
                     "empty": true,
-                    "guid": "zpP73xCi55eyTiwX",
                     "isolated": true,
-                    "last_connected": "2024-03-18T08:30:50.941Z",
-                    "os_type": "linux"
+                    "last_connected": "2024-03-18T08:30:50.941Z"
                 },
                 {
                     "class": ".MachineInboxModel",
                     "connected": false,
-                    "display_name": "dim-win10",
                     "empty": true,
-                    "guid": "7vCmFBCi55eyTiwX",
                     "isolated": false,
-                    "last_connected": "2024-03-17T16:21:34.714Z",
-                    "os_type": "xyz"
+                    "last_connected": "2024-03-17T16:21:34.714Z"
                 }
             ],
             "primary_root_cause_name": "register-cimprovider.exe",
@@ -2412,17 +2455,29 @@ An example event for `poll_malop` looks as following:
             ]
         }
     },
+    "data_stream": {
+        "dataset": "cybereason.poll_malop",
+        "namespace": "53482",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "76c22ab0-d551-4b40-b2cd-68f4ad690db9",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "malware"
         ],
         "created": "2023-09-15T23:52:35.604Z",
+        "dataset": "cybereason.poll_malop",
         "id": "AAAA05JzW7vmNhCD",
+        "ingested": "2026-01-20T06:17:08Z",
         "kind": "alert",
-        "original": "{\"@class\":\".MalopInboxModel\",\"guid\":\"AAAA05JzW7vmNhCD\",\"closerName\":\"Closer Name\",\"displayName\":\"register-cimprovider.exe\",\"rootCauseElementType\":\"Process\",\"primaryRootCauseName\":\"register-cimprovider.exe\",\"rootCauseElementNamesCount\":1,\"detectionEngines\":[\"EDR\"],\"detectionTypes\":[\"calc_Custom_Rule\"],\"malopDetectionType\":\"CUSTOM_RULE\",\"creationTime\":1694821955604,\"lastUpdateTime\":1709579576110,\"iconBase64\":\"muhk\",\"priority\":\"HIGH\",\"group\":\"72a61eac-6f79-4670-8607-a1334ddd2ff0\",\"rootCauseElementHashes\": \"f7b32703e444fdc75c09840afa3dcda8286f3b24\",\"status\":\"Active\",\"severity\":\"High\",\"machines\":[{\"@class\":\".MachineInboxModel\",\"guid\":\"lbnnvBCi55eyTiwX\",\"displayName\":\"d3dock-poc\",\"osType\":\"WINDOWS\",\"connected\":false,\"isolated\":false,\"lastConnected\":1704608610725,\"empty\":true},{\"@class\":\".MachineInboxModel\",\"guid\":\"zpP73xCi55eyTiwX\",\"displayName\":\"cybereason\",\"osType\":\"linux\",\"connected\":true,\"isolated\":true,\"lastConnected\":1710750650941,\"empty\":true},{\"@class\":\".MachineInboxModel\",\"guid\":\"7vCmFBCi55eyTiwX\",\"displayName\":\"dim-win10\",\"osType\":\"xyz\",\"connected\":false,\"isolated\":false,\"lastConnected\":1710692494714,\"empty\":true}],\"users\":[{\"guid\":\"AAAAGGHyKbMGbI4y\",\"displayName\":\"d3dock-poc\\\\administrator\",\"admin\":false,\"localSystem\":false,\"domainUser\":false},{\"guid\":\"AAAAGK97gKTvmLc3\",\"displayName\":\"cybereason\\\\system\",\"admin\":false,\"localSystem\":true,\"domainUser\":false},{\"guid\":\"AAAAGGZ3xLXVm27e\",\"displayName\":\"cy\\\\cymulator\",\"admin\":false,\"localSystem\":false,\"domainUser\":false}],\"containers\":[\"Testing\"],\"labels\":[\"IT-Pending\", \"Testing\"],\"decisionStatuses\":[\"Testing\"],\"malopCloseTime\":1700721915015,\"escalated\":false,\"malopStatus\":\"Active\",\"malopSeverity\":\"High\",\"edr\":true,\"malopType\":\"CUSTOM_RULE\",\"malopPriority\":\"LOW\",\"closed\":false,\"empty\":true}",
         "type": [
             "info"
         ]
@@ -2450,6 +2505,9 @@ An example event for `poll_malop` looks as following:
             ]
         }
     },
+    "input": {
+        "type": "cel"
+    },
     "related": {
         "hash": [
             "f7b32703e444fdc75c09840afa3dcda8286f3b24"
@@ -2475,8 +2533,8 @@ An example event for `poll_malop` looks as following:
         ]
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "cybereason-poll_malop"
     ]
 }
 ```
@@ -2551,6 +2609,13 @@ An example event for `suspicions_process` looks as following:
 ```json
 {
     "@timestamp": "2024-03-12T15:13:27.872Z",
+    "agent": {
+        "ephemeral_id": "e51371e9-5904-4398-bbc8-1e624f59287c",
+        "id": "02c714ca-5c57-484f-885f-ab3a7c633af8",
+        "name": "elastic-agent-98770",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
     "cybereason": {
         "suspicions_process": {
             "element_values": {
@@ -2579,10 +2644,8 @@ An example event for `suspicions_process` looks as following:
                     "element_values": [
                         {
                             "element_type": "File",
-                            "guid": "7vCmFKxNAQXpBIkL",
                             "has_malops": false,
                             "has_suspicions": false,
-                            "name": "msedge.exe",
                             "object": {
                                 "fileHash": {
                                     "elementValues": [
@@ -2651,10 +2714,8 @@ An example event for `suspicions_process` looks as following:
                     "element_values": [
                         {
                             "element_type": "Machine",
-                            "guid": "7vCmFBCi55eyTiwX",
                             "has_malops": false,
-                            "has_suspicions": false,
-                            "name": "dim-win10"
+                            "has_suspicions": false
                         }
                     ],
                     "guessed_total": 0,
@@ -2666,10 +2727,8 @@ An example event for `suspicions_process` looks as following:
                     "element_values": [
                         {
                             "element_type": "Process",
-                            "guid": "7vCmFMsvYy739EW5",
                             "has_malops": false,
-                            "has_suspicions": false,
-                            "name": "msedge.exe"
+                            "has_suspicions": false
                         }
                     ],
                     "guessed_total": 0,
@@ -2684,21 +2743,14 @@ An example event for `suspicions_process` looks as following:
             "filter_data": {
                 "group_by_value": "msedge.exe"
             },
-            "guid_string": "7vCmFCPB0XpbELrD",
             "is_malicious": true,
             "malicious": true,
             "simple_values": {
                 "command_line": {
-                    "total_values": 1,
-                    "values": [
-                        "\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-appcompat-clear --mojo-platform-channel-handle=2744 --field-trial-handle=2328,i,5521555393418764293,4286640738456912470,262144 --variations-seed-version /prefetch:3"
-                    ]
+                    "total_values": 1
                 },
                 "creation_time": {
-                    "total_values": 1,
-                    "values": [
-                        "2024-03-12T08:40:35.122Z"
-                    ]
+                    "total_values": 1
                 },
                 "element_display_name": {
                     "total_values": 1,
@@ -2707,10 +2759,7 @@ An example event for `suspicions_process` looks as following:
                     ]
                 },
                 "end_time": {
-                    "total_values": 1,
-                    "values": [
-                        "2024-03-12T15:13:27.872Z"
-                    ]
+                    "total_values": 1
                 },
                 "execution_prevented": {
                     "total_values": 1,
@@ -2749,10 +2798,7 @@ An example event for `suspicions_process` looks as following:
                     ]
                 },
                 "image_file_md5_string": {
-                    "total_values": 1,
-                    "values": [
-                        "5ac5ddc4c27ecc203b2ed62bbe8fb8b9"
-                    ]
+                    "total_values": 1
                 },
                 "image_file_product_name": {
                     "total_values": 1,
@@ -2761,10 +2807,7 @@ An example event for `suspicions_process` looks as following:
                     ]
                 },
                 "image_file_sha1_string": {
-                    "total_values": 1,
-                    "values": [
-                        "a3c06b947549921d60d59917575df5ee5dfc472a"
-                    ]
+                    "total_values": 1
                 },
                 "is_image_file_signed_and_verified": {
                     "total_values": 1,
@@ -2807,19 +2850,31 @@ An example event for `suspicions_process` looks as following:
             }
         }
     },
+    "data_stream": {
+        "dataset": "cybereason.suspicions_process",
+        "namespace": "36786",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "02c714ca-5c57-484f-885f-ab3a7c633af8",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "malware"
         ],
         "created": [
             "2024-03-12T08:40:35.122Z"
         ],
+        "dataset": "cybereason.suspicions_process",
         "id": "7vCmFCPB0XpbELrD",
+        "ingested": "2026-01-20T05:56:29Z",
         "kind": "alert",
-        "original": "[{\"simpleValues\":{\"commandLine\":{\"totalValues\":1,\"values\":[\"\\\"C:\\\\Program Files (x86)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\\\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-appcompat-clear --mojo-platform-channel-handle=2744 --field-trial-handle=2328,i,5521555393418764293,4286640738456912470,262144 --variations-seed-version \\/prefetch:3\"]},\"group\":{\"totalValues\":1,\"values\":[\"72a61eac-6f79-4670-8607-a1334ddd2ff0\"]},\"imageFile.maliciousClassificationType\":{\"totalValues\":1,\"values\":[\"indifferent\"]},\"ransomwareAutoRemediationSuspended\":{\"totalValues\":1,\"values\":[\"false\"]},\"imageFile.fileHash.iconBase64\":{\"totalValues\":1,\"values\":[\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAh4SURBVFhHpdd7UFNnGgbwWBURCAQVtu0\\/OzudcXVFVEBATdWKLVvkIuEmWAoUtOttqsICIiqKiEQBoV4xut1O1d11lW4RvFTSQ0ggECABkhAIIF4QpXZTt1Pcdbt59j050QoBq+07804YhuT5fe\\/58p0D70XLi3kQM69mgJlb02+aU9OHObIeeMqMmCM3YI5Ci3n1Gmr1kE+jsptaskhd\\/WvrW39Z+TDfSnwY05BXzQNQOPVtsIDZsm7qLnjWdsBTrsWculYCNMOnQQn\\/phoINdfNS9oudy\\/TVgitH\\/Vy5cs8Evoy35t8mIfwrvkGXjWDFH6Hwm\\/Cs+YGZtewgA54yPSYLW+Dp6IVc+ub4KVUYUEzC7iGpW0VWK67iKCuM+qwXsmLT8SPeZTvywyZLeHMP+HFDGJezT0C3OVWT+EelnAO4FHbRgg1AVTwbqiHb5MMC1qqLYDAjnN413AGK3tPDMX158dYI8YuP+Y\\/Elo55jPfgQXQ+C2rn0fh7AQsq6fRz2KDLa2jn1lAK02hGfOUjfBVsRO4agWcRVh3GQsAAcyr+\\/PGRvgzj\\/MJAFo99fcU\\/i1N4AEB7lsAnjLu2nvIDJbVs8GzZO34nawVs2pZQAvtBRXtAxmE6itY1n4RgfrPCHAC0TcLQeFIGNhhTh5Mt90X\\/sx\\/hRRu9mP+bQHMZ\\/5F\\/ZCC2Wt\\/l177afUsoJNCtU+DR\\/ZseTMhGmgjfonFmgoEaM8juOsEIm4UIe52LpLuZ2HN16lD1tgfy495bKKm8EdWwHfwkpow84tbmFnRS92DGZe6CGCkcP2o4Wx7yFtoLyixsPkKAf6BgHYWUIaIXjFib+UhaSAVawY3YaMpRWKNtqxewoY\\/Wf30c31w230NLqnlEGRWwjXrCqZkVVFfwtSMcryaX4U3\\/t48BoD9KjLwbZRiUUsllmvPIMhQhugbuYi9mY3E\\/i1IubceGx7Em63xFsAQXX94fP4NBFnXwM+4BudsBi67FBDk1sM1rwFT8pSYmleHabkyTNstxbSdl\\/FqbhWmV2qGAWbLVZhbJ4e\\/6hIWt\\/wNAa2fYEVHCUI7xVjVtw0JdzYh+e5a\\/OF+PDY9iJRQ+A8xBMD0M\\/1wSL0Kp+214Oc0wnmvBi772yEQ6+B6UIcp1FMLdXArbIPbgRa47a+HW64UbtkVeOMCNw2P2hY6lBQEUGB+fRUWNV\\/EMs0pBHcUQ2TMQUxvBuJubMYH\\/Wvx4b14rB+MHuAtqn6kmXn+a0xOk8IhWwnH3Wrw83RwLjDARdwJQWEXXIuMmHLIiKnU00qoDxngXqyD+4EmuOfJ4LajEr+tUtKpKMdcuRReisvwbziPN5s+xTL1MQTr8hBu2I5o4xa835eCpNuJSOmPxYd3ReB5Vzz8H39nI+yzVXDY3QbHvA445XeCX2CE8wEjXA52Q1DUDdfiHkL0YGpJDyE68XppR\\/evSg0F7kXqdPd9CuVrBdfhwbCA6wSoxALlZ3hTdQpvNR9BiC4XIkMWAbZide9aJN5MRPKtKA4w4y+DmLS9Gfa72jA5Vw+HvE447qPe3zUcUcghBNl1+M2Wz0us2+dpuefVJk4vr4a3\\/AJ8FefgX\\/dnLFaVIaBJjOC2TIRqMxFp2Ij3ehKR0LfaAlhzJxw8t+Iu2GW3YlKOHva5Bkzea7AgHKwIpwKCiDmESzoDxyCx0pppUzM+ufrYW3aWAGexsP4kFisPYplKjCBNBkLb0yDSb0CsIQ7x3VFIuiFCys1Q8FwPGjFxpw52u\\/SYtNsA+z0cYvJIRKaCwgvgFFaabs2zKZ+\\/Xm33ln0Kv9ojWKQoxJIGMd5pzECgKg0hmnUIb09GlC4e7xkj8b4xBCl9gWbehGwtJhBg4q4O2OV0EKLDgrB\\/FrFXD8fQIgovAV90PNWaZ1PejCTfR3aKAIcJcABL6vYgoD6NABsQ0pIIUXsCYvTRNAUR4jt\\/j0RjQDdv\\/HYC7NATQm+LYC8Ji9hQBccQAoiOgR95ssCaZ1M+X5UMzK85goW1+6n34S1FKpYrUxHYuA4rGhMQpo6HSBOFWH0IYnXvIt4QIOS9sl2H8dm6URGTrAiHiKNwWnmYDQc\\/+nS3NW9YeUk\\/FnpLi+k0FcOfyYWwdieWyrciQLEegfUJHKBJBFFLKCI1QYjTBzKWN76SpTONhbBjJ5HVDIeQQlr9cfCjTrEAMz\\/qtM3DhXe1uNxbWghf6R4sZHZCyGzF0tqNCJAn4526BAQ1rEKoKhwidQgL4MLZGrdNxxACTxDjR04inQ6n0ENwiihjw6n\\/RJDTA9a3Dyvf6hy1nzTHvECaToBUAqwjwAd4Wx6HoPpwBDeEm8JUoZutf87VuG3aGELABkE9kb4Z9usq4RhWah0\\/hXMAdhrl1o+wKaF002Yh85FkCZPMBMhWM2\\/XrpIEyiPGfjYkxBCLGPcsIptD2KXVw3Hlx6MB4Bx5ctT98PKVqc0nBCw9AjExXUUTKIHT6AA4R5QNOYtODB\\/rc8p1RWGMa9DBUR5QM7Um3ggEB6EzIPww7YETFP50DzwLAAGojw+5hB8rd1l51OaZTxByKEYQXCwRBBeZCAACjDK5TK2Q2jwaYlLKF3AKP0qhEg4xOgAEAAGoj8Al7DAEoaXUJSAACEBdBAKYCTDGfqBLQY2RiPEZLXCMOEaXgb4J7FfxlwHyrWljVKZWYoOgtlt3jaZwhNuMkSziZwF+fA58bnGTMLOQZxH2SRe4S8GeCZESAlD4iwHMBPiJlY8sbk+YRiIsk6AAuilROBvMhTvTfWIMgIkAP+\\/\\/Q0tx06BzgoVwiPHpLZicdBF8uj8400ScKZR95YKp6fcEGCLAS676eZXJnphahhCmJ6fmhKw22P2xge6WX8Lxo6\\/gmsr88Fpa9cPXU86PecseXjze\\/wGADjhbeB2rcwAAAABJRU5ErkJggg==\"]},\"executionPrevented\":{\"totalValues\":1,\"values\":[\"false\"]},\"isWhiteListClassification\":{\"totalValues\":1,\"values\":[\"false\"]},\"imageFile.md5String\":{\"totalValues\":1,\"values\":[\"5ac5ddc4c27ecc203b2ed62bbe8fb8b9\"]},\"creationTime\":{\"totalValues\":1,\"values\":[\"1710232835122\"]},\"endTime\":{\"totalValues\":1,\"values\":[\"1710256407872\"]},\"imageFile.sha1String\":{\"totalValues\":1,\"values\":[\"a3c06b947549921d60d59917575df5ee5dfc472a\"]},\"isImageFileSignedAndVerified\":{\"totalValues\":1,\"values\":[\"true\"]},\"iconBase64\":{\"totalValues\":1,\"values\":[\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAh4SURBVFhHpdd7UFNnGgbwWBURCAQVtu0\\/OzudcXVFVEBATdWKLVvkIuEmWAoUtOttqsICIiqKiEQBoV4xut1O1d11lW4RvFTSQ0ggECABkhAIIF4QpXZTt1Pcdbt59j050QoBq+07804YhuT5fe\\/58p0D70XLi3kQM69mgJlb02+aU9OHObIeeMqMmCM3YI5Ci3n1Gmr1kE+jsptaskhd\\/WvrW39Z+TDfSnwY05BXzQNQOPVtsIDZsm7qLnjWdsBTrsWculYCNMOnQQn\\/phoINdfNS9oudy\\/TVgitH\\/Vy5cs8Evoy35t8mIfwrvkGXjWDFH6Hwm\\/Cs+YGZtewgA54yPSYLW+Dp6IVc+ub4KVUYUEzC7iGpW0VWK67iKCuM+qwXsmLT8SPeZTvywyZLeHMP+HFDGJezT0C3OVWT+EelnAO4FHbRgg1AVTwbqiHb5MMC1qqLYDAjnN413AGK3tPDMX158dYI8YuP+Y\\/Elo55jPfgQXQ+C2rn0fh7AQsq6fRz2KDLa2jn1lAK02hGfOUjfBVsRO4agWcRVh3GQsAAcyr+\\/PGRvgzj\\/MJAFo99fcU\\/i1N4AEB7lsAnjLu2nvIDJbVs8GzZO34nawVs2pZQAvtBRXtAxmE6itY1n4RgfrPCHAC0TcLQeFIGNhhTh5Mt90X\\/sx\\/hRRu9mP+bQHMZ\\/5F\\/ZCC2Wt\\/l177afUsoJNCtU+DR\\/ZseTMhGmgjfonFmgoEaM8juOsEIm4UIe52LpLuZ2HN16lD1tgfy495bKKm8EdWwHfwkpow84tbmFnRS92DGZe6CGCkcP2o4Wx7yFtoLyixsPkKAf6BgHYWUIaIXjFib+UhaSAVawY3YaMpRWKNtqxewoY\\/Wf30c31w230NLqnlEGRWwjXrCqZkVVFfwtSMcryaX4U3\\/t48BoD9KjLwbZRiUUsllmvPIMhQhugbuYi9mY3E\\/i1IubceGx7Em63xFsAQXX94fP4NBFnXwM+4BudsBi67FBDk1sM1rwFT8pSYmleHabkyTNstxbSdl\\/FqbhWmV2qGAWbLVZhbJ4e\\/6hIWt\\/wNAa2fYEVHCUI7xVjVtw0JdzYh+e5a\\/OF+PDY9iJRQ+A8xBMD0M\\/1wSL0Kp+214Oc0wnmvBi772yEQ6+B6UIcp1FMLdXArbIPbgRa47a+HW64UbtkVeOMCNw2P2hY6lBQEUGB+fRUWNV\\/EMs0pBHcUQ2TMQUxvBuJubMYH\\/Wvx4b14rB+MHuAtqn6kmXn+a0xOk8IhWwnH3Wrw83RwLjDARdwJQWEXXIuMmHLIiKnU00qoDxngXqyD+4EmuOfJ4LajEr+tUtKpKMdcuRReisvwbziPN5s+xTL1MQTr8hBu2I5o4xa835eCpNuJSOmPxYd3ReB5Vzz8H39nI+yzVXDY3QbHvA445XeCX2CE8wEjXA52Q1DUDdfiHkL0YGpJDyE68XppR\\/evSg0F7kXqdPd9CuVrBdfhwbCA6wSoxALlZ3hTdQpvNR9BiC4XIkMWAbZide9aJN5MRPKtKA4w4y+DmLS9Gfa72jA5Vw+HvE447qPe3zUcUcghBNl1+M2Wz0us2+dpuefVJk4vr4a3\\/AJ8FefgX\\/dnLFaVIaBJjOC2TIRqMxFp2Ij3ehKR0LfaAlhzJxw8t+Iu2GW3YlKOHva5Bkzea7AgHKwIpwKCiDmESzoDxyCx0pppUzM+ufrYW3aWAGexsP4kFisPYplKjCBNBkLb0yDSb0CsIQ7x3VFIuiFCys1Q8FwPGjFxpw52u\\/SYtNsA+z0cYvJIRKaCwgvgFFaabs2zKZ+\\/Xm33ln0Kv9ojWKQoxJIGMd5pzECgKg0hmnUIb09GlC4e7xkj8b4xBCl9gWbehGwtJhBg4q4O2OV0EKLDgrB\\/FrFXD8fQIgovAV90PNWaZ1PejCTfR3aKAIcJcABL6vYgoD6NABsQ0pIIUXsCYvTRNAUR4jt\\/j0RjQDdv\\/HYC7NATQm+LYC8Ji9hQBccQAoiOgR95ssCaZ1M+X5UMzK85goW1+6n34S1FKpYrUxHYuA4rGhMQpo6HSBOFWH0IYnXvIt4QIOS9sl2H8dm6URGTrAiHiKNwWnmYDQc\\/+nS3NW9YeUk\\/FnpLi+k0FcOfyYWwdieWyrciQLEegfUJHKBJBFFLKCI1QYjTBzKWN76SpTONhbBjJ5HVDIeQQlr9cfCjTrEAMz\\/qtM3DhXe1uNxbWghf6R4sZHZCyGzF0tqNCJAn4526BAQ1rEKoKhwidQgL4MLZGrdNxxACTxDjR04inQ6n0ENwiihjw6n\\/RJDTA9a3Dyvf6hy1nzTHvECaToBUAqwjwAd4Wx6HoPpwBDeEm8JUoZutf87VuG3aGELABkE9kb4Z9usq4RhWah0\\/hXMAdhrl1o+wKaF002Yh85FkCZPMBMhWM2\\/XrpIEyiPGfjYkxBCLGPcsIptD2KXVw3Hlx6MB4Bx5ctT98PKVqc0nBCw9AjExXUUTKIHT6AA4R5QNOYtODB\\/rc8p1RWGMa9DBUR5QM7Um3ggEB6EzIPww7YETFP50DzwLAAGojw+5hB8rd1l51OaZTxByKEYQXCwRBBeZCAACjDK5TK2Q2jwaYlLKF3AKP0qhEg4xOgAEAAGoj8Al7DAEoaXUJSAACEBdBAKYCTDGfqBLQY2RiPEZLXCMOEaXgb4J7FfxlwHyrWljVKZWYoOgtlt3jaZwhNuMkSziZwF+fA58bnGTMLOQZxH2SRe4S8GeCZESAlD4iwHMBPiJlY8sbk+YRiIsk6AAuilROBvMhTvTfWIMgIkAP+\\/\\/Q0tx06BzgoVwiPHpLZicdBF8uj8400ScKZR95YKp6fcEGCLAS676eZXJnphahhCmJ6fmhKw22P2xge6WX8Lxo6\\/gmsr88Fpa9cPXU86PecseXjze\\/wGADjhbeB2rcwAAAABJRU5ErkJggg==\"]},\"imageFile.productName\":{\"totalValues\":1,\"values\":[\"Microsoft Edge\"]},\"elementDisplayName\":{\"totalValues\":1,\"values\":[\"msedge.exe\"]},\"imageFile.companyName\":{\"totalValues\":1,\"values\":[\"Microsoft Corporation\"]},\"productType\":{\"totalValues\":1,\"values\":[\"BROWSER\"]}},\"elementValues\":{\"children\":{\"totalValues\":0,\"elementValues\":[],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"calculatedUser\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"User\",\"guid\":\"AAAAGGZ3xLXVm27e\",\"name\":\"cy\\\\cymulator\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"ownerMachine\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Machine\",\"guid\":\"7vCmFBCi55eyTiwX\",\"name\":\"dim-win10\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"parentProcess\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"Process\",\"guid\":\"7vCmFMsvYy739EW5\",\"name\":\"msedge.exe\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0},\"imageFile\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"File\",\"guid\":\"7vCmFKxNAQXpBIkL\",\"name\":\"msedge.exe\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{\"fileHash\":{\"totalValues\":1,\"elementValues\":[{\"elementType\":\"FileHash\",\"guid\":\"AAAAHuaPtU7zGEJc\",\"name\":\"a3c06b947549921d60d59917575df5ee5dfc472a\",\"hasSuspicions\":false,\"hasMalops\":false,\"elementValues\":{},\"simpleValues\":{\"iconBase64\":{\"totalValues\":1,\"values\":[\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAh4SURBVFhHpdd7UFNnGgbwWBURCAQVtu0\\/OzudcXVFVEBATdWKLVvkIuEmWAoUtOttqsICIiqKiEQBoV4xut1O1d11lW4RvFTSQ0ggECABkhAIIF4QpXZTt1Pcdbt59j050QoBq+07804YhuT5fe\\/58p0D70XLi3kQM69mgJlb02+aU9OHObIeeMqMmCM3YI5Ci3n1Gmr1kE+jsptaskhd\\/WvrW39Z+TDfSnwY05BXzQNQOPVtsIDZsm7qLnjWdsBTrsWculYCNMOnQQn\\/phoINdfNS9oudy\\/TVgitH\\/Vy5cs8Evoy35t8mIfwrvkGXjWDFH6Hwm\\/Cs+YGZtewgA54yPSYLW+Dp6IVc+ub4KVUYUEzC7iGpW0VWK67iKCuM+qwXsmLT8SPeZTvywyZLeHMP+HFDGJezT0C3OVWT+EelnAO4FHbRgg1AVTwbqiHb5MMC1qqLYDAjnN413AGK3tPDMX158dYI8YuP+Y\\/Elo55jPfgQXQ+C2rn0fh7AQsq6fRz2KDLa2jn1lAK02hGfOUjfBVsRO4agWcRVh3GQsAAcyr+\\/PGRvgzj\\/MJAFo99fcU\\/i1N4AEB7lsAnjLu2nvIDJbVs8GzZO34nawVs2pZQAvtBRXtAxmE6itY1n4RgfrPCHAC0TcLQeFIGNhhTh5Mt90X\\/sx\\/hRRu9mP+bQHMZ\\/5F\\/ZCC2Wt\\/l177afUsoJNCtU+DR\\/ZseTMhGmgjfonFmgoEaM8juOsEIm4UIe52LpLuZ2HN16lD1tgfy495bKKm8EdWwHfwkpow84tbmFnRS92DGZe6CGCkcP2o4Wx7yFtoLyixsPkKAf6BgHYWUIaIXjFib+UhaSAVawY3YaMpRWKNtqxewoY\\/Wf30c31w230NLqnlEGRWwjXrCqZkVVFfwtSMcryaX4U3\\/t48BoD9KjLwbZRiUUsllmvPIMhQhugbuYi9mY3E\\/i1IubceGx7Em63xFsAQXX94fP4NBFnXwM+4BudsBi67FBDk1sM1rwFT8pSYmleHabkyTNstxbSdl\\/FqbhWmV2qGAWbLVZhbJ4e\\/6hIWt\\/wNAa2fYEVHCUI7xVjVtw0JdzYh+e5a\\/OF+PDY9iJRQ+A8xBMD0M\\/1wSL0Kp+214Oc0wnmvBi772yEQ6+B6UIcp1FMLdXArbIPbgRa47a+HW64UbtkVeOMCNw2P2hY6lBQEUGB+fRUWNV\\/EMs0pBHcUQ2TMQUxvBuJubMYH\\/Wvx4b14rB+MHuAtqn6kmXn+a0xOk8IhWwnH3Wrw83RwLjDARdwJQWEXXIuMmHLIiKnU00qoDxngXqyD+4EmuOfJ4LajEr+tUtKpKMdcuRReisvwbziPN5s+xTL1MQTr8hBu2I5o4xa835eCpNuJSOmPxYd3ReB5Vzz8H39nI+yzVXDY3QbHvA445XeCX2CE8wEjXA52Q1DUDdfiHkL0YGpJDyE68XppR\\/evSg0F7kXqdPd9CuVrBdfhwbCA6wSoxALlZ3hTdQpvNR9BiC4XIkMWAbZide9aJN5MRPKtKA4w4y+DmLS9Gfa72jA5Vw+HvE447qPe3zUcUcghBNl1+M2Wz0us2+dpuefVJk4vr4a3\\/AJ8FefgX\\/dnLFaVIaBJjOC2TIRqMxFp2Ij3ehKR0LfaAlhzJxw8t+Iu2GW3YlKOHva5Bkzea7AgHKwIpwKCiDmESzoDxyCx0pppUzM+ufrYW3aWAGexsP4kFisPYplKjCBNBkLb0yDSb0CsIQ7x3VFIuiFCys1Q8FwPGjFxpw52u\\/SYtNsA+z0cYvJIRKaCwgvgFFaabs2zKZ+\\/Xm33ln0Kv9ojWKQoxJIGMd5pzECgKg0hmnUIb09GlC4e7xkj8b4xBCl9gWbehGwtJhBg4q4O2OV0EKLDgrB\\/FrFXD8fQIgovAV90PNWaZ1PejCTfR3aKAIcJcABL6vYgoD6NABsQ0pIIUXsCYvTRNAUR4jt\\/j0RjQDdv\\/HYC7NATQm+LYC8Ji9hQBccQAoiOgR95ssCaZ1M+X5UMzK85goW1+6n34S1FKpYrUxHYuA4rGhMQpo6HSBOFWH0IYnXvIt4QIOS9sl2H8dm6URGTrAiHiKNwWnmYDQc\\/+nS3NW9YeUk\\/FnpLi+k0FcOfyYWwdieWyrciQLEegfUJHKBJBFFLKCI1QYjTBzKWN76SpTONhbBjJ5HVDIeQQlr9cfCjTrEAMz\\/qtM3DhXe1uNxbWghf6R4sZHZCyGzF0tqNCJAn4526BAQ1rEKoKhwidQgL4MLZGrdNxxACTxDjR04inQ6n0ENwiihjw6n\\/RJDTA9a3Dyvf6hy1nzTHvECaToBUAqwjwAd4Wx6HoPpwBDeEm8JUoZutf87VuG3aGELABkE9kb4Z9usq4RhWah0\\/hXMAdhrl1o+wKaF002Yh85FkCZPMBMhWM2\\/XrpIEyiPGfjYkxBCLGPcsIptD2KXVw3Hlx6MB4Bx5ctT98PKVqc0nBCw9AjExXUUTKIHT6AA4R5QNOYtODB\\/rc8p1RWGMa9DBUR5QM7Um3ggEB6EzIPww7YETFP50DzwLAAGojw+5hB8rd1l51OaZTxByKEYQXCwRBBeZCAACjDK5TK2Q2jwaYlLKF3AKP0qhEg4xOgAEAAGoj8Al7DAEoaXUJSAACEBdBAKYCTDGfqBLQY2RiPEZLXCMOEaXgb4J7FfxlwHyrWljVKZWYoOgtlt3jaZwhNuMkSziZwF+fA58bnGTMLOQZxH2SRe4S8GeCZESAlD4iwHMBPiJlY8sbk+YRiIsk6AAuilROBvMhTvTfWIMgIkAP+\\/\\/Q0tx06BzgoVwiPHpLZicdBF8uj8400ScKZR95YKp6fcEGCLAS676eZXJnphahhCmJ6fmhKw22P2xge6WX8Lxo6\\/gmsr88Fpa9cPXU86PecseXjze\\/wGADjhbeB2rcwAAAABJRU5ErkJggg==\"]}}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0}},\"simpleValues\":{\"sha1String\":{\"totalValues\":1,\"values\":[\"a3c06b947549921d60d59917575df5ee5dfc472a\"]},\"maliciousClassificationType\":{\"totalValues\":1,\"values\":[\"indifferent\"]},\"md5String\":{\"totalValues\":1,\"values\":[\"5ac5ddc4c27ecc203b2ed62bbe8fb8b9\"]},\"productName\":{\"totalValues\":1,\"values\":[\"Microsoft Edge\"]},\"companyName\":{\"totalValues\":1,\"values\":[\"Microsoft Corporation\"]}}}],\"totalSuspicious\":0,\"totalMalicious\":0,\"guessedTotal\":0}},\"suspicions\":{\"connectingToBlackListAddressSuspicion\":1710232863248},\"filterData\":{\"sortInGroupValue\":\"\",\"groupByValue\":\"msedge.exe\"},\"isMalicious\":true,\"suspicionCount\":1,\"guidString\":\"7vCmFCPB0XpbELrD\",\"labelsIds\":null,\"malopPriority\":null,\"suspect\":true,\"malicious\":true}, {\"connectingToBlackListAddressSuspicion\":{\"potentialEvidence\":[\"hasBlackListConnectionEvidence\"],\"firstTimestamp\":1710232863248,\"totalSuspicions\":4}}, {\"evidence\":\"map\"}]",
         "type": [
             "info"
         ]
@@ -2839,6 +2894,9 @@ An example event for `suspicions_process` looks as following:
         "uid": [
             "7vCmFKxNAQXpBIkL"
         ]
+    },
+    "input": {
+        "type": "cel"
     },
     "process": {
         "command_line": [
@@ -2872,8 +2930,8 @@ An example event for `suspicions_process` looks as following:
         ]
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "cybereason-suspicions_process"
     ]
 }
 ```
