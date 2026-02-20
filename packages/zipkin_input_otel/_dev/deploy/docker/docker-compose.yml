@@ -1,15 +1,19 @@
 version: '2.3'
 services:
-  zipkin_input_otel:
-    # TODO Currently docker.elastic.co/observability/stream:v0.20.0 cannot be used
-    # because it does not accept 202 responses as success.
-    # Related issue: https://github.com/elastic/stream/issues/193
-    build:
-      context: ./source
-      dockerfile: Dockerfile
-    volumes:
-      - ./sample_traces:/sample_traces:ro
+  generate_traces:
+    image: curlimages/curl
     environment:
-      - ZIPKIN_ENDPOINT=http://elastic-agent:9411
-      - TRACES_PATTERN=/sample_traces/sample*.json
-      - SEND_DELAY=5s
+      - TARGET_URL=http://backend:9000
+    volumes:
+      - ./scripts/send_traces.sh:/send_traces.sh
+    command: ["sh", "/send_traces.sh"]
+    depends_on:
+      backend:
+        condition: service_healthy
+  backend:
+    image: ghcr.io/openzipkin/brave-example:armeria
+    entrypoint: start-backend
+    ports:
+      - 9000:9000
+    environment:
+      - ZIPKIN_BASEURL=http://elastic-agent:9411
