@@ -593,6 +593,32 @@ processors:
         - crowdstrike.event.UserName
       ignore_missing: true
 
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null/empty values.
+      tag: remove_nulls
+      source: |-
+        void handleMap(Map map) {
+            map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        void handleList(List list) {
+            list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        handleMap(ctx);
+
 on_failure:
   - append:
       field: error.message
