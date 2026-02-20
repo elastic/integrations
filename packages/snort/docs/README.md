@@ -193,10 +193,8 @@ The following issues are commonly encountered when configuring or running the Sn
     * Verify that Snort is monitoring the correct network interface.
     * Ensure the relevant rules are enabled in your `snort.conf` or `snort.lua` file.
 - Logs are not appearing when using the logfile input:
-    * Ensure the Elastic Agent user has read access to the Snort log directory (for example, `/var/log/snort/`). You can grant permissions with the following command:
-      ```bash
-      sudo chmod -R +r /var/log/snort/
-      ```
+    * Ensure the Elastic Agent user has read access to the Snort log directory (for example, `/var/log/snort/`). Check file permissions or other security frameworks which may be blocking read access (for example, SELinux or AppArmor).
+
 - UDP input port binding conflicts:
     * If the Elastic Agent fails to start when using the UDP input, check if another service is already using port 9514:
       ```bash
