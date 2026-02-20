@@ -94,15 +94,15 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "fc7db397-ae2f-4d87-9a8b-03c3a16df2a9",
-                                                            "type": "column"
+                                                            "fallback": false,
+                                                            "type": "alphabetical"
                                                         },
                                                         "orderDirection": "asc",
-                                                        "otherBucket": true,
+                                                        "otherBucket": false,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 15
+                                                        "size": 70
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "network.protocol"
@@ -142,8 +142,7 @@
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "network.protocol"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -154,9 +153,17 @@
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -168,18 +175,14 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "gigamon.ami.app_tags",
-                                        "index": "3ecf2152-241f-4cd5-b5c2-6c9234dc5c79",
-                                        "key": "gigamon.ami.app_tags",
+                                        "index": "93548b63-e0dc-416e-92c3-a057c292abc5",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "Artificial Intelligence,Web"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "gigamon.ami.app_tags": "Artificial Intelligence,Web"
+                                        "wildcard": {
+                                            "gigamon.ami.app_tags": "Artificial Intelligence*"
                                         }
                                     }
                                 }
@@ -202,7 +205,7 @@
                                     "yRight": true
                                 },
                                 "labelsOrientation": {
-                                    "x": 0,
+                                    "x": -90,
                                     "yLeft": 0,
                                     "yRight": 0
                                 },
@@ -222,9 +225,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -251,9 +256,42 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "93548b63-e0dc-416e-92c3-a057c292abc5",
+                                "key": "query",
+                                "negate": false,
+                                "type": "custom"
+                            },
+                            "query": {
+                                "wildcard": {
+                                    "gigamon.ami.app_tags": "Artificial Intelligence*"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": "data_stream.dataset : \"gigamon.ami\" "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "AI Apps[Gigamon AMI]"
                 },
                 "gridData": {
                     "h": 14,
@@ -263,7 +301,6 @@
                     "y": 0
                 },
                 "panelIndex": "cb5be9bb-fe1a-4545-960d-8cc7d0099a71",
-                "title": "AI Apps[Gigamon AMI]",
                 "type": "lens"
             },
             {
@@ -280,7 +317,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "302e1521-7a92-4cbb-8c13-f07993b71444": {
                                             "columnOrder": [
@@ -296,13 +332,11 @@
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
-                                                    "scale": "ratio",
                                                     "sourceField": "network.protocol"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -322,18 +356,14 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "gigamon.ami.app_tags",
                                         "index": "49e7fbc5-50a0-41c5-95eb-6a946c315426",
-                                        "key": "gigamon.ami.app_tags",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "Artificial Intelligence,Web"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "gigamon.ami.app_tags": "Artificial Intelligence,Web"
+                                        "wildcard": {
+                                            "gigamon.ami.app_tags": "Artificial Intelligence*"
                                         }
                                     }
                                 }
@@ -347,16 +377,54 @@
                                 "layerId": "302e1521-7a92-4cbb-8c13-f07993b71444",
                                 "layerType": "data",
                                 "metricAccessor": "9b5eacf0-9a57-4f30-960f-7d48f49623ea",
+                                "primaryAlign": "center",
+                                "secondaryAlign": "center",
+                                "secondaryLabelPosition": "before",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                },
                                 "titlesTextAlign": "center",
-                                "valueFontMode": "fit",
-                                "valuesTextAlign": "center"
+                                "valueFontMode": "fit"
                             }
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "49e7fbc5-50a0-41c5-95eb-6a946c315426",
+                                "key": "query",
+                                "negate": false,
+                                "type": "custom"
+                            },
+                            "query": {
+                                "wildcard": {
+                                    "gigamon.ami.app_tags": "Artificial Intelligence*"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": "data_stream.dataset : \"gigamon.ami\" "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total Number of AI Flows[Gigamon AMI]"
                 },
                 "gridData": {
                     "h": 14,
@@ -366,7 +434,6 @@
                     "y": 14
                 },
                 "panelIndex": "6bc0d8f5-8224-4ec0-91db-4a8cb6c04c7b",
-                "title": "Total Number of AI Flows[Gigamon AMI]",
                 "type": "lens"
             },
             {
@@ -380,7 +447,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "3b70bb6d-1950-4588-b9e7-9a4b1768e5c6",
+                                "name": "557dcb57-04c9-4541-af50-acc012cd0753",
                                 "type": "index-pattern"
                             }
                         ],
@@ -454,18 +521,15 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "gigamon.ami.app_tags",
-                                        "index": "3b70bb6d-1950-4588-b9e7-9a4b1768e5c6",
-                                        "key": "gigamon.ami.app_tags",
+                                        "index": "557dcb57-04c9-4541-af50-acc012cd0753",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "Artificial Intelligence,Web"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom",
+                                        "value": "{\"wildcard\":{\"gigamon.ami.app_tags\":\"Artificial Intelligence*\"}}"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "gigamon.ami.app_tags": "Artificial Intelligence,Web"
+                                        "wildcard": {
+                                            "gigamon.ami.app_tags": "Artificial Intelligence*"
                                         }
                                     }
                                 }
@@ -490,9 +554,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -515,9 +581,43 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "557dcb57-04c9-4541-af50-acc012cd0753",
+                                "key": "query",
+                                "negate": false,
+                                "type": "custom",
+                                "value": "{\"wildcard\":{\"gigamon.ami.app_tags\":\"Artificial Intelligence*\"}}"
+                            },
+                            "query": {
+                                "wildcard": {
+                                    "gigamon.ami.app_tags": "Artificial Intelligence*"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": "data_stream.dataset : \"gigamon.ami\" "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top AI Destinations[Gigamon AMI]"
                 },
                 "gridData": {
                     "h": 14,
@@ -527,7 +627,6 @@
                     "y": 14
                 },
                 "panelIndex": "5303a34d-7184-416a-9dbe-7165e381f719",
-                "title": "Top AI Destinations[Gigamon AMI]",
                 "type": "lens"
             },
             {
@@ -541,7 +640,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a70c387b-8942-49f6-be26-9c4f1059578a",
+                                "name": "cb8d2d23-bb60-4322-9775-03e5d29d0ab4",
                                 "type": "index-pattern"
                             }
                         ],
@@ -553,7 +652,8 @@
                                         "942bc812-0a73-4504-af0c-181834f5ebc5": {
                                             "columnOrder": [
                                                 "aff00065-ad6c-4a26-b3a7-ad0ee3b72e79",
-                                                "b06d14b8-0b28-4d5f-9ed5-17eb0ee87f67"
+                                                "b06d14b8-0b28-4d5f-9ed5-17eb0ee87f67",
+                                                "b06d14b8-0b28-4d5f-9ed5-17eb0ee87f67X0"
                                             ],
                                             "columns": {
                                                 "aff00065-ad6c-4a26-b3a7-ad0ee3b72e79": {
@@ -568,10 +668,10 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b06d14b8-0b28-4d5f-9ed5-17eb0ee87f67",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
@@ -587,11 +687,24 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Top AI Sources",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "count(source.ip)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "b06d14b8-0b28-4d5f-9ed5-17eb0ee87f67X0"
+                                                    ]
+                                                },
+                                                "b06d14b8-0b28-4d5f-9ed5-17eb0ee87f67X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Top AI Sources",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
                                                     "sourceField": "source.ip"
                                                 }
                                             },
@@ -616,18 +729,15 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "gigamon.ami.app_tags",
-                                        "index": "a70c387b-8942-49f6-be26-9c4f1059578a",
-                                        "key": "gigamon.ami.app_tags",
+                                        "index": "cb8d2d23-bb60-4322-9775-03e5d29d0ab4",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "Artificial Intelligence,Web"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom",
+                                        "value": "{\"wildcard\":{\"gigamon.ami.app_tags\":\"Artificial Intelligence*\"}}"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "gigamon.ami.app_tags": "Artificial Intelligence,Web"
+                                        "wildcard": {
+                                            "gigamon.ami.app_tags": "Artificial Intelligence*"
                                         }
                                     }
                                 }
@@ -652,9 +762,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -677,9 +789,43 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "cb8d2d23-bb60-4322-9775-03e5d29d0ab4",
+                                "key": "query",
+                                "negate": false,
+                                "type": "custom",
+                                "value": "{\"wildcard\":{\"gigamon.ami.app_tags\":\"Artificial Intelligence*\"}}"
+                            },
+                            "query": {
+                                "wildcard": {
+                                    "gigamon.ami.app_tags": "Artificial Intelligence*"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": "data_stream.dataset : \"gigamon.ami\" "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top AI Sources[Gigamon AMI]"
                 },
                 "gridData": {
                     "h": 14,
@@ -689,7 +835,6 @@
                     "y": 14
                 },
                 "panelIndex": "7d599388-1ff5-4382-9cc4-b2544692cfd6",
-                "title": "Top AI Sources[Gigamon AMI]",
                 "type": "lens"
             },
             {
@@ -706,14 +851,12 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "4c9cf9c2-3fe2-4079-a860-53bee0bd2c7a": {
                                             "columnOrder": [
                                                 "529d8331-f29f-46a5-9484-3f5dea638261",
                                                 "c3e38ac7-9aa0-4a6a-ad08-f6f79d2b6db7",
                                                 "fff89c0f-cb82-4db0-a868-e9dd985e6b1d",
-                                                "b1db5b78-1aa0-4d33-b24a-ee00c228166a",
                                                 "ac4e956b-1027-49bf-bbcb-97070753bb8f"
                                             ],
                                             "columns": {
@@ -753,20 +896,6 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
-                                                },
-                                                "b1db5b78-1aa0-4d33-b24a-ee00c228166a": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "Start Time",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "gigamon.ami.flow_start_sec"
                                                 },
                                                 "c3e38ac7-9aa0-4a6a-ad08-f6f79d2b6db7": {
                                                     "customLabel": true,
@@ -823,7 +952,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -843,18 +971,14 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "gigamon.ami.app_tags",
                                         "index": "15822764-db72-4d8b-a6a6-5354609f02c2",
-                                        "key": "gigamon.ami.app_tags",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "Artificial Intelligence,Web"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "gigamon.ami.app_tags": "Artificial Intelligence,Web"
+                                        "wildcard": {
+                                            "gigamon.ami.app_tags": "Artificial Intelligence*"
                                         }
                                     }
                                 }
@@ -866,11 +990,6 @@
                             },
                             "visualization": {
                                 "columns": [
-                                    {
-                                        "columnId": "b1db5b78-1aa0-4d33-b24a-ee00c228166a",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
                                     {
                                         "columnId": "529d8331-f29f-46a5-9484-3f5dea638261",
                                         "isMetric": false,
@@ -899,9 +1018,43 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "15822764-db72-4d8b-a6a6-5354609f02c2",
+                                "key": "query",
+                                "negate": false,
+                                "type": "custom"
+                            },
+                            "query": {
+                                "wildcard": {
+                                    "gigamon.ami.app_tags": "Artificial Intelligence*"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": "data_stream.dataset : \"gigamon.ami\" "
+                    },
+                    "searchSessionId": "0565402f-db79-41b0-b4a3-27dba1d6b39e",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "AI flows - Detail info of AI flows[Gigamon AMI]"
                 },
                 "gridData": {
                     "h": 13,
@@ -911,7 +1064,6 @@
                     "y": 28
                 },
                 "panelIndex": "27f62369-98f5-43c7-9dea-44f494ebac24",
-                "title": "AI flows - Detail info of AI flows[Gigamon AMI]",
                 "type": "lens"
             },
             {
@@ -1000,7 +1152,6 @@
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
                                                     "sourceField": "network.protocol"
                                                 }
                                             },
@@ -1012,9 +1163,17 @@
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -1026,18 +1185,14 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "gigamon.ami.app_tags",
                                         "index": "ae89f777-97ad-4e02-b33b-7215dd3e7a6c",
-                                        "key": "gigamon.ami.app_tags",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "Artificial Intelligence,Web"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "gigamon.ami.app_tags": "Artificial Intelligence,Web"
+                                        "wildcard": {
+                                            "gigamon.ami.app_tags": "Artificial Intelligence*"
                                         }
                                     }
                                 }
@@ -1064,9 +1219,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -1091,9 +1248,42 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "ae89f777-97ad-4e02-b33b-7215dd3e7a6c",
+                                "key": "query",
+                                "negate": false,
+                                "type": "custom"
+                            },
+                            "query": {
+                                "wildcard": {
+                                    "gigamon.ami.app_tags": "Artificial Intelligence*"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": "gigamon.ami.app_tags : \"Artificial Intelligence,Web\" "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "AI Session Count[Gigamon AMI]"
                 },
                 "gridData": {
                     "h": 13,
@@ -1103,18 +1293,16 @@
                     "y": 28
                 },
                 "panelIndex": "7f329dab-a77a-4741-baeb-d4e45e4bebfb",
-                "title": "AI Session Count[Gigamon AMI]",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Gigamon] AI Insights",
-        "version": 3
+        "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-09-22T08:36:00.701Z",
+    "created_at": "2026-02-10T10:49:09.925Z",
     "id": "gigamon-8bcbcb16-2e63-4923-b916-904a6d6f0ed8",
-    "managed": true,
     "references": [
         {
             "id": "logs-*",
@@ -1133,7 +1321,7 @@
         },
         {
             "id": "logs-*",
-            "name": "5303a34d-7184-416a-9dbe-7165e381f719:3b70bb6d-1950-4588-b9e7-9a4b1768e5c6",
+            "name": "5303a34d-7184-416a-9dbe-7165e381f719:557dcb57-04c9-4541-af50-acc012cd0753",
             "type": "index-pattern"
         },
         {
@@ -1143,7 +1331,7 @@
         },
         {
             "id": "logs-*",
-            "name": "7d599388-1ff5-4382-9cc4-b2544692cfd6:a70c387b-8942-49f6-be26-9c4f1059578a",
+            "name": "7d599388-1ff5-4382-9cc4-b2544692cfd6:cb8d2d23-bb60-4322-9775-03e5d29d0ab4",
             "type": "index-pattern"
         },
         {
