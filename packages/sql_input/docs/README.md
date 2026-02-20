@@ -84,6 +84,9 @@ sql_queries:
 
 For more examples of response format please refer [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html)
 
+### SQL Query (Cursor Mode)
+
+A single SQL query used for cursor-based incremental data fetching. When this field is set, it is used instead of **SQL Queries**. The query must include a `:cursor` placeholder in the WHERE clause. Set **SQL Response Format** to `table`. See the Cursor-based incremental data fetching section below for details.
 
 ### Merge Results
 Merge multiple queries into a single event.
@@ -105,6 +108,145 @@ sql_queries:
 ```
 
 The `merge_results` feature will create a combined event, where `blks_hit`, `blks_read`, `checkpoints_timed` and `checkpoints_req` are part of the same event.
+
+### Cursor-based incremental data fetching
+
+Cursor support enables incremental fetching by tracking the last fetched row value and using it to fetch only new data on subsequent collection cycles. This is useful for continuously appended data like audit logs, event tables, or time-series data where you want to avoid re-fetching already-seen rows.
+
+When cursor is enabled, you must use the **SQL Query (Cursor Mode)** field instead of the **SQL Queries** field. Cursor mode requires a single query; it does not support multiple queries. Set **SQL Response Format** to `table`.
+
+#### Required fields
+
+- **SQL Query (Cursor Mode):** Enter a single SQL query string. Include exactly one `:cursor` placeholder in the WHERE clause and an `ORDER BY` clause on the cursor column.
+- **Cursor Configuration:** Enter YAML in the form shown below.
+- **SQL Response Format:** Must be set to `table`.
+
+#### Cursor Configuration field value
+
+Enter the following in the **Cursor Configuration** field (the values are merged under the `cursor:` key in the generated config):
+
+```yaml
+enabled: true
+column: id
+type: integer
+default: "0"
+```
+
+#### SQL Query (Cursor Mode) field examples
+
+**Integer cursor (auto-increment ID):**
+
+```
+SELECT id, event_type, payload FROM audit_log WHERE id > :cursor ORDER BY id ASC LIMIT 500
+```
+
+**Timestamp cursor:**
+
+```
+SELECT id, message, created_at FROM logs WHERE created_at > :cursor ORDER BY created_at ASC LIMIT 500
+```
+
+**Date cursor:**
+
+```
+SELECT report_date, metrics FROM daily_reports WHERE report_date > :cursor ORDER BY report_date ASC
+```
+
+**Decimal cursor:**
+
+```
+SELECT id, amount, description FROM transactions WHERE amount > :cursor ORDER BY amount ASC LIMIT 500
+```
+
+**MSSQL (uses TOP instead of LIMIT):**
+
+```
+SELECT TOP 500 id, event_type, payload FROM audit_log WHERE id > :cursor ORDER BY id ASC
+```
+
+**Descending cursor:**
+
+```
+SELECT id, event_data FROM events WHERE id < :cursor ORDER BY id DESC LIMIT 500
+```
+
+With `direction: desc` in the Cursor Configuration field:
+
+```yaml
+enabled: true
+column: id
+type: integer
+default: "999999999"
+direction: desc
+```
+
+#### Cursor configuration options
+
+| Option | Required | Description |
+|--------|----------|-------------|
+| `enabled` | No | Set to `true` to enable cursor-based fetching. Default: `false`. |
+| `column` | Yes (when enabled) | Name of the column to track. Must appear in the query results. |
+| `type` | Yes (when enabled) | Data type of the cursor column. One of: `integer`, `timestamp`, `date`, `float`, `decimal`. |
+| `default` | Yes (when enabled) | Initial cursor value used before any state is persisted. |
+| `direction` | No | `asc` (default) tracks the maximum value; `desc` tracks the minimum value. |
+
+#### Supported cursor types
+
+| Type | Description | Default format example |
+|------|-------------|------------------------|
+| `integer` | Integer values such as auto-increment IDs or sequences. | `"0"` |
+| `timestamp` | TIMESTAMP or DATETIME columns. Accepts RFC 3339, `YYYY-MM-DD HH:MM:SS[.nnnnnnnnn]`, or date-only formats. Stored internally as nanoseconds in UTC. | `"2024-01-01T00:00:00Z"` |
+| `date` | Date-only columns (`YYYY-MM-DD`). | `"2024-01-01"` |
+| `float` | FLOAT, DOUBLE, or REAL columns. IEEE 754 precision limits apply. | `"0.0"` |
+| `decimal` | DECIMAL or NUMERIC columns. Supports arbitrary precision. | `"0.00"` |
+
+#### Scan direction
+
+| Direction | WHERE clause operator | ORDER BY | Cursor tracks |
+|-----------|----------------------|----------|---------------|
+| `asc` (default) | `>` or `>=` | `ASC` | Maximum value in results |
+| `desc` | `<` or `<=` | `DESC` | Minimum value in results |
+
+#### Query requirements
+
+When cursor is enabled:
+
+1. Use the **SQL Query (Cursor Mode)** field (not SQL Queries).
+2. Set **SQL Response Format** to `table`.
+3. Include an `ORDER BY` clause on the cursor column matching the configured direction.
+4. Include exactly one `:cursor` placeholder in the WHERE clause.
+5. Cursor is not compatible with `fetch_from_all_databases`. Use separate module blocks per database if needed.
+
+#### State persistence
+
+Cursor state is persisted to disk under `{data.path}/sql-cursor/` and survives Elastic Agent restarts. The state key is a hash derived from the cursor direction, column name, query string, and full database URI/DSN. Changing any of these values resets the cursor to the configured `default`.
+
+#### Choosing `>` vs `>=`
+
+- Use `>` when the cursor column has unique, monotonically increasing values (for example, auto-increment IDs). This avoids re-fetching the last row.
+- Use `>=` when multiple rows can share the same cursor value (for example, timestamps with second-level precision). This might re-fetch the last row but avoids data loss. Use Elasticsearch document IDs or an ingest pipeline to deduplicate.
+
+#### Error handling
+
+The cursor uses at-least-once delivery: events are emitted before cursor state is updated. If a failure occurs after emitting events but before saving the cursor, previously emitted rows are re-fetched on the next cycle. This guarantees no data loss, but duplicates are possible.
+
+#### Driver-specific notes
+
+- **MySQL:** Add `parseTime=true` to the DSN for timestamp cursors (for example, `root:pass@tcp(localhost:3306)/mydb?parseTime=true`).
+- **Oracle:** Set the session timezone to UTC for timestamp cursors (for example, using the `alterSession` DSN parameter).
+- **MSSQL:** Use `TOP` instead of `LIMIT`. The driver translates the `:cursor` placeholder to `@p1` internally.
+- **Decimal:** Values are passed as strings. Use `CAST(:cursor AS DECIMAL(10,2))` in the query if the database requires explicit typing.
+
+#### Limitations
+
+- Each fetch cycle loads all matching rows into memory. Use `LIMIT` (or `TOP` for MSSQL) to bound the result set (500–5000 rows recommended).
+- Long-running fetch cycles can cause subsequent cycles to be skipped until the current one finishes.
+- Each fetch is limited by the module `timeout` (defaults to `period`).
+- Float cursors have IEEE 754 precision limits. Use `decimal` for exact values.
+- String, UUID, and ULID types are not supported as cursor columns.
+- NULL cursor values in result rows are skipped.
+- The cursor column must appear in the SELECT clause.
+- Only one `:cursor` placeholder per query is supported.
 
 ### SSL configuration
 
