@@ -55,8 +55,8 @@ vars:
         value: client_secret
     description: >-
       Authentication method to use for Event Hub and Storage Account.
-      When set to 'connection_string' or left blank: connection_string and storage_account_key are required.
-      When set to 'client_secret': the system authenticates with Microsoft Entra ID using the provided credentials, requiring tenant_id, client_id, client_secret, and eventhub_namespace.
+      When set to **Connection String** or left blank: **Connection String** and **Storage Account Key** are required.
+      When set to **Client Secret**: Microsoft Entra ID client secret authentication is used, requiring **Tenant ID**, **Client ID**, **Client Secret**, and **Event Hub Namespace**.
       Note: The same authentication type applies to both Event Hub and Storage Account for security consistency.
   - name: connection_string
     type: password
@@ -66,7 +66,7 @@ vars:
     required: false
     show_user: true
     description: >-
-      (Required when auth_type is 'connection_string' or left blank) The connection string required to communicate with Event Hubs.
+      (Required when **Authentication Type** is **Connection String** or left blank) The connection string required to communicate with Event Hubs.
       See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
   - name: storage_account_key
     type: password
@@ -76,8 +76,8 @@ vars:
     required: false
     show_user: true
     description: >-
-      (Required when auth_type is 'connection_string' or left blank) The storage account key used to authorize access to data in your storage account.
-      Not used when auth_type is 'client_secret'; client secret is used for storage authentication instead.
+      (Required when **Authentication Type** is **Connection String** or left blank) The storage account key used to authorize access to data in your storage account.
+      Not used when **Authentication Type** is **Client Secret**; client secret is used for storage authentication instead.
   - name: storage_account
     type: text
     title: Storage Account
@@ -93,7 +93,7 @@ vars:
     required: false
     show_user: true
     description: >-
-      (Required when auth_type is 'client_secret') Fully qualified Event Hub namespace (e.g., namespace.servicebus.windows.net).
+      (Required when **Authentication Type** is **Client Secret**) Fully qualified Event Hub namespace (e.g., namespace.servicebus.windows.net).
       Do not use the short namespace name; use the complete FQDN.
   - name: tenant_id
     type: text
@@ -102,7 +102,7 @@ vars:
     required: false
     show_user: true
     description: >-
-      (Required when auth_type is 'client_secret') Microsoft Entra ID tenant ID.
+      (Required when **Authentication Type** is **Client Secret**) Microsoft Entra ID tenant ID.
       This is the directory/tenant where your Microsoft Entra ID application is registered.
   - name: client_id
     type: text
@@ -111,7 +111,7 @@ vars:
     required: false
     show_user: true
     description: >-
-      (Required when auth_type is 'client_secret') Microsoft Entra ID application (client) ID.
+      (Required when **Authentication Type** is **Client Secret**) Microsoft Entra ID application (client) ID.
       The service principal must have 'Azure Event Hubs Data Receiver' role on the Event Hub and 'Storage Blob Data Contributor' role on the Storage Account.
   - name: client_secret
     type: password
@@ -121,7 +121,7 @@ vars:
     required: false
     show_user: true
     description: >-
-      (Required when auth_type is 'client_secret') Microsoft Entra ID application client secret.
+      (Required when **Authentication Type** is **Client Secret**) Microsoft Entra ID application client secret.
       Generate this secret in your Microsoft Entra ID app registration.
   - name: authority_host
     type: text
@@ -131,7 +131,7 @@ vars:
     show_user: false
     default: https://login.microsoftonline.com
     description: >-
-      (Optional, for client secret) Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
+      (Optional when **Authentication Type** is **Client Secret**) Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
       Change for other Azure environments: Azure Government (https://login.microsoftonline.us), Azure China (https://login.chinacloudapi.cn), or Azure Germany (https://login.microsoftonline.de).
   - name: resource_manager_endpoint
     type: text
