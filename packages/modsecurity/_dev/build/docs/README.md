@@ -6,12 +6,6 @@
 
 The ModSecurity Audit integration for Elastic enables you to collect and analyze logs from ModSecurity, the open-source Web Application Firewall (WAF). This integration allows you to ingest detailed transaction logs into the Elastic Stack, providing visibility into HTTP requests and responses for real-time threat detection and forensic investigation.
 
-You can use this integration to support several security operations:
-- Monitor logs for common web attacks such as SQL injection (SQLi), Cross-Site Scripting (XSS), and Local File Inclusion (LFI)
-- Maintain a comprehensive audit trail of all HTTP transactions and security interventions to satisfy compliance requirements
-- Review detailed audit logs to identify legitimate traffic being blocked by restrictive rules, allowing you to create exceptions and reduce false positives
-- Correlate WAF events with other system and network logs to trace attacker activity across your infrastructure
-
 ### Compatibility
 
 This integration is compatible with the following third-party components:
