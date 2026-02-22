@@ -1,5 +1,7 @@
 ARG SERVICE_VERSION=${SERVICE_VERSION:-5.0}
 FROM mongo:${SERVICE_VERSION}
-RUN sed -i "/jessie-updates/d" /etc/apt/sources.list
-RUN apt-get update && apt-get install -y netcat
+# remove the mongodb-org.list as the GPG key is expired and we don't need it.
+RUN rm /etc/apt/sources.list.d/mongodb-org.list && \
+    apt update && \
+    yes | apt install netcat-openbsd
 HEALTHCHECK --interval=1s --retries=90 CMD nc -z localhost 27017
