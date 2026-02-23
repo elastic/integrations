@@ -76,6 +76,26 @@ For the full setup guide, refer to the [EDOT Android getting started documentati
 5. (Optional) Select the version of your application to narrow down your results.
 6. (Recommended) Click on values across the dashboard's panels to create filters and focus the dashboard on the specific data you'd like to inspect.
 
+### Checking trace waterfall details
+
+Within the **[Android OTel] Application Overview** dashboard, go to a panel that shows a list of spans and click on its "Explore in Discover" button.
+
+![Explore in Discover](../img/explore-spans-in-discover.png)
+
+Then expand the details for one of the spans in Discover.
+
+![Open Span details](../img/open-span-details.png)
+
+You'll see the trace waterfall UI in there. You can expand it to become fullscreen and start drilling down to other details from there.
+
+![Trace waterfall UI](../img/trace-waterfall-ui.png)
+
+### Viewing details from a crash
+
+Within the **[Android OTel] Application Overview** dashboard, scroll down to the "Crashes" section to see the list of crashes by group ID. Select one group ID and click on "View crash details" to see that crash details in a separate dashboard.
+
+![View crash details](../img/drilldown-on-crash-details.png)
+
 ## Troubleshooting
 
 If you do not see data in the dashboards, make sure that:
