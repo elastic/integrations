@@ -61,12 +61,12 @@ To start populating these dashboards:
 
 1. Add the [EDOT Android agent plugin](https://plugins.gradle.org/plugin/co.elastic.otel.android.agent) to your app's `build.gradle.kts` file:
 
-    ```kotlin
-    plugins {
-        id("com.android.application")
-        id("co.elastic.otel.android.agent") version "[latest_version]"
-    }
-    ```
+```kotlin
+plugins {
+    id("com.android.application")
+    id("co.elastic.otel.android.agent") version "[latest_version]"
+}
+```
 
 2. Initialize the agent in your application code:
 
