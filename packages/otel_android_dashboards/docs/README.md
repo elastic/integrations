@@ -5,7 +5,7 @@
 
 Use this package to get Kibana dashboards for visualizing telemetry data from your Android applications instrumented with [OpenTelemetry](https://opentelemetry.io/). The dashboards provide visibility into application health, crash analysis, span performance, and session-level insights.
 
-The recommended way to send Android telemetry to the Elastic Stack is through the [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android), an APM agent built on top of OpenTelemetry that works with the Elastic Stack out of the box. EDOT Android provides automatic instrumentation, session tracking, disk buffering, and central configuration, while providing all the context and tools to properly send data to the Elastic Stack, making it the easiest way to populate the dashboards included in this package.
+The recommended way to send Android telemetry to the Elastic Stack is through the [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android), an APM agent built on top of OpenTelemetry that works with the Elastic Stack out of the box. EDOT Android provides automatic instrumentation, session tracking, disk buffering, and central configuration, along with all the context and tools to properly send data to the Elastic Stack, making it the easiest way to populate the dashboards included in this package.
 
 You can also use any other OpenTelemetry-compatible Android instrumentation, as long as the expected telemetry fields are present.
 
@@ -41,8 +41,8 @@ The main dashboard provides a high-level view of your Android application's heal
 - **Sessions** — Number of unique sessions. A session represents a period of user interaction with the application.
 - **Installations by manufacturer** — Donut chart showing the distribution of installations across Android device manufacturers.
 - **Installations by OS version** — Donut chart showing the distribution of installations across Android OS versions.
-- **All spans** — Table of spans grouped by name with average duration which can be further explored by a drilldown into Discover to see more span details with the trace waterfall UI.
-- **Failed spans** — Table of spans with an "Error" status, grouped by name and occurrence count, which can be further explored by a drilldown into Discover to see more span details with the trace waterfall UI.
+- **All spans** — Table of spans grouped by name with average duration, which can be further explored by a drilldown into Discover to see more span details with the trace waterfall UI.
+- **Failed spans** — Table of spans with an "Error" status, grouped by name and occurrence count, with a similar drilldown into Discover to see span details with the trace waterfall UI.
 - **Total spans / Failed spans** — Metric counters for total and errored span counts.
 - **Logs** — Total recorded log count.
 - **Crashes** — List of crashes grouped by a computed stacktrace group ID, with total crash count and crashes-per-session average. Clicking a crash group drills down into the Exception Details dashboard.
