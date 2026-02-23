@@ -62,7 +62,7 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 
 ## Setting it up
 
-1. Start by sending data to your Elastic Stack via the [EDOT Android agent](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) or an equivalent OpenTelemetry SDK sending data to the Elastic Stack.
+1. Start by sending data to your Elastic Stack via the [EDOT Android agent](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) or an equivalent OpenTelemetry SDK.
 2. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
 
 For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android/getting-started).
@@ -73,8 +73,8 @@ For the full setup guide, refer to the [EDOT Android getting started documentati
 2. In the search bar, type **Android OTel**.
 3. Open the **[Android OTel] Application Overview** dashboard and verify that data is populated.
 4. Select your application from the list of "Applications" in one of the top panels of the dashboard.
-5. (Optionally) Select the version of your application to narrow down your results.
-6. (Recommended) Click on values across the dashboard's panels to create filters for them to make the dashboard show you the specific data you'd like to check.
+5. (Optional) Select the version of your application to narrow down your results.
+6. (Recommended) Click on values across the dashboard's panels to create filters and focus the dashboard on the specific data you'd like to inspect.
 
 ## Troubleshooting
 
