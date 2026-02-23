@@ -1,101 +1,99 @@
 {{- generatedHeader }}
-{{/*
-This template can be used as a starting point for writing documentation for your new integration. For each section, fill in the details
-described in the comments.
-
-Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
-*/}}
-# Android Observability Integration for Elastic
+# Android OpenTelemetry Assets
 
 ## Overview
-{{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
-The Android Observability integration for Elastic enables collection of ...
-This integration facilitates ...
+
+Use this package to get Kibana dashboards for visualizing telemetry data from your Android applications instrumented with [OpenTelemetry](https://opentelemetry.io/). The dashboards provide visibility into application health, crash analysis, span performance, and session-level insights.
+
+The recommended way to send Android telemetry to the Elastic Stack is through the [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/edot-android/), an APM agent built on top of OpenTelemetry that works with Elastic out of the box. EDOT Android provides automatic instrumentation, session tracking, disk buffering, and central configuration, making it the easiest way to populate the dashboards included in this package.
+
+You can also use any other OpenTelemetry-compatible Android instrumentation, as long as the expected telemetry fields are present.
 
 ### Compatibility
-{{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
-This integration is compatible with ...
 
-### How it works
-{{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or recieving data from a network or file.*/}}
+This package has been tested with EDOT Android and OpenTelemetry semantic conventions. The dashboards query data from `logs-generic.otel*` and `traces-generic.otel*` index patterns, and filter on `os.name: "Android"`.
 
-## What data does this integration collect?
-{{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available */}}
-The Android Observability integration collects log messages of the following types:
-* ...
+## What do I need to use this package?
 
-### Supported use cases
-{{/* Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. */}}
+- An Android application instrumented with [EDOT Android](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/edot-android/) or an equivalent OpenTelemetry SDK sending data to the Elastic Stack.
+- Kibana 8.19.0 or later, or Kibana 9.1.0 or later.
+- Telemetry data must include the following fields for full dashboard functionality:
+  - `os.name` (set to `"Android"`)
+  - `session.id`
+  - `service.name` and `service.version`
+  - `exception.stacktrace`, `exception.type`, and `exception.message` (for crash analysis)
+  - `os.version` and `device.manufacturer` (for device breakdown charts)
+  - `span.name` and `span.status.code` (for span analysis)
 
-## What do I need to use this integration?
-{{/* List any vendor-specific prerequisites needed before starting to install the integration. */}}
+EDOT Android populates all of these fields automatically.
 
-## How do I deploy this integration?
+## Dashboards
 
-### Agent-based deployment
+### Application Overview
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+The main dashboard provides a high-level view of your Android application's health and usage. It includes controls to filter by application name and version, along with the following panels:
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+- **Device installations** — Total number of unique device installations, tracked by an installation ID stored in each device's cache.
+- **Sessions** — Number of unique sessions. A session represents a period of user interaction with the application.
+- **Installations by manufacturer** — Donut chart showing the distribution of installations across Android device manufacturers.
+- **Installations by OS version** — Donut chart showing the distribution of installations across Android OS versions.
+- **All spans** — Table of spans grouped by name with average duration.
+- **Failed spans** — Table of spans with an "Error" status, grouped by name and occurrence count.
+- **Total spans / Failed spans** — Metric counters for total and errored span counts.
+- **Logs** — Total recorded log count.
+- **Crashes** — List of crashes grouped by a computed stacktrace group ID, with total crash count and crashes-per-session average. Clicking a crash group drills down into the Exception Details dashboard.
 
-{{/* If agentless is available for this integration, we'll want to include that here as well.
-### Agentless deployment
+### Exception Details
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+A drilldown dashboard opened from the Application Overview when selecting a specific crash group. It shows:
 
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html) 
-*/}}
+- **Top affected sessions** — Sessions with the most occurrences of the selected exception, with a drilldown to view session details.
+- **Occurrences by session** — Average number of times the exception occurs per session.
+- **Total occurrences** — Total count of the selected exception.
+- **Top exception messages** — Most common messages associated with the exception, useful when stacktraces have variable message content.
+- **Top affected OS versions** — Donut chart of exception occurrences by Android OS version.
+- **Top affected manufacturers** — Donut chart of exception occurrences by device manufacturer.
+- **Full stacktrace** — The complete stacktrace for the selected exception.
 
-### Onboard / configure
-{{/* List the steps that will need to be followed in order to completely set up a working integration.
-For integrations that support multiple input types, be sure to add steps for all inputs.
-*/}}
+## Getting started with EDOT Android
 
-### Validation
-{{/* How can the user test whether the integration is working? Including example commands or test files if applicable */}}
+To start populating these dashboards:
+
+1. Add the [EDOT Android agent plugin](https://plugins.gradle.org/plugin/co.elastic.otel.android.agent) to your app's `build.gradle.kts` file:
+
+    ```kotlin
+    plugins {
+        id("com.android.application")
+        id("co.elastic.otel.android.agent") version "[latest_version]"
+    }
+    ```
+
+2. Initialize the agent in your application code:
+
+    ```kotlin
+    val agent = ElasticApmAgent.builder(application)
+        .setServiceName("Your app name")
+        .setExportUrl("https://your-elastic-endpoint")
+        .setExportAuthentication(Authentication.ApiKey("your-api-key"))
+        .build()
+    ```
+
+3. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
+
+For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/edot-android/getting-started).
+
+## Validation
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **Android OTel**.
+3. Open the **[Android OTel] Application Overview** dashboard and verify that data is populated.
 
 ## Troubleshooting
 
-For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
-{{/*
-Add any vendor specific troubleshooting here.
+If you do not see data in the dashboards, make sure that:
 
-Are there common issues or “gotchas” for deploying this integration? If so, how can they be resolved?
-If applicable, links to the third-party software’s troubleshooting documentation.
-*/}}
+- Your Android application is sending telemetry to the Elastic Stack. You can verify this in Kibana's Discover by searching for `os.name: "Android"` in the `logs-generic.otel*` or `traces-generic.otel*` index patterns.
+- The `session.id` field is present in the telemetry data. EDOT Android includes this automatically. If you are using a vanilla OpenTelemetry SDK, you may need to configure session tracking manually.
+- The `service.name` field is set correctly so the application name filter works as expected.
 
-## Scaling
-
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
-{{/* Add any vendor specific scaling information here */}}
-
-## Reference
-{{/* Repeat for each data stream of the current type
-### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}.
-
-For each data_stream_name, include an optional summary of the datastream, the exported fields reference table and the sample event.
-
-The fields template function will be replaced by a generated list of all fields from the `fields/` directory of the data stream when building the integration.
-
-#### {data stream name} fields
-
-To include a generated list of fields from the `fields/` directory, uncomment and use:
-{{ fields "data_stream_name" }}
-
-The event template function will be replace by a sample event, taken from `sample_event.json`, when building this integration.
-
-To include a sample event from `sample_event.json`, uncomment and use:
-{{ event "data_stream_name" }}
-
-*/}}
-
-### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
-{{ inputDocs }}
-
-### API usage
-{{/* For integrations that use APIs to collect data, document all the APIs that are used, and link to relevent information */}}
-These APIs are used with this integration:
-* ...
+For general help with Elastic integrations, refer to [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
