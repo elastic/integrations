@@ -30,14 +30,6 @@ policy_templates:
         title: Collect Exchange Online Message Trace logs via Graph API
         description: Collect Exchange Online logs
         vars:
-          - name: url
-            type: text
-            title: URL
-            multi: false
-            description: URL for the Exchange Online API (Add https:// before the url).
-            default: https://reports.office365.com/ecp/reportingwebservice/reporting.svc/MessageTrace
-            show_user: true
-            required: true
           - name: client_id
             type: text
             title: Client ID
@@ -89,18 +81,14 @@ policy_templates:
             required: true
             show_user: true
             description: Company owned domains. This is used to calculate the email direction and extract user names.
-          - name: scopes
+          - name: request_url
             type: text
-            title: Oauth2 Scopes
-            multi: true
-            default:
-              - https://outlook.office365.com/.default
-            required: false
+            title: Request URL
+            description: URL of API endpoint.
+            default: https://graph.microsoft.com
+            multi: false
+            required: true
             show_user: false
-            description: |
-              Generally one or more Oauth2 scopes are required to authenticate with the Microsoft Exchange Online Message Trace API.
-              The only time a scope should no be used is if you are using an azure resource. Scopes & azure resources are mutually
-              exclusive in this scenario.
           - name: login_url
             type: text
             title: OAuth Server URL
@@ -109,7 +97,7 @@ policy_templates:
             show_user: false
             default: https://login.microsoftonline.com
             description: URL of Login server '/tenant-id/oauth2/v2.0/token added automatically'
-          - name: token_url
+          - name: token_endpoint
             type: text
             title: OAuth Token endpoint
             required: true
@@ -118,15 +106,6 @@ policy_templates:
             default: oauth2/v2.0/token
             description: Microsoft Identity Platform OAuth2 token endpoint
             secret: false
-          - name: azure_resource
-            type: text
-            title: Azure Resource
-            multi: false
-            required: false
-            show_user: false
-            description: |
-              URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>.
-              Only use this when oauth scopes are not used.
           - name: proxy_url
             type: text
             title: Proxy URL
