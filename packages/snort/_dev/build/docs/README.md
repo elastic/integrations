@@ -67,7 +67,7 @@ You'll need to configure Snort to output logs in a format that the agent can rea
 Follow these steps to configure Snort 3 using Lua:
 1. Open the `snort.lua` configuration file, typically located at `/usr/local/etc/snort/snort.lua` or `/etc/snort/snort.lua`.
 2. To output high-fidelity logs for the Elastic Agent, add the following JSON logging block:
-   ```lua
+   ```
    alert_json = {
        file = true,
        fields = 'timestamp pkt_num proto pkt_gen pkt_len dir src_addr src_port dst_addr dst_port service rule action class b64_data',
@@ -75,7 +75,7 @@ Follow these steps to configure Snort 3 using Lua:
    }
    ```
 3. Alternatively, for the Alert Fast format, add this block:
-   ```lua
+   ```
    alert_fast = {
        file = true,
        packet = false,
@@ -83,7 +83,7 @@ Follow these steps to configure Snort 3 using Lua:
    }
    ```
 4. If you're forwarding using UDP, add this syslog block:
-   ```lua
+   ```
    alert_syslog = {
        facility = 'local5',
        level = 'alert'
