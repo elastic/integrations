@@ -47,13 +47,13 @@ program: |
       (
         state.?cursor.end.orValue(null) == null ?
           // Initial start.
-          now.truncate(duration("1s")) - duration(state.initial_interval)
+          now - duration(state.initial_interval)
         :
           // A new start after the last end.
           state.cursor.end.parse_time(time_layout.RFC3339Nano) + duration("100ns")
       ).as(start, {
         "start": start.format(time_layout.RFC3339Nano),
-        "end": min(start + duration("240h"), now.truncate(duration("1s"))).format(time_layout.RFC3339Nano),
+        "end": min(start + duration("240h"), now-duration(state.min_age)).format(time_layout.RFC3339Nano),
       }).as(range, {
         "url": [
           state.url.trim_suffix("/"),
@@ -71,7 +71,7 @@ program: |
         resp.Body.decode_json().as(body,
           state.with({
             "events": body.value,
-            "want_more": body[?"@odata.nextLink"].orValue(null) != null || current.end.parse_time(time_layout.RFC3339Nano) < now.truncate(duration("1s")),
+            "want_more": body[?"@odata.nextLink"].orValue(null) != null || current.end.parse_time(time_layout.RFC3339Nano) < now-duration(state.min_age),
             "cursor": {
               ?"next_link": body[?"@odata.nextLink"],
               "end": current.end,
