@@ -22,7 +22,6 @@ rules:
               "Name": "Test User"
           }
           `}}
-
   # Auth without password
   - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
     methods: ["POST"]
@@ -44,7 +43,6 @@ rules:
               "Name": "Test User"
           }
           `}}
-
   # Get Workgroups
   - path: "/BeyondTrust/api/public/v3/Workgroups"
     methods: ["GET"]
@@ -70,7 +68,6 @@ rules:
               }
           ]
           `}}
-
   # Get Assets for Workgroup 1 - page 1
   - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
     methods: ["GET"]
@@ -105,32 +102,30 @@ rules:
               "TotalCount": 2
           }
           `}}
-
   # Get Assets for Workgroup 1 - page 2 (auth failure)
   - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
-    methods: [ "GET" ]
+    methods: ["GET"]
     query_params:
       limit: '1'
       offset: '1'
     request_headers:
-      Content-Type: [ 'application/json' ]
-      Cookie: [ 'ASP.NET_SessionId=cookie_value1' ]
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
     responses:
       - status_code: 401
         headers:
-          Content-Type: [ 'application/json' ]
+          Content-Type: ['application/json']
         body: >-
           "User not authenticated"
-
   # Get Assets for Workgroup 1 - page 2 (with cookie_value2)
   - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
-    methods: [ "GET" ]
+    methods: ["GET"]
     query_params:
       limit: '1'
       offset: '1'
     request_headers:
-      Content-Type: [ 'application/json' ]
-      Cookie: [ 'ASP.NET_SessionId=cookie_value2' ]
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
     responses:
       - status_code: 200
         headers:
@@ -160,7 +155,6 @@ rules:
         headers:
           Content-Type: ['text/plain']
         body: Program should never request this. {{.request.vars}}
-
   # Get Assets for Workgroup 2 - no assets
   - path: "/BeyondTrust/api/public/v3/Workgroups/2/Assets"
     methods: ["GET"]
@@ -181,17 +175,16 @@ rules:
               "TotalCount": 0
           }
           `}}
-
   # Get Workgroups (second periodic execution)
   - path: "/BeyondTrust/api/public/v3/Workgroups"
-    methods: [ "GET" ]
+    methods: ["GET"]
     request_headers:
-      Content-Type: [ 'application/json' ]
-      Cookie: [ 'ASP.NET_SessionId=cookie_value2' ]
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
     responses:
       - status_code: 200
         headers:
-          Content-Type: [ 'application/json' ]
+          Content-Type: ['application/json']
         body: |-
           {{ minify_json `
           [
@@ -202,20 +195,19 @@ rules:
               }
           ]
           `}}
-
   # Get Assets for Workgroup 3 (second periodic execution)
   - path: "/BeyondTrust/api/public/v3/Workgroups/3/Assets"
-    methods: [ "GET" ]
+    methods: ["GET"]
     request_headers:
-      Content-Type: [ 'application/json' ]
-      Cookie: [ 'ASP.NET_SessionId=cookie_value2' ]
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
     query_params:
       limit: '1'
       offset: '0'
     responses:
       - status_code: 200
         headers:
-          Content-Type: [ 'application/json' ]
+          Content-Type: ['application/json']
         body: |-
           {{ minify_json `
           {

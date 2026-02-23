@@ -33,17 +33,16 @@ rules:
             "Name": "Test User"
           }
           `}}
-
   - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
-    methods: [ "POST" ]
+    methods: ["POST"]
     request_headers:
-      Authorization: [ 'PS-Auth key=test_api_key; runas=testuser2;' ]
-      Content-Type: [ 'application/json' ]
+      Authorization: ['PS-Auth key=test_api_key; runas=testuser2;']
+      Content-Type: ['application/json']
     responses:
       - status_code: 200
         headers:
-          Content-Type: [ 'application/json' ]
-          Set-Cookie: [ 'ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}' ]
+          Content-Type: ['application/json']
+          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}']
         body: |
           {{ minify_json `
           {
@@ -54,7 +53,6 @@ rules:
             "Name": "Test User"
           }
           `}}
-
   - path: "/BeyondTrust/api/public/v3/Sessions"
     methods: ["GET"]
     request_headers:
@@ -131,14 +129,12 @@ rules:
             }
           ]
           `}}
-
       # Sessions - second request (session expired)
       - status_code: 401
         headers:
           Content-Type: ['application/json']
         body: >-
           "User not authenticated"
-
   # Sessions - retry after re-authentication
   - path: "/BeyondTrust/api/public/v3/Sessions"
     methods: ["GET"]
