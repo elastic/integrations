@@ -26,8 +26,10 @@ This integration collects log messages of the following type:
     - vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
     - vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
 
-- `Alert and Incidents`: Collect details of all alert findings and incident assets including:
+- `Alert Findings`: Collect details of all alert findings and incident assets including:
     - alert_findings (endpoint: `/api/v2/alert_findings`)
+
+- `Incidents`: Collect details of all incident assets including:
     - incidents (endpoint: `/api/v2/incidents`)
 
 ### Supported use cases
@@ -155,20 +157,25 @@ The `exposure` data stream provides exposure logs from axonius.
 
 {{event "exposure"}}
 
-### Alert and Incident
+### Alert Finding
 
-The `alert_and_incident` data stream provides alert findings and incident asset logs from axonius.
+The `alert_finding` data stream provides alert findings asset logs from axonius.
 
-#### alert_and_incident fields
+#### alert_finding fields
 
-{{ fields "alert_and_incident" }}
+{{ fields "alert_finding" }}
 
-{{event "alert_and_incident"}}
+{{event "alert_finding"}}
 
-### Inputs used
+### Incident
 
-{{/* All inputs used by this package will be automatically listed here. */}}
-{{ inputDocs }}
+The `incident` data stream provides incident asset logs from axonius.
+
+#### incident fields
+
+{{ fields "incident" }}
+
+{{event "incident"}}
 
 ### API usage
 
@@ -181,10 +188,11 @@ These APIs are used with this integration:
     * vulnerability_instances (endpoint: `/api/v2/vulnerability_instances`)
     * vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
     * vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
-* Alert Findings and Incidents:
+* Alert Findings:
     * alert_findings (endpoint: `/api/v2/alert_findings`)
+* Incidents:
     * incidents (endpoint: `/api/v2/incidents`)
 
 ### ILM Policy
 
-To facilitate adapter, user, gateway and assets data including exposures, alert findings and incidents, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*` and `.ds-logs-axonius.alert_and_incident-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy` and `logs-axonius.alert_and_incident-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, alert findings and incidents, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*` and `.ds-logs-axonius.incident-*`  respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy` and `logs-axonius.alert_and_incident-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
