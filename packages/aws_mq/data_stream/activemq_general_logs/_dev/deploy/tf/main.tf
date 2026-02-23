@@ -3,15 +3,11 @@ variable "TEST_RUN_ID" {
 }
 
 locals {
-  region = "us-east-1"
-
   activemq_general_log_group  = "/aws/activemq/broker/test-${var.TEST_RUN_ID}/general"
   activemq_general_log_stream = "general-stream"
 }
 
 provider "aws" {
-  region = local.region
-
   default_tags {
     tags = {
       environment  = var.ENVIRONMENT
@@ -49,7 +45,7 @@ resource "null_resource" "push_activemq_general_logs" {
     # unset AWS_PROFILE to use environment credentials
     unset AWS_PROFILE
 
-    if ! command -v aws &> /dev/null; then
+    if ! command -v aws >/dev/null 2>&1; then
 
       apt-get update -qq
       apt-get install -y -qq curl unzip > /dev/null 2>&1
@@ -99,14 +95,18 @@ resource "null_resource" "push_activemq_general_logs" {
     interpreter = ["/bin/sh", "-c"]
 
     environment = {
-      LOG_GROUP_NAME     = aws_cloudwatch_log_group.activemq_general.name
-      LOG_STREAM_NAME    = aws_cloudwatch_log_stream.activemq_general.name
-      AWS_REGION         = local.region
-      AWS_DEFAULT_REGION = local.region
+      LOG_GROUP_NAME  = aws_cloudwatch_log_group.activemq_general.name
+      LOG_STREAM_NAME = aws_cloudwatch_log_stream.activemq_general.name
     }
   }
 }
 
+data "aws_region" "current" {}
+
 output "activemq_general_log_group_arn" {
   value = aws_cloudwatch_log_group.activemq_general.arn
+}
+
+output "region_name" {
+  value = data.aws_region.current.name
 }
