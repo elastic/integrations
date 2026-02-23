@@ -3,7 +3,7 @@
 ## Overview
 [Forescout](https://www.forescout.com) is a leading device visibility and control platform that enables organizations to continuously identify, classify, and enforce security policies across all connected devices. It provides real-time visibility into IT, IoT, OT, and unmanaged devices across enterprise networks.
 
-The Forescout integration for Elastic allows you to collect event data using the TCP and UDP, then visualize the data in Kibana.
+The Forescout integration for Elastic allows you to collect event data using TCP and UDP, then visualize the data in Kibana.
 
 ### Compatibility
 The Forescout integration is tested with product version **8.5.2**.
