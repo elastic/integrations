@@ -160,3 +160,37 @@ rules:
               "nextCursor": null
             }
           }
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: ["POST"]
+    request_headers:
+      Content-Type: application/json
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": {
+              "alerts": {
+                "totalCount": 10000,
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "hasPreviousPage": false,
+                  "startCursor": "cursor_0",
+                  "endCursor": "cursor_end"
+                },
+                "edges": [
+                  {{/* Comma is added at the end of each line inside the template to preserve JSON format */}}
+                  {{- $g := glob "/var/log/corpus-*" -}}
+                  {{- range $g -}}
+                    {{- file . -}}
+                  {{- end -}}
+                  {{/* A last line of hard-coded data is required to properly close the JSON body */}}
+                  {"cursor":"cursor_end","node":{"id": "01999999-2345-f12c-9012-434561", "aiInvestigation": null, "analystVerdict": "FALSE_POSITIVE_BENIGN", "analytics": {"category": "Custom Rule", "name": null, "typeValue": "RULE", "uid": "1412136126226508571"}, "assets": [{"accessible": true, "agentUuid": "187d5f3c7af341079041baeb9f88a511", "agentVersion": "22.3.2.373", "assetTypeClassifier": null, "category": "Workstation", "connectivityToConsole": "ONLINE", "decommissioned": false, "id": "masked00asset000000000001", "lastLoggedInUser": null, "name": "host-masked", "origin": "RESOURCES", "osType": "WINDOWS", "osVersion": "Windows 10 Pro 19044", "pendingReboot": false, "policy": "Default", "role": "TARGET", "status": "ACTIVE", "subcategory": "Desktop"}], "assignee": null, "attackSurfaces": ["ENDPOINT"], "availableActionIds": null, "classification": "UNKNOWN", "confidenceLevel": null, "createdAt": "2025-03-26T22:49:17.906Z", "dataSources": [], "description": null, "detectedAt": "2025-03-26T22:50:14.436Z", "detectionSource": {"product": "STAR", "vendor": "SentinelOne"}, "detectionTime": {"assets": [{"accessible": true, "asset": {"agentVersion": "22.3.2.373", "consoleIpAddress": null, "domain": "example.local", "ipV4": null, "ipV6": null, "lastLoggedInUser": null, "osName": "Windows 10 Pro", "osRevision": "19044", "osType": "WINDOWS", "policy": null, "subscriptionTime": "2025-01-15T10:00:00.000Z"}, "cloud": null, "kubernetes": null, "origin": "RESOURCES", "scope": {"accountId": "111222333444", "accountName": "AccountName", "groupName": "Default Group", "siteName": "Default site"}}], "attacker": null, "scope": {"accountId": "111222333444", "accountName": "AccountName", "groupName": "Default Group", "siteName": "Default site"}, "targetUser": null}, "exclusionHash": null, "externalId": "9876543210987654321", "firstSeenAt": "2025-03-26T22:49:17.906Z", "lastSeenAt": "2025-03-26T22:50:14.436Z", "name": "test5", "noteExists": false, "process": {"cmdLine": "powershell.exe -ExecutionPolicy Restricted -Command Write-Host 'Final result: 1';", "file": {"certSubject": "Example Corp", "md5": "5d41402abc4b2a76b9719d911017c592", "name": "powershell.exe", "path": "C:\\Windows\\System32\\WINDOWSPOWERSHELL\\V1.0\\powershell.exe", "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d", "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"}, "parentName": "CompatTelRunner.exe"}, "realTime": {"scope": {"account": {"id": "111222333444", "name": "AccountName"}, "group": {"id": "3334445556667778889", "name": "Default Group"}, "site": {"id": "2223334445556667778", "name": "Default site"}}}, "result": null, "severity": "CRITICAL", "sloDetails": null, "status": "RESOLVED", "storylineId": "B02A4270B2C04B06", "ticketId": null, "updatedAt": "2025-04-25T18:18:29.148Z"}}
+                ]
+              }
+            }
+          }
