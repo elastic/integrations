@@ -146,10 +146,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| error.message | Error message. | match_only_text |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
 | event.module | Event module. | constant_keyword |  |  |
 | grafana.alerting.active_alerts | Number of active alerts. | long |  | gauge |
 | grafana.alerting.active_configurations | Number of active alerting configurations. | long |  | gauge |
@@ -289,8 +286,6 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | prometheus.labels.\* | Prometheus metric labels. | keyword |  |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |  |  |
 
 
 ### Logs
@@ -360,7 +355,6 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | Cloud account ID. | keyword |
 | cloud.availability_zone | Cloud availability zone. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -371,14 +365,8 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset. | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | grafana.log.handler | Request handler name. | keyword |
 | grafana.log.orgId | Organization ID in context. | long |
 | grafana.log.subUrl | Grafana sub-URL prefix. | keyword |
@@ -386,20 +374,8 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | host.name | Host name. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
-| http.request.referrer | Referrer for this HTTP request. | keyword |
-| http.response.body.bytes | Size in bytes of the response body. | long |
-| http.response.status_code | HTTP response status code. | long |
 | input.type | Type of Filebeat input. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| log.logger | The name of the logger inside the application that created the event. | keyword |
 | log.offset | Log offset. | long |
-| log.origin.file.line | The line number of the file containing the source code which originated the log event. | long |
-| log.origin.file.name | The name of the file containing the source code which originated the log event. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| tags | List of keywords used to tag each event. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
-| user.name | Short name or login of the user. | keyword |
 
 
 ## Setup
