@@ -92,7 +92,7 @@ You'll see the trace waterfall UI in there. You can expand it to become fullscre
 
 ### Viewing details from a crash
 
-Within the **[Android OTel] Application Overview** dashboard, scroll down to the "Crashes" section to see the list of crashes by group ID. Select one group ID and click on "View crash details" to see that crash details in a separate dashboard.
+Within the **[Android OTel] Application Overview** dashboard, scroll down to the "Crashes" section to see the list of crashes by group ID. Select one group ID and click on "View crash details" to see that crash's details in a separate dashboard.
 
 ![View crash details](../img/drilldown-on-crash-details.png)
 
