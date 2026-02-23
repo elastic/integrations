@@ -21,7 +21,7 @@ This integration collects log messages of the following type:
 - `Alert`: Collects `alert` logs from the Flashpoint Ignite API (endpoint: `/alert-management/v1/notifications`),
 - `Indicator`: Collects `indicator` logs from the Flashpoint Ignite API (endpoint: `/technical-intelligence/v2/indicators`),
 
-### Supported Use Cases
+### Supported use cases
 
 Integrating Flashpoint with Elastic SIEM provides centralized visibility into both threat intelligence **Alerts** and **Indicators**, enabling efficient monitoring and investigation within Kibana dashboards.
 
@@ -127,7 +127,7 @@ For more information on architectures that can be used for scaling this integrat
 
 These input is used in the integration:
 
-- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
 ### API usage
 
