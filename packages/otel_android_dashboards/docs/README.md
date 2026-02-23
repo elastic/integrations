@@ -80,7 +80,7 @@ To start populating these dashboards:
 
 3. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
 
-For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/edot-android/getting-started).
+For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android/getting-started).
 
 ## Validation
 
