@@ -19,7 +19,9 @@ state:
   initial_interval: {{initial_interval}}
   limit: {{limit}}
   apikey: {{escape_string apikey}}
+ {{#if password}}
   password: {{escape_string password}}
+ {{/if}}
   username: {{escape_string username}}
 redact:
   fields:
@@ -195,7 +197,7 @@ program: |-
           "Header": {
             "Authorization": [
               sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-              ((state.?password.orValue("") != "") ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+              (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
             ],
             "Content-Type": ["application/json"],
           },
