@@ -783,11 +783,6 @@ This is the `event` dataset.
 | m365_defender.event.md5 | MD5 hash of the file that the recorded action was applied to. | keyword |
 | m365_defender.event.merged_device_ids | Previous device IDs that have been assigned to the same device. | keyword |
 | m365_defender.event.merged_to_device_id | The most recent device ID assigned to a device. | keyword |
-| m365_defender.event.message_format_subtype | Subtype of message format, for example, HTML. | keyword |
-| m365_defender.event.message_format_type | Type of message format; possible values: RichText, Text. | keyword |
-| m365_defender.event.message_id | Identifier for the message (non-unique). | keyword |
-| m365_defender.event.message_subject | Subject of the message, if it exists. | keyword |
-| m365_defender.event.message_version | Version number of the message. | keyword |
 | m365_defender.event.model | Model name or number of the product from the vendor or manufacturer, only available if device discovery finds enough information about this attribute. | keyword |
 | m365_defender.event.network.adapter_name | Name of the network adapter. | keyword |
 | m365_defender.event.network.adapter_status | Operational status of the network adapter. For the possible values, refer to this enumeration. | keyword |
@@ -809,7 +804,6 @@ This is the `event` dataset.
 | m365_defender.event.os.platform | Platform of the operating system running on the machine. This indicates specific operating systems, including variations within the same family, such as Windows 11, Windows 10 and Windows 7. | keyword |
 | m365_defender.event.os.version | Version of the operating system running on the machine. | keyword |
 | m365_defender.event.os.version_info | Additional information about the OS version, such as the popular name, code name, or version number. | keyword |
-| m365_defender.event.parent_message_id | Identifier for the message that the current message was a reply to, otherwise this is the same as the MessageId. | keyword |
 | m365_defender.event.port | TCP port used during communication. | long |
 | m365_defender.event.previous.file_name | Original name of the file that was renamed as a result of the action. | keyword |
 | m365_defender.event.previous.folder_path | Original folder containing the file before the recorded action was applied. | keyword |
