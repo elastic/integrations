@@ -15,7 +15,7 @@ This package has been tested with EDOT Android and OpenTelemetry semantic conven
 
 ## What do I need to use this package?
 
-- An Android application instrumented with [EDOT Android](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/edot-android/) or an equivalent OpenTelemetry SDK sending data to the Elastic Stack.
+- An Android application instrumented with [EDOT Android](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) or an equivalent OpenTelemetry SDK sending data to the Elastic Stack.
 - Kibana 8.19.0 or later, or Kibana 9.1.0 or later.
 - Telemetry data must include the following fields for full dashboard functionality:
   - `os.name` (set to `"Android"`)
