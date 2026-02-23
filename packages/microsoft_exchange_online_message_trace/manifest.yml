@@ -26,8 +26,8 @@ policy_templates:
     title: Microsoft Exchange Online Message Trace
     description: Microsoft Exchange Online Message Trace logs
     inputs:
-      - type: httpjson
-        title: Collect Exchange Online Message Trace logs via API
+      - type: cel
+        title: Collect Exchange Online Message Trace logs via Graph API
         description: Collect Exchange Online logs
         vars:
           - name: url
@@ -60,6 +60,35 @@ policy_templates:
             multi: false
             required: true
             show_user: true
+          - name: batch_size
+            type: text
+            title: Batch Size
+            description: Batch size for the response of Exchange Online Message Trace
+            default: 1000
+            required: true
+          - name: interval
+            type: text
+            title: Interval
+            description: Duration between requests to Exchange Online. Supported units for this parameter are h/m/s.
+            default: 1h
+            multi: false
+            required: true
+            show_user: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            description: How far back to pull the initial log from Exchange Online. Supported units for this parameter are h/m/s.
+            default: 48h
+            multi: false
+            required: true
+            show_user: true
+          - name: local_domains
+            type: text
+            title: Local Domains
+            multi: true
+            required: true
+            show_user: true
+            description: Company owned domains. This is used to calculate the email direction and extract user names.
           - name: scopes
             type: text
             title: Oauth2 Scopes
@@ -105,38 +134,6 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-          - name: batch_size
-            type: text
-            title: Batch Size
-            description: Batch size for the response of Exchange Online Message Trace
-            default: 1000
-            required: true
-          - name: interval
-            type: text
-            title: Interval
-            description: Duration between requests to Exchange Online. Supported units for this parameter are h/m/s.
-            default: 1h
-            multi: false
-            required: true
-            show_user: true
-          - name: initial_interval
-            type: text
-            title: Initial Interval
-            description: How far back to pull the initial log from Exchange Online. Supported units for this parameter are h/m/s.
-            default: 48h
-            multi: false
-            required: true
-            show_user: true
-          - name: min_age
-            type: text
-            title: Minimum Age
-            description: |
-              Logs will not be requested until they are at least this old. This value should be always lesser in value than the initial_interval.
-              Supported units for this parameter are h/m/s.
-            default: 1h
-            multi: false
-            required: true
-            show_user: true
           - name: drop_status
             type: text
             title: Drop Logs With Status
@@ -151,7 +148,7 @@ policy_templates:
             default: 1h
             multi: false
             required: true
-            show_user: true
+            show_user: false
           - name: request_timeout
             type: text
             title: Request Timeout
@@ -159,14 +156,7 @@ policy_templates:
             default: 60s
             multi: false
             required: true
-            show_user: true
-          - name: local_domains
-            type: text
-            title: Local Domains
-            multi: true
-            required: true
-            show_user: true
-            description: Company owned domains. This is used to calculate the email direction and extract user names.
+            show_user: false
           - name: ssl
             type: yaml
             title: SSL Configuration
