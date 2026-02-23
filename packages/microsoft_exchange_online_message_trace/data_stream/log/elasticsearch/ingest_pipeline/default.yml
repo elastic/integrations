@@ -14,6 +14,47 @@ processors:
   - json:
       field: event.original
       target_field: microsoft.online_message_trace
+  # Map field names from the Graph API to equivalents from the previous API
+  - rename:
+      field: microsoft.online_message_trace.fromIP
+      target_field: microsoft.online_message_trace.FromIP
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.messageId
+      target_field: microsoft.online_message_trace.MessageId
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.id
+      target_field: microsoft.online_message_trace.MessageTraceId
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.receivedDateTime
+      target_field: microsoft.online_message_trace.Received
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.recipientAddress
+      target_field: microsoft.online_message_trace.RecipientAddress
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.senderAddress
+      target_field: microsoft.online_message_trace.SenderAddress
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.size
+      target_field: microsoft.online_message_trace.Size
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.status
+      target_field: microsoft.online_message_trace.Status
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.subject
+      target_field: microsoft.online_message_trace.Subject
+      ignore_missing: true
+  - rename:
+      field: microsoft.online_message_trace.toIP
+      target_field: microsoft.online_message_trace.ToIP
+      ignore_missing: true
   # Drop "null" event
   - drop:
       if: ctx.microsoft?.online_message_trace?.value instanceof List && ctx.microsoft.online_message_trace.value.length == 0 
