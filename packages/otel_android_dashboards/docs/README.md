@@ -27,6 +27,10 @@ This package has been tested with EDOT Android and OpenTelemetry semantic conven
 
 EDOT Android populates all of these fields automatically.
 
+### Try it out
+
+Check out the EDOT Android's [Demo application](https://github.com/elastic/android-agent-demo) guide to set up a test environment and take a quick look at how its data looks like with the dashboards provided in this package.
+
 ## Dashboards
 
 ### Application Overview
@@ -96,5 +100,6 @@ If you do not see data in the dashboards, make sure that:
 - Your Android application is sending telemetry to the Elastic Stack. You can verify this in Kibana's Discover by searching for `os.name: "Android"` in the `logs-generic.otel*` or `traces-generic.otel*` index patterns.
 - The `session.id` field is present in the telemetry data. EDOT Android includes this automatically. If you are using a vanilla OpenTelemetry SDK, you may need to configure session tracking manually.
 - The `service.name` field is set correctly so the application name filter works as expected.
+- The time range selected in Kibana covers the period when your application was sending telemetry. If the default time range doesn't show any data, try expanding it (for example, to "Last 7 days" or "Last 30 days") to confirm data has been ingested.
 
-For general help with Elastic integrations, refer to [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+For general help with the EDOT Android SDK, refer to [EDOT Android troubleshooting](https://www.elastic.co/docs/troubleshoot/ingest/opentelemetry/edot-sdks/android).
