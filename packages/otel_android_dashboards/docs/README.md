@@ -60,7 +60,7 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 
 ## Setting it up
 
-1. Instrument your Android application with an OpenTelemetry SDK and start sending data to your Elastic Stack.
+1. Instrument your Android application and start sending data to your Elastic Stack.
 2. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
 
 For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android/getting-started).
