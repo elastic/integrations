@@ -1,0 +1,2427 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    },
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "293b3be7-4034-49bf-8f48-63caf6fd37cb": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "TS metrics-collectortelemetry.otel-* | STATS BY service.instance.id, service.name \n| EVAL identifier = CONCAT(service.instance.id, \" (\",service.name,\")\")\n| KEEP identifier\n",
+                        "selectedOptions": [
+                            "5e8f975b-dfac-4f1e-9627-31224cfa8375 (otelcol-contrib)"
+                        ],
+                        "singleSelect": true,
+                        "title": "instance",
+                        "variableName": "instance",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "296353c0-38ed-4ba5-bff3-7b741812bf99": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_receiver_accepted_spans IS NOT NULL\n| STATS transport = VALUES(transport) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL transport = MV_APPEND(transport, \"--ALL--\")\n| MV_EXPAND transport\n| STATS BY transport\n| SORT transport",
+                        "selectedOptions": [
+                            "grpc"
+                        ],
+                        "singleSelect": true,
+                        "title": "traces_receiver_transport",
+                        "variableName": "traces_receiver_transport",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 2,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "5d0ac793-833e-413b-a824-54ec77d56da4": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_processor_incoming_items IS NOT NULL\n| WHERE otel.signal == \"traces\"\n| STATS processor = VALUES(processor) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL processor = MV_APPEND(processor, \"--ALL--\")\n| MV_EXPAND processor\n| STATS BY processor\n| SORT processor",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "trace_processor",
+                        "variableName": "trace_processor",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 3,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "759dc07b-b3e7-4530-b420-80a8f02f61aa": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_exporter_sent_spans IS NOT NULL\n| STATS exporter = VALUES(exporter) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL exporter = MV_APPEND(exporter, \"--ALL--\")\n| MV_EXPAND exporter\n| STATS BY exporter\n| SORT exporter",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "trace_exporter",
+                        "variableName": "trace_exporter",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 4,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "e0f3d45f-aada-4154-9450-b9ac814b43f1": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_receiver_accepted_spans IS NOT NULL\n| STATS receiver = VALUES(receiver) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL receiver = MV_APPEND(receiver, \"--ALL--\")\n| MV_EXPAND receiver\n| STATS BY receiver\n| SORT receiver",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "trace_receiver",
+                        "variableName": "trace_receiver",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 1,
+                    "type": "esqlControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_22911b79-9e9d-4c36-b6d6-2ad27de30dee_dashboard",
+                            "id": "22911b79-9e9d-4c36-b6d6-2ad27de30dee",
+                            "label": "Overview",
+                            "order": 0,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_27150f96-4418-4ed0-948e-a1e864f09815_dashboard",
+                            "id": "27150f96-4418-4ed0-948e-a1e864f09815",
+                            "label": "Traces",
+                            "order": 1,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_8ee1a210-4e88-4848-9e52-6eb8c9030f01_dashboard",
+                            "id": "8ee1a210-4e88-4848-9e52-6eb8c9030f01",
+                            "label": "Metrics",
+                            "order": 2,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_d5d0402e-6b7f-4014-bdf1-cd7586cc1736_dashboard",
+                            "id": "d5d0402e-6b7f-4014-bdf1-cd7586cc1736",
+                            "label": "Logs",
+                            "order": 3,
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "1eb91f07-355b-46c2-847e-914a95f81949",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1eb91f07-355b-46c2-847e-914a95f81949",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## Receiver metrics (Traces)"
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "bd014cd2-52ab-4179-969e-6723702def56",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "bd014cd2-52ab-4179-969e-6723702def56",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "51306f64-e0f7-42c7-abfb-cd9f22e67bae": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Spans / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_spans, receiver, transport, service.instance.id\n| STATS spans_rate = SUM(RATE(otelcol_receiver_accepted_spans)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_spans, receiver, transport, service.instance.id\n| STATS spans_rate = SUM(RATE(otelcol_receiver_accepted_spans)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "spans_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "51306f64-e0f7-42c7-abfb-cd9f22e67bae",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "spans_rate over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of accepted spans for the selected receivers and transports based on the otelcol_receiver_accepted_spans metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_spans, receiver, transport, service.instance.id\n| STATS spans_rate = SUM(RATE(otelcol_receiver_accepted_spans)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Receiver - Accepted Spans Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "4b3313ae-95d5-4cd5-afac-2316685d10ac",
+                    "w": 19,
+                    "x": 10,
+                    "y": 5
+                },
+                "panelIndex": "4b3313ae-95d5-4cd5-afac-2316685d10ac",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "51306f64-e0f7-42c7-abfb-cd9f22e67bae": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Spans / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_spans, receiver, transport, service.instance.id\n| STATS spans_rate = SUM(RATE(otelcol_receiver_refused_spans)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_spans, receiver, transport, service.instance.id\n| STATS spans_rate = SUM(RATE(otelcol_receiver_refused_spans)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "spans_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "51306f64-e0f7-42c7-abfb-cd9f22e67bae",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#ee72a6",
+                                                "forAccessor": "spans_rate"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "spans_rate over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of refused spans for the selected receivers and transports based on the otelcol_receiver_refused_spans metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_spans, receiver, transport, service.instance.id\n| STATS spans_rate = SUM(RATE(otelcol_receiver_refused_spans)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Receiver - Refused Spans Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "c95be494-6d0c-45cb-99f5-e98f10398638",
+                    "w": 19,
+                    "x": 29,
+                    "y": 5
+                },
+                "panelIndex": "c95be494-6d0c-45cb-99f5-e98f10398638",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## Processor metrics (Traces)",
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "d54e8184-623f-448f-9ce1-a947402c5ec6",
+                    "w": 48,
+                    "x": 0,
+                    "y": 17
+                },
+                "panelIndex": "d54e8184-623f-448f-9ce1-a947402c5ec6",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "51306f64-e0f7-42c7-abfb-cd9f22e67bae": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Spans / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS spans_rate = AVG(RATE(otelcol_processor_incoming_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS spans_rate = AVG(RATE(otelcol_processor_incoming_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "spans_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "51306f64-e0f7-42c7-abfb-cd9f22e67bae",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "spans_rate over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the average rate of incoming spans for the selected processors based on the otelcol_processor_incoming_items metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS spans_rate = AVG(RATE(otelcol_processor_incoming_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Processor - Incoming Spans Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "4c44d9a9-3d34-46c9-a785-2bfaf0a89e93",
+                    "w": 19,
+                    "x": 10,
+                    "y": 20
+                },
+                "panelIndex": "4c44d9a9-3d34-46c9-a785-2bfaf0a89e93",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "51306f64-e0f7-42c7-abfb-cd9f22e67bae": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Spans / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS spans_rate = AVG(RATE(otelcol_processor_outgoing_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS spans_rate = AVG(RATE(otelcol_processor_outgoing_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "spans_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "51306f64-e0f7-42c7-abfb-cd9f22e67bae",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#61a2ff",
+                                                "forAccessor": "spans_rate"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "spans_rate over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the average rate of outgoing spans for the selected processors based on the otelcol_processor_outgoing_items metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS spans_rate = AVG(RATE(otelcol_processor_outgoing_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Processor - Outgoing Spans Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "5c81e774-b133-43e0-8934-b42ea3a662e7",
+                    "w": 19,
+                    "x": 29,
+                    "y": 20
+                },
+                "panelIndex": "5c81e774-b133-43e0-8934-b42ea3a662e7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## Exporter metrics (Traces)",
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "3ba43552-b4b8-4ba6-aacf-f0b0d91e7136",
+                    "w": 48,
+                    "x": 0,
+                    "y": 32
+                },
+                "panelIndex": "3ba43552-b4b8-4ba6-aacf-f0b0d91e7136",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "50ebc2ae-a0e9-41b2-a9f8-8772696c1d1d": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "queue_size",
+                                                    "customLabel": true,
+                                                    "fieldName": "queue_size",
+                                                    "inMetricDimension": true,
+                                                    "label": "Current Queue Size",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {}
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_size, service.instance.id\n| STATS queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_size, service.instance.id\n| STATS queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "layerId": "50ebc2ae-a0e9-41b2-a9f8-8772696c1d1d",
+                                "layerType": "data",
+                                "metricAccessor": "queue_size",
+                                "subtitle": "[batches]"
+                            }
+                        },
+                        "title": "queue_size",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_size, service.instance.id\n| STATS queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "1dee4e5d-0e20-4b3c-8fa1-ee36e2c74199",
+                    "w": 10,
+                    "x": 0,
+                    "y": 35
+                },
+                "panelIndex": "1dee4e5d-0e20-4b3c-8fa1-ee36e2c74199",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "251106ea-3a8c-4402-907f-456662b14a3c": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "queue_size",
+                                                    "customLabel": true,
+                                                    "fieldName": "queue_size",
+                                                    "inMetricDimension": true,
+                                                    "label": "Batches in Queue",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_size, service.instance.id\n| STATS queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_size, service.instance.id\n| STATS queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "queue_size"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "251106ea-3a8c-4402-907f-456662b14a3c",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "queue_size over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the overall queue size for the selected trace exporters based on the otelcol_exporter_queue_size metric",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_size, service.instance.id\n| STATS queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Exporter - Queue Size"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "16ba08db-ccd6-41ea-8512-18767bb527b4",
+                    "w": 19,
+                    "x": 10,
+                    "y": 35
+                },
+                "panelIndex": "16ba08db-ccd6-41ea-8512-18767bb527b4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "95b12abc-d8d8-4016-90da-0f940e090ac7": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "queue_utilization",
+                                                    "customLabel": true,
+                                                    "fieldName": "queue_utilization",
+                                                    "inMetricDimension": true,
+                                                    "label": "Utilization",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_capacity, metrics.otelcol_exporter_queue_size, exporter, service.instance.id\n| STATS capacity = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_capacity)),\n    queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL queue_utilization = queue_size::double / capacity::double\n| KEEP Time, queue_utilization"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_capacity, metrics.otelcol_exporter_queue_size, exporter, service.instance.id\n| STATS capacity = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_capacity)),\n    queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL queue_utilization = queue_size::double / capacity::double\n| KEEP Time, queue_utilization"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "queue_utilization"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "95b12abc-d8d8-4016-90da-0f940e090ac7",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "lowerBound": 0,
+                                    "mode": "custom",
+                                    "upperBound": 1
+                                }
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Ratio between otelcol_exporter_queue_size and otelcol_exporter_queue_capacity",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_capacity, metrics.otelcol_exporter_queue_size, exporter, service.instance.id\n| STATS capacity = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_capacity)),\n    queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL queue_utilization = queue_size::double / capacity::double\n| KEEP Time, queue_utilization"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Exporter - Queue Utilization"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "b7048f32-6dd8-46a2-8642-16144157fbd7",
+                    "w": 19,
+                    "x": 29,
+                    "y": 35
+                },
+                "panelIndex": "b7048f32-6dd8-46a2-8642-16144157fbd7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "8b21d13b-d926-40ef-85ed-54e6360876e7": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "queue_utilization",
+                                                    "customLabel": true,
+                                                    "fieldName": "queue_utilization",
+                                                    "inMetricDimension": true,
+                                                    "label": "Current Queue Utilization",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "293e9080-8cf0-4ac5-9e60-77d7fa8365d7",
+                                                    "customLabel": true,
+                                                    "fieldName": "max_val",
+                                                    "label": "Max",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "params": {
+                                                            "id": "number"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics*",
+                                                            "sourceField": "max_val"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_capacity, metrics.otelcol_exporter_queue_size, exporter, service.instance.id\n| STATS capacity = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_capacity)),\n    queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL queue_utilization = queue_size::double / capacity::double, max_val = 1.0\n| KEEP queue_utilization, max_val"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_capacity, metrics.otelcol_exporter_queue_size, exporter, service.instance.id\n| STATS capacity = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_capacity)),\n    queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL queue_utilization = queue_size::double / capacity::double, max_val = 1.0\n| KEEP queue_utilization, max_val"
+                            },
+                            "visualization": {
+                                "layerId": "8b21d13b-d926-40ef-85ed-54e6360876e7",
+                                "layerType": "data",
+                                "maxAccessor": "293e9080-8cf0-4ac5-9e60-77d7fa8365d7",
+                                "metricAccessor": "queue_utilization",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 0.7
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 0.9
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 0.7
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 0.9
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 1
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "progressDirection": "horizontal",
+                                "showBar": true
+                            }
+                        },
+                        "title": "queue_utilization",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE data_type == \"traces\"\n| WHERE ?trace_exporter == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_queue_capacity, metrics.otelcol_exporter_queue_size, exporter, service.instance.id\n| STATS capacity = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_capacity)),\n    queue_size = SUM(LAST_OVER_TIME(metrics.otelcol_exporter_queue_size)) \n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL queue_utilization = queue_size::double / capacity::double, max_val = 1.0\n| KEEP queue_utilization, max_val"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "faa9b3b4-6a5e-4613-9f6f-91d14481bbff",
+                    "w": 10,
+                    "x": 0,
+                    "y": 40
+                },
+                "panelIndex": "faa9b3b4-6a5e-4613-9f6f-91d14481bbff",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "5825edef-ba49-46f2-8b15-fdd182bec30b": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "sent_spans",
+                                                    "customLabel": true,
+                                                    "fieldName": "sent_spans",
+                                                    "inMetricDimension": true,
+                                                    "label": "Sent Spans",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_sent_spans, exporter, service.instance.id\n| STATS \n    sent_spans = SUM(INCREASE(otelcol_exporter_sent_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP sent_spans"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_sent_spans, exporter, service.instance.id\n| STATS \n    sent_spans = SUM(INCREASE(otelcol_exporter_sent_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP sent_spans"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#16C5C0",
+                                "layerId": "5825edef-ba49-46f2-8b15-fdd182bec30b",
+                                "layerType": "data",
+                                "metricAccessor": "sent_spans"
+                            }
+                        },
+                        "title": "sent_spans",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_sent_spans, exporter, service.instance.id\n| STATS \n    sent_spans = SUM(INCREASE(otelcol_exporter_sent_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP sent_spans"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "bccda6ab-3b9f-4e70-a7a6-5f84d8a857e5",
+                    "w": 10,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "bccda6ab-3b9f-4e70-a7a6-5f84d8a857e5",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "4c8a7e34-e1a6-4ae8-8f7d-6a39fbda83e8": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Spans / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_sent_spans, service.instance.id\n| STATS spans_rate = SUM(RATE(metrics.otelcol_exporter_sent_spans)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_sent_spans, service.instance.id\n| STATS spans_rate = SUM(RATE(metrics.otelcol_exporter_sent_spans)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "spans_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "4c8a7e34-e1a6-4ae8-8f7d-6a39fbda83e8",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "spans_rate over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of sent spans for the selected receivers based on the metrics.otelcol_exporter_sent_spans metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_sent_spans, service.instance.id\n| STATS spans_rate = SUM(RATE(metrics.otelcol_exporter_sent_spans)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Exporter - Sent Spans Rate"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "70d804d5-903e-4afe-9ebc-afcbe7d609b4",
+                    "w": 19,
+                    "x": 10,
+                    "y": 45
+                },
+                "panelIndex": "70d804d5-903e-4afe-9ebc-afcbe7d609b4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "4c8a7e34-e1a6-4ae8-8f7d-6a39fbda83e8": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Spans / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_send_failed_spans, service.instance.id\n| STATS spans_rate = SUM(RATE(metrics.otelcol_exporter_send_failed_spans)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_send_failed_spans, service.instance.id\n| STATS spans_rate = SUM(RATE(metrics.otelcol_exporter_send_failed_spans)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "spans_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "4c8a7e34-e1a6-4ae8-8f7d-6a39fbda83e8",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#ee72a6",
+                                                "forAccessor": "spans_rate"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "spans_rate over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of send failed spans for the selected receivers based on the otelcol_exporter_send_failed_spans metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_send_failed_spans, service.instance.id\n| STATS spans_rate = SUM(RATE(metrics.otelcol_exporter_send_failed_spans)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces Exporter - Spans Rate Failed Sending"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "3466cdb3-a103-4046-8206-5b2e0d24e7b6",
+                    "w": 19,
+                    "x": 29,
+                    "y": 45
+                },
+                "panelIndex": "3466cdb3-a103-4046-8206-5b2e0d24e7b6",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "315fd5f1-175d-4de2-9dfc-272364300bac": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "send_failed_spans",
+                                                    "customLabel": true,
+                                                    "fieldName": "send_failed_spans",
+                                                    "inMetricDimension": true,
+                                                    "label": "Send Failed Spans",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_send_failed_spans, exporter, service.instance.id\n| STATS \n    send_failed_spans = SUM(INCREASE(otelcol_exporter_send_failed_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP send_failed_spans"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_send_failed_spans, exporter, service.instance.id\n| STATS \n    send_failed_spans = SUM(INCREASE(otelcol_exporter_send_failed_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP send_failed_spans"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#EE72A6",
+                                "layerId": "315fd5f1-175d-4de2-9dfc-272364300bac",
+                                "layerType": "data",
+                                "metricAccessor": "send_failed_spans"
+                            }
+                        },
+                        "title": "send_failed_spans",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?trace_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_send_failed_spans, exporter, service.instance.id\n| STATS \n    send_failed_spans = SUM(INCREASE(otelcol_exporter_send_failed_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP send_failed_spans"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "90d7ad51-aa6a-4650-85a8-fd9dc5e35108",
+                    "w": 10,
+                    "x": 0,
+                    "y": 50
+                },
+                "panelIndex": "90d7ad51-aa6a-4650-85a8-fd9dc5e35108",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "43b7e7c1-ed82-47b3-9a47-3d2cc007d1c0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "refused_spans",
+                                                    "customLabel": true,
+                                                    "fieldName": "refused_spans",
+                                                    "inMetricDimension": true,
+                                                    "label": "Refused Spans",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_spans, receiver, transport, service.instance.id\n| STATS \n    refused_spans = SUM(INCREASE(otelcol_receiver_refused_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP refused_spans"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_spans, receiver, transport, service.instance.id\n| STATS \n    refused_spans = SUM(INCREASE(otelcol_receiver_refused_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP refused_spans"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#EE72A6",
+                                "layerId": "43b7e7c1-ed82-47b3-9a47-3d2cc007d1c0",
+                                "layerType": "data",
+                                "metricAccessor": "refused_spans"
+                            }
+                        },
+                        "title": "refused_spans",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_spans, receiver, transport, service.instance.id\n| STATS \n    refused_spans = SUM(INCREASE(otelcol_receiver_refused_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP refused_spans"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "3cffd3e4-8ee0-442e-8d1c-ea90ef66eedb",
+                    "w": 10,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "3cffd3e4-8ee0-442e-8d1c-ea90ef66eedb",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c1fcc507-d6cb-49ae-8e99-62698bcad2c4": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "accepted_spans",
+                                                    "customLabel": true,
+                                                    "fieldName": "accepted_spans",
+                                                    "inMetricDimension": true,
+                                                    "label": "Accepted Spans",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": ""
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_spans, receiver, transport, service.instance.id\n| STATS \n    accepted_spans = SUM(INCREASE(otelcol_receiver_accepted_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP accepted_spans"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_spans, receiver, transport, service.instance.id\n| STATS \n    accepted_spans = SUM(INCREASE(otelcol_receiver_accepted_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP accepted_spans"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#16C5C0",
+                                "layerId": "c1fcc507-d6cb-49ae-8e99-62698bcad2c4",
+                                "layerType": "data",
+                                "metricAccessor": "accepted_spans"
+                            }
+                        },
+                        "title": "accepted_spans",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?trace_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?trace_receiver == receiver)\n| WHERE ?traces_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?traces_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_spans, receiver, transport, service.instance.id\n| STATS \n    accepted_spans = SUM(INCREASE(otelcol_receiver_accepted_spans))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP accepted_spans"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "dfe29a89-496e-4383-a8dc-9acabf24bf40",
+                    "w": 10,
+                    "x": 0,
+                    "y": 5
+                },
+                "panelIndex": "dfe29a89-496e-4383-a8dc-9acabf24bf40",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "a8f96fbf-3544-4c25-a62e-7120906c507d": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_increase",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_increase",
+                                                    "inMetricDimension": true,
+                                                    "label": "Outgoing Spans",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS spans_increase = AVG(INCREASE(otelcol_processor_outgoing_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP spans_increase"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS spans_increase = AVG(INCREASE(otelcol_processor_outgoing_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP spans_increase"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#61A2FF",
+                                "layerId": "a8f96fbf-3544-4c25-a62e-7120906c507d",
+                                "layerType": "data",
+                                "metricAccessor": "spans_increase",
+                                "subtitle": "avg"
+                            }
+                        },
+                        "title": "spans_increase",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Shows the average rate of incoming spans for the selected processors.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS spans_increase = AVG(INCREASE(otelcol_processor_outgoing_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP spans_increase"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "ae966b79-9852-418a-a7dd-fb9bb91016f9",
+                    "w": 10,
+                    "x": 0,
+                    "y": 26
+                },
+                "panelIndex": "ae966b79-9852-418a-a7dd-fb9bb91016f9",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "a8f96fbf-3544-4c25-a62e-7120906c507d": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "spans_increase",
+                                                    "customLabel": true,
+                                                    "fieldName": "spans_increase",
+                                                    "inMetricDimension": true,
+                                                    "label": "Incoming Spans",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS spans_increase = AVG(INCREASE(otelcol_processor_incoming_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP spans_increase"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS spans_increase = AVG(INCREASE(otelcol_processor_incoming_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP spans_increase"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#16C5C0",
+                                "layerId": "a8f96fbf-3544-4c25-a62e-7120906c507d",
+                                "layerType": "data",
+                                "metricAccessor": "spans_increase",
+                                "subtitle": "avg"
+                            }
+                        },
+                        "title": "spans_increase",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Shows the average rate of incoming spans for the selected processors.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"traces\"\n| WHERE ?trace_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?trace_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS spans_increase = AVG(INCREASE(otelcol_processor_incoming_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP spans_increase"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "293bebb5-1a09-4b40-ab6f-4f5562946009",
+                    "w": 10,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "293bebb5-1a09-4b40-ab6f-4f5562946009",
+                "type": "lens"
+            }
+        ],
+        "timeFrom": "now-24h/h",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "OTel Collector internal telemetry - Traces"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-02-23T08:47:07.046Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "otel_collector_internal_telemetry-58ba1893-9b1b-46e7-8a32-0765a5dd120a",
+    "references": [
+        {
+            "id": "otel_collector_internal_telemetry-4c979b50-19eb-411c-8cfd-6ffe37fb0092",
+            "name": "1eb91f07-355b-46c2-847e-914a95f81949:link_22911b79-9e9d-4c36-b6d6-2ad27de30dee_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "otel_collector_internal_telemetry-58ba1893-9b1b-46e7-8a32-0765a5dd120a",
+            "name": "1eb91f07-355b-46c2-847e-914a95f81949:link_27150f96-4418-4ed0-948e-a1e864f09815_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "otel_collector_internal_telemetry-8f77b7f6-0ec0-462b-bb59-0607ffc464e1",
+            "name": "1eb91f07-355b-46c2-847e-914a95f81949:link_8ee1a210-4e88-4848-9e52-6eb8c9030f01_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "otel_collector_internal_telemetry-919a1e90-10fd-4671-9612-bb2dd2f5530a",
+            "name": "1eb91f07-355b-46c2-847e-914a95f81949:link_d5d0402e-6b7f-4014-bdf1-cd7586cc1736_dashboard",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
