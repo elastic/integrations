@@ -60,38 +60,21 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 - **Top affected manufacturers** — Donut chart of exception occurrences by device manufacturer.
 - **Full stacktrace** — The complete stacktrace for the selected exception.
 
-## Getting started with EDOT Android
+## Setting it up
 
-To start populating these dashboards:
-
-1. Add the [EDOT Android agent plugin](https://plugins.gradle.org/plugin/co.elastic.otel.android.agent) to your app's `build.gradle.kts` file:
-
-```kotlin
-plugins {
-    id("com.android.application")
-    id("co.elastic.otel.android.agent") version "[latest_version]"
-}
-```
-
-2. Initialize the agent in your application code:
-
-```kotlin
-val agent = ElasticApmAgent.builder(application)
-    .setServiceName("Your app name")
-    .setExportUrl("https://your-elastic-endpoint")
-    .setExportAuthentication(Authentication.ApiKey("your-api-key"))
-    .build()
-```
-
-3. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
+1. Start by sending data to your Elastic Stack via the [EDOT Android agent](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) or an equivalent OpenTelemetry SDK sending data to the Elastic Stack.
+2. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
 
 For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android/getting-started).
 
-## Validation
+## Visualizing your data
 
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Android OTel**.
 3. Open the **[Android OTel] Application Overview** dashboard and verify that data is populated.
+4. Select your application from the list of "Applications" in one of the top panels of the dashboard.
+5. (Optionally) Select the version of your application to narrow down your results.
+6. (Recommended) Click on values across the dashboard's panels to create filters for them to make the dashboard show you the specific data you'd like to check.
 
 ## Troubleshooting
 
