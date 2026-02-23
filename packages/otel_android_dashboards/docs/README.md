@@ -5,9 +5,7 @@
 
 Use this package to get Kibana dashboards for visualizing telemetry data from your Android applications instrumented with [OpenTelemetry](https://opentelemetry.io/). The dashboards provide visibility into application health, crash analysis, span performance, and session-level insights.
 
-The recommended way to send Android telemetry to the Elastic Stack is through the [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android), an APM agent built on top of OpenTelemetry that works with the Elastic Stack out of the box. EDOT Android provides automatic instrumentation, session tracking, disk buffering, and central configuration, along with all the context and tools to properly send data to the Elastic Stack, making it the easiest way to populate the dashboards included in this package.
-
-You can also use any other OpenTelemetry-compatible Android instrumentation, as long as the expected telemetry fields are present.
+The [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) is the easiest way to populate these dashboards. It is an APM agent built on top of OpenTelemetry that provides automatic instrumentation, session tracking, disk buffering, and central configuration out of the box. Any other OpenTelemetry-compatible Android instrumentation will also work, as long as the expected telemetry fields are present.
 
 ### Compatibility
 
@@ -15,7 +13,7 @@ This package has been tested with EDOT Android and OpenTelemetry semantic conven
 
 ## What do I need to use this package?
 
-- An Android application instrumented with [EDOT Android](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) or an equivalent OpenTelemetry SDK sending data to the Elastic Stack.
+- An Android application instrumented with an OpenTelemetry SDK (such as [EDOT Android](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android)) sending data to the Elastic Stack.
 - Kibana 8.19.0 or later, or Kibana 9.1.0 or later.
 - Telemetry data must include the following fields for full dashboard functionality:
   - `os.name` (set to `"Android"`)
@@ -25,7 +23,7 @@ This package has been tested with EDOT Android and OpenTelemetry semantic conven
   - `os.version` and `device.manufacturer` (for device breakdown charts)
   - `span.name` and `span.status.code` (for span analysis)
 
-EDOT Android populates all of these fields automatically.
+EDOT Android populates all of these fields automatically. If you are using a different OpenTelemetry SDK, ensure they are configured in your instrumentation.
 
 ### Try it out
 
@@ -62,7 +60,7 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 
 ## Setting it up
 
-1. Start by sending data to your Elastic Stack via the [EDOT Android agent](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) or an equivalent OpenTelemetry SDK.
+1. Instrument your Android application with an OpenTelemetry SDK and start sending data to your Elastic Stack.
 2. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
 
 For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android/getting-started).
@@ -101,7 +99,7 @@ Within the **[Android OTel] Application Overview** dashboard, scroll down to the
 If you do not see data in the dashboards, make sure that:
 
 - Your Android application is sending telemetry to the Elastic Stack. You can verify this in Kibana's Discover by searching for `os.name: "Android"` in the `logs-generic.otel*` or `traces-generic.otel*` index patterns.
-- The `session.id` field is present in the telemetry data. EDOT Android includes this automatically. If you are using a vanilla OpenTelemetry SDK, you may need to configure session tracking manually.
+- The `session.id` field is present in the telemetry data. If you are not using EDOT Android, you may need to configure session tracking manually.
 - The `service.name` field is set correctly so the application name filter works as expected.
 - The time range selected in Kibana covers the period when your application was sending telemetry. If the default time range doesn't show any data, try expanding it (for example, to "Last 7 days" or "Last 30 days") to confirm data has been ingested.
 
