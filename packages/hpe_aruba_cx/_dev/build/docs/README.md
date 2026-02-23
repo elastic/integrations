@@ -1,42 +1,234 @@
-# HPE Aruba CX Integration
+# HPE Aruba CX Integration for Elastic
 
-The HPE Aruba CX integration allows you to monitor the HPE Aruba Networking CX Switch. The switch series is modern, flexible, and intelligent stackable switch series ideally for enterprise network access, aggregation, core, and data center top of rack (ToR) deployments.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
-Use the HPE Aruba integration and follow the setup steps listed below to forward the CX Switch logging to a deployed standalone or managed Beat at a specific port listening for TCP or UDP data. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `log` when troubleshooting data/error issue encountered in the field.
+## Overview
 
+The HPE Aruba CX integration for Elastic enables you to collect logs from HPE Aruba Networking CX Switch series, providing visibility into network operations, security events, and hardware health. By ingesting these logs into the Elastic Stack, you can monitor network stability, audit configuration changes, and maintain security compliance across your infrastructure.
 
-## Compatibility
+### Compatibility
 
-This package follows the [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360** on the 10.15 version of the specification. As new appliances and OSes are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new/old version of the product line.
-The integration ONLY supports logs in ENGLISH, internationalization of logs to other languages are NOT supported.
+This integration is compatible with the following:
+- Tested models: HPE Aruba Networking CX Switch series 6000, 6300, and 8360.
+- AOS-CX version: Tested against AOS-CX version 10.15 and compatible with the AOS-CX 10.15 Event Log Message Reference Guide.
+- Language: This integration strictly supports logs in the English language.
 
+### How it works
 
-## Data streams
+This integration collects logs from Aruba CX switches by acting as a syslog receiver or by reading log files. You can deploy an Elastic Agent and configure it to receive data through one of the following methods:
+- TCP: The `log` data stream receives syslog messages over a TCP port. This is the recommended method for reliable delivery of system, security, and protocol logs.
+- UDP: The `log` data stream receives syslog messages over a UDP port. This method is designed for high-volume log ingest where minimal overhead on the source switch is required.
+- Filestream: The `log` data stream reads logs from files on the local host. This is typically used for ingesting audit logs or files stored on a management server.
 
-The HPE Aruba CX integration collects events into data stream: `log`
+Once the logs are received, the Elastic Agent parses and enriches the data before forwarding it to your Elastic deployment, where you can monitor it using the provided dashboards.
 
+## What data does this integration collect?
 
+The HPE Aruba CX integration collects log messages of the following types:
+* System and security logs: These include logs covering AAA (Authentication, Authorization, and Accounting), ACLs (Access Control Lists), port security, and user management events.
+* Protocol events: These provide detailed state change and error information for networking protocols including BGP, OSPF, ARP, BFD, and LACP.
+* Hardware health metrics: These are log-based health indicators for physical components such as fans, power supplies, and temperature sensors.
+* Configuration and management logs: These provide audit trails of configuration changes, firmware updates, and REST API interactions.
 
-## Requirements
+### Supported use cases
 
-Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-We recommend using our hosted Elasticsearch Service on Elastic Cloud, or self-manage the Elastic Stack on your own hardware.
+You can use the HPE Aruba CX integration for several operational and security use cases:
+* Security monitoring: You can monitor authentication and authorization events to identify unauthorized access attempts or suspicious configuration changes.
+* Network troubleshooting: You'll be able to analyze protocol events and state changes to diagnose connectivity issues and network instability.
+* Infrastructure health: You can track hardware-related log messages to proactively identify failing components like power supplies or fans.
+* Audit and compliance: You can maintain a record of configuration changes and administrative actions for regulatory compliance and internal security audits.
 
+## What do I need to use this integration?
 
-## Setup
+To use this integration, you'll need to meet the following Elastic and vendor-specific prerequisites:
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+### Vendor prerequisites
 
+Before you begin, ensure your HPE Aruba CX switch is set up with these configurations:
+- Administrative access to the HPE Aruba CX switch via the Command Line Interface (CLI) using SSH or a console connection.
+- Network connectivity between the switch and the Elastic Agent host. The switch must be able to reach the IP address of the Elastic Agent on the configured syslog port, such as `1470` for TCP or `1024` for UDP.
+- AOS-CX switch logging configured to forward logs in English.
+- Network Time Protocol (NTP) synchronized on all switches to ensure that timestamps are accurate and synchronized.
+- Sufficient privileges to enter configuration mode with `configure terminal` and save the configuration with `write memory`.
 
-## Logs
-### Exported fields
+### Elastic prerequisites
 
-Below are the fields from the different event types and their mapping into ECS supported fields or customer Aruba fields
+You'll also need to prepare your Elastic environment with the following:
+- An Elastic Agent installed and enrolled in a Fleet policy.
+- The HPE Aruba CX integration added to the relevant Agent policy.
+- Firewall rules on the Elastic Agent host that allow inbound traffic on the ports you specify in the integration configuration.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed on a host that can receive syslog data or has access to log files from your HPE Aruba CX switches. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Set up steps in HPE Aruba CX
+
+You can configure your AOS-CX switches to send logs to the Elastic Agent using either the CLI or the Web UI.
+
+#### Syslog (CLI method)
+
+To configure remote logging via the CLI:
+
+1. Log in to the AOS-CX switch CLI via SSH or console.
+2. Enter global configuration mode:
+   `switch# configure terminal`
+3. Configure the remote logging target with the transport protocol and port. Replace `<elastic_agent_ip>` (replace with your actual value) with your agent's IP.
+   For TCP (recommended for reliable delivery, default integration port `1470`):
+   `switch(config)# logging <elastic_agent_ip> port 1470 transport tcp`
+   For UDP (default integration port `1024`):
+   `switch(config)# logging <elastic_agent_ip> port 1024 transport udp`
+4. Specify the VRF if you use a dedicated management network:
+   `switch(config)# logging <elastic_agent_ip> vrf mgmt port 1470 transport tcp`
+5. Set the severity level to filter events sent to the agent (e.g., `informational` or `notice`):
+   `switch(config)# logging <elastic_agent_ip> severity informational`
+6. Exit and save the configuration to the startup config:
+   `switch(config)# end`
+   `switch# write memory`
+
+#### Syslog (Web UI method)
+
+To configure remote logging via the Web UI:
+
+1. Log in to the AOS-CX Web UI using administrative credentials.
+2. Navigate to **System > Logging** in the sidebar.
+3. Locate the **Logging Servers** section and click the **+ (Add)** button.
+4. Enter the **IP Address** of the Elastic Agent.
+5. Select the appropriate **VRF** (e.g., `mgmt`) that has connectivity to the agent.
+6. Set the **Severity Level** to `Informational` or higher.
+7. Click **Apply** to activate the settings and click the **Save** icon at the top of the UI to persist across reboots.
+
+#### Filestream (logfile) collection
+
+If you prefer to collect logs from a file:
+
+1. Ensure the Elastic Agent has read permissions for the directory containing the AOS-CX logs.
+2. Configure the switch or an intermediate collector to write AOS-CX logs to a specific directory (e.g., `/var/log/audit/`).
+3. Ensure your log rotation mechanism allows the Elastic Agent to monitor both active and rotated files if you require historical data.
+
+#### Vendor resources
+
+The following resources provide more information about AOS-CX configuration:
+- [AOS-CX Switch Software Documentation Portal](https://arubanetworking.hpe.com/techdocs/AOS-CX/help_portal/Content/home.htm)
+- [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm)
+
+### Set up steps in Kibana
+
+To set up the integration in Kibana:
+
+1. In Kibana, navigate to **Management > Integrations**.
+2. Search for **HPE Aruba CX** and select the integration.
+3. Click **Add HPE Aruba CX**.
+4. Configure the integration settings based on your chosen input type.
+
+#### TCP input configuration
+
+This input collects logs over a TCP socket:
+
+- **Listen Address** (`listen_address`): The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
+- **Listen Port** (`listen_port`): The TCP port number to listen on. Default: `1470`.
+- **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`.
+- **Tags** (`tags`): List of tags to add to the events.
+- **SSL Configuration** (`ssl`): Provide SSL certificate and key information if you use encrypted transport.
+- **Custom TCP Options** (`tcp_options`): Specify options like `max_connections`, `framing`, or `line_delimiter`.
+
+#### UDP input configuration
+
+This input collects logs over a UDP socket:
+
+- **Listen Address** (`listen_address`): The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
+- **Listen Port** (`listen_port`): The UDP port number to listen on. Default: `1024`.
+- **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`.
+- **Custom UDP Options** (`udp_options`): Specify options such as `read_buffer`, `max_message_size`, or `timeout`.
+
+#### Log file input configuration
+
+This input collects logs directly from log files. This input is disabled by default and you must explicitly enable it:
+
+- **Paths** (`paths`): Provide the list of paths to the log files (e.g., `/var/log/audit/*.log`).
+- **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`.
+
+After configuring your input, assign the integration to an agent policy and click **Save and continue**.
+
+### Validation
+
+To verify the integration is working and data is flowing:
+
+1. Trigger data flow on the HPE Aruba CX device using one of these actions:
+    - Enter and exit global configuration mode to trigger a `CONFIG_MGMT` log: `configure terminal` then `exit`.
+    - Log out and log back into the switch CLI via SSH to trigger AAA and SSH session logs.
+    - Toggle a non-critical, unused interface: `interface 1/1/1` (replace with your actual value), `shutdown`, then `no shutdown`.
+2. In Kibana, navigate to **Analytics > Discover**.
+3. Select the `logs-*` data view.
+4. Enter the KQL filter `data_stream.dataset : "hpe_aruba_cx.log"` and check for incoming documents.
+5. Verify that logs appear with recent timestamps and that fields like `event.code`, `log.level`, and `aruba.hardware.device` are correctly populated.
+6. Navigate to **Analytics > Dashboards** and search for "HPE Aruba CX" to verify that visualizations are populated with data.
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Common configuration issues
+
+This section addresses common issues you might encounter while setting up or running the HPE Aruba CX integration:
+- VRF routing mismatch: If you configure the switch to send logs but they never arrive at the destination, verify the `vrf` parameter in the `logging` command. If the Elastic Agent is on the management network, your command must include `vrf mgmt`.
+- Port conflicts: Ensure the port configured in the integration settings (for example, `1470` for TCP or `1024` for UDP) is not being used by another process on the Elastic Agent host. You can use `ss -tlnp | grep <port>` (replace `<port>` with your actual value) on Linux or `netstat -ano | findstr <port>` (replace `<port>` with your actual value) on Windows to verify port availability.
+- ACL or firewall blocks: Check the outbound access control lists (ACLs) on the switch and the local firewall on the Elastic Agent host (such as `iptables` or `firewalld`) to ensure traffic is allowed on the specified UDP or TCP ports.
+- English-only requirement: If logs appear garbled or fail to parse correctly, verify that the switch isn't configured for internationalized logging. This integration only supports the standard English log format.
+- Parsing failures: If logs appear in Discover but have a `tags: [_grokparsefailure]` entry, the log format might differ from the expected AOS-CX standard. You can check the `error.message` field for specific details.
+- Timestamp mismatches: If logs don't appear in the default time range, check the Network Time Protocol (NTP) status on the switch. Large time drifts can cause logs to be indexed into the past or future relative to the current Kibana view.
+- Field mapping mismatches: Review the `event.original` field against the parsed fields. If critical information is missing, verify that the switch is sending the full log header according to the AOS-CX specification.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+To ensure optimal performance in high-volume environments, consider the following settings:
+- While UDP (default port `1024`) is faster for syslog transmission and places less load on the switch CPU, TCP (default port `1470`) is recommended for environments where delivery guarantees are required.
+- For TCP connections, you should enable SSL if logs transit over public or untrusted networks to ensure data confidentiality.
+- You can configure the HPE Aruba CX switch to forward only necessary events by setting the severity per remote server. For example, use the command `logging <elastic_agent_ip> severity informational` (replace `<elastic_agent_ip>` with your actual value).
+- Don't forward `debug` level logs in production environments as they can overwhelm the ingest pipeline and increase storage requirements.
+
+## Reference
+
+### Inputs used
+
+{{ inputDocs }}
+
+### Data streams
+
+The HPE Aruba CX integration provides a data stream for collecting event logs.
+
+#### log
+
+The `log` data stream provides events from HPE Aruba CX switches of the following types:
+- System and hardware status messages
+- Configuration and management activity
+- Network protocol and routing events
+- Security and authentication logs
+
+##### log fields
+
+{{ fields "log" }}
+
+##### log sample event
+
+{{ event "log" }}
+
+### Exported fields by Aruba event type
+
+Below are the fields from the different Aruba event types and their mapping into ECS supported fields or customer Aruba fields
 
 To Be Removed
 Note: Field types are defined within `fields.yml`
 Note: Descriptions have not been filled out
+
+<details>
+<summary>Exported fields</summary>
 
 #### [AAA events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/AAA.htm)
 | Doc Fields           | Schema Mapping               |
@@ -1823,9 +2015,9 @@ Note: Descriptions have not been filled out
 | `<image_file>`            | file.name                        |
 | `<reason>`                | event.reason                     |
 | `<tftp_ip>`               | server.ip                        |
+</details>
+### Vendor documentation links
 
-## Generated Logs
-
-The `log` dataset collects the HPE Aruba CX logs.
-
-{{fields "log"}}
+For more information about HPE Aruba CX logs and event mnemonics, refer to the following vendor documentation:
+- [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm)
+- [Official HPE Aruba Networking CX documentation](https://arubanetworking.hpe.com/techdocs/AOS-CX/help_portal/Content/home.htm)
