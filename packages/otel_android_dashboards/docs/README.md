@@ -5,7 +5,7 @@
 
 Use this package to get Kibana dashboards for visualizing telemetry data from your Android applications instrumented with [OpenTelemetry](https://opentelemetry.io/). The dashboards provide visibility into application health, crash analysis, span performance, and session-level insights.
 
-The recommended way to send Android telemetry to the Elastic Stack is through the [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/edot-android/), an APM agent built on top of OpenTelemetry that works with Elastic out of the box. EDOT Android provides automatic instrumentation, session tracking, disk buffering, and central configuration, making it the easiest way to populate the dashboards included in this package.
+The recommended way to send Android telemetry to the Elastic Stack is through the [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android), an APM agent built on top of OpenTelemetry that works with Elastic out of the box. EDOT Android provides automatic instrumentation, session tracking, disk buffering, and central configuration, making it the easiest way to populate the dashboards included in this package.
 
 You can also use any other OpenTelemetry-compatible Android instrumentation, as long as the expected telemetry fields are present.
 
