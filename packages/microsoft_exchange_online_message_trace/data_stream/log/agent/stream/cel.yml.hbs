@@ -69,14 +69,26 @@ program: |
     request("GET", current.url).do_request().as(resp,
       resp.StatusCode == 200 ?
         resp.Body.decode_json().as(body,
-          state.with({
-            "events": body.value,
-            "want_more": body[?"@odata.nextLink"].orValue(null) != null || current.end.parse_time(time_layout.RFC3339Nano) < now-duration(state.min_age),
-            "cursor": {
-              ?"next_link": body[?"@odata.nextLink"],
-              "end": current.end,
-            },
-          })
+          {
+            "has_next_link": body[?"@odata.nextLink"].orValue(null) != null,
+            "not_up_to_date": current.end.parse_time(time_layout.RFC3339Nano) < now-duration(state.min_age),
+          }.as(status,
+            status.has_next_link || not_up_to_date
+          ).as(want_more,
+            state.with({
+              "events": body.value.size() > 0 ?
+                body.value.map(e, { "message": e.encode_json() })
+              : want_more ?
+                [{"message": "retry"}]
+              :
+                []
+              "want_more": want_more,
+              "cursor": {
+                ?"next_link": body[?"@odata.nextLink"],
+                "end": current.end,
+              },
+            })
+          )
         )
       :
         state.with({
@@ -101,7 +113,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        message: "retry"
+{{#if processors}}
 {{processors}}
 {{/if}}
