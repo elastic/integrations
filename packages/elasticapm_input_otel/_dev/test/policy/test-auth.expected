@@ -1,7 +1,9 @@
 connectors:
     forward: {}
 exporters:
-    elasticsearch/componentid-0: {}
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
 extensions:
     apikeyauth/componentid-0:
         application_privileges:
@@ -45,19 +47,23 @@ processors:
             - context: log
               statements:
                 - set(attributes["data_stream.type"], "logs")
-                - set(attributes["data_stream.dataset"], "elasticapm_input_otel.elasticapmintakereceiver")
+                - set(attributes["data_stream.dataset"], "elasticapmintakereceiver")
                 - set(attributes["data_stream.namespace"], "ep")
         metric_statements:
             - context: datapoint
               statements:
                 - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "elasticapm_input_otel.elasticapmintakereceiver")
+                - set(attributes["data_stream.dataset"], "elasticapmintakereceiver")
                 - set(attributes["data_stream.namespace"], "ep")
         trace_statements:
             - context: span
               statements:
                 - set(attributes["data_stream.type"], "traces")
-                - set(attributes["data_stream.dataset"], "elasticapm_input_otel.elasticapmintakereceiver")
+                - set(attributes["data_stream.dataset"], "elasticapmintakereceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+            - context: spanevent
+              statements:
+                - set(attributes["data_stream.type"], "logs")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     elasticapmintake/componentid-0:

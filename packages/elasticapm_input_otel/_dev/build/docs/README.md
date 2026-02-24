@@ -46,7 +46,11 @@ Configure the following settings:
 
 1. **Endpoint**: The address where the receiver listens for APM agent connections (default: `localhost:8200`)
 2. **TLS Settings** (optional): Enable TLS for encrypted connections between APM agents and the receiver
-3. **Agent Configuration** (optional): Enable fetching APM Central Configurations from Elasticsearch
+3. **API key authentication** (optional): Validate APM API keys via the apikeyauth extension
+
+### Known limitations
+
+- **Agent Configuration**: Fetching APM Central Configurations from Elasticsearch is not supported. The receiver's agent config feature requires an Elasticsearch connection that this package does not expose. The Enable Agent Configuration option must remain disabled.
 
 ### APM Agent Configuration
 
@@ -90,5 +94,17 @@ For more information on architectures that can be used for scaling this integrat
 ### Inputs used
 
 This package uses the [Elastic APM Intake Receiver](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver) from the Elastic OpenTelemetry Collector Components.
+
+### Traces reference
+
+For trace data (spans, transactions), refer to the [elasticapmintakereceiver documentation](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver).
+
+### Metrics reference
+
+For APM application metrics, refer to the [elasticapmintakereceiver documentation](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver).
+
+### Logs reference
+
+For application logs correlated with traces, refer to the [elasticapmintakereceiver documentation](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver).
 
 {{ inputDocs }}

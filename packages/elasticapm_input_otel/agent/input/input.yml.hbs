@@ -1,4 +1,5 @@
 {{#if auth_enabled}}
+{{#if auth_elasticsearch_endpoint}}
 extensions:
   apikeyauth:
     endpoint: {{auth_elasticsearch_endpoint}}
@@ -8,6 +9,7 @@ extensions:
           - "event:write"
         resources:
           - "-"
+{{/if}}
 {{/if}}
 receivers:
   elasticapmintake:
@@ -21,8 +23,10 @@ receivers:
 {{/if}}
 {{/if}}
 {{#if auth_enabled}}
+{{#if auth_elasticsearch_endpoint}}
     auth:
       authenticator: apikeyauth
+{{/if}}
 {{/if}}
     agent_config:
       enabled: {{agent_config_enabled}}
@@ -34,7 +38,9 @@ processors:
     detectors: ["system"]
 service:
 {{#if auth_enabled}}
+{{#if auth_elasticsearch_endpoint}}
   extensions: [apikeyauth]
+{{/if}}
 {{/if}}
   pipelines:
     logs:
