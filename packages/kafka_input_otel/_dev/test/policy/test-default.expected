@@ -38,19 +38,23 @@ processors:
             - context: log
               statements:
                 - set(attributes["data_stream.type"], "logs")
-                - set(attributes["data_stream.dataset"], "kafka_input_otel.kafkareceiver")
+                - set(attributes["data_stream.dataset"], "kafkareceiver")
                 - set(attributes["data_stream.namespace"], "ep")
         metric_statements:
             - context: datapoint
               statements:
                 - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "kafka_input_otel.kafkareceiver")
+                - set(attributes["data_stream.dataset"], "kafkareceiver")
                 - set(attributes["data_stream.namespace"], "ep")
         trace_statements:
             - context: span
               statements:
                 - set(attributes["data_stream.type"], "traces")
-                - set(attributes["data_stream.dataset"], "kafka_input_otel.kafkareceiver")
+                - set(attributes["data_stream.dataset"], "kafkareceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+            - context: spanevent
+              statements:
+                - set(attributes["data_stream.type"], "logs")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     kafka/componentid-0:
