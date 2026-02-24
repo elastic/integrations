@@ -6,6 +6,8 @@ exporters:
             - https://elasticsearch:9200
 extensions:
     bearertokenauth/componentid-0:
+        header: Authorization
+        scheme: Bearer
         token: my-secret-token
 inputs: []
 output_permissions:
@@ -27,6 +29,11 @@ output_permissions:
                   privileges:
                     - auto_configure
                     - create_doc
+                - names:
+                    - traces-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
 processors:
     resourcedetection/componentid-0:
         detectors:
@@ -43,6 +50,16 @@ processors:
               statements:
                 - set(attributes["data_stream.type"], "metrics")
                 - set(attributes["data_stream.dataset"], "otlpreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+        trace_statements:
+            - context: span
+              statements:
+                - set(attributes["data_stream.type"], "traces")
+                - set(attributes["data_stream.dataset"], "otlpreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+            - context: spanevent
+              statements:
+                - set(attributes["data_stream.type"], "logs")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     otlp/componentid-0:
@@ -79,6 +96,19 @@ service:
             receivers:
                 - forward
         metrics/componentid-1:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - otlp/componentid-0
+        traces:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        traces/componentid-2:
             exporters:
                 - forward
             processors:

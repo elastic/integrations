@@ -2,7 +2,7 @@
 
 ## Overview
 
-The OTLP Receiver OpenTelemetry Input Package enables Elastic Agent to receive logs and metrics via the [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otlp/) over gRPC and HTTP. This allows Elastic Agent to function as a managed OpenTelemetry Collector, accepting telemetry from any OTLP-compatible SDK or collector.
+The OTLP Receiver OpenTelemetry Input Package enables Elastic Agent to receive logs, metrics, and traces via the [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otlp/) over gRPC and HTTP. This allows Elastic Agent to function as a managed OpenTelemetry Collector, accepting telemetry from any OTLP-compatible SDK or collector.
 
 The package uses the upstream [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver/otlpreceiver) from the OpenTelemetry Collector.
 
@@ -21,10 +21,10 @@ Incoming telemetry is processed and forwarded to Elasticsearch for indexing and 
 |----------|----------|--------------------------------------------------|
 | Logs     | Enabled  | Log records from applications and infrastructure |
 | Metrics  | Enabled  | Metric data points and time series               |
-| Traces   | Disabled | Distributed traces (configuration commented out) |
+| Traces   | Enabled  | Distributed traces and spans                     |
 | Profiles | Disabled | Profiling data (configuration commented out)     |
 
-> **Note:** Traces and profiles are defined in the manifest but their pipeline configuration is currently commented out in the input template. When binding to all interfaces (`0.0.0.0`) for production use, consider enabling authentication or TLS.
+> **Note:** Profiles are defined in the manifest but their pipeline configuration is currently commented out. When binding to all interfaces (`0.0.0.0`) for production use, consider enabling authentication or TLS.
 
 ## Configuration
 
@@ -42,7 +42,8 @@ Configuration maps to the [OTLP Receiver protocols](https://github.com/open-tele
 | Setting         | Default | Description                     |
 |-----------------|---------|---------------------------------|
 | Accept Logs     | `true`  | Enable acceptance of log data   |
-| Accept Metrics  | `true`  | Enable acceptance of metric data|
+| Accept Metrics  | `true`  | Enable acceptance of metric data |
+| Accept Traces   | `true`  | Enable acceptance of trace data |
 
 ### Authentication
 
