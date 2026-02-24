@@ -1,5 +1,5 @@
 format_version: 3.5.0
-name: jaeger_otel_input
+name: jaeger_input_otel
 title: "Jaeger OpenTelemetry Input Package"
 version: "0.1.0"
 source:
@@ -11,7 +11,7 @@ categories:
   - opentelemetry
 conditions:
   kibana:
-    version: "^9.2.0"
+    version: "^9.4.0"
   elastic:
     subscription: "basic"
 icons:
@@ -33,6 +33,38 @@ policy_templates:
         title: gRPC endpoint
         description: Endpoint for the Jaeger gRPC protocol (default localhost:14250).
         default: localhost:14250
+        show_user: true
+      - name: tls_enabled
+        type: bool
+        required: false
+        title: Enable TLS
+        description: Enable TLS for secure gRPC connections (certificate and key required).
+        default: false
+        show_user: true
+      - name: tls_cert_file
+        type: text
+        required: false
+        title: TLS Certificate File
+        description: Path to the TLS certificate file for the server.
+        show_user: true
+      - name: tls_key_file
+        type: text
+        required: false
+        title: TLS Key File
+        description: Path to the TLS private key file for the server.
+        show_user: true
+      - name: tls_client_ca_file
+        type: text
+        required: false
+        title: TLS Client CA File
+        description: Path to the CA certificate file for verifying client certificates (mTLS).
+        show_user: false
+      - name: thrift_http_endpoint
+        type: text
+        required: false
+        title: Thrift HTTP endpoint
+        description: Optional. Endpoint for the Jaeger Thrift HTTP protocol (e.g. localhost:14268). When set, enables HTTP alongside gRPC for Jaeger agent compatibility.
+        show_user: true
 owner:
   github: elastic/ecosystem
   type: elastic
