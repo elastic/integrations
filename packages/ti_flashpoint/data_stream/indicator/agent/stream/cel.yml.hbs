@@ -30,10 +30,10 @@ program: |
     request(
       "GET",
       state.?next.url.orValue(
-        state.url.trim_right("/") + "/alert-management/v1/notifications?" + {
+        state.url.trim_right("/") + "/technical-intelligence/v2/indicators?" + {
           "size": [string(state.page_size)],
-          "sort": ["created_at:asc"],
-          "created_after": [state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))]
+          "sort": ["modified_at:asc"],
+          "modified_after": [state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))],
         }.format_query()
       )
     ).with({
@@ -56,7 +56,7 @@ program: |
           ),
           "cursor": {
             ?"last_timestamp": has(body.items) && size(body.items) > 0 ?
-              optional.of(timestamp(body.items[size(body.items) - 1].created_at).format("2006-01-02T15:04:05"))
+              optional.of(timestamp(body.items[size(body.items) - 1].modified_at).format("2006-01-02T15:04:05"))
             :
               state.?cursor.last_timestamp
           },
@@ -72,7 +72,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "GET " + state.url.trim_right("/") + "/alert-management/v1/notifications: " + (
+            "message": "GET " + state.url.trim_right("/") + "/technical-intelligence/v2/indicators: " + (
               size(resp.Body) != 0 ?
                 string(resp.Body)
               :

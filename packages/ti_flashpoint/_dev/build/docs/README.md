@@ -4,7 +4,7 @@
 
 [Flashpoint](https://flashpoint.io/) is a comprehensive threat intelligence platform that delivers actionable insights from dark web, deep web, and technical sources. It combines human-curated intelligence with automated collection to help organizations identify emerging threats, monitor adversary activity, and assess cyber risk with enriched context.
 
-The Flashpoint integration for Elastic collects alerts from the **Flashpoint Ignite API** and visualizes them in Kibana.
+The Flashpoint integration for Elastic collects alerts and indicators from the **Flashpoint Ignite API** and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -19,14 +19,23 @@ This integration periodically queries the Flashpoint Ignite API to retrieve logs
 This integration collects log messages of the following type:
 
 - `Alert`: Collects `alert` logs from the Flashpoint Ignite API (endpoint: `/alert-management/v1/notifications`),
+- `Indicator`: Collects `indicator` logs from the Flashpoint Ignite API (endpoint: `/technical-intelligence/v2/indicators`),
 
 ### Supported use cases
 
-Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence alerts. Kibana dashboards present key metrics such as `Total Alerts`, along with visualizations for `Alerts by Data Type` and `Alert Sources`.
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into both threat intelligence **Alerts** and **Indicators**, enabling efficient monitoring and investigation within Kibana dashboards.
 
-`Alert Trends over Time` help analysts monitor activity patterns and quickly identify changes. These insights support efficient threat monitoring and investigation workflows.
+For **Alerts**, dashboard presents key metrics such as `Total Alerts` and `Alert Trends Over Time`, helping analysts quickly detect activity spikes and monitor evolving threat patterns.
+
+For **Indicators**, dashboard highlights `Total Indicators` and `Indicators by Type`, providing insight into indicator volume and classification for effective threat analysis.
+
+Interactive filtering controls allow analysts to drill down across alerts and indicators, supporting streamlined investigation workflows within a unified threat intelligence view.
 
 ## What do I need to use this integration?
+
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
 
 ### From Flashpoint
 
@@ -77,6 +86,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Flashpoint**, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **ti_flashpoint**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -95,15 +111,27 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "alert"}}
 
+#### Indicator
+
+{{fields "indicator"}}
+
+### Example event
+
+#### Indicator
+
+{{event "indicator"}}
+
+
 
 ### Inputs used
 
 These input is used in the integration:
 
-- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
 ### API usage
 
 This integration dataset uses the following API:
 
 * List Alerts (endpoint: `/alert-management/v1/notifications`)|
+* List Indicators (endpoint: `/technical-intelligence/v2/indicators`)
