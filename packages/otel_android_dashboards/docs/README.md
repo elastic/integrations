@@ -18,7 +18,7 @@ This package has been tested with EDOT Android and OpenTelemetry semantic conven
 - Telemetry data must include the following fields for full dashboard functionality:
   - `os.name` (set to `"Android"`)
   - `session.id`
-  - `service.name` and `service.version`
+  - `service.name` and `service.version` (which are the OpenTelemetry way to define a telemetry source, in this case your Android application's name and version)
   - `exception.stacktrace`, `exception.type`, and `exception.message` (for crash analysis)
   - `os.version` and `device.manufacturer` (for device breakdown charts)
   - `span.name` and `span.status.code` (for span analysis)
@@ -27,7 +27,7 @@ EDOT Android populates all of these fields automatically. If you are using a dif
 
 ### Try it out
 
-Check out the EDOT Android's [Demo application](https://github.com/elastic/android-agent-demo) guide to set up a test environment and take a quick look at what its data looks like with the dashboards provided in this package.
+Check out the EDOT Android's [Demo application](https://github.com/elastic/android-agent-demo) guide to set up a test environment and take a quick look at what its data looks like with the dashboards provided in this integration package.
 
 ## Dashboards
 
@@ -61,7 +61,7 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 ## Setting it up
 
 1. Instrument your Android application and start sending data to your Elastic Stack.
-2. Install this package in Kibana and open the **[Android OTel] Application Overview** dashboard.
+2. Install this integration package in Kibana and open the **[Android OTel] Application Overview** dashboard.
 
 For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android/getting-started).
 
