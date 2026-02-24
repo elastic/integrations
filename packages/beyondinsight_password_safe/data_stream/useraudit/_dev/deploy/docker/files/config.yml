@@ -41,26 +41,7 @@ rules:
             "Name": "Test User"
           }
           `}}
-  - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
-    methods: ["POST"]
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key; runas=testuser2;']
-      Content-Type: ['application/json']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
-        body: |
-          {{ minify_json `
-          {
-            "UserId": 1,
-            "SID": null,
-            "EmailAddress": "test.user@example.com",
-            "UserName": "testuser",
-            "Name": "Test User"
-          }
-          `}}
+
   # Request 4 - Start of 2nd periodic execution.
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
@@ -93,6 +74,7 @@ rules:
               "TotalCount": 1
           }
           `}}
+
   # Request 3.
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
@@ -134,6 +116,7 @@ rules:
               "TotalCount": 5
           }
           `}}
+
   # Request 2.
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
@@ -151,6 +134,7 @@ rules:
           Content-Type: ['application/json']
         body: >-
           "User not authenticated"
+
   # Request 1.
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
