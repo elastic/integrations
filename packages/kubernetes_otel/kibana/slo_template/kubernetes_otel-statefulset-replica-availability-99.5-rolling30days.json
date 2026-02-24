@@ -1,24 +1,24 @@
 {
   "attributes": {
-    "name": "[Kubernetes OTel] DaemonSet Scheduling Availability 99.0% Rolling 30 Days",
-    "description": "This SLO tracks the scheduling availability of Kubernetes DaemonSets via OTel metrics, ensuring that 99.0% of time intervals have each DaemonSet running on all eligible nodes over a rolling period of 30 days. DaemonSets are critical for node-level infrastructure services (monitoring agents, log collectors, security agents, network plugins).",
+    "name": "[Kubernetes OTel] StatefulSet Replica Availability 99.5% Rolling 30 Days",
+    "description": "This SLO tracks the availability of Kubernetes StatefulSets via OTel metrics, ensuring that 99.5% of time intervals have each StatefulSet meeting its desired replica count over a rolling period of 30 days. StatefulSets manage stateful workloads (databases, message queues, caches) where pod identity and ordering matter — making availability critical for data integrity.",
     "indicator": {
       "type": "sli.metric.timeslice",
       "params": {
         "index": "metrics-*",
-        "filter": "data_stream: \"k8sclusterreceiver.otel\" and k8s.daemonset.ready_nodes: * and k8s.daemonset.desired_scheduled_nodes : *",
+        "filter": "data_stream.dataset : \"k8sclusterreceiver.otel\" AND k8s.statefulset.ready_pods: * AND k8s.statefulset.desired_pods : *",
         "metric": {
           "metrics": [
             {
               "name": "A",
               "aggregation": "sum",
-              "field": "k8s.daemonset.ready_nodes",
+              "field": "k8s.statefulset.ready_pods",
               "filter": ""
             },
             {
               "name": "B",
               "aggregation": "sum",
-              "field": "k8s.daemonset.desired_scheduled_nodes",
+              "field": "k8s.statefulset.desired_pods",
               "filter": ""
             }
           ],
@@ -35,17 +35,17 @@
       "type": "rolling"
     },
     "objective": {
-      "target": 0.99,
+      "target": 0.995,
       "timesliceTarget": 0.95,
       "timesliceWindow": "5m"
     },
     "tags": [
-      "k8s",
       "kubernetes",
+      "k8s",
       "otel"
     ],
     "groupBy": [
-      "resource.attributes.k8s.daemonset.name"
+      "resource.attributes.k8s.statefulset.name"
     ],
     "artifacts": {
       "dashboards": [
@@ -55,6 +55,6 @@
       ]
     }
   },
-  "id": "kubernetes_otel_daemonset_scheduling_availability_99.0_Rolling30Days",
+  "id": "kubernetes_otel-statefulset-replica-availability-99.5-rolling30days",
   "type": "slo_template"
 }
