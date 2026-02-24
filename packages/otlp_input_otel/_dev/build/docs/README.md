@@ -2,7 +2,7 @@
 
 ## Overview
 
-The OTLP Receiver OpenTelemetry Input Package enables Elastic Agent to receive logs, metrics, and traces via the [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otlp/) over gRPC and HTTP. This allows Elastic Agent to function as a managed OpenTelemetry Collector, accepting telemetry from any OTLP-compatible SDK or collector.
+The OTLP Receiver OpenTelemetry Input Package enables Elastic Agent to receive logs, metrics, and traces using the [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otlp/) over gRPC and HTTP. This allows Elastic Agent to function as a managed OpenTelemetry Collector, accepting telemetry from any OTLP-compatible SDK or collector.
 
 The package uses the upstream [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver/otlpreceiver) from the OpenTelemetry Collector.
 
@@ -22,7 +22,7 @@ Incoming telemetry is processed and forwarded to Elasticsearch for indexing and 
 | Logs     | Enabled  | Log records from applications and infrastructure |
 | Metrics  | Enabled  | Metric data points and time series               |
 | Traces   | Enabled  | Distributed traces and spans                     |
-| Profiles | Disabled | Profiling data (configuration commented out)     |
+| Profiles | Unavailable | Profiling data (configuration commented out)     |
 
 > **Note:** Profiles are defined in the manifest but their pipeline configuration is currently commented out. When binding to all interfaces (`0.0.0.0`) for production use, consider enabling authentication or TLS.
 
@@ -47,15 +47,15 @@ Configuration maps to the [OTLP Receiver protocols](https://github.com/open-tele
 
 ### Authentication
 
-Authentication follows the [OpenTelemetry configauth Server Authenticators](https://github.com/open-telemetry/opentelemetry-collector/blob/main/config/configauth/README.md). One of the following may be enabled at a time.
+Authentication follows the [OpenTelemetry configauth Server Authenticators](https://github.com/open-telemetry/opentelemetry-collector/blob/main/config/configauth/README.md). One of the following can be enabled at a time.
 
 #### Basic Auth (basicauthextension)
 
 | Setting                   | Default | Description                                                      |
 |---------------------------|---------|------------------------------------------------------------------|
-| Enable Basic Auth         | `false` | Require Basic Auth (username/password via htpasswd) for requests |
+| Enable Basic Auth         | `false` | Require Basic Auth (username/password using htpasswd) for requests |
 | Basic Auth htpasswd File  | (none)  | Path to htpasswd file for validation                             |
-| Basic Auth htpasswd Inline| (none)  | Inline htpasswd content (e.g. from `htpasswd -nb user pass`)     |
+| Basic Auth htpasswd Inline| (none)  | Inline htpasswd content (for example, from `htpasswd -nb user pass`)     |
 
 #### Bearer Token (bearertokenauthextension)
 
@@ -91,7 +91,7 @@ TLS can be configured for both gRPC and HTTP endpoints. Maps to [configtls Serve
 
 ## Upstream reference
 
-For additional configuration options (URL paths per signal, CORS, compression, keepalive, etc.), see:
+For additional configuration options (URL paths per signal, CORS, compression, keepalive, and so on), refer to:
 
 - [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver/otlpreceiver)
 - [gRPC settings](https://github.com/open-telemetry/opentelemetry-collector/blob/main/config/configgrpc/README.md)
