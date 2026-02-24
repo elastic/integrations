@@ -67,7 +67,7 @@ For the full setup guide, refer to the [EDOT Android getting started documentati
 
 ## Visualizing your data
 
-1. In the top search bar in Kibana, search for **Dashboards**.
+1. In the top search bar in Kibana, search for **Dashboards**. Alternatively, you can find the dashboards in the **Integrations** page under this package's **Assets** tab.
 2. In the search bar, type **Android OTel**.
 3. Open the **[Android OTel] Application Overview** dashboard and verify that data is populated.
 4. Select your application from the list of "Applications" in one of the top panels of the dashboard.
