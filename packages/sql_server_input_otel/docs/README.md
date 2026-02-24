@@ -43,7 +43,7 @@ The SQL Server receiver can collect log events when a direct database connection
 
 - **Top Query Events** (`db.server.top_query`): Captures the most expensive queries by execution time within a configurable lookback window, including execution counts, CPU time, and logical reads. Enable by setting **Enable Top Query Events** to `true`.
 
-Both event types require a direct database connection (server, port, username, and password must be configured). The `query_sample_collection` and `top_query_collection` settings control the behavior of each event type.
+Both event types require a direct database connection. Configure either the individual connection settings (server, port, username, and password) or the datasource connection string. The `query_sample_collection` and `top_query_collection` settings control the behavior of each event type.
 
 For a complete list of log attributes, refer to the [SQL Server Receiver logs documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/sqlserverreceiver/logs-documentation.md) in the upstream OpenTelemetry Collector repository.
 
