@@ -27,7 +27,7 @@ EDOT Android populates all of these fields automatically. If you are using a dif
 
 ### Try it out
 
-Check out the EDOT Android's [Demo application](https://github.com/elastic/android-agent-demo) guide to set up a test environment and take a quick look at what its data looks like with the dashboards provided in this integration package.
+Check out the EDOT Android's [Demo application](https://github.com/elastic/android-agent-demo) guide to set up a test environment and take a quick look at what its data looks like with the dashboards provided in this content package.
 
 ## Dashboards
 
@@ -61,7 +61,7 @@ A drilldown dashboard opened from the Application Overview when selecting a spec
 ## Setting it up
 
 1. Instrument your Android application and start sending data to your Elastic Stack.
-2. Install this integration package in Kibana and open the **[Android OTel] Application Overview** dashboard.
+2. Install this content package in Kibana and open the **[Android OTel] Application Overview** dashboard.
 
 For the full setup guide, refer to the [EDOT Android getting started documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android/getting-started).
 
