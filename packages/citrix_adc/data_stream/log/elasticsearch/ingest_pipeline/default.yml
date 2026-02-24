@@ -42,13 +42,19 @@ processors:
         SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.syslog_timestamp}|%{TIMESTAMP_ISO8601:_tmp.syslog_timestamp8601})'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_tmp.tz}?'
   - pipeline:
-      name: '{{ IngestPipeline "cef" }}'
-      tag: pipeline_cef
-      if: ctx.citrix?.detail != null && ctx.citrix.detail.startsWith("CEF:")
-  - pipeline:
       name: '{{ IngestPipeline "native" }}'
       tag: pipeline_native
       if: ctx.citrix?.detail != null && !ctx.citrix.detail.startsWith("CEF:")
+  - set:
+      field: citrix.detail
+      tag: set_cef_detail_from_extended_message
+      copy_from: citrix.extended.message
+      if: ctx.citrix?.extended?.message != null && ctx.citrix.extended.message.startsWith("CEF:")
+      override: true
+  - pipeline:
+      name: '{{ IngestPipeline "cef" }}'
+      tag: pipeline_cef
+      if: ctx.citrix?.detail != null && ctx.citrix.detail.startsWith("CEF:")
   - convert:
       field: event.severity
       tag: convert_event_severity_to_long
