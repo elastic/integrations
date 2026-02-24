@@ -96,6 +96,11 @@ Within the **[Android OTel] Application Overview** dashboard, scroll down to the
 
 ## Troubleshooting
 
+If you can't see the trace waterfall UI in Discover, as shown above, make sure that:
+
+- Your Elastic Stack version is either 8.19.0 or above or 9.1.0 or above. 
+- Your Kibana space's "solution view" is set to "Observability". As explained [here](https://www.elastic.co/blog/elastic-redesigned-navigation-menu-kibana#editing-space-settings-).
+
 If you do not see data in the dashboards, make sure that:
 
 - Your Android application is sending telemetry to the Elastic Stack. You can verify this in Kibana's Discover by searching for `os.name: "Android"` in the `logs-generic.otel*` or `traces-generic.otel*` index patterns.
