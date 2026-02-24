@@ -39,6 +39,15 @@ Enable the category `Logs related to ApiManagement Gateway` to stream the logs t
    └──────────────────┘      └──────────────┘     └─────────────────┘
 ```
 
+> **Upgrade note**
+If you are upgrading from a previous version to 0.9.0, the metrics configuration (for example, `client_id`, `client_secret`, `tenant_id`, `subscription_id`) has moved out of the metrics data stream and into the policy template. While upgrading, review your integration policy and re-enter these values.
+
+### Agent metrics
+
+The agent metrics data stream collects Microsoft Foundry **Agents** metrics from Azure Monitor (Category: Agents). These metrics help you monitor agent activity and usage, such as event volume, token consumption, runs, and tool calls.
+
+Agent metrics are available under the `azure.ai_foundry.agent.*` field namespace (for example, `azure.ai_foundry.agent.input_tokens.total` and `azure.ai_foundry.agent.tool_calls.total`).
+
 ### Metrics
 
 The metrics data stream collects the cognitive service metrics that is specific to the Microsoft Foundry service.
@@ -325,6 +334,162 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+
+
+### Agent metrics reference
+
+The Microsoft Foundry agent metrics provide visibility into agent activity and usage, such as token consumption, runs, and tool calls.
+
+An example event for `agent` looks as following:
+
+```json
+{
+    "cloud": {
+        "provider": "azure",
+        "region": "eastus2"
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "dd5751b2-98ee-4abe-a555-617ae627e4e2",
+        "type": "metricbeat",
+        "ephemeral_id": "7359ff11-9479-4b9c-83c4-b0ff8ce0d6ee",
+        "version": "8.18.1"
+    },
+    "@timestamp": "2025-06-16T09:59:00.000Z",
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "service": {
+        "type": "azure"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "azure.ai_foundry.agent"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "EE-87-F8-35-CB-E5"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "dd5751b2-98ee-4abe-a555-617ae627e4e2",
+        "version": "8.18.1",
+        "snapshot": false
+    },
+    "metricset": {
+        "period": 300000,
+        "name": "monitor"
+    },
+    "event": {
+        "duration": 30818990806,
+        "agent_id_status": "verified",
+        "ingested": "2025-06-16T10:02:45Z",
+        "module": "azure",
+        "dataset": "azure.ai_foundry.agent"
+    },
+    "azure": {
+        "subscription_id": "12cabcb4-86e8-404f-a3d2-123456a",
+        "timegrain": "PT1M",
+        "resource": {
+            "name": "ai-muthuhub687016784742",
+            "id": "/subscriptions/12cabcb4-86e8-404f-a3d2-123456/resourceGroups/rg-mp-0034_ai/providers/Microsoft.CognitiveServices/accounts/ai-muthuhub6870112345/projects/my-agent-project",
+            "type": "Microsoft.CognitiveServices/accounts/projects",
+            "group": "rg-mp-0034_ai"
+        },
+        "namespace": "Microsoft.CognitiveServices/accounts/projects",
+        "ai_foundry": {
+            "agent": {
+                "events": {
+                    "total": 156
+                },
+                "input_tokens": {
+                    "total": 4521
+                },
+                "messages": {
+                    "total": 25
+                },
+                "output_tokens": {
+                    "total": 1893
+                },
+                "responses": {
+                    "total": 12
+                },
+                "runs": {
+                    "total": 8
+                },
+                "threads": {
+                    "total": 5
+                },
+                "tool_calls": {
+                    "total": 18
+                },
+                "usage_indexed_files": {
+                    "total": 42
+                }
+            }
+        },
+        "dimensions": {
+            "region": "eastus2",
+            "agent_id": "agent-12345",
+            "model_name": "gpt-4o",
+            "event_type": "message_created",
+            "run_status": "completed"
+        }
+    }
+}
+```
+
+**ECS Field Reference**
+
+For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| azure.ai_foundry.agent.events.total | Total number of agent events. Tracks all events generated by agents during execution. | long | gauge |
+| azure.ai_foundry.agent.input_tokens.total | Number of input tokens (prompts) processed by agents. Applies to agent-based deployments. | long | gauge |
+| azure.ai_foundry.agent.messages.total | Number of messages processed by Microsoft Foundry agents. Tracks messages exchanged between users and agents. | long | gauge |
+| azure.ai_foundry.agent.output_tokens.total | Number of output tokens (completions) generated by agents. Applies to agent-based deployments. | long | gauge |
+| azure.ai_foundry.agent.responses.total | Number of agent responses generated. Tracks the total count of responses sent by agents to users. | long | gauge |
+| azure.ai_foundry.agent.runs.total | Number of agent runs executed. Each run represents a complete agent execution cycle from start to finish. | long | gauge |
+| azure.ai_foundry.agent.threads.total | Number of agent threads created. Threads represent conversation sessions between users and agents. | long | gauge |
+| azure.ai_foundry.agent.tool_calls.total | Number of tool calls made by agents. Tracks function/tool invocations during agent execution. | long | gauge |
+| azure.ai_foundry.agent.usage_indexed_files.total | Number of indexed files used by agents. Tracks file-based data retrieval operations in vector stores. | long | gauge |
+| azure.application_id | The application ID | keyword |  |
+| azure.dimensions.\* | Azure metric dimensions. | object |  |
+| azure.dimensions.fingerprint | Autogenerated ID representing the fingerprint of the azure.dimensions object | keyword |  |
+| azure.namespace | The namespace selected | keyword |  |
+| azure.resource.group | The resource group | keyword |  |
+| azure.resource.id | The id of the resource | keyword |  |
+| azure.resource.name | The name of the resource | keyword |  |
+| azure.resource.tags.\* | Azure resource tags. | object |  |
+| azure.resource.type | The type of the resource | keyword |  |
+| azure.subscription_id | The subscription ID | keyword |  |
+| azure.timegrain | The Azure metric timegrain | keyword |  |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| dataset.name | Dataset name. | constant_keyword |  |
+| dataset.namespace | Dataset namespace. | constant_keyword |  |
+| dataset.type | Dataset type. | constant_keyword |  |
 
 
 ### Metrics reference
