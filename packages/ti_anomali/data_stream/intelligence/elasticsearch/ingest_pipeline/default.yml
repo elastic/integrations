@@ -5,7 +5,7 @@ processors:
   - set:
       tag: set_ecs_version
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
   - remove:
       field:
         - organization
@@ -30,8 +30,8 @@ processors:
       field: event.type
       value: [indicator]
 
-  # data is in json.*
 
+  # data is in json.*
   - set:
       tag: set_timestamp
       field: "@timestamp"
@@ -51,6 +51,7 @@ processors:
       if: ctx.json?.modified_ts != null && ctx.json.modified_ts != ''
       on_failure:
         - append:
+            tag: append_error_message_c65b8206
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -97,6 +98,11 @@ processors:
           ctx.error.message.add(result.message);
         }
         ctx.json["deletion_scheduled_at"] = result.time;
+      on_failure:
+        - append:
+            tag: append_error_message_8abbba95
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Map itype field to STIX 2.0 Cyber Observable values (threat.indicator.type)
   - script:
@@ -300,8 +306,9 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_146a612e
             field: error.message
-            value: 'Unable to determine STIX 2.0 indicator type from itype "{{{ json.itype }}}": {{{ _ingest.on_failure_message }}}'
+            value: 'Unable to determine STIX 2.0 indicator type from itype "{{{ json.itype }}}": Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Detect ipv6 for ipv4-addr types
   - set:
@@ -319,8 +326,9 @@ processors:
       if: ctx.json.latitude != null && ctx.json.longitude != null
       on_failure:
         - append:
+            tag: append_error_message_994909c6
             field: error.message
-            value: 'Cannot convert latitude field "{{{ json.latitude }}}" to double: {{{ _ingest.on_failure_message }}}'
+            value: 'Cannot convert latitude field "{{{ json.latitude }}}" to double: Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_longitude
       field: json.longitude
@@ -329,8 +337,9 @@ processors:
       if: "ctx.json.latitude != null && ctx.json.longitude != null"
       on_failure:
         - append:
+            tag: append_error_message_12c379a2
             field: error.message
-            value: 'Cannot convert longitude field "{{{ json.longitude }}}" to double: {{{ _ingest.on_failure_message }}}'
+            value: 'Cannot convert longitude field "{{{ json.longitude }}}" to double: Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       tag: remove_json_latitude_json_longitude
       field:
@@ -382,7 +391,11 @@ processors:
         } else {
           ctx.threat.indicator.confidence = "High";
         }
-
+      on_failure:
+        - append:
+            tag: append_error_message_16f70af0
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Convert asn field.
   - convert:
       tag: convert_json_asn
@@ -390,11 +403,12 @@ processors:
       target_field: threat.indicator.as.number
       type: long
       ignore_missing: true
-      if: "ctx.json.asn != null && ctx.json.asn != ''"
+      if: ctx.json?.asn != ''
       on_failure:
         - append:
+            tag: append_error_message_923c2217
             field: error.message
-            value: "Cannot convert asn field `{{{ json.asn }}}` to long: {{{ _ingest.on_failure_message }}}"
+            value: "Cannot convert asn field `{{{ json.asn }}}` to long: Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - remove:
       tag: remove_json_asn
       field: json.asn
@@ -412,11 +426,34 @@ processors:
       target_field: threat.indicator.geo.country_iso_code
       ignore_missing: true
 
-  - rename:
-      tag: rename_json_ip
+  - convert:
+      tag: convert_json_ip_to_threat_indicator_ip_da6daf63
       field: json.ip
       target_field: threat.indicator.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.ip != ''
+      on_failure:
+        - append:
+            tag: append_error_message_4454e9e9
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_threat_indicator_ip_to_related_ip
+      value: "{{{ threat.indicator.ip }}}"
+      if: ctx.threat?.indicator?.ip != null
+      allow_duplicates: false
+  - geoip:
+      field: threat.indicator.ip
+      tag: geoip_threat_indicator_ip
+      target_field: threat.indicator.geo
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_c00a8bf5
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
       tag: set_threat_indicator_email_address
@@ -424,6 +461,12 @@ processors:
       copy_from: json.value
       if: ctx.json.type == 'email'
       ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_value_to_related_user
+      value: "{{{ json.value }}}"
+      if: ctx.json?.type == 'email'
+      allow_duplicates: false
 
   - set:
       tag: set_threat_indicator_url_domain
@@ -431,6 +474,12 @@ processors:
       copy_from: json.value
       if: ctx.json.type == 'domain'
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_value_to_related_hosts
+      value: "{{{ json.value }}}"
+      if: ctx.json?.type == 'domain' && ctx.json?.value != null
+      allow_duplicates: false
 
   - uri_parts:
       tag: uri_parts_json_value
@@ -440,8 +489,9 @@ processors:
       keep_original: true
       on_failure:
         - append:
+            tag: append_error_message_fbe6c2bb
             field: error.message
-            value: "Cannot parse url value `{{{ json.value }}}`: {{{ _ingest.on_failure_message }}}"
+            value: "Cannot parse url value `{{{ json.value }}}`: Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       tag: set_threat_indicator_url_full
       field: threat.indicator.url.full
@@ -468,6 +518,18 @@ processors:
       field: threat.indicator.file.hash.sha512
       copy_from: json.value
       if: ctx.json.type == 'md5' && ctx.json.subtype == 'SHA512'
+  - append:
+      field: related.hash
+      tag: append_value_to_related_hash
+      value: "{{{ json.value }}}"
+      if: ctx.json?.type == 'md5'
+      allow_duplicates: false
+  - set:
+      tag: set_threat_indicator_name
+      field: threat.indicator.name
+      copy_from: json.value
+      if: "['ip', 'domain', 'url', 'email', 'md5'].contains(ctx.json?.type)"
+      ignore_empty_value: true
   - remove:
       tag: remove_json_subtype
       field: json.subtype
@@ -538,7 +600,7 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: "Found a tag without a name `{{{ _ingest._value }}}`: {{{ _ingest.on_failure_message }}}"
+                value: "Found a tag without a name `{{{ _ingest._value }}}`: Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - remove:
       tag: remove_json_tags
       field: json.tags
@@ -557,6 +619,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_7c80f5a1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -571,6 +634,12 @@ processors:
       field: json.meta.registrant_email
       target_field: json.meta.registrant.email
       ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_meta_registrant_email_to_related_user
+      value: "{{{ json.meta.registrant.email }}}"
+      if: ctx.json?.meta?.registrant?.email != ''
+      allow_duplicates: false
   - rename:
       tag: rename_json_meta_registrant_name
       field: json.meta.registrant_name
@@ -604,6 +673,7 @@ processors:
         - json.target_industry
         - json.threatscore
         - json.workgroups
+        - json.ip
       ignore_missing: true
 
   - script:
