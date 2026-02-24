@@ -1,0 +1,200 @@
+format_version: 3.6.0
+name: otlp_input_otel
+title: "OTLP Receiver OpenTelemetry Input Package"
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: "Receive logs, metrics, traces, and profiles via OTLP (OpenTelemetry Protocol) over gRPC and HTTP"
+type: input
+categories:
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/otlp_otellogo.svg
+    title: OTLP OTel logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: otlpreceiver
+    type: metrics
+    title: OTLP Receiver (OpenTelemetry)
+    description: Receive logs, metrics, traces, and profiles via OTLP over gRPC and HTTP
+    input: otelcol
+    template_path: input.yml.hbs
+    dynamic_signal_types: true
+    vars:
+      # Protocol endpoints
+      - name: grpc_endpoint
+        type: text
+        required: true
+        title: gRPC Endpoint
+        description: Address and port to listen on for OTLP gRPC connections.
+        default: localhost:4317
+        show_user: true
+      - name: http_endpoint
+        type: text
+        required: true
+        title: HTTP Endpoint
+        description: Address and port to listen on for OTLP HTTP connections.
+        default: localhost:4318
+        show_user: true
+      # Signal toggles
+      - name: enable_logs
+        type: bool
+        required: false
+        title: Accept Logs
+        description: Enable acceptance of log data via OTLP.
+        default: true
+        show_user: true
+      - name: enable_metrics
+        type: bool
+        required: false
+        title: Accept Metrics
+        description: Enable acceptance of metric data via OTLP.
+        default: true
+        show_user: true
+      # - name: enable_traces
+      # type: bool
+      # required: false
+      # title: Accept Traces
+      # description: Enable acceptance of trace data via OTLP.
+      # default: true
+      # show_user: true
+      # - name: enable_profiles
+      # type: bool
+      # required: false
+      # title: Accept Profiles
+      # description: Enable acceptance of profiling data via OTLP.
+      # TODO: Change to true once profiles are generally available
+      # default: false
+      # show_user: false
+      # Authentication (per OpenTelemetry configauth: basicauthextension, bearertokenauthextension, oidcauthextension)
+      - name: enable_basic_auth
+        type: bool
+        required: false
+        title: Enable Basic Auth
+        description: Require Basic Auth (username/password via htpasswd) for incoming OTLP requests. Uses basicauthextension.
+        default: false
+        show_user: true
+      # Basic Auth (basicauthextension) - requires htpasswd file or inline
+      - name: basic_auth_htpasswd_file
+        type: text
+        required: false
+        title: Basic Auth htpasswd File
+        description: Path to htpasswd file for Basic Auth validation. Required when Basic Auth is enabled.
+        show_user: true
+      - name: basic_auth_htpasswd_inline
+        type: text
+        required: false
+        title: Basic Auth htpasswd Inline
+        description: Inline htpasswd content (e.g. from `htpasswd -nb user pass`). Alternative to htpasswd file.
+        show_user: false
+      # Bearer Token (bearertokenauthextension) - token, tokens, or filename
+      - name: enable_bearer_auth
+        type: bool
+        required: false
+        title: Enable Bearer Token Auth
+        description: Require bearer token authentication for incoming OTLP requests. Uses bearertokenauthextension.
+        default: false
+        show_user: true
+      - name: bearer_token
+        type: password
+        required: false
+        title: Bearer Token
+        description: The bearer token to validate against incoming requests. Required when Bearer Token auth is enabled.
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        show_user: true
+      - name: bearer_token_filename
+        type: text
+        required: false
+        title: Bearer Token File
+        description: Path to file containing bearer token(s). Alternative to bearer_token.
+        show_user: false
+      - name: bearer_token_header
+        type: text
+        required: false
+        title: Bearer Token Header
+        description: HTTP header name for the token. Defaults to Authorization.
+        default: Authorization
+        show_user: false
+      - name: bearer_token_scheme
+        type: text
+        required: false
+        title: Bearer Token Scheme
+        description: Auth scheme for the token. Defaults to Bearer.
+        default: Bearer
+        show_user: false
+      # OIDC (oidcauthextension) - issuer_url, audience required
+      - name: enable_oidc_auth
+        type: bool
+        required: false
+        title: Enable OIDC Auth
+        description: Require OIDC-based authentication for incoming OTLP requests. Uses oidcauthextension.
+        default: false
+        show_user: true
+      - name: oidc_issuer_url
+        type: text
+        required: false
+        title: OIDC Issuer URL
+        description: Base URL for the OIDC provider. Required when OIDC auth is enabled.
+        show_user: true
+      - name: oidc_audience
+        type: text
+        required: false
+        title: OIDC Audience
+        description: Audience of the token used during verification. Required unless ignore_audience is true.
+        show_user: true
+      - name: oidc_ignore_audience
+        type: bool
+        required: false
+        title: OIDC Ignore Audience
+        description: Skip validating the audience field.
+        default: false
+        show_user: false
+      - name: oidc_issuer_ca_path
+        type: text
+        required: false
+        title: OIDC Issuer CA Path
+        description: Local path for the issuer CA's TLS server cert.
+        show_user: false
+      - name: oidc_username_claim
+        type: text
+        required: false
+        title: OIDC Username Claim
+        description: Claim to use as username if token 'sub' is not suitable.
+        show_user: false
+      - name: oidc_groups_claim
+        type: text
+        required: false
+        title: OIDC Groups Claim
+        description: Claim holding subject's group membership information.
+        show_user: false
+      # TLS
+      - name: tls_cert_file
+        type: text
+        required: false
+        title: TLS Certificate File
+        description: Path to the TLS certificate file for the server.
+        show_user: false
+      - name: tls_key_file
+        type: text
+        required: false
+        title: TLS Key File
+        description: Path to the TLS private key file for the server.
+        show_user: false
+      - name: tls_ca_file
+        type: text
+        required: false
+        title: TLS CA File
+        description: Path to the TLS CA certificate file for client verification (mTLS).
+        show_user: false
+owner:
+  github: elastic/ecosystem
+  type: elastic

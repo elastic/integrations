@@ -1,0 +1,127 @@
+{{#if enable_basic_auth}}
+extensions:
+  basicauth:
+    htpasswd:
+{{#if basic_auth_htpasswd_file}}
+      file: {{basic_auth_htpasswd_file}}
+{{/if}}
+{{#if basic_auth_htpasswd_inline}}
+      inline: |
+        {{basic_auth_htpasswd_inline}}
+{{/if}}
+{{/if}}
+{{#if enable_bearer_auth}}
+extensions:
+  bearertokenauth:
+{{#if bearer_token}}
+    token: {{bearer_token}}
+{{/if}}
+{{#if bearer_token_filename}}
+    filename: {{bearer_token_filename}}
+{{/if}}
+{{#if bearer_token_header}}
+    header: {{bearer_token_header}}
+{{/if}}
+{{#if bearer_token_scheme}}
+    scheme: {{bearer_token_scheme}}
+{{/if}}
+{{/if}}
+{{#if enable_oidc_auth}}
+extensions:
+  oidc:
+    issuer_url: {{oidc_issuer_url}}
+    audience: {{oidc_audience}}
+{{#if oidc_ignore_audience}}
+    ignore_audience: {{oidc_ignore_audience}}
+{{/if}}
+{{#if oidc_issuer_ca_path}}
+    issuer_ca_path: {{oidc_issuer_ca_path}}
+{{/if}}
+{{#if oidc_username_claim}}
+    username_claim: {{oidc_username_claim}}
+{{/if}}
+{{#if oidc_groups_claim}}
+    groups_claim: {{oidc_groups_claim}}
+{{/if}}
+{{/if}}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: {{grpc_endpoint}}
+{{#if tls_cert_file}}
+        tls:
+          cert_file: {{tls_cert_file}}
+          key_file: {{tls_key_file}}
+{{#if tls_ca_file}}
+          client_ca_file: {{tls_ca_file}}
+{{/if}}
+{{/if}}
+{{#if enable_basic_auth}}
+        auth:
+          authenticator: basicauth
+{{/if}}
+{{#if enable_bearer_auth}}
+        auth:
+          authenticator: bearertokenauth
+{{/if}}
+{{#if enable_oidc_auth}}
+        auth:
+          authenticator: oidc
+{{/if}}
+      http:
+        endpoint: {{http_endpoint}}
+{{#if tls_cert_file}}
+        tls:
+          cert_file: {{tls_cert_file}}
+          key_file: {{tls_key_file}}
+{{#if tls_ca_file}}
+          client_ca_file: {{tls_ca_file}}
+{{/if}}
+{{/if}}
+{{#if enable_basic_auth}}
+        auth:
+          authenticator: basicauth
+{{/if}}
+{{#if enable_bearer_auth}}
+        auth:
+          authenticator: bearertokenauth
+{{/if}}
+{{#if enable_oidc_auth}}
+        auth:
+          authenticator: oidc
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+{{#if enable_basic_auth}}
+  extensions: [basicauth]
+{{/if}}
+{{#if enable_bearer_auth}}
+  extensions: [bearertokenauth]
+{{/if}}
+{{#if enable_oidc_auth}}
+  extensions: [oidc]
+{{/if}}
+  pipelines:
+{{#if enable_logs}}
+    logs:
+      receivers: [otlp]
+      processors: [resourcedetection/system]
+{{/if}}
+{{#if enable_metrics}}
+    metrics:
+      receivers: [otlp]
+      processors: [resourcedetection/system]
+{{/if}}
+{{!-- {{#if enable_profiles}}
+    profiles:
+      receivers: [otlp]
+      processors: [resourcedetection/system]
+{{/if}}
+{{#if enable_traces}}
+    traces:
+      receivers: [otlp]
+      processors: [resourcedetection/system]
+{{/if}} --}}
