@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a sequence of events in Microsoft Entra ID indicative of suspicious cloud-based device registration via automated tooling like ROADtools or similar frameworks. This behavior involves adding a device via the Device Registration Service, followed by the assignment of registered users and owners \u2014 a pattern consistent with techniques used to establish persistence or acquire a Primary Refresh Token (PRT). ROADtools and similar tooling leave distinct telemetry signatures such as the `Microsoft.OData.Client` user agent. These sequences are uncommon in typical user behavior and may reflect abuse of device trust for session hijacking or silent token replay.",
+        "from": "now-30m",
+        "index": [
+            "filebeat-*",
+            "logs-azure.auditlogs-*"
+        ],
+        "interval": "15m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Entra ID Unusual Cloud Device Registration",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Unusual Cloud Device Registration\n\nThis rule detects a sequence of Microsoft Entra ID audit events consistent with cloud device registration abuse via ROADtools or similar automation frameworks. The activity includes three correlated events:\n\n1. Add device operation from the Device Registration Service using suspicious user-agents (`Dsreg/*`, `DeviceRegistrationClient`, or `Microsoft.OData.Client/*`).\n2. Addition of a registered user with an `enterprise registration` URN.\n3. Assignment of a registered owner to the device.\n\nThis pattern has been observed in OAuth phishing and PRT abuse campaigns where adversaries silently register a cloud device to obtain persistent, trusted access.\n\n### Possible investigation steps\n\n- Identify the user principal associated with the device registration.\n- Review the `azure.auditlogs.identity` field to confirm the Device Registration Service initiated the request.\n- Check the user-agent in `azure.auditlogs.properties.additional_details.value`. Known attack tooling signatures include:\n  - `Dsreg/10.0 (Windows X.X.X)` - ROADtools Windows device registration\n  - `DeviceRegistrationClient` - ROADtools MacOS/Android device registration\n  - `Microsoft.OData.Client/*` - .NET-based tools or Graph SDK\n- Examine the OS version in the modified properties to identify potentially suspicious or outdated versions.\n- Verify the URN in the new value field (`urn:ms-drs:enterpriseregistration.windows.net`) is not being misused.\n- Use `azure.correlation_id` to pivot across all three steps of the registration flow.\n- Pivot to `azure.signinlogs` to detect follow-on activity using the new device, such as sign-ins involving refresh or primary refresh tokens.\n- Look for signs of persistence or lateral movement enabled by the newly registered device.\n- Identify the registered device name by reviewing `azure.auditlogs.properties.target_resources.0.display_name` and confirm it's expected for the user or organization.\n- Use the correlation ID `azure.correlation_id` to pivot into registered user events from Entra ID audit logs and check `azure.auditlogs.properties.target_resources.0.user_principal_name` to identify the user associated with the device registration.\n- Review any activity for this user from Entra ID sign-in logs, where the incoming token type is a `primaryRefreshToken`.\n\n### False positive analysis\n\n- Some MDM, autopilot provisioning flows, or third-party device management tools may generate similar sequences. Validate against known provisioning tools, expected rollout windows, and device inventory.\n- Investigate whether the device name, OS version, and registration details align with normal IT workflows.\n- Check if the user-agent corresponds to legitimate automation or tooling used by your organization.\n\n### Response and remediation\n\n- If confirmed malicious, remove the registered device from Entra ID.\n- Revoke refresh tokens and primary refresh tokens associated with the user and device.\n- Disable the user account and initiate password reset and identity verification procedures.\n- Review audit logs and sign-in activity for additional indicators of persistence or access from the rogue device.\n- Tighten conditional access policies to restrict device registration and enforce compliance or hybrid join requirements.\n",
+        "query": "sequence by azure.correlation_id with maxspan=5m\n[any where event.dataset == \"azure.auditlogs\" and\n    azure.auditlogs.identity == \"Device Registration Service\" and\n    azure.auditlogs.operation_name == \"Add device\" and\n    (\n        azure.auditlogs.properties.additional_details.value like \"Microsoft.OData.Client/*\" or\n        azure.auditlogs.properties.additional_details.value like \"Dsreg/*\" or\n        azure.auditlogs.properties.additional_details.value == \"DeviceRegistrationClient\"\n    ) and\n    `azure.auditlogs.properties.target_resources.0.modified_properties.1.display_name` == \"CloudAccountEnabled\" and\n    `azure.auditlogs.properties.target_resources.0.modified_properties.1.new_value` == \"[true]\"]\n[any where event.dataset == \"azure.auditlogs\" and\n    azure.auditlogs.operation_name == \"Add registered users to device\" and\n    `azure.auditlogs.properties.target_resources.0.modified_properties.2.new_value` like \"*urn:ms-drs:enterpriseregistration.windows.net*\"]\n[any where event.dataset == \"azure.auditlogs\" and\n    azure.auditlogs.operation_name == \"Add registered owner to device\"]\n",
+        "references": [
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/",
+            "https://github.com/dirkjanm/ROADtools",
+            "https://dirkjanm.io/introducing-roadtools-token-exchange-roadtx/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "`azure.auditlogs.properties.target_resources.0.modified_properties.1.display_name`",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "`azure.auditlogs.properties.target_resources.0.modified_properties.1.new_value`",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "`azure.auditlogs.properties.target_resources.0.modified_properties.2.new_value`",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.identity",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.additional_details.value",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.correlation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "90efea04-5675-11f0-8f80-f661ea17fbcd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 3
+    },
+    "id": "90efea04-5675-11f0-8f80-f661ea17fbcd_3",
+    "type": "security-rule"
+}

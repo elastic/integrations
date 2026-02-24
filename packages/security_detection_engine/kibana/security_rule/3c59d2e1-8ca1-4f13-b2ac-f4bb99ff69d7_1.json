@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects attempts to disassociate or manipulate Amazon GuardDuty member accounts within an AWS organization. In multi-account GuardDuty deployments, a delegated administrator account aggregates findings from member accounts. Adversaries may attempt to disassociate member accounts, delete member relationships, stop monitoring members, or delete pending invitations to break this centralized visibility. These actions can be precursors to or alternatives for deleting GuardDuty detectors entirely, allowing attackers to operate undetected in member accounts while the administrator account loses visibility. This rule identifies successful API calls that manipulate GuardDuty member relationships, which are rare in normal operations and warrant immediate investigation.",
+        "false_positives": [
+            "GuardDuty member relationships may be modified during legitimate organizational changes such as account migrations, security architecture restructuring, or delegated administrator transitions. Verify whether the user identity and timing align with approved change management processes. If this is expected administrative activity, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS GuardDuty Member Account Manipulation",
+        "note": "## Triage and analysis\n\n### Investigating AWS GuardDuty Member Account Manipulation\n\nIn AWS Organizations with GuardDuty enabled, a delegated administrator account receives and aggregates security findings from all member accounts. This centralized visibility is critical for detecting threats across the organization. Adversaries who compromise a member account may attempt to break this relationship to operate without triggering alerts visible to the security team.\n\nThis rule detects several API actions that manipulate GuardDuty member relationships:\n- `DisassociateFromMasterAccount` / `DisassociateFromAdministratorAccount`: Member account breaks its connection to the administrator\n- `DeleteMembers`: Administrator removes member accounts from GuardDuty\n- `StopMonitoringMembers`: Administrator stops monitoring specific member accounts without fully removing them\n- `DeleteInvitations`: Member account deletes pending invitations, preventing association\n\nThese actions are extremely rare in normal operations and can indicate either a compromised account or an attacker preparing to disable GuardDuty entirely.\n\n### Possible investigation steps\n\n- **Identify the actor**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.type` to determine who performed the action.\n  - Determine whether the action originated from a member account (disassociation) or the administrator account (deletion/stop monitoring).\n\n- **Review request context**\n  - Check `aws.cloudtrail.request_parameters` to identify which member accounts were affected.\n  - Determine the scope: single account or multiple accounts targeted.\n\n- **Analyze source and access patterns**\n  - Review `source.ip` and `user_agent.original` for anomalous access patterns.\n  - Check if the action occurred outside normal business hours or maintenance windows.\n\n- **Correlate with related activity**\n  - Search for subsequent `DeleteDetector` API calls in the affected member accounts.\n  - Look for other defense evasion indicators: CloudTrail modifications, Config rule deletions, Security Hub changes.\n  - Check for privilege escalation or credential access events preceding this action.\n\n- **Verify business justification**\n  - Confirm with the identified user or team whether there was a legitimate organizational change.\n  - Check for related change tickets or migration documentation.\n\n### False positive analysis\n\n- **Organizational restructuring**\n  - Member relationships may change during account migrations or delegated administrator transitions.\n  - Validate against documented organizational changes.\n\n- **Account decommissioning**\n  - Accounts being retired may be removed from GuardDuty before closure.\n  - Confirm this aligns with account lifecycle management processes.\n\n### Response and remediation\n\n- **Immediate containment**\n  - If unauthorized, immediately re-associate the affected member accounts with the administrator.\n  - For `StopMonitoringMembers`, use `StartMonitoringMembers` to restore visibility.\n\n- **Investigation**\n  - Audit the affected member accounts for suspicious activity during the visibility gap.\n  - Review CloudTrail for any actions taken while GuardDuty monitoring was disrupted.\n\n- **Hardening**\n  - Restrict `guardduty:DisassociateFromAdministratorAccount`, `guardduty:DeleteMembers`, and related permissions.\n  - Use SCPs to prevent member accounts from disassociating from GuardDuty administrators.\n  - Implement Security Hub controls to detect changes to GuardDuty organization configuration.\n\n### Additional information\n- **[AWS GuardDuty Multi-Account Documentation](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_accounts.html)**\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)**\n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)**\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"guardduty.amazonaws.com\"\n    and event.action: (\n        \"DisassociateFromAdministratorAccount\" or\n        \"DeleteMembers\" or\n        \"StopMonitoringMembers\" or\n        \"DeleteInvitations\" or\n        \"DisassociateMembers\"\n    )\n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/guardduty/latest/APIReference/API_DisassociateFromAdministratorAccount.html",
+            "https://docs.aws.amazon.com/guardduty/latest/APIReference/API_DeleteMembers.html",
+            "https://docs.aws.amazon.com/guardduty/latest/APIReference/API_StopMonitoringMembers.html",
+            "https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_accounts.html",
+            "https://permiso.io/blog/lucr-3-scattered-spider-getting-saas-y-in-the-cloud"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "3c59d2e1-8ca1-4f13-b2ac-f4bb99ff69d7",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS GuardDuty",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "3c59d2e1-8ca1-4f13-b2ac-f4bb99ff69d7_1",
+    "type": "security-rule"
+}

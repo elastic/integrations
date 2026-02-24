@@ -1,0 +1,180 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects potential brute force attacks against a single Okta user account where excessive unique device token hashes are generated, indicating automated tooling that fails to persist browser cookies between attempts.",
+        "false_positives": [
+            "A user experiencing login issues may generate multiple device tokens through repeated legitimate attempts.",
+            "Automated testing or monitoring tools that do not persist cookies may trigger this rule."
+        ],
+        "from": "now-30m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Okta Brute Force (Device Token Rotation)",
+        "note": "## Triage and analysis\n\n### Investigating Potential Okta Brute Force (Device Token Rotation)\n\nThis rule identifies excessive unique device token hashes generated for a single user account, indicating automated brute force tooling that fails to persist browser cookies between authentication attempts.\n\n#### Possible investigation steps\n- Identify the targeted user account and determine if it has elevated privileges or sensitive access.\n- Review the source IP and check if it belongs to known proxy, VPN, or cloud infrastructure.\n- Examine user agent strings for signs of automation, scripting tools, or inconsistent browser fingerprints.\n- Check if Okta flagged the source as a known threat or proxy.\n- Determine if any authentication attempts succeeded following the failed attempts.\n- Review the user's recent activity for signs of account compromise.\n\n### False positive analysis\n- Users experiencing login issues may generate multiple device tokens through repeated legitimate attempts.\n- Automated testing or monitoring tools that do not persist cookies may trigger this rule.\n- Browser extensions or privacy tools that clear cookies between requests may cause device token rotation.\n\n### Response and remediation\n- If attack is confirmed, reset the user's password immediately.\n- Block the source IP at the network perimeter.\n- Review and potentially reset MFA for the targeted account.\n- Monitor for any successful authentication that may indicate compromise.\n- Contact the user to verify if they experienced legitimate login issues.\n",
+        "query": "FROM logs-okta.system-* METADATA _id, _version, _index\n| WHERE\n    event.dataset == \"okta.system\"\n    AND (event.action LIKE \"user.authentication.*\" OR event.action == \"user.session.start\")\n    AND okta.outcome.reason IN (\"INVALID_CREDENTIALS\", \"LOCKED_OUT\")\n    AND okta.actor.alternate_id IS NOT NULL\n    // Primary authn endpoint; sessions API provides additional coverage\n    AND (\n        okta.debug_context.debug_data.request_uri == \"/api/v1/authn\"\n        OR okta.debug_context.debug_data.request_uri LIKE \"/api/v1/sessions*\"\n    )\n// Track whether each event has a device token\n| EVAL has_dt_hash = CASE(okta.debug_context.debug_data.dt_hash IS NOT NULL, 1, 0)\n// Aggregate by IP + user to detect single-user brute force\n| STATS\n    Esql.unique_dt_hashes = COUNT_DISTINCT(okta.debug_context.debug_data.dt_hash),\n    Esql.total_attempts = COUNT(*),\n    Esql.attempts_with_dt = SUM(has_dt_hash),\n    Esql.unique_user_agents = COUNT_DISTINCT(okta.client.user_agent.raw_user_agent),\n    Esql.first_seen = MIN(@timestamp),\n    Esql.last_seen = MAX(@timestamp),\n    Esql.dt_hash_values = VALUES(okta.debug_context.debug_data.dt_hash),\n    Esql.event_action_values = VALUES(event.action),\n    Esql.user_agent_values = VALUES(okta.client.user_agent.raw_user_agent),\n    Esql.device_values = VALUES(okta.client.device),\n    Esql.is_proxy_values = VALUES(okta.security_context.is_proxy),\n    Esql.geo_country_values = VALUES(client.geo.country_name),\n    Esql.geo_city_values = VALUES(client.geo.city_name),\n    Esql.source_asn_values = VALUES(source.as.number),\n    Esql.source_asn_org_values = VALUES(source.as.organization.name),\n    Esql.threat_suspected_values = VALUES(okta.debug_context.debug_data.threat_suspected),\n    Esql.risk_level_values = VALUES(okta.debug_context.debug_data.risk_level),\n    Esql.risk_reasons_values = VALUES(okta.debug_context.debug_data.risk_reasons)\n  BY okta.client.ip, okta.actor.alternate_id\n// Calculate automation detection metrics (float-safe division)\n| EVAL Esql.dt_coverage = Esql.attempts_with_dt * 1.0 / Esql.total_attempts,\n       Esql.dt_per_attempt = Esql.unique_dt_hashes * 1.0 / Esql.total_attempts\n// Detection branches:\n//   A) Many unique DT hashes relative to attempts = tooling generating new tokens per attempt\n//   B) High attempts + very low DT coverage = cookie-less automation (no DT sent at all)\n//   C) Multiple user agents for same user = evasion or automation\n| WHERE\n    (Esql.unique_dt_hashes >= 7 AND Esql.total_attempts >= 10 AND Esql.dt_per_attempt >= 0.5)\n    OR (Esql.total_attempts >= 12 AND Esql.dt_coverage < 0.15)\n    OR (Esql.total_attempts >= 10 AND Esql.unique_user_agents >= 5)\n| SORT Esql.total_attempts DESC\n| KEEP Esql.*, okta.client.ip, okta.actor.alternate_id\n",
+        "references": [
+            "https://support.okta.com/help/s/article/Troubleshooting-Distributed-Brute-Force-andor-Password-Spray-attacks-in-Okta",
+            "https://www.okta.com/identity-101/brute-force/",
+            "https://support.okta.com/help/s/article/How-does-the-Device-Token-work?language=en_US",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://www.elastic.co/security-labs/testing-okta-visibility-and-detection-dorothy",
+            "https://sec.okta.com/articles/2023/08/cross-tenant-impersonation-prevention-and-detection",
+            "https://www.okta.com/resources/whitepaper-how-adaptive-mfa-can-help-in-mitigating-brute-force-attacks/",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.attempts_with_dt",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.device_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.dt_coverage",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.dt_hash_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.dt_per_attempt",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_action_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_city_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_country_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_proxy_values",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.last_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_level_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_reasons_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_org_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.threat_suspected_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.total_attempts",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_dt_hashes",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_user_agents",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "okta.actor.alternate_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "okta.client.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "23f18264-2d6d-11ef-9413-f661ea17fbce",
+        "setup": "The Okta Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Data Source: Okta",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 209
+    },
+    "id": "23f18264-2d6d-11ef-9413-f661ea17fbce_209",
+    "type": "security-rule"
+}

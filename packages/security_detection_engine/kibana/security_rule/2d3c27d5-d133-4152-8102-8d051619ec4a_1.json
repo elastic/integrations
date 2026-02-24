@@ -1,0 +1,207 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects potential password spray attacks where multiple source IPs target multiple Okta user accounts within a time window, indicating coordinated attacks using IP rotation to evade single-source detection.",
+        "false_positives": [
+            "Large enterprises with many users experiencing simultaneous password issues during credential rotation events.",
+            "Automated monitoring or penetration testing tools scanning from multiple IPs."
+        ],
+        "from": "now-1h",
+        "interval": "15m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Okta Password Spray (Multi-Source)",
+        "note": "## Triage and analysis\n\n### Investigating Potential Okta Password Spray (Multi-Source)\n\nThis rule identifies coordinated password spray attacks where multiple source IPs target multiple user accounts within a time window. This pattern indicates attackers using IP rotation to evade single-source detection while spraying passwords across the organization.\n\n#### Possible investigation steps\n- Review the list of targeted user accounts and check if any authentications succeeded.\n- Examine the source IPs and their ASN ownership for signs of proxy, VPN, or cloud infrastructure.\n- Check if Okta flagged any of the sources as known threats or proxies.\n- Analyze the attempts-per-user ratio to confirm spray behavior versus brute force.\n- Review the geographic distribution of source IPs for coordination patterns.\n- Cross-reference with successful authentication events to identify potential compromises.\n\n### False positive analysis\n- Organization-wide password rotation or expiration events may cause widespread authentication failures.\n- Misconfigured SSO or SAML integrations can cause batch failures from legitimate infrastructure.\n- Penetration testing should be coordinated and whitelisted in advance.\n\n### Response and remediation\n- If attack is confirmed, notify affected users and enforce password resets for potentially compromised accounts.\n- Block attacking IP ranges at the network perimeter.\n- Enable or strengthen MFA for targeted accounts.\n- Review Okta sign-on policies to add additional friction for suspicious authentication patterns.\n- Consider temporary lockdowns for highly targeted accounts.\n",
+        "query": "FROM logs-okta.system-* METADATA _id, _version, _index\n| WHERE\n    event.dataset == \"okta.system\"\n    AND (event.action LIKE \"user.authentication.*\" OR event.action == \"user.session.start\")\n    AND okta.outcome.reason IN (\"INVALID_CREDENTIALS\", \"LOCKED_OUT\")\n    AND okta.actor.alternate_id IS NOT NULL\n\n// Bucket into 15-minute windows and create user-source mapping for context\n| EVAL\n    Esql.time_bucket = DATE_TRUNC(15 minutes, @timestamp),\n    Esql.user_source_info = CONCAT(\n      \"{\\\"user\\\":\\\"\", okta.actor.alternate_id,\n      \"\\\",\\\"ip\\\":\\\"\", COALESCE(okta.client.ip::STRING, \"unknown\"),\n      \"\\\",\\\"user_agent\\\":\\\"\", COALESCE(okta.client.user_agent.raw_user_agent, \"unknown\"), \"\\\"}\"\n    )\n\n// Aggregate across entire tenant per time bucket to detect distributed spray\n| STATS\n    Esql.unique_users = COUNT_DISTINCT(okta.actor.alternate_id),\n    Esql.unique_source_ips = COUNT_DISTINCT(okta.client.ip),\n    Esql.total_attempts = COUNT(*),\n    Esql.unique_user_agents = COUNT_DISTINCT(okta.client.user_agent.raw_user_agent),\n    Esql.unique_asns = COUNT_DISTINCT(source.as.number),\n    Esql.unique_countries = COUNT_DISTINCT(client.geo.country_name),\n    Esql.first_seen = MIN(@timestamp),\n    Esql.last_seen = MAX(@timestamp),\n    Esql.target_users = VALUES(okta.actor.alternate_id),\n    Esql.source_ip_values = VALUES(okta.client.ip),\n    Esql.user_source_mapping = VALUES(Esql.user_source_info),\n    Esql.event_action_values = VALUES(event.action),\n    Esql.user_agent_values = VALUES(okta.client.user_agent.raw_user_agent),\n    Esql.device_values = VALUES(okta.client.device),\n    Esql.is_proxy_values = VALUES(okta.security_context.is_proxy),\n    Esql.geo_country_values = VALUES(client.geo.country_name),\n    Esql.geo_city_values = VALUES(client.geo.city_name),\n    Esql.source_asn_values = VALUES(source.as.number),\n    Esql.source_asn_org_values = VALUES(source.as.organization.name),\n    Esql.threat_suspected_values = VALUES(okta.debug_context.debug_data.threat_suspected),\n    Esql.risk_level_values = VALUES(okta.debug_context.debug_data.risk_level),\n    Esql.risk_reasons_values = VALUES(okta.debug_context.debug_data.risk_reasons)\n  BY Esql.time_bucket\n\n// Calculate spray metrics\n| EVAL\n    Esql.attempts_per_user = Esql.total_attempts * 1.0 / Esql.unique_users,\n    Esql.attempts_per_ip = Esql.total_attempts * 1.0 / Esql.unique_source_ips,\n    Esql.users_per_ip = Esql.unique_users * 1.0 / Esql.unique_source_ips\n\n// Distributed spray: many IPs, many users, moderate spread across both\n// Key differentiator: attacks come from multiple IPs (evading per-IP rules)\n| WHERE\n    Esql.unique_source_ips >= 5\n    AND Esql.unique_users >= 8\n    AND Esql.total_attempts >= 25\n    AND Esql.attempts_per_user <= 5.0\n    AND Esql.users_per_ip >= 1.0\n\n| SORT Esql.total_attempts DESC\n| KEEP Esql.*\n",
+        "references": [
+            "https://support.okta.com/help/s/article/Troubleshooting-Distributed-Brute-Force-andor-Password-Spray-attacks-in-Okta",
+            "https://www.okta.com/identity-101/brute-force/",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://www.elastic.co/security-labs/testing-okta-visibility-and-detection-dorothy",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.attempts_per_ip",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.attempts_per_user",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.device_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_action_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_city_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_country_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_proxy_values",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.last_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_level_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_reasons_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_org_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.target_users",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.threat_suspected_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_bucket",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.total_attempts",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_asns",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_countries",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_source_ips",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_user_agents",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_users",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_source_mapping",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.users_per_ip",
+                "type": "double"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2d3c27d5-d133-4152-8102-8d051619ec4a",
+        "setup": "The Okta Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Data Source: Okta",
+            "Data Source: Okta System Logs",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "2d3c27d5-d133-4152-8102-8d051619ec4a_1",
+    "type": "security-rule"
+}

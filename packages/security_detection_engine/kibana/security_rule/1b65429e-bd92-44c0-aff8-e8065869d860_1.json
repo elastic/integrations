@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects execution of bpftool commands used to detach eBPF programs or links, or to delete or modify eBPF maps. These actions can disable, alter, or interfere with kernel-level instrumentation and enforcement mechanisms implemented through eBPF. In environments relying on eBPF-based networking, observability, or security controls, unexpected use of these operations may indicate defense evasion or runtime tampering.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "endgame-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "BPF Program Tampering via bpftool",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating BPF Program Tampering via bpftool\n\nThis rule detects bpftool executions that detach eBPF programs/links or delete/update eBPF maps, actions that can silently disable kernel-level visibility and enforcement built on eBPF. Attackers use these operations to evade detection or weaken runtime controls by removing loaded probes or rewriting map contents that drive policy decisions. A common pattern is running bpftool to detach a program from a hook or detach a link shortly before other suspicious activity.\n\n### Possible investigation steps\n\n- Pull the full bpftool command line and correlate it with the invoking user, session (TTY/SSH), parent process chain, and any preceding privilege escalation to determine whether it was interactive admin work or automated tampering.  \n- Capture current eBPF state (`bpftool prog show`, `bpftool link show`, `bpftool map show -j`) and compare with recent snapshots/logs to identify which program/link/map changed and what controls (sensor, CNI, LSM, XDP/TC) may have been impacted.  \n- Identify the affected attachment point by mapping the detached program/link ID to its hook (e.g., tc/xdp/cgroup/tracepoint/kprobe) and validate operational impact by checking for missing telemetry, policy gaps, or network behavior changes around the event time.  \n- Review audit/system logs and package history for installation or recent execution of bpftool, kernel/debug tooling, or custom eBPF loaders, and look for nearby suspicious binaries/scripts that could be orchestrating repeated detach/update actions.  \n- If malicious activity is suspected, preserve artifacts by exporting bpftool JSON output and relevant `/sys/fs/bpf` entries, then hunt for follow-on persistence or rootkit-like behavior (new eBPF loads, altered maps, hidden processes, unexpected kernel module activity) on the host.\n\n### False positive analysis\n\n- A system administrator or SRE running bpftool during incident response or troubleshooting may detach a program/link or update/delete a map to temporarily disable an eBPF hook and validate whether it is causing network drops, performance regressions, or incorrect enforcement.\n- A maintenance workflow during kernel, CNI, or eBPF policy rollouts may use bpftool to detach and replace existing attachments or refresh map entries as part of a controlled upgrade/rollback, especially when reloading pinned objects under `/sys/fs/bpf`.\n\n### Response and remediation\n\n- Contain by isolating the host from the network or restricting outbound access while preserving access for forensics if bpftool detach/map operations are unexpected or coincide with loss of eBPF-based enforcement/telemetry.  \n- Eradicate by stopping and removing the controlling process/script (inspect the bpftool parent chain and cron/systemd units), revoking the initiating account\u2019s sudo/root access, and deleting any unauthorized pinned objects under `/sys/fs/bpf` after exporting them for evidence.  \n- Recover by reloading the approved eBPF components (agent/CNI/LSM/XDP/TC) from trusted packages or images, reattaching required programs/links, and restoring known-good map contents from backups or redeploying policy to repopulate maps.  \n- Escalate to incident response and platform owners immediately if repeated bpftool tampering persists after containment, you find unknown pinned maps/programs with suspicious names/owners, or multiple hosts show simultaneous detach/update activity.  \n- Harden by limiting bpftool availability (remove from production images where not needed), enforcing least-privilege on CAP_BPF/CAP_SYS_ADMIN and sudoers, and adding immutable monitoring of `/usr/sbin/bpftool` and `/sys/fs/bpf` plus periodic snapshots of `bpftool prog/link/map show` for drift detection.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\nevent.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\") and\nprocess.name == \"bpftool\" and (\n  (process.args == \"prog\" and process.args == \"detach\") or\n  (process.args == \"map\" and process.args in (\"delete\", \"update\")) or\n  (process.args == \"link\" and process.args == \"detach\")\n)\n",
+        "references": [
+            "https://manpages.ubuntu.com/manpages/jammy/man8/bpftool-prog.8.html",
+            "https://manpages.ubuntu.com/manpages/noble/man8/bpftool-map.8.html",
+            "https://man.archlinux.org/man/bpftool-link.8.en"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1b65429e-bd92-44c0-aff8-e8065869d860",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Threat: Rootkit",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1014",
+                        "name": "Rootkit",
+                        "reference": "https://attack.mitre.org/techniques/T1014/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "1b65429e-bd92-44c0-aff8-e8065869d860_1",
+    "type": "security-rule"
+}
