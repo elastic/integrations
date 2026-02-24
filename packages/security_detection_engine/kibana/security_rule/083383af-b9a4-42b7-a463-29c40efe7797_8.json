@@ -1,0 +1,202 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts that builds commands from concatenated string literals inside dynamic invocation constructs like &() or .(). Attackers use concatenated dynamic invocation to obscure execution intent, bypass keyword-based detections, and evade AMSI.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell Obfuscation via Concatenated Dynamic Command Invocation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating Potential PowerShell Obfuscation via Concatenated Dynamic Command Invocation\n\nThis rule identifies PowerShell script block content where a command is built from concatenated string literals and executed through dynamic invocation using the call operator (&) or dot invocation (.). This technique can hide the true command name (for example, splitting cmdlet, function, alias, or script names into fragments) and is often paired with additional obfuscation to hinder quick review.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `Esql.script_block_tmp`: Transformed script block where detection patterns replace original content with a marker to support scoring/counting and quickly spot match locations.\n- `Esql.script_block_pattern_count`: Count of matches for the detection pattern(s) observed in the script block content.\n- `powershell.file.script_block_entropy_bits`: Shannon entropy of the script block. Higher values may indicate obfuscation.\n- `powershell.file.script_block_surprisal_stdev`: Standard deviation of surprisal across the script block. Low values indicate uniform randomness. High values indicate mixed patterns and variability.\n- `powershell.file.script_block_unique_symbols`: Count of distinct characters present in the script block.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Establish scope and execution context:\n  - Review `host.name` and `host.id` to understand where the script ran, and identify whether the host is an admin workstation, server, or user endpoint.\n  - Review `user.name`, `user.domain`, and `user.id` to understand who initiated the activity and whether PowerShell use is expected for that identity.\n  - Use the alert timestamp to bound the activity window for correlation and scoping.\n\n- Reconstruct the dynamically invoked command(s):\n  - Review `powershell.file.script_block_text` and use `Esql.script_block_tmp` to quickly locate the dynamic invocation expression(s) inside the script block.\n  - Identify each invocation using `&(...)` or `.(...)` where multiple quoted strings are joined with `+`.\n  - Concatenate the quoted string fragments in their observed order to derive the effective command/function/script name being invoked.\n  - Use `Esql.script_block_pattern_count` to prioritize review; multiple dynamic concatenation invocations in the same script block generally indicate stronger intent to obscure execution.\n\n- Determine whether the operator changes execution semantics:\n  - For `&(...)` (call operator), focus on the command being executed and any arguments passed immediately before/after the invocation.\n  - For `.(...)` (dot invocation), assess whether the script is intended to run in the current scope (for example, to define or modify functions/variables) and whether that scope change is expected for the host and user context.\n\n- Reassemble full script content when fragmented:\n  - Pivot on `powershell.file.script_block_id` to locate other fragments of the same script block.\n  - If `powershell.total` indicates the content is split across multiple events, use `powershell.sequence` and `powershell.total` to reconstruct the full script block in order before making a determination.\n\n- Identify script origin and persistence opportunities:\n  - If `file.path`, `file.directory`, or `file.name` are present, determine whether the script block is associated with an on-disk script and whether its location aligns with approved administrative tooling or known automation paths.\n  - Treat unusual user-writable or temporary locations as higher risk, especially when paired with high `Esql.script_block_pattern_count`.\n\n- Evaluate obfuscation characteristics and intent:\n  - Use `powershell.file.script_block_entropy_bits`, `powershell.file.script_block_surprisal_stdev`, `powershell.file.script_block_unique_symbols`, and `powershell.file.script_block_length` to assess how atypical the content is compared to known-good scripts in your environment.\n  - Review surrounding logic in `powershell.file.script_block_text` for additional obfuscation patterns (for example, layered string operations, indirect invocation, or hidden payload material) that may not be captured by this specific match.\n\n- Correlate with adjacent endpoint activity (if available):\n  - Pivot using `host.id` and the alert time window to identify the PowerShell host process, its parent process, and any child processes that indicate follow-on execution.\n  - Review network, file, and registry activity on `host.id` around the same time for signs of payload retrieval, on-disk staging, persistence, or system configuration changes.\n  - Review authentication activity associated with `user.id` around the same time window for anomalous logons, new session sources, or unusual access patterns.\n  - Pivot on `user.id` to identify similar activity across other hosts, which may indicate shared automation, credential reuse, or lateral movement.\n\n- Capture and operationalize investigation artifacts:\n  - Document the reconstructed command strings, notable script fragments, and any referenced file locations (`file.path`) for escalation and threat hunting.\n  - Use those artifacts to search for additional occurrences across the environment, focusing on the same `user.id`, `host.id`, and similar `powershell.file.script_block_text` patterns.\n\n### False positive analysis\n\n- Administrative scripts, modules, or internal frameworks that dynamically assemble short command names (cmdlets, functions, aliases) via string concatenation before invoking them for indirection or compatibility.\n- Legitimate automation that uses dot invocation to load or execute helper logic in the current scope, including scripts that intentionally reduce readability for code protection.\n\n### Response and remediation\n\n- If the activity is confirmed or strongly suspected to be malicious or unauthorized:\n  - Contain the affected host identified by `host.id` to prevent further execution and potential lateral movement.\n  - Preserve evidence, including the full reconstructed `powershell.file.script_block_text` (using `powershell.sequence`/`powershell.total` if needed) and any associated on-disk script referenced by `file.path`.\n\n- If an on-disk script is involved (`file.path` present):\n  - Acquire the referenced script file for analysis and validate its provenance.\n  - Remove or quarantine the script if it is unauthorized, and assess for additional copies using the same `file.name` or `file.path` patterns across hosts.\n\n- If account misuse is suspected:\n  - Scope recent activity for the implicated `user.id` across hosts, prioritize investigation for privileged accounts, and reset credentials per policy.\n  - Review and reduce unnecessary privileges associated with the account, especially if PowerShell access is not required.\n\n- Eradication and recovery:\n  - Identify and remediate follow-on artifacts discovered during scoping (for example, dropped scripts/binaries or persistence mechanisms) using established response procedures.\n  - Increase monitoring for recurrence by hunting for similar dynamic concatenation patterns (high `Esql.script_block_pattern_count`) on the same `host.id` and `user.id`.\n\n- Post-incident hardening:\n  - Ensure PowerShell Script Block Logging coverage is consistently enabled and centrally collected for systems where PowerShell use is permitted.\n  - Limit PowerShell use to approved users and hosts, and review controls that reduce the impact of dynamic invocation and obfuscation in your environment.\n",
+        "query": "from logs-windows.powershell_operational* metadata _id, _version, _index\n| where event.code == \"4104\" and powershell.file.script_block_text like \"*+*\"\n\n// replace the patterns we are looking for with the \ud83d\udd25 emoji to enable counting them\n// The emoji is used because it's unlikely to appear in scripts and has a consistent character length of 1\n| eval Esql.script_block_tmp = replace(\n    powershell.file.script_block_text,\n    \"\"\"[.&]\\(\\s*(['\"][A-Za-z0-9.-]+['\"]\\s*\\+\\s*)+['\"][A-Za-z0-9.-]+['\"]\\s*\\)\"\"\",\n    \"\ud83d\udd25\"\n)\n\n// count how many patterns were detected by calculating the number of \ud83d\udd25 characters inserted\n| eval Esql.script_block_pattern_count = length(Esql.script_block_tmp) - length(replace(Esql.script_block_tmp, \"\ud83d\udd25\", \"\"))\n\n// keep the fields relevant to the query, although this is not needed as the alert is populated using _id\n| keep\n    Esql.script_block_pattern_count,\n    Esql.script_block_tmp,\n    powershell.file.*,\n    file.path,\n    powershell.sequence,\n    powershell.total,\n    _id,\n    _version,\n    _index,\n    host.name,\n    host.id,\n    agent.id,\n    user.id\n\n// Filter for scripts that match the pattern at least once\n| where Esql.script_block_pattern_count >= 1\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.script_block_pattern_count",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.script_block_tmp",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_entropy_bits",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_entropy_normalized",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_length",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_surprisal_stdev",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_unique_symbols",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.sequence",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.total",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "083383af-b9a4-42b7-a463-29c40efe7797",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 8
+    },
+    "id": "083383af-b9a4-42b7-a463-29c40efe7797_8",
+    "type": "security-rule"
+}
