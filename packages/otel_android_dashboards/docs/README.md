@@ -1,4 +1,3 @@
-{{- generatedHeader }}
 # Android OpenTelemetry Assets
 
 ## Overview
