@@ -111,6 +111,10 @@ The `merge_results` feature will create a combined event, where `blks_hit`, `blk
 
 ### Cursor-based incremental data fetching
 
+::::{note}
+Cursor-based incremental data fetching is a beta feature introduced in Elastic Stack 9.4.
+::::
+
 Cursor support enables incremental fetching by tracking the last fetched row value and using it to fetch only new data on subsequent collection cycles. This is useful for continuously appended data like audit logs, event tables, or time-series data where you want to avoid re-fetching already-seen rows.
 
 When cursor is enabled, you must use the **SQL Query (Cursor Mode)** field instead of the **SQL Queries** field. Cursor mode requires a single query; it does not support multiple queries. Set **SQL Response Format** to `table`.
@@ -152,6 +156,16 @@ SELECT id, message, created_at FROM logs WHERE created_at > :cursor ORDER BY cre
 SELECT report_date, metrics FROM daily_reports WHERE report_date > :cursor ORDER BY report_date ASC
 ```
 
+**Float cursor:**
+
+```
+SELECT id, score FROM scores WHERE score > :cursor ORDER BY score ASC LIMIT 500
+```
+
+::::{note}
+Float cursors use IEEE 754 `float64` representation. For exact precision at boundaries (for example, financial data), use the `decimal` type instead.
+::::
+
 **Decimal cursor:**
 
 ```
@@ -189,6 +203,10 @@ direction: desc
 | `type` | Yes (when enabled) | Data type of the cursor column. One of: `integer`, `timestamp`, `date`, `float`, `decimal`. |
 | `default` | Yes (when enabled) | Initial cursor value used before any state is persisted. |
 | `direction` | No | `asc` (default) tracks the maximum value; `desc` tracks the minimum value. |
+
+::::{tip}
+For best performance, ensure the cursor column has a database index. Without an index, the `WHERE column > :cursor ORDER BY column` clause triggers a full table scan on every collection cycle, which can be slow on large tables.
+::::
 
 #### Supported cursor types
 
