@@ -26,6 +26,7 @@ This integration collects APM telemetry data from Elastic APM agents:
 
 ## Compatibility
 
+- **Elastic Stack version 9.4.0 or later is required**
 - Only the APM Intake V2 protocol is supported
 - RUM (Real User Monitoring) intake and older protocols are not supported
 - Compatible with Elastic APM agents that support the Intake V2 protocol
@@ -34,6 +35,7 @@ This integration collects APM telemetry data from Elastic APM agents:
 
 ### Prerequisites
 
+- Elastic Stack version 9.4.0 or later
 - Elastic Agent with EDOT Collector support
 - Elastic APM agents configured to send data to the collector endpoint
 
