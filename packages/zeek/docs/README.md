@@ -50,7 +50,7 @@ The Zeek integration collects log messages of the following types:
 *   `signature`: Traffic matching defined Zeek signatures for threat detection.
 *   `sip`: Session Initiation Protocol (VoIP) traffic metadata.
 *   `smb_cmd`: Information about SMB commands executed over the network.
-*   `smb_files`: Metadata for files accessed or transferred via SMB.
+*   `smb_files`: Metadata for files accessed or transferred using SMB.
 *   `smb_mapping`: SMB share mapping activity and tree connects.
 *   `smtp`: Email transaction metadata, including sender, receiver, and subject lines.
 *   `snmp`: Simple Network Management Protocol traffic and command metadata.
@@ -220,7 +220,7 @@ You can resolve most issues by checking the following common configuration point
 - Zeek logs are not in JSON format: This integration requires logs to be in JSON format. If your logs are tab-separated, ensure you have added `@load policy/tuning/json-logs.zeek` to your `local.zeek` configuration file and applied the changes by running `sudo zeekctl deploy`.
 - Permission denied: The user account running the Elastic Agent must have read permissions for the Zeek log directory. Check directory permissions with `ls -ld /opt/zeek/logs/current/` to ensure the agent can access the files.
 - Incomplete data collection: If only some logs are appearing, check the specific filename settings for each data stream in the integration configuration. If you have customized your Zeek configuration to use non-standard filenames, you must update the corresponding data stream settings to match the actual files, such as `conn.log` or `http.log`.
-- Data parsing errors: If you use custom Zeek scripts that modify standard log fields, the ingest pipeline may fail to parse the data correctly. Verify that your `local.zeek` configuration does not conflict with standard JSON output schemas.
+- Data parsing errors: If you use custom Zeek scripts that modify standard log fields, the ingest pipeline might fail to parse the data correctly. Verify that your `local.zeek` configuration does not conflict with standard JSON output schemas.
 - Zeek service state: Ensure that Zeek is running and that the `current` directory is being updated. You can check the status of your Zeek nodes using the `sudo zeekctl status` command.
 
 ### Vendor resources
