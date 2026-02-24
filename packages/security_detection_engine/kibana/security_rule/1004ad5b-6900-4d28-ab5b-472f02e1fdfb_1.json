@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the rare occurrence of a user or role accessing AWS Systems Manager (SSM) inventory APIs or running the AWS-GatherSoftwareInventory job. These APIs reveal detailed information about managed EC2 instances including installed software, patch compliance status, and command execution history. Adversaries may use these calls to collect software inventory while blending in with legitimate AWS operations. This is a New Terms rule that detects when a user accesses these reconnaissance APIs for the first time.",
+        "false_positives": [
+            "Legitimate administrators or automation tools may access SSM inventory APIs for asset management or compliance purposes. Verify whether the user identity should be using these APIs. If known behavior is causing false positives, add exceptions."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-10d",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS SSM Inventory Reconnaissance by Rare User",
+        "new_terms_fields": [
+            "cloud.account.id",
+            "user.name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS SSM Inventory Reconnaissance by Rare User\n\nAWS Systems Manager (SSM) Inventory provides detailed information about managed EC2 instances, including installed \napplications, network configurations, OS details, and patch compliance status. Threat actors, including Scattered \nSpider (LUCR-3), leverage these APIs to discover targets for lateral movement.\n\nThis rule detects the first time a specific user (identified by `cloud.account.id` and `user.name`) accesses SSM \ninventory reconnaissance APIs or runs inventory collection commands. These APIs are typically used by automation \nsystems, not interactively by humans.\n\n### Possible investigation steps\n\n- **Verify User Identity**: Check `aws.cloudtrail.user_identity.arn` or `user.name` to determine who performed the action.\n    - Is this a service account, automation role, or human user?\n    - Does this user typically interact with SSM or EC2 infrastructure?\n- **Review Source Context**: Examine `source.ip` and `source.geo` to determine where the request originated.\n    - Does the source IP match expected locations for this user?\n    - Is the source IP from an EC2 instance (potentially compromised) or an external location?\n- **Analyze User Agent**: Check `user_agent.original` for suspicious values.\n    - AWS CLI, SDK, or CloudShell usage from unexpected users is suspicious.\n    - Custom or unusual user agents may indicate attacker tooling.\n- **Correlate with Other Events**: Look for other reconnaissance or lateral movement activity from the same user.\n    - Check for `StartSession`, `SendCommand`, or other SSM execution APIs.\n    - Look for `GetCallerIdentity` calls which often precede reconnaissance.\n- **Review Timeline**: Investigate activity 30 minutes before and after this event.\n    - Was there an initial access event (e.g., console login, `AssumeRole`)?\n    - Did the user proceed to access secrets or attempt lateral movement?\n\n### False positive analysis\n\n- Automation and Monitoring: Legitimate monitoring tools, asset management systems, or compliance scanners may query SSM inventory regularly. These should use dedicated service accounts.\n- Administrator Activity: Cloud administrators may occasionally query inventory for troubleshooting. Verify with the user whether this was intentional.\n- CI/CD Pipelines: Deployment pipelines may check patch compliance before deployments.\n- SSM Associations: The `AWS-GatherSoftwareInventory` document is normally deployed via IaC tools (Terraform, CloudFormation) or the AWS Console during initial setup. Interactive `CreateAssociation` calls outside of these contexts warrant investigation.\n\n### Response and remediation\n\n- Immediate Verification: Contact the user to verify whether they performed this action intentionally.\n- Review Permissions: If unauthorized, review and restrict the user's IAM permissions following least privilege.\n- Investigate Credential Compromise: If the user did not perform this action, treat their credentials as compromised.\n    - Rotate access keys and session tokens.\n    - Review recent activity for data exfiltration or privilege escalation.\n- Enhanced Monitoring: Add the user or role to enhanced monitoring if suspicious activity is confirmed.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"ssm.amazonaws.com\"\n    and (\n        event.action: (\"GetInventory\" or \"GetInventorySchema\" or \"ListInventoryEntries\" or \"DescribeInstancePatches\" or \"ListCommands\")\n        or (event.action: \"CreateAssociation\"\n            and aws.cloudtrail.request_parameters: *AWS-GatherSoftwareInventory*)\n    )\n    and not aws.cloudtrail.user_identity.type : \"AWSService\" \n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://permiso.io/blog/lucr-3-scattered-spider-getting-saas-y-in-the-cloud",
+            "https://www.cisa.gov/sites/default/files/2023-11/aa23-320a_scattered_spider_0.pdf",
+            "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-inventory.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1004ad5b-6900-4d28-ab5b-472f02e1fdfb",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS SSM",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1538",
+                        "name": "Cloud Service Dashboard",
+                        "reference": "https://attack.mitre.org/techniques/T1538/"
+                    },
+                    {
+                        "id": "T1580",
+                        "name": "Cloud Infrastructure Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1580/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "1004ad5b-6900-4d28-ab5b-472f02e1fdfb_1",
+    "type": "security-rule"
+}
