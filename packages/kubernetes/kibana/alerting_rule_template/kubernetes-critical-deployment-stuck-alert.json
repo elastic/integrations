@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-critical-deployment-stuck-alert",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Critical Deployment Stuck Alert",
+        "tags": [
+            "Kubernetes",
+            "Deployment",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when deployments have unavailable replicas for an extended period.\n//\n// What triggers this alert:\n// Deployment stuck with unavailable replicas for 10+ minutes.\n//\n// Placeholders to replace:\n// - Add a label filter to scope to your team, e.g.:\n//   AND `kubernetes.labels.team` == \"your-team\"\n//   Or remove to monitor all deployments.\n//\n// Common causes:\n// Image pull failures, resource constraints, failed health checks, bad config.\n//\n// Action needed:\n// Check deployment events, pod logs, and resource availability.\nTS metrics-kubernetes.state_deployment-*\n| WHERE `kubernetes.deployment.replicas.unavailable` >= 1\n| STATS doc_count = COUNT(*)\n  BY `kubernetes.deployment.name`, `orchestrator.cluster.name`\n| WHERE doc_count > 11"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 5
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

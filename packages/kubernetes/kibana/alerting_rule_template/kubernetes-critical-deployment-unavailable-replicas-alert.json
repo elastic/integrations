@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-critical-deployment-unavailable-replicas-alert",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Critical Deployment Unavailable Replicas Alert",
+        "tags": [
+            "Kubernetes",
+            "Deployment",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when deployments have unavailable replicas.\n//\n// What triggers this alert:\n// MAX(kubernetes.deployment.replicas.unavailable) > 0 per cluster.\n//\n// Placeholders to replace:\n// - Add a label filter to scope to your team/service, e.g.:\n//   AND `kubernetes.labels.team` == \"platform\"\n//   AND `kubernetes.labels.app` == \"critical-service\"\n//   Or remove to monitor all deployments.\n//\n// What it means:\n// One or more pod replicas are not ready \u2014 reduced capacity or failed deployments.\n//\n// Common causes:\n// Image pull errors, resource constraints, crash loops, configuration issues.\nTS metrics-kubernetes.state_deployment-*\n| STATS max_unavailable = MAX(`kubernetes.deployment.replicas.unavailable`)\n  BY `orchestrator.cluster.name`\n| WHERE max_unavailable IS NOT NULL AND max_unavailable > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 10
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

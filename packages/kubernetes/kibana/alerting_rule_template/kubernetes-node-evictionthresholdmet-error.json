@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-node-evictionthresholdmet-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Node EvictionThresholdMet Error",
+        "tags": [
+            "Kubernetes",
+            "Node",
+            "Eviction"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert on Kubernetes Node EvictionThresholdMet events.\n//\n// What triggers this alert:\n// Node under resource pressure \u2014 evicting pods to reclaim memory/disk/inodes.\n//\n// Common causes:\n// Memory pressure, disk pressure, inode exhaustion, PID exhaustion.\n//\n// Action needed:\n// Check node resources, scale cluster, adjust pod limits, investigate resource leaks.\n//\n// To scope to a cluster, add: AND `orchestrator.cluster.name` == \"YOUR_CLUSTER\"\nFROM metrics-kubernetes.event-*\n| WHERE `kubernetes.event.involved_object.kind` == \"Node\"\n  AND `kubernetes.event.source.component` == \"kubelet\"\n  AND `kubernetes.event.reason` == \"EvictionThresholdMet\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.event.involved_object.name`,\n     `kubernetes.event.involved_object.kind`, `kubernetes.event.reason`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-pod-failedprestophook-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Pod FailedPreStopHook Error",
+        "tags": [
+            "Kubernetes",
+            "Pod",
+            "Lifecycle"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert on Kubernetes Pod FailedPreStopHook events.\n//\n// What triggers this alert:\n// PreStop lifecycle hook failed \u2014 may cause ungraceful shutdown or incomplete cleanup.\n//\n// Common causes:\n// Hook command errors, timeout exceeded, missing dependencies, script failures.\n//\n// Action needed:\n// Review preStop hook configuration, check hook logs, verify command paths and permissions.\n//\n// To scope to a namespace, add: AND `kubernetes.event.metadata.namespace` == \"YOUR_NAMESPACE\"\nFROM metrics-kubernetes.event-*\n| WHERE `kubernetes.event.involved_object.kind` == \"Pod\"\n  AND `kubernetes.event.source.component` == \"kubelet\"\n  AND `kubernetes.event.reason` == \"FailedPreStopHook\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.event.metadata.namespace`,\n     `kubernetes.event.involved_object.name`, `kubernetes.event.involved_object.kind`,\n     `kubernetes.event.reason`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

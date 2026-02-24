@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-node-memorypressure-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Node MemoryPressure Error",
+        "tags": [
+            "Kubernetes",
+            "Node",
+            "Memory"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when Kubernetes nodes report memory pressure.\n//\n// What triggers this alert:\n// Node memory_pressure=true \u2014 kernel OOM killer may start killing processes.\n//\n// Common causes:\n// Memory leaks, oversized workloads, insufficient node memory, no resource limits.\n//\n// Action needed:\n// Check node memory usage, review pod resource limits, scale cluster.\n//\n// To scope to a cluster, add: AND `orchestrator.cluster.name` == \"YOUR_CLUSTER\"\nTS metrics-kubernetes.node-*\n| WHERE `kubernetes.node.status.memory_pressure` == \"true\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.node.name`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

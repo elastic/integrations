@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-pod-high-cpu-usage",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Pod High CPU Usage",
+        "tags": [
+            "Kubernetes",
+            "Pod",
+            "CPU"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when pod CPU usage exceeds 95% of its limit.\n//\n// What triggers this alert:\n// Pod CPU usage above 95% of configured limit \u2014 throttling imminent.\n//\n// Action needed:\n// Increase CPU limits, optimize workload, or scale horizontally.\n//\n// Adjust threshold as needed (e.g., 0.9 for 90% early warning).\nTS metrics-kubernetes.pod-*\n| WHERE `kubernetes.pod.cpu.usage.limit.pct` > 0.95\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.pod.name`, `kubernetes.namespace`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

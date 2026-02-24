@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-apiserver-high-latency",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] API Server High Latency",
+        "tags": [
+            "Kubernetes",
+            "API Server",
+            "Latency"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when API server average request latency exceeds 600 seconds.\n//\n// What triggers this alert:\n// Computes MAX(duration.sum) / MAX(duration.count) per cluster.\n// Unit: microseconds. Threshold 600000000 \u00b5s = 600 seconds.\n//\n// What it means:\n// Severe API server performance degradation affecting all cluster operations.\n//\n// Common causes:\n// Etcd performance issues, API server overload, network latency, resource constraints.\n//\n// Action needed:\n// Check API server metrics, etcd health, and cluster load.\n//\n// Adjust the threshold based on your SLO (e.g., 5000000 = 5 seconds).\nTS metrics-kubernetes.apiserver-*\n| STATS\n    max_duration_sum = MAX(`kubernetes.apiserver.request.duration.us.sum`),\n    max_duration_count = MAX(`kubernetes.apiserver.request.duration.us.count`)\n  BY `orchestrator.cluster.name`\n| WHERE max_duration_count IS NOT NULL AND max_duration_count > 0\n| EVAL avg_latency_us = max_duration_sum / max_duration_count\n| WHERE avg_latency_us > 600000000"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

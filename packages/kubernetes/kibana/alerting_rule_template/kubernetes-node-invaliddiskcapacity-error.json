@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-node-invaliddiskcapacity-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Node InvalidDiskCapacity Error",
+        "tags": [
+            "Kubernetes",
+            "Node",
+            "Disk"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert on Kubernetes Node InvalidDiskCapacity events.\n//\n// What triggers this alert:\n// Kubelet cannot read valid disk capacity \u2014 filesystem or storage subsystem issue.\n//\n// Common causes:\n// Filesystem corruption, storage driver issues, disk hardware failure, mount problems.\n//\n// Action needed:\n// Check disk health, filesystem integrity, storage driver logs. Consider node replacement.\n//\n// To scope to a specific cluster, add: AND `orchestrator.cluster.name` == \"YOUR_CLUSTER\"\nFROM metrics-kubernetes.event-*\n| WHERE `kubernetes.event.involved_object.kind` == \"Node\"\n  AND `kubernetes.event.source.component` == \"kubelet\"\n  AND `kubernetes.event.reason` == \"InvalidDiskCapacity\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.event.involved_object.name`,\n     `kubernetes.event.involved_object.kind`, `kubernetes.event.reason`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
