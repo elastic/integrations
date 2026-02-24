@@ -2477,6 +2477,7 @@ RADIUS authentication attempts.
 | zeek.radius.reply_msg | Reply message from the server challenge. This is frequently shown to the user authenticating. | keyword |
 | zeek.radius.result | Successful or failed authentication. | keyword |
 | zeek.radius.ttl | The duration between the first request and either the "Access-Accept" message or an error. If the field is empty, it means that either the request or response was not seen. | integer |
+| zeek.radius.tunnel_client | Address (IPv4, IPv6, or FQDN) of the initiator end of the tunnel, if present. This is collected from the Tunnel-Client-Endpoint attribute. | keyword |
 | zeek.radius.username | The username, if present. | keyword |
 | zeek.session_id | A unique identifier of the session | keyword |
 
