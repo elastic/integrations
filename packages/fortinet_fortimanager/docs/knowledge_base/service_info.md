@@ -11,13 +11,27 @@ The Fortinet FortiManager integration allows you to monitor and analyze logs fro
 ## Data types collected
 
 This integration can collect the following types of data:
--   **Fortinet FortiManager logs** (type: logs, input: filestream): Collect Fortinet FortiManager logs via Filestream input. This stream includes various FortiManager event subtypes such as System Manager (system), FortiGuard Service (fgd), Security Console (scply), Firmware Manager (fmwmgr), Log Daemon (logd), Debug IO Log (iolog), FortiGate-FortiManager Protocol (fgfm), Device Manager (devmgr/dvm), Deployment Manager (dm), Object Changes (objcfg), and Script Manager (scrmgr) from active log files. The data is parsed from Syslog format.
+-   **Fortinet FortiManager logs** (type: logs, input: filestream): Collect Fortinet FortiManager logs via Filestream input from active log files. The data is parsed from Syslog format. This stream includes the following FortiManager event subtypes:
+
+| FortiManager Subtype                           |
+| -----------------------------------------------|
+| System Manager (system)                        |
+| FortiGuard Service (fgd)                       |
+| Security Console (scply)                       |
+| Firmware Manager (fmwmgr)                      |
+| Log Daemon (logd)                              |
+| Debug IO Log (iolog)                           |
+| FortiGate-FortiManager Protocol (fgfm)         |
+| Device Manager (devmgr/dvm)                    |
+| Deployment Manager (dm)                        |
+| Object Changes (objcfg)                        |
+| Script Manager (scrmgr)                        |
 -   **Fortinet FortiManager logs** (type: logs, input: tcp): Collect Fortinet FortiManager logs via TCP input. This stream includes various FortiManager and FortiAnalyzer event subtypes, including System Manager, FortiGuard Service, Log Files, Logging Status, and Reports, pushed directly to an Elastic Agent via a TCP port. The data is parsed from Syslog format.
 -   **Fortinet FortiManager logs** (type: logs, input: udp): Collect Fortinet FortiManager logs via UDP input. This stream includes various FortiManager and FortiAnalyzer event subtypes, including System Manager, Log Files, Logging Status, and Reports, pushed directly to an Elastic Agent via a UDP port. The data is parsed from Syslog format.
 
 ## Compatibility
 
-**Fortinet FortiManager** and **FortiAnalyzer**: 7.2.2 and above. This integration has been tested against FortiManager & FortiAnalyzer version 7.2.2. Versions above this are expected to work but have not been tested.
+This integration has been tested against FortiManager & FortiAnalyzer version 7.2.2. Versions above this are expected to work but have not been tested.
 
 ## Scaling and Performance
 
@@ -40,7 +54,6 @@ To ensure optimal performance in high-volume environments, consider the followin
 -   An installed and enrolled Elastic Agent running on a host machine that is network-accessible from the FortiManager/FortiAnalyzer devices.
 -   Network connectivity between the Elastic Agent and your Elasticsearch cluster to successfully send collected data for indexing and analysis.
 -   Sufficient system resources (CPU, memory, disk I/O) on the host running the Elastic Agent to efficiently process and forward the anticipated volume of FortiManager/FortiAnalyzer logs.
--   Elastic Stack 8.x or newer.
 
 ## Vendor set up steps
 
@@ -60,6 +73,7 @@ This step registers the Elastic Agent as a valid log destination.
     *   **Reliable Connection**:
         *   To send logs via **UDP** (the default syslog protocol), leave this option disabled.
         *   To send logs via **TCP** (for guaranteed delivery), enable this option. This setting **must** match the protocol configured in the Elastic Agent integration.
+        *   **Optional TLS Setup**: When using TCP with **Reliable Connection** enabled, you can optionally enable **Secure Connection** to encrypt the syslog traffic using TLS/SSL. If enabled, you must specify a **Local Certificate CN** and optionally configure a **Peer Certificate CN** for the syslog server. This requires corresponding SSL configuration in the Elastic Agent integration's Advanced Options.
 5.  Click **OK** to save the syslog server configuration.
 
 #### Part 2: Enable Log Forwarding to the Syslog Server (CLI)
@@ -130,29 +144,7 @@ Common log paths may include `/var/log/fortinet/fortimanager.log*`. Ensure that 
 #max_connections: 1
 #line_delimiter: "\n"
 `.
-    -   **SSL Configuration**: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details. Default: `
-#certificate_authorities:
-#  - |
-#    -----BEGIN CERTIFICATE-----
-#    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
-#    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
-#    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
-#    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
-#    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
-#    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
-#    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
-#    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
-#    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
-#    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
-#    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
-#    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
-#    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
-#    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
-#    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
-#    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
-#    sxSmbIUfc2SGJGCJD4I=
-#    -----END CERTIFICATE-----
-`.
+    -   **SSL Configuration**: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
     -   **Tags**: Default: `['forwarded', 'fortinet_fortimanager-log']`.
     -   **Preserve duplicate custom fields**: Preserve fortinet_fortimanager.log fields that were copied to Elastic Common Schema (ECS) fields. Default: `False`.
     -   **Processors**: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
@@ -224,19 +216,8 @@ After configuration is complete, follow these steps to verify data is flowing co
         1.  In Kibana Discover, apply a filter like `error.message : *` to identify events that failed to parse.
         2.  If the `preserve_original_event` setting is enabled in your integration, examine the `event.original` field for these erroring events to see the raw log content received by the Agent. This can help identify formatting issues at the source.
         3.  If logs appear truncated, consider increasing the `max_message_size` in the `Custom TCP Options` or `Custom UDP Options` within your Elastic Agent integration configuration to accommodate larger log messages.
--   **Missing or incorrect fields**:
-    -   **Cause**: Some expected ECS fields (e.g., `source.ip`, `event.action`) or Fortinet-specific fields are not populated, or their values are incorrect, indicating a potential issue with the processing pipeline's field extraction.
-    -   **Solution**:
-        1.  Ensure that FortiManager/FortiAnalyzer is sending logs with complete information, including source IP, event type, and other relevant details.
-        2.  If specific custom fields are expected to be copied to ECS, verify the `preserve_duplicate_custom_fields` setting in the Kibana integration configuration.
-        3.  For advanced cases, custom processors can be added to the Elastic Agent integration configuration to apply additional parsing logic or field manipulations.
 
 ## Vendor Resources
 
 -   [FortiManager & FortiAnalyzer Log Reference](https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/5a0d548a-12b0-11ed-9eba-fa163e15d75b/FortiManager_%26_FortiAnalyzer_7.2.1_Log_Reference.pdf) - A comprehensive guide detailing the log messages generated by FortiManager and FortiAnalyzer.
 -   [Fortinet FortiManager VM Install Guide](https://help.fortinet.com/fmgr/vm-install/56/Resources/HTML/0000_OnlineHelp%20Cover.htm) - Provides instructions and resources for installing FortiManager as a virtual machine.
-
-# Documentation sites
-
--   [FortiManager & FortiAnalyzer Log Reference](https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/5a0d548a-12b0-11ed-9eba-fa163e15d75b/FortiManager_%26_FortiAnalyzer_7.2.1_Log_Reference.pdf) - Detailed log reference documentation for FortiManager and FortiAnalyzer.
--   [Fortinet FortiManager VM Install Guide](https://help.fortinet.com/fmgr/vm-install/56/Resources/HTML/0000_OnlineHelp%20Cover.htm) - Official installation guide for FortiManager virtual machines.
