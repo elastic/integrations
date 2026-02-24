@@ -1,0 +1,142 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a network connection by the command prompt (cmd.exe) when it is executed with specific arguments, such as a script or a URL, or when it is spawned by Microsoft Office applications. Adversaries often abuse cmd.exe to download malicious payloads or establish command and control channels from a remote source.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.domain",
+                "user.id",
+                "process.entity_id",
+                "process.name",
+                "process.parent.name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Command Prompt Network Connection",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Command Prompt Network Connection\n\nThis alert identifies a Windows `cmd.exe` process start event that is quickly followed by a network connection from the same `cmd.exe` instance (`process.entity_id`). The command line indicates scripted execution (batch files), references to remote resources (URL-like strings), or execution launched by a Microsoft Office application. This pattern can be used to download payloads, stage execution, or establish command and control.\n\n#### Triage and analysis steps\n\n- Confirm the matched sequence and keep analysis tied to the correct process instance:\n  - Use the `Investigate in timeline` button in the Alerts table or pivot on `process.entity_id` to review both the process start event and the associated network event(s).\n  - Example KQL pivots:\n    - `process.entity_id:\"<process_entity_id>\" and event.category:process`\n    - `process.entity_id:\"<process_entity_id>\" and event.category:network`\n\n- Determine why `cmd.exe` matched and assess intent:\n  - Review `process.args` to confirm the interpreter switch (`/c` to execute and exit, `/k` to remain open).\n  - Identify which match condition applies:\n    - Batch script: `process.args` includes a `.bat` or `.cmd` reference.\n    - Remote resource: `process.command_line` contains `http://`, `https://`, or `ftp://`.\n    - Office parent: `process.parent.name` is one of `winword.exe`, `excel.exe`, `powerpnt.exe`, `outlook.exe`, `msaccess.exe`, or `mspub.exe`.\n  - Look for staging or obfuscation patterns in `process.command_line` (for example: `&`/`&&`/`||`, pipes `|`, redirection `>`/`>>`, escaping `^`, environment variables, or long encoded strings).\n\n- Validate the execution context and launch vector:\n  - Review `user.*` fields to determine who ran the command and whether it is expected for the host role.\n  - Review `process.parent.name` (and `process.parent.command_line` if available) to understand the initial trigger:\n    - Office parent: prioritize identifying the initiating document or message and any user interaction around `@timestamp`.\n    - Management tooling or installer parent: validate change control and whether the command line and destination are consistent with that software.\n  - If a batch script is referenced, locate the script on the host (if telemetry allows) and capture path and hash (`file.path`, `file.hash.sha256`) for scoping.\n\n- Analyze the outbound destination:\n  - Review `destination.ip` and `destination.port` for expectedness (business relationship, known vendor, or organization-owned public IP space).\n  - Note: the rule excludes common private and reserved address ranges, but it can still alert on connections to legitimate public services.\n  - Pivot on `destination.ip` to identify other hosts contacting the same destination near `@timestamp`:\n    - `destination.ip:\"<destination_ip>\" and event.category:network`\n  - Check whether the same `process.entity_id` generated repeated connections (potential beaconing) versus a single connection (one-time retrieval).\n\n- Reconstruct follow-on activity and potential impact:\n  - Identify child processes spawned by `cmd.exe` and look for common follow-on tooling (for example: `powershell.exe`, `mshta.exe`, `rundll32.exe`, `regsvr32.exe`, `certutil.exe`, `bitsadmin.exe`, `curl.exe`, `wget.exe`).\n  - If file telemetry is available, review file creation/modification shortly after `@timestamp` and correlate any new binaries or scripts with hashes and execution events.\n\n- Scope the activity (blast radius):\n  - Search for the same `process.command_line` (or distinctive substrings), script name, or extracted URL across endpoints.\n  - Search for other `cmd.exe` instances connecting to the same `destination.ip` or the same destination port/protocol.\n  - If the parent is Office, scope for the same parent-child relationship (`process.parent.name` -> `cmd.exe`) across users and hosts.\n\n### False positive analysis\n\n- Software deployment, packaging, or endpoint management workflows that use `cmd.exe /c` to run batch scripts and contact vendor services.\n- Signed installer or updater activity where `cmd.exe` is used as a helper process with stable command lines.\n- Documented Office macros/add-ins/templates that legitimately spawn `cmd.exe` with consistent command lines and destinations.\n\nA benign determination is more likely when the combination of `process.parent.name`, stable `process.command_line`, and consistent `destination.ip`/`destination.port` repeats across an expected set of hosts and users and aligns to a documented workflow owner.\n\n### Response and remediation\n\n- If the activity is suspicious or cannot be attributed to an approved workflow:\n  - Contain the affected endpoint (`host.id`) using available endpoint or network controls.\n  - Preserve evidence (at minimum):\n    - `@timestamp`, `host.*`, `user.*`\n    - `process.entity_id`, `process.command_line`, `process.args`, `process.parent.*`\n    - `destination.ip`, `destination.port`, `network.*`\n    - Any related child processes and file artifacts (paths and hashes) identified during triage\n  - Scope for related activity by searching for additional occurrences of the same destination and command-line patterns.\n  - If Office is the launch vector, identify and quarantine the initiating document or email and assess whether similar content was delivered to other users.\n  - If a script is involved, collect and review the script contents and investigate how it was introduced (downloads, email attachments, shared drives, logon scripts, scheduled tasks).\n  - If account compromise is suspected, follow established identity response procedures (credential reset, session review, and access auditing).\n\n- If the activity is confirmed benign:\n  - Document the expected parent process, command-line pattern, and destinations.\n  - Consider adding a narrowly scoped exception using stable identifiers and constrained conditions (for example, specific `process.command_line` patterns and known destinations) to reduce recurring noise.\n",
+        "query": "sequence by process.entity_id with maxspan=15s\n  [process where host.os.type == \"windows\" and event.type == \"start\" and\n    process.name : \"cmd.exe\" and process.args : (\"/c\", \"/k\") and\n    (\n      process.args : (\"*.bat\", \"*.cmd\") or\n      process.command_line : (\"*http://*\", \"*https://*\", \"*ftp://*\") or\n      process.parent.name : (\"excel.exe\", \"msaccess.exe\", \"mspub.exe\", \"powerpnt.exe\", \"winword.exe\", \"outlook.exe\")\n    )\n  ]\n  [network where host.os.type == \"windows\" and process.name : \"cmd.exe\" and\n     not cidrmatch(destination.ip, \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\",\n                                  \"192.0.0.0/29\", \"192.0.0.8/32\", \"192.0.0.9/32\", \"192.0.0.10/32\", \"192.0.0.170/32\",\n                                  \"192.0.0.171/32\", \"192.0.2.0/24\", \"192.31.196.0/24\", \"192.52.193.0/24\",\n                                  \"192.168.0.0/16\", \"192.88.99.0/24\", \"224.0.0.0/4\", \"100.64.0.0/10\", \"192.175.48.0/24\",\n                                  \"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"240.0.0.0/4\", \"::1\",\n                                  \"FE80::/10\", \"FF00::/8\")]\n",
+        "references": [
+            "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "89f9a4b0-9f8f-4ee0-8823-c4751a6d6696",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 213
+    },
+    "id": "89f9a4b0-9f8f-4ee0-8823-c4751a6d6696_213",
+    "type": "security-rule"
+}

@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the creation of a new SAML Identity Provider (IdP) in AWS IAM. SAML providers enable federated authentication between AWS and external identity providers, allowing users to access AWS resources using credentials from the external IdP. Adversaries who have gained administrative access may create rogue SAML providers to establish persistent, federated access to AWS accounts that survives credential rotation. This technique allows attackers to assume roles and access resources by forging SAML assertions from an IdP they control. Creating a SAML provider is a rare administrative action that should be closely monitored and validated against authorized infrastructure changes.",
+        "false_positives": [
+            "SAML providers may be created during legitimate identity federation setup, SSO integration projects, or infrastructure-as-code deployments. Verify whether the user identity and timing align with approved change management processes. If this is expected administrative activity, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS IAM SAML Provider Created",
+        "note": "## Triage and analysis\n\n### Investigating AWS IAM SAML Provider Created\n\nSAML (Security Assertion Markup Language) providers in AWS IAM enable federated authentication, allowing users from external identity providers to access AWS resources without separate AWS credentials. Creating a SAML provider establishes a trust relationship between AWS and the external IdP.\n\nThis rule detects successful `CreateSAMLProvider` API calls. In most environments, SAML provider creation is extremely rare\u2014typically only occurring during initial SSO setup or major infrastructure changes. An unauthorized SAML provider creation could enable an attacker to maintain persistent access by forging SAML assertions from an IdP they control.\n\n### Possible investigation steps\n\n- **Identify the actor**\n  - Review `aws.cloudtrail.user_identity.arn` to determine who created the SAML provider.\n  - Verify whether this principal is authorized to manage identity federation.\n\n- **Review the SAML provider details**\n  - Examine `aws.cloudtrail.request_parameters` for the SAML provider name and metadata document.\n  - Identify the external IdP URL and signing certificate in the metadata.\n\n- **Validate business justification**\n  - Confirm with identity management or platform teams whether this aligns with planned SSO integration.\n  - Check for related change tickets or infrastructure-as-code deployments.\n\n- **Check for follow-on activity**\n  - Search for `CreateRole` or `UpdateAssumeRolePolicy` calls that reference the new SAML provider.\n  - Look for `AssumeRoleWithSAML` calls using the newly created provider.\n\n- **Correlate with other suspicious activity**\n  - Check for preceding privilege escalation or credential access events.\n  - Look for other persistence mechanisms being established concurrently.\n\n### False positive analysis\n\n- **Planned SSO integration**\n  - SAML providers are created during initial setup of identity federation with Okta, Azure AD, or other IdPs.\n  - Validate against documented SSO integration projects.\n\n- **Infrastructure-as-code deployments**\n  - Terraform, CloudFormation, or other IaC tools may create SAML providers as part of automated deployments.\n  - Confirm via CI/CD logs.\n\n### Response and remediation\n\n- **Immediate containment**\n  - If unauthorized, delete the SAML provider using `DeleteSAMLProvider`.\n  - Review and remove any IAM roles that trust the rogue provider.\n\n- **Investigation**\n  - Audit CloudTrail for any `AssumeRoleWithSAML` calls using this provider.\n  - Review all IAM roles with SAML trust relationships.\n\n- **Hardening**\n  - Restrict `iam:CreateSAMLProvider` permissions to a limited set of administrative roles.\n  - Implement SCPs to control SAML provider creation in member accounts.\n  - Enable AWS Config rules to monitor identity provider configurations.\n\n### Additional information\n- **[AWS IAM SAML Providers Documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html)**\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)**\n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)**\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"iam.amazonaws.com\"\n    and event.action: \"CreateSAMLProvider\"\n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateSAMLProvider.html",
+            "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html",
+            "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-320a"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a80ffc40-a256-475a-a86a-74361930cdb1",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS IAM",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1484",
+                        "name": "Domain or Tenant Policy Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1484/",
+                        "subtechnique": [
+                            {
+                                "id": "T1484.002",
+                                "name": "Trust Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1484/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "a80ffc40-a256-475a-a86a-74361930cdb1_1",
+    "type": "security-rule"
+}

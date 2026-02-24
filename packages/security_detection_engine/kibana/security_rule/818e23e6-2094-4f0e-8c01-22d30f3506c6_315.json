@@ -1,0 +1,140 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects registry changes that disable PowerShell Script Block Logging. Attackers may disable this logging to conceal their activities in the host and evade detection.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.registry-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "registry.path",
+                "registry.value",
+                "registry.data.strings",
+                "process.executable",
+                "process.entity_id",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "user.domain"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "PowerShell Script Block Logging Disabled",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating PowerShell Script Block Logging Disabled\n\nThis alert indicates a registry modification that set `EnableScriptBlockLogging` to a disabled value (`registry.data.strings` of `0` or `0x00000000`). Disabling Script Block Logging reduces visibility into PowerShell execution and is commonly used to evade detection, especially when followed by script-driven activity.\n\n#### Key alert fields to review\n\n- `process.executable`: The process responsible for modifying the registry value.\n- `registry.value`: The registry value name that was changed (`EnableScriptBlockLogging`).\n- `registry.data.strings`: The new data indicating the setting was disabled.\n- `registry.path`: The full registry path of the modified value.\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n\n#### Possible investigation steps\n\n- Establish the affected endpoint and time window:\n  - Use `host.name`, `host.id`, and `@timestamp` to identify the impacted endpoint and define a review window (include activity immediately before and after the change).\n  - Prioritize based on endpoint role and criticality (for example, servers and admin workstations).\n\n- Validate the registry change and its scope:\n  - Review `registry.path`, `registry.value`, and `registry.data.strings` to confirm the setting was disabled and to understand where it was applied.\n  - Compare `registry.path` to common policy locations for Script Block Logging (for example, `HKEY_LOCAL_MACHINE\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\\EnableScriptBlockLogging`).\n  - Determine whether the change is likely machine-wide or user-scoped based on the hive reflected in `registry.path`, and assess the blast radius accordingly.\n  - Check for repeated changes (toggling) to the same `registry.path` and `registry.value` around the alert time, which can indicate attempted evasion or policy enforcement conflicts.\n\n- Identify the modifying process and execution context:\n  - Review `process.executable` for legitimacy (expected binary name, expected install path) and whether it typically performs configuration changes.\n  - Pivoting using `process.entity_id`, review `process.command_line` to understand how the value was set and whether the command line suggests interactive administration, scripts, or automation.\n  - Using nearby endpoint process telemetry on the same host, reconstruct the process tree to identify the initiating process (parent) and any immediate follow-on execution that may have benefited from reduced PowerShell logging.\n\n- Assess the user context and authorization:\n  - Review `user.name`, `user.domain`, and `user.id` to determine whether the account is expected to manage logging or policy settings on this endpoint.\n  - If the change is attributed to a service or system context, identify the associated service, scheduled activity, or management workflow that could have performed the modification.\n  - Scope the user across other hosts for similar activity during the same window to identify potential credential misuse.\n\n- Hunt for related activity that may be masked by reduced logging:\n  - Review host activity immediately before the change for suspicious behavior that could explain the need to disable Script Block Logging (initial access, privilege escalation, or tool staging).\n  - Review host activity after the change for suspicious process launches, script interpreter activity, persistence attempts, credential access behavior, or lateral movement indicators.\n  - Review network activity from the host around the change for connections consistent with payload retrieval, remote access, or command and control.\n  - Review other registry changes around the same time that may further impair visibility or weaken defenses.\n\n- Scope and impact assessment across the environment:\n  - Search for other instances where `registry.value` is `EnableScriptBlockLogging` and `registry.data.strings` indicates a disabled state to determine whether this is isolated or widespread.\n  - Pivot on `process.executable` and `user.id` to identify other endpoints where the same process or account modified this setting.\n  - Identify whether the setting was later restored on the same host by looking for subsequent changes to the same `registry.path` and `registry.value`.\n\n### False positive analysis\n\n- Authorized policy, baseline, or hardening changes that intentionally modify PowerShell logging settings, supported by change records and consistent execution by expected accounts and tooling.\n- Provisioning or imaging workflows where configuration changes occur during early host lifecycle stages and are consistent across a known deployment batch.\n- Short-lived administrative troubleshooting where the setting is temporarily changed and promptly restored, with supporting documentation.\n\n### Response and remediation\n\n- If the change is unexpected or suspicious:\n  - Treat as potential defense evasion and escalate according to incident response procedures.\n  - Contain the endpoint if there are indicators of follow-on malicious activity in the surrounding timeframe.\n  - Preserve evidence related to the change, including `process.executable`, `process.command_line`, user context, and any correlated endpoint telemetry.\n\n- Restore and enforce PowerShell visibility:\n  - Re-enable Script Block Logging using approved administrative processes and verify the setting persists through policy enforcement.\n  - Monitor for repeated attempts to disable Script Block Logging, especially from the same user or originating process.\n\n- Remediate root cause and reduce recurrence:\n  - Identify and remove unauthorized tooling or persistence associated with the modifying process.\n  - Investigate potential account compromise for the associated user and take appropriate actions (credential reset and access review), prioritizing privileged accounts.\n  - Hunt for additional endpoints impacted by the same user or process and remediate as needed.\n  - Apply least-privilege controls to limit who can modify logging-related registry settings and improve alerting for additional defense impairment behaviors observed during the investigation window.\n",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n    registry.value : \"EnableScriptBlockLogging\" and\n    registry.data.strings : (\"0\", \"0x00000000\") and\n    not process.executable : (\n          \"?:\\\\Windows\\\\System32\\\\svchost.exe\",\n          \"?:\\\\Windows\\\\System32\\\\DeviceEnroller.exe\",\n          \"?:\\\\Windows\\\\system32\\\\omadmclient.exe\",\n          \"?:\\\\Program Files\\\\Trend Micro\\\\Cloud Endpoint\\\\CloudEndpointService.exe\",\n          \"?:\\\\Program Files (x86)\\\\N-able Technologies\\\\AutomationManagerAgent\\\\AutomationManager.AgentService.exe\",\n          \n          /* Crowdstrike specific exclusion as it uses NT Object paths */\n          \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\svchost.exe\",\n          \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\DeviceEnroller.exe\",\n          \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\system32\\\\omadmclient.exe\",\n          \"\\\\Device\\\\HarddiskVolume*\\\\Program Files\\\\Trend Micro\\\\Cloud Endpoint\\\\CloudEndpointService.exe\",\n          \"\\\\Device\\\\HarddiskVolume*\\\\Program Files (x86)\\\\N-able Technologies\\\\AutomationManagerAgent\\\\AutomationManager.AgentService.exe\"\n    )\n",
+        "references": [
+            "https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.PowerShell::EnableScriptBlockLogging"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "818e23e6-2094-4f0e-8c01-22d30f3506c6",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    },
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.002",
+                                "name": "Disable Windows Event Logging",
+                                "reference": "https://attack.mitre.org/techniques/T1562/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 315
+    },
+    "id": "818e23e6-2094-4f0e-8c01-22d30f3506c6_315",
+    "type": "security-rule"
+}

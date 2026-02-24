@@ -1,0 +1,102 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a FortiGate SSL VPN login event is followed by any SIEM detection alert for the same user name within a short time window. This correlation can indicate abuse of VPN access for malicious activity, credential compromise used from a VPN session, or initial access via VPN followed by post-compromise behavior.",
+        "from": "now-9m",
+        "index": [
+            "logs-fortinet_fortigate.log-*",
+            ".alerts-security.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "FortiGate SSL VPN Login Followed by SIEM Alert by User",
+        "note": "## Triage and analysis\n\n### Investigating FortiGate SSL VPN Login Followed by SIEM Alert by User\n\nThis rule correlates a FortiGate SSL VPN login with a subsequent security alert for the same user name, highlighting possible abuse of VPN access or activity shortly after remote access.\n\n### Possible investigation steps\n\n- Review the FortiGate login event (source IP, user, time) and the SIEM alert(s) that followed for the same user.\n- Determine whether the user is expected to use VPN and whether the subsequent alert is related to legitimate work (e.g. admin tools, updates).\n- Check for other alerts or logins for the same user in the same time window to assess scope.\n- Correlate with authentication logs to identify impossible travel or credential reuse from the VPN session.\n\n### False positive analysis\n\n- Legitimate VPN users triggering detections (e.g. scripted tasks, admin tooling) after login.\n- Security scans or automated jobs that run in the context of a VPN-authenticated user.\n\n### Response and remediation\n\n- If abuse or compromise is suspected, disable or reset the user\u2019s VPN access and credentials.\n- Investigate the host and process associated with the SIEM alert.\n- Escalate to the security or incident response team if the alert indicates malicious activity.\n",
+        "query": "sequence by user.name with maxspan=10m\n [authentication where event.dataset == \"fortinet_fortigate.log\" and event.action == \"login\" and event.code in (\"0101039426\", \"0101039427\")]\n [any where event.kind == \"signal\" and kibana.alert.rule.name != null and event.dataset != \"fortinet_fortigate.log\" and\n  kibana.alert.risk_score > 21 and kibana.alert.rule.rule_id != \"a7f2c1b4-5d8e-4f3a-9b0c-2e1d4a6b8f3e\" and user.name != null]\n",
+        "references": [
+            "https://attack.mitre.org/tactics/TA0001/",
+            "https://www.elastic.co/docs/reference/integrations/fortinet_fortigate"
+        ],
+        "related_integrations": [
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kibana.alert.risk_score",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kibana.alert.rule.name",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kibana.alert.rule.rule_id",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a7f2c1b4-5d8e-4f3a-9b0c-2e1d4a6b8f3e",
+        "severity": "medium",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Tactic: Initial Access",
+            "Data Source: Fortinet",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "a7f2c1b4-5d8e-4f3a-9b0c-2e1d4a6b8f3e_1",
+    "type": "security-rule"
+}

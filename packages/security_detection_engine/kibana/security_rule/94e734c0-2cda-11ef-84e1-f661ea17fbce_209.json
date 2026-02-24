@@ -1,0 +1,198 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects potential credential stuffing attacks where a single source IP attempts authentication against many Okta user accounts with minimal attempts per user, indicating the use of breached credential lists.",
+        "false_positives": [
+            "Corporate proxy or VPN exit nodes may aggregate traffic from multiple legitimate users.",
+            "Shared systems such as kiosks or conference room computers may have multiple users authenticating."
+        ],
+        "from": "now-15m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Okta Credential Stuffing (Single Source)",
+        "note": "## Triage and analysis\n\n### Investigating Potential Okta Credential Stuffing (Single Source)\n\nThis rule identifies a single source IP attempting authentication against many user accounts with minimal attempts per user. This pattern indicates credential stuffing where attackers rapidly test breached username and password pairs.\n\n#### Possible investigation steps\n- Identify the source IP and determine if it belongs to known proxy, VPN, or cloud infrastructure.\n- Review the list of targeted user accounts and check if any authentications succeeded.\n- Examine the user agent strings for signs of automation or scripting tools.\n- Check if Okta flagged the source as a known threat or proxy.\n- Determine if any targeted accounts have elevated privileges or access to sensitive systems.\n- Review the geographic location and ASN of the source IP for anomalies.\n\n### False positive analysis\n- Corporate proxies or VPN exit nodes may aggregate traffic from multiple legitimate users.\n- Shared systems such as kiosks or conference room computers may have multiple users authenticating.\n- Legitimate SSO integrations may generate multiple authentication attempts from a single source.\n\n### Response and remediation\n- If attack is confirmed, block the source IP at the network perimeter.\n- Reset passwords for any accounts that may have been compromised.\n- Enable or strengthen MFA for targeted accounts.\n- Review Okta sign-on policies to add additional friction for suspicious authentication patterns.\n- If this is a known legitimate source, consider adding an exception for the IP or ASN.\n",
+        "query": "FROM logs-okta.system-* METADATA _id, _version, _index\n| WHERE\n    event.dataset == \"okta.system\"\n    AND (event.action LIKE \"user.authentication.*\" OR event.action == \"user.session.start\")\n    AND okta.outcome.reason IN (\"INVALID_CREDENTIALS\", \"LOCKED_OUT\")\n    AND okta.actor.alternate_id IS NOT NULL\n// Build user-source context as JSON for enrichment\n| EVAL Esql.user_source_info = CONCAT(\n    \"{\\\"user\\\":\\\"\", okta.actor.alternate_id,\n    \"\\\",\\\"ip\\\":\\\"\", COALESCE(okta.client.ip::STRING, \"unknown\"),\n    \"\\\",\\\"user_agent\\\":\\\"\", COALESCE(okta.client.user_agent.raw_user_agent, \"unknown\"), \"\\\"}\"\n  )\n// FIRST STATS: Aggregate by (IP, user) to get per-user attempt counts\n// This prevents skew from outlier users with many attempts\n| STATS\n    Esql.user_attempts = COUNT(*),\n    Esql.user_dt_hashes = COUNT_DISTINCT(okta.debug_context.debug_data.dt_hash),\n    Esql.user_source_info = VALUES(Esql.user_source_info),\n    Esql.user_agents_per_user = VALUES(okta.client.user_agent.raw_user_agent),\n    Esql.devices_per_user = VALUES(okta.client.device),\n    Esql.is_proxy = VALUES(okta.security_context.is_proxy),\n    Esql.geo_country = VALUES(client.geo.country_name),\n    Esql.geo_city = VALUES(client.geo.city_name),\n    Esql.asn_number = VALUES(source.as.number),\n    Esql.asn_org = VALUES(source.as.organization.name),\n    Esql.threat_suspected = VALUES(okta.debug_context.debug_data.threat_suspected),\n    Esql.risk_level = VALUES(okta.debug_context.debug_data.risk_level),\n    Esql.risk_reasons = VALUES(okta.debug_context.debug_data.risk_reasons),\n    Esql.event_actions = VALUES(event.action),\n    Esql.first_seen_user = MIN(@timestamp),\n    Esql.last_seen_user = MAX(@timestamp)\n  BY okta.client.ip, okta.actor.alternate_id\n// SECOND STATS: Aggregate by IP to detect credential stuffing pattern\n// Now we can accurately measure the distribution of attempts across users\n| STATS\n    Esql.unique_users = COUNT(*),\n    Esql.total_attempts = SUM(Esql.user_attempts),\n    Esql.max_attempts_per_user = MAX(Esql.user_attempts),\n    Esql.min_attempts_per_user = MIN(Esql.user_attempts),\n    Esql.avg_attempts_per_user = AVG(Esql.user_attempts),\n    Esql.users_with_single_attempt = SUM(CASE(Esql.user_attempts == 1, 1, 0)),\n    Esql.users_with_few_attempts = SUM(CASE(Esql.user_attempts <= 2, 1, 0)),\n    Esql.first_seen = MIN(Esql.first_seen_user),\n    Esql.last_seen = MAX(Esql.last_seen_user),\n    Esql.target_users = VALUES(okta.actor.alternate_id),\n    Esql.user_source_mapping = VALUES(Esql.user_source_info),\n    Esql.event_action_values = VALUES(Esql.event_actions),\n    Esql.user_agent_values = VALUES(Esql.user_agents_per_user),\n    Esql.device_values = VALUES(Esql.devices_per_user),\n    Esql.is_proxy_values = VALUES(Esql.is_proxy),\n    Esql.geo_country_values = VALUES(Esql.geo_country),\n    Esql.geo_city_values = VALUES(Esql.geo_city),\n    Esql.source_asn_values = VALUES(Esql.asn_number),\n    Esql.source_asn_org_values = VALUES(Esql.asn_org),\n    Esql.threat_suspected_values = VALUES(Esql.threat_suspected),\n    Esql.risk_level_values = VALUES(Esql.risk_level),\n    Esql.risk_reasons_values = VALUES(Esql.risk_reasons)\n  BY okta.client.ip\n// Calculate stuffing signature: most users should have very few attempts\n| EVAL Esql.pct_users_few_attempts = Esql.users_with_few_attempts * 100.0 / Esql.unique_users\n// Credential stuffing: many users, most with 1-2 attempts each, low max per user\n// Stacked stats gives us accurate per-user distribution instead of skewed averages\n| WHERE\n    Esql.total_attempts >= 25\n    AND Esql.unique_users >= 15\n    AND Esql.max_attempts_per_user <= 2\n    AND Esql.pct_users_few_attempts >= 80.0\n| SORT Esql.unique_users DESC\n| KEEP Esql.*, okta.client.ip\n",
+        "references": [
+            "https://support.okta.com/help/s/article/Troubleshooting-Distributed-Brute-Force-andor-Password-Spray-attacks-in-Okta",
+            "https://www.okta.com/identity-101/brute-force/",
+            "https://support.okta.com/help/s/article/How-does-the-Device-Token-work?language=en_US",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://www.elastic.co/security-labs/testing-okta-visibility-and-detection-dorothy",
+            "https://sec.okta.com/articles/2023/08/cross-tenant-impersonation-prevention-and-detection",
+            "https://www.okta.com/resources/whitepaper-how-adaptive-mfa-can-help-in-mitigating-brute-force-attacks/",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.avg_attempts_per_user",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.device_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_action_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_city_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_country_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_proxy_values",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.last_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.max_attempts_per_user",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.min_attempts_per_user",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.pct_users_few_attempts",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_level_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_reasons_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_org_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.target_users",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.threat_suspected_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.total_attempts",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_users",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_source_mapping",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.users_with_few_attempts",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.users_with_single_attempt",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "okta.client.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "94e734c0-2cda-11ef-84e1-f661ea17fbce",
+        "setup": "The Okta Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Data Source: Okta",
+            "Data Source: Okta System Logs",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.004",
+                                "name": "Credential Stuffing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 209
+    },
+    "id": "94e734c0-2cda-11ef-84e1-f661ea17fbce_209",
+    "type": "security-rule"
+}
