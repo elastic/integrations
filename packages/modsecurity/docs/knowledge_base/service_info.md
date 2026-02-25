@@ -1,4 +1,4 @@
-```# Service Info
+# Service Info
 
 The ModSecurity integration allows users to ingest audit logs from the ModSecurity Web Application Firewall (WAF). This integration provides visibility into web traffic security events, helping administrators monitor and respond to malicious activities.
 
@@ -64,23 +64,23 @@ This includes suggested configuration, but can be modified for a specific use ca
 
 1.  **Locate the Configuration File**: Identify your main `modsecurity.conf` file. Common paths include `/etc/nginx/modsec/modsecurity.conf` for Nginx or `/etc/modsecurity/modsecurity.conf` for Apache.
 2.  **Enable the Audit Engine**: Set the engine to log only relevant events to reduce volume.
-    ```apache
+    ```
     SecAuditEngine RelevantOnly
     ```
 3.  **Configure JSON Format**: Ensure the logs are structured for the integration parser.
-    ```apache
+    ```
     SecAuditLogFormat JSON
     ```
 4.  **Set Logging Type**: Use serial logging to write all events to a single file.
-    ```apache
+    ```
     SecAuditLogType Serial
     ```
 5.  **Define Log Parts**: Specify which transaction parts to include. Note it is recommended to exclude part `K` to prevent ingestion issues. Can also include `C` for full request body.
-    ```apache
+    ```
     SecAuditLogParts ABFHJZ
     ```
 6.  **Specify Log Path**: Set the destination file for the audit logs.
-    ```apache
+    ```
     SecAuditLog /var/log/modsec-audit.json
     ```
 7.  **Integrate with Web Server**: Ensure your web server configuration loads these rules.
