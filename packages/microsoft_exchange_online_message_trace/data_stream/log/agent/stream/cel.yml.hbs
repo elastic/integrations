@@ -73,15 +73,16 @@ program: |
             "has_next_link": body[?"@odata.nextLink"].orValue(null) != null,
             "not_up_to_date": current.end.parse_time(time_layout.RFC3339Nano) < now-duration(state.min_age),
           }.as(status,
-            status.has_next_link || not_up_to_date
+            status.has_next_link || status.not_up_to_date
           ).as(want_more,
             state.with({
-              "events": body.value.size() > 0 ?
+              "events": (body.value.size() > 0 ?
                 body.value.map(e, { "message": e.encode_json() })
               : want_more ?
                 [{"message": "retry"}]
               :
                 []
+              ),
               "want_more": want_more,
               "cursor": {
                 ?"next_link": body[?"@odata.nextLink"],
