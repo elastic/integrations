@@ -11,7 +11,7 @@ The Fortinet FortiManager integration allows you to monitor and analyze logs fro
 ## Data types collected
 
 This integration can collect the following types of data:
--   **Fortinet FortiManager logs** (type: logs, input: filestream): Collect Fortinet FortiManager logs via Filestream input from active log files. The data is parsed from Syslog format. This stream includes the following FortiManager event subtypes:
+-   **Fortinet FortiManager logs** (type: logs, input: filestream): Collect Fortinet FortiManager logs using Filestream input from active log files. The data is parsed from Syslog format. This stream includes the following FortiManager event subtypes:
 
 | FortiManager Subtype                           |
 | -----------------------------------------------|
@@ -26,8 +26,8 @@ This integration can collect the following types of data:
 | Deployment Manager (dm)                        |
 | Object Changes (objcfg)                        |
 | Script Manager (scrmgr)                        |
--   **Fortinet FortiManager logs** (type: logs, input: tcp): Collect Fortinet FortiManager logs via TCP input. This stream includes various FortiManager and FortiAnalyzer event subtypes, including System Manager, FortiGuard Service, Log Files, Logging Status, and Reports, pushed directly to an Elastic Agent via a TCP port. The data is parsed from Syslog format.
--   **Fortinet FortiManager logs** (type: logs, input: udp): Collect Fortinet FortiManager logs via UDP input. This stream includes various FortiManager and FortiAnalyzer event subtypes, including System Manager, Log Files, Logging Status, and Reports, pushed directly to an Elastic Agent via a UDP port. The data is parsed from Syslog format.
+-   **Fortinet FortiManager logs** (type: logs, input: tcp): Collect Fortinet FortiManager logs using TCP input. This stream includes various FortiManager and FortiAnalyzer event subtypes, including System Manager, FortiGuard Service, Log Files, Logging Status, and Reports, pushed directly to an Elastic Agent using a TCP port. The data is parsed from Syslog format.
+-   **Fortinet FortiManager logs** (type: logs, input: udp): Collect Fortinet FortiManager logs using UDP input. This stream includes various FortiManager and FortiAnalyzer event subtypes, including System Manager, Log Files, Logging Status, and Reports, pushed directly to an Elastic Agent using a UDP port. The data is parsed from Syslog format.
 
 ## Compatibility
 
@@ -36,7 +36,7 @@ This integration has been tested against FortiManager & FortiAnalyzer version 7.
 ## Scaling and Performance
 
 To ensure optimal performance in high-volume environments, consider the following:
--   **Transport/Collection Considerations:** When collecting logs via Syslog, the choice between TCP and UDP is crucial. TCP offers reliable, ordered delivery, which is ideal for critical security logs where data integrity is paramount, though it may introduce slightly more overhead. UDP provides faster, connectionless delivery, making it suitable for high-volume, less critical logs where some occasional packet loss is acceptable. For filestream, ensure the Elastic Agent has efficient access to log file paths and proper handling of log rotations to prevent data gaps or performance bottlenecks.
+-   **Transport/Collection Considerations:** When collecting logs using Syslog, the choice between TCP and UDP is crucial. TCP offers reliable, ordered delivery, which is ideal for critical security logs where data integrity is paramount, though it may introduce slightly more overhead. UDP provides faster, connectionless delivery, making it suitable for high-volume, less critical logs where some occasional packet loss is acceptable. For filestream, ensure the Elastic Agent has efficient access to log file paths and proper handling of log rotations to prevent data gaps or performance bottlenecks.
 -   **Data Volume Management:** To optimize the performance of both the FortiManager/FortiAnalyzer and the Elastic Stack, configure the FortiManager/FortiAnalyzer to filter or limit the types and severity of logs forwarded to the Elastic Agent. Only forward logs essential for your security monitoring, compliance, or operational analysis needs. While setting the minimum severity to `information` ensures comprehensive logging, it can be adjusted to `warning` or `error` if data volume becomes unmanageably high.
 -   **Elastic Agent Scaling:** A single Elastic Agent can handle a significant volume of logs, but for very high-throughput FortiManager/FortiAnalyzer environments, consider deploying multiple Elastic Agents. Each agent can be configured to listen on a dedicated port or monitor specific subsets of log files, thereby distributing the ingestion load. Ensure the agents are adequately resourced with CPU, memory, and disk I/O, and are placed strategically (e.g., on the same network segment) to minimize network latency to the FortiManager/FortiAnalyzer devices.
 
@@ -44,7 +44,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 
 ## Vendor prerequisites
 
--   Administrative access to the FortiManager or FortiAnalyzer device to configure log forwarding settings via both the web-based GUI and the command-line interface (CLI).
+-   Administrative access to the FortiManager or FortiAnalyzer device to configure log forwarding settings using both the web-based GUI and the command-line interface (CLI).
 -   Network connectivity between the FortiManager/FortiAnalyzer device and the Elastic Agent's host. This requires allowing traffic on the specific Syslog port (e.g., TCP/UDP 514 or 9022) in any intervening firewalls.
 -   Knowledge of the Elastic Agent's IP address (or fully qualified domain name) and the specific TCP or UDP port number it will be configured to listen on for incoming Syslog messages.
 -   If utilizing the filestream input method, ensure the Elastic Agent has appropriate read permissions to access the FortiManager/FortiAnalyzer log files stored locally on the Agent's host or an accessible network-mounted filesystem.
@@ -71,15 +71,15 @@ This step registers the Elastic Agent as a valid log destination.
     *   **IP address (or FQDN)**: Enter the IP address or fully qualified domain name of the server where the Elastic Agent is running and listening for logs.
     *   **Syslog Server Port**: Enter the port number that the Elastic Agent is configured to listen on. The standard default syslog port is `514`, but `9022` is a common alternative.
     *   **Reliable Connection**:
-        *   To send logs via **UDP** (the default syslog protocol), leave this option disabled.
-        *   To send logs via **TCP** (for guaranteed delivery), enable this option. This setting **must** match the protocol configured in the Elastic Agent integration.
+        *   To send logs using **UDP** (the default syslog protocol), leave this option disabled.
+        *   To send logs using **TCP** (for guaranteed delivery), enable this option. This setting **must** match the protocol configured in the Elastic Agent integration.
         *   **Optional TLS Setup**: When using TCP with **Reliable Connection** enabled, you can optionally enable **Secure Connection** to encrypt the syslog traffic using TLS/SSL. If enabled, you must specify a **Local Certificate CN** and optionally configure a **Peer Certificate CN** for the syslog server. This requires corresponding SSL configuration in the Elastic Agent integration's Advanced Options.
 5.  Click **OK** to save the syslog server configuration.
 
 #### Part 2: Enable Log Forwarding to the Syslog Server (CLI)
-This step activates the sending of logs to the server you just configured. This can only be done via the CLI.
+This step activates the sending of logs to the server you just configured. This can only be done using the CLI.
 
-1.  Open the FortiManager CLI console. You can typically access this from the top-right corner of the FortiManager web GUI or via SSH.
+1.  Open the FortiManager CLI console. You can typically access this from the top-right corner of the FortiManager web GUI or using SSH.
 2.  Enter the following commands to configure the local log syslog daemon settings:
     ```shell
     config system locallog syslogd setting
@@ -121,8 +121,8 @@ Common log paths may include `/var/log/fortinet/fortimanager.log*`. Ensure that 
 4.  Follow the prompts to add the integration to an existing Elastic Agent policy or create a new one.
 5.  Proceed to configure the specific input types based on your FortiManager/FortiAnalyzer deployment:
 
-### Collecting logs from Fortinet FortiManager instances via filestream input.
-1.  Select the **Collecting logs from Fortinet FortiManager instances via filestream input.** input type in Kibana.
+### Collecting logs from Fortinet FortiManager instances using filestream input.
+1.  Select the **Collecting logs from Fortinet FortiManager instances using filestream input.** input type in Kibana.
 2.  Configure the following fields:
     -   **Paths**: A list of glob-based paths that will be crawled and fetched. Default: `/var/log/fortinet/fortimanager.log*`.
     -   **Timezone Offset**: By default, datetimes in the logs will be interpreted as relative to the timezone configured in the host where the agent is running. If ingesting logs from a host on a different timezone, use this field to set the timezone offset so that datetimes are correctly parsed. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00") from UCT. Default: `local`.
@@ -132,8 +132,8 @@ Common log paths may include `/var/log/fortinet/fortimanager.log*`. Ensure that 
     -   **Processors**: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 3.  Save and deploy the integration.
 
-### Collecting logs from Fortinet FortiManager instances via tcp input.
-1.  Select the **Collecting logs from Fortinet FortiManager instances via tcp input.** input type in Kibana.
+### Collecting logs from Fortinet FortiManager instances using tcp input.
+1.  Select the **Collecting logs from Fortinet FortiManager instances using tcp input.** input type in Kibana.
 2.  Configure the following fields:
     -   **Listen Address**: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
     -   **Listen Port**: The TCP port number to listen on. Default: `9022`.
@@ -150,8 +150,8 @@ Common log paths may include `/var/log/fortinet/fortimanager.log*`. Ensure that 
     -   **Processors**: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 3.  Save and deploy the integration.
 
-### Collecting logs from Fortinet FortiManager instances via udp input.
-1.  Select the **Collecting logs from Fortinet FortiManager instances via udp input.** input type in Kibana.
+### Collecting logs from Fortinet FortiManager instances using udp input.
+1.  Select the **Collecting logs from Fortinet FortiManager instances using udp input.** input type in Kibana.
 2.  Configure the following fields:
     -   **Listen Address**: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
     -   **Listen Port**: The UDP port number to listen on. Default: `9022`.
@@ -199,7 +199,7 @@ After configuration is complete, follow these steps to verify data is flowing co
         2.  Check for any network firewalls between the FortiManager/FortiAnalyzer and the Elastic Agent host that might be blocking the Syslog port (e.g., 514 or 9022).
         3.  On the Elastic Agent host, use `netstat -tulnp | grep <port>` (Linux) or similar commands to confirm the Elastic Agent is actively listening on the configured port.
 -   **Incorrect protocol configuration (TCP vs UDP)**:
-    -   **Cause**: A mismatch between the protocol configured on the FortiManager/FortiAnalyzer and the Elastic Agent's input type. If FortiManager sends via TCP, but Agent expects UDP, no logs will be processed.
+    -   **Cause**: A mismatch between the protocol configured on the FortiManager/FortiAnalyzer and the Elastic Agent's input type. If FortiManager sends using TCP, but Agent expects UDP, no logs will be processed.
     -   **Solution**: Ensure the `Reliable Connection` option in the FortiManager GUI Syslog Server settings (under **System Settings > Advanced > Syslog Server**) is enabled if you are using the Elastic Agent's **TCP input**, or disabled if you are using the **UDP input**. Update the Elastic Agent integration input accordingly to match.
 -   **Log forwarding not enabled or severity too low**:
     -   **Cause**: The CLI commands to enable log forwarding (`set status enable`) or the configured severity level (`set severity information`) were not correctly applied or are too restrictive.
