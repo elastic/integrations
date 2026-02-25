@@ -68,25 +68,9 @@ To configure SAP Privileges to send logs to your Elastic stack:
 
 ## Log samples
 
-Below are sample logs from SAP Privileges:
+Below are the sample logs of the respective category.
 
-### Privilege Grant/Revoke Logs
-
-```
-<134>2025-01-23T09:49:10.000+05:00 SRV-MAC-001 Privileges: User john.doe granted admin privileges for 1 hour
-<134>2025-01-23T10:49:10.000+05:00 SRV-MAC-001 Privileges: User john.doe admin privileges revoked
-<134>2025-01-23T11:30:00.000+05:00 SRV-MAC-001 Privileges: User jane.smith granted admin privileges for 30 minutes
-```
-
-### Authentication Logs
-
-```
-<134>2025-01-23T12:00:00.000+05:00 SRV-MAC-001 Privileges: User john.doe authenticated successfully using Touch ID
-<134>2025-01-23T12:05:00.000+05:00 SRV-MAC-001 Privileges: User jane.smith authentication failed - incorrect password
-<134>2025-01-23T12:10:00.000+05:00 SRV-MAC-001 Privileges: User bob.jones authenticated successfully using password
-```
-
-### Privilege Renewal Logs
+### Audit Logs
 
 ```
 <134>2025-01-23T13:00:00.000+05:00 SRV-MAC-001 Privileges: User john.doe renewed admin privileges for 1 hour
@@ -174,5 +158,4 @@ An example event for `log` looks as following:
 | log.source.address | Log source address | keyword |
 | privilege.reason | The reason given to elevate privileges | keyword |
 | privilege.type | Privilege Type that was applied (User or Administrative) | keyword |
-| privilege.duration | Duration for which privileges were granted | keyword |
-| privilege.outcome | Outcome of the privilege request (granted/denied) | keyword |
+
