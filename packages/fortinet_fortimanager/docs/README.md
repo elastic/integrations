@@ -92,8 +92,8 @@ This step registers the Elastic Agent as a valid log destination in the FortiMan
     *   **IP address (or FQDN)**: Enter the IP address or fully qualified domain name of the server where the Elastic Agent is running and listening for logs.
     *   **Syslog Server Port**: Enter the port number that the Elastic Agent is configured to listen on. The standard default syslog port is `514`, but `9022` is a common alternative.
     *   **Reliable Connection**:
-        *   To send logs via UDP (the default protocol), leave this option disabled.
-        *   To send logs via TCP, enable this option. This setting must match the protocol you configure in the Elastic Agent integration.
+        *   To send logs using UDP (the default protocol), leave this option disabled.
+        *   To send logs using TCP, enable this option. This setting must match the protocol you configure in the Elastic Agent integration.
         *   **Optional TLS setup**: When you use TCP with Reliable Connection enabled, you can optionally enable **Secure Connection** to encrypt traffic using TLS/SSL. If you enable this, you'll need to specify a **Local Certificate CN** and optionally a **Peer Certificate CN**. This requires corresponding SSL configuration in the Elastic Agent integration's advanced options.
 5.  Click **OK** to save the configuration.
 

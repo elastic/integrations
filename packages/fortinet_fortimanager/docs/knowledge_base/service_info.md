@@ -36,7 +36,7 @@ This integration has been tested against FortiManager & FortiAnalyzer version 7.
 ## Scaling and Performance
 
 To ensure optimal performance in high-volume environments, consider the following:
--   **Transport/Collection Considerations:** When collecting logs using Syslog, the choice between TCP and UDP is crucial. TCP offers reliable, ordered delivery, which is ideal for critical security logs where data integrity is paramount, though it may introduce slightly more overhead. UDP provides faster, connectionless delivery, making it suitable for high-volume, less critical logs where some occasional packet loss is acceptable. For filestream, ensure the Elastic Agent has efficient access to log file paths and proper handling of log rotations to prevent data gaps or performance bottlenecks.
+-   **Transport/Collection Considerations:** When collecting logs using Syslog, the choice between TCP and UDP is crucial. TCP offers reliable, ordered delivery, which is ideal for critical security logs where data integrity is paramount, though it can introduce slightly more overhead. UDP provides faster, connectionless delivery, making it suitable for high-volume, less critical logs where some occasional packet loss is acceptable. For filestream, ensure the Elastic Agent has efficient access to log file paths and proper handling of log rotations to prevent data gaps or performance bottlenecks.
 -   **Data Volume Management:** To optimize the performance of both the FortiManager/FortiAnalyzer and the Elastic Stack, configure the FortiManager/FortiAnalyzer to filter or limit the types and severity of logs forwarded to the Elastic Agent. Only forward logs essential for your security monitoring, compliance, or operational analysis needs. While setting the minimum severity to `information` ensures comprehensive logging, it can be adjusted to `warning` or `error` if data volume becomes unmanageably high.
 -   **Elastic Agent Scaling:** A single Elastic Agent can handle a significant volume of logs, but for very high-throughput FortiManager/FortiAnalyzer environments, consider deploying multiple Elastic Agents. Each agent can be configured to listen on a dedicated port or monitor specific subsets of log files, thereby distributing the ingestion load. Ensure the agents are adequately resourced with CPU, memory, and disk I/O, and are placed strategically (e.g., on the same network segment) to minimize network latency to the FortiManager/FortiAnalyzer devices.
 
@@ -64,7 +64,7 @@ Configuring Fortinet FortiManager to send local event logs to Elastic Agent invo
 This step registers the Elastic Agent as a valid log destination.
 
 1.  Log in to the FortiManager web UI using your administrative credentials.
-2.  Navigate to **System Settings > Advanced > Syslog Server**. In some older versions, this option may be found under **System Settings > Syslog Server**.
+2.  Navigate to **System Settings > Advanced > Syslog Server**. In some older versions, this option can be found under **System Settings > Syslog Server**.
 3.  In the Syslog Server pane, click **Create New** to add a new syslog server entry.
 4.  Configure the syslog server with the following settings:
     *   **Name**: Provide a descriptive name for the server, for example, `elastic-agent-syslog`.
@@ -105,7 +105,7 @@ This step activates the sending of logs to the server you just configured. This 
 ### For Logfile Collection:
 For filestream collection, FortiManager or FortiAnalyzer must be configured to store logs locally on the system where the Elastic Agent is running, or on a network-mounted filesystem accessible by the Agent.
 Specific vendor steps for configuring FortiManager/FortiAnalyzer to write logs to local files for filestream collection are not explicitly provided in the integration context. Users should refer to Fortinet's official documentation regarding local log storage, retention, and file paths on their FortiManager or FortiAnalyzer device.
-Common log paths may include `/var/log/fortinet/fortimanager.log*`. Ensure that the Elastic Agent has the necessary file system read permissions to access these log files.
+Common log paths can include `/var/log/fortinet/fortimanager.log*`. Ensure that the Elastic Agent has the necessary file system read permissions to access these log files.
 
 ### Vendor Set up Resources
 
