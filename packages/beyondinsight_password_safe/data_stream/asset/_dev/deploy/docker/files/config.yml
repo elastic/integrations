@@ -23,6 +23,28 @@ rules:
           }
           `}}
 
+  # Auth (no password)
+  - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key; runas=testuser2;']
+      Content-Type: ['application/json']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+        body: |
+          {{ minify_json `
+          {
+              "UserId": 1,
+              "SID": null,
+              "EmailAddress": "test.user@example.com",
+              "UserName": "testuser",
+              "Name": "Test User"
+          }
+          `}}
+
   # Get Workgroups
   - path: "/BeyondTrust/api/public/v3/Workgroups"
     methods: ["GET"]
