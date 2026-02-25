@@ -201,6 +201,32 @@ processors:
       tag: date_event_end_time_epoch
       if: "ctx.crowdstrike?.event?.EndTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.EndTimeEpoch).length() <= 11"
 
+# Threat fields: the default pipeline sets threat.framework from the threat.* fields.
+  - split:
+      field: crowdstrike.event.Techniques
+      separator: ","
+      target_field: threat.technique.name
+      tag: split_techniques
+      if: ctx.crowdstrike?.event?.Techniques != null
+  - split:
+      field: crowdstrike.event.TechniqueIds
+      separator: ","
+      target_field: threat.technique.id
+      tag: split_technique_ids
+      if: ctx.crowdstrike?.event?.TechniqueIds != null
+  - split:
+      field: crowdstrike.event.Tactics
+      separator: ","
+      target_field: threat.tactic.name
+      tag: split_tactics
+      if: ctx.crowdstrike?.event?.Tactics != null
+  - split:
+      field: crowdstrike.event.TacticIds
+      separator: ","
+      target_field: threat.tactic.id
+      tag: split_tactic_ids
+      if: ctx.crowdstrike?.event?.TacticIds != null
+
 on_failure:
   - append:
       field: error.message

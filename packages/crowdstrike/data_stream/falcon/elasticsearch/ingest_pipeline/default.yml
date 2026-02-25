@@ -479,10 +479,14 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      description: For tactics that are prefixed with "CS" or "TA".
+      description: Set threat.framework from threat.* fields using prefix matching and preference order.
       lang: painless
       tag: script_threat_framework
+      if: ctx.threat != null
       params:
+        framework_preference:
+          - MITRE ATT&CK
+          - CrowdStrike Falcon Detections Framework
         framework_cs: 'CrowdStrike Falcon Detections Framework'
         framework_ma: 'MITRE ATT&CK'
         falcon_tactic_names:
@@ -496,7 +500,6 @@ processors:
           - ai powered ioa
           - insecure security posture
       source: |
-        if (ctx.threat == null) { return; }
         def tid = ctx.threat.tactic?.id;
         def nid = ctx.threat.technique?.id;
         def tname = ctx.threat.tactic?.name;
@@ -532,9 +535,12 @@ processors:
           }
         }
 
-        if (!list.isEmpty()) {
-            ctx.threat = ctx.threat ?: [:];
-            ctx.threat.framework = list;
+        def chosen = null;
+        for (def preferred : params.framework_preference) {
+          if (list.contains(preferred)) { chosen = preferred; break; }
+        }
+        if (chosen != null) {
+          ctx.threat.framework = chosen;
         }
       on_failure:
         - append:
