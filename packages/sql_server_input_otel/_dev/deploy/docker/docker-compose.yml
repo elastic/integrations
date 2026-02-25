@@ -1,0 +1,27 @@
+version: '2.3'
+services:
+  sql_server_input_otel:
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    user: root
+    build:
+      context: .
+      args:
+        MSSQL_VERSION: ${MSSQL_VERSION:-2019-latest}
+    ports:
+      - 1433
+  sql_server_input_otel_workload:
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    build:
+      context: .
+      args:
+        MSSQL_VERSION: ${MSSQL_VERSION:-2019-latest}
+    depends_on:
+      sql_server_input_otel:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/workload_ready"]
+      interval: 10s
+      timeout: 3s
+      start_period: 60s
+      retries: 5
+    entrypoint: ["/bin/bash", "/init/workload.sh"]
