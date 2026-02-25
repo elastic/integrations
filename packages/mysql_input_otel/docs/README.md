@@ -8,9 +8,9 @@ The MySQL OpenTelemetry Input Package for Elastic enables collection of metrics 
 
 This package receives telemetry data from MySQL servers by configuring the MySQL endpoint and credentials in the Input Package, which then gets applied to the mysqlreceiver present in the EDOT collector, which then forwards the data to Elastic Agent. The Elastic Agent processes and enriches the data before sending it to Elasticsearch for indexing and analysis. Once the data arrives into Elasticsearch, its corresponding [MySQL OpenTelemetry Assets Package](https://www.elastic.co/docs/reference/integrations/mysql_otel) gets auto installed and the dashboards light up.
 
-The package collects both **metrics** (from `SHOW GLOBAL STATUS` and InnoDB tables) and **logs** (query samples and top queries). Log events include:
-- **`db.server.query_sample`** (enabled by default): Current running database statements
-- **`db.server.top_query`** (when top query collection is configured): Queries that consumed the most CPU
+The package collects both **metrics** (from `SHOW GLOBAL STATUS` and InnoDB tables) and **logs** (query samples and top queries). Log events are controlled by the Enable Query Sample Events and Enable Top Query Events settings:
+- **`db.server.query_sample`**: Current running database statements (enabled by default)
+- **`db.server.top_query`**: Queries that consumed the most CPU (disabled by default)
 
 ## Requirements
 
