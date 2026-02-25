@@ -3,6 +3,8 @@
 ## Overview
 The Jaeger OpenTelemetry Input Package for Elastic enables collection of trace data in [Jaeger](https://www.jaegertracing.io/) format over **gRPC** using the [jaegerreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/jaegerreceiver).
 
+**Jaeger and OpenTelemetry:** This input receives traces in **Jaeger format** (legacy Protobuf gRPC, Thrift HTTP), not OTLP. Jaeger and OpenTelemetry serve different roles—Jaeger is a tracing backend while OpenTelemetry provides SDKs for instrumentation; both support compatible trace models. For details on protocols, compatibility, and migration, see the [Jaeger documentation](https://www.jaegertracing.io/docs/2.15/) and the [jaegerreceiver README](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/jaegerreceiver/README.md).
+
 **Requirements:** Kibana 9.4.0 or later (traces support), Elastic Agent with Elastic Distribution of OpenTelemetry (EDOT).
 
 ### How it works
