@@ -5,9 +5,9 @@ processors:
       tag: drop_empty_events_placeholder_1f3e6c12
       if: ctx.message == 'empty_events_placeholder'
   - set:
-      tag: set_ecs_version_to_9_2_0_3273339c
+      tag: set_ecs_version_to_9_2_0_b777da29
       field: ecs.version
-      value: 9.2.0
+      value: 9.3.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error_4c75f12b
@@ -52,7 +52,10 @@ processors:
 
   # rename to snake case
   - script:
-      description: Convert camelCase to snake_case.
+      description: >
+        Convert field names from camelCase to snake case recursively.
+        NOTE: This processor also assigns the normalized output to
+        ctx.ironscales.incident and removes ctx.json from the document.
       tag: script_convert_camelcase_to_snake_case_99ea9f77
       lang: painless
       source: |-
@@ -529,26 +532,29 @@ processors:
           field: url.full
           value: '{{{_ingest._value.url}}}'
           allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ironscales_incident_attachments_aba9f346
+  - script:
+      tag: process_ironscales_incident_attachments
+      description: ECS mapping for fields of ironscales.incident.attachments array.
       if: ctx.ironscales?.incident?.attachments instanceof List
-      field: ironscales.incident.attachments
-      processor:
-        append:
-          tag: append_email_attachments_file_name_779be52d
-          field: email.attachments.file.name
-          value: '{{{_ingest._value.file_name}}}'
-          allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ironscales_incident_attachments_aaa9f1b3
-      if: ctx.ironscales?.incident?.attachments instanceof List
-      field: ironscales.incident.attachments
-      processor:
-        append:
-          tag: append_email_attachments_file_hash_md5_e29b54cc
-          field: email.attachments.file.hash.md5
-          value: '{{{_ingest._value.md5}}}'
-          allow_duplicates: false
+      lang: painless
+      source: |
+        // Initialize ECS email.attachments structure
+        ctx.email = ctx.email ?: [:];
+        ctx.email.attachments = ctx.email.attachments ?: [:];
+        ctx.email.attachments.file = ctx.email.attachments.file ?: [:];
+        ctx.email.attachments.file.name = ctx.email.attachments.file.name ?: [];
+        ctx.email.attachments.file.hash = ctx.email.attachments.file.hash ?: [:];
+        ctx.email.attachments.file.hash.md5 = ctx.email.attachments.file.hash.md5 ?: [];
+
+        // Single iteration to extract file_name and md5 from attachments array
+        for (attachment in ctx.ironscales.incident.attachments) {
+          if (attachment.file_name != null && !ctx.email.attachments.file.name.contains(attachment.file_name)) {
+            ctx.email.attachments.file.name.add(attachment.file_name);
+          }
+          if (attachment.md5 != null && !ctx.email.attachments.file.hash.md5.contains(attachment.md5)) {
+            ctx.email.attachments.file.hash.md5.add(attachment.md5);
+          }
+        }
   - append:
       tag: append_related_user_from_ironscales_incident_recipient_email_7bf620ae
       if: ctx.ironscales?.incident?.recipient_email != null
@@ -609,56 +615,36 @@ processors:
       field: related.ip
       value: '{{{ironscales.incident.mail_server.ip}}}'
       allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ironscales_incident_reports_6f27d044
+  - script:
+      tag: process_ironscales_incident_reports
+      description: ECS mapping for fields of ironscales.incident.reports array.
       if: ctx.ironscales?.incident?.reports instanceof List
-      field: ironscales.incident.reports
-      processor:
-        append:
-          tag: append_related_user_ddc8bfe7
-          field: related.user
-          value: '{{{_ingest._value.name}}}'
-          allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ironscales_incident_reports_7227d4fd
-      if: ctx.ironscales?.incident?.reports instanceof List
-      field: ironscales.incident.reports
-      processor:
-        append:
-          tag: append_related_user_8932176a
-          field: related.user
-          value: '{{{_ingest._value.email}}}'
-          allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ironscales_incident_reports_7127d36a
-      if: ctx.ironscales?.incident?.reports instanceof List
-      field: ironscales.incident.reports
-      processor:
-        append:
-          tag: append_related_user_d4a32e42
-          field: related.user
-          value: '{{{_ingest._value.sender_email}}}'
-          allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ironscales_incident_reports_6c27cb8b
-      if: ctx.ironscales?.incident?.reports instanceof List
-      field: ironscales.incident.reports
-      processor:
-        append:
-          tag: append_related_hosts_e67d98bb
-          field: related.hosts
-          value: '{{{_ingest._value.mail_server.host}}}'
-          allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ironscales_incident_reports_6b27c9f8
-      if: ctx.ironscales?.incident?.reports instanceof List
-      field: ironscales.incident.reports
-      processor:
-        append:
-          tag: append_related_ip_f355a878
-          field: related.ip
-          value: '{{{_ingest._value.mail_server.ip}}}'
-          allow_duplicates: false
+      lang: painless
+      source: |
+        // Initialize ECS related fields structure
+        ctx.related = ctx.related ?: [:];
+        ctx.related.user = ctx.related.user ?: [];
+        ctx.related.hosts = ctx.related.hosts ?: [];
+        ctx.related.ip = ctx.related.ip ?: [];
+
+        // Single iteration to extract name, email, sender_email, mail_server.host, and mail_server.ip from reports array
+        for (report in ctx.ironscales.incident.reports) {
+          if (report?.name != null && !ctx.related.user.contains(report.name)) {
+            ctx.related.user.add(report.name);
+          }
+          if (report?.email != null && !ctx.related.user.contains(report.email)) {
+            ctx.related.user.add(report.email);
+          }
+          if (report?.sender_email != null && !ctx.related.user.contains(report.sender_email)) {
+            ctx.related.user.add(report.sender_email);
+          }
+          if (report?.mail_server?.host != null && !ctx.related.hosts.contains(report.mail_server.host)) {
+            ctx.related.hosts.add(report.mail_server.host);
+          }
+          if (report?.mail_server?.ip != null && !ctx.related.ip.contains(report.mail_server.ip)) {
+            ctx.related.ip.add(report.mail_server.ip);
+          }
+        }
 
   # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
   - foreach:

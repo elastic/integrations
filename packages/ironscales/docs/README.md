@@ -60,7 +60,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 
-## configure
+### configure
 
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **IRONSCALES**.
@@ -128,7 +128,7 @@ For more information on architectures that can be used for scaling this integrat
 | ironscales.incident.created |  | date |
 | ironscales.incident.detailed_classification |  | keyword |
 | ironscales.incident.email_body_text |  | text |
-| ironscales.incident.email_subject |  | text |
+| ironscales.incident.email_subject |  | match_only_text |
 | ironscales.incident.federation.companies_affected |  | long |
 | ironscales.incident.federation.companies_marked_fp |  | long |
 | ironscales.incident.federation.companies_marked_phishing |  | long |
@@ -473,7 +473,7 @@ An example event for `incident` looks as following:
 
 These inputs can be used in this integration:
 
-- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
 ### API usage
 
