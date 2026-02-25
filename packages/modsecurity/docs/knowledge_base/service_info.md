@@ -1,4 +1,4 @@
-# Service Info
+```# Service Info
 
 The ModSecurity integration allows users to ingest audit logs from the ModSecurity Web Application Firewall (WAF). This integration provides visibility into web traffic security events, helping administrators monitor and respond to malicious activities.
 

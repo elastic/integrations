@@ -1,4 +1,4 @@
-# ModSecurity Audit Integration for Elastic
+```# ModSecurity Audit Integration for Elastic
 
 > Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
