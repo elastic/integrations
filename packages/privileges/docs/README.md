@@ -1,64 +1,156 @@
-# Privileges
+# SAP Privileges
 
-The Privileges integration collects and parses DNS, DHCP, and Audit data collected from [Privileges](https://pleasantpasswords.com/) via TCP/UDP or logfile.
+The SAP Privileges integration collects and parses privilege management events from [SAP Privileges](https://github.com/SAP/macOS-enterprise-privileges) for macOS. SAP Privileges is a free macOS application designed for modern enterprise environments that gives users temporary administrator privileges when needed without granting permanent admin rights.
 
 ## Data streams
 
-The PPS integration collects the following event types: `log`.
+The SAP Privileges integration collects the following event types: `log`.
 
 ## Compatibility
 
-This module has been tested against `Privileges Version 7.11.44.0 `.  
-It should however work with all versions.
+This integration has been tested with SAP Privileges 2.x and should work with all versions.
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+- Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+- SAP Privileges must be installed on the macOS devices you want to monitor.
 
 ## Setup
 
-1. Enable the integration with TCP/UDP input.
-2. Log in to the PPS WebUI.
-3. Configure the PPS to send messages to a Syslog server using the following steps. 
-    1. From the menu go to **Logging** -> **Syslog Configuration**.
-    2. Set the Syslog Configuration to **Enabled**.
-    3. Set Hostname to the Hostname of your Fleet Agent or Load Balancer.
-    4. Set the Correct Port used in the Integration Configuration.
-    5. Set UDP or TCP.
-    6. Optionally set the Facility.
+### Configure SAP Privileges to send Syslog
+
+To configure SAP Privileges to send logs to your Elastic Agent:
+
+1. **Create a configuration profile** (mobileconfig file) with remote logging settings:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>PayloadContent</key>
+			<dict>
+				<key>corp.sap.privileges</key>
+				<dict>
+					<key>Forced</key>
+					<array>
+						<dict>
+							<key>mcx_preference_settings</key>
+							<dict>
+								<key>RemoteLogging</key>
+								<dict>
+									<key>ServerType</key>
+									<string>syslog</string>
+									<key>ServerAddress</key>
+									<string>YOUR_AGENT_IP_OR_HOSTNAME</string>
+									<key>SyslogOptions</key>
+									<dict>
+										<key>ServerPort</key>
+										<integer>514</integer>
+										<key>UseTLS</key>
+										<false/>
+										<key>LogFacility</key>
+										<integer>4</integer>
+										<key>LogSeverity</key>
+										<integer>6</integer>
+										<key>MaximumMessageSize</key>
+										<integer>480</integer>
+									</dict>
+								</dict>
+							</dict>
+						</dict>
+					</array>
+				</dict>
+			</dict>
+			<key>PayloadDescription</key>
+			<string/>
+			<key>PayloadDisplayName</key>
+			<string>Privileges configuration</string>
+			<key>PayloadEnabled</key>
+			<true/>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.ManagedClient.preferences.36132147-235E-4663-ADA8-2664C67C4DD2</string>
+			<key>PayloadOrganization</key>
+			<string>SAP SE</string>
+			<key>PayloadType</key>
+			<string>com.apple.ManagedClient.preferences</string>
+			<key>PayloadUUID</key>
+			<string>36132147-235E-4663-ADA8-2664C67C4DD2</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Configures the Privileges app.</string>
+	<key>PayloadDisplayName</key>
+	<string>Privileges configuration</string>
+	<key>PayloadEnabled</key>
+	<true/>
+	<key>PayloadIdentifier</key>
+	<string>CF401A42-35CA-4DA6-9123-5A49C87ECB5A</string>
+	<key>PayloadOrganization</key>
+	<string>SAP SE</string>
+	<key>PayloadRemovalDisallowed</key>
+	<true/>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>50870D16-7AAD-478B-BFFE-BED09499F7E0</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>
+```
+
+2. **Replace `YOUR_AGENT_IP_OR_HOSTNAME`** with the IP address or hostname of your Elastic Agent or load balancer.
+
+3. **Adjust the port** (`ServerPort`) to match the port configured in your Elastic Agent integration.
+
+4. **Deploy the configuration profile** to your macOS devices using your MDM solution (e.g., Jamf, Kandji, Mosyle).
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
-2. In the search top bar, type **Privileges** or **PPS**.
-3. Select the **Privileges** integration and add it.
-4. Add all the required integration configuration parameters.
+1. In Kibana, navigate to **Management** > **Integrations**.
+2. In the search bar, type **SAP Privileges** or **Privileges**.
+3. Select the **SAP Privileges** integration and add it.
+4. Add all the required integration configuration parameters:
+   - Set the correct **host** (IP or hostname)
+   - Set the correct **port** (must match the port in the configuration profile)
+   - Choose **TCP** or **UDP** protocol (must match the configuration profile)
 5. Save the integration.
 
 ## Log samples
 
-Below are the sample logs of the respective category.
+Below are sample logs from SAP Privileges:
 
-### Audit Logs
+### Privilege Grant Logs
 
 ```
-<134>Jan 23 09:49:10 SRV-PPS-001 Privileges:192.168.1.2 - user@name.test -  - Success - Syslog Settings Changed - User <user@name.test> Syslogging setting updated  changing the host from <localhost> to <127.0.0.1> changing the port fr	127.0.0.1	23/01 09:49:10.894	
-<134>Jan 23 11:32:57 SRV-PPS-001 Privileges:192.168.1.2 - user@name.test -  - Success - Password Fetched - User <user@name.test> fetched the password for <TOP/SECRET/PASSWORD> - test	127.0.0.1	23/01 11:32:57.857	
-<134>Jan 23 12:20:07 SRV-PPS-001 Privileges:0.0.0.0 - Backup Restore Service -  - Success - Backup Occurred - User <Backup Restore Service> backing up database to <C:\ProgramData\Pleasant Solutions\Password Server\Backups\Backup	127.0.0.1	23/01 12:20:07.802	
-<134>Jan 23 12:37:37 SRV-PPS-001 Privileges:192.168.1.1 - user@name.test -  - Success - Session Log On - User <user@name.test> logged on	127.0.0.1	23/01 12:37:37.346
-<134>Jan 23 12:38:07 SRV-PPS-001 Privileges:192.168.1.1 - user@name.test -  - Success - Entry Updated - User <user@name.test> updated entry <TOP/SECRET/PASSWORD> changing the password	127.0.0.1	23/01 12:38:07.629	
-<134>Jan 23 13:43:47 SRV-PPS-001 Privileges:192.168.1.3 - user@name.test -  - Success - Identity Verified - User <user@name.test> verified via ApplicationBasicOAuth	127.0.0.1	23/01 13:43:47.422	
-<134>Jan 23 13:47:25 SRV-PPS-001 Privileges:192.168.1.3 - user@name.test -  - Error - Identity Not Verified - User <user@name.test> failed to verify themselves	127.0.0.1	23/01 13:47:25.593	
-<134>Jan 23 13:47:25 SRV-PPS-001 Privileges:192.168.1.3 - user@name.test -  - Error - Sign-in Failed - User <user@name.test> sign-in denied	127.0.0.1	23/01 13:47:25.641	
-<134>Jan 23 14:05:54 SRV-PPS-001 Privileges:192.168.1.3 - user@name.test -  - Success - Entry Created - User <user@name.test> created entry <TOP/SECRET/PASSWORD> as a duplicate	127.0.0.1	23/01 14:05:54.404	
-<134>Jan 23 14:05:54 SRV-PPS-001 Privileges:192.168.1.3 - user@name.test -  - Success - Entry Duplicated - User <user@name.test> duplicated entry <TOP/SECRET/PASSWORD>	127.0.0.1	23/01 14:05:54.450	
+<134>2025-01-23T09:49:10.000+05:00 SRV-MAC-001 Privileges: User john.doe granted admin privileges for 1 hour
+```
+
+### Privilege Revoke Logs
+
+```
+<134>2025-01-23T10:49:10.000+05:00 SRV-MAC-001 Privileges: User john.doe admin privileges revoked
+```
+
+### Authentication Logs
+
+```
+<134>2025-01-23T11:32:57.000+05:00 SRV-MAC-001 Privileges: User john.doe authenticated successfully
 ```
 
 ## Logs
 
 This is the `log` dataset.
 
-An example event for `log` looks as following:
+An example event for `log` looks as follows:
 
 ```json
 {
@@ -71,10 +163,10 @@ An example event for `log` looks as following:
         "version": "8.13.0"
     },
     "client": {
-        "ip": "192.168.1.2"
+        "ip": "192.168.1.100"
     },
     "data_stream": {
-        "dataset": "pps.log",
+        "dataset": "sap_privileges.log",
         "namespace": "63231",
         "type": "logs"
     },
@@ -89,15 +181,15 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "created": "2025-01-23T09:49:10.000+05:00",
-        "dataset": "pps.log",
+        "dataset": "sap_privileges.log",
         "ingested": "2025-05-30T11:05:38Z",
         "kind": "event",
-        "original": "<134>Jan 23 09:49:10 SRV-PPS-001 Privileges:192.168.1.2 - user@name.test -  - Success - Syslog Settings Changed - User <user@name.test> Syslogging setting updated  changing the host from <localhost> to <127.0.0.1> changing the port fr\t127.0.0.1\t23/01 09:49:10.894\t",
+        "original": "<134>2025-01-23T09:49:10.000+05:00 SRV-MAC-001 Privileges: User john.doe granted admin privileges for 1 hour",
         "outcome": "success",
         "timezone": "+0500"
     },
     "host": {
-        "hostname": "SRV-PPS-001"
+        "hostname": "SRV-MAC-001"
     },
     "input": {
         "type": "udp"
@@ -110,16 +202,14 @@ An example event for `log` looks as following:
             "priority": 134
         }
     },
-    "message": "Syslog Settings Changed - User <user@name.test> Syslogging setting updated  changing the host from <localhost> to <127.0.0.1> changing the port fr\t127.0.0.1\t23/01 09:49:10.894\t",
+    "message": "User john.doe granted admin privileges for 1 hour",
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "pps-log"
+        "sap_privileges-log"
     ],
     "user": {
-        "domain": "name.test",
-        "email": "user@name.test",
-        "name": "user"
+        "name": "john.doe"
     }
 }
 ```
@@ -135,10 +225,15 @@ An example event for `log` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
-| pps.entry.name | The name of an entry in the password manager | keyword |
-| pps.entry.path | Password Path | keyword |
-| pps.entry.reason | Reason the user interacted with a password | keyword |
-| pps.entry.target.name | The new name of an entry in the password manager if it was changed | keyword |
-| pps.entry.target.username | The new username of an entry in the password manager if it was changed | keyword |
-| pps.entry.username | The username of an entry in the password manager | keyword |
+| sap_privileges.action | The action performed (grant, revoke, authenticate, etc.) | keyword |
+| sap_privileges.duration | Duration of granted privileges | keyword |
+| sap_privileges.user.name | Name of the user | keyword |
+| sap_privileges.user.id | User ID | keyword |
+| sap_privileges.outcome | Outcome of the operation (success, failure) | keyword |
+| sap_privileges.reason | Reason provided by user | keyword |
 
+## Additional Resources
+
+- [SAP Privileges GitHub Repository](https://github.com/SAP/macOS-enterprise-privileges)
+- [SAP Privileges Documentation](https://github.com/SAP/macOS-enterprise-privileges#documentation)
+- [Example Configuration Profiles](https://github.com/SAP/macOS-enterprise-privileges/tree/main/application_management/example_profiles)
