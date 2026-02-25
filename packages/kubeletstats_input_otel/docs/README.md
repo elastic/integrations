@@ -3,7 +3,7 @@
 # Kubelet Stats OpenTelemetry Input Package
 
 > [!WARNING]
-> This package is currently not published to Elastic Package Registry. Any future changes should include a version bump and this package should be republished in order to be made available.
+> This package is currently not published to Elastic Package Registry. Any future changes should include a version bump and this package should be republished to be made available.
 
 ## Overview
 
