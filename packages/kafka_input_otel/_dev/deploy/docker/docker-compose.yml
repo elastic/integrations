@@ -1,4 +1,22 @@
 services:
+  kafka_create_traces:
+    build:
+      context: .
+      dockerfile: Dockerfile-traces
+    depends_on:
+      kafka_service:
+        condition: service_healthy
+    environment:
+      KAFKA_TOPIC: otlp_spans
+  kafka_create_metrics:
+    build:
+      context: .
+      dockerfile: Dockerfile-metrics
+    depends_on:
+      kafka_service:
+        condition: service_healthy
+    environment:
+      KAFKA_TOPIC: otlp_metrics
   kafka_create_logs:
     build:
       context: .

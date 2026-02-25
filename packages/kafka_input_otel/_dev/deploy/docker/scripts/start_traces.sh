@@ -2,7 +2,9 @@
 set -e
 set -x
 
-KAFKA_TOPIC="${KAFKA_TOPIC:-otlp_logs}"
+source /opt/example_trace.sh
+
+KAFKA_TOPIC="${KAFKA_TOPIC:-otlp_spans}"
 KAFKA_BROKER="${KAFKA_BROKER:-kafka_service:9092}"
 
 # Create a topic for the producer and consumer
@@ -26,17 +28,18 @@ KAFKA_JMX_OPTS= /opt/kafka/bin/kafka-topics.sh \
 # Start the console producer in the background
 echo "Starting producer with Jolokia on port 8775..."
 export KAFKA_OPTS="-javaagent:/opt/jolokia/jolokia-jvm.jar=port=8775,host=0.0.0.0"
-(while true; do echo "{\"message\":\"Test log message at $(date)\", \"level\": \"info\", \"timestamp\": \"$(date +%s)\"}"; sleep 5; done) | \
+(while true; do  create_trace_document "example" ; sleep 5; done) | \
 KAFKA_JMX_OPTS= /opt/kafka/bin/kafka-console-producer.sh \
   --bootstrap-server "$KAFKA_BROKER" \
   --topic "$KAFKA_TOPIC" &
 
 echo "Starting producer with Jolokia on port 8776..."
 export KAFKA_OPTS="-javaagent:/opt/jolokia/jolokia-jvm.jar=port=8776,host=0.0.0.0"
-(while true; do echo "{\"message\":\"Test other topic log message at $(date)\", \"level\": \"info\", \"timestamp\": \"$(date +%s)\"}"; sleep 2; done) | \
+(while true; do create_trace_document "foo-bar" ; sleep 2; done) | \
 KAFKA_JMX_OPTS= /opt/kafka/bin/kafka-console-producer.sh \
   --bootstrap-server "$KAFKA_BROKER" \
   --topic "$KAFKA_TOPIC-2" &
 
 
 while true; do sleep 1; done
+
