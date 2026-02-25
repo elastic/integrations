@@ -1,0 +1,23 @@
+---
+description: Benchmark 10000 endpoint_activity events ingested
+input: cel
+vars:
+  hostname: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+data_stream:
+  name: endpoint_activity
+  vars:
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: trend_micro_vision_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./endpoint-activity-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./endpoint-activity-benchmark/config.yml
+    fields:
+      path: ./endpoint-activity-benchmark/fields.yml

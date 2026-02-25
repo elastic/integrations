@@ -1,0 +1,57 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $schemaVersion := generate "schemaVersion" }}
+{{- $alertId := generate "alertId" }}
+{{- $investigationStatus := generate "investigationStatus" }}
+{{- $alertProvider := generate "alertProvider" }}
+{{- $model := generate "model" }}
+{{- $score := generate "score" }}
+{{- $severity := generate "severity" }}
+{{- $createdDateTime := generate "createdDateTime" | date "2006-01-02T15:04:05Z" }}
+{{- $updatedDateTime := generate "updatedDateTime" | date "2006-01-02T15:04:05Z" }}
+{{- $description := generate "description" }}
+{{- $desktopCount := generate "desktopCount" }}
+{{- $serverCount := generate "serverCount" }}
+{{- $accountCount := generate "accountCount" }}
+{{- $emailAddressCount := generate "emailAddressCount" }}
+{{- $entityType := generate "entityType" }}
+{{- $entityValue := generate "entityValue" }}
+{{- $entityId := generate "entityId" }}
+{{- $indicatorType := generate "indicatorType" }}
+{{- $indicatorField := generate "indicatorField" }}
+{{- $indicatorValue := generate "indicatorValue" }}
+{{- $ruleId := generate "ruleId" }}
+{{- $ruleName := generate "ruleName" }}
+{{- $filterName := generate "filterName" }}
+{{- $mitreTechniqueId := generate "mitreTechniqueId" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "trend_micro_vision_one.alert",
+        "namespace": "93724",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "message": "{\"schemaVersion\":\"{{ $schemaVersion }}\",\"id\":\"{{ $alertId }}\",\"investigationStatus\":\"{{ $investigationStatus }}\",\"workbenchLink\":\"https://portal.visionone.trendmicro.com/workbench?workbenchId={{ $alertId }}\",\"alertProvider\":\"{{ $alertProvider }}\",\"model\":\"{{ $model }}\",\"score\":{{ $score }},\"severity\":\"{{ $severity }}\",\"createdDateTime\":\"{{ $createdDateTime }}\",\"updatedDateTime\":\"{{ $updatedDateTime }}\",\"description\":\"{{ $description }}\",\"impactScope\":{\"desktopCount\":{{ $desktopCount }},\"serverCount\":{{ $serverCount }},\"accountCount\":{{ $accountCount }},\"emailAddressCount\":{{ $emailAddressCount }},\"entities\":[{\"entityType\":\"{{ $entityType }}\",\"entityValue\":\"{{ $entityValue }}\",\"entityId\":\"{{ $entityId }}\",\"relatedEntities\":[\"{{ $entityValue }}\"],\"relatedIndicatorIds\":[1]}]},\"indicators\":[{\"id\":1,\"type\":\"{{ $indicatorType }}\",\"field\":\"{{ $indicatorField }}\",\"value\":\"{{ $indicatorValue }}\",\"relatedEntities\":[\"{{ $entityValue }}\"],\"filterIds\":[\"{{ $ruleId }}\"]}],\"matchedRules\":[{\"id\":\"{{ $ruleId }}\",\"name\":\"{{ $ruleName }}\",\"matchedFilters\":[{\"id\":\"{{ $ruleId }}\",\"name\":\"{{ $filterName }}\",\"matchedDateTime\":\"{{ $createdDateTime }}\",\"mitreTechniqueIds\":[\"{{ $mitreTechniqueId }}\"],\"matchedEvents\":[{\"uuid\":\"{{ $alertId }}\",\"matchedDateTime\":\"{{ $createdDateTime }}\"}]}]}]}",
+    "event": {
+        "dataset": "trend_micro_vision_one.alert"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "trend_micro_vision_one-alert"
+    ]
+}

@@ -1,0 +1,23 @@
+---
+description: Benchmark 10000 network_activity events ingested
+input: cel
+vars:
+  hostname: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+data_stream:
+  name: network_activity
+  vars:
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: trend_micro_vision_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./network-activity-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./network-activity-benchmark/config.yml
+    fields:
+      path: ./network-activity-benchmark/fields.yml

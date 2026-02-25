@@ -1,0 +1,27 @@
+---
+description: Benchmark 10000 telemetry events ingested
+input: cel
+vars:
+  hostname: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+data_stream:
+  name: telemetry
+  vars:
+    initial_interval: 2h
+    min_time_range: 10m
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+    enable_request_tracer: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: trend_micro_vision_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./telemetry-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./telemetry-benchmark/config.yml
+    fields:
+      path: ./telemetry-benchmark/fields.yml
