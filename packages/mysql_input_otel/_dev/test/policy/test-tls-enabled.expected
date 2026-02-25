@@ -15,6 +15,11 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                - names:
                     - metrics-*-*
                   privileges:
                     - auto_configure
@@ -24,6 +29,12 @@ processors:
         detectors:
             - system
     transform/componentid-1:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "mysqlreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
         metric_statements:
             - context: datapoint
               statements:
@@ -79,12 +90,25 @@ receivers:
 secret_references: []
 service:
     pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - mysql/componentid-0
         metrics:
             exporters:
                 - elasticsearch/componentid-0
             receivers:
                 - forward
-        metrics/componentid-0:
+        metrics/componentid-1:
             exporters:
                 - forward
             processors:

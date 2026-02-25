@@ -1,10 +1,10 @@
-format_version: 3.5.0
+format_version: 3.6.0
 name: mysql_input_otel
 title: "MySQL OpenTelemetry Input Package"
-version: 0.1.1
+version: 0.2.0
 source:
   license: "Elastic-2.0"
-description: "Collect MySQL metrics using OpenTelemetry Collector"
+description: "Collect MySQL metrics and logs using OpenTelemetry Collector"
 type: input
 categories:
   - datastore
@@ -12,7 +12,7 @@ categories:
   - opentelemetry
 conditions:
   kibana:
-    version: "^9.2.2"
+    version: "^9.4.0"
   elastic:
     subscription: "basic"
 icons:
@@ -23,10 +23,11 @@ icons:
 policy_templates:
   - name: mysqlreceiver
     type: metrics
-    title: MySQL Metrics (OpenTelemetry)
-    description: Collect MySQL metrics using OpenTelemetry Collector
+    title: MySQL Metrics and Logs (OpenTelemetry)
+    description: Collect MySQL metrics and logs (query samples, top queries) using OpenTelemetry Collector
     input: otelcol
     template_path: input.yml.hbs
+    dynamic_signal_types: true
     vars:
       # Connection settings
       - name: endpoint
