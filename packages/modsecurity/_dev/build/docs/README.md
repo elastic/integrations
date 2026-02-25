@@ -1,4 +1,4 @@
-```# ModSecurity Audit Integration for Elastic
+# ModSecurity Audit Integration for Elastic
 
 > Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
@@ -68,23 +68,23 @@ To configure ModSecurity for log collection, follow these steps to enable JSON-f
 
 1.  **Locate the configuration file**: Identify your main `modsecurity.conf` file. Common paths include `/etc/nginx/modsec/modsecurity.conf` for Nginx or `/etc/modsecurity/modsecurity.conf` for Apache.
 2.  **Enable the audit engine**: Set the engine to log only relevant events to reduce volume.
-    ```apache
+    ```
     SecAuditEngine RelevantOnly
     ```
 3.  **Configure JSON format**: Ensure the logs are structured for the integration parser.
-    ```apache
+    ```
     SecAuditLogFormat JSON
     ```
 4.  **Set logging type**: Use serial logging to write all events to a single file.
-    ```apache
+    ```
     SecAuditLogType Serial
     ```
 5.  **Define log parts**: Specify which transaction parts to include. It's recommended to exclude part `K` to prevent ingestion issues. You can also include `C` for the full request body.
-    ```apache
+    ```
     SecAuditLogParts ABFHJZ
     ```
 6.  **Specify log path**: Set the destination file for the audit logs (for example, `/var/log/modsec-audit.json`).
-    ```apache
+    ```
     SecAuditLog /var/log/modsec-audit.json
     ```
 7.  **Integrate with the web server**: Ensure your web server configuration loads these rules.
