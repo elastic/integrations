@@ -3,22 +3,35 @@ receivers:
     protocols:
       grpc:
         endpoint: {{grpc_endpoint}}
+{{#if tls_enabled}}
+        tls:
+{{#if tls_cert_file}}
+          cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
+          key_file: {{tls_key_file}}
+{{/if}}
+{{#if tls_client_ca_file}}
+          client_ca_file: {{tls_client_ca_file}}
+{{/if}}
+{{/if}}
 {{#if thrift_http_endpoint}}
       thrift_http:
         endpoint: {{thrift_http_endpoint}}
-{{/if}}
 {{#if tls_enabled}}
-{{#if tls_cert_file}}
-{{#if tls_key_file}}
         tls:
+{{#if tls_cert_file}}
           cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
           key_file: {{tls_key_file}}
+{{/if}}
 {{#if tls_client_ca_file}}
           client_ca_file: {{tls_client_ca_file}}
 {{/if}}
 {{/if}}
 {{/if}}
-{{/if}}
+
 processors:
   resourcedetection/system:
     detectors: ["system"]
