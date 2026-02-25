@@ -783,6 +783,8 @@ This is the `event` dataset.
 | m365_defender.event.md5 | MD5 hash of the file that the recorded action was applied to. | keyword |
 | m365_defender.event.merged_device_ids | Previous device IDs that have been assigned to the same device. | keyword |
 | m365_defender.event.merged_to_device_id | The most recent device ID assigned to a device. | keyword |
+| m365_defender.event.message_id | Identifier for the message (non-unique). | keyword |
+| m365_defender.event.message_version | Version number of the message. | keyword |
 | m365_defender.event.model | Model name or number of the product from the vendor or manufacturer, only available if device discovery finds enough information about this attribute. | keyword |
 | m365_defender.event.network.adapter_name | Name of the network adapter. | keyword |
 | m365_defender.event.network.adapter_status | Operational status of the network adapter. For the possible values, refer to this enumeration. | keyword |
