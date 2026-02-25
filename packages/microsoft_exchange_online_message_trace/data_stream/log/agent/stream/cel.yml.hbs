@@ -74,11 +74,8 @@ program: |-
     request("GET", current.url).do_request().as(resp,
       (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
-          {
-            "has_next_link": body[?"@odata.nextLink"].orValue(null) != null,
-            "not_up_to_date": current.end.parse_time(time_layout.RFC3339Nano) < now - duration(state.min_age),
-          }.as(status,
-            status.has_next_link || status.not_up_to_date
+          (
+            body[?"@odata.nextLink"].orValue(null) != null || current.end.parse_time(time_layout.RFC3339Nano) < now - duration(state.min_age)
           ).as(want_more,
             state.with(
               {
