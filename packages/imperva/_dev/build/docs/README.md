@@ -4,7 +4,7 @@
 
 ## Overview
 
-The Imperva integration for Elastic enables you to collect and analyze logs from Imperva SecureSphere devices using Elastic Agent. By ingesting these logs into the Elastic Stack, you can monitor security events, audit database activity, and gain comprehensive visibility into web application traffic.
+The Imperva integration for Elastic enables you to collect and analyze logs from Imperva SecureSphere devices using Elastic Agent. This integration supports logs in CEF (Common Event Format) only. By ingesting these logs into the Elastic Stack, you can monitor security events, audit database activity, and gain comprehensive visibility into web application traffic.
 
 ### Compatibility
 
@@ -67,10 +67,12 @@ To send logs from Imperva SecureSphere to Elastic Agent, you'll need to create o
     *   **Syslog Host**: The IP address of the host where the Elastic Agent is installed.
     *   **Syslog Port**: The port number configured in the Elastic integration (for example, `9507`).
     *   **Protocol**: The protocol configured in the Elastic integration (`TCP` or `UDP`).
-    *   **Message Format**: Choose a format that provides the necessary detail (standard Syslog or LEEF/CEF if applicable).
-8. Navigate to the relevant policy (for example, Security, Audit, or System) where you want to apply this action set.
-9. In the **Apply To** or **Action** section of the policy, select the action set you just created.
-10. Click **Save** to apply the changes.
+    *   **Message Format**: Select **CEF** (Common Event Format).
+8. In the **Apply to event type** drop-down menu, select an event type to which to apply the action set.
+9. Click **Create** to create the action set.
+10. Navigate to the relevant policy (for example, Security, Audit, or System) where you want to apply this action set.
+11. In the **Apply To** or **Action** section of the policy, select the action set you just created.
+12. Click **Save** to apply the changes.
 
 ### Set up steps in Kibana
 

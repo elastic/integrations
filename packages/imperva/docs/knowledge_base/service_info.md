@@ -27,7 +27,7 @@ The Imperva integration is compatible with **Imperva SecureSphere** platforms th
 ## Scaling and Performance
 
 To ensure optimal performance in high-volume Imperva environments, consider the following:
-- **Transport/Collection Considerations:** For high-volume environments, TCP is recommended over UDP to ensure delivery reliability. Adjust the `max_message_size` (default **50KiB**) in the **Custom TCP Options** or **Custom UDP Options** if your CEF payloads exceed the default buffer size.
+- **Transport/Collection Considerations:** For high-volume environments, TCP is recommended over UDP to ensure delivery reliability. Adjust the `max_message_size` in the **Custom TCP Options** or **Custom UDP Options** if your CEF payloads exceed the default buffer size.
 - **Data Volume Management:** Reduce ingest load by configuring Imperva "Action Sets" to only forward critical severity events or specific violation types.
 - **Elastic Agent Scaling:** For high-throughput environments, deploy multiple Elastic Agents behind a network load balancer to distribute traffic evenly.
 
