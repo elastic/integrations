@@ -4,7 +4,7 @@
 
 [Flashpoint](https://flashpoint.io/) is a comprehensive threat intelligence platform that delivers actionable insights from dark web, deep web, and technical sources. It combines human-curated intelligence with automated collection to help organizations identify emerging threats, monitor adversary activity, and assess cyber risk with enriched context.
 
-The Flashpoint integration for Elastic collects alerts and indicators from the **Flashpoint Ignite API** and visualizes them in Kibana.
+The Flashpoint integration for Elastic collects alerts, indicators and vulnerabilities from the **Flashpoint Ignite API** and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -20,16 +20,21 @@ This integration collects log messages of the following type:
 
 - `Alert`: Collects `alert` logs from the Flashpoint Ignite API (endpoint: `/alert-management/v1/notifications`),
 - `Indicator`: Collects `indicator` logs from the Flashpoint Ignite API (endpoint: `/technical-intelligence/v2/indicators`),
+- `Vulnerabilities`: Collects `vulnerability` logs from the Flashpoint Ignite API (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`),
+
+**Note**: This integration uses Elastic transforms to deduplicate **incident** data and maintain the latest view of each incident for analysis and reporting.
 
 ### Supported use cases
 
-Integrating Flashpoint with Elastic SIEM provides centralized visibility into both threat intelligence **Alerts** and **Indicators**, enabling efficient monitoring and investigation within Kibana dashboards.
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence **Alerts**, **Indicators**, and **Vulnerabilities**, enabling efficient monitoring, investigation, and risk assessment within Kibana dashboards.
 
-For **Alerts**, dashboard presents key metrics such as `Total Alerts` and `Alert Trends Over Time`, helping analysts quickly detect activity spikes and monitor evolving threat patterns.
+For **Alerts**, the dashboard presents key metrics such as `Total Alerts` and `Alert Trends Over Time`, helping analysts quickly detect activity spikes and monitor evolving threat patterns.
 
-For **Indicators**, dashboard highlights `Total Indicators` and `Indicators by Type`, providing insight into indicator volume and classification for effective threat analysis.
+For **Indicators**, the dashboard highlights `Total Indicators` and `Indicators by Type`, providing insight into indicator volume and classification for effective threat analysis.
 
-Interactive filtering controls allow analysts to drill down across alerts and indicators, supporting streamlined investigation workflows within a unified threat intelligence view.
+For **Vulnerabilities**, the dashboard presents `Total Vulnerabilities` and key breakdowns by `Severity` and `Status`, helping security teams assess exposure levels and prioritize remediation efforts.
+
+Interactive filtering controls allow analysts to drill down across alerts, indicators, and vulnerabilities, supporting streamlined investigation and prioritization workflows within a unified threat intelligence view.
 
 ## What do I need to use this integration?
 
@@ -79,6 +84,10 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 6. Select **Save and continue** to save the integration.
 
+## Troubleshooting
+
+1. If vulnerability data collection is slow or fails with `context deadline exceeded`, reduce the `Page Size` and increase the `HTTP Client Timeout`.
+
 ### Validation
 
 #### Dashboard populated
@@ -122,6 +131,16 @@ For more information on architectures that can be used for scaling this integrat
 {{event "indicator"}}
 
 
+#### Vulnerability
+
+{{fields "vulnerability"}}
+
+### Example event
+
+#### Vulnerability
+
+{{event "vulnerability"}}
+
 
 ### Inputs used
 
@@ -135,3 +154,4 @@ This integration dataset uses the following API:
 
 * List Alerts (endpoint: `/alert-management/v1/notifications`)|
 * List Indicators (endpoint: `/technical-intelligence/v2/indicators`)
+* List Vulberabilities (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`)
