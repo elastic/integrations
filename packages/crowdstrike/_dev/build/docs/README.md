@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
+The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
 
 ### Compatibility
 
