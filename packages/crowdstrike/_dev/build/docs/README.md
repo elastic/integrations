@@ -80,7 +80,8 @@ By default, the configuration file for the Falcon SIEM Connector is located at `
 
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
-Current supported Event Streams event types are:
+Current supported event types are:
+- CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
 - EppDetectionSummaryEvent
@@ -136,9 +137,8 @@ The following parameters from your CrowdStrike instance are required:
 
 ### Collect data via CrowdStrike Falcon Data Replicator (FDR)
 
-The CrowdStrike Falcon Data Replicator (FDR) allows CrowdStrike users to replicate FDR data from CrowdStrike
-managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is
-available in S3.
+The CrowdStrike Falcon Data Replicator allows CrowdStrike users to replicate data from CrowdStrike
+managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is available in S3.
 
 This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed
 SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket

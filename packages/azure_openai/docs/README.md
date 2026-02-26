@@ -23,6 +23,8 @@ These are the supported Azure log categories:
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
 
+**Authentication (Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+
 #### Default Logging
 
 The Azure OpenAI provides native logging and monitoring to track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
@@ -378,4 +380,26 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | dataset.name | Dataset name. | constant_keyword |  |  |
 | dataset.namespace | Dataset namespace. | constant_keyword |  |  |
 | dataset.type | Dataset type. | constant_keyword |  |  |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[Azure OpenAI] Latency high**
+
+
+
+**[Azure OpenAI] Provisioned Utilization above threshold**
+
+
+
+**[Azure OpenAI] Quota Error Rates above threshold**
+
+
 

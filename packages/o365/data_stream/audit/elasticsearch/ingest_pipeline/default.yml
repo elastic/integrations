@@ -13,11 +13,13 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -29,54 +31,65 @@ processors:
         ctx.event = ctx.event ?: [:];
         ctx.event.original = Json.dump(ctx.o365audit)
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - append:
+      tag: append_event_category_4595ee28
       field: event.category
       value: web
   - fingerprint:
+      tag: fingerprint_443be558
       fields:
         - o365audit.Id
       target_field: "_id"
       ignore_missing: true
 
   # Miscellaneous
-
   - set:
+      tag: set_file_extension_9dc66335
       field: file.extension
       copy_from: o365audit.FileExtension
       ignore_empty_value: true
 
   - set:
+      tag: set_file_hash_sha1_97939b23
       field: file.hash.sha1
       copy_from: o365audit.Sha1
       ignore_empty_value: true
   - set:
+      tag: set_file_hash_sha256_c70524eb
       field: file.hash.sha256
       copy_from: o365audit.Sha256
       ignore_empty_value: true
 
   - set:
+      tag: set_file_path_83694d77
       field: file.path
       copy_from: o365audit.FilePath
       ignore_empty_value: true
   - set:
+      tag: set_file_path_53cd1ef1
       field: file.path
       copy_from: o365audit.TargetFilePath
       ignore_empty_value: true
       override: false
 
   - set:
+      tag: set_file_size_723563fe
       field: file.size
       copy_from: o365audit.FileSizeBytes
       ignore_empty_value: true
   - set:
+      tag: set_file_size_c6196fe8
       field: file.size
       copy_from: o365audit.FileSize
       ignore_empty_value: true
@@ -102,17 +115,21 @@ processors:
         }
       on_failure:
         - remove:
+            tag: remove_file_size_d74cf399
             field: file.size
         - append:
+            tag: append_error_message_974b7657
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
+      tag: set_process_name_fa24cee1
       field: process.name
       copy_from: o365audit.Application
       ignore_empty_value: true
 
   - set:
+      tag: set_url_domain_5891eb27
       field: url.domain
       copy_from: o365audit.OriginatingDomain
       ignore_empty_value: true
@@ -159,21 +176,23 @@ processors:
   - script:
       description: 'This is the second half of an implementation of `if: _ingest._value instanceof String` for the foreach above.'
       if: ctx._tmp?.action_strings != null
-      tag: script_select_string_actions
+      tag: script_01a1e9ce
       source: |-
         // To reach here, ctx._tmp.action_strings must be non-null
         // and for this to be true, script_select_string_actions
-        // must have run, requring that ctx.o365audit.Actions is
+        // must have run, requiring that ctx.o365audit.Actions is
         // non-null, so we do not need to check again.
         ctx.o365audit.Actions.addAll(ctx._tmp.action_strings);
 
   # General Schema
   - date:
+      tag: date_o365audit_CreationTime_6311f871
       field: o365audit.CreationTime
       formats:
         - ISO8601
       if: ctx.o365audit?.CreationTime != null
   - rename:
+      tag: rename_o365audit_Id_to_event_id_6e947a76
       field: o365audit.Id
       target_field: event.id
       ignore_missing: true
@@ -184,33 +203,40 @@ processors:
       if: ctx.o365audit?.ListBaseType != null
       on_failure:
         - append:
+            tag: append_error_message_8375c352
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - rename:
+      tag: rename_o365audit_ClientIPAddress_to_client__temp_bda6b6c2
       field: o365audit.ClientIPAddress
       target_field: client._temp
       ignore_missing: true
   - rename:
+      tag: rename_o365audit_ClientIP_to_client__temp_c46a88f2
       field: o365audit.ClientIP
       target_field: client._temp
       ignore_missing: true
       if: ctx.client?._temp == null
   - rename:
+      tag: rename_o365audit_ActorIpAddress_to_client__temp_0ce83358
       field: o365audit.ActorIpAddress
       target_field: client._temp
       ignore_missing: true
       if: ctx.client?._temp == null
   - convert:
+      tag: convert_o365audit_UserId_to_user_id_ecdabea0
       field: o365audit.UserId
       target_field: user.id
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_o365audit_Workload_to_event_provider_360cf1ce
       field: o365audit.Workload
       target_field: event.provider
       ignore_missing: true
   - rename:
+      tag: rename_o365audit_Operation_to_event_action_12df59f5
       field: o365audit.Operation
       target_field: event.action
       ignore_missing: true
@@ -221,6 +247,7 @@ processors:
       tag: rename_organization_id
       on_failure:
         - append:
+            tag: append_error_message_904f4924
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -230,8 +257,10 @@ processors:
       if: ctx.o365audit?.AdditionalInfo instanceof String
       on_failure:
         - remove:
+            tag: remove_o365audit_AdditionalInfo_0b134349
             field: o365audit.AdditionalInfo
         - append:
+            tag: append_error_message_03690b95
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
@@ -240,16 +269,20 @@ processors:
       if: ctx.o365audit?.OperationProperties instanceof String
       on_failure:
         - remove:
+            tag: remove_o365audit_OperationProperties_da3a1cbc
             field: o365audit.OperationProperties
         - append:
+            tag: append_error_message_2d0560ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - rename:
+      tag: rename_o365audit_UserAgent_to_user_agent_original_dd35f20c
       field: o365audit.UserAgent
       target_field: user_agent.original
       ignore_missing: true
   - script:
+      tag: script_3e1f1446
       if: ctx.o365audit?.RecordType != null
       lang: painless
       params:
@@ -365,19 +398,23 @@ processors:
           }
           ctx.event.code = schema;
         }
-  - set: 
+  - set:
+      tag: set_event_outcome_8d2e3d55
       field: event.outcome
       value: success
       if: 'ctx.o365audit?.ResultStatus != null && ["succeeded", "success", "partiallysucceeded", "true"].contains(ctx.o365audit?.ResultStatus.toLowerCase())'
-  - set: 
+  - set:
+      tag: set_event_outcome_17b036a7
       field: event.outcome
       value: failure
       if: 'ctx.o365audit?.ResultStatus != null && ["failed", "false"].contains(ctx.o365audit?.ResultStatus.toLowerCase())'
-  - set: 
+  - set:
+      tag: set_event_outcome_d8aaefc7
       field: event.outcome
       value: success
       if: ctx.event?.outcome == null
   - script:
+      tag: script_9062a98b
       lang: painless
       if: 'ctx.o365audit?.Parameters != null && ctx.o365audit?.Parameters instanceof List'
       source: >
@@ -390,13 +427,15 @@ processors:
         }
         ctx.o365audit.Parameters = newparams;
   - rename:
+      tag: rename_o365audit_Parameters_to_o365audit_Parameters__raw_295c4311
       field: o365audit.Parameters
       target_field: o365audit.Parameters._raw
       if: 'ctx.o365audit?.Parameters != null && ctx.o365audit?.Parameters instanceof String'
   - grok:
+      tag: grok_o365audit_Parameters__raw_12faafdd
       field: o365audit.Parameters._raw
       if: ctx.o365audit?.NetworkMessageId == null || ctx.o365audit.NetworkMessageId == ''
-      patterns: 
+      patterns:
         - '^-?Identity\s"?%{DATA:o365audit.NetworkMessageId}"?$'
       ignore_missing: true
       ignore_failure: true
@@ -425,13 +464,14 @@ processors:
           ctx.email.to = ctx.email.to ?: [:];
           ctx.email.to.address = addressSet.asList();
         }
-
   - set:
+      tag: set_email_from_address_224df4c7
       field: email.from.address
       copy_from: o365audit.Parameters.From
       ignore_empty_value: true
 
   - script:
+      tag: script_fb390089
       if: ctx.o365audit?.Platform != null
       lang: painless
       params:
@@ -451,6 +491,38 @@ processors:
         }
   - script:
       lang: painless
+      tag: script_to_set_host_os_type
+      description: Script to set host_os_type.
+      if: ctx.o365audit?.Platform != null
+      source: |
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String lcPlatform = ctx.o365audit.Platform.toLowerCase();
+        if (lcPlatform.contains('windows')) {
+            ctx.host.os.type = 'windows';
+        } else if (lcPlatform.contains('linux')) {
+            ctx.host.os.type = 'linux';
+        } else if (lcPlatform.contains('mac')) {
+            ctx.host.os.type = 'macos';
+        } else if (lcPlatform.contains('unix')) {
+            ctx.host.os.type = 'unix';
+        } else if (lcPlatform.contains('ios')) {
+            ctx.host.os.type = 'ios';
+        } else if (lcPlatform.contains('android')) {
+            ctx.host.os.type = 'android';
+        }
+  - lowercase:
+      field: host.os.type
+      tag: lowercase_host_os_type
+      ignore_missing: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_frin_platform
+      copy_from: o365audit.Platform
+      ignore_empty_value: true
+  - script:
+      tag: script_3607a99b
+      lang: painless
       if: 'ctx.o365audit?.ExtendedProperties != null && ctx.o365audit?.ExtendedProperties instanceof List'
       source: >
         def newparams = new HashMap(); 
@@ -462,10 +534,12 @@ processors:
         }
         ctx.o365audit.ExtendedProperties = newparams;
   - rename:
+      tag: rename_o365audit_ExtendedProperties_to_o365audit_ExtendedProperties__raw_7bf8bce9
       field: o365audit.ExtendedProperties
       target_field: o365audit.ExtendedProperties._raw
       if: 'ctx.o365audit?.ExtendedProperties != null && ctx.o365audit?.ExtendedProperties instanceof String'
   - script:
+      tag: script_fc4d1742
       lang: painless
       if: 'ctx.o365audit?.ModifiedProperties != null && ctx.o365audit?.ModifiedProperties instanceof List'
       source: >
@@ -488,12 +562,13 @@ processors:
           return;
         }
         ctx.o365audit.ModifiedProperties = newparams;
-
   - rename:
+      tag: rename_o365audit_ModifiedProperties_to_o365audit_ModifiedProperties__raw_c4286e95
       field: o365audit.ModifiedProperties
       target_field: o365audit.ModifiedProperties._raw
       if: 'ctx.o365audit?.ModifiedProperties != null && ctx.o365audit?.ModifiedProperties instanceof String'
   - script:
+      tag: script_39009c18
       lang: painless
       if: 'ctx.o365audit?.AlertLinks != null && ctx.o365audit?.AlertLinks instanceof List'
       source: >
@@ -509,19 +584,23 @@ processors:
           return;
         }
         ctx.o365audit.AlertLinks = links;
-  - set: 
+  - set:
+      tag: set_event_severity_2835f311
       field: event.severity
       value: 1
       if: ctx.o365audit?.Severity == "informational"
-  - set: 
+  - set:
+      tag: set_event_severity_c5e2dc47
       field: event.severity
       value: 2
       if: ctx.o365audit?.Severity == "low"
-  - set: 
+  - set:
+      tag: set_event_severity_1aacabd3
       field: event.severity
       value: 3
       if: ctx.o365audit?.Severity == "medium"
-  - set: 
+  - set:
+      tag: set_event_severity_bebbae7b
       field: event.severity
       value: 4
       if: ctx.o365audit?.Severity == "high"
@@ -534,26 +613,36 @@ processors:
       tag: rename_organization_name
       on_failure:
         - append:
+            tag: append_error_message_6ea83e06
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_o365audit_OriginatingServer_to_server__temp_f1e22f12
       field: o365audit.OriginatingServer
       target_field: server._temp
       ignore_missing: true
       if: ctx.event?.code == "ExchangeAdmin"
   # ExchangeItem Schema
+  - append:
+      tag: append_event_category_61a49432
+      field: event.category
+      value: email
+      if: ctx.event?.code == "ExchangeItem"
   - rename:
+      tag: rename_o365audit_MailboxOwnerUPN_to_user_email_62fc4d51
       field: o365audit.MailboxOwnerUPN
       target_field: user.email
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
   - convert:
+      tag: convert_o365audit_LogonUserSid_to_user_id_0c48c9b2
       field: o365audit.LogonUserSid
       target_field: user.id
       type: string
       ignore_missing: true
       if: 'ctx.user?.id == null && ctx.o365audit?.LogonUserSid != null && ctx.event?.code == "ExchangeItem"'
   - rename:
+      tag: rename_o365audit_LogonUserDisplayName_to_user_full_name_3b466445
       field: o365audit.LogonUserDisplayName
       target_field: user.full_name
       ignore_missing: true
@@ -566,215 +655,262 @@ processors:
       tag: rename_organization_name_exchange_item
       on_failure:
         - append:
+            tag: append_error_message_eb6e85b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_o365audit_OriginatingServer_to_server__temp_5e826fba
       field: o365audit.OriginatingServer
       target_field: server._temp
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
   - rename:
+      tag: rename_o365audit_ClientIPAddress_to_client__temp_d1adf9ea
       field: o365audit.ClientIPAddress
       target_field: client._temp
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
   - rename:
+      tag: rename_o365audit_ClientProcessName_to_process_name_e56e4e0b
       field: o365audit.ClientProcessName
       target_field: process.name
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
   # AzureActiveDirectory Schema
-  - set: 
+  - set:
+      tag: set_user_target_id_d467d782
       field: user.target.id
       copy_from: o365audit.ObjectId
       if: ctx.event?.code == "AzureActiveDirectory"
   ## AzureActiveDirectory Schema new user
-  - set: 
+  - set:
+      tag: set_event_action_8f668a10
       field: event.action
       value: added-user-account
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "Add user."'
-  - append: 
+  - append:
+      tag: append_event_category_82505a27
       field: event.category
       value: iam
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "added-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_03ac408d
       field: event.type
       value: user
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "added-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_8b4ec7c3
       field: event.type
       value: creation
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "added-user-account"'
   ## AzureActiveDirectory Schema update user
-  - set: 
+  - set:
+      tag: set_event_action_30d51a99
       field: event.action
       value: modified-user-account
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "Update user."'
-  - append: 
+  - append:
+      tag: append_event_category_9c8dae40
       field: event.category
       value: iam
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "modified-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_34e560a4
       field: event.type
       value: user
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "modified-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_93a119d1
       field: event.type
       value: change
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "modified-user-account"'
   ## AzureActiveDirectory Schema delete user
-  - set: 
+  - set:
+      tag: set_event_action_3aeaab35
       field: event.action
       value: deleted-user-account
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "Delete user."'
-  - append: 
+  - append:
+      tag: append_event_category_f1ea27d8
       field: event.category
       value: iam
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "deleted-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_fecba03c
       field: event.type
       value: user
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "deleted-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_02cc398f
       field: event.type
       value: deletion
       if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "deleted-user-account"'
   # AzureActiveDirectoryStsLogon Schema
-  - append: 
+  - append:
+      tag: append_event_category_5f1fd4bf
       field: event.category
       value: authentication
       if: ctx.event?.code == "AzureActiveDirectoryStsLogon"
-  - append: 
+  - append:
+      tag: append_event_type_c71e78a9
       field: event.type
       value: start
       if: ctx.event?.code == "AzureActiveDirectoryStsLogon"
-  - append: 
+  - append:
+      tag: append_event_type_72cb1b6d
       field: event.type
       value: access
       if: 'ctx.event?.code == "AzureActiveDirectoryStsLogon"'
   # SharePointFileOperation and SharePointSharingOperation Schemas
   - rename:
+      tag: rename_o365audit_ObjectId_to_url_original_3692071d
       field: o365audit.ObjectId
       target_field: url.original
       ignore_missing: true
       if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - rename:
+      tag: rename_o365audit_SourceRelativeUrl_to_file_directory_b37fb5b4
       field: o365audit.SourceRelativeUrl
       target_field: file.directory
       ignore_missing: true
       if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - rename:
+      tag: rename_o365audit_SourceFileName_to_file_name_af0359ee
       field: o365audit.SourceFileName
       target_field: file.name
       ignore_missing: true
       if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - rename:
+      tag: rename_o365audit_SourceFileExtension_to_file_extension_f3b7d0c0
       field: o365audit.SourceFileExtension
       target_field: file.extension
       ignore_missing: true
       if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - append:
+      tag: append_event_category_13dd4fae
       field: event.category
       value: file
       if: 'ctx.event?.action != null && ["FileAccessed", "FileDeleted", "FileDownloaded", "FileModified", "FileMoved", "FileRenamed", "FileRestored", "FileUploaded", "FolderCopied", "FolderCreated", "FolderDeleted", "FolderModified", "FolderMoved", "FolderRenamed", "FolderRestored"].contains(ctx.event?.action)'
   - append:
+      tag: append_event_category_377511c6
       field: event.category
       value: configuration
       if: ctx.event?.action == "ComplianceSettingChanged"
-  - append: 
+  - append:
+      tag: append_event_type_ba7ade54
       field: event.type
       value: access
       if: 'ctx.event?.action != null && ["FileAccessed", "FileDownloaded"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_0f9f6fa9
       field: event.type
       value: change
       if: 'ctx.event?.action != null && ["ComplianceSettingChanged", "FileModified", "FileMoved", "FileRenamed", "FileRestored", "FolderModified", "FolderMoved", "FolderRenamed", "FolderRestored"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_8003d15e
       field: event.type
       value: deletion
       if: 'ctx.event?.action != null && ["FileDeleted", "FolderDeleted"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_724ad465
       field: event.type
       value: creation
       if: 'ctx.event?.action != null && ["FileUploaded", "FolderCopied", "FolderCreated"].contains(ctx.event?.action)'
   # SecurityComplianceAlerts Schema
   - set:
+      tag: set_message_186a70fd
       field: message
       copy_from: o365audit.Name
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
+      tag: rename_o365audit_Name_to_rule_name_b2f6f228
       field: o365audit.Name
       target_field: rule.name
       ignore_missing: true
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
+      tag: rename_o365audit_PolicyId_to_rule_id_07f34602
       field: o365audit.PolicyId
       target_field: rule.id
       ignore_missing: true
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
+      tag: rename_o365audit_Category_to_rule_category_00c3c3bc
       field: o365audit.Category
       target_field: rule.category
       ignore_missing: true
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
+      tag: rename_o365audit_EntityType_to_rule_ruleset_2a437e65
       field: o365audit.EntityType
       target_field: rule.ruleset
       ignore_missing: true
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
+      tag: rename_o365audit_AlertEntityId_to_rule_description_b2d408c4
       field: o365audit.AlertEntityId
       target_field: rule.description
       ignore_missing: true
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
+      tag: rename_o365audit_AlertLinks_to_rule_reference_26448414
       field: o365audit.AlertLinks
       target_field: rule.reference
       ignore_missing: true
       if: ctx.event?.code == "SecurityComplianceAlerts"
-  - set: 
+  - set:
+      tag: set_event_kind_167186ea
       field: event.kind
       value: alert
       if: ctx.event?.code == "SecurityComplianceAlerts"
-  - append: 
+  - append:
+      tag: append_event_category_5cd75b68
       field: event.category
       value: authentication
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.o365audit?.Category == "AccessGovernance"'
-  - append: 
+  - append:
+      tag: append_event_category_acfdbc8e
       field: event.category
       value: file
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.o365audit?.Category != null && ["DataGovernance", "DataLossPrevention"].contains(ctx.o365audit?.Category)'
-  - append: 
+  - append:
+      tag: append_event_category_da0f4aa2
       field: event.category
       value: malware
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.o365audit?.Category == "ThreatManagement"'
-  - append: 
+  - append:
+      tag: append_event_category_61810389
       field: event.category
       value: authentication
       allow_duplicates: false
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.o365audit?.Category != null && !["DataGovernance", "DataLossPrevention", "ThreatManagement", "AccessGovernance"].contains(ctx.o365audit?.Category)'
-  - append: 
+  - append:
+      tag: append_event_category_477f0e67
       field: event.category
       value: web
       allow_duplicates: false
       if: ctx.event?.code == "SecurityComplianceAlerts"
-  - append: 
+  - append:
+      tag: append_event_type_fe5e902b
       field: event.type
       value: info
       allow_duplicates: false
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - convert:
+      tag: convert_o365audit_AlertEntityId_to_user_id_83931794
       field: o365audit.AlertEntityId
       target_field: user.id
       type: string
       ignore_missing: true
       if: 'ctx.user?.id == null && ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset == "User"'
   - rename:
+      tag: rename_o365audit_AlertEntityId_to_user_email_a7322129
       field: o365audit.AlertEntityId
       target_field: user.email
       ignore_missing: true
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset != null && ["Recipients", "Sender"].contains(ctx.rule?.ruleset)'
   - rename:
+      tag: rename_o365audit_AlertEntityId_to_threat_technique_id_11e017e6
       field: o365audit.AlertEntityId
       target_field: threat.technique.id
       ignore_missing: true
@@ -795,70 +931,84 @@ processors:
         } else {
           ctx.message = "Office365 Alert: " + operation + " detected in email sent by " + user + " with subject '" + subject + "'";
         }
-  - set: 
+  - set:
+      tag: set_event_kind_0865c760
       field: event.kind
       value: alert
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
-  - append: 
+  - append:
+      tag: append_event_category_91227162
       field: event.category
       value: file
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
-  - append: 
+  - append:
+      tag: append_event_type_a59a610a
       field: event.type
       value: access
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_SharePointMetaData_From_to_user_id_e7728609
       field: o365audit.SharePointMetaData.From
       target_field: user.id
       ignore_missing: true
       if: 'ctx.user?.id == null && ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_SharePointMetaData_FileName_to_file_name_4c06a6ee
       field: o365audit.SharePointMetaData.FileName
       target_field: file.name
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_SharePointMetaData_FilePathUrl_to_url_original_9628c8ba
       field: o365audit.SharePointMetaData.FilePathUrl
       target_field: url.original
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_SharePointMetaData_UniqueId_to_file_inode_f95b5147
       field: o365audit.SharePointMetaData.UniqueId
       target_field: file.inode
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_SharePointMetaData_UniqueID_to_file_inode_4ad77667
       field: o365audit.SharePointMetaData.UniqueID
       target_field: file.inode
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_SharePointMetaData_FileOwner_to_file_owner_c6d08a02
       field: o365audit.SharePointMetaData.FileOwner
       target_field: file.owner
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_ExchangeMetaData_From_to_source_user_email_400b8d42
       field: o365audit.ExchangeMetaData.From
       target_field: source.user.email
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_PolicyId_to_rule_id_68b29bc0
       field: o365audit.PolicyId
       target_field: rule.id
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
+      tag: rename_o365audit_PolicyName_to_rule_name_894b1338
       field: o365audit.PolicyName
       target_field: rule.name
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - date:
+      tag: date_o365audit_SharePointMetaData_LastModifiedTime_to_file_mtime_031dee9d
       field: o365audit.SharePointMetaData.LastModifiedTime
       target_field: file.mtime
       formats:
         - ISO8601
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code) && ctx.o365audit?.SharePointMetaData?.LastModifiedTime != null'
   - script:
+      tag: script_85fa2c9b
       lang: painless
       if: 'ctx.event?.code != null && ctx.o365audit?.ExchangeMetaData!= null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
       source: >
@@ -884,11 +1034,13 @@ processors:
           }
         }
   - rename:
+      tag: rename_o365audit_ExceptionInfo_to_o365audit_ExceptionInfo_Reason_4631306e
       field: o365audit.ExceptionInfo
       target_field: o365audit.ExceptionInfo.Reason
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code) && ctx.o365audit?.ExceptionInfo != null && ctx.o365audit?.ExceptionInfo instanceof String'
   - script:
+      tag: script_3a5b43dc
       lang: painless
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code) && ctx.o365audit?.PolicyDetails != null'
       source: >
@@ -968,37 +1120,44 @@ processors:
         ctx.event.outcome = "failure";
   # Yammer Schema
   - rename:
+      tag: rename_o365audit_ActorUserId_to_user_email_5bb083f5
       field: o365audit.ActorUserId
       target_field: user.email
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
   - convert:
+      tag: convert_o365audit_ActorYammerUserId_to_user_id_a114ca12
       field: o365audit.ActorYammerUserId
       target_field: user.id
       type: string
       ignore_missing: true
       if: 'ctx.user?.id == null && ctx.event?.code == "Yammer"'
   - rename:
+      tag: rename_o365audit_FileId_to_file_inode_c45b06ed
       field: o365audit.FileId
       target_field: file.inode
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
   - rename:
+      tag: rename_o365audit_FileName_to_file_name_c8840547
       field: o365audit.FileName
       target_field: file.name
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
   - rename:
+      tag: rename_o365audit_GroupName_to_group_name_e1775675
       field: o365audit.GroupName
       target_field: group.name
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
   - rename:
+      tag: rename_o365audit_TargetUserId_to_destination_user_email_598cdaed
       field: o365audit.TargetUserId
       target_field: destination.user.email
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
   - script:
+      tag: script_d6527ed5
       description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
       if: ctx.o365audit?.TargetYammerUserId != null
       source: |-
@@ -1008,106 +1167,131 @@ processors:
           ctx.o365audit.TargetYammerUserId = ctx.o365audit.TargetYammerUserId.toString();
         }
   - rename:
+      tag: rename_o365audit_TargetYammerUserId_to_destination_user_id_98d0b8d9
       field: o365audit.TargetYammerUserId
       target_field: destination.user.id
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
-  - append: 
+  - append:
+      tag: append_event_category_366e32c5
       field: event.category
       value: configuration
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["NetworkConfigurationUpdated", "NetworkSecurityConfigurationUpdated", "SoftDeleteSettingsUpdated", "ProcessProfileFields", "SupervisorAdminToggled"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_category_c033009f
       field: event.category
       value: iam
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["NetworkSecurityConfigurationUpdated", "GroupCreation", "GroupDeletion", "NetworkUserSuspended", "UserSuspension"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_category_27bfceb1
       field: event.category
       value: file
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["FileCreated", "FileDownloaded", "FileShared", "FileUpdateDescription", "FileUpdateName", "FileVisited"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_2b41531d
       field: event.type
       value: change
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["NetworkConfigurationUpdated", "NetworkSecurityConfigurationUpdated", "SoftDeleteSettingsUpdated", "ProcessProfileFields", "SupervisorAdminToggled"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_d8ce5e45
       field: event.type
       value: admin
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action == "NetworkSecurityConfigurationUpdated"'
-  - append: 
+  - append:
+      tag: append_event_type_ead8ad31
       field: event.type
       value: creation
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["FileCreated", "GroupCreation", "FileUpdateName"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_6f0a866a
       field: event.type
       value: deletion
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action == "GroupDeletion"'
-  - append: 
+  - append:
+      tag: append_event_type_ec95401b
       field: event.type
       value: access
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["FileDownloaded", "FileShared", "FileUpdateDescription", "FileVisited"].contains(ctx.event?.action)'
-  - append: 
+  - append:
+      tag: append_event_type_143833ec
       field: event.type
       value: group
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["GroupCreation", "GroupDeletion"].contains(ctx.event?.action)'
   # Teams Schema
-  - set: 
+  - set:
+      tag: set_event_action_5d374665
       field: event.action
       value: added-group-account-to
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "TeamCreated"'
-  - append: 
+  - append:
+      tag: append_event_category_fa455d05
       field: event.category
       value: iam
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-group-account-to"'
-  - append: 
+  - append:
+      tag: append_event_type_7affef37
       field: event.type
       value: group
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-group-account-to"'
-  - append: 
+  - append:
+      tag: append_event_type_d89ac66d
       field: event.type
       value: creation
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-group-account-to"'
   - rename:
+      tag: rename_o365audit_TeamName_to_group_name_378e2c8a
       field: o365audit.TeamName
       target_field: group.name
       ignore_missing: true
       if: ctx.event?.code == "MicrosoftTeams"
-  - set: 
+  - set:
+      tag: set_event_action_8f33bc25
       field: event.action
       value: added-users-to-group
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "MemberAdded"'
-  - append: 
+  - append:
+      tag: append_event_category_941fbbae
       field: event.category
       value: iam
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-users-to-group"'
-  - append: 
+  - append:
+      tag: append_event_type_53947cc0
       field: event.type
       value: group
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-users-to-group"'
-  - append: 
+  - append:
+      tag: append_event_type_09482fdf
       field: event.type
       value: change
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-users-to-group"'
-  - set: 
+  - set:
+      tag: set_event_action_e7ba1ac3
       field: event.action
       value: deleted-user-account
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "Delete user."'
-  - append: 
+  - append:
+      tag: append_event_category_304faba2
       field: event.category
       value: iam
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_3ae43002
       field: event.type
       value: user
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
-  - append: 
+  - append:
+      tag: append_event_type_59798eb5
       field: event.type
       value: deletion
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
   - rename:
+      tag: rename_o365audit_ObjectId_to_user_target_id_05fee056
       field: o365audit.ObjectId
       target_field: user.target.id
       ignore_missing: true
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
   - script:
+      tag: script_ee9fc2d4
       lang: painless
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.o365audit?.Members != null && ctx.o365audit.Members instanceof List'
       source: >
@@ -1130,8 +1314,9 @@ processors:
       replacement: '$1$2'
       ignore_missing: true
   - grok:
+      tag: grok_client__temp_18e2100e
       field: client._temp
-      patterns: 
+      patterns:
         - '%{IPANDPORTBRACKETS}'
         - '^%{IP:client.address}$'
         - '^\[%{IP:client.address}\]$'
@@ -1151,11 +1336,13 @@ processors:
         HOSTNAMEANDIP: '%{NOTSPACE:client.domain} \(%{NOTCLOSINGPARENS:client.address}\)'
       if: 'ctx.client?._temp != null && !ctx.client?._temp.isEmpty()'
   - gsub:
+      tag: gsub_server__temp_e8014e71
       field: server._temp
       pattern: "[\n\r]"
       replacement: ""
       ignore_missing: true
   - grok:
+      tag: grok_server__temp_1e56357a
       field: server._temp
       patterns:
         - '^\[%{HOSTNAMEANDIP}\]$'
@@ -1167,39 +1354,47 @@ processors:
       if: 'ctx.server?._temp != null && !ctx.server?._temp.isEmpty()'
       ignore_failure: true
   - convert:
+      tag: convert_client_address_to_client_ip_c25a437d
       field: client.address
       target_field: client.ip
       type: ip
       ignore_failure: true
   - convert:
+      tag: convert_client__port_to_client_port_6d29f17e
       field: client._port
       target_field: client.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_server_address_to_server_ip_cd8f255d
       field: server.address
       target_field: server.ip
       type: ip
       ignore_failure: true
-  - remove: 
+  - remove:
+      tag: remove_41349f89
       field:
         - client._port
         - client._temp
         - server._temp
       ignore_missing: true
   - set:
+      tag: set_source_ip_fb72ffcf
       field: source.ip
       copy_from: client.ip
       if: ctx.client?.ip != null
   - set:
+      tag: set_source_port_5d1dfb1d
       field: source.port
       copy_from: client.port
       if: ctx.client?.port != null
   - set:
+      tag: set_destination_ip_c1908e48
       field: destination.ip
       copy_from: server.ip
       if: ctx.server?.ip != null
   - script:
+      tag: script_c0e5055d
       lang: painless
       if: 'ctx.user?.id instanceof String && ctx.user?.id.contains("@")'
       source: >
@@ -1211,6 +1406,7 @@ processors:
         ctx.user.domain = splitmail[1];
         ctx.user.name = splitmail[0];
   - script:
+      tag: script_5cc6a2b4
       lang: painless
       if: 'ctx.user?.target?.id instanceof String && ctx.user?.target?.id.contains("@")'
       source: >
@@ -1222,6 +1418,7 @@ processors:
         ctx.user.target.domain = splitmail[1];
         ctx.user.target.name = splitmail[0];
   - script:
+      tag: script_afa68d08
       lang: painless
       if: 'ctx.source?.user?.id instanceof String && ctx.source?.user?.id.contains("@")'
       source: >
@@ -1233,6 +1430,7 @@ processors:
         ctx.source.user.domain = splitmail[1];
         ctx.source.user.name = splitmail[0];
   - script:
+      tag: script_64d610c3
       lang: painless
       if: 'ctx.destination?.user?.id instanceof String && ctx.destination?.user?.id.contains("@")'
       source: >
@@ -1244,58 +1442,70 @@ processors:
         ctx.destination.user.domain = splitmail[1];
         ctx.destination.user.name = splitmail[0];
   - set:
+      tag: set_network_type_165f3eef
       field: network.type
       value: ipv6
       if: 'ctx.client?.ip instanceof String && ctx.client?.ip.contains(":")'
   - set:
+      tag: set_network_type_8c345870
       field: network.type
       value: ipv4
       if: 'ctx.network?.type == null && ctx.client?.ip != null'
   - append:
+      tag: append_related_ip_3726c45d
       field: related.ip
       value: "{{{client.ip}}}"
       allow_duplicates: false
       if: ctx.client?.ip != null
   - append:
+      tag: append_related_ip_c3acf835
       field: related.ip
       value: "{{{server.ip}}}"
       allow_duplicates: false
       if: ctx.server?.ip != null
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_be5e9d5c
       field: related.user
       value: "{{{user.target.name}}}"
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
+      tag: append_related_user_306b5d7f
       field: related.user
       value: "{{{file.owner}}}"
       allow_duplicates: false
       if: ctx.file?.owner != null
   - append:
+      tag: append_related_user_019a4c76
       field: related.user
       value: "{{{o365audit.Parameters.User}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Parameters?.User != null
   - rename:
+      tag: rename_o365audit_ExtendedProperties_UserAgent_to_user_agent_original_f69176bb
       field: o365audit.ExtendedProperties.UserAgent
       target_field: user_agent.original
       ignore_missing: true
       if: ctx.o365audit?.ExtendedProperties?.UserAgent != null
   # Add Host and Organization fields
   - lowercase:
+      tag: lowercase_organization_id_166f7d8e
       field: organization.id
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_host_id_821997c4
       field: host.id
       copy_from: organization.id
       if: ctx.organization instanceof Map && ctx.organization?.id != null
   - script:
+      tag: script_9a7a1e0a
       lang: painless
       if: ctx.organization instanceof Map && ctx.organization?.id != null && ctx._conf?.tenants != null
       source: >
@@ -1305,27 +1515,33 @@ processors:
           ctx.organization.name = conftenants[orgid];
         }
   - set:
+      tag: set_host_name_e036e1a2
       field: host.name
       copy_from: o365audit.DeviceName
       if: ctx.o365audit?.DeviceName != null && ctx.host?.name == null
   - set:
+      tag: set_host_name_593179ac
       field: host.name
       copy_from: organization.name
       if: ctx.organization instanceof Map && ctx.organization?.name != null && ctx.host?.name == null
   - set:
+      tag: set_host_name_492f492c
       field: host.name
       copy_from: user.domain
       if: ctx.user?.domain != null && ctx.host?.name == null
   # Convert field values
   - convert:
+      tag: convert_o365audit_AzureActiveDirectoryEventType_82b67126
       field: o365audit.AzureActiveDirectoryEventType
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_o365audit_RecordType_2ef06f8d
       field: o365audit.RecordType
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_o365audit_UserType_3067be7b
       field: o365audit.UserType
       type: string
       ignore_missing: true
@@ -1337,6 +1553,7 @@ processors:
       tag: set_event_provider
       ignore_empty_value: true
   - foreach:
+      tag: foreach_o365audit_Actor_cea9f90a
       field: o365audit.Actor
       if: ctx.o365audit?.Actor instanceof List
       processor:
@@ -1346,6 +1563,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_o365audit_Target_0a80e51c
       field: o365audit.Target
       if: ctx.o365audit?.Target instanceof List
       processor:
@@ -1355,6 +1573,7 @@ processors:
           type: string
           ignore_missing: true
   - script:
+      tag: script_cadf6d43
       description: Ensure that versions are not rendered with e-notation, general fallback for all other cases.
       if: ctx.o365audit?.Version != null
       source: |-
@@ -1364,6 +1583,7 @@ processors:
           ctx.o365audit.Version = ctx.o365audit.Version.toString();
         }
   - script:
+      tag: script_631a7dd5
       description: Ensure that internal logon types are not rendered with e-notation, general fallback for all other cases.
       if: ctx.o365audit?.InternalLogonType != null
       source: |-
@@ -1373,6 +1593,7 @@ processors:
           ctx.o365audit.InternalLogonType = ctx.o365audit.InternalLogonType.toString();
         }
   - script:
+      tag: script_eab6f972
       description: Ensure that logon types are not rendered with e-notation, general fallback for all other cases.
       if: ctx.o365audit?.LogonType != null
       source: |-
@@ -1382,6 +1603,7 @@ processors:
           ctx.o365audit.LogonType = ctx.o365audit.LogonType.toString();
         }
   - script:
+      tag: script_2a18231b
       description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
       if: ctx.o365audit?.ActorYammerUserId != null
       source: |-
@@ -1391,6 +1613,7 @@ processors:
           ctx.o365audit.ActorYammerUserId = ctx.o365audit.ActorYammerUserId.toString();
         }
   - script:
+      tag: script_61d54c44
       description: Ensure that network IDs are not rendered with e-notation, general fallback for all other cases.
       if: ctx.o365audit?.YammerNetworkId != null
       source: |-
@@ -1424,6 +1647,12 @@ processors:
       tag: append_email_message_id_1
       allow_duplicates: false
   - append:
+      field: email.message_id
+      value: "{{{o365audit.Item.InternetMessageId}}}"
+      if: ctx.o365audit?.Item?.InternetMessageId != null && ctx.o365audit.Item.InternetMessageId != ''
+      tag: append_item_internet_message_id_into_email_message_id
+      allow_duplicates: false
+  - append:
       field: email.local_id
       value: "{{{o365audit.NetworkMessageId}}}"
       if: ctx.o365audit?.NetworkMessageId != null && ctx.o365audit.NetworkMessageId != ''
@@ -1435,6 +1664,12 @@ processors:
       if: ctx.o365audit?.P1Sender != null && ctx.o365audit.P1Sender != ''
       tag: append_email_sender_address_1
       allow_duplicates: false
+  - append:
+      field: email.sender.address
+      value: "{{{source.user.email}}}"
+      if: ctx.source?.user?.email != null && ctx.source.user.email != ''
+      tag: append_email_sender_address_from_source
+      allow_duplicates: false
   - foreach:
       field: o365audit.Recipients
       if: ctx.o365audit?.Recipients instanceof List && ctx.o365audit.Recipients.length > 0
@@ -1445,12 +1680,24 @@ processors:
           value: "{{{_ingest._value}}}"
           tag: append_recipient_to_email_to_address
           allow_duplicates: false
+  - foreach:
+      field: destination.user.email
+      if: ctx.destination?.user?.email instanceof List
+      tag: foreach_destination_user_email
+      processor:
+        append:
+          field: email.to.address
+          value: "{{{_ingest._value}}}"
+          tag: append_destination_user_email_to_to_address
+          allow_duplicates: false
   - append:
+      tag: append_related_ip_98e499e6
       field: related.ip
       value: "{{{o365audit.SenderIp}}}"
       allow_duplicates: false
       if: ctx.o365audit?.SenderIp != null && ctx.o365audit.SenderIp != ''
   - append:
+      tag: append_related_ip_6d425c06
       field: related.ip
       value: "{{{o365audit.SenderIP}}}"
       allow_duplicates: false
@@ -1461,6 +1708,41 @@ processors:
       if: ctx.o365audit?.Subject != null && ctx.o365audit.Subject != ''
       tag: append_email_subject_1
       allow_duplicates: false
+  - append:
+      field: email.subject
+      value: "{{{o365audit.Item.Subject}}}"
+      if: ctx.o365audit?.Item?.Subject != null && ctx.o365audit.Item.Subject != ''
+      tag: append_item_subject_into_email_subject
+      allow_duplicates: false
+  - script:
+      tag: script_item_attachments
+      if: ctx.o365audit?.Item?.Attachments != null && ctx.o365audit.Item.Attachments != ''
+      description: Parse attachments from Item.Attachments.
+      source: |-
+        ctx.email = ctx.email ?: [:];
+        ctx.email.attachments = [];
+        
+        // Split semicolon-delimited attachment string into individual attachment entries
+        def attachmentList = ctx.o365audit.Item.Attachments.splitOnToken(';');
+        
+        for (def attachment : attachmentList) {
+          def attachmentObj = [:];
+          
+          // Parse pattern: "filename.extension (sizeb)"
+          def matcher = /^(.+?)\.([^.]+)\s*\((\d+)b\)$/.matcher(attachment);
+          if (matcher.matches()) {
+            attachmentObj.file = [:];
+            attachmentObj.file.extension = matcher.group(2);
+            attachmentObj.file.name = matcher.group(1) + '.' + matcher.group(2);
+            attachmentObj.file.size = Long.parseLong(matcher.group(3));
+            ctx.email.attachments.add(attachmentObj);
+          } 
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_dd78c9ec
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: o365audit.EndTimeUtc
       target_field: o365audit.EndTimeUtc
@@ -1511,14 +1793,17 @@ processors:
       if: ctx.o365audit?.containsKey('Data') == true && ctx.o365audit?.RecordType == '64'
       tag: gsub_remove_duplicated_querytime
   - json:
+      tag: json_o365audit_Data_73eae5fb
       field: o365audit.Data
       if: ctx.o365audit?.containsKey('Data') == true
       on_failure:
         - remove:
+            tag: remove_o365audit_Data_e0fb21bb
             field: o365audit.Data
             ignore_missing: true
             description: remove_malformed_data
   - rename:
+      tag: rename_o365audit_Data_to_o365audit_Data_flattened_924e239f
       field: o365audit.Data
       target_field: o365audit.Data.flattened
       ignore_missing: true
@@ -1528,15 +1813,7 @@ processors:
       tag: script_known_Data
       if: 'ctx.o365audit?.Data?.flattened instanceof Map'
       params:
-        knownKeys: [
-          'ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at',
-          'cid', 'cpid', 'dm', 'dpn', 'eid', 'etps', 'etype', 'f3u', 'fvs',
-          'imsgid', 'lon', 'mat', 'md', 'ms', 'od', 'op', 'ot', 'plk', 'pud',
-          'reid', 'rid', 'sev', 'sict', 'sid', 'sip', 'sitmi', 'srt', 'ssic',
-          'suid', 'tdc', 'te', 'thn', 'tht', 'tid', 'tpid', 'tpt', 'trc', 'ts',
-          'tsd', 'ttdt', 'ttr', 'upfc', 'upfv', 'ut', 'von', 'wl', 'zfh', 'zfn',
-          'zmfh', 'zmfn', 'zu'
-        ]
+        knownKeys: ['ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at', 'cid', 'cpid', 'dm', 'dpn', 'eid', 'etps', 'etype', 'f3u', 'fvs', 'imsgid', 'lon', 'mat', 'md', 'ms', 'od', 'op', 'ot', 'plk', 'pud', 'reid', 'rid', 'sev', 'sict', 'sid', 'sip', 'sitmi', 'srt', 'ssic', 'suid', 'tdc', 'te', 'thn', 'tht', 'tid', 'tpid', 'tpt', 'trc', 'ts', 'tsd', 'ttdt', 'ttr', 'upfc', 'upfv', 'ut', 'von', 'wl', 'zfh', 'zfn', 'zmfh', 'zmfn', 'zu']
       source: >
         for (def key : params.knownKeys) {
           if (ctx.o365audit.Data.flattened.containsKey(key)) {
@@ -1544,63 +1821,77 @@ processors:
           }
         }
   - convert:
+      tag: convert_o365audit_Data_sip_1df0ff2b
       field: o365audit.Data.sip
       type: ip
       ignore_missing: true
       if: ctx.o365audit?.Data?.sip != ''
       on_failure:
         - remove:
+            tag: remove_o365audit_Data_sip_95693a2c
             field: o365audit.Data.sip
             ignore_missing: true
   - convert:
+      tag: convert_o365_audit_SensitivityLabelEventData_ActionSourceDetail_d6510954
       field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
       type: long
       ignore_missing: true
       if: ctx.o365?.audit?.SensitivityLabelEventData?.ActionSourceDetail != ''
       on_failure:
         - remove:
+            tag: remove_o365_audit_SensitivityLabelEventData_ActionSourceDetail_ac8ae560
             field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
             ignore_missing: true
   - convert:
+      tag: convert_o365_audit_SensitivityLabelEventData_LabelEventType_d04ddf88
       field: o365.audit.SensitivityLabelEventData.LabelEventType
       type: long
       ignore_missing: true
       if: ctx.o365?.audit?.SensitivityLabelEventData?.LabelEventType != ''
       on_failure:
         - remove:
+            tag: remove_o365_audit_SensitivityLabelEventData_LabelEventType_468846e8
             field: o365.audit.SensitivityLabelEventData.LabelEventType
             ignore_missing: true
   - date:
+      tag: date_o365audit_Data_at_to_o365audit_Data_at_650b1b31
       field: o365audit.Data.at
       target_field: o365audit.Data.at
       formats:
         - ISO8601
       if: ctx.o365audit?.Data?.at != null
   - date:
+      tag: date_o365audit_Data_md_to_o365audit_Data_md_d8b1d89d
       field: o365audit.Data.md
       target_field: o365audit.Data.md
       formats:
         - ISO8601
       if: ctx.o365audit?.Data?.md != null
   - date:
+      tag: date_o365audit_Data_te_to_o365audit_Data_te_3753208b
       field: o365audit.Data.te
       target_field: o365audit.Data.te
       formats:
         - ISO8601
+        - yyyy-MM-dd HH:mm:ss'Z'
       if: ctx.o365audit?.Data?.te != null
   - date:
+      tag: date_o365audit_Data_ts_to_o365audit_Data_ts_60cc586d
       field: o365audit.Data.ts
       target_field: o365audit.Data.ts
       formats:
         - ISO8601
+        - yyyy-MM-dd HH:mm:ss'Z'
       if: ctx.o365audit?.Data?.ts != null
   - date:
+      tag: date_o365audit_Data_ttdt_to_o365audit_Data_ttdt_9ead56cc
       field: o365audit.Data.ttdt
       target_field: o365audit.Data.ttdt
       formats:
         - ISO8601
       if: ctx.o365audit?.Data?.ttdt != null
   - append:
+      tag: append_related_user_72ce7bf6
       field: related.user
       value: "{{{o365audit.Data.f3u}}}"
       allow_duplicates: false
@@ -1612,6 +1903,7 @@ processors:
       tag: set_user_email
       ignore_empty_value: true
   - append:
+      tag: append_related_user_74080691
       field: related.user
       value: "{{{o365audit.Data.suid}}}"
       allow_duplicates: false
@@ -1623,6 +1915,7 @@ processors:
       tag: append_email_sender_address_2
       allow_duplicates: false
   - append:
+      tag: append_related_user_5439ef83
       field: related.user
       value: "{{{o365audit.Data.tsd}}}"
       allow_duplicates: false
@@ -1634,6 +1927,7 @@ processors:
       tag: append_email_to_address
       allow_duplicates: false
   - append:
+      tag: append_related_user_0bcc5687
       field: related.user
       value: "{{{o365audit.Data.trc}}}"
       allow_duplicates: false
@@ -1662,11 +1956,7 @@ processors:
       tag: script_known_Data.Entities
       if: ctx.o365audit?.Data?.flattened?.Entities instanceof List
       params:
-        knownEntityKeys: [
-          'InternetMessageId', 'NetworkMessageId', 'OriginalDeliveryLocation',
-          'P1Sender', 'P2Sender', 'PhishConfidenceLevel', 'Recipient', 'SenderIP', 'Subject',
-          'ThreatDetectionMethods', 'Upn'
-        ]
+        knownEntityKeys: ['InternetMessageId', 'NetworkMessageId', 'OriginalDeliveryLocation', 'P1Sender', 'P2Sender', 'PhishConfidenceLevel', 'Recipient', 'SenderIP', 'Subject', 'ThreatDetectionMethods', 'Upn']
       source: >
         ctx._tmp = ctx._tmp ?: [:];
         ctx._tmp.entities = [:];
@@ -1684,6 +1974,7 @@ processors:
         }
   # Extract _tmp.entities into ECS fields
   - foreach:
+      tag: foreach__tmp_entities_InternetMessageId_21b75422
       field: _tmp.entities.InternetMessageId
       if: ctx._tmp?.entities?.InternetMessageId instanceof List
       processor:
@@ -1693,6 +1984,7 @@ processors:
           tag: append_entities.InternetMessageId_email.message_id
           allow_duplicates: false
   - foreach:
+      tag: foreach__tmp_entities_NetworkMessageId_82c85e73
       field: _tmp.entities.NetworkMessageId
       if: ctx._tmp?.entities?.NetworkMessageId instanceof List
       processor:
@@ -1702,6 +1994,7 @@ processors:
           tag: append_entities.NetworkMessageId_email.local_id
           allow_duplicates: false
   - foreach:
+      tag: foreach__tmp_entities_P1Sender_4e9613ad
       field: _tmp.entities.P1Sender
       if: ctx._tmp?.entities?.P1Sender instanceof List
       processor:
@@ -1711,6 +2004,7 @@ processors:
           tag: append_entities.P1Sender_email.sender.address
           allow_duplicates: false
   - foreach:
+      tag: foreach__tmp_entities_P2Sender_f89724e6
       field: _tmp.entities.P2Sender
       if: ctx._tmp?.entities?.P2Sender instanceof List
       processor:
@@ -1720,6 +2014,7 @@ processors:
           tag: append_entities.P2Sender_email.from.address
           allow_duplicates: false
   - foreach:
+      tag: foreach__tmp_entities_Recipient_ca33b0ac
       field: _tmp.entities.Recipient
       if: ctx._tmp?.entities?.Recipient instanceof List
       processor:
@@ -1729,11 +2024,13 @@ processors:
           tag: append_entities.Recipient_email.to.address
           allow_duplicates: false
   - set:
+      tag: set_user_email_87a39bd8
       field: user.email
       copy_from: _tmp.entities.Recipient
       if: ctx.user?.email == null && ctx._tmp?.entities?.Recipient instanceof List && ctx._tmp.entities.Recipient.length > 0
       ignore_empty_value: true
   - foreach:
+      tag: foreach__tmp_entities_SenderIP_4a5b81c3
       field: _tmp.entities.SenderIP
       if: ctx._tmp?.entities?.SenderIP instanceof List
       processor:
@@ -1743,6 +2040,7 @@ processors:
           tag: append_entities.SenderIP_related.ip
           allow_duplicates: false
   - foreach:
+      tag: foreach__tmp_entities_Subject_771241ef
       field: _tmp.entities.Subject
       if: ctx._tmp?.entities?.Subject instanceof List
       processor:
@@ -1752,6 +2050,7 @@ processors:
           tag: append_entities.Subject_email.subject
           allow_duplicates: false
   - foreach:
+      tag: foreach__tmp_entities_Upn_ca5fa308
       field: _tmp.entities.Upn
       if: ctx._tmp?.entities?.Upn instanceof List
       processor:
@@ -1781,9 +2080,11 @@ processors:
       if: ctx.o365audit?.ExtendedProperties?.additionalDetails instanceof String
       on_failure:
         - remove:
+            tag: remove_o365audit_ExtendedProperties_additionalDetails_316a9f1b
             field: o365audit.ExtendedProperties.additionalDetails
             ignore_missing: true
         - append:
+            tag: append_error_message_7ee67ff4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -1793,6 +2094,7 @@ processors:
       ignore_empty_value: true
       override: false
   - user_agent:
+      tag: user_agent_o365audit_ExtendedProperties_additionalDetails_User-Agent_3413845d
       field: o365audit.ExtendedProperties.additionalDetails.User-Agent
       if: ctx.user_agent == null
       ignore_missing: true
@@ -1814,10 +2116,12 @@ processors:
 
   # ExchangeItemAggregated Schema
   - append:
+      tag: append_event_type_306ea761
       field: event.type
       value: access
       if: ctx.o365audit?.RecordType == "50"
   - append:
+      tag: append_event_category_44167de1
       field: event.category
       value: email
       if: ctx.o365audit?.RecordType == "50"
@@ -1890,19 +2194,23 @@ processors:
         }
         ctx.o365audit.ThreatDetectionMethods = result;
   - rename:
+      tag: rename_o365audit_to_o365_audit_77e76ef2
       field: o365audit
       target_field: o365.audit
       ignore_missing: true
   - user_agent:
+      tag: user_agent_user_agent_original_b5325863
       field: user_agent.original
       ignore_missing: true
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -1911,19 +2219,132 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+
+  # Populate related.user
+  - append:
+      tag: append_related_user_7f407fef
+      field: related.user
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      tag: append_related_user_49283340
+      field: related.user
+      value: "{{{user.target.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.id != null
+  - append:
+      tag: append_related_user_15e46c96
+      field: related.user
+      value: "{{{user.target.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.email != null
+  - append:
+      tag: append_related_user_34fcf415
+      field: related.user
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+
+  # Populate related.hosts
+  - append:
+      tag: append_related_hosts_452ef445
+      field: related.hosts
+      value: "{{{host.name}}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      tag: append_related_hosts_897609bc
+      field: related.hosts
+      value: "{{{host.hostname}}}"
+      allow_duplicates: false
+      if: ctx.host?.hostname != null && ctx.host.hostname != ctx.host?.name
+  - append:
+      tag: append_related_hosts_23e97a1f
+      field: related.hosts
+      value: "{{{user.domain}}}"
+      allow_duplicates: false
+      if: ctx.user?.domain != null
+  - append:
+      tag: append_related_hosts_f2ac264a
+      field: related.hosts
+      value: "{{{user.target.domain}}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.domain != null && ctx.user.target.domain != ctx.user?.domain
+  - append:
+      tag: append_related_hosts_b0d2e007
+      field: related.hosts
+      value: "{{{source.domain}}}"
+      allow_duplicates: false
+      if: ctx.source?.domain != null
+  - append:
+      tag: append_related_hosts_b0d7ba0b
+      field: related.hosts
+      value: "{{{destination.domain}}}"
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
+  - append:
+      tag: append_related_hosts_e5210c4d
+      field: related.hosts
+      value: "{{{url.domain}}}"
+      allow_duplicates: false
+      if: ctx.url?.domain != null
+  - append:
+      tag: append_related_hosts_2ab61e3f
+      field: related.hosts
+      value: "{{{server.domain}}}"
+      allow_duplicates: false
+      if: ctx.server?.domain != null
+  - append:
+      tag: append_related_hosts_1d453937
+      field: related.hosts
+      value: "{{{client.domain}}}"
+      allow_duplicates: false
+      if: ctx.client?.domain != null
+
+  # Populate related.hash
+  - append:
+      tag: append_related_hash_6af42da3
+      field: related.hash
+      value: "{{{file.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - append:
+      tag: append_related_hash_b56c7961
+      field: related.hash
+      value: "{{{file.hash.sha1}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null
+  - append:
+      tag: append_related_hash_017aef51
+      field: related.hash
+      value: "{{{file.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - append:
+      tag: append_related_hash_24fd9395
+      field: related.hash
+      value: "{{{file.hash.sha512}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha512 != null
+
   - remove:
+      tag: remove_d0ecf5cd
       field:
         - _conf
         - _tmp
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -1941,10 +2362,12 @@ processors:
         }
         dropEmptyFields(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

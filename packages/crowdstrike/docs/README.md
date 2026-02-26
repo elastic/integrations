@@ -80,7 +80,8 @@ By default, the configuration file for the Falcon SIEM Connector is located at `
 
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
-Current supported Event Streams event types are:
+Current supported event types are:
+- CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
 - EppDetectionSummaryEvent
@@ -136,9 +137,8 @@ The following parameters from your CrowdStrike instance are required:
 
 ### Collect data via CrowdStrike Falcon Data Replicator (FDR)
 
-The CrowdStrike Falcon Data Replicator (FDR) allows CrowdStrike users to replicate FDR data from CrowdStrike
-managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is
-available in S3.
+The CrowdStrike Falcon Data Replicator allows CrowdStrike users to replicate data from CrowdStrike
+managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is available in S3.
 
 This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed
 SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket
@@ -1147,6 +1147,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.DomainName |  | keyword |
 | crowdstrike.event.EgressEventId |  | keyword |
 | crowdstrike.event.EgressSessionId |  | keyword |
 | crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
@@ -1203,6 +1204,8 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.IOARuleName | Name given to the custom IOA rule that triggered. | keyword |
 | crowdstrike.event.IOCType | CrowdStrike type for indicator of compromise. | keyword |
 | crowdstrike.event.IOCValue | CrowdStrike value for indicator of compromise. | keyword |
+| crowdstrike.event.IPv4 |  | ip |
+| crowdstrike.event.IPv6 |  | ip |
 | crowdstrike.event.IdpPolicyRuleAction | Identity Protection policy rule action. | keyword |
 | crowdstrike.event.IdpPolicyRuleName | Identity Protection policy rule name. | keyword |
 | crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |
@@ -1806,6 +1809,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.CertificatePublisher |  | keyword |
 | crowdstrike.CertificateSignatureHash |  | keyword |
 | crowdstrike.CertificateSignatureHashAlgorithm |  | keyword |
+| crowdstrike.ChangeId |  | keyword |
 | crowdstrike.ChangeTime |  | date |
 | crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
@@ -1817,6 +1821,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ClientComputerName |  | keyword |
 | crowdstrike.ClientId |  | match_only_text |
 | crowdstrike.ClientProcessStartKey |  | keyword |
+| crowdstrike.CloudIndicator |  | boolean |
 | crowdstrike.CommandCount |  | match_only_text |
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
@@ -1839,6 +1844,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ConnectionAddressIP6 |  | match_only_text |
 | crowdstrike.ConnectionFlags |  | keyword |
 | crowdstrike.ConnectionType |  | keyword |
+| crowdstrike.ContentDiff.Exists |  | boolean |
 | crowdstrike.ContentPatternCounts |  | nested |
 | crowdstrike.ContentPatterns.ConfidenceLevel |  | long |
 | crowdstrike.ContentPatterns.ID |  | keyword |
@@ -1885,6 +1891,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.DirectoryEnumeratedCount |  | long |
 | crowdstrike.DllCharacteristics |  | keyword |
 | crowdstrike.DnsRequestCount |  | long |
+| crowdstrike.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.DnsResponseType |  | keyword |
 | crowdstrike.DocumentFileWrittenCount |  | long |
 | crowdstrike.DomainSid |  | keyword |
@@ -1950,6 +1957,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.FeatureVector |  | match_only_text |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
+| crowdstrike.FileAttributesNew |  | keyword |
+| crowdstrike.FileAttributesPrevious |  | keyword |
 | crowdstrike.FileCategory |  | keyword |
 | crowdstrike.FileCategoryCounts |  | nested |
 | crowdstrike.FileContent |  | match_only_text |
@@ -2072,6 +2081,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
 | crowdstrike.IsClipboard |  | boolean |
+| crowdstrike.IsEBPF |  | keyword |
+| crowdstrike.IsFromDifferentMountNamespace |  | keyword |
 | crowdstrike.IsHosted |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
@@ -2176,14 +2187,18 @@ An example event for `fdr` looks as following:
 | crowdstrike.NetworkModuleLoadCount |  | long |
 | crowdstrike.NetworkRecvAcceptCount |  | long |
 | crowdstrike.NewExecutableWrittenCount |  | long |
+| crowdstrike.NewFileAttributesLinux |  | keyword |
 | crowdstrike.NewFileIdentifier |  | keyword |
+| crowdstrike.NewUnixPermissions |  | keyword |
 | crowdstrike.NlMtu |  | keyword |
-| crowdstrike.Nonce |  | integer |
+| crowdstrike.Nonce |  | unsigned_long |
 | crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
 | crowdstrike.Object1Type |  | keyword |
+| crowdstrike.ObjectAccessOperationType |  | keyword |
 | crowdstrike.ObjectNameEtw |  | match_only_text |
+| crowdstrike.ObjectType |  | keyword |
 | crowdstrike.ObjectTypeEtw |  | match_only_text |
 | crowdstrike.Objective |  | keyword |
 | crowdstrike.OciContainerAppName |  | match_only_text |
@@ -2302,10 +2317,16 @@ An example event for `fdr` looks as following:
 | crowdstrike.PlatformId |  | keyword |
 | crowdstrike.PlatformName |  | keyword |
 | crowdstrike.PointerSize |  | keyword |
+| crowdstrike.Policy.ID |  | keyword |
+| crowdstrike.Policy.Name |  | keyword |
+| crowdstrike.PolicyRuleSeverity |  | long |
 | crowdstrike.PreferredLifetime |  | keyword |
 | crowdstrike.PrefixLength |  | keyword |
 | crowdstrike.PrefixOrigin |  | keyword |
+| crowdstrike.Prevalence.Key |  | keyword |
 | crowdstrike.PreviousConnectTime |  | date |
+| crowdstrike.PreviousFileAttributesLinux |  | keyword |
+| crowdstrike.PreviousUnixPermissions |  | keyword |
 | crowdstrike.PrimaryModule |  | keyword |
 | crowdstrike.PrivilegedProcessHandleCount |  | long |
 | crowdstrike.PrivilegesBitmask |  | keyword |
@@ -2365,6 +2386,10 @@ An example event for `fdr` looks as following:
 | crowdstrike.RemovableDiskFileWrittenCount |  | long |
 | crowdstrike.RequestType |  | keyword |
 | crowdstrike.ResendToCloud |  | keyword |
+| crowdstrike.ResourceAttributes |  | flattened |
+| crowdstrike.ResourceCreateTime |  | date |
+| crowdstrike.ResourceId |  | keyword |
+| crowdstrike.ResourceIdType |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
 | crowdstrike.ResponseAction |  | keyword |
 | crowdstrike.RetransmitTime |  | keyword |
@@ -2398,6 +2423,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ScriptControlErrorCode |  | keyword |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
 | crowdstrike.ScriptingLanguageId |  | keyword |
+| crowdstrike.SecurityInformationLinux |  | keyword |
 | crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
@@ -2474,6 +2500,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.SubjectDomainNameEtw |  | match_only_text |
 | crowdstrike.SuffixOrigin |  | keyword |
 | crowdstrike.SuppressType |  | keyword |
+| crowdstrike.Suppression.Suppressed |  | boolean |
 | crowdstrike.SuspectStackCount |  | long |
 | crowdstrike.SuspiciousCredentialModuleLoadCount |  | long |
 | crowdstrike.SuspiciousDnsRequestCount |  | long |
@@ -2604,25 +2631,74 @@ An example event for `fdr` looks as following:
 | crowdstrike.aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
 | crowdstrike.assessments |  | flattened |
+| crowdstrike.attack_types |  | keyword |
+| crowdstrike.aws_account_id |  | keyword |
 | crowdstrike.cid |  | keyword |
+| crowdstrike.cis_benchmark_ids |  | keyword |
+| crowdstrike.cisa_benchmark_ids |  | keyword |
+| crowdstrike.cloud_asset_type |  | long |
+| crowdstrike.cloudplatform |  | keyword |
+| crowdstrike.compliance.benchmarkNames |  | keyword |
+| crowdstrike.compliance.frameworks |  | keyword |
+| crowdstrike.compliance.requirements |  | keyword |
+| crowdstrike.compliance.sections |  | keyword |
+| crowdstrike.compliance.versions |  | keyword |
+| crowdstrike.created |  | date |
+| crowdstrike.crn |  | keyword |
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
+| crowdstrike.disposition |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.event-type |  | keyword |
+| crowdstrike.event_category |  | keyword |
+| crowdstrike.finding |  | keyword |
+| crowdstrike.findings.name |  | keyword |
+| crowdstrike.findings.value |  | keyword |
+| crowdstrike.firstDetected |  | date |
 | crowdstrike.hostname |  | keyword |
 | crowdstrike.id |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
+| crowdstrike.internal_only |  | boolean |
+| crowdstrike.iso_benchmark_ids |  | keyword |
+| crowdstrike.lastDetected |  | date |
+| crowdstrike.legacyPolicyId |  | long |
 | crowdstrike.localipCount |  | integer |
+| crowdstrike.management_event |  | boolean |
 | crowdstrike.monthsincereset |  | keyword |
 | crowdstrike.name |  | keyword |
+| crowdstrike.nist_benchmark_ids |  | keyword |
 | crowdstrike.os_version |  | keyword |
+| crowdstrike.pci_benchmark_ids |  | keyword |
+| crowdstrike.policy_severity |  | long |
 | crowdstrike.product_type_desc |  | keyword |
+| crowdstrike.read_only |  | boolean |
+| crowdstrike.request_id |  | keyword |
+| crowdstrike.request_parameters |  | keyword |
+| crowdstrike.resource.captured |  | date |
+| crowdstrike.resource.legacyResourceId |  | keyword |
+| crowdstrike.resource.legacyResourceTypeId |  | long |
+| crowdstrike.resource.resourceId |  | keyword |
+| crowdstrike.resource.resourceType |  | keyword |
+| crowdstrike.resource_url |  | keyword |
+| crowdstrike.response_elements |  | keyword |
+| crowdstrike.revision |  | long |
 | crowdstrike.scores.modified_time |  | date |
 | crowdstrike.scores.os |  | long |
 | crowdstrike.scores.overall |  | long |
 | crowdstrike.scores.sensor |  | long |
 | crowdstrike.scores.version |  | keyword |
+| crowdstrike.service |  | keyword |
+| crowdstrike.soc2_benchmark_ids |  | keyword |
+| crowdstrike.status |  | keyword |
 | crowdstrike.subnet |  | keyword |
+| crowdstrike.url |  | keyword |
+| crowdstrike.user_identity_access_key_id |  | keyword |
+| crowdstrike.user_identity_account_id |  | keyword |
+| crowdstrike.user_identity_arn |  | keyword |
+| crowdstrike.user_identity_mfa_authenticated |  | boolean |
+| crowdstrike.vertex_id |  | keyword |
+| crowdstrike.vertex_type |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

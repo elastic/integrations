@@ -5,7 +5,7 @@ mapped_pages:
 
 # Documentation guidelines [documentation-guidelines]
 
-The goal of each integration’s documentation is to:
+The goal of each integration's documentation is to:
 
 * Describe the benefits the integration offers and how Elastic can help with different use cases. 
 * Specify requirements, including system compatibility, supported versions of third-party products, permissions needed, and more.
@@ -20,17 +20,19 @@ The goal of each integration’s documentation is to:
     * [Performance and scaling](#idg-docs-performance-scaling)
     * [Reference](#idg-docs-reference)
 
-Some considerations when these documentation files are written at `_dev/build/docs/*.md`:
+::::{tip}
+**Getting started quickly:** Run `elastic-package create package` to generate a new package with a README template that follows this structure. The generated template includes placeholder content for each section and has [documentation structure validation](finishing-touches.md#documentation-structure-validation) enabled by default, so `elastic-package check` will verify your README includes all required sections.
+::::
 
-* These files follow the Markdown syntax and leverage the use of [documentation templates](https://github.com/elastic/elastic-package/blob/main/docs/howto/add_package_readme.md).
-* There are some available functions or placeholders (`fields`, `event`, `url`) that can be used to help you write documentation. For more detail, refer to [placeholders](https://github.com/elastic/elastic-package/blob/main/docs/howto/add_package_readme.md#placeholders).
-* Regarding the `url` placeholder, this placeholder should be used to add links to the [Elastic documentation guides](https://www.elastic.co/guide/index.html) in your documentation:
+### Writing documentation templates
 
-    * The file containing all of the defined links is in the root of the directory: [`links_table.yml`](https://github.com/elastic/elastic-package/blob/main/scripts/links_table.yml)
-    * If needed, more links to Elastic documentation guides can be added into that file.
-    * Example usage:
+Documentation files are written as templates at `_dev/build/docs/*.md` and are processed during `elastic-package build` to generate the final documentation in `docs/`.
 
-        * In the documentation files (`_dev/build/docs/*.md`), `{{ url "getting-started-observability" "Elastic guide" }}` generates a link to the Observability Getting Started guide.
+Key considerations:
+
+* **Markdown syntax:** Documentation files use standard Markdown syntax.
+* **Template functions:** Use template functions like `{{ fields "data_stream" }}` and `{{ event "data_stream" }}` to automatically generate field tables and sample events. See [template functions](finishing-touches.md#template-functions) for the complete list.
+* **Linking to Elastic docs:** Use the `{{ url "link-id" "Caption" }}` function to create links to Elastic documentation. This ensures links remain valid as documentation URLs change. Available link IDs are defined in [`links_table.yml`](https://github.com/elastic/elastic-package/blob/main/scripts/links_table.yml).
 
 ### Overview [idg-docs-overview]
 

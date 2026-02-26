@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule correlates security alerts with processes exhibiting unusually high CPU utilization on the same host and process ID within a short time window. This behavior may indicate malicious activity such as malware execution, cryptomining, exploit payload execution, or abuse of system resources following initial compromise.",
+        "from": "now-9m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Detection Alert on a Process Exhibiting CPU Spike",
+        "note": "## Triage and analysis\n\n### Investigating Detection Alert on a Process Exhibiting CPU Spike\n\nThis rule identifies processes that both triggered a security alert and exhibited unusually high CPU utilization on the\nsame host and process ID within a short time window. This combination may indicate malicious execution, resource abuse, or\npost-compromise activity.\n\n### Possible investigation steps\n- Review the correlated alert(s) to understand why the process was flagged by Elastic Defend.\n- Examine the process name, command line, and SHA-256 hash to determine whether the process is expected or known to be malicious.\n- Validate the observed CPU usage and duration to determine whether the spike is abnormal for this process and host.\n- Check for related process activity such as parent/child processes, suspicious process spawning, or privilege escalation attempts.\n- Review additional host telemetry including:\n  - Network connections initiated by the process\n  - File creation or modification events\n  - Persistence mechanisms (services, scheduled tasks, registry keys)\n- Determine whether similar activity is observed on other hosts, which may indicate a broader compromise.\n\n### False positive analysis\n- Legitimate high-CPU processes such as software updates, backup agents, security scans, or system maintenance tasks.\n- Resource-intensive but benign applications (e.g., compilers, video encoding, data processing jobs).\n- Security tools or monitoring agents temporarily consuming high CPU.\n\n### Response and remediation\n- If malicious activity is confirmed, isolate the affected host to prevent further impact.\n- Terminate the offending process if safe to do so.\n- Remove any identified malicious binaries or artifacts and eliminate persistence mechanisms.\n- Apply relevant patches or configuration changes to remediate the root cause.\n- Monitor the environment for recurrence of similar high-CPU processes combined with security alerts.\n- Escalate the incident if multiple hosts or indicators suggest coordinated or widespread activity.",
+        "query": "FROM metrics-*, .alerts-security.* METADATA _index\n| eval\n       // processes with more than 70% total CPU use\n       cpu_metrics_pids = CASE(_index like \".ds-metrics-system.process-*\" and system.process.cpu.total.norm.pct >= 0.7, process.pid, null),\n       // any security alert with process.name and ID populated excluding low severity ones\n       alerts_pids = CASE(_index like \".internal.alerts-security.*\" and kibana.alert.rule.name is not null and process.name is not null and process.pid is not null and host.id is not null and kibana.alert.risk_score > 21, process.pid, null)\n| stats pid_with_cpu_spike = COUNT_DISTINCT(cpu_metrics_pids), pid_with_alerts = COUNT_DISTINCT(alerts_pids),\n        Esql.max_cpu_pct = MAX(system.process.cpu.total.norm.pct),\n        Esql.alerts = VALUES(kibana.alert.rule.name),\n        Esql.process_hash_sha256 = VALUES(process.hash.sha256),\n        process_path = VALUES(process.executable),\n        parent_process_path = VALUES(process.parent.executable),\n        user_name = VALUES(user.name),\n        cmdline = VALUES(process.command_line) by process.pid, process.name, host.id\n| where pid_with_cpu_spike > 0 and pid_with_alerts > 0\n// populate fields to use in rule exceptions\n| eval process.hash.sha256 = MV_FIRST(Esql.process_hash_sha256),\n       process.executable = MV_FIRST(process_path),\n       process.parent.executable = MV_FIRST(parent_process_path),\n       process.command_line = MV_FIRST(cmdline),\n       user.name = MV_FIRST(user_name)\n| KEEP user.name, host.id, process.*, Esql.*\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.alerts",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.max_cpu_pct",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_hash_sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.hash.sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "df9c0e92-5dee-4f1d-a760-3a5c039e4382",
+        "setup": "## Setup\n\nThis rule requires host CPU metrics collected via the Elastic Agent **System** integration.\n\n### System Metrics Integration Setup\nThe System integration collects host-level metrics such as CPU usage, load, memory, and process statistics and sends them to Elasticsearch using Elastic Agent.\n\n#### Prerequisite Requirements:\n- Elastic Agent managed by Fleet\n- A Fleet Server configured and reachable\n  Refer to the Fleet Server setup guide:\n  https://www.elastic.co/guide/en/fleet/current/fleet-server.html\n\n#### The following steps should be executed in order to enable CPU metrics collection:\n- Go to the Kibana home page and click **Add integrations**.\n- In the search bar, enter **System** and select the **System** integration.\n- Click **Add System**.\n- Configure an integration name and optionally add a description.\n- Under **Metrics**, ensure the following datasets are enabled:\n  - `system.cpu`\n  - `system.load` (optional but recommended)\n  - `system.process` (optional, if process-level CPU is required)\n- Review optional and advanced settings as needed.\n- Add the integration to an existing agent policy or create a new agent policy.\n- Deploy the Elastic Agent to the hosts from which CPU metrics should be collected.\n- Click **Save and Continue** to finalize the setup.\n\n#### Validation\nAfter deployment, verify CPU metrics ingestion by confirming the presence of documents in:\n- `metrics-system.cpu-*`\n- `metrics-system.load-*` (if enabled)\n\nFor more details on the System integration and available metrics, refer to the documentation:\nhttps://docs.elastic.co/integrations/system\n",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide",
+            "Domain: Endpoint",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "df9c0e92-5dee-4f1d-a760-3a5c039e4382_1",
+    "type": "security-rule"
+}

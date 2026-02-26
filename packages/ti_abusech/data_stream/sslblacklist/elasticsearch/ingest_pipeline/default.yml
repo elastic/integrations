@@ -16,6 +16,7 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - terminate:
@@ -23,15 +24,19 @@ processors:
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
   - set:
+      tag: set_labels_interval_ca65b42c
       field: labels.interval
       copy_from: _conf.interval
       if: ctx._conf?.interval != null && ctx._conf.interval != ''
@@ -40,34 +45,41 @@ processors:
   # General ECS fields #
   ######################
   - drop:
+      tag: drop_fbdaef0d
       description: Drop if message is empty string return by CEL program.
       if: ctx?.message == null || ctx.message == ""
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_abusech_sslblacklist_4f4c6810
       field: event.original
       target_field: abusech.sslblacklist
   #####################
   # Threat ECS Fields #
   #####################
   - set:
+      tag: set_threat_indicator_type_a8880263
       field: threat.indicator.type
       value: x509-certificate
   - date:
+      tag: date_abusech_sslblacklist_ts_to_threat_indicator_first_seen_87912573
       field: abusech.sslblacklist.ts
       target_field: threat.indicator.first_seen
       formats:
         - ISO8601
       if: ctx.abusech?.sslblacklist?.ts != null
-  - remove: 
+  - remove:
+      tag: remove_abusech_sslblacklist_ts_b116ba64
       field: abusech.sslblacklist.ts
       if: ctx.threat?.indicator?.first_seen != null
   - set:
@@ -79,6 +91,7 @@ processors:
       copy_from: abusech.sslblacklist.reason
       tag: set-indicator-description
   - append:
+      tag: append_related_hash_899c4041
       field: related.hash
       value: "{{{ abusech.sslblacklist.sha1 }}}"
       allow_duplicates: false
@@ -88,6 +101,7 @@ processors:
   ######################
   # The `AbuseCH Active URL API` ingests all active indicators during every `Interval`. So, all indicators are expired every `Interval` so new indicators are ingested.
   - set:
+      tag: set_event_ingested_0b555d4b
       field: event.ingested
       copy_from: _ingest.timestamp
   - script:
@@ -134,14 +148,17 @@ processors:
   # Cleanup processors #
   ######################
   - set:
+      tag: set_threat_indicator_type_ac7917ab
       field: threat.indicator.type
       value: unknown
       if: ctx.threat?.indicator?.type == null
   - convert:
+      tag: convert_abusech_sslblacklist_larted_d936c02d
       field: abusech.sslblacklist.larted
       type: boolean
       ignore_missing: true
   - script:
+      tag: script_b7bb2433
       lang: painless
       if: ctx.abusech != null
       source: |
@@ -166,6 +183,7 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_13da0647
       field:
         - abusech.sslblacklist.reason
         - abusech.sslblacklist.sha1
@@ -173,6 +191,7 @@ processors:
         - _conf
       ignore_missing: true
   - script:
+      tag: script_85ca118b
       description: Remove null/empty values recursively.
       lang: painless
       source: |-

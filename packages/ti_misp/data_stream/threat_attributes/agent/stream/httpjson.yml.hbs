@@ -46,6 +46,39 @@ request.transforms:
 - set:
     target: body.returnFormat
     value: json
+{{#if daily_refetch}}
+# Daily refetch mode: every 24 hours, reset cursor to re-fetch all attributes from initial_interval.
+# When a daily refetch occurs, the timestamp is reset to initial_interval and last_daily_refetch is updated.
+- set:
+    target: body.timestamp
+    value: |-
+      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
+      [[- $initialInterval := (parseDuration "-{{initial_interval}}") -]]
+      [[- $initialTimestamp := (now $initialInterval).Unix -]]
+      [[- $isDailyRefetch := true -]]
+      [[- if index .cursor "last_daily_refetch" -]]
+        [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
+        [[- $nextRefetch := 0 -]]
+        [[- with $lastRefetch -]]
+          [[- $nextRefetch = .Add $dailyRefetchDuration -]]
+        [[- end -]]
+        [[- with $nextRefetch -]]
+          [[- if .Before now -]]
+            [[- $isDailyRefetch = true -]]
+          [[- else -]]
+            [[- $isDailyRefetch = false -]]
+          [[- end -]]
+        [[- end -]]
+      [[- end -]]
+      [[- if $isDailyRefetch -]]
+        [[- $initialTimestamp -]]
+      [[- else if index .cursor "timestamp" -]]
+        [[- .cursor.timestamp -]]
+      [[- else -]]
+        [[- $initialTimestamp -]]
+      [[- end -]]
+    default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+{{else}}
 - set:
     target: body.timestamp
     value: >-
@@ -55,6 +88,7 @@ request.transforms:
         [[- .last_response.url.params.Get "timestamp" -]]
       [[- end -]]
     default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+{{/if}}
 - set:
     # Ignored by MISP, set as a workaround to make it available in response.pagination.
     target: url.params.timestamp
@@ -87,9 +121,34 @@ response.pagination:
 cursor:
   timestamp:
     value: '[[.last_event.timestamp]]'
+{{#if daily_refetch}}
+  last_daily_refetch:
+    # Track when the last daily refetch started. Updated when 24h has passed since previous refetch.
+    value: |-
+      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
+      [[- if index .cursor "last_daily_refetch" -]]
+        [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
+        [[- $nextRefetch := 0 -]]
+        [[- with $lastRefetch -]]
+          [[- $nextRefetch = .Add $dailyRefetchDuration -]]
+        [[- end -]]
+        [[- with $nextRefetch -]]
+          [[- if .Before now -]]
+            [[- formatDate now "RFC3339" -]]
+          [[- else -]]
+            [[- $.cursor.last_daily_refetch -]]
+          [[- end -]]
+        [[- end -]]
+      [[- else -]]
+        [[- formatDate now "RFC3339" -]]
+      [[- end -]]
+{{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
+{{/if}}
+{{#if daily_refetch}}
+  - daily_refetch
 {{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}

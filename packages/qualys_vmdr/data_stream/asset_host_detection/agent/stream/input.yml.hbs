@@ -42,7 +42,7 @@ program: |
           state.?want_more.orValue(false) ?
             state.next_page.link
           :
-            state.url.trim_right("/") + "/api/3.0/fo/asset/host/vm/detection/?" +
+            state.url.trim_right("/") + "/api/5.0/fo/asset/host/vm/detection/?" +
             state.?params.orValue("").parse_query().with({
               "action": ["list"],
               "show_igs": [state.show_igs? "1" : "0"],
@@ -61,7 +61,7 @@ program: |
             (
               has(resp.Body) && size(resp.Body) != 0
               ?
-                (resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_ahd'), "decode_xml_error_ahd").as(ahd_body,
+                (resp.Body.as(xml, try(xml.decode_xml('qualys_api_5_0_ahd'), "decode_xml_error_ahd").as(ahd_body,
                   !has(ahd_body.decode_xml_error_ahd)
                   ?
                     (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue()
@@ -125,7 +125,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "GET "+state.url.trim_right("/") + "/api/3.0/fo/asset/host/vm/detection/: "+(
+                  "message": "GET "+state.url.trim_right("/") + "/api/5.0/fo/asset/host/vm/detection/: "+(
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -178,7 +178,7 @@ program: |
     ).as(state, state.with(
       !has(state.worklist) ? state :
         has(state.worklist.HOST_QID_LIST) && size(state.worklist.HOST_QID_LIST) > 0 ?
-          request("GET", state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/?" +
+          request("GET", state.url.trim_right("/") + "/api/4.0/fo/knowledge_base/vuln/?" +
             {
               "ids": [front(state.worklist.HOST_QID_LIST, int(state.query_limit)).join(",")],
               "action": ["list"],
@@ -189,7 +189,7 @@ program: |
               "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
             }
           }).do_request().as(resp, (resp.StatusCode == 200 ?
-            resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_kb'), "decode_xml_error_kb").as(kb_body,
+            resp.Body.as(xml, try(xml.decode_xml('qualys_api_4_0_kb'), "decode_xml_error_kb").as(kb_body,
               !has(kb_body.decode_xml_error_kb)
               ?
                 (
@@ -280,7 +280,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "GET "+state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/: "+(
+                  "message": "GET "+state.url.trim_right("/") + "/api/4.0/fo/knowledge_base/vuln/: "+(
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -368,7 +368,7 @@ processors:
 {{processors}}
 {{/if}}
 xsd:
-  qualys_api_3_0_ahd: |
+  qualys_api_5_0_ahd: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='HOST_LIST_VM_DETECTION_OUTPUT'>
@@ -597,6 +597,7 @@ xsd:
           <xsd:element ref='EC2'/>
           <xsd:element ref='GOOGLE'/>
           <xsd:element ref='AZURE'/>
+          <xsd:element ref='ALICLOUD'/>
         </xsd:choice>
         </xsd:complexType>
       </xsd:element>
@@ -618,6 +619,14 @@ xsd:
       </xsd:element>
 
       <xsd:element name='AZURE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ATTRIBUTE' minOccurs='0' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ALICLOUD'>
         <xsd:complexType>
         <xsd:sequence>
           <xsd:element ref='ATTRIBUTE' minOccurs='0' maxOccurs='unbounded'/>
@@ -687,10 +696,18 @@ xsd:
           <xsd:element ref='FQDN' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='SSL' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='INSTANCE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVE' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='RESULTS' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='STATUS' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='FIRST_FOUND_DATETIME' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='LAST_FOUND_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='VULNERABILITY_DETECTION_SOURCES' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LATEST_VULNERABILITY_DETECTION_SOURCE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MITRE_TACTIC_NAME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MITRE_TECHNIQUE_NAME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MITRE_TACTIC_ID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MITRE_TECHNIQUE_ID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TRURISK_ELIMINATION_STATUS' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='QDS' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='QDS_FACTORS' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='TIMES_FOUND' minOccurs='0' maxOccurs='1'/>
@@ -728,6 +745,9 @@ xsd:
       </xsd:element>
 
       <xsd:element name='INSTANCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CVE' type='xsd:string'>
       </xsd:element>
 
       <xsd:element name='RESULTS' type='xsd:string'>
@@ -771,6 +791,27 @@ xsd:
       </xsd:element>
 
       <xsd:element name='LAST_FOUND_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VULNERABILITY_DETECTION_SOURCES' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LATEST_VULNERABILITY_DETECTION_SOURCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MITRE_TACTIC_NAME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MITRE_TECHNIQUE_NAME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MITRE_TACTIC_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MITRE_TECHNIQUE_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TRURISK_ELIMINATION_STATUS' type='xsd:string'>
       </xsd:element>
 
       <xsd:element name='TIMES_FOUND' type='xsd:string'>
@@ -838,7 +879,7 @@ xsd:
       </xsd:element>
       </xsd:schema>
 
-  qualys_api_3_0_kb: |
+  qualys_api_4_0_kb: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='KNOWLEDGE_BASE_VULN_LIST_OUTPUT'>

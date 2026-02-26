@@ -32,6 +32,9 @@ When using GitHub API to collect audit log events, below requirements must be me
  - If you're an enterprise admin, ensure your token also includes `admin:enterprise` scope to access enterprise-wide logs.
 
 To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming.
+
+**Authentication (Azure Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+
 To collect audit log events from Azure Blob Storage, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-blob-storage) to setup audit log streaming.
 To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3) to setup audit log streaming. For more details, refer to this [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
 To collect audit log events from Google Cloud Storage, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-google-cloud-storage) to setup audit log streaming.
@@ -97,8 +100,10 @@ For Filebeat input documentation, refer to the following pages:
 | github.login_method |  | keyword |
 | github.logout_reason |  | keyword |
 | github.message |  | keyword |
+| github.multi_repo |  | boolean |
 | github.name |  | keyword |
 | github.new_role |  | keyword |
+| github.number |  | long |
 | github.old_role |  | keyword |
 | github.operation_type |  | keyword |
 | github.org | GitHub organization name. | keyword |
@@ -106,6 +111,7 @@ For Filebeat input documentation, refer to the following pages:
 | github.permission | GitHub user permissions for the event. | keyword |
 | github.programmatic_access_type | Type of authentication used. | keyword |
 | github.public_repo |  | boolean |
+| github.publicly_leaked |  | boolean |
 | github.pull_request_id |  | keyword |
 | github.pull_request_title |  | keyword |
 | github.pull_request_url |  | keyword |
@@ -120,6 +126,8 @@ For Filebeat input documentation, refer to the following pages:
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
 | github.request_category |  | keyword |
+| github.secret_type |  | keyword |
+| github.secret_type_display_name |  | keyword |
 | github.secrets_updated |  | keyword |
 | github.source_branch |  | keyword |
 | github.target_branch |  | keyword |
@@ -772,6 +780,13 @@ The GitHub Issues datastream lets you retrieve github issues, including pull req
 All issues including `closed` are retrieved by default. If users want to retrieve only `open` requests, you need to change `State` parameter to `open`.
 
 To use this integration, users must use GitHub Apps or Personal Access Token with `read` permission to repositories or organization. Refer to [GitHub Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+
+**Note**: The Issues API can fetch a maximum of 30,000 issues when querying at the organization level. No limitation exists when querying for the repository level.
+
+**Note**: Ensure the GitHub Personal Access Token includes following fine-grained permission for the repository:
+- At least `Read-only` permission on Issues
+- At least `Read-only` permission on Metadata
+If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
 **Exported fields**
 

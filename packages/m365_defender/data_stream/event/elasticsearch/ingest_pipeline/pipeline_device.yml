@@ -89,7 +89,7 @@ processors:
   - append:
       field: event.type
       value: info
-      tag: append_event_type_info
+      tag: append_event_type_acd4e280
       if: ctx.event?.category != null && ctx.event.type == null && ctx.event.category.contains('file')
   - append:
       field: event.type
@@ -104,27 +104,27 @@ processors:
   - append:
       field: event.type
       value: start
-      tag: append_event_type_start
+      tag: append_event_type_fd78b233
       if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('connectionrequest') || ctx.json.properties.ActionType.toLowerCase().contains('listeningconnectioncreated') || ctx.json.properties.ActionType.toLowerCase().contains('processcreated') || ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents'))
   - append:
       field: event.type
       value: start
-      tag: append_event_type_start
+      tag: append_event_type_ee8a2e14
       if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('inboundconnectionaccepted')
   - append:
       field: event.type
       value: creation
-      tag: append_event_type_creation
+      tag: append_event_type_f6cf17ce
       if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('registrykeycreated')
   - append:
       field: event.type
       value: deletion
-      tag: append_event_type_deletion
+      tag: append_event_type_5a7004f0
       if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('registrykeydeleted') || ctx.json.properties.ActionType.toLowerCase().contains('registryvaluedeleted'))
   - append:
       field: event.type
       value: change
-      tag: append_event_type_change
+      tag: append_event_type_2a95f0fc
       if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('registrykeyrenamed') || ctx.json.properties.ActionType.toLowerCase().contains('registryvalueset'))
   - set:
       field: json.properties.ActionType
@@ -151,7 +151,7 @@ processors:
   - append:
       field: event.type
       value: info
-      tag: append_event_type_info
+      tag: append_event_type_c1ec773e
       if: ctx.event?.category != null && ctx.event.type == null && (ctx.event.category.contains('network') || ctx.event.category.contains('api'))
 
   # AdditionalFields are flattened, as they can vary depending on the source, users can use custom pipelines to move fields away from AdditionalFields if required.
@@ -163,8 +163,9 @@ processors:
       if: ctx.json?.properties?.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
+            tag: append_error_message_42d48b84
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.AdditionalFields
       target_field: m365_defender.event.additional_fields
@@ -206,8 +207,9 @@ processors:
       if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.m365_defender?.event?.additional_fields?.answers != null && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
       on_failure:
         - append:
+            tag: append_error_message_5385e7bd
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: m365_defender.event.additional_fields.answers
       target_field: m365_defender.event.dns.answers
@@ -220,8 +222,9 @@ processors:
       if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.m365_defender?.event?.additional_fields?.TTLs != null && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
       on_failure:
         - append:
+            tag: append_error_message_76b3e131
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: m365_defender.event.additional_fields.TTLs
       target_field: m365_defender.event.dns.ttls
@@ -229,6 +232,7 @@ processors:
       ignore_missing: true
       if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
   - script:
+      tag: script_e72da60f
       description: Add m365_defender.event.dns.header_flags from flags inside AdditionalFields
       lang: painless
       if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
@@ -255,48 +259,54 @@ processors:
       if: ctx.json?.properties?.CrlDistributionPointUrls instanceof String && ctx.json.properties.CrlDistributionPointUrls != ''
       on_failure:
       - append:
+          tag: append_error_message_38e19586
           field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.LoggedOnUsers
       tag: json_json_properties_LoggedOnUsers
       if: ctx.json?.properties?.LoggedOnUsers instanceof String && ctx.json.properties.LoggedOnUsers != ''
       on_failure:
         - append:
+            tag: append_error_message_026795ce
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.ConnectedNetworks
       tag: json_json_properties_ConnectedNetworks
       if: ctx.json?.properties?.ConnectedNetworks instanceof String && ctx.json.properties.ConnectedNetworks != ''
       on_failure:
         - append:
+            tag: append_error_message_a6390898
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.DefaultGateways
       tag: json_json_properties_DefaultGateways
       if: ctx.json?.properties?.DefaultGateways instanceof String && ctx.json.properties.DefaultGateways != ''
       on_failure:
         - append:
+            tag: append_error_message_9cdb036c
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.DnsAddresses
       tag: json_json_properties_DnsAddresses
       if: ctx.json?.properties?.DnsAddresses instanceof String && ctx.json.properties.DnsAddresses != ''
       on_failure:
         - append:
+            tag: append_error_message_85ea261e
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.IPAddresses
       tag: json_json_properties_IPAddresses
       if: ctx.json?.properties?.IPAddresses instanceof String && ctx.json.properties.IPAddresses != ''
       on_failure:
         - append:
+            tag: append_error_message_e12c342e
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Date Processors
   - date:
@@ -308,8 +318,9 @@ processors:
       if: ctx.json?.properties?.CertificateExpirationTime instanceof String && ctx.json.properties.CertificateExpirationTime != ""
       on_failure:
         - append:
+            tag: append_error_message_48739101
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.properties.InitiatingProcessCreationTime
       target_field: m365_defender.event.initiating_process.creation_time
@@ -319,8 +330,9 @@ processors:
       if: ctx.json?.properties?.InitiatingProcessCreationTime instanceof String && ctx.json.properties.InitiatingProcessCreationTime != ""
       on_failure:
         - append:
+            tag: append_error_message_f0307348
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.properties.InitiatingProcessParentCreationTime
       target_field: m365_defender.event.initiating_process.parent_creation_time
@@ -330,8 +342,9 @@ processors:
       if: ctx.json?.properties?.InitiatingProcessParentCreationTime instanceof String && ctx.json.properties.InitiatingProcessParentCreationTime != ""
       on_failure:
         - append:
+            tag: append_error_message_b57caf37
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.properties.ProcessCreationTime
       target_field: m365_defender.event.process.creation_time
@@ -341,8 +354,9 @@ processors:
       if: ctx.json?.properties?.ProcessCreationTime instanceof String && ctx.json.properties.ProcessCreationTime != ""
       on_failure:
         - append:
+            tag: append_error_message_3a75bd3f
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.properties.CertificateCountersignatureTime
       target_field: m365_defender.event.certificate.countersignature_time
@@ -352,8 +366,9 @@ processors:
       if: ctx.json?.properties?.CertificateCountersignatureTime instanceof String && ctx.json.properties.CertificateCountersignatureTime != ""
       on_failure:
         - append:
+            tag: append_error_message_daab155c
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.properties.CertificateCreationTime
       target_field: m365_defender.event.certificate.creation_time
@@ -363,8 +378,9 @@ processors:
       if: ctx.json?.properties?.CertificateCreationTime instanceof String && ctx.json.properties.CertificateCreationTime != ""
       on_failure:
         - append:
+            tag: append_error_message_fe2622dd
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Convert processors
   - convert:
       field: json.properties.InitiatingProcessFileSize
@@ -375,8 +391,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4711c429
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.InitiatingProcessLogonId
       target_field: m365_defender.event.initiating_process.logon_id
@@ -400,8 +417,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a49e3a29
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.ReportId
       target_field: m365_defender.event.report_id
@@ -418,8 +436,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ba57e945
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.IPv6Dhcp
       target_field: m365_defender.event.ipv6_dhcp
@@ -429,11 +448,13 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e043d8c5
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-# Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
+  # Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
   - script:
+      tag: script_47b85861
       lang: painless
       source: |
        def isTruthy(def val) {
@@ -510,7 +531,7 @@ processors:
   - rename:
       field: json.properties.DeviceId
       target_field: m365_defender.event.device.id
-      tag : rename_json_properties_DeviceId
+      tag: rename_json_properties_DeviceId
       ignore_missing: true
   - rename:
       field: json.properties.InitiatingProcessCommandLine
@@ -1059,6 +1080,7 @@ processors:
       if: ctx.json?.properties?.FileOriginIP != null
       on_failure:
         - remove:
+            tag: remove_json_properties_FileOriginIP_6cf3e671
             field: json.properties.FileOriginIP
   - rename:
       field: json.properties.FileOriginIP
@@ -1072,6 +1094,7 @@ processors:
       if: ctx.json?.properties?.RemoteIP != null
       on_failure:
         - remove:
+            tag: remove_json_properties_RemoteIP_06a3b788
             field: json.properties.RemoteIP
   - rename:
       field: json.properties.RemoteIP
@@ -1085,6 +1108,7 @@ processors:
       if: ctx.json?.properties?.LocalIP != null
       on_failure:
         - remove:
+            tag: remove_json_properties_LocalIP_0ec930b1
             field: json.properties.LocalIP
   - rename:
       field: json.properties.LocalIP
@@ -1098,6 +1122,7 @@ processors:
       if: ctx.json?.properties?.RequestSourceIP != null
       on_failure:
         - remove:
+            tag: remove_json_properties_RequestSourceIP_b3d0c3a3
             field: json.properties.RequestSourceIP
   - rename:
       field: json.properties.RequestSourceIP
@@ -1126,6 +1151,7 @@ processors:
       if: ctx.json?.properties?.PublicIP != null
       on_failure:
         - remove:
+            tag: remove_json_properties_PublicIP_f0be0db7
             field: json.properties.PublicIP
   - rename:
       field: json.properties.PublicIP
@@ -1139,9 +1165,9 @@ processors:
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_file_path
-      if: ctx.event?.category != null && 
-        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - script:
+      tag: script_9738ef33
       description: Adds file information.
       lang: painless
       if: ctx.file?.path != null && ctx.file.path.length() > 1
@@ -1586,6 +1612,7 @@ processors:
         && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') || ctx.event.category.contains('library'))
       ignore_empty_value: true
   - script:
+      tag: script_8a7319c0
       description: Make temp variable for adding process.Ext.api.name when event.category is 'api'.
       lang: painless
       if: >-
@@ -1635,9 +1662,9 @@ processors:
       ignore_missing: true
   # Add Target.process.* when remote API call i.e., ActionType: (CreateRemoteThreadApiCall or ReadProcessMemoryApiCall or ntallocatevirtualmemoryremoteapicall or OpenProcessApiCall)
   - set:
-      field: Target.process.name 
+      field: Target.process.name
       copy_from: m365_defender.event.file.name
-      tag: set_Target_process_name 
+      tag: set_Target_process_name
       if: ctx.event?.category != null && ctx.event.category.contains('api') && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
       ignore_empty_value: true
   - set:
@@ -1664,7 +1691,7 @@ processors:
       value: >-
         {{{m365_defender.event.folder_path}}}\{{{m365_defender.event.file.name}}}
       tag: set_Target_process_executable
-      if: >- 
+      if: >-
         ctx.event?.category != null 
         && ctx.event.category.contains('api') 
         && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
@@ -1685,12 +1712,11 @@ processors:
             || ctx.event.category.contains('driver') 
             || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
             || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
-
   - set:
       field: process.hash.md5
       copy_from: m365_defender.event.initiating_process.md5
       ignore_empty_value: true
-      tag: set_process_hash_md5
+      tag: set_process_hash_md5_66b165d6
       if: >-
         ctx.event?.category != null 
         && (ctx.event.category.contains('api') 
@@ -1701,7 +1727,7 @@ processors:
       field: process.hash.sha1
       copy_from: m365_defender.event.initiating_process.sha1
       ignore_empty_value: true
-      tag: set_process_hash_sha1
+      tag: set_process_hash_sha1_2c3f7ca5
       if: >-
         ctx.event?.category != null 
         && (ctx.event.category.contains('api') 
@@ -1712,7 +1738,7 @@ processors:
       field: process.hash.sha256
       copy_from: m365_defender.event.initiating_process.sha256
       ignore_empty_value: true
-      tag: set_process_hash_sha256
+      tag: set_process_hash_sha256_57789c47
       if: >-
         ctx.event?.category != null 
         && (ctx.event.category.contains('api') 
@@ -1723,7 +1749,7 @@ processors:
       field: process.parent.pid
       copy_from: m365_defender.event.initiating_process.parent_id
       ignore_empty_value: true
-      tag: set_process_parent_pid
+      tag: set_process_parent_pid_36f4fe37
       if: >-
         ctx.event?.category != null 
         && (ctx.event.category.contains('api') 
@@ -1756,7 +1782,7 @@ processors:
       field: process.name
       copy_from: m365_defender.event.initiating_process.file_name
       ignore_empty_value: true
-      tag: set_process_name
+      tag: set_process_name_a4f68d40
       if: >-
         ctx.event?.category != null 
         && (ctx.event.category.contains('api') 
@@ -1767,7 +1793,7 @@ processors:
       field: process.executable
       copy_from: m365_defender.event.initiating_process.folder_path
       ignore_empty_value: true
-      tag: set_process_executable
+      tag: set_process_executable_4b8d3abd
       if: >-
         ctx.event?.category != null 
         && (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
@@ -1812,7 +1838,7 @@ processors:
       field: process.parent.start
       copy_from: m365_defender.event.initiating_process.parent_creation_time
       ignore_empty_value: true
-      tag: set_process_parent_start
+      tag: set_process_parent_start_c8255897
       if: >-
         ctx.event?.category != null 
         && (ctx.event.category.contains('api') 
@@ -1823,7 +1849,7 @@ processors:
       field: process.parent.name
       copy_from: m365_defender.event.initiating_process.parent_file_name
       ignore_empty_value: true
-      tag: set_process_parent_name
+      tag: set_process_parent_name_4b915226
       if: >-
         ctx.event?.category != null 
         && (ctx.event.category.contains('api') 
@@ -1909,7 +1935,7 @@ processors:
   - set:
       field: process.code_signature.status
       copy_from: m365_defender.event.initiating_process.signature_status
-      tag: set_process_code_signature_status
+      tag: set_process_code_signature_status_481c9f53
       ignore_empty_value: true
       if: >-
         ctx.event?.category != null 
@@ -1918,6 +1944,7 @@ processors:
             || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   ### Remove the temporary variable 
   - remove:
+      tag: remove__temp_deviceevents_that_map_process_88c7c078
       field: _temp_deviceevents_that_map_process
       description: Remove temporary variable created in tag set_temp_deviceevents_that_map_process*
       ignore_missing: true
@@ -1926,41 +1953,41 @@ processors:
       field: process.command_line
       copy_from: m365_defender.event.process.command_line
       ignore_empty_value: true
-      tag: set_process_command_line
+      tag: set_process_command_line_7a342635
   - set:
       field: process.start
       copy_from: m365_defender.event.process.creation_time
       ignore_empty_value: true
-      tag: set_process_start
+      tag: set_process_start_959feeac
   - set:
       field: process.pid
       copy_from: m365_defender.event.process.id
       ignore_empty_value: true
-      tag: set_process_pid
+      tag: set_process_pid_93d8f798
   - set:
       field: process.pe.company
       copy_from: m365_defender.event.process.version_info_company_name
-      tag: set_process_pe_company
+      tag: set_process_pe_company_579fcc0f
       ignore_empty_value: true
   - set:
       field: process.pe.description
       copy_from: m365_defender.event.process.version_info_file_description
-      tag: set_process_pe_description
+      tag: set_process_pe_description_e00918cd
       ignore_empty_value: true
   - set:
       field: process.pe.original_file_name
       copy_from: m365_defender.event.process.version_info_original_file_name
-      tag: set_process_pe_original_file_name
+      tag: set_process_pe_original_file_name_6d76aeb2
       ignore_empty_value: true
   - set:
       field: process.pe.product
       copy_from: m365_defender.event.process.version_info_product_name
-      tag: set_process_pe_product
+      tag: set_process_pe_product_494c4897
       ignore_empty_value: true
   - set:
       field: process.pe.file_version
       copy_from: m365_defender.event.process.version_info_product_version
-      tag: set_process_pe_file_version
+      tag: set_process_pe_file_version_b91ab100
       ignore_empty_value: true
 
   # Host mappings
@@ -1973,6 +2000,11 @@ processors:
       field: host.name
       tag: lowercase_host_name
       if: ctx.host?.name != null
+  - lowercase:
+      field: m365_defender.event.device.name
+      target_field: host.hostname
+      tag: lowercase_host_hostname
+      if: ctx.m365_defender?.event?.device?.name != null
   - set:
       field: host.id
       copy_from: m365_defender.event.device.id
@@ -1989,19 +2021,23 @@ processors:
       tag: set_host_architecture
       ignore_empty_value: true
   - set:
+      tag: set_host_os_type_62ba268a
       field: host.os.type
       value: windows
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('windows')
   - set:
+      tag: set_host_os_type_9c46628a
       field: host.os.type
       value: linux
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('linux')
   - set:
+      tag: set_host_os_type_280931ca
       field: host.os.type
       value: macos
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
   # host.os.type can also be derived for Windows based on event.category
   - set:
+      tag: set__tmp_posix_559988e4
       field: _tmp.posix
       value: true
       if: >-
@@ -2014,6 +2050,7 @@ processors:
         ctx.m365_defender.event.additional_fields.InitiatingProcessPosixRealUser != null &&
         ctx.m365_defender.event.additional_fields.InitiatingProcessPosixSessionId != null
   - set:
+      tag: set_host_os_type_e4c52edf
       field: host.os.type
       value: windows
       if: >-
@@ -2024,6 +2061,7 @@ processors:
             ctx.event.category.contains('driver')
         )
   - set:
+      tag: set_host_os_type_1dd233f2
       field: host.os.type
       value: windows
       if: >-
@@ -2032,6 +2070,7 @@ processors:
             ctx.m365_defender?.event?.request?.account_sid != null
         )
   - set:
+      tag: set_host_os_type_7f30425d
       field: host.os.type
       value: windows
       if: >-
@@ -2039,6 +2078,7 @@ processors:
             ctx.m365_defender?.event?.initiating_process?.account_sid != null
         )
   - set:
+      tag: set_host_os_type_79be972b
       field: host.os.type
       value: windows
       if: >-
@@ -2047,6 +2087,7 @@ processors:
             ctx.m365_defender?.event?.account?.sid != null
         )
   - set:
+      tag: set_host_os_type_f18fb812
       field: host.os.type
       value: windows
       if: >-
@@ -2054,6 +2095,7 @@ processors:
             ctx.m365_defender?.event?.initiating_process?.account_sid != null
         )
   - set:
+      tag: set_host_os_type_a2a1dc7c
       field: host.os.type
       value: unix
       if: ctx.host?.os?.type == null && ctx._tmp?.posix == true
@@ -2101,6 +2143,7 @@ processors:
       ignore_missing: true
       if: ctx._tmp?.mac?.contains('-') == false
   - append:
+      tag: append_host_mac_39430dea
       field: host.mac
       value: '{{{_tmp.mac}}}'
       if: ctx._tmp?.mac != null
@@ -2194,25 +2237,25 @@ processors:
       field: source.ip
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
-      tag: set_source_ip
+      tag: set_source_ip_08598a09
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
       field: source.ip
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
-      tag: set_source_ip
+      tag: set_source_ip_61d14edf
       if: ctx.event?.category != null && !ctx.event.category.contains('authentication') && ctx.m365_defender?.event?.network_direction == null
   - set:
       field: source.ip
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
-      tag: set_source_ip
+      tag: set_source_ip_da6f8587
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - set:
       field: source.ip
       copy_from: m365_defender.event.request.source_ip
       ignore_empty_value: true
-      tag: set_source_ip
+      tag: set_source_ip_9f17a105
       if: ctx.event?.category != null && ctx.event.category.contains('file')
   - set:
       field: source.port
@@ -2224,24 +2267,24 @@ processors:
       field: source.port
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
-      tag: set_source_port
+      tag: set_source_port_fe04517e
       if: ctx.event?.category != null && ctx.event.category.contains('authentication')
   - set:
       field: source.port
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
-      tag: set_source_port
+      tag: set_source_port_1c9ac230
       if: ctx.event?.category != null && !ctx.event.category.contains('authentication')
   - set:
       field: source.port
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
-      tag: set_source_port
+      tag: set_source_port_adde5f49
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - set:
       field: source.port
       copy_from: m365_defender.event.request.source_port
-      tag: set_source_port
+      tag: set_source_port_4c774e5c
       ignore_empty_value: true
   - set:
       field: source.domain
@@ -2260,13 +2303,13 @@ processors:
       field: destination.ip
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
-      tag: set_destination_ip
+      tag: set_destination_ip_5c85505c
       if: ctx.event?.category != null && !ctx.event.category.contains('authentication') && ctx.m365_defender?.event?.network_direction == null
   - set:
       field: destination.ip
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
-      tag: set_destination_ip
+      tag: set_destination_ip_78f91600
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
       field: destination.address
@@ -2284,13 +2327,13 @@ processors:
       field: destination.port
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
-      tag: set_destination_port
+      tag: set_destination_port_8094a312
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - set:
       field: destination.port
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
-      tag: set_destination_port
+      tag: set_destination_port_5bc43d06
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
 
   # User fields (Duplicate fields like user.name never exists at the same time in different event types)
@@ -2307,7 +2350,7 @@ processors:
   - set:
       field: user.name
       copy_from: m365_defender.event.request.account_name
-      tag: set_user_name
+      tag: set_user_name_5ca6a474
       ignore_empty_value: true
   - set:
       field: user.name
@@ -2318,7 +2361,7 @@ processors:
   - set:
       field: user.domain
       copy_from: m365_defender.event.account.domain
-      tag: set_user_domain
+      tag: set_user_domain_21c37d97
       ignore_empty_value: true
   - set:
       field: user.domain
@@ -2723,6 +2766,7 @@ processors:
 
   ## IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_56e63fbc
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       first_only: true
@@ -2732,6 +2776,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -2740,18 +2785,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
@@ -2765,48 +2814,57 @@ processors:
       if: ctx.host?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_452ef445
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_23e97a1f
       field: related.hosts
       value: '{{{user.domain}}}'
       if: ctx.user?.domain != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_b45c0939
       field: related.hosts
       value: '{{{m365_defender.event.initiating_process.account_domain}}}'
       if: ctx.m365_defender?.event?.initiating_process?.account_domain != null
       allow_duplicates: false
   ## Users
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_6b789361
       field: related.user
       value: '{{{m365_defender.event.initiating_process.account_name}}}'
       if: ctx.m365_defender?.event?.initiating_process?.account_name != null
       allow_duplicates: false
   ## IP
   - append:
+      tag: append_related_ip_25998011
       field: related.ip
       value: '{{{m365_defender.event.file.origin_ip}}}'
       if: ctx.m365_defender?.event?.file?.origin_ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_host_ip_0c6db249
       field: host.ip
       if: ctx.host?.ip instanceof List
       ignore_failure: true
@@ -2817,67 +2875,80 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
+      tag: append_related_ip_51e94d70
       field: related.ip
       value: '{{{m365_defender.event.ipv4_dhcp}}}'
       if: ctx.m365_defender?.event?.ipv4_dhcp != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_6ee5d55c
       field: related.ip
       value: '{{{m365_defender.event.ipv6_dhcp}}}'
       if: ctx.m365_defender?.event?.ipv6_dhcp != null
       allow_duplicates: false
   ## Hash
   - append:
+      tag: append_related_hash_6af42da3
       field: related.hash
       value: '{{{file.hash.md5}}}'
       if: ctx.file?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_b56c7961
       field: related.hash
       value: '{{{file.hash.sha1}}}'
       if: ctx.file?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_017aef51
       field: related.hash
       value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_e71b2329
       field: related.hash
       value: '{{{process.hash.md5}}}'
       if: ctx.process?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_96df867f
       field: related.hash
       value: '{{{process.hash.sha1}}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_239dcc07
       field: related.hash
       value: '{{{process.hash.sha256}}}'
       if: ctx.process?.hash?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_42c4599f
       field: related.hash
       value: '{{{process.parent.hash.md5}}}'
       if: ctx.process?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_0567735b
       field: related.hash
       value: '{{{process.parent.hash.sha1}}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_80031fa3
       field: related.hash
       value: '{{{process.parent.hash.sha256}}}'
       if: ctx.process?.hash?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_dcdcb3bb
       field: related.hash
       value: '{{{m365_defender.event.issuer_hash}}}'
       if: ctx.m365_defender?.event?.issuer_hash != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_6d95bbe5
       field: related.hash
       value: '{{{m365_defender.event.signer_hash}}}'
       if: ctx.m365_defender?.event?.signer_hash != null
@@ -2960,6 +3031,7 @@ processors:
         - m365_defender.event.dns.header_flags
       ignore_missing: true
   - remove:
+      tag: remove_3f4f84fc
       field:
         - _tmp
       ignore_missing: true

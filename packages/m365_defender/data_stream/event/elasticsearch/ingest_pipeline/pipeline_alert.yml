@@ -6,6 +6,11 @@ processors:
       field: event.kind
       value: alert
       tag: set_event_kind
+  - set:
+      field: event.kind
+      value: event
+      if: ctx.m365_defender?.event?.category.toLowerCase().contains('behavior')
+      tag: set_event_kind_to_event
   - append:
       field: event.category
       value: file
@@ -54,24 +59,27 @@ processors:
       if: ctx.json?.properties?.Categories instanceof String && ctx.json.properties.Categories != ''
       on_failure:
         - append:
+            tag: append_error_message_f0bfc88d
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.AdditionalFields
       tag: json_properties_AdditionalFields
       if: ctx.json?.properties?.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
+            tag: append_error_message_5e0deff9
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.AttackTechniques
       tag: json_properties_AttackTechniques
       if: ctx.json?.properties?.AttackTechniques instanceof String && ctx.json.properties.AttackTechniques != ''
       on_failure:
         - append:
+            tag: append_error_message_4c43ecf1
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Convert processors
   - convert:
@@ -83,8 +91,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_026cb1f0
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.FileSize
       target_field: m365_defender.event.file.size
@@ -94,8 +103,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_75842b59
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.LocalIP
       target_field: m365_defender.event.local.ip
@@ -105,8 +115,69 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aa8d4cbc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.StartTime
+      tag: date_StartTime
+      target_field: m365_defender.event.start_time
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.StartTime != null && ctx.json.properties.StartTime != ''
+      on_failure:
+        - append:
+            tag: append_error_message_8f13733e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.EndTime
+      tag: date_EndTime
+      target_field: m365_defender.event.end_time
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.EndTime != null && ctx.json.properties.EndTime != ''
+      on_failure:
+        - append:
+            tag: append_error_message_d76601d3
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.DataAggregationEndTime
+      tag: date_DataAggregationEndTime
+      target_field: m365_defender.event.data_aggregation_end_time
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.DataAggregationEndTime != null && ctx.json.properties.DataAggregationEndTime != ''
+      on_failure:
+        - append:
+            tag: append_error_message_08f81395
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.DataAggregationStartTime
+      tag: date_DataAggregationStartTime
+      target_field: m365_defender.event.data_aggregation_start_time
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.DataAggregationStartTime != null && ctx.json.properties.DataAggregationStartTime != ''
+      on_failure:
+        - append:
+            tag: append_error_message_e4bee2d4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.EmailClusterId
+      target_field: m365_defender.event.email.cluster_id
+      tag: convert_email_cluster_id
+      if: ctx.json?.properties?.EmailClusterId != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_2cb9fa98
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Rename processors
   - rename:
@@ -259,10 +330,56 @@ processors:
       target_field: m365_defender.event.application
       tag: rename_json_properties_Application
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.properties.ApplicationId
       target_field: m365_defender.event.application_id
-      tag: rename_json_properties_ApplicationId
+      tag: convert_json_properties_ApplicationId
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.properties.ActionType
+      target_field: m365_defender.event.action.type
+      tag: rename_json_properties_ActionType
+      ignore_missing: true
+  - rename:
+      field: json.properties.BehaviorId
+      tag: rename_BehaviorId
+      target_field: m365_defender.event.behavior_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.CloudResourceType
+      tag: rename_CloudResourceType
+      target_field: m365_defender.event.cloud_resource_type
+      ignore_missing: true
+  - rename:
+      field: json.properties.CloudResourceId
+      tag: rename_CloudResourceId
+      target_field: m365_defender.event.cloud_resource_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.CloudSubscriptionId
+      tag: rename_CloudSubscriptionId
+      target_field: m365_defender.event.cloud_subscription_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.CloudPlatform
+      tag: rename_CloudPlatform
+      target_field: m365_defender.event.cloud_platform
+      ignore_missing: true
+  - rename:
+      field: json.properties.DataSources
+      tag: rename_DataSources
+      target_field: m365_defender.event.data_sources
+      ignore_missing: true
+  - rename:
+      field: json.properties.Description
+      tag: rename_Description
+      target_field: m365_defender.event.description
+      ignore_missing: true
+  - rename:
+      field: json.properties.DetailedEntityRole
+      tag: rename_DetailedEntityRole
+      target_field: m365_defender.event.detailed_entity_role
       ignore_missing: true
   - rename:
       field: json.properties.EmailSubject
@@ -279,6 +396,11 @@ processors:
       target_field: m365_defender.event.evidence.role
       tag: rename_json_properties_EvidenceRole
       ignore_missing: true
+  - rename:
+      field: json.properties.EntityRole
+      tag: rename_EntityRole
+      target_field: m365_defender.event.entity_role
+      ignore_missing: true
 
   # Event mapping
   - set:
@@ -290,6 +412,10 @@ processors:
       field: event.provider
       copy_from: m365_defender.event.service_source
       tag: set_event_provider
+  - set:
+      field: event.id
+      tag: set_event_id_from_event_behavior_id
+      copy_from: m365_defender.event.behavior_id
       ignore_empty_value: true
   - set:
       field: event.reference
@@ -320,6 +446,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_6af68d2a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -528,25 +655,27 @@ processors:
       if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != ''
       on_failure:
         - append:
+            tag: append_error_message_ab0d0e22
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - sort:
       field: threat.technique.subtechnique.id
       tag: sort_threat_technique_subtechnique_id
       if: ctx.threat?.technique?.subtechnique?.id != null && ctx.threat.technique.subtechnique.id != ''
       on_failure:
         - append:
+            tag: append_error_message_7b86280a
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - sort:
       field: threat.technique.subtechnique.name
       tag: sort_threat_technique_subtechnique_name
       if: ctx.threat?.technique?.subtechnique?.name != null && ctx.threat.technique.subtechnique.name != ''
       on_failure:
         - append:
+            tag: append_error_message_e2dd7f92
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # File mapping (Unless category is threat)
   - set:
@@ -554,7 +683,7 @@ processors:
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_file_directory
-      if: ctx.event?.category != null && !ctx.event.category.contains('threat') 
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
   - set:
       field: file.hash.sha1
       copy_from: m365_defender.event.sha1
@@ -628,7 +757,7 @@ processors:
       field: user.id
       copy_from: m365_defender.event.account.object_id
       ignore_empty_value: true
-      tag: set_user_id
+      tag: set_user_id_442d5534
       if: ctx.user?.id == null
 
   # Email mapping
@@ -643,13 +772,20 @@ processors:
       tag: set_email_message_id
       ignore_empty_value: true
 
+  # Cloud mapping
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_from_event_cloud_platform
+      copy_from: m365_defender.event.cloud_platform
+      ignore_empty_value: true
+
   # General mapping
   - set:
       field: message
       copy_from: m365_defender.event.title
       tag: set_message
       ignore_empty_value: true
-  
+
   # Related mapping
   ## Host
   - append:
@@ -661,13 +797,13 @@ processors:
   - append:
       field: related.hosts
       value: '{{{user.domain}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_a29fcba7
       if: ctx.user?.domain != null
       allow_duplicates: false
   - append:
       field: related.hosts
       value: '{{{host.id}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_7257683d
       if: ctx.host?.id != null
       allow_duplicates: false
   ## User
@@ -680,7 +816,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      tag: append_related_user
+      tag: append_related_user_56737f2b
       if: ctx.user?.name != null
       allow_duplicates: false
   ## IP
@@ -693,7 +829,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
-      tag: append_related_ip
+      tag: append_related_ip_78c8cc1d
       if: ctx.destination?.ip != null
       allow_duplicates: false
   ## Hash
@@ -706,7 +842,7 @@ processors:
   - append:
       field: related.hash
       value: '{{{m365_defender.event.sha1}}}'
-      tag: append_related_hash
+      tag: append_related_hash_70cd15fc
       if: ctx.m365_defender?.event?.sha1 != null
       allow_duplicates: false
 
@@ -719,6 +855,7 @@ processors:
         - m365_defender.event.timestamp
         - m365_defender.event.remote.url
         - m365_defender.event.alert.id
+        - m365_defender.event.cloud_platform
         - m365_defender.event.service_source
         - m365_defender.event.device.name
         - m365_defender.event.device.id
@@ -741,6 +878,7 @@ processors:
         - m365_defender.event.network.message_id
         - m365_defender.event.email.subject
         - m365_defender.event.title
+        - m365_defender.event.behavior_id
       ignore_missing: true
 on_failure:
   - append:
