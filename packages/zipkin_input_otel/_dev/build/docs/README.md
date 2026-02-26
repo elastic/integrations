@@ -8,17 +8,14 @@ This package receives Zipkin trace data (V1 and V2 JSON/Protobuf formats) by con
 
 ## Configuration
 
-| Setting | Description | Default |
-|---|---|---|
-| Endpoint | The `host:port` address to listen on for Zipkin spans | `localhost:9411` |
-| Parse String Tags | Parse string tags/binary annotations into int/bool/float types | `false` |
+For the full list of settings exposed for the receiver and examples, refer to the [Zipkin Receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/zipkinreceiver).
 
 ## Troubleshooting
 
 If you encounter issues:
 
 1. Verify the endpoint is accessible and not blocked by a firewall.
-2. Ensure applications are sending Zipkin-formatted traces to the configured endpoint (default: `http://<host>:9411/api/v2/spans`).
+2. Ensure applications are sending Zipkin-formatted traces to the configured endpoint (default: `http://<host>:9411`).
 3. Check the Elastic Agent logs for any receiver errors.
 
 ## Traces reference
