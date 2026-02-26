@@ -22,6 +22,8 @@ This integration supports below API versions to collect data.
 | ---------------------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
 | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
+| BehaviorEntities          | Information about entities (file, process, device, user, and others) that are involved in a behavior.                                                                             |
+| BehaviorInfo              | Information about behaviors from Microsoft Defender for Cloud Apps and User and Entity Behavior Analytics (UEBA).                                                                 |
 | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
 | DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
 | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
@@ -41,6 +43,9 @@ This integration supports below API versions to collect data.
 | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
 | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
 | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+| MessageEvents             | Details about messages sent and received within your organization at the time of delivery.                                                                                        |
+| MessagePostDeliveryEvents | Information about security events that occurred after the delivery of a Microsoft Teams message in your organization.                                                             |
+| MessageUrlInfo            | Information about URLs sent through Microsoft Teams messages in your organization.                                                                                                |
 | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
 
 ## What data does this integration collect?
@@ -74,6 +79,8 @@ Follow the steps below to configure data collection from Microsoft sources.
 
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 - A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping filebeat it can start back up at the spot that it stopped processing messages.
+
+**Authentication:** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
 #### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
@@ -639,6 +646,9 @@ This is the `event` dataset.
 | m365_defender.event.attachment_count | Number of attachments in the email. | long |
 | m365_defender.event.attack_techniques | MITRE ATT&CK techniques associated with the activity that triggered the alert. | keyword |
 | m365_defender.event.authentication_details | List of pass or fail verdicts by email authentication protocols like DMARC, DKIM, SPF or a combination of multiple authentication types (CompAuth). | keyword |
+| m365_defender.event.aws_resource_name | Unique identifier specific to Amazon Web Services devices, containing the Amazon resource name. | keyword |
+| m365_defender.event.azure_resource_id | Unique identifier of the Azure resource associated with the device. | keyword |
+| m365_defender.event.behavior_id | Unique identifier for the behavior. | keyword |
 | m365_defender.event.bulk_complaint_level | Threshold assigned to email from bulk mailers, a high bulk complaint level (BCL) means the email is more likely to generate complaints, and thus more likely to be spam. | long |
 | m365_defender.event.category | The Advanced Hunting table name with 'AdvancedHunting-' prefix. | keyword |
 | m365_defender.event.certificate.countersignature_time | Date and time the certificate was countersigned. | date |
@@ -648,17 +658,24 @@ This is the `event` dataset.
 | m365_defender.event.change_source | Identifies which identity provider or process triggered the addition of the new row. For example, the System-UserPersistence value is used for any rows added by an automated process. | keyword |
 | m365_defender.event.city | City where the client IP address is geolocated. | keyword |
 | m365_defender.event.client_version | Version of the endpoint agent or sensor running on the machine. | keyword |
+| m365_defender.event.cloud_platform | Cloud platform where the event occurred. | keyword |
+| m365_defender.event.cloud_resource_id | Unique identifier of the cloud resource accessed. | keyword |
+| m365_defender.event.cloud_resource_type | Type of cloud resource. | keyword |
+| m365_defender.event.cloud_subscription_id | Unique identifier of the cloud service subscription. | keyword |
 | m365_defender.event.confidence_level | List of confidence levels of any spam or phishing verdicts. For spam, this column shows the spam confidence level (SCL), indicating if the email was skipped (-1), found to be not spam (0,1), found to be spam with moderate confidence (5,6), or found to be spam with high confidence (9). For phishing, this column displays whether the confidence level is "High" or "Low". | flattened |
 | m365_defender.event.connected_networks | Networks that the adapter is connected to. Each JSON array contains the network name, category (public, private or domain), a description, and a flag indicating if it's connected publicly to the internet. | flattened |
 | m365_defender.event.connectors | Custom instructions that define organizational mail flow and how the email was routed. | keyword |
 | m365_defender.event.country_code | Two-letter code indicating the country where the client IP address is geolocated. | keyword |
 | m365_defender.event.crl_distribution_point_urls | JSON array listing the URLs of network shares that contain certificates and certificate revocation lists (CRLs). | keyword |
+| m365_defender.event.data_sources | Products or services that provided information for the behavior. | keyword |
 | m365_defender.event.default_gateways | Default gateway addresses in JSON array format. | keyword |
 | m365_defender.event.delivery.action | Delivery action of the email: Delivered, Junked, Blocked, or Replaced. | keyword |
 | m365_defender.event.delivery.location | Location where the email was delivered: Inbox/Folder, On-premises/External, Junk, Quarantine, Failed, Dropped, Deleted items. | keyword |
+| m365_defender.event.description | Description of the behavior. | keyword |
 | m365_defender.event.destination.device_name | Name of the device running the server application that processed the recorded action. | keyword |
 | m365_defender.event.destination.ip_address | IP address of the device running the server application that processed the recorded action. | ip |
 | m365_defender.event.destination.port | Destination port of related network communications or activity. | long |
+| m365_defender.event.detailed_entity_role | The roles of the entity in the behavior. | keyword |
 | m365_defender.event.detection.methods | Methods used to detect malware, phishing, or other threats found in the email or at the time of click. | flattened |
 | m365_defender.event.detection.source | Detection technology or sensor that identified the notable component or activity. | keyword |
 | m365_defender.event.device.category | Broader classification that groups certain device types under the following categories: Endpoint, Network device, IoT, Unknown. | keyword |
@@ -683,6 +700,8 @@ This is the `event` dataset.
 | m365_defender.event.email.direction | Direction of the email relative to your network: Inbound, Outbound, Intra-org. | keyword |
 | m365_defender.event.email.language | Detected language of the email content. | keyword |
 | m365_defender.event.email.subject | Subject of the email. | keyword |
+| m365_defender.event.end_time | Date and time of the last activity related to the behavior. | date |
+| m365_defender.event.entity_role | Indicates whether the entity is impacted or merely related. | keyword |
 | m365_defender.event.entity_type | Type of object, such as a file, a process, a device, or a user. | keyword |
 | m365_defender.event.evidence.direction | Indicates whether the entity is the source or the destination of a network connection. | keyword |
 | m365_defender.event.evidence.role | How the entity is involved in an alert, indicating whether it is impacted or is merely related. | keyword |
@@ -696,6 +715,9 @@ This is the `event` dataset.
 | m365_defender.event.file.size | Size of the file in bytes. | long |
 | m365_defender.event.file.type | File extension type. | keyword |
 | m365_defender.event.folder_path | Folder containing the file that the recorded action was applied to. | keyword |
+| m365_defender.event.gcp_full_resource_name | Unique identifier specific to Google Cloud Platform devices, containing a combination of zone and ID for GCP. | keyword |
+| m365_defender.event.group_id | Identifier for the team or group that the message was sent to. | keyword |
+| m365_defender.event.group_name | Name of the team or group that the message was sent to. | keyword |
 | m365_defender.event.initiating_process.account_domain | Domain of the account that ran the process responsible for the event. | keyword |
 | m365_defender.event.initiating_process.account_name | User name of the account that ran the process responsible for the event. | keyword |
 | m365_defender.event.initiating_process.account_object_id | Azure AD object ID of the user account that ran the process responsible for the event. | keyword |
@@ -737,10 +759,12 @@ This is the `event` dataset.
 | m365_defender.event.is_azure_info_protection_applied | Indicates whether the file is encrypted by Azure Information Protection. | boolean |
 | m365_defender.event.is_clicked_through | Indicates whether the user was able to click through to the original URL or was not allowed. | boolean |
 | m365_defender.event.is_excluded | Determines if the device is currently excluded from Microsoft Defender for Vulnerability Management experiences. | boolean |
+| m365_defender.event.is_external_thread | Indicates if there are external recipients in the thread (1) or none (0). | boolean |
 | m365_defender.event.is_external_user | Indicates whether a user inside the network doesn't belong to the organization's domain. | boolean |
 | m365_defender.event.is_impersonated | Indicates whether the activity was performed by one user for another (impersonated) user. | boolean |
 | m365_defender.event.is_internet_facing | Indicates whether the device is internet-facing. | boolean |
 | m365_defender.event.is_local_admin | Boolean indicator of whether the user is a local administrator on the machine. | boolean |
+| m365_defender.event.is_owned_thread | boolean value indicating whether the message is owned by your organization or not (only the messages owned by your organization can be remediated). | boolean |
 | m365_defender.event.is_root_signer_microsoft | Indicates whether the signer of the root certificate is Microsoft and if the file is included in Windows operating system. | boolean |
 | m365_defender.event.is_signed | Indicates whether the file is signed. | boolean |
 | m365_defender.event.is_trusted | Indicates whether the file is trusted based on the results of the WinVerifyTrust function, which checks for unknown root certificate information, invalid signatures, revoked certificates, and other questionable attributes. | boolean |
@@ -748,6 +772,8 @@ This is the `event` dataset.
 | m365_defender.event.issuer | Information about the issuing certificate authority (CA). | keyword |
 | m365_defender.event.issuer_hash | Unique hash value identifying issuing certificate authority (CA). | keyword |
 | m365_defender.event.join_type |  | keyword |
+| m365_defender.event.last_edited_time | Date and time when the message was last edited. | keyword |
+| m365_defender.event.latest_delivery_location | Last known location of the message. | keyword |
 | m365_defender.event.local.ip | IP address assigned to the local device or machine used during communication. | ip |
 | m365_defender.event.local.ip_type | Type of IP address, for example Public, Private, Reserved, Loopback, Teredo, FourToSixMapping, and Broadcast. | keyword |
 | m365_defender.event.local.port | TCP port on the local machine used during communication. | long |
@@ -759,6 +785,8 @@ This is the `event` dataset.
 | m365_defender.event.md5 | MD5 hash of the file that the recorded action was applied to. | keyword |
 | m365_defender.event.merged_device_ids | Previous device IDs that have been assigned to the same device. | keyword |
 | m365_defender.event.merged_to_device_id | The most recent device ID assigned to a device. | keyword |
+| m365_defender.event.message_id | Identifier for the message (non-unique). | keyword |
+| m365_defender.event.message_version | Version number of the message. | keyword |
 | m365_defender.event.model | Model name or number of the product from the vendor or manufacturer, only available if device discovery finds enough information about this attribute. | keyword |
 | m365_defender.event.network.adapter_name | Name of the network adapter. | keyword |
 | m365_defender.event.network.adapter_status | Operational status of the network adapter. For the possible values, refer to this enumeration. | keyword |
@@ -829,6 +857,8 @@ This is the `event` dataset.
 | m365_defender.event.request.protocol | Network protocol, if applicable, used to initiate the activity: Unknown, Local, SMB, or NFS. | keyword |
 | m365_defender.event.request.source_ip | IPv4 or IPv6 address of the remote device that initiated the activity. | ip |
 | m365_defender.event.request.source_port | Source port on the remote device that initiated the activity. | long |
+| m365_defender.event.resource_id | Unique identifier of the cloud resource accessed. | keyword |
+| m365_defender.event.safety_tip | The safety tip that has been added on a message, if any. | keyword |
 | m365_defender.event.sender.display_name | Name of the sender displayed in the address book, typically a combination of a given or first name, a middle initial, and a last name or surname. | keyword |
 | m365_defender.event.sender.from_address | Sender email address in the FROM header, which is visible to email recipients on their email clients. | keyword |
 | m365_defender.event.sender.from_domain | Sender domain in the FROM header, which is visible to email recipients on their email clients. | keyword |
@@ -837,6 +867,8 @@ This is the `event` dataset.
 | m365_defender.event.sender.mail_from_address | Sender email address in the MAIL FROM header, also known as the envelope sender or the Return-Path address. | keyword |
 | m365_defender.event.sender.mail_from_domain | Sender domain in the MAIL FROM header, also known as the envelope sender or the Return-Path address. | keyword |
 | m365_defender.event.sender.object_id | Unique identifier for the sender's account in Azure AD. | keyword |
+| m365_defender.event.sender_email_address | Email address of the sender. | keyword |
+| m365_defender.event.sender_type | Type of user that sent the message, for example, User, Group, Anonymous. | keyword |
 | m365_defender.event.sensitivity.label | Label applied to an email, file, or other content to classify it for information protection. | keyword |
 | m365_defender.event.sensitivity.sub_label | Sublabel applied to an email, file, or other content to classify it for information protection; sensitivity sublabels are grouped under sensitivity labels but are treated independently. | keyword |
 | m365_defender.event.sensor_health_state | Indicates health of the device's EDR sensor, if onboarded to Microsoft Defender For Endpoint. | keyword |
@@ -850,12 +882,18 @@ This is the `event` dataset.
 | m365_defender.event.signer_hash | Unique hash value identifying the signer. | keyword |
 | m365_defender.event.source_provider | The identity's source, such as Microsoft Entra ID, Active Directory, or a hybrid identity synchronized from Active Directory to Azure Active Directory. | keyword |
 | m365_defender.event.source_system | The source system for the record. | keyword |
+| m365_defender.event.start_time | Date and time of the first activity related to the behavior. | date |
 | m365_defender.event.subject | Subject of the email. | keyword |
+| m365_defender.event.subscription_id | Subscription ID of the Azure subscription. | keyword |
+| m365_defender.event.successful_read_operations | The count of successful read operations. | long |
 | m365_defender.event.target.account_display_name | Display name of the account that the recorded action was applied to. | keyword |
 | m365_defender.event.target.account_upn | User principal name (UPN) of the account that the recorded action was applied to. | keyword |
 | m365_defender.event.target.device_name | Fully qualified domain name (FQDN) of the device that the recorded action was applied to. | keyword |
+| m365_defender.event.teams_message_id | Unique identifier for the message, as generated by Microsoft 365. | keyword |
 | m365_defender.event.tenant.id |  | keyword |
 | m365_defender.event.tenant.name |  | keyword |
+| m365_defender.event.thread_id | Identifier of the channel or chat thread that the message is part of. | keyword |
+| m365_defender.event.thread_subtype | Indicates the channel type, possible values: None, PrivateChannel. | keyword |
 | m365_defender.event.threat.family | Malware family that the suspicious or malicious file or process has been classified under. | keyword |
 | m365_defender.event.threat.names | Detection name for malware or other threats found. | keyword |
 | m365_defender.event.threat.types | Verdict from the email filtering stack on whether the email contains malware, phishing, or other threats. | keyword |
