@@ -1,7 +1,7 @@
 # Trend Micro Vision One Integration for Elastic
 
 ## Overview
-The [Trend Micro Vision One](https://www.trendmicro.com/en_gb/business/products/one-platform.html) integration allows you to monitor Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry activity. Trend Micro Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks via a single Trend Micro Vision One platform or the managed Trend Micro Vision One service.
+The [Trend Micro Vision One](https://www.trendmicro.com/en_gb/business/products/one-platform.html) integration allows you to monitor Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry activity. Trend Micro Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks using a single Trend Micro Vision One platform or the managed Trend Micro Vision One service.
 
 ### Compatibility
 
@@ -15,12 +15,12 @@ This integration periodically queries the Trend Micro Vision One REST API to ret
 
 This integration collects log messages of the following types:
 
-- `Alert`: Displays information about workbench alerts. See more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Workbench/paths/~1v3.0~1workbench~1alerts/get).
-- `Audit`: Displays log entries that match the specified search criteria. See more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Audit-Logs).
-- `Detection`: Displays search results from the Detection Data source. See more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Search/paths/~1v3.0~1search~1detections/get).
-- `Endpoint activity`: Displays search results from the Endpoint activity Data source. See more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Search/paths/~1v3.0~1search~1endpointActivities/get).
-- `Network activity`: Displays search results from the Network activity Data source. See more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Search/paths/~1v3.0~1search~1networkActivities/get).
-- `Telemetry`: Displays telemetry events from the Datalake Pipeline API. See more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Datalake-Pipeline).
+- `Alert`: Displays information about workbench alerts. Refer to more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Workbench/paths/~1v3.0~1workbench~1alerts/get).
+- `Audit`: Displays log entries that match the specified search criteria. Refer to more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Audit-Logs).
+- `Detection`: Displays search results from the Detection Data source. Refer to more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Search/paths/~1v3.0~1search~1detections/get).
+- `Endpoint activity`: Displays search results from the Endpoint activity Data source. Refer to more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Search/paths/~1v3.0~1search~1endpointActivities/get).
+- `Network activity`: Displays search results from the Network activity Data source. Refer to more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Search/paths/~1v3.0~1search~1networkActivities/get).
+- `Telemetry`: Displays telemetry events from the Datalake Pipeline API. Refer to more details in the doc [here](https://portal.xdr.trendmicro.com/ui/amc/redoc/index.html?from=v3.0#tag/Datalake-Pipeline).
 
 ### Supported Use Cases
 
@@ -38,14 +38,14 @@ Integrating Trend Micro Vision One alert, audit, detection, endpoint activity, n
     - **Name**: A meaningful name that can help you identify the API key.
     - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. Custom roles can be created by navigating to **Administration -> User Roles -> Add Role**. The role must have appropriate API access permission to fetch relevant data. The following table outlines the access permissions to apps and features needed to fetch relevant data from Trend Vision API.
 
-        | Datastream        | Section                                                      | Permissions                                                  |
-        |-------------------|--------------------------------------------------------------|--------------------------------------------------------------|
-        | Alert             | Platform Capabilities > XDR Threat Investigation > Workbench | `View, filter, and search`.                                  |
-        | Audit             | Settings > Administration > Audit Logs                       | `View, filter, and search`, `Export and Download`.           |
-        | Detection         | Platform Capabilities > XDR Threat Investigation > Search    | `View, filter, and search`.                                  |
-        | Endpoint activity | Agentic SIEM and XDR > XDR Data Explorer                     | `View queries and Watchlist, and filter and search queries`. |
-        | Network activity  | Agentic SIEM and XDR > XDR Data Explorer                     | `View queries and Watchlist, and filter and search queries`. |
-        | Telemetry         | Platform Capabilities > XDR Threat Investigation > Search    | `View, filter, and search`.                                  |
+        | Datastream        | Section                                                          | Permissions                                                  |
+        |-------------------|------------------------------------------------------------------|--------------------------------------------------------------|
+        | Alert             | Platform Capabilities > Agentic SIEM & XDR > Workbench           | `View, filter, and search`.                                  |
+        | Audit             | Settings > Administration > Audit Logs                           | `View, filter, and search`, `Export and Download`.           |
+        | Detection         | Platform Capabilities > Agentic SIEM and XDR > XDR Data Explorer | `View queries and Watchlist, and filter and search queries`. |
+        | Endpoint activity | Platform Capabilities > Agentic SIEM and XDR > XDR Data Explorer | `View queries and Watchlist, and filter and search queries`. |
+        | Network activity  | Platform Capabilities > Agentic SIEM and XDR > XDR Data Explorer | `View queries and Watchlist, and filter and search queries`. |
+        | Telemetry         | Platform Capabilities > Agentic SIEM and XDR > XDR Data Explorer | `View queries and Watchlist, and filter and search queries`. |
 
         Refer to [Account Role Permissions](https://automation.trendmicro.com/xdr/Guides/Authentication/) for more details.
 
@@ -62,15 +62,13 @@ Refer to [First steps toward using the APIs](https://automation.trendmicro.com/x
 
 When the Telemetry data stream starts for the first time it will use the Datalake Pipeline API to bind all telemetry data types to a new pipeline with a distinctive description. If a pipeline with that description already exists, it will be reused. It will never delete the pipeline, so if you stop using the integration, that pipeline should be removed manually.
 
-**Note:** The API key generated by a user expires one year after being generated.
-
 ## How do I deploy this integration?
 
 ### Agent-based deployment
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Onboard / configure
 
@@ -80,7 +78,7 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 4. Select **Add Trend Micro Vision One** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To **Collect Trend Micro Vision One logs via API**, you'll need to:
+    * To collect the logs from Trend Micro Vision One using API, you'll need to:
 
         - Configure **Regional Domain URL** and **API Token**.
         - Adjust the integration configuration parameters if required, including the Interval, Preserve original event etc. to enable data collection.
