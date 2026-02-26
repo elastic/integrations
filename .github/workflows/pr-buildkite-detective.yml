@@ -1,0 +1,28 @@
+name: PR Buildkite Detective
+on:
+  workflow_run:
+    workflows: ["buildkite/integrations", "integrations" ]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  discussions: write
+  issues: write
+  pull-requests: write  # required by gh-aw compiler for add-comment (github/gh-aw#16673)
+
+jobs:
+  run:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      toJSON(github.event.workflow_run.pull_requests) != '[]' &&
+      contains(fromJSON('["v1v", "mrodm", "fr4nc1sc0-r4m0n"]'), github.actor)
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-buildkite-detective.lock.yml@v0
+    with:
+      buildkite-org: "elastic"
+      additional-instructions: >-
+        The BUILDKITE_API_TOKEN secret is not needed, the buildkite pipelines are public and the detective
+        will only use the Buildkite API to fetch logs from failed builds.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      BUILDKITE_API_TOKEN: "none"
