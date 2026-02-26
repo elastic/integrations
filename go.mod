@@ -253,4 +253,4 @@ require (
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/jsoriano/elastic-package v0.66.1-0.20260225134624-3d5512fa7a17
+replace github.com/elastic/elastic-package => github.com/jsoriano/elastic-package v0.66.1-0.20260226143049-05a838f5801a
