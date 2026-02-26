@@ -506,15 +506,15 @@ processors:
         if ((tid == null || tid.isEmpty()) && (nid == null || nid.isEmpty()) && (tname == null || tname.isEmpty())) {
           return;
         }
-        Set list = new HashSet();
+        Set frameworks = new HashSet();
         // Handling tactics prefixed with "CS" or "TA".
         if (tid != null && !tid.isEmpty()) {
           for (String t: tid) {
             if (t.startsWith("CS")) {
-              list.add(params.framework_cs);
+              frameworks.add(params.framework_cs);
             }
             else if (t.startsWith("TA")) {
-              list.add(params.framework_ma);
+              frameworks.add(params.framework_ma);
             }
           }
         }
@@ -522,7 +522,7 @@ processors:
         if (nid != null && !nid.isEmpty()) {
           for (String t: nid) {
             if (t.startsWith("CS")) {
-              list.add(params.framework_cs);
+              frameworks.add(params.framework_cs);
             }
           }
         }
@@ -530,17 +530,32 @@ processors:
         if (tname != null && !tname.isEmpty()) {
           for (String t: tname) {
             if (params.falcon_tactic_names.contains(t.toLowerCase())) {
-              list.add(params.framework_cs);
+              frameworks.add(params.framework_cs);
             }
           }
         }
 
-        def chosen = null;
-        for (def preferred : params.framework_preference) {
-          if (list.contains(preferred)) { chosen = preferred; break; }
+        if (frameworks.isEmpty()) {
+          return;
         }
-        if (chosen != null) {
-          ctx.threat.framework = chosen;
+        if (frameworks.size() == 1) {
+          ctx.threat.framework = frameworks.iterator().next();
+          return;
+        }
+
+        for (def preferred : params.framework_preference) {
+          if (frameworks.contains(preferred)) {
+            ctx.threat.framework = preferred;
+            return;
+          }
+        }
+
+        // fallback when new frameworks are added and not yet in preference list
+        for (def framework : frameworks) {
+          ctx.threat.framework = framework;
+          if (framework != null) {
+            return;
+          }
         }
       on_failure:
         - append:
