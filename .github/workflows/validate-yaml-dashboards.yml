@@ -1,0 +1,180 @@
+---
+name: Validate Dashboard Compilation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/**/_dev/build/kibana/**/*.yaml'
+      - 'packages/**/kibana/dashboard/*.json'
+      - '.github/workflows/validate-yaml-dashboards.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-dashboards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Find changed YAML dashboard files
+        id: find-changed
+        run: |
+          set -e
+          
+          # Find YAML files changed in the PR diff
+          CHANGED_YAML_FILES=$(git diff --name-only origin/main...HEAD -- 'packages/**/_dev/build/kibana/**/*.yaml' 2>/dev/null || true)
+          
+          if [ -z "$CHANGED_YAML_FILES" ]; then
+            echo "No YAML dashboard files changed in this PR"
+            echo "changed_files=" >> $GITHUB_OUTPUT
+            echo "unique_dirs=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Found changed YAML dashboard files:"
+          echo "$CHANGED_YAML_FILES"
+          echo ""
+          
+          # Store the list of changed files for linting (we lint each file individually)
+          CHANGED_FILES_ESCAPED=$(echo "$CHANGED_YAML_FILES" | tr '\n' ' ' | sed 's/ $//')
+          echo "changed_files=$CHANGED_FILES_ESCAPED" >> $GITHUB_OUTPUT
+          
+          # Find unique input directories to avoid redundant compilation
+          # Group files by their input directory (e.g., packages/aws_vpcflow_otel/_dev/build/kibana)
+          UNIQUE_DIRS=$(echo "$CHANGED_YAML_FILES" | xargs -n1 dirname | sort -u | tr '\n' ' ' | sed 's/ $//')
+          echo "Unique input directories (for compilation):"
+          echo "$UNIQUE_DIRS"
+          echo ""
+          echo "unique_dirs=$UNIQUE_DIRS" >> $GITHUB_OUTPUT
+
+      - name: Lint changed YAML dashboards
+        id: lint
+        if: steps.find-changed.outputs.changed_files != ''
+        run: |
+          set +e  # Don't exit on error, we'll handle it manually
+          
+          CHANGED_FILES="${{ steps.find-changed.outputs.changed_files }}"
+          
+          # Track linting results
+          LINT_FAILED=0
+          
+          # Process each changed YAML file
+          for yaml_file in $CHANGED_FILES; do
+            echo "=========================================="
+            echo "Linting: $yaml_file"
+            echo "=========================================="
+            echo ""
+            
+            # First, show all linting results (warnings, info, errors)
+            echo "Linting results:"
+            uvx --from kb-dashboard-lint@0.2.7 kb-dashboard-lint check \
+                --input-file "$yaml_file" || true
+            echo ""
+            
+            # Then check specifically for warnings/errors (this will exit non-zero on warnings or errors)
+            if ! uvx --from kb-dashboard-lint@0.2.7 kb-dashboard-lint check \
+                --input-file "$yaml_file" \
+                --severity-threshold warning > /dev/null 2>&1; then
+              echo "❌ ERROR: Linting found warnings or errors in $yaml_file"
+              LINT_FAILED=1
+            else
+              echo "✅ No warnings or errors found in $yaml_file (info may be present above)"
+            fi
+            
+            echo ""
+          done
+          
+          set -e  # Re-enable exit on error
+          
+          if [ $LINT_FAILED -eq 1 ]; then
+            echo ""
+            echo "=========================================="
+            echo "❌ Dashboard linting FAILED (warnings or errors found)"
+            echo "=========================================="
+            exit 1
+          else
+            echo "=========================================="
+            echo "✅ All dashboard linting PASSED (no warnings or errors)"
+            echo "=========================================="
+          fi
+
+      - name: Validate YAML dashboards match committed JSON
+        id: validate
+        if: steps.find-changed.outputs.unique_dirs != ''
+        run: |
+          set -e
+          
+          UNIQUE_DIRS="${{ steps.find-changed.outputs.unique_dirs }}"
+          VALIDATION_FAILED=0
+          
+          # Process each unique input directory
+          for input_dir in $UNIQUE_DIRS; do
+            echo "=========================================="
+            echo "Validating: $input_dir"
+            echo "=========================================="
+            
+            # Extract package name from path (e.g., packages/aws_vpcflow_otel/_dev/...)
+            package_name=$(echo "$input_dir" | sed 's|packages/\([^/]*\)/.*|\1|')
+            output_dir="packages/${package_name}/kibana/dashboard"
+            
+            echo "Input directory: $input_dir"
+            echo "Output directory: $output_dir"
+            echo ""
+            
+            # Compile directly to the output directory with --exit-non-zero-on-change.
+            # This flag makes the exit code equal to the number of files that changed
+            # (capped at 125). It only checks files produced by the compiler, so
+            # non-compiled (pre-existing) JSON dashboards are ignored.
+            set +e
+            uvx --from kb-dashboard-cli@0.2.7 kb-dashboard compile \
+                --input-dir "$input_dir" \
+                --output-dir "$output_dir" \
+                --format json \
+                --exit-non-zero-on-change
+            exit_code=$?
+            set -e
+            
+            if [ $exit_code -eq 0 ]; then
+              echo "✅ PASSED: YAML dashboards in $input_dir match committed JSON"
+            else
+              echo ""
+              echo "❌ ERROR: $exit_code compiled dashboard(s) differ from committed JSON in $output_dir"
+              echo ""
+              echo "Differences:"
+              git diff -- "$output_dir" || true
+              echo ""
+              echo "The YAML source and committed JSON are out of sync."
+              echo "Please recompile with:"
+              echo "  uvx --from kb-dashboard-cli@0.2.7 kb-dashboard compile --input-dir $input_dir --output-dir $output_dir --format json"
+              echo ""
+              VALIDATION_FAILED=1
+            fi
+            
+            echo ""
+          done
+          
+          # Restore any files modified during validation
+          git checkout -- . 2>/dev/null || true
+          
+          if [ $VALIDATION_FAILED -eq 1 ]; then
+            echo ""
+            echo "=========================================="
+            echo "❌ Dashboard validation FAILED"
+            echo "=========================================="
+            exit 1
+          else
+            echo "=========================================="
+            echo "✅ All dashboard validations PASSED"
+            echo "=========================================="
+          fi
