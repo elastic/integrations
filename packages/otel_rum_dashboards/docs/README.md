@@ -7,11 +7,11 @@ Use this package to get a dashboard which displays metrics from your web applica
 - page load and visits: these metrics are calculated from the telemetry captured by [`@opentelemetry/instrumentation-document-load`](https://www.npmjs.com/package/@opentelemetry/instrumentation-document-load) instrumentation.
 - errors: the top errors are calculated from the telemetry captured by [`@opentelemetry/instrumentation-web-exception`](https://www.npmjs.com/package/@opentelemetry/instrumentation-web-exception) instrumentation.
 
-You should have both instrumentations enabled in your web application in order to get the metrics populated in this dashboard.
+You should have both instrumentations enabled in your web application to get the metrics populated in this dashboard.
 
 ### Compatibility
 
-This package has ben tested with OpenTelemetry JS SDK `2.2.0` and with OpenTelemetry semantic conventions `1.38.0`. It should work with newer versions as long as there are no breaking changes in `browser.*` namespace of semantic conventions.
+This package has ben tested with OpenTelemetry JS SDK `2.2.0` and with OpenTelemetry semantic conventions `1.38.0`. It should work with later versions as long as there are no breaking changes in `browser.*` namespace of semantic conventions.
 
 ## What do I need to use this integration?
 
