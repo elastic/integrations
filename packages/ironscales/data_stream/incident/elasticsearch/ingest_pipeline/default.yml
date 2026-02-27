@@ -5,7 +5,7 @@ processors:
       tag: drop_empty_events_placeholder_1f3e6c12
       if: ctx.message == 'empty_events_placeholder'
   - set:
-      tag: set_ecs_version_to_9_2_0_b777da29
+      tag: set_ecs_version_to_9_3_0_b777da29
       field: ecs.version
       value: 9.3.0
   - terminate:
@@ -533,11 +533,11 @@ processors:
           value: '{{{_ingest._value.url}}}'
           allow_duplicates: false
   - script:
-      tag: process_ironscales_incident_attachments
       description: ECS mapping for fields of ironscales.incident.attachments array.
+      tag: process_ironscales_incident_attachments_35d83dcc
       if: ctx.ironscales?.incident?.attachments instanceof List
       lang: painless
-      source: |
+      source: |-
         // Initialize ECS email.attachments structure
         ctx.email = ctx.email ?: [:];
         ctx.email.attachments = ctx.email.attachments ?: [:];
@@ -616,11 +616,11 @@ processors:
       value: '{{{ironscales.incident.mail_server.ip}}}'
       allow_duplicates: false
   - script:
-      tag: process_ironscales_incident_reports
       description: ECS mapping for fields of ironscales.incident.reports array.
+      tag: process_ironscales_incident_reports_484a9017
       if: ctx.ironscales?.incident?.reports instanceof List
       lang: painless
-      source: |
+      source: |-
         // Initialize ECS related fields structure
         ctx.related = ctx.related ?: [:];
         ctx.related.user = ctx.related.user ?: [];
