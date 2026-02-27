@@ -1,0 +1,62 @@
+skip:
+  reason: Test is skipped until we support multisignal inputs.
+  link: https://github.com/elastic/elastic-package/issues/3298
+service: sql_server_input_otel
+vars:
+  server: "{{Hostname}}"
+  port: "{{Port}}"
+  username: "SA"
+  password: "1234_asdf"
+  collection_interval: 10s
+  initial_delay: 1s
+  enable_query_sample_events: true
+  enable_top_query_events: true
+  top_query_lookback_time: 60s
+  top_query_collection_interval: 10s
+assert:
+  min_count: 10
+  fields_present:
+    # Common to both event types
+    - db.query.text
+    - sqlserver.query_hash
+    - sqlserver.query_plan_hash
+    - sqlserver.total_elapsed_time
+    # Top-Query Collection (db.server.top_query)
+    - sqlserver.total_rows
+    - sqlserver.total_worker_time
+    - sqlserver.total_logical_reads
+    - sqlserver.total_logical_writes
+    - sqlserver.total_physical_reads
+    - sqlserver.execution_count
+    - sqlserver.total_grant_kb
+    - sqlserver.query_plan
+    # Query-Sample Collection (db.server.query_sample)
+    - db.system.name
+    - db.namespace
+    - network.peer.address
+    - network.peer.port
+    - client.port
+    - client.address
+    - sqlserver.query_start
+    - sqlserver.session_id
+    - sqlserver.session_status
+    - sqlserver.request_status
+    - sqlserver.command
+    - sqlserver.blocking_session_id
+    - sqlserver.wait_type
+    - sqlserver.wait_time
+    - sqlserver.wait_resource
+    - sqlserver.open_transaction_count
+    - sqlserver.transaction_id
+    - sqlserver.percent_complete
+    - sqlserver.estimated_completion_time
+    - sqlserver.cpu_time
+    - sqlserver.reads
+    - sqlserver.writes
+    - sqlserver.logical_reads
+    - sqlserver.transaction_isolation_level
+    - sqlserver.lock_timeout
+    - sqlserver.deadlock_priority
+    - sqlserver.row_count
+    - sqlserver.context_info
+    - sqlserver.username
