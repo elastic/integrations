@@ -26,7 +26,7 @@ For more details, refer to Microsoft's [Graph-based message trace API onboarding
 
 After that is done, you can configure the Microsoft Exchange Online Message Trace integration using the Tenant ID, Client ID and Client Secret.
 
-Note that these are different from the OAuth credentails used previously with the legacy Message Trace API in the Reporting Webservice.
+These are different from the OAuth credentails used previously with the legacy Message Trace API in the Reporting Webservice.
 
 ### Integration settings
 
