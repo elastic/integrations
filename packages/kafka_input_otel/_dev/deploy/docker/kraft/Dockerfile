@@ -1,4 +1,5 @@
-FROM apache/kafka:4.0.0
+ARG KAFKA_VERSION=4.0.0
+FROM apache/kafka:${KAFKA_VERSION}
 
 USER root
 
@@ -23,9 +24,9 @@ ENV KAFKA_JMX_OPTS="-Dcom.sun.management.jmxremote \
 ADD jolokia/jolokia-jvm-2.3.0.jar /opt/jolokia/jolokia-jvm.jar
 
 # Copy startup script
-ADD kraft/startup.sh /opt/startup.sh
-ADD kraft/healthcheck.sh /healthcheck.sh
-ADD kraft/server.properties /opt/kafka/config/kraft/server_custom.properties
+ADD startup.sh /opt/startup.sh
+ADD healthcheck.sh /healthcheck.sh
+ADD server.properties /opt/kafka/config/kraft/server_custom.properties
 RUN chmod +x /opt/startup.sh /healthcheck.sh && chown -R 1001:0 /opt
 
 USER 1001
