@@ -1,0 +1,26 @@
+---
+description: Pipeline for processing Kafka Connect task metrics
+processors:
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.module
+      value: kafka_connect
+  - rename:
+      field: jolokia.kafka_connect
+      target_field: kafka_connect
+      ignore_missing: true
+      ignore_failure: true
+  - dissect:
+      if: ctx.kafka_connect?.connector?.name == null
+      field: kafka_connect.mbean
+      pattern: 'kafka.connect:connector=%{kafka_connect.connector.name},task=%{kafka_connect.task.id},%{}'
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

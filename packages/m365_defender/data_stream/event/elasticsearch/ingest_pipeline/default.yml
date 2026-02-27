@@ -105,11 +105,11 @@ processors:
       field: error.message
       value: 'The event category {{{m365_defender.event.category}}} is not supported.'
       tag: append_invalid_m365_defender_event_category
-      if: ctx.m365_defender?.event?.category != null && !['AdvancedHunting-AlertEvidence','AdvancedHunting-AlertInfo','AdvancedHunting-DeviceEvents','AdvancedHunting-DeviceFileCertificateInfo','AdvancedHunting-DeviceFileEvents','AdvancedHunting-DeviceImageLoadEvents','AdvancedHunting-DeviceInfo','AdvancedHunting-DeviceLogonEvents','AdvancedHunting-DeviceNetworkEvents','AdvancedHunting-DeviceNetworkInfo','AdvancedHunting-DeviceProcessEvents','AdvancedHunting-DeviceRegistryEvents','AdvancedHunting-EmailAttachmentInfo','AdvancedHunting-EmailEvents','AdvancedHunting-EmailPostDeliveryEvents','AdvancedHunting-EmailUrlInfo','AdvancedHunting-IdentityLogonEvents','AdvancedHunting-IdentityQueryEvents','AdvancedHunting-IdentityDirectoryEvents', 'AdvancedHunting-IdentityInfo','AdvancedHunting-CloudAppEvents','AdvancedHunting-UrlClickEvents'].contains(ctx.m365_defender.event.category)
+      if: ctx.m365_defender?.event?.category != null && !['AdvancedHunting-AlertEvidence','AdvancedHunting-AlertInfo','AdvancedHunting-BehaviorInfo','AdvancedHunting-BehaviorEntities','AdvancedHunting-DeviceEvents','AdvancedHunting-DeviceFileCertificateInfo','AdvancedHunting-DeviceFileEvents','AdvancedHunting-DeviceImageLoadEvents','AdvancedHunting-DeviceInfo','AdvancedHunting-DeviceLogonEvents','AdvancedHunting-DeviceNetworkEvents','AdvancedHunting-DeviceNetworkInfo','AdvancedHunting-DeviceProcessEvents','AdvancedHunting-DeviceRegistryEvents','AdvancedHunting-EmailAttachmentInfo','AdvancedHunting-EmailEvents','AdvancedHunting-EmailPostDeliveryEvents','AdvancedHunting-EmailUrlInfo','AdvancedHunting-IdentityLogonEvents','AdvancedHunting-IdentityQueryEvents','AdvancedHunting-IdentityDirectoryEvents', 'AdvancedHunting-IdentityInfo','AdvancedHunting-MessageEvents','AdvancedHunting-MessagePostDeliveryEvents','AdvancedHunting-MessageUrlInfo','AdvancedHunting-CloudAppEvents','AdvancedHunting-UrlClickEvents'].contains(ctx.m365_defender.event.category)
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alert" }}'
       tag: pipeline_alert
-      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('alert')
+      if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('alert') || ctx.m365_defender.event.category.toLowerCase().contains('behavior'))
   - pipeline:
       name: '{{ IngestPipeline "pipeline_device" }}'
       tag: pipeline_device
@@ -117,7 +117,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_email" }}'
       tag: pipeline_email
-      if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('email') || ctx.m365_defender.event.category.toLowerCase().contains('urlclickevents'))
+      if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('email') || ctx.m365_defender.event.category.toLowerCase().contains('urlclickevents') || ctx.m365_defender.event.category.toLowerCase().contains('message'))
   - pipeline:
       name: '{{ IngestPipeline "pipeline_app_and_identity" }}'
       tag: pipeline_app_and_identity
