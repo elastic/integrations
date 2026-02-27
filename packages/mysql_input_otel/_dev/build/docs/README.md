@@ -20,7 +20,7 @@ The package collects both **metrics** (from `SHOW GLOBAL STATUS` and InnoDB tabl
 
 ### MySQL requirements for log collection
 
-To collect log events (query samples and top queries), configure MySQL as follows:
+To collect log events (query samples and top queries), configure MySQL as follows. For additional details, see the [upstream mysqlreceiver logs documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver#logs).
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
