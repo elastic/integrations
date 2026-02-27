@@ -10,7 +10,7 @@ The Hashicorp Vault integration allows you to collect audit logs, operational lo
 
 This integration has been tested with Hashicorp Vault version 1.11.
 
-This integration is compatible with Elastic Stack version 8.11.0 or higher.
+This integration is compatible with Elastic Stack version 8.12.0 or later.
 
 ### How it works
 
@@ -43,7 +43,6 @@ Integrating Hashicorp Vault data with Elastic enables several key use cases for 
 
 Before you begin, ensure you have the following prerequisites:
 
-- An Elastic deployment on version 8.12.0 or higher.
 - An Elastic Agent installed and enrolled in a policy.
 - Administrative access to your Hashicorp Vault server. You'll need a Vault token with `root` privileges or sufficient permissions to enable audit devices and read metrics from the `/sys/metrics` endpoint.
 - The `vault` CLI installed and authenticated on a machine where you can run configuration commands.
@@ -79,7 +78,7 @@ To collect audit logs from a file, you'll need to enable the file audit device i
     ```bash
     vault audit enable file file_path=/var/log/vault/audit.json
     ```
-4.  It's recommended to configure `logrotate` to manage file growth.
+4.  It's recommended to configure `logrotate` or similar utility to manage file growth.
 
 #### Configure audit logs (TCP socket)
 
@@ -87,9 +86,9 @@ You can also configure Vault to send audit logs to the Elastic Agent over a TCP 
 
 > **Warning: Risk of Unresponsive Vault with TCP socket audit devices**
 >
-> If a TCP socket audit log destination (like the Elastic Agent) becomes unavailable, Vault may block and stop processing all requests until the connection is restored. This can lead to a service outage.
+> If a TCP socket audit log destination (like the Elastic Agent) becomes unavailable, Vault can block and stop processing all requests until the connection is restored. This can lead to a service outage.
 >
-> To mitigate this risk, HashiCorp strongly recommends that a socket audit device is configured as a secondary device, alongside a primary, non-socket audit device (like the `file` audit device). For more details, see the official documentation on [Blocked Audit Devices](https://developer.hashicorp.com/vault/docs/audit/socket#configuration).
+> To mitigate this risk, HashiCorp strongly recommends that a socket audit device is configured as a secondary device, alongside a primary, non-socket audit device (like the `file` audit device). For more details, refer to the official documentation on [Blocked Audit Devices](https://developer.hashicorp.com/vault/docs/audit/socket#configuration).
 
 1.  Ensure the Elastic Agent is installed and configured to listen on the target TCP port (e.g., `9007`).
 2.  Enable the socket device via the Vault CLI, providing the Elastic Agent's IP address and port:
@@ -97,7 +96,7 @@ You can also configure Vault to send audit logs to the Elastic Agent over a TCP 
     # Replace <elastic_agent_ip> with the actual IP address
     vault audit enable socket address="<elastic_agent_ip>:9007" socket_type=tcp
     ```
-3.  Verify connectivity. If the Agent is not reachable, Vault may block API requests.
+3.  Verify connectivity. If the Agent is not reachable, Vault might block API requests.
 
 #### Configure operational logs
 
@@ -115,11 +114,12 @@ To collect operational logs, you need to set the log format to `json` in your Va
 
 #### Configure metrics
 
-To collect metrics, you'll need to enable the telemetry endpoint in Vault.
+This integration collects metrics in Prometheus format from Vault's `/v1/sys/metrics` endpoint. To enable it, you'll need to configure the `telemetry` stanza in Vault.
 
-1.  Open the Vault configuration file and add or update the `telemetry` stanza:
+1.  Open the Vault configuration file and add or update the `telemetry` stanza. The `prometheus_retention_time` parameter must be set to a non-zero value to enable the Prometheus metrics endpoint:
     ```hcl
     telemetry {
+      prometheus_retention_time = "30s"
       disable_hostname = true
       enable_hostname_label = true
     }
@@ -197,7 +197,7 @@ To test the integration, generate some activity in Vault:
 
 ## Troubleshooting
 
-For help with common issues, see the following sections.
+For help with common issues, refer to the following sections.
 
 ### Common configuration issues
 
@@ -209,13 +209,6 @@ For help with common issues, see the following sections.
 -   **Hashed secrets in logs**: By default, Vault hashes secret values in audit logs using HMAC-SHA256. If you cannot see raw secrets, this is expected behavior.
 -   **403 Forbidden on metrics endpoint**: Ensure the token provided in the integration configuration has a policy that allows `read` access to the `sys/metrics` path.
 -   **Expired token**: Vault tokens used for metrics collection should be "periodic" or have a long time-to-live (TTL) to prevent the integration from failing when the token expires.
-
-### Vendor resources
-
--   [Vault Audit Devices: File](https://developer.hashicorp.com/vault/docs/audit/file)
--   [Vault Audit Devices: Socket](https://developer.hashicorp.com/vault/docs/audit/socket)
--   [Vault Telemetry Configuration](https://developer.hashicorp.com/vault/docs/configuration/telemetry)
--   [Vault API Documentation](https://developer.hashicorp.com/vault/api-docs)
 
 ## Performance and scaling
 
@@ -229,11 +222,22 @@ For more information on architectures that you can use for scaling this integrat
 
 ## Reference
 
-### audit
+### Vendor documentation links
+
+-   [Vault Audit Devices: File](https://developer.hashicorp.com/vault/docs/audit/file)
+-   [Vault Audit Devices: Socket](https://developer.hashicorp.com/vault/docs/audit/socket)
+-   [Vault Telemetry Configuration](https://developer.hashicorp.com/vault/docs/configuration/telemetry)
+-   [Vault API Documentation](https://developer.hashicorp.com/vault/api-docs)
+-   [Vault Audit-Hash API](https://developer.hashicorp.com/vault/api-docs/system/audit-hash)
+-   [Configure Systemd for Vault](https://developer.hashicorp.com/vault/tutorials/day-one-raft/raft-deployment-guide#step-3-configure-systemd)
+
+### Data streams
+
+#### audit
 
 The `audit` data stream collects audit logs from Hashicorp Vault. These logs contain detailed information about all requests and responses to Vault, providing a comprehensive trail of activity. This is useful for security monitoring, compliance, and troubleshooting.
 
-#### audit fields
+##### audit fields
 
 **Exported fields**
 
@@ -346,7 +350,7 @@ The `audit` data stream collects audit logs from Hashicorp Vault. These logs con
 | user.id | Unique identifier of the user. | keyword |
 
 
-#### audit sample event
+##### audit sample event
 
 An example event for `audit` looks as following:
 
@@ -443,11 +447,11 @@ An example event for `audit` looks as following:
 }
 ```
 
-### log
+#### log
 
 The `log` data stream collects the operational logs from Hashicorp Vault. These logs provide insights into the internal operations of the Vault server, including startup, shutdown, errors, and warnings. They are essential for monitoring the health and performance of your Vault instance.
 
-#### log fields
+##### log fields
 
 **Exported fields**
 
@@ -474,7 +478,7 @@ The `log` data stream collects the operational logs from Hashicorp Vault. These 
 | tags | List of keywords used to tag each event. | keyword |
 
 
-#### log sample event
+##### log sample event
 
 An example event for `log` looks as following:
 
@@ -555,11 +559,11 @@ An example event for `log` looks as following:
 }
 ```
 
-### metrics
+#### metrics
 
 The `metrics` data stream collects telemetry data from Hashicorp Vault. These metrics provide real-time visibility into Vault's performance, including memory usage, request latency, and backend operations. The metrics are collected in Prometheus format.
 
-#### metrics fields
+##### metrics fields
 
 **Exported fields**
 
@@ -609,7 +613,7 @@ The `metrics` data stream collects telemetry data from Hashicorp Vault. These me
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
-#### metrics sample event
+##### metrics sample event
 
 An example event for `metrics` looks as following:
 

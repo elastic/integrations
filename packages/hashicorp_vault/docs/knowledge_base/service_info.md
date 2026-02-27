@@ -42,7 +42,6 @@ To ensure optimal performance in high-volume environments, consider the followin
 
 - **Agent Enrollment:** An Elastic Agent must be installed and enrolled in a policy via Fleet.
 - **Connectivity:** The Elastic Agent requires network access to the Vault server's API for metrics collection and must be reachable by the Vault server if using the socket audit device.
-- **Version Requirements:** This integration requires Elastic Stack version **8.12.0** or higher. It is recommended to use the latest version for full feature support.
 
 ## Vendor set up steps
 
@@ -58,14 +57,14 @@ To ensure optimal performance in high-volume environments, consider the followin
 ### Configure Audit Log (Socket Device):
   **Warning: Risk of Unresponsive Vault with TCP Socket Audit Devices**
 
-  If a TCP socket audit log destination (like the Elastic Agent) becomes unavailable, Vault may block and stop processing all requests until the connection is restored. This can lead to a service outage.
+  If a TCP socket audit log destination (like the Elastic Agent) becomes unavailable, Vault can block and stop processing all requests until the connection is restored. This can lead to a service outage.
 
-  To mitigate this risk, HashiCorp strongly recommends that a socket audit device is configured as a secondary device, alongside a primary, non-socket audit device (like the `file` audit device). For more details, see the official documentation on [Blocked Audit Devices](https://developer.hashicorp.com/vault/docs/audit/socket#configuration).
+  To mitigate this risk, HashiCorp strongly recommends that a socket audit device is configured as a secondary device, alongside a primary, non-socket audit device (like the `file` audit device). For more details, refer to the official documentation on [Blocked Audit Devices](https://developer.hashicorp.com/vault/docs/audit/socket#configuration).
 
 1. Ensure the Elastic Agent is already configured and listening on the target TCP port (default **9007**).
 2. Enable the socket device via the Vault CLI using the Agent's IP:
    `vault audit enable socket address="${ELASTIC_AGENT_IP}:9007" socket_type=tcp`
-3. Verify connectivity. If the Agent is not reachable, Vault may block API requests depending on your `backoff` settings.
+3. Verify connectivity. If the Agent is not reachable, Vault might block API requests depending on your `backoff` settings.
 
 ### Configure Operational Logs:
 1. Open your Vault configuration file (commonly `/etc/vault.d/vault.hcl`).
