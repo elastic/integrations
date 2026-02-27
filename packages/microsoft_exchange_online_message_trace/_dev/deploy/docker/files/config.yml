@@ -1,31 +1,31 @@
 rules:
-  # Base auth rule
-  - path: /tenant_id/oauth2/v2.0/token
+  # auth
+  - path: /test-tenant-id/oauth2/v2.0/token
     methods: [POST]
     query_params:
-      client_id: test-app-id
-      client_secret: test-secret
-      grant_type: client_credentials
-      scope: "{scope:.*}"
+      grant_type: ["client_credentials"]
+      scope: ["http://svc-graph-api:8080/.default"]
     request_headers:
       Content-Type:
         - "application/x-www-form-urlencoded"
+      Authorization:
+        - "^Basic .+$"
     responses:
       - status_code: 200
         headers:
           Content-Type:
             - "application/json"
         body: |-
-          {"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","token_type": "Bearer","not_before": 1549647431,"expires_in": 3600,"resource": "f2a76e08-93f2-4350-833c-965c02483b11"}
-  # start normal httpjson test
-  - path: /ecp/reportingwebservice/reporting.svc/MessageTrace
+          {"token_type":"Bearer","expires_in":3599,"ext_expires_in":3599,"access_token":"test-access-token"}
+  # data: checks that the first page is requested, the second page link is followed, a new request (empty resonse) may be done to be fully up to date, then no new request for a while.
+  - path: /beta/admin/exchange/tracing/messageTraces
     methods: [GET]
     request_headers:
       Authorization:
-        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
+        - "Bearer test-access-token"
     query_params:
-      $top: "{$top:2}"
-      $skiptoken: "{$skiptoken:0}"
+      $filter: '{filter:receivedDateTime ge \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z and receivedDateTime le \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z}'
+      $top: "4"
     responses:
       - status_code: 200
         headers:
@@ -33,73 +33,42 @@ rules:
             - "application/json"
         body: |-
           {
-            "odata.metadata":"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace",
-            "value":
-            [
-              {"Organization":"contoso.com","MessageId":"<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>","Received":"2022-09-05T18:10:13.4907658","SenderAddress":"azure-noreply@microsoft.com","RecipientAddress":"linus@contoso.com","Subject":"PIM: A privileged directory role was assigned outside of PIM","Status":"Delivered","ToIP":"216.160.83.56","FromIP":"81.2.69.144","Size":87891,"MessageTraceId":"cf7a249a-5edd-4350-130a-08da8f69e0f6","StartDate":"2022-09-04T09:01:46.0369423Z","EndDate":"2022-09-06T09:01:46.0369423Z","Index":0},
-              {"Organization":"contoso.com","MessageId":"<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>","Received":"2022-09-05T18:10:13.4907658","SenderAddress":"azure-noreply@microsoft.com","RecipientAddress":"linus@contoso.com","Subject":"PIM: A privileged directory role was assigned outside of PIM","Status":"Delivered","ToIP":"216.160.83.56","FromIP":"81.2.69.144","Size":87891,"MessageTraceId":"cf7a249a-5edd-4350-130a-08da8f69e0f9","StartDate":"2022-09-04T09:01:46.0369423Z","EndDate":"2022-09-06T09:01:46.0369423Z","Index":4}
+            "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
+            "@odata.nextLink": "http://svc-graph-api:8080/beta/admin/exchange/tracing/messageTraces?$skiptoken=eyJTdGFydERhdGUiOiIyMDI1LTExLTI3VDE0OjE4OjM3LjYwNzAzOTBaIiwiRW5kRGF0ZSI6IjIwMjUtMTItMDJUMDU6MzQ6MTIuMzczMDAwMFoiLCJTdGFydGluZ1JlY2lwaWVudEFkZHJlc3MiOiJrQGVsYXN0aWM1OTUub25taWNyb3NvZnQuY29tIiwiUmVzdWx0U2l6ZSI6IjQifQ==",
+            "value": [
+              {"id":"ef9fe88a-8090-431e-8e32-0bb4e5a123f0","messageId":"<HCWQQ8CZ5ZX7.PYAQ1TEP85FR@2ijrkiv53719mlz>","status":"delivered","receivedDateTime":"2025-12-07T10:55:04.455Z","recipientAddress":"G@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 2a66cc39-7e6b-48c7-9b0a-b9960f0150e4)","size":327283,"fromIP":"2a02:cf41:cf7a:429f:643d:3f00:7aa0:8c1f","toIP":""},
+              {"id":"1027db27-3572-40e5-adb6-5ad5671a822f","messageId":"<U4U3Y2Y07N1N.R867ZA7MFBES@x5crlz184405uix>","status":"delivered","receivedDateTime":"2025-12-07T10:55:03.203Z","recipientAddress":"k@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 2a66cc39-7e6b-48c7-9b0a-b9960f0150e4)","size":327401,"fromIP":"2a02:cf47:b5a9:cce6:efe5:3af4:16c:ebbd","toIP":""},
+              {"id":"1b529424-cbb5-4f8f-8a19-80bb744a5a6d","messageId":"<QD7WKDVX1N6W.4IQ5GWTLH70U@qttgj6b55417aki>","status":"delivered","receivedDateTime":"2025-12-07T10:55:02.614Z","recipientAddress":"c@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 2a66cc39-7e6b-48c7-9b0a-b9960f0150e4)","size":327102,"fromIP":"2a02:cf47:b5a9:cce6:efe5:3af4:16c:ebbd","toIP":""},
+              {"id":"7545bbb9-35ab-44f7-85f6-084ce49b8827","messageId":"<ed063217-6801-4391-b098-0116c061ed1a@az.northeurope.microsoft.com>","status":"delivered","receivedDateTime":"2025-12-02T05:34:12.373Z","recipientAddress":"k@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":294162,"fromIP":"2a02:cf46:283e:94d6:7957:2014:2e0f:fe5c","toIP":""}
             ]
           }
-  - path: /ecp/reportingwebservice/reporting.svc/MessageTrace
-    methods: [GET]
-    request_headers:
-      Authorization:
-        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
-    query_params:
-      $top: "{$top:2}"
-      $skiptoken: "{$skiptoken:2}"
-    responses:
       - status_code: 200
         headers:
           Content-Type:
             - "application/json"
         body: |-
           {
-            "odata.metadata":"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace",
-            "value":
-            [
-              {"Organization":"contoso.com","MessageId":"\u003cGVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\u003e","Received":"2022-10-21T17:25:30.6006882Z","SenderAddress":"noreply@azure.microsoft.com","RecipientAddress":"linus@contoso.com","Subject":"testmail 1","Status":"Delivered","ToIP":null,"FromIP":"40.107.23.81","Size":22704,"MessageTraceId":"a6f62809-5cda-4454-0962-08dab38940d6","StartDate":"2022-10-21T09:40:10Z","EndDate":"2022-10-22T09:40:10Z","Index":1}
-            ]
-          }
-  # end normal httpjson test
-  # start null trailing httpjson test
-  - path: /ecp/reportingwebservice/reporting.svc/MessageTrace
-    methods: [GET]
-    request_headers:
-      Authorization:
-        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
-    query_params:
-      $top: "{$top:1}"
-      $skiptoken: "{$skiptoken:0}"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {
-            "odata.metadata":"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace",
-            "value":
-            [
-              {"Organization":"contoso.com","MessageId":"\u003cGVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\u003e","Received":"2022-10-21T17:25:30.6006882Z","SenderAddress":"noreply@azure.microsoft.com","RecipientAddress":"linus@contoso.com","Subject":"testmail 1","Status":"Delivered","ToIP":null,"FromIP":"40.107.23.81","Size":22704,"MessageTraceId":"a6f62809-5cda-4454-0962-08dab38940d6","StartDate":"2022-10-21T09:40:10Z","EndDate":"2022-10-22T09:40:10Z","Index":1}
-            ]
-          }
-  - path: /ecp/reportingwebservice/reporting.svc/MessageTrace
-    methods: [GET]
-    request_headers:
-      Authorization:
-        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
-    query_params:
-      $top: "{$top:1}"
-      $skiptoken: "{$skiptoken:1}"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {
-            "odata.metadata":"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace",
+            "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
             "value": []
           }
-# end null trailing httpjson test
+  - path: /beta/admin/exchange/tracing/messageTraces
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+    query_params:
+      $skiptoken: "eyJTdGFydERhdGUiOiIyMDI1LTExLTI3VDE0OjE4OjM3LjYwNzAzOTBaIiwiRW5kRGF0ZSI6IjIwMjUtMTItMDJUMDU6MzQ6MTIuMzczMDAwMFoiLCJTdGFydGluZ1JlY2lwaWVudEFkZHJlc3MiOiJrQGVsYXN0aWM1OTUub25taWNyb3NvZnQuY29tIiwiUmVzdWx0U2l6ZSI6IjQifQ=="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
+            "value": [
+              {"id":"21043660-ed82-4361-84f6-64b636e4540c","messageId":"<GKOZ8REPH7BB.X3Y4IO0NW4CY@2io7f7545525rcf>","status":"delivered","receivedDateTime":"2025-12-02T05:34:11.587Z","recipientAddress":"cberkhout@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":295688,"fromIP":"2a02:cf41:d675:a90d:c0ef:b23f:f053:947e","toIP":""},
+              {"id":"86b1a4da-fe88-4610-934c-cd9e4ecdf7d6","messageId":"<X7N66Q68OVNH.1T8JFAOO39LB@7ojcevr65724okb>","status":"delivered","receivedDateTime":"2025-12-02T05:34:11.218Z","recipientAddress":"gregcrist@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":296107,"fromIP":"2a02:cf46:283e:94d6:7957:2014:2e0f:fe5c","toIP":""},
+              {"id":"48d3fcf5-2389-4390-926f-7f6e575b1fe6","messageId":"<123433a6-c7cb-473e-9c65-2ca41b93f2dd@az.westus3.microsoft.com>","status":"delivered","receivedDateTime":"2025-11-30T06:43:04.864Z","recipientAddress":"G@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 60aa0e13-5d8c-4325-ad81-e22998b1649e)","size":327783,"fromIP":"2a02:cf47:648c:e1da:2155:5eb2:8ead:fb05","toIP":""}
+            ]
+          }
