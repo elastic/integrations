@@ -233,50 +233,6 @@ processors:
       tag: set_rule_name_from_event_policy_name
       copy_from: crowdstrike.event.Policy.Name
       ignore_empty_value: true
-  - foreach:
-      field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack_tactic_name
-      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
-      processor:
-        append:
-            field: threat.tactic.name
-            tag: append_crowdstrike_event_MitreAttack_Tactic_into_threat_tactic_name
-            value: '{{{_ingest._value.Tactic}}}'
-            allow_duplicates: false
-  - foreach:
-      field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack_tactic_id
-      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
-      processor:
-        append:
-            field: threat.tactic.id
-            tag: append_crowdstrike_event_MitreAttack_TacticID_into_threat_tactic_id
-            value: '{{{_ingest._value.TacticID}}}'
-            allow_duplicates: false
-  - foreach:
-      field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack_technique_name
-      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
-      processor:
-        append:
-            field: threat.technique.name
-            tag: append_crowdstrike_event_MitreAttack_Technique_into_threat_technique_name
-            value: '{{{_ingest._value.Technique}}}'
-            allow_duplicates: false
-  - foreach:
-      field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack_technique_id
-      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
-      processor:
-        append:
-            field: threat.technique.id
-            tag: append_crowdstrike_event_MitreAttack_TechniqueID_into_threat_technique_id
-            value: '{{{_ingest._value.TechniqueID}}}'
-            allow_duplicates: false
-  - set:
-      field: threat.framework
-      tag: set_threat_framework
-      value: MITRE ATT&CK
   - set:
       field: user.id
       tag: set_user_id_from_event_UserSid
@@ -298,7 +254,6 @@ processors:
         - crowdstrike.event.FalconHostLink
         - crowdstrike.event.Filename
         - crowdstrike.event.Hostname
-        - crowdstrike.event.MitreAttack
         - crowdstrike.event.Name
         - crowdstrike.event.Platform
         - crowdstrike.event.Policy
