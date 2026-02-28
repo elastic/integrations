@@ -6,18 +6,6 @@
 
 The Syslog router integration for Elastic enables you to route incoming syslog events to the correct Elastic integration data stream using regex pattern matching on the `message` field. It acts as a centralized traffic controller for syslog messages, allowing a single Elastic Agent to receive a mixed stream of logs from multiple network devices and forward each event to its appropriate integration-specific data stream for parsing.
 
-This integration facilitates the following:
-
-- Consolidating syslog from many different network devices onto a single listener port instead of managing separate listeners for every vendor.
-- Automatically identifying log sources and routing them to specialized data streams such as `cisco_asa.log` or `panw.panos`.
-- Extending the routing logic with custom patterns to handle proprietary or non-standard syslog formats.
-
-This integration is useful for several common use cases:
-
-- Centralized syslog ingestion: Receive syslog from many different network devices on a single port and automatically route each event to its corresponding integration for proper parsing.
-- Multi-vendor firewall environments: You can consolidate syslog collection through a single Elastic Agent policy rather than deploying separate inputs per vendor.
-- Rapid onboarding of syslog sources: You can add support for new device types by adding a single `if/then` block with a regex pattern, without needing to deploy additional agents or inputs.
-
 ### Compatibility
 
 This integration requires Kibana versions ^8.14.3 or ^9.0.0, and a basic Elastic subscription.
@@ -78,6 +66,14 @@ Based on your routing configuration, data is directed toward specialized integra
 - Authentication and identity logs: Identity services and access logs (for example, `cisco_ise.log`).
 - Intrusion detection alerts: IDS/IPS signatures (for example, `snort.log` or `fortinet_fortiedr.log`).
 
+### Supported use cases
+
+You can use this integration for the following use cases:
+
+- Centralized syslog ingestion: Receive syslog from many different network devices on a single port and automatically route each event to its corresponding integration for parsing.
+- Multi-vendor firewall environments: Consolidate syslog collection through a single Elastic Agent policy rather than deploying separate inputs per vendor.
+- Rapid onboarding of syslog sources: Add support for new device types by adding a single `if/then` block with a regex pattern, without needing to deploy additional agents or inputs.
+
 ## What do I need to use this integration?
 
 The Syslog Router is an Elastic-built tool and not a third-party vendor product, so you don't have vendor-side prerequisites. To use this integration, you'll need the following:
@@ -129,20 +125,97 @@ After your devices are ready to send data, you can set up the integration in Kib
 6. Select the **Elastic Agent policy** where you want to deploy the integration.
 7. Click **Save and continue**.
 
+### Configuring routing patterns
+
+#### Pattern definition
+
+The integration uses [Beats conditionals and processors](https://www.elastic.co/guide/en/beats/filebeat/current/defining-processors.html) to match incoming syslog messages to target data streams. Pattern definitions are evaluated in the order they appear. Each pattern is an `if/then` block:
+
+```yaml
+- if:
+    and:
+      - not.has_fields: _conf.dataset
+      - regexp.message: "%ASA-"
+  then:
+    - add_fields:
+        target: ""
+        fields:
+          _conf.dataset: "cisco_asa.log"
+          _conf.tz_offset: "UTC"
+          _temp_.internal_zones: ["trust"]
+          _temp_.external_zones: ["untrust"]
+```
+
+The `not.has_fields: _conf.dataset` condition ensures only the first matching pattern sets the routing target.
+
+#### Reordering patterns
+
+Move the entire `if/then` block up or down in the YAML list. Place stricter patterns before more relaxed ones, and high-traffic integrations near the top.
+
+#### Disabling a pattern
+
+Remove the block entirely, or comment it out with `#`:
+
+```yaml
+# - if:
+#     and:
+#       - not.has_fields: _conf.dataset
+#       - regexp.message: "%ASA-"
+#   then:
+#     - add_fields:
+#         target: ''
+#         fields:
+#           _conf.dataset: "cisco_asa.log"
+#           _conf.tz_offset: "UTC"
+#           _temp_.internal_zones: ['trust']
+#           _temp_.external_zones: ['untrust']
+```
+
+#### Adding a new pattern
+
+At minimum, an `add_fields` processor must set `_conf.dataset` to the target integration's dataset name (`integration.data_stream`):
+
+```yaml
+- if:
+    and:
+      - not.has_fields: _conf.dataset
+      - regexp.message: "MY_PATTERN"
+  then:
+    - add_fields:
+        target: ""
+        fields:
+          _conf.dataset: "my_integration.my_data_stream"
+```
+
+Multiple regex patterns can be combined with `or`:
+
+```yaml
+- if:
+    and:
+      - not.has_fields: _conf.dataset
+      - or:
+          - regexp.message: <PATTERN_1>
+          - regexp.message: <PATTERN_2>
+```
+
+Additional processors such as `decode_cef` or `syslog` may be added in the `then` block if the target integration requires light pre-processing. However, for any complex processing of custom logs, we recommend creating a separate integration and routing to it.
+
 ### Validation
 
 To ensure your deployment is working correctly, follow these steps:
 
 1. Verify the agent is receiving data by checking the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening. You can send a test syslog message from the agent host to itself to confirm the port is open:
+
    ```bash
    echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514
    ```
-3. In Kibana, navigate to **Analytics > Discover**.
-4. Select the `logs-*` data view.
-5. Search for routed events using KQL. For example, to check for routed Cisco ASA logs, use: `data_stream.dataset : "cisco_asa.log"`.
-6. Verify that the events are correctly parsed and that fields from the target integration are present.
-7. To find events that didn't match any routing pattern, search for: `data_stream.dataset : "syslog_router.log"`.
-8. Examine the `message` field of these unmatched events to determine if you need to add or adjust your reroute patterns.
+
+2. In Kibana, navigate to **Analytics > Discover**.
+3. Select the `logs-*` data view.
+4. Search for routed events using KQL. For example, to check for routed Cisco ASA logs, use: `data_stream.dataset : "cisco_asa.log"`.
+5. Verify that the events are correctly parsed and that fields from the target integration are present.
+6. To find events that didn't match any routing pattern, search for: `data_stream.dataset : "syslog_router.log"`.
+7. Examine the `message` field of these unmatched events to determine if you need to add or adjust your reroute patterns.
 
 ## Troubleshooting
 
