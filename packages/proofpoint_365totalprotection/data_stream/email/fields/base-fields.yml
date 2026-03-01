@@ -1,0 +1,206 @@
+- name: data_stream.type
+  type: constant_keyword
+  description: Data stream type.
+- name: data_stream.dataset
+  type: constant_keyword
+  description: Data stream dataset.
+- name: data_stream.namespace
+  type: constant_keyword
+  description: Data stream namespace.
+- name: '@timestamp'
+  type: date
+  description: Event timestamp.
+- name: ecs.version
+  type: keyword
+  description: ECS version this event conforms to.
+- name: input.type
+  type: keyword
+  description: Type of Filebeat input.
+- name: email.from.address
+  type: keyword
+  description: The sender's email address.
+- name: email.to.address
+  type: keyword
+  description: The recipient's email address.
+- name: email.subject
+  type: text
+  description: Email subject line.
+- name: email.message_id
+  type: keyword
+  description: RFC822 Message-ID header.
+- name: email.direction
+  type: keyword
+  description: Email direction (inbound/outbound).
+- name: source.ip
+  type: ip
+  description: Source IP address.
+- name: destination.ip
+  type: ip
+  description: Destination IP address.
+- name: related.ip
+  type: ip
+  description: All IPs related to this email (source and destination).
+- name: related.user
+  type: keyword
+  description: All users/email addresses related to this email.
+- name: proofpoint
+  type: group
+  fields:
+    - name: email
+      type: group
+      fields:
+        - name: msg_id
+          type: keyword
+          description: Internal Proofpoint message ID (used for deduplication)
+        - name: message_id
+          type: keyword
+          description: RFC822 Message-ID header
+        - name: date
+          type: date
+          description: Email date and time
+        - name: direction
+          type: keyword
+          description: Email direction (Inbound/Outbound)
+        - name: direction_text
+          type: keyword
+          description: Human-readable email direction text
+        - name: comm_partner
+          type: keyword
+          description: Communication partner email address (sender for inbound, recipient for outbound)
+        - name: owner
+          type: keyword
+          description: Email address owner (recipient for inbound, sender for outbound)
+        - name: from
+          type: keyword
+          description: Sender email address (derived from comm_partner/owner based on direction)
+        - name: to
+          type: keyword
+          description: Recipient email address (derived from comm_partner/owner based on direction)
+        - name: subject
+          type: text
+          description: Email subject line
+        - name: action
+          type: keyword
+          description: Last remediation action taken
+        - name: attachments
+          type: keyword
+          description: Whether the email has attachments (yes/no)
+        - name: attachmentsList
+          type: keyword
+          description: List of attachment filenames
+        - name: attachmentsExtensions
+          type: keyword
+          description: List of attachment file extensions
+        - name: classification_id
+          type: integer
+          description: Classification ID
+        - name: classification_text
+          type: keyword
+          description: Classification text (clean, spam, malware, etc.)
+        - name: status_id
+          type: integer
+          description: Status ID
+        - name: status_text
+          type: keyword
+          description: Status text (Delivered, Quarantined, Blocked, etc.)
+        - name: reason
+          type: text
+          description: Reason for classification
+        - name: reason_intern
+          type: text
+          description: Internal reason for classification
+        - name: gateway
+          type: keyword
+          description: Gateway that processed the email
+        - name: source_hostname
+          type: keyword
+          description: Source hostname
+        - name: source_ip
+          type: ip
+          description: Source IP address
+        - name: destination_hostname
+          type: keyword
+          description: Destination hostname
+        - name: destination_ip
+          type: ip
+          description: Destination IP address
+        - name: owner_domain
+          type: keyword
+          description: Owner's email domain
+        - name: crypt_type_in
+          type: object
+          object_type: keyword
+          description: Incoming encryption object containing id and text
+        - name: incoming_encryption
+          type: keyword
+          description: Incoming encryption type (extracted from crypt_type_in)
+        - name: crypt_type_out
+          type: object
+          object_type: keyword
+          description: Outgoing encryption object containing id and text
+        - name: outgoing_encryption
+          type: keyword
+          description: Outgoing encryption type (extracted from crypt_type_out)
+        - name: private
+          type: boolean
+          description: Whether the email is private
+        - name: smtp_dialog
+          type: text
+          description: SMTP dialog
+        - name: smtp_status
+          type: text
+          description: SMTP status message
+        - name: smtp_status_code
+          type: keyword
+          description: SMTP status code
+        - name: last_remediation_actions
+          type: keyword
+          description: Last remediation actions taken
+        - name: last_remediation_type
+          type: keyword
+          description: Type of last remediation
+        - name: last_remediation_folder
+          type: keyword
+          description: Folder for last remediation
+        - name: last_remediation_effectiveness
+          type: keyword
+          description: Effectiveness of last remediation
+        - name: last_report_type
+          type: keyword
+          description: Type of last report
+        - name: history
+          type: text
+          description: Email history
+        - name: ttl
+          type: date
+          description: Time to live
+        - name: ttl_reason
+          type: keyword
+          description: Reasons for TTL
+        - name: fix_ids
+          type: keyword
+          description: Fix IDs
+        - name: es_mail_id
+          type: keyword
+          description: Elasticsearch mail ID
+        - name: has_url_rewritten
+          type: boolean
+          description: Whether URLs have been rewritten
+        - name: is_archived
+          type: boolean
+          description: Whether the email is archived
+        - name: size
+          type: keyword
+          description: Email size with unit
+        - name: last_remediation
+          type: object
+          enabled: false
+          description: Last remediation object with details about remediation actions
+        - name: classification
+          type: object
+          object_type: keyword
+          description: Classification object containing id and text
+        - name: status
+          type: object
+          object_type: keyword
+          description: Status object containing id and text
