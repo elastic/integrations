@@ -24,6 +24,9 @@
         - name: description
           type: text
           description: Detailed description of the event type
+        - name: server_timestamp
+          type: date
+          description: Date and time of event being received by backend server. UTC+00:00
         - name: persistence_timestamp
           type: date
           description: Timestamp when the event was persisted
@@ -75,9 +78,21 @@
             - name: labels
               type: keyword
               description: Device labels
+            - name: winsAddress
+              type: keyword
+              description: WINS address
+            - name: winsName
+              type: keyword
+              description: Device WINS name
+            - name: clientType
+              type: keyword
+              description: Client type
         - name: userName
           type: keyword
           description: User name associated with the event
+        - name: xmRecommendationKey
+          type: keyword
+          description: Key for the kind of XM recommendation (XM events)
         - name: details
           type: group
           description: Additional event details
@@ -256,3 +271,273 @@
             - name: affectedSharedFolders
               type: keyword
               description: Shared folders affected by the activity (activityMonitor events)
+            - name: readableIncidentId
+              type: keyword
+              description: Incident ID used in Elements portal UI (EDR events)
+            - name: mergedTo
+              type: keyword
+              description: ID of an incident to what the current incident was merged to (EDR events)
+            - name: systemWide
+              type: keyword
+              description: Infection is system wide (fileScanning/manualScanning events)
+            - name: readOnly
+              type: keyword
+              description: The infected file cannot be modified (fileScanning/manualScanning events)
+            - name: rebootRequiredToDelete
+              type: keyword
+              description: Reboot is required to remove the infection (fileScanning/manualScanning events)
+            - name: availableActions
+              type: keyword
+              description: Suggested actions in response to infection. Options are block,disinfect,delete,rename,quarantine (fileScanning/manualScanning events)
+            - name: recommendedAction
+              type: keyword
+              description: Recommended action (fileScanning/manualScanning events)
+            - name: containerSize
+              type: keyword
+              description: Size of an archive (fileScanning events)
+            - name: containerMailbox
+              type: keyword
+              description: True if a container of file is a mailbox (fileScanning events)
+            - name: subItem
+              type: keyword
+              description: Path to an infected file in an archive in case action was performed on whole archive (fileScanning events)
+            - name: accessOperation
+              type: keyword
+              description: For real-time scanning, attempted operation (fileScanning events)
+            - name: accessFlags
+              type: keyword
+              description: For real-time scanning, separated by comma WIN API flags used in accessing the file (fileScanning events)
+            - name: accessorHash
+              type: keyword
+              description: For real-time scanning, sha1 hash of the accessing process (fileScanning events)
+            - name: accessorPath
+              type: keyword
+              description: For real-time scanning, process used to access the file (fileScanning events)
+            - name: appliedRule
+              type: keyword
+              description: Applied rule name (various events)
+            - name: cloudProvider
+              type: keyword
+              description: Name of cloud provider (cloud events)
+            - name: cloudProviderTenantId
+              type: keyword
+              description: Cloud provider tenant ID (cloud events)
+            - name: serviceType
+              type: keyword
+              description: Service type (ECP events - o365-exchange, o365-teams, etc.)
+            - name: eventId
+              type: keyword
+              description: Event ID (ECP events)
+            - name: itemType
+              type: keyword
+              description: Item type (ECP events - EmailMessage, TeamsChannelItem, etc.)
+            - name: itemDateTimeReceived
+              type: keyword
+              description: Date and time when item was received (ECP events)
+            - name: itemSender
+              type: keyword
+              description: Sender of the item (ECP events)
+            - name: itemSubject
+              type: keyword
+              description: Subject of the item (ECP events)
+            - name: internetMessageId
+              type: keyword
+              description: Internet message ID (ECP events)
+            - name: itemParentFolderName
+              type: keyword
+              description: Parent folder name (ECP events)
+            - name: itemSize
+              type: keyword
+              description: Item size (ECP events)
+            - name: unsafeAttachmentCount
+              type: keyword
+              description: Count of unsafe attachments (ECP events)
+            - name: unsafeUrlCount
+              type: keyword
+              description: Count of unsafe URLs (ECP events)
+            - name: userPrincipalName
+              type: keyword
+              description: User principal name (ECP events)
+            - name: urls
+              type: keyword
+              description: URLs found in the item (ECP events)
+            - name: detonation
+              type: boolean
+              description: Whether detonation was performed (ECP events)
+            - name: reputationScore
+              type: keyword
+              description: Reputation score (ECP events)
+            - name: verdict
+              type: keyword
+              description: Verdict (ECP events - Safe, Unsafe, etc.)
+            - name: location
+              type: keyword
+              description: Location/URL of the item (ECP events)
+            - name: fileName
+              type: keyword
+              description: File name (ECP events)
+            - name: items
+              type: keyword
+              description: List of items that are restored from quarantine (Server Share Protection/Rollback events)
+            - name: backupFolder
+              type: keyword
+              description: Path to affected backup folder (Server Share Protection/Rollback events)
+            - name: isQuarantineAllowed
+              type: keyword
+              description: Are reverted files stored in quarantine or not (Server Share Protection/Rollback events)
+            - name: processOperations
+              type: keyword
+              description: List of process operations. JSON object wrapped into a string (Rollback events)
+            - name: registryOperations
+              type: keyword
+              description: List of registry operations. JSON object wrapped into a string (Rollback events)
+            - name: targetFileVersion
+              type: keyword
+              description: Version of the target file (Application Control events)
+            - name: targetPrevalence
+              type: keyword
+              description: Prevalence rating of the target file (Application Control events)
+            - name: targetProductName
+              type: keyword
+              description: Product name of the target file (Application Control events)
+            - name: targetProductVersion
+              type: keyword
+              description: Product version of the target file (Application Control events)
+            - name: targetSignatureSignerName
+              type: keyword
+              description: Signature signer name of the target file (Application Control events)
+            - name: targetVersionCompanyName
+              type: keyword
+              description: Version company name of the target file (Application Control events)
+            - name: errorMessage
+              type: text
+              description: Text message describing the error (Application Control error events)
+            - name: categories
+              type: keyword
+              description: List of categories associated with the blocked page (Web Content Control events)
+            - name: contentType
+              type: keyword
+              description: Content type of a blocked request (Web Traffic Scanning events)
+            - name: websiteUrl
+              type: keyword
+              description: URL of the website that triggered the event (Web Traffic Scanning events)
+            - name: computerName
+              type: keyword
+              description: Name of the computer (Web Traffic Scanning events)
+            - name: operation
+              type: keyword
+              description: Operation type (XFence events - read, write, etc.)
+            - name: processHash
+              type: keyword
+              description: Hash of the process (XFence events)
+            - name: processPath
+              type: keyword
+              description: Path to the process (XFence events)
+            - name: processTeamId
+              type: keyword
+              description: Process team ID (XFence events)
+            - name: serviceId
+              type: keyword
+              description: Service ID (Collaboration Protection events)
+            - name: inboxRuleName
+              type: keyword
+              description: Rule name for inbox (Collaboration Protection inbox rule scan events)
+            - name: appName
+              type: keyword
+              description: Name, version, or GUID string of the blocked application (AMSI events)
+            - name: contentName
+              type: keyword
+              description: Filename, URL, unique script ID, or similar of the content (AMSI events)
+            - name: prevalenceScore
+              type: keyword
+              description: Prevalence score (Collaboration Protection events)
+            - name: filename
+              type: keyword
+              description: File name (Collaboration Protection events - alternative to fileName)
+            - name: recommendationDetails
+              type: text
+              description: Details of the recommendation (XM events)
+            - name: recommendationId
+              type: keyword
+              description: Unique ID of the recommendation (XM events)
+            - name: recommendationName
+              type: keyword
+              description: Name of the recommendation (XM events)
+            - name: recommendationStatus
+              type: keyword
+              description: Status of the recommendation (XM events - open, closed, acceptedRisk)
+            - name: remediationEffort
+              type: keyword
+              description: Estimated effort to remediate (XM events)
+            - name: remediationEffortString
+              type: keyword
+              description: Effort level as a string (XM events)
+            - name: remediationImpact
+              type: keyword
+              description: Impact of remediation (XM events - critical, high, medium, low)
+            - name: topAssets
+              type: keyword
+              description: List of top assets affected by the recommendation (XM events - JSON array)
+            - name: totalAssets
+              type: integer
+              description: Total number of assets affected (XM events)
+            - name: topFindings
+              type: keyword
+              description: List of top findings related to the recommendation (XM events - JSON array)
+            - name: totalFindings
+              type: integer
+              description: Total number of findings (XM events)
+            - name: daysFromLastUpdate
+              type: keyword
+              description: How many days are passed since last database update (Connector events)
+            - name: ruleGroupName
+              type: keyword
+              description: Group name of a rule that blocked a connection (Firewall events)
+            - name: layerName
+              type: keyword
+              description: Name of a layer that blocked a connection (Firewall events)
+            - name: ruleDirection
+              type: keyword
+              description: Direction of triggered rule (Firewall events - inbound, outbound, forward)
+            - name: ipProtocol
+              type: keyword
+              description: IP protocol type (Firewall events)
+            - name: rarity
+              type: keyword
+              description: Rarity of the blocked process (DeepGuard events - unknown, rare, common)
+            - name: exploit
+              type: keyword
+              description: Full name of an exploit (DeepGuard events)
+            - name: commandLine
+              type: keyword
+              description: Command line of the blocked process (DeepGuard events)
+            - name: devicePath
+              type: keyword
+              description: Blocked device path (Device Control events)
+            - name: deviceId
+              type: keyword
+              description: Blocked device ID (Device Control events)
+            - name: deviceName
+              type: keyword
+              description: Blocked device name (Device Control events)
+            - name: initiator
+              type: keyword
+              description: Path to the executable that accessed the device (Device Control events)
+            - name: processId
+              type: keyword
+              description: Process ID that made modification attempt (Integrity Checker events)
+            - name: actionType
+              type: keyword
+              description: Type of blocked action (Tamper Protection events - process, file, registry)
+            - name: initiator_certificate_hash
+              type: keyword
+              description: Hash of initiator process certificate (Tamper Protection events)
+            - name: initiator_signer_name
+              type: keyword
+              description: Initiator process signer name (Tamper Protection events)
+            - name: ipAddress
+              type: keyword
+              description: Current IP address in slash notation (Tamper Protection events)
+            - name: requestType
+              type: keyword
+              description: Blocked operation (Tamper Protection events - reg_delete_key, terminate_process, etc.)
