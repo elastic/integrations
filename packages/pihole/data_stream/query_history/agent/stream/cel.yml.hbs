@@ -1,0 +1,136 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  url: {{url}}
+redact:
+  fields:
+    - api_password
+program: |
+  // Authenticate with Pi-hole API
+  post_request(
+    state.url.trim_right("/") + "/api/auth",
+    "application/json",
+    {
+      "password": "{{api_password}}"
+    }.encode_json()
+  ).do_request().as(auth_resp,
+    auth_resp.StatusCode != 200 ?
+      {
+        "events": [{
+          "error": {
+            "message": "Authentication failed: HTTP " + string(auth_resp.StatusCode)
+          }
+        }],
+        "want_more": false
+      }
+    :
+      auth_resp.Body.decode_json().as(auth_body,
+        !has(auth_body.session) || !has(auth_body.session.sid) ?
+          {
+            "events": [{
+              "error": {
+                "message": "Authentication response missing session ID"
+              }
+            }],
+            "want_more": false
+          }
+        :
+          // Get query history metrics using session ID
+          request(
+            "GET",
+            state.url.trim_right("/") + "/api/history"
+          ).with({
+            "Header": {
+              "X-FTL-SID": [auth_body.session.sid]
+            }
+          }).do_request().as(history_resp,
+            // Process history response first
+            history_resp.StatusCode != 200 ?
+              // History request failed, still try to logout before returning error
+              request("DELETE", state.url.trim_right("/") + "/api/auth").with({
+                "Header": {"X-FTL-SID": [auth_body.session.sid]}
+              }).do_request().as(logout_resp, {
+                "events": [{
+                  "error": {
+                    "message": "Failed to fetch history: HTTP " + string(history_resp.StatusCode)
+                  }
+                }],
+                "want_more": false
+              })
+            :
+              // History request succeeded, process response
+              history_resp.Body.decode_json().as(history_body,
+                // Logout after successful collection
+                request("DELETE", state.url.trim_right("/") + "/api/auth").with({
+                  "Header": {"X-FTL-SID": [auth_body.session.sid]}
+                }).do_request().as(logout_resp,
+                  // Force logout completion by checking status
+                  logout_resp.StatusCode == 204 ?
+                    (!has(history_body.history) ?
+                      {
+                        "events": [],
+                        "want_more": false
+                      }
+                    :
+                      {
+                        "events": history_body.history.map(item, {
+                          "timestamp": int(item.timestamp),
+                          "total": int(item.total),
+                          "cached": int(item.cached),
+                          "blocked": int(item.blocked),
+                          "forwarded": int(item.forwarded)
+                        }),
+                        "want_more": false
+                      }
+                    )
+                  :
+                    (!has(history_body.history) ?
+                      {
+                        "events": [],
+                        "want_more": false
+                      }
+                    :
+                      {
+                        "events": history_body.history.map(item, {
+                          "timestamp": int(item.timestamp),
+                          "total": int(item.total),
+                          "cached": int(item.cached),
+                          "blocked": int(item.blocked),
+                          "forwarded": int(item.forwarded),
+                          "_logout_failed": "HTTP " + string(logout_resp.StatusCode)
+                        }),
+                        "want_more": false
+                      }
+                    )
+                )
+              )
+          )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if tags}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
