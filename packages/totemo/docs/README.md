@@ -9,8 +9,8 @@ The Totemo integration collects the following event types: `log`.
 
 ## Compatibility
 
-This module has been tested against `Kiteworks Totemomail Version #TODO: Find out the version`.  
-It should however work with all versions if the logging is setup correctly
+This module has been tested against Kiteworks Totemomail.  
+It should work with all versions if the logging is setup correctly
 
 ## Requirements
 
