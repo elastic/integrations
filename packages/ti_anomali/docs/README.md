@@ -9,11 +9,13 @@ Use the Anomali ThreatStream integration to collect and parse threat intelligenc
 
 ### Compatibility
 
-The Anomali ThreatStream integration is compatible with Anomali ThreatStream REST API V2.This integration also supports Anomali ThreatStream Elastic Extension. But it is **DEPRECATED** and not recommended to use.
+The Anomali ThreatStream integration is compatible with Anomali ThreatStream REST API V2. This integration also supports Anomali ThreatStream Elastic Extension. But it is **DEPRECATED** and not recommended to use.
 
 ### How it works
 
 The integration periodically query the Anomali ThreatStream REST API V2 intelligence endpoint. It authenticates using your username and API key, then retrieves the latest threat indicators.
+
+**NOTE:** The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be accessible using the alias `logs-ti_anomali_latest.intelligence`.
 
 ## What Data Does This Integration Collect?
 
@@ -39,10 +41,10 @@ To collect data from Anomali ThreatStream API, you need to have following:
 - Anomali ThreatStream username
 - Anomali ThreatStream API key
 
-#### DEPRECATED: Collect data from Anomali ThreatStream via the Elastic Extension
+#### DEPRECATED: Collect data from Anomali ThreatStream using the Elastic Extension
 This source of indicators is deprecated. New users should instead use the API source above. This source requires additional software, the _Elastic_ _Extension,_ to connect Anomali ThreatStream to this integration. It's available on the [ThreatStream download page](https://ui.threatstream.com/downloads).
 
-Please refer to the documentation included with the extension for a detailed explanation on how to configure Anomali ThreatStream to send indicators to this integration.
+Refer to the documentation included with the extension for a detailed explanation on how to configure Anomali ThreatStream to send indicators to this integration.
 
 ## How do I deploy this integration?
 
@@ -59,7 +61,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
-**NOTE:** The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be accessible using the alias `logs-ti_anomali_latest.intelligence`.
+
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **Anomali ThreatStream**.
 3. Select the **Anomali ThreatStream** integration from the search results.
@@ -88,11 +90,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. The transform creates destination indices that are accessible via the alias of the form `logs-ti_anomali_latest.<datastreamname>`. When querying for active indicators or setting up indicator match rules, use the alias to avoid false positives from expired indicators. The dashboards show only the latest indicators.
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. The transform creates destination indices that are accessible using the alias of the form `logs-ti_anomali_latest.<datastreamname>`. When querying for active indicators or setting up indicator match rules, use the alias to avoid false positives from expired indicators. The dashboards show only the latest indicators.
 
 #### Handling Orphaned IOCs
 
-Indicator data from Anomali ThreatStream can contain information about deletion or expiry times. However, some Anomali ThreatStream IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure an "IOC Expiration Duration" or "IOC Duration Before Deletion" parameter while setting up a policy. The value set there will limit the time that indicators are retained before deletion, but indicators may be removed earlier based on information from Anomali ThreatStream.
+Indicator data from Anomali ThreatStream can contain information about deletion or expiry times. However, some Anomali ThreatStream IOCs might never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure an "IOC Expiration Duration" or "IOC Duration Before Deletion" parameter while setting up a policy. The value set there will limit the time that indicators are retained before deletion, but indicators might be removed earlier based on information from Anomali ThreatStream.
 
 ### Destination index versioning and deleting older versions
 
@@ -119,13 +121,13 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 
 If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
 
-| Anomali `severity` | Severity Name |
-| -------------------|---------------|
-| 0 - 19             | info          |
-| 20 - 39            | low           |
-| 40 - 59            | medium        |
-| 60 - 79            | high          |
-| 80 - 100           | critical      |
+| Anomali `severity` | Severity Name | `event.severity` |
+| -------------------|---------------|------------------|
+| 0 - 19             | info          | 21               |
+| 20 - 39            | low           | 21               |
+| 40 - 59            | medium        | 47               |
+| 60 - 79            | high          | 73               |
+| 80 - 100           | critical      | 99               |
 
 ### ILM Policies
 
@@ -196,7 +198,7 @@ For more information on architectures that can be used for scaling this integrat
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
-#### Threatstream
+#### **DEPRECATED:** Threatstream
 
 **Exported fields**
 
@@ -337,7 +339,7 @@ An example event for `intelligence` looks as following:
 }
 ```
 
-#### Threatstream
+#### **DEPRECATED:** Threatstream
 
 An example event for `threatstream` looks as following:
 
@@ -444,8 +446,8 @@ An example event for `threatstream` looks as following:
 
 These inputs are used in this integration:
 
-- [http_endpoint](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-http_endpoint)
-- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [HTTP Endpoint](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-http_endpoint)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
 ### API usage
 
