@@ -1,0 +1,225 @@
+---
+description: Pipeline for processing STIX 2.1 non-indicator objects
+processors:
+      #######################
+      # User-account
+      #######################
+      - set:
+                field: event.kind
+                value: asset
+                if: ctx.foo?.type == 'user-account'
+      - append:
+                field: event.category
+                value: threat
+                if: ctx.foo?.type == 'user-account'
+      - set:
+                field: event.type
+                value: [ indicator ]
+                if: ctx.foo?.type == 'user-account'
+      - set:
+                field: user.name
+                copy_from: foo.account_login
+                if: ctx.foo?.account_login != null && ctx.foo?.type == 'user-account'
+      - set:
+                field: user.full_name
+                copy_from: foo.display_name
+                if: ctx.foo?.display_name != null && ctx.foo?.type == 'user-account'
+      - set:
+                field: user.email
+                copy_from: foo.account_login
+                if: ctx.foo?.account_login != null && ctx.foo.account_login.contains("@") && ctx.foo?.type == 'user-account'
+      - set:
+                field: user.id
+                copy_from: foo.id
+                if: ctx.foo?.id != null && ctx.foo?.type == 'user-account'
+      - set:
+                field: user.credential
+                copy_from: foo.credential
+                if: ctx.foo?.credential != null && ctx.foo?.type == 'user-account'
+
+      #######################
+      # Ipv4-addr
+      #######################
+      - set:
+                field: event.kind
+                value: event
+                if: ctx.foo?.type == 'ipv4-addr'
+      - append:
+                field: event.category
+                value: threat
+                if: ctx.foo?.type == 'ipv4-addr'
+      - set:
+                field: event.type
+                value: [ indicator ]
+                if: ctx.foo?.type == 'ipv4-addr'
+      - set:
+                field: threat.indicator.type
+                value: ipv4-addr
+                if: ctx.foo?.type == 'ipv4-addr'
+      - set:
+                field: threat.indicator.ip
+                copy_from: foo.value
+                if: ctx.foo?.value != null && ctx.foo?.type == 'ipv4-addr'
+      - append:
+                field: related.ip
+                value: "{{{foo.value}}}"
+                if: ctx.foo?.value != null && ctx.foo?.type == 'ipv4-addr'
+                allow_duplicates: false
+
+      #######################
+      # Malware
+      #######################
+      - set:
+                field: event.kind
+                value: event
+                if: ctx.foo?.type == 'malware'
+      - append:
+                field: event.category
+                value: malware
+                if: ctx.foo?.type == 'malware'
+      - set:
+                field: event.type
+                value: [ info ]
+                if: ctx.foo?.type == 'malware'
+      - set:
+                field: threat.software.type
+                value: Malware
+                if: ctx.foo?.type == 'malware'
+      - set:
+                field: threat.software.name
+                copy_from: foo.name
+                if: ctx.foo?.name != null && ctx.foo?.type == 'malware'
+      - set:
+                field: threat.software.capabilities
+                copy_from: foo.capabilities
+                if: ctx.foo?.capabilities != null && ctx.foo?.type == 'malware'
+      - set:
+                field: threat.software.malware_types
+                copy_from: foo.malware_types
+                if: ctx.foo?.malware_types != null && ctx.foo?.type == 'malware'
+      - set:
+                field: related.references
+                copy_from: foo.sample_refs
+                if: ctx.foo?.sample_refs != null && ctx.foo?.type == 'malware'
+
+      #######################
+      # Directory
+      #######################
+      - set:
+                field: event.kind
+                value: asset
+                if: ctx.foo?.type == 'directory'
+      - append:
+                field: event.category
+                value: host
+                if: ctx.foo?.type == 'directory'
+      - set:
+                field: event.type
+                value: [ info ]
+                if: ctx.foo?.type == 'directory'
+      - set:
+                field: file.directory
+                copy_from: foo.path
+                if: ctx.foo?.path != null && ctx.foo?.type == 'directory'
+      - set:
+                field: threat.indicator.file.directory
+                copy_from: foo.path
+                if: ctx.foo?.path != null && ctx.foo?.type == 'directory'
+      - set:
+                field: threat.indicator.type
+                value: directory
+                if: ctx.foo?.type == 'directory'
+
+      #######################
+      # File
+      #######################
+      - set:
+                field: event.kind
+                value: asset
+                if: ctx.foo?.type == 'file'
+      - append:
+                field: event.category
+                value: host
+                if: ctx.foo?.type == 'file'
+      - set:
+                field: event.type
+                value: [ info ]
+                if: ctx.foo?.type == 'file'
+      - set:
+                field: file.name
+                copy_from: foo.name
+                if: ctx.foo?.name != null && ctx.foo?.type == 'file'
+      - set:
+                field: threat.indicator.file.name
+                copy_from: foo.name
+                if: ctx.foo?.name != null && ctx.foo?.type == 'file'
+      - set:
+                field: file.reference
+                copy_from: foo.parent_directory_ref
+                if: ctx.foo?.parent_directory_ref != null && ctx.foo?.type == 'file'
+      - set:
+                field: threat.indicator.type
+                value: file
+                if: ctx.foo?.type == 'file'
+
+      #######################
+      # Relationship
+      #######################
+      - set:
+                field: event.kind
+                value: event
+                if: ctx.foo?.type == 'relationship'
+      - append:
+                field: event.category
+                value: threat
+                if: ctx.foo?.type == 'relationship'
+      - set:
+                field: event.type
+                value: [ indicator ]
+                if: ctx.foo?.type == 'relationship'
+      - set:
+                field: related.type
+                copy_from: foo.relationship_type
+                if: ctx.foo?.relationship_type != null && ctx.foo?.type == 'relationship'
+      - set:
+                field: related.source_ref
+                copy_from: foo.source_ref
+                if: ctx.foo?.source_ref != null && ctx.foo?.type == 'relationship'
+      - set:
+                field: related.target_ref
+                copy_from: foo.target_ref
+                if: ctx.foo?.target_ref != null && ctx.foo?.type == 'relationship'
+
+      #######################
+      # Append Tags
+      #######################
+      - append:
+                field: tags
+                value: luminar_stix_user_account
+                if: ctx.foo?.type == 'user-account'
+                allow_duplicates: false
+      - append:
+                field: tags
+                value: luminar_stix_ipv4_addr
+                if: ctx.foo?.type == 'ipv4-addr'
+                allow_duplicates: false
+      - append:
+                field: tags
+                value: luminar_stix_malware
+                if: ctx.foo?.type == 'malware'
+                allow_duplicates: false
+      - append:
+                field: tags
+                value: luminar_stix_directory
+                if: ctx.foo?.type == 'directory'
+                allow_duplicates: false
+      - append:
+                field: tags
+                value: luminar_stix_file
+                if: ctx.foo?.type == 'file'
+                allow_duplicates: false
+      - append:
+                field: tags
+                value: luminar_stix_relationship
+                if: ctx.foo?.type == 'relationship'
+                allow_duplicates: false

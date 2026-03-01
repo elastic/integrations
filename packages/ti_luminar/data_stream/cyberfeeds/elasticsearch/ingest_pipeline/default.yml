@@ -1,0 +1,261 @@
+---
+description: Pipeline for processing STIX 2.1 IOCs
+processors:
+    # Fail if error during the CEL program evaluation
+    - fail:
+            if: ctx.error?.message != null
+            message: "Error during CEL program evaluation"
+
+    - set:
+            field: ecs.version
+            value: "8.17.0"
+
+    - set:
+            field: threat.feed.name
+            copy_from: _conf.feed_name
+            if: ctx._conf?.feed_name != null
+    - set:
+            field: threat.feed.reference
+            copy_from: _conf.feed_reference
+            if: ctx._conf?.feed_reference != null
+
+    # Rename message to event.original if not already set
+    - rename:
+            field: message
+            tag: rename_message_to_event_original
+            target_field: event.original
+            ignore_missing: true
+            if: ctx.event?.original == null
+
+    # Remove message after renaming (required for validation)
+    - remove:
+            field: message
+            tag: remove_message
+            if: ctx.event?.original != null
+            ignore_missing: true
+
+    # Parse the raw JSON from event.original into a temporary 'foo' object
+    - json:
+            field: event.original
+            tag: luminar_event_original
+            target_field: foo
+            on_failure:
+                - append:
+                        field: error.message
+                        value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+    # Drop document if spec_version is not 2.1
+    - drop:
+            if: ctx.foo.spec_version != '2.1'
+            tag: drop_no_luminar_2_1
+
+    # Drop document if created < fetch_time
+    - drop:
+            if: ctx.fetch_time != null && ctx.foo?.created != null && ZonedDateTime.parse(ctx.foo.created).isBefore(ZonedDateTime.parse(ctx.fetch_time))
+            tag: drop_old_luminar_object
+
+    - fingerprint:
+            fields:
+                - foo.name
+                - foo.type
+                - foo.pattern
+            target_field: "_id"
+            ignore_missing: true
+
+    - date:
+            field: foo.created
+            target_field: "@timestamp"
+            formats:
+                - "ISO8601"
+            if: ctx.foo.created != null
+            tag: date_created
+    # Flatten extensions to foo.extensions
+    - script:
+            lang: painless
+            if: ctx.foo?.extensions != null
+            source: >
+                  if (ctx.foo.extension == null) {
+                    ctx.foo.extension = new HashMap();
+                  } for (entry in ctx.foo.extensions.entrySet()) {
+                    def extKey = entry.getKey();
+                    def extVal = entry.getValue();
+                    if (extKey != null && extKey.startsWith("extension-definition--") && extVal instanceof Map) {
+                      for (subEntry in extVal.entrySet()) {
+                        ctx.foo.extension[subEntry.getKey()] = subEntry.getValue();
+                      }
+                    } else {
+                      ctx.foo.extension[extKey] = extVal;
+                    }
+                  }
+
+    - pipeline:
+            name: '{{ IngestPipeline "ingest-indicator" }}'
+            if: ctx.foo?.type == 'indicator'
+
+    - pipeline:
+            name: '{{ IngestPipeline "ingest-non-indicator" }}'
+            if: "ctx.foo?.type != null && ['malware','threat-actor','relationship','software','identity','location','campaign','vulnerability','report'].contains(ctx.foo.type)"
+    # Normalize top-level common fields into luminar.*
+    - rename:
+            field: foo.id
+            target_field: luminar.id
+            ignore_missing: true
+
+    - rename:
+            field: foo.type
+            target_field: luminar.type
+            ignore_missing: true
+
+    - rename:
+            field: foo.created
+            target_field: luminar.created
+            ignore_missing: true
+
+    - rename:
+            field: foo.modified
+            target_field: luminar.modified
+            ignore_missing: true
+
+    # Copy labels array to luminar.labels
+    - foreach:
+            field: foo.labels
+            processor:
+                  append:
+                        field: luminar.labels
+                        value: "{{{_ingest._value}}}"
+            ignore_missing: true
+            ignore_failure: true
+            if: ctx.foo?.labels != null
+
+    # Indicator-specific field mapping
+    - rename:
+            field: foo.confidence
+            target_field: luminar.confidence
+            ignore_missing: true
+
+    - rename:
+            field: foo.name
+            target_field: luminar.name
+            ignore_missing: true
+
+    - rename:
+            field: foo.description
+            target_field: luminar.description
+            ignore_missing: true
+
+    - rename:
+            field: foo.pattern
+            target_field: luminar.pattern
+            ignore_missing: true
+
+    - rename:
+            field: foo.created_by_ref
+            target_field: luminar.created_by_ref
+            ignore_missing: true
+
+    - rename:
+            field: foo.external_references
+            target_field: luminar.external_references
+            ignore_missing: true
+
+    - rename:
+            field: foo.indicator_types
+            target_field: luminar.indicator_types
+            ignore_missing: true
+
+    - rename:
+            field: foo.valid_from
+            target_field: luminar.valid_from
+            ignore_missing: true
+
+    - rename:
+            field: foo.valid_until
+            target_field: luminar.valid_until
+            ignore_missing: true
+
+    - rename:
+            field: foo.ioc_expiration_date
+            target_field: luminar.ioc_expiration_date
+            ignore_missing: true
+
+    - rename:
+            field: foo.ioc_expiration_duration
+            target_field: luminar.ioc_expiration_duration
+            ignore_missing: true
+
+    - rename:
+            field: foo.ioc_expiration_reason
+            target_field: luminar.ioc_expiration_reason
+            ignore_missing: true
+
+    - rename:
+            field: foo.extension
+            target_field: luminar.extensions
+            ignore_missing: true
+    # Threat Actor fields
+    - rename:
+            field: foo.aliases
+            target_field: luminar.aliases
+            ignore_missing: true
+    - rename:
+            field: foo.threat_actor_types
+            target_field: luminar.threat_actor_types
+            ignore_missing: true
+    # Location fields
+    - rename:
+            field: foo.country
+            target_field: luminar.country
+            ignore_missing: true
+    # Identity fields
+    - rename:
+            field: foo.identity_class
+            target_field: luminar.identity_class
+            ignore_missing: true
+
+    # Relationship fields
+    - rename:
+            field: foo.relationship_type
+            target_field: luminar.relationship_type
+            ignore_missing: true
+
+    - rename:
+            field: foo.source_ref
+            target_field: luminar.source_ref
+            ignore_missing: true
+
+    - rename:
+            field: foo.target_ref
+            target_field: luminar.target_ref
+            ignore_missing: true
+    # Report fields
+    - rename:
+            field: foo.published
+            target_field: luminar.published
+            ignore_missing: true
+
+    - rename:
+            field: foo.report_types
+            target_field: luminar.report_types
+            ignore_missing: true
+
+    - rename:
+            field: foo.object_refs
+            target_field: luminar.object_refs
+            ignore_missing: true
+
+    - remove:
+            field: [ _conf, fetch_time, foo ]
+            ignore_missing: true
+
+on_failure:
+    - append:
+            field: error.message
+            value: >
+                  Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+    - set:
+            field: event.kind
+            value: pipeline_error
+    - append:
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false

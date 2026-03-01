@@ -1,0 +1,24 @@
+---
+description: Pipeline for processing MAC address STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_mac_pattern
+      patterns:
+        - "(?i:^\\[?mac-addr:value%{SPACE}=%{SPACE}'%{DATA:_tmp.mac}'\\]?)"
+      ignore_failure: true
+
+  - append:
+      field: threat.indicator.mac
+      value: '{{{ _tmp.mac }}}'
+      if: ctx._tmp?.mac != null
+
+  - append:
+      field: related.mac
+      value: '{{{ _tmp.mac }}}'
+      if: ctx._tmp?.mac != null
+      allow_duplicates: false
+
+  - remove:
+      field: _tmp
+      ignore_missing: true
