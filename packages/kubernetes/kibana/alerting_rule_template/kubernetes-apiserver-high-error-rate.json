@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-apiserver-high-error-rate",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] API Server High Error Rate",
+        "tags": [
+            "Kubernetes",
+            "API Server",
+            "Errors"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when API server error rate (4xx + 5xx responses / total) exceeds 20%.\n//\n// What triggers this alert:\n// Ratio of error responses to total requests above 0.2 (20%).\n//\n// What it means:\n// API server experiencing high failure rate \u2014 cluster operations impacted.\n//\n// Common causes:\n// Authentication issues, resource quotas, network problems, API server overload.\n//\n// Action needed:\n// Check API server logs, review authentication config, verify resource quotas.\n//\n// Handles division by zero: filters out clusters with zero total requests.\n// Adjust threshold (e.g., 0.1 for 10% for stricter monitoring).\nTS metrics-kubernetes.apiserver-*\n| STATS\n    error_count = COUNT(*) WHERE `kubernetes.apiserver.request.code` LIKE \"5*\"\n      OR `kubernetes.apiserver.request.code` LIKE \"4*\",\n    total_count = COUNT(*)\n  BY `orchestrator.cluster.name`\n| WHERE total_count > 0\n| EVAL error_ratio = ROUND(error_count / TO_DOUBLE(total_count), 4)\n| WHERE error_ratio > 0.2"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

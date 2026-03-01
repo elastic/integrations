@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-job-backofflimitexceeded-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Job BackoffLimitExceeded Error",
+        "tags": [
+            "Kubernetes",
+            "Job",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert on Kubernetes Job BackoffLimitExceeded events.\n//\n// What triggers this alert:\n// Job failed too many times and stopped retrying \u2014 permanent failure.\n//\n// Common causes:\n// Bad configuration, missing dependencies, insufficient resources, application bugs.\n//\n// Action needed:\n// Check job logs, review configuration, verify dependencies.\n//\n// To scope to a namespace, add: AND `kubernetes.event.metadata.namespace` == \"YOUR_NAMESPACE\"\nFROM metrics-kubernetes.event-*\n| WHERE `kubernetes.event.involved_object.kind` == \"Job\"\n  AND `kubernetes.event.source.component` == \"job-controller\"\n  AND `kubernetes.event.reason` == \"BackoffLimitExceeded\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.event.metadata.namespace`,\n     `kubernetes.event.involved_object.name`, `kubernetes.event.involved_object.kind`,\n     `kubernetes.event.reason`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

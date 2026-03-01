@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-node-networkunavailable-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Node NetworkUnavailable Error",
+        "tags": [
+            "Kubernetes",
+            "Node",
+            "Network"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when Kubernetes nodes report network unavailable status.\n//\n// What triggers this alert:\n// Node network interface marked as unavailable \u2014 no pod networking possible.\n//\n// Common causes:\n// CNI plugin failure, network interface down, cloud provider networking issues.\n//\n// Action needed:\n// Check node network configuration, CNI plugin status, and cloud provider networking.\n//\n// To scope to a cluster, add: AND `orchestrator.cluster.name` == \"YOUR_CLUSTER\"\nTS metrics-kubernetes.node-*\n| WHERE `kubernetes.node.status.network_unavailable` == \"true\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.node.name`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

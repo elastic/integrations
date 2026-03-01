@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-node-high-cpu-usage",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Node High CPU Usage",
+        "tags": [
+            "Kubernetes",
+            "Node",
+            "CPU"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when node CPU usage ratio indicates saturation.\n//\n// What triggers this alert:\n// Computes (usage nanocores / 1e9) / allocatable cores.\n// Ratio >= 1 means the node is fully utilizing its allocatable CPU.\n//\n// What it means:\n// Node CPU saturated \u2014 workloads may be throttled.\n//\n// Action needed:\n// Scale horizontally, redistribute workloads, or increase node CPU.\n//\n// Adjust the threshold (e.g., 0.9 for 90% utilization warning).\nTS metrics-kubernetes.node-*\n| WHERE `kubernetes.node.cpu.allocatable.cores` IS NOT NULL\n| STATS\n    max_usage_nanocores = MAX(`kubernetes.node.cpu.usage.nanocores`),\n    max_allocatable_cores = MAX(`kubernetes.node.cpu.allocatable.cores`)\n  BY `orchestrator.cluster.name`, `kubernetes.node.name`\n| WHERE max_allocatable_cores IS NOT NULL AND max_allocatable_cores > 0\n| EVAL cpu_ratio = (max_usage_nanocores / 1000000000.0) / max_allocatable_cores\n| WHERE cpu_ratio >= 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
