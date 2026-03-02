@@ -1,0 +1,55 @@
+{{#if auth_enabled}}
+{{#if auth_elasticsearch_endpoint}}
+extensions:
+  apikeyauth:
+    endpoint: {{auth_elasticsearch_endpoint}}
+    application_privileges:
+      - application: "apm"
+        privileges:
+          - "event:write"
+        resources:
+          - "-"
+{{/if}}
+{{/if}}
+receivers:
+  elasticapmintake:
+    endpoint: {{endpoint}}
+{{#if tls_enabled}}
+    tls:
+      cert_file: {{tls_cert_file}}
+      key_file: {{tls_key_file}}
+{{#if tls_client_ca_file}}
+      client_ca_file: {{tls_client_ca_file}}
+{{/if}}
+{{/if}}
+{{#if auth_enabled}}
+{{#if auth_elasticsearch_endpoint}}
+    auth:
+      authenticator: apikeyauth
+{{/if}}
+{{/if}}
+    agent_config:
+      enabled: {{agent_config_enabled}}
+{{#if agent_config_enabled}}
+      cache_duration: {{agent_config_cache_duration}}
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+{{#if auth_enabled}}
+{{#if auth_elasticsearch_endpoint}}
+  extensions: [apikeyauth]
+{{/if}}
+{{/if}}
+  pipelines:
+    logs:
+      receivers: [elasticapmintake]
+      processors: [resourcedetection/system]
+    metrics:
+      receivers: [elasticapmintake]
+      processors: [resourcedetection/system]
+    traces:
+      receivers: [elasticapmintake]
+      processors: [resourcedetection/system]
+    
