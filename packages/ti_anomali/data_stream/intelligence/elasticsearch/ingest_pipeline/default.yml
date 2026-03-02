@@ -504,26 +504,27 @@ processors:
       ignore_missing: true
 
   # Map the severity field to event.severity
-  - set:
-      tag: set_event_severity_low
-      field: event.severity
-      value: 3
-      if: 'ctx.json.meta?.severity == "low"'
-  - set:
-      tag: set_event_severity_medium
-      field: event.severity
-      value: 5
-      if: 'ctx.json.meta?.severity == "medium"'
-  - set:
-      tag: set_event_severity_high
-      field: event.severity
-      value: 7
-      if: 'ctx.json.meta?.severity == "high"'
-  - set:
-      tag: set_event_severity_very_high
-      field: event.severity
-      value: 9
-      if: 'ctx.json.meta?.severity == "very-high"'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.json?.meta?.severity != null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String severity_value = ctx.json.meta.severity;
+        if (severity_value.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (severity_value.equalsIgnoreCase("very-high")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # map tag names, ignore other tag data that's sometimes available: json.tags.{id, org_id, tlp, _valid}
   - foreach:

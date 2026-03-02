@@ -1,35 +1,100 @@
-# Anomali Integration
+# Anomali ThreatStream Integration
 
-The Anomali integration can fetch indicators from [Anomali ThreatStream](https://www.anomali.com/products/threatstream), a commercial Threat Intelligence service.
+ 
+## Overview
 
-It has the following data streams:
+The Anomali ThreatStream integration allows you to monitor threat intelligence indicators from [Anomali ThreatStream](https://www.anomali.com/products/threatstream), a commercial Threat Intelligence service. When integrated with Elastic Security, this valuable threat intelligence data can be leveraged within Elastic for analyzing and detecting potential security threats.
+ 
+Use the Anomali ThreatStream integration to collect and parse threat intelligence indicators from the Anomali ThreatStream API, and then visualize that data in Kibana.
 
-- **`intelligence`** Indicators retrieved from the Anomali ThreatStream API's intelligence endpoint.
-- **`threatstream`** Indicators received from the Anomali ThreatStream Elastic Extension, which is additional software. This is deprecated.
+### Compatibility
 
-## Requirements
+The Anomali ThreatStream integration is compatible with Anomali ThreatStream REST API V2. This integration also supports Anomali ThreatStream Elastic Extension. But it is **DEPRECATED** and not recommended to use.
 
-### Agentless enabled integration
+### How it works
+
+The integration periodically query the Anomali ThreatStream REST API V2 intelligence endpoint. It authenticates using your username and API key, then retrieves the latest threat indicators.
+
+**NOTE:** The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be accessible using the alias `logs-ti_anomali_latest.intelligence`.
+
+## What Data Does This Integration Collect?
+
+This integration collects log messages of the following types:
+
+- **`Intelligence`** Threat Indicators retrieved from the Anomali ThreatStream API's intelligence endpoint. 
+- **`Threatstream`** DEPRECATED: Threat Indicators retrieved from the Anomali ThreatStream Elastic Extension. 
+
+### Supported use cases
+
+Use this integration to collect and store threat intelligence indicators from Anomali ThreatStream, providing centralized access to threat data. Users can view and analyze threat intelligence data through pre-built Kibana dashboards to understand the threat landscape and identify indicator trends over time.
+
+## What do I need to use this integration?
+
+### From Elastic
+
+This integration uses [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
+### From Anomali ThreatStream
+
+#### Collect data from Anomali ThreatStream API
+To collect data from Anomali ThreatStream API, you need to have following:
+- Anomali ThreatStream username
+- Anomali ThreatStream API key
+
+#### DEPRECATED: Collect data from Anomali ThreatStream using the Elastic Extension
+This source of indicators is deprecated. New users should instead use the API source above. This source requires additional software, the _Elastic_ _Extension,_ to connect Anomali ThreatStream to this integration. It's available on the [ThreatStream download page](https://ui.threatstream.com/downloads).
+
+Refer to the documentation included with the extension for a detailed explanation on how to configure Anomali ThreatStream to send indicators to this integration.
+
+## How do I deploy this integration?
+
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+### Agentless-based installation
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent based installation
+### Agent-based installation
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
-You can install only one Elastic Agent per host.
-Elastic Agent is required to stream data from the REST API or webhook and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-## Logs
+## Setup
+
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **Anomali ThreatStream**.
+3. Select the **Anomali ThreatStream** integration from the search results.
+4. Select **Add Anomali ThreatStream** to add the integration.
+5. Enable and configure only the collection methods which you will use.
+   * To **Collect Anomali events from ThreatStream API**, you need to:
+       - Configure **Username** and **API key**.
+6. Select **Save and continue** to save the integration.
+
+### Validation
+
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **ti_anomali**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **ti_anomali**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
+## Troubleshooting
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. The transform creates destination indices that are accessible via the alias of the form `logs-ti_anomali_latest.<datastreamname>`. When querying for active indicators or setting up indicator match rules, use the alias to avoid false positives from expired indicators. The dashboards show only the latest indicators.
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. The transform creates destination indices that are accessible using the alias of the form `logs-ti_anomali_latest.<datastreamname>`. When querying for active indicators or setting up indicator match rules, use the alias to avoid false positives from expired indicators. The dashboards show only the latest indicators.
 
 #### Handling Orphaned IOCs
 
-Indicator data from Anomali can contain information about deletion or expiry times. However, some Anomali IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure an "IOC Expiration Duration" or "IOC Duration Before Deletion" parameter while setting up a policy. The value set there will limit the time that indicators are retained before deletion, but indicators may be removed earlier based on information from Anomali.
+Indicator data from Anomali ThreatStream can contain information about deletion or expiry times. However, some Anomali ThreatStream IOCs might never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure an "IOC Expiration Duration" or "IOC Duration Before Deletion" parameter while setting up a policy. The value set there will limit the time that indicators are retained before deletion, but indicators might be removed earlier based on information from Anomali ThreatStream.
 
 ### Destination index versioning and deleting older versions
 
@@ -43,104 +108,40 @@ When this happens, the transform does not have the functionality to auto-delete 
 2. Run `GET _cat/indices?v` and check if any older versions exist. Such as `logs-ti_anomali_latest.intelligence-1`
 3. Run `DELETE logs-ti_anomali_latest.intelligence-<OLDVERSION>` to delete the old index.
 
+#### Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name | `event.severity` |
+| --------------|------------------|
+| Low           | 21               |
+| Medium        | 47               |
+| High          | 73               |
+| Very High     | 99               |
+
+If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
+
+| Anomali `severity` | Severity Name | `event.severity` |
+| -------------------|---------------|------------------|
+| 0 - 19             | info          | 21               |
+| 20 - 39            | low           | 21               |
+| 40 - 59            | medium        | 47               |
+| 60 - 79            | high          | 73               |
+| 80 - 100           | critical      | 99               |
+
 ### ILM Policies
 
 To prevent unbounded growth of the source data streams `logs-ti_opencti.<datastreamname>-*`, index lifecycle management (ILM) policies will deletes records 5 days after ingestion.
 
-### Anomali ThreatStream API
+## Performance and scaling
 
-The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be be accessible using the alias `logs-ti_anomali_latest.intelligence`.
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
-An example event for `intelligence` looks as following:
+## Reference
 
-```json
-{
-    "@timestamp": "2025-05-15T05:41:39.529550940Z",
-    "agent": {
-        "ephemeral_id": "c4e3038f-6797-46c3-b082-cbd123c7cbe3",
-        "id": "1c061faa-0b6d-43fe-b1d8-93ca2ddea2de",
-        "name": "elastic-agent-51370",
-        "type": "filebeat",
-        "version": "8.13.0"
-    },
-    "anomali": {
-        "threatstream": {
-            "can_add_public_tags": true,
-            "confidence": 60,
-            "deletion_scheduled_at": "2025-05-22T05:41:39.52955094Z",
-            "expiration_ts": "9999-12-31T00:00:00.000Z",
-            "feed_id": 0,
-            "id": "232020126",
-            "is_anonymous": false,
-            "is_editable": false,
-            "is_public": true,
-            "itype": "apt_domain",
-            "meta": {
-                "severity": "very-high"
-            },
-            "owner_organization_id": 67,
-            "retina_confidence": -1,
-            "source_reported_confidence": 60,
-            "status": "active",
-            "threat_type": "apt",
-            "type": "domain",
-            "update_id": "100000001",
-            "uuid": "0921be47-9cc2-4265-b896-c62a7cb91042",
-            "value": "gen1xyz.com"
-        }
-    },
-    "data_stream": {
-        "dataset": "ti_anomali.intelligence",
-        "namespace": "27115",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "1c061faa-0b6d-43fe-b1d8-93ca2ddea2de",
-        "snapshot": false,
-        "version": "8.13.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "threat"
-        ],
-        "created": "2021-04-06T09:56:22.915Z",
-        "dataset": "ti_anomali.intelligence",
-        "ingested": "2025-05-15T05:41:39Z",
-        "kind": "enrichment",
-        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":60,\"created_by\":null,\"created_ts\":\"2021-04-06T09:56:22.915Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":232020126,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_domain\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 136\",\"severity\":\"very-high\"},\"modified_ts\":\"2021-04-06T09:56:22.915Z\",\"org\":\"\",\"owner_organization_id\":67,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/232020126/\",\"retina_confidence\":-1,\"sort\":[455403032],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":60,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":54,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"domain\",\"update_id\":100000001,\"uuid\":\"0921be47-9cc2-4265-b896-c62a7cb91042\",\"value\":\"gen1xyz.com\",\"workgroups\":[]}",
-        "severity": 9,
-        "type": [
-            "indicator"
-        ]
-    },
-    "input": {
-        "type": "cel"
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "anomali-intelligence"
-    ],
-    "threat": {
-        "indicator": {
-            "confidence": "Medium",
-            "marking": {
-                "tlp": "WHITE"
-            },
-            "modified_at": "2021-04-06T09:56:22.915Z",
-            "provider": "Analyst",
-            "type": "domain-name",
-            "url": {
-                "domain": "gen1xyz.com"
-            }
-        }
-    }
-}
-```
+### ECS field reference
+
+#### Intelligence
 
 **Exported fields**
 
@@ -197,13 +198,148 @@ An example event for `intelligence` looks as following:
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
-### Anomali ThreatStream via the Elastic Extension
+#### **DEPRECATED:** Threatstream
 
-This source of indicators is deprecated. New users should instead use the API source above. This source requires additional software, the _Elastic_ _Extension,_ to connect Anomali ThreatStream to this integration. It's available on the [ThreatStream download page](https://ui.threatstream.com/downloads).
+**Exported fields**
 
-Please refer to the documentation included with the extension for a detailed explanation on how to configure Anomali ThreatStream to send indicators to this integration.
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| anomali.threatstream.added_at | Date when IOC was added. | date |
+| anomali.threatstream.classification | Indicates whether an indicator is private or from a public feed and available publicly. Possible values: private, public. | keyword |
+| anomali.threatstream.confidence | The measure of the accuracy (from 0 to 100) assigned by ThreatStream's predictive analytics technology to indicators. | long |
+| anomali.threatstream.deleted_at | Date when IOC was deleted/expired. | date |
+| anomali.threatstream.detail2 | Detail text for indicator. | text |
+| anomali.threatstream.id | The ID of the indicator. | keyword |
+| anomali.threatstream.import_session_id | ID of the import session that created the indicator on ThreatStream. | keyword |
+| anomali.threatstream.itype | Indicator type. Possible values: "apt_domain", "apt_email", "apt_ip", "apt_url", "bot_ip", "c2_domain", "c2_ip", "c2_url", "i2p_ip", "mal_domain", "mal_email", "mal_ip", "mal_md5", "mal_url", "parked_ip", "phish_email", "phish_ip", "phish_url", "scan_ip", "spam_domain", "ssh_ip", "suspicious_domain", "tor_ip" and "torrent_tracker_url". | keyword |
+| anomali.threatstream.maltype | Information regarding a malware family, a CVE ID, or another attack or threat, associated with the indicator. | wildcard |
+| anomali.threatstream.md5 | Hash for the indicator. | keyword |
+| anomali.threatstream.resource_uri | Relative URI for the indicator details. | keyword |
+| anomali.threatstream.severity | Criticality associated with the threat feed that supplied the indicator. Possible values: low, medium, high, very-high. | keyword |
+| anomali.threatstream.source | Source for the indicator. | keyword |
+| anomali.threatstream.source_feed_id | ID for the integrator source. | keyword |
+| anomali.threatstream.state | State for this indicator. | keyword |
+| anomali.threatstream.trusted_circle_ids | ID of the trusted circle that imported the indicator. | keyword |
+| anomali.threatstream.update_id | Update ID. | keyword |
+| anomali.threatstream.url | URL for the indicator. | keyword |
+| anomali.threatstream.value_type | Data type of the indicator. Possible values: ip, domain, url, email, md5. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
-Indicators ingested in this way will become accessible using the alias `logs-ti_anomali_latest.threatstream`.
+
+### Example Event
+
+#### Intelligence
+
+An example event for `intelligence` looks as following:
+
+```json
+{
+    "@timestamp": "2026-02-17T18:19:20.040372072Z",
+    "agent": {
+        "ephemeral_id": "7e123f85-f764-40f4-9f99-dda29c79759e",
+        "id": "53c59193-8db2-43b2-97d9-9c0dc78e0aa0",
+        "name": "elastic-agent-43496",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "anomali": {
+        "threatstream": {
+            "can_add_public_tags": true,
+            "confidence": 60,
+            "deletion_scheduled_at": "2026-02-24T18:19:20.040372072Z",
+            "expiration_ts": "9999-12-31T00:00:00.000Z",
+            "feed_id": 0,
+            "id": "232020126",
+            "is_anonymous": false,
+            "is_editable": false,
+            "is_public": true,
+            "itype": "apt_domain",
+            "meta": {
+                "severity": "very-high"
+            },
+            "owner_organization_id": 67,
+            "retina_confidence": -1,
+            "source_reported_confidence": 60,
+            "status": "active",
+            "threat_type": "apt",
+            "type": "domain",
+            "update_id": "100000001",
+            "uuid": "0921be47-9cc2-4265-b896-c62a7cb91042",
+            "value": "gen1xyz.com"
+        }
+    },
+    "data_stream": {
+        "dataset": "ti_anomali.intelligence",
+        "namespace": "62245",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "53c59193-8db2-43b2-97d9-9c0dc78e0aa0",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "created": "2021-04-06T09:56:22.915Z",
+        "dataset": "ti_anomali.intelligence",
+        "ingested": "2026-02-17T18:19:20Z",
+        "kind": "enrichment",
+        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":60,\"created_by\":null,\"created_ts\":\"2021-04-06T09:56:22.915Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":232020126,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_domain\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 136\",\"severity\":\"very-high\"},\"modified_ts\":\"2021-04-06T09:56:22.915Z\",\"org\":\"\",\"owner_organization_id\":67,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/232020126/\",\"retina_confidence\":-1,\"sort\":[455403032],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":60,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":54,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"domain\",\"update_id\":100000001,\"uuid\":\"0921be47-9cc2-4265-b896-c62a7cb91042\",\"value\":\"gen1xyz.com\",\"workgroups\":[]}",
+        "severity": 99,
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "anomali-intelligence"
+    ],
+    "threat": {
+        "indicator": {
+            "confidence": "Medium",
+            "marking": {
+                "tlp": "WHITE"
+            },
+            "modified_at": "2021-04-06T09:56:22.915Z",
+            "provider": "Analyst",
+            "type": "domain-name",
+            "url": {
+                "domain": "gen1xyz.com"
+            }
+        }
+    }
+}
+```
+
+#### **DEPRECATED:** Threatstream
 
 An example event for `threatstream` looks as following:
 
@@ -211,11 +347,11 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "5b173eb1-b99b-41b7-8bd8-aee3a5e52c58",
-        "id": "574058b5-688b-43f0-ac43-68a85476b2fa",
-        "name": "elastic-agent-42471",
+        "ephemeral_id": "2d43be92-7e4d-4f7b-b33f-be73ae71d11e",
+        "id": "d589cc00-ee76-4c35-936c-d796aed48bba",
+        "name": "elastic-agent-66326",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "anomali": {
         "threatstream": {
@@ -240,16 +376,16 @@ An example event for `threatstream` looks as following:
     },
     "data_stream": {
         "dataset": "ti_anomali.threatstream",
-        "namespace": "11488",
+        "namespace": "75920",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "574058b5-688b-43f0-ac43-68a85476b2fa",
+        "id": "d589cc00-ee76-4c35-936c-d796aed48bba",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -257,10 +393,10 @@ An example event for `threatstream` looks as following:
             "threat"
         ],
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2025-05-14T08:28:29Z",
+        "ingested": "2026-02-17T18:24:39Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
-        "severity": 7,
+        "severity": 73,
         "type": [
             "indicator"
         ]
@@ -306,46 +442,14 @@ An example event for `threatstream` looks as following:
 }
 ```
 
-**Exported fields**
+### Inputs used
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| anomali.threatstream.added_at | Date when IOC was added. | date |
-| anomali.threatstream.classification | Indicates whether an indicator is private or from a public feed and available publicly. Possible values: private, public. | keyword |
-| anomali.threatstream.confidence | The measure of the accuracy (from 0 to 100) assigned by ThreatStream's predictive analytics technology to indicators. | long |
-| anomali.threatstream.deleted_at | Date when IOC was deleted/expired. | date |
-| anomali.threatstream.detail2 | Detail text for indicator. | text |
-| anomali.threatstream.id | The ID of the indicator. | keyword |
-| anomali.threatstream.import_session_id | ID of the import session that created the indicator on ThreatStream. | keyword |
-| anomali.threatstream.itype | Indicator type. Possible values: "apt_domain", "apt_email", "apt_ip", "apt_url", "bot_ip", "c2_domain", "c2_ip", "c2_url", "i2p_ip", "mal_domain", "mal_email", "mal_ip", "mal_md5", "mal_url", "parked_ip", "phish_email", "phish_ip", "phish_url", "scan_ip", "spam_domain", "ssh_ip", "suspicious_domain", "tor_ip" and "torrent_tracker_url". | keyword |
-| anomali.threatstream.maltype | Information regarding a malware family, a CVE ID, or another attack or threat, associated with the indicator. | wildcard |
-| anomali.threatstream.md5 | Hash for the indicator. | keyword |
-| anomali.threatstream.resource_uri | Relative URI for the indicator details. | keyword |
-| anomali.threatstream.severity | Criticality associated with the threat feed that supplied the indicator. Possible values: low, medium, high, very-high. | keyword |
-| anomali.threatstream.source | Source for the indicator. | keyword |
-| anomali.threatstream.source_feed_id | ID for the integrator source. | keyword |
-| anomali.threatstream.state | State for this indicator. | keyword |
-| anomali.threatstream.trusted_circle_ids | ID of the trusted circle that imported the indicator. | keyword |
-| anomali.threatstream.update_id | Update ID. | keyword |
-| anomali.threatstream.url | URL for the indicator. | keyword |
-| anomali.threatstream.value_type | Data type of the indicator. Possible values: ip, domain, url, email, md5. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
-| log.flags | Flags for the log file. | keyword |
-| log.offset | Offset of the entry in the log file. | long |
-| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
-| threat.feed.name | Display friendly feed name | constant_keyword |
-| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+These inputs are used in this integration:
 
+- [HTTP Endpoint](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-http_endpoint)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+### API usage
+
+This integration dataset uses the following APIs:
+- Anomali ThreatStream API
