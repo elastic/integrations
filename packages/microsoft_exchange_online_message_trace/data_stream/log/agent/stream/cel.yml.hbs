@@ -1,0 +1,129 @@
+config_version: 2
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/{{token_endpoint}}
+auth.oauth2.scopes: {{url}}/.default
+resource.timeout: {{resource_timeout}}
+{{#if proxy_url }}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+redact:
+  fields: ~
+fields_under_root: true
+fields:
+  _conf:
+  {{#if local_domains}}
+    local_domains:
+    {{#each local_domains as |local_domain i|}}
+      - {{local_domain}}
+    {{/each}}
+  {{/if}}
+  {{#if drop_status}}
+    drop_status: {{drop_status}}
+  {{/if}}
+interval: {{interval}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  min_age: {{min_age}}
+  top: {{batch_size}}
+program: |-
+  (
+    (state.?cursor.next_link.orValue(null) != null) ?
+      // There is a next link to follow for the current range.
+      {
+        "url": state.cursor.next_link,
+        "end": state.cursor.end,
+      }
+    :
+      (
+        (state.?cursor.end.orValue(null) == null) ?
+          (
+            // Initial start.
+            now - duration(state.initial_interval)
+          )
+        :
+          // A new start after the last end.
+          state.cursor.end.parse_time(time_layout.RFC3339Nano) + duration("100ns")
+      ).as(start,
+        {
+          "start": start.format(time_layout.RFC3339Nano),
+          "end": min(start + duration("240h"), now - duration(state.min_age)).format(time_layout.RFC3339Nano),
+        }
+      ).as(range,
+        {
+          "url": [
+            state.url.trim_suffix("/"),
+            "/beta/admin/exchange/tracing/messageTraces?",
+            {
+              "$filter": [["receivedDateTime", "ge", range.start, "and", "receivedDateTime", "le", range.end].join(" ")],
+              "$top": [string(state.top)],
+            }.format_query(),
+          ].join(""),
+          "end": range.end,
+        }
+      )
+  ).as(current,
+    request("GET", current.url).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          (
+            body[?"@odata.nextLink"].orValue(null) != null || current.end.parse_time(time_layout.RFC3339Nano) < now - duration(state.min_age)
+          ).as(want_more,
+            state.with(
+              {
+                "events": (body.value.size() > 0) ?
+                  body.value.map(e, {"message": e.encode_json()})
+                : want_more ?
+                  [{"message": "retry"}]
+                :
+                  [],
+                "want_more": want_more,
+                "cursor": {
+                  ?"next_link": body[?"@odata.nextLink"],
+                  "end": current.end,
+                },
+              }
+            )
+          )
+        )
+      :
+        state.with(
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + current.url + ": " + string(resp.Body),
+              },
+            },
+            "want_more": false,
+          }
+        )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event:
+    when:
+      equals:
+        message: "retry"
+{{#if processors}}
+{{processors}}
+{{/if}}
