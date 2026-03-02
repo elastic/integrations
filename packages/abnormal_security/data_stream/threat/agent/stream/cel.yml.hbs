@@ -86,7 +86,7 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           resp.Body.decode_json().as(body,{
-            "events": body.messages.map(e,{
+            "events": body.?messages.orValue([]).map(e,{
               "message": state.enrichment ?
                 e.with({
                   "attachments": request("GET",
@@ -150,19 +150,31 @@ program: |
           })
         :
           {
-            "events": {
+            "events": [{
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET:"+(
+                "message": "GET /v1/threats/" + string(state.worklist.threats[state.next].threatId) + ": " +(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
                     string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                 ),
               },
+            }],
+            "cursor": {
+              "last_timestamp": state.end_time
             },
-            "want_more": false,
+            "worklist": int(state.next) + 1 < size(state.worklist.threats) ? state.worklist : {},
+            "child_next_page": 1,
+            "next": (
+              int(state.next) + 1 < size(state.worklist.threats) ?
+                int(state.next) + 1
+              :
+                0
+            ),
+            "next_page": int(state.next) + 1 < size(state.worklist.threats) ? state.next_page : has(state.worklist.nextPageNumber) ? state.worklist.nextPageNumber : 1,
+            "want_more": int(state.next) + 1 < size(state.worklist.threats) || has(state.worklist.nextPageNumber),
           }
         )
       :

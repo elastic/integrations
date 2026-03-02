@@ -1,0 +1,70 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{period}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+namespace: "kafka_connect"
+jmx.mappings:
+  - mbean: 'kafka.connect:type=connect-metrics,client-id=*'
+    attributes:
+      - attr: connection-close-rate
+        field: client.connection_close_rate
+      - attr: connection-count
+        field: client.connection_count
+      - attr: connection-creation-rate
+        field: client.connection_creation_rate
+      - attr: failed-authentication-rate
+        field: client.failed_authentication_rate
+      - attr: incoming-byte-rate
+        field: client.incoming_byte_rate
+      - attr: io-ratio
+        field: client.io_ratio
+      - attr: io-time-ns-avg
+        field: client.io_time_ns_avg
+      - attr: io-wait-ratio
+        field: client.io_wait_ratio
+      - attr: io-wait-time-ns-avg
+        field: client.io_wait_time_ns_avg
+      - attr: network-io-rate
+        field: client.network_io_rate
+      - attr: outgoing-byte-rate
+        field: client.outgoing_byte_rate
+      - attr: request-rate
+        field: client.request_rate
+      - attr: request-size-avg
+        field: client.request_size_avg
+      - attr: request-size-max
+        field: client.request_size_max
+      - attr: response-rate
+        field: client.response_rate
+      - attr: select-rate
+        field: client.select_rate
+      - attr: successful-authentication-rate
+        field: client.successful_authentication_rate
+      - attr: request-total
+        field: client.request_total
+      - attr: response-total
+        field: client.response_total
+      - attr: incoming-byte-total
+        field: client.incoming_byte_total
+      - attr: outgoing-byte-total
+        field: client.outgoing_byte_total
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
