@@ -19,6 +19,17 @@ processors:
 - rename:
     fields:
       - {from: "message", to: "event.original"}
+- script:
+    lang: javascript
+    source: |
+      function process(event) {
+        var msg = event.Get("event.original");
+        if (msg != null) {
+          // Remove brackets from IPv6 addresses to comply with CEF specification
+          msg = msg.replace(/\[([0-9a-fA-F:]+)\]/gi, "$1");
+          event.Put("event.original", msg);
+        }
+      }
 - decode_cef:
     field: event.original
 {{#if tz_offset}}
