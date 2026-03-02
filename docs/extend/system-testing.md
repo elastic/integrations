@@ -73,6 +73,8 @@ With the service deployer, you configure the service which will send data to you
 As running a live service is often not possible, mock data, using a real transport, is often used for system tests. For example, if a service provides data with syslog over UDP, instead of running a live service, the data can be sent by setting up a deployment which writes mock syslog data to a socket listening to UDP.
 [elastic/stream](https://github.com/elastic/stream) is a utility which can be used with system tests to stream mock data to many types of protocols.
 
+**Kafka Input OTel package:** For packages that consume from Kafka (e.g. [kafka_input_otel](https://github.com/elastic/integrations/tree/main/packages/kafka_input_otel)), the test setup uses [telemetrygen](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/cmd/telemetrygen) and an OTel Collector with a Kafka exporter. Data flows: telemetrygen (OTLP) → otelcol (Kafka exporter) → Kafka → Elastic Agent (Kafka receiver). See the package [docs/README.md](https://github.com/elastic/integrations/blob/main/packages/kafka_input_otel/docs/README.md#system-testing-development) for the full architecture.
+
 ### 2. Test Case Configuration
 
 Define test scenarios for each data stream:
