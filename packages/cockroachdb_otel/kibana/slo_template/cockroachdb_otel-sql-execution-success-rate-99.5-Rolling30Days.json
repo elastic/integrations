@@ -1,0 +1,62 @@
+{
+  "attributes": {
+    "name": "[CockroachDB OTel] SQL execution success rate 99.5% rolling 30 days",
+    "description": "This SLO tracks the ratio of successful SQL statement executions (exec_success) to total executions (exec_success + exec_error) over a rolling 30 days, ensuring 99.5% of statements complete successfully. Degradation indicates application-visible SQL errors.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"prometheusreceiver.otel\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "exec_success"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "exec_success"
+            },
+            {
+              "name": "C",
+              "aggregation": "sum",
+              "field": "exec_error"
+            }
+          ],
+          "equation": "B + C"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "cockroachdb",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "cockroachdb_otel-sql-layer" },
+      { "id": "cockroachdb_otel-overview" }
+    ]
+  },
+  "id": "cockroachdb_otel-sql-execution-success-rate-99.5-Rolling30Days",
+  "type": "slo_template"
+}

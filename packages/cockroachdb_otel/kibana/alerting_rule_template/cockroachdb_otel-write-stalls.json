@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-write-stalls",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Storage write stalls",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// Critical: Pebble write stalls block all writes to the store\n// storage_write_stalls is a counter; any increase indicates stalls occurred\n| WHERE metrics.storage_write_stalls IS NOT NULL AND metrics.storage_write_stalls > 0\n| STATS stalls = MAX(metrics.storage_write_stalls)\n  BY resource.attributes.service.instance.id, attributes.node_id, attributes.store\n| SORT stalls DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

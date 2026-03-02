@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-l0-sublevels-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] L0 sublevels high (pre-stall)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// L0 sublevels > 20 typically triggers write stalls; early warning\n// Adjust threshold (20) if your workload differs\n| WHERE metrics.storage_l0_sublevels IS NOT NULL AND metrics.storage_l0_sublevels > 20\n| STATS l0_sublevels = MAX(metrics.storage_l0_sublevels)\n  BY resource.attributes.service.instance.id, attributes.node_id, attributes.store\n| SORT l0_sublevels DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
