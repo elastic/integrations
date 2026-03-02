@@ -1572,7 +1572,7 @@ An example event for `ntp` looks as following:
 
 The System `process` data stream provides process statistics. One document is
 provided for each process. 
-Refer to the [Configuration](docs-content://reference/beats/docs/reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
+Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
 #### Supported operating systems
 

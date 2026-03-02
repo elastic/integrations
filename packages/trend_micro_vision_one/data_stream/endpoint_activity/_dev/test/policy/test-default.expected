@@ -1,0 +1,153 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: trend_micro_vision_one
+      name: test-default-trend_micro_vision_one
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: trend_micro_vision_one.endpoint_activity
+          interval: 24h
+          program: |-
+            (
+              state.?want_more.orValue(false) ?
+                state
+              :
+                state.with({
+                  "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                  "end_time": now.format(time_layout.RFC3339),
+                })
+            ).as(state,
+              // use next.link if available, otherwise build initial request
+              (
+                state.?next.link.hasValue() ?
+                  state.next.link
+                :
+                  state.url.trim_right("/") + "/v3.0/search/endpointActivities?" + {
+                    "top": [string(state.batch_size)],
+                    "startDateTime": [string(state.start_time)],
+                    "endDateTime": [string(state.end_time)],
+                  }.format_query()
+              ).as(request_url,
+                request(
+                  "GET",
+                  request_url
+                ).with(
+                  {
+                    "Header": {
+                      "Authorization": ["Bearer " + state.api_token],
+                      "Content-Type": ["application/json;charset=utf-8"],
+                      "TMV1-Query": ["*"],
+                    },
+                  }
+                ).do_request().as(resp,
+                  resp.StatusCode == 200 ?
+                    resp.Body.decode_json().as(body,
+                      {
+                        "events": has(body.items) && size(body.items) > 0 ?
+                          body.items.map(item,
+                            {
+                              "message": item.encode_json(),
+                            }
+                          )
+                        :
+                          [],
+                        // next.link will not be available in last paginated call
+                        "next": {?"link": body.?nextLink},
+                        "want_more": body.?nextLink.hasValue(),
+                        "api_token": state.api_token,
+                        "batch_size": state.batch_size,
+                        "initial_interval": state.initial_interval,
+                        "cursor": {
+                          ?"last_timestamp": (has(body.items) && size(body.items) > 0) ?
+                            (has(state.?cursor.last_timestamp) ?
+                              optional.of(
+                                max([
+                                  state.cursor.last_timestamp.parse_time("2006-01-02T15:04:05"),
+                                  timestamp(int(timestamp(0)+duration(string(int(body.items[0].eventTime))+"ms")))
+                                ]).format("2006-01-02T15:04:05")
+                              )
+                            :
+                              optional.of(timestamp(int(timestamp(0)+duration(string(int(body.items[0].eventTime))+"ms"))).format("2006-01-02T15:04:05"))
+                            )
+                          :
+                            state.?cursor.last_timestamp
+                        }
+                      }
+                    )
+                  :
+                    resp.StatusCode == 429 ?
+                      {
+                        "events": [],
+                        "rate_limited": debug("rate_limit_exceeded", bytes(resp.Body).decode_json().?fail[0].message.orValue("missing message")),
+                        "want_more": false,
+                        "next": state.?next,
+                        "api_token": state.api_token,
+                        "initial_interval": state.initial_interval,
+                        "batch_size": state.batch_size,
+                        "cursor": state.?cursor,
+                      }
+                    :
+                      {
+                        "events": [
+                          {
+                            "error": {
+                              "code": string(resp.StatusCode),
+                              "id": string(resp.Status),
+                              "message": "GET " + request_url + ": " + (
+                                size(resp.Body) != 0 ?
+                                  string(resp.Body)
+                                :
+                                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                              ),
+                            },
+                          },
+                        ],
+                        "want_more": false,
+                        "next": state.?next,
+                        "api_token": state.api_token,
+                        "initial_interval": state.initial_interval,
+                        "batch_size": state.batch_size,
+                        "cursor": state.?cursor,
+                      }
+                )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_token
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://example.visionone.trendmicro.com
+          state:
+            api_token: ${SECRET_0}
+            batch_size: 1000
+            initial_interval: 24h
+          tags:
+            - forwarded
+            - trend_micro_vision_one-endpoint_activity
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-trend_micro_vision_one.endpoint_activity-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

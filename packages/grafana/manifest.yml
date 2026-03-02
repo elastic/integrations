@@ -1,0 +1,69 @@
+format_version: "3.3.0"
+name: grafana
+title: Grafana
+version: 0.1.0
+description: Collect metrics and logs from Grafana instances with Elastic Agent.
+type: integration
+categories:
+  - observability
+  - monitoring
+conditions:
+  kibana:
+    version: "^8.16.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/logo.svg
+    title: Grafana
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/grafana-overview.png
+    title: Grafana Overview Dashboard
+    size: 1218x2178
+    type: image/png
+  - src: /img/grafana-logs.png
+    title: Grafana Logs Dashboard
+    size: 1218x2178
+    type: image/png
+policy_templates:
+  - name: grafana
+    title: Grafana
+    description: Collect metrics and logs from Grafana instances
+    inputs:
+      - type: prometheus/metrics
+        title: Collect Grafana metrics
+        description: Scrape Prometheus metrics from Grafana /metrics endpoint
+        vars:
+          - name: hosts
+            type: text
+            title: Grafana Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:3000
+          - name: metrics_path
+            type: text
+            title: Metrics Path
+            required: true
+            show_user: false
+            default: /metrics
+          - name: username
+            type: text
+            title: Username
+            required: false
+            show_user: true
+            description: Basic auth username for /metrics endpoint (if configured)
+          - name: password
+            type: password
+            title: Password
+            required: false
+            show_user: true
+            secret: true
+      - type: logfile
+        title: Collect Grafana logs
+        description: Collect Grafana server logs from file or container stdout
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: community

@@ -1,0 +1,128 @@
+rules:
+  - path: /oauth2/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer","refresh_token":"yyyy"}
+  - path: /alerts/combined/alerts/v1
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "meta": {
+              "pagination": {
+                "total": 100000,
+                "limit": 100
+              }
+            },
+            "errors": [],
+            "resources": [
+              {{/* Comma is added at the end of each line inside the template to preserve JSON format */}}
+              {{- $g := glob "/var/log/corpus-*" -}}
+              {{- range $g -}}
+                {{- file . -}}
+              {{- end -}}
+              {{/* A last line of hard-coded data is required to properly close the JSON body */}}
+              {"agent_id":"2ce412d17b334ad4adc8c1c54dbfec4b","aggregate_id":"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778","alleged_filetype":"exe","cid":"92012896127c4a948236ba7601b886b0","composite_id":"92012896127c4a8236ba7601b886b0:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600","confidence":10,"created_timestamp":"2023-11-03T18:01:23.995794943Z","id":"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600","severity":30,"status":"new","timestamp":"2023-11-03T18:00:22.328Z","updated_timestamp":"2023-11-03T19:00:23.985007341Z"}
+            ]
+          }
+  - path: /devices/combined/devices/v1
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "meta": {
+              "pagination": {
+                "total": 100000,
+                "limit": 100
+              }
+            },
+            "errors": [],
+            "resources": [
+              {{/* Comma is added at the end of each line inside the template to preserve JSON format */}}
+              {{- $g := glob "/var/log/corpus-*" -}}
+              {{- range $g -}}
+                {{- file . -}}
+              {{- end -}}
+              {{/* A last line of hard-coded data is required to properly close the JSON body */}}
+              {"device_id":"2ce412d17b334ad4adc8c1c54dbfec4b","cid":"92012896127c4a948236ba7601b886b0","agent_load_flags":"0","agent_local_time":"2023-11-07T04:51:16.678Z","agent_version":"7.05.17603.0","hostname":"test-host","status":"normal","modified_timestamp":"2023-11-07T04:51:16.678Z"}
+            ]
+          }
+  - path: /spotlight/combined/vulnerabilities/v1
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "meta": {
+              "pagination": {
+                "total": 100000,
+                "limit": 100
+              }
+            },
+            "errors": [],
+            "resources": [
+              {{/* Comma is added at the end of each line inside the template to preserve JSON format */}}
+              {{- $g := glob "/var/log/corpus-*" -}}
+              {{- range $g -}}
+                {{- file . -}}
+              {{- end -}}
+              {{/* A last line of hard-coded data is required to properly close the JSON body */}}
+              {"id":"CVE-2023-12345","cid":"92012896127c4a948236ba7601b886b0","aid":"2ce412d17b334ad4adc8c1c54dbfec4b","vulnerability_id":"CVE-2023-12345","status":"open","cve":{"severity":"MEDIUM","references":["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-1234"]},"created_timestamp":"2023-11-03T18:01:23.995794943Z","updated_timestamp":"2023-11-03T19:00:23.985007341Z"}
+            ]
+          }
+  - path: /sensors/entities/datafeed/v2
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+              "resources": [
+                  {
+                      "dataFeedURL": "http://svc-crowdstrike:8080/events",
+                      "sessionToken": {
+                          "token": "secretsessiontoken"
+                      },
+                      "refreshActiveSessionURL": "http://svc-crowdstrike:8080/refresh",
+                      "refreshActiveSessionInterval": 1800
+                  }
+              ]
+          }
+  - path: /events
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{- $g := glob "/var/log/corpus-*" -}}
+          {{- range $g -}}
+            {{- file . -}}
+          {{- end -}}
+  - path: /refresh
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: ''

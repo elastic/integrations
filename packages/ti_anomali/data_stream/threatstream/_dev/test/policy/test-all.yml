@@ -1,0 +1,23 @@
+data_stream:
+  vars:
+    listen_address : localhost
+    listen_port: 8181
+    url: /
+    content_type : application/x-ndjson
+    secret: test_secret
+    ssl: |
+      enabled: false
+      certificate: "/etc/pki/client/cert.pem"
+      key: "/etc/pki/client/cert.key"
+    ioc_expiration_duration: "90d"
+    tags:
+    preserve_original_event: false
+    processors: |
+      - add_fields:
+          target: project
+          fields:
+            name: myproject
+            id: '574734885120952459'
+      - add_tags:
+          tags: [web, production]
+          target: "environment"
