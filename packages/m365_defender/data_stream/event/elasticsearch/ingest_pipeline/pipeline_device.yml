@@ -41,7 +41,7 @@ processors:
       field: event.category
       value: process
       tag: append_event_category_process
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceprocessevents')
+      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceprocessevents') || ctx.m365_defender.event.category.toLowerCase().contains('cloudprocessevents')
   - append:
       field: event.category
       value: library
@@ -538,6 +538,90 @@ processors:
       target_field: m365_defender.event.initiating_process.command_line
       tag: rename_json_properties_InitiatingProcessCommandLine
       ignore_missing: true
+  - rename:
+      field: json.properties.AzureResourceId
+      target_field: m365_defender.event.azure_resource_id
+      tag: rename_json_properties_AzureResourceId
+      ignore_missing: true
+  - rename:
+      field: json.properties.AwsResourceName
+      target_field: m365_defender.event.aws_resource_name
+      tag: rename_json_properties_AwsResourceName
+      ignore_missing: true
+  - rename:
+      field: json.properties.GcpFullResourceName
+      target_field: m365_defender.event.gcp_full_resource_name
+      tag: rename_json_properties_GcpFullResourceName
+      ignore_missing: true
+  - rename:
+      field: json.properties.ContainerImageName
+      target_field: m365_defender.event.container_image_name
+      tag: rename_json_properties_ContainerImageName
+      ignore_missing: true
+  - rename:
+      field: json.properties.KubernetesNamespace
+      target_field: m365_defender.event.kubernetes_namespace
+      tag: rename_json_properties_KubernetesNamespace
+      ignore_missing: true
+  - rename:
+      field: json.properties.KubernetesPodName
+      target_field: m365_defender.event.kubernetes_pod_name
+      tag: rename_json_properties_KubernetesPodName
+      ignore_missing: true
+  - rename:
+      field: json.properties.KubernetesResource
+      target_field: m365_defender.event.kubernetes_resource
+      tag: rename_json_properties_KubernetesResource
+      ignore_missing: true
+  - rename:
+      field: json.properties.ContainerName
+      target_field: m365_defender.event.container_name
+      tag: rename_json_properties_ContainerName
+      ignore_missing: true
+  - rename:
+      field: json.properties.ContainerId
+      target_field: m365_defender.event.container_id
+      tag: rename_json_properties_ContainerId
+      ignore_missing: true
+
+  # ECS container field mappings
+  - set:
+      field: container.name
+      copy_from: m365_defender.event.container_name
+      ignore_empty_value: true
+      tag: set_container_name_ecs
+  - set:
+      field: container.id
+      copy_from: m365_defender.event.container_id
+      ignore_empty_value: true
+      tag: set_container_id_ecs
+  - set:
+      field: container.image.name
+      copy_from: m365_defender.event.container_image_name
+      ignore_empty_value: true
+      tag: set_container_image_name_ecs
+
+  - rename:
+      field: json.properties.ProcessName
+      target_field: m365_defender.event.process_name
+      tag: rename_json_properties_ProcessName
+      ignore_missing: true
+  - rename:
+      field: json.properties.ParentProcessName
+      target_field: m365_defender.event.parent_process_name
+      tag: rename_json_properties_ParentProcessName
+      ignore_missing: true
+  - rename:
+      field: json.properties.ParentProcessId
+      target_field: m365_defender.event.parent_process_id
+      tag: rename_json_properties_ParentProcessId
+      ignore_missing: true
+  - rename:
+      field: json.properties.ProcessCurrentWorkingDirectory
+      target_field: m365_defender.event.process_current_working_directory
+      tag: rename_json_properties_ProcessCurrentWorkingDirectory
+      ignore_missing: true
+
   - rename:
       field: json.properties.InitiatingProcessMD5
       target_field: m365_defender.event.initiating_process.md5
@@ -1660,6 +1744,27 @@ processors:
       if: >-
         ctx.event?.category != null && ctx.event.category.contains('api')
       ignore_missing: true
+  # Process field mappings for CloudProcess Event
+  - set:
+      field: process.name
+      copy_from: m365_defender.event.process_name
+      ignore_empty_value: true
+      tag: set_process_name_ecs
+  - set:
+      field: process.parent.name
+      copy_from: m365_defender.event.parent_process_name
+      ignore_empty_value: true
+      tag: set_process_parent_name_ecs
+  - set:
+      field: process.parent.pid
+      copy_from: m365_defender.event.parent_process_id
+      ignore_empty_value: true
+      tag: set_process_parent_pid_ecs
+  - set:
+      field: process.working_directory
+      copy_from: m365_defender.event.process_current_working_directory
+      ignore_empty_value: true
+      tag: set_process_working_directory_ecs
   # Add Target.process.* when remote API call i.e., ActionType: (CreateRemoteThreadApiCall or ReadProcessMemoryApiCall or ntallocatevirtualmemoryremoteapicall or OpenProcessApiCall)
   - set:
       field: Target.process.name
@@ -3029,6 +3134,13 @@ processors:
         - m365_defender.event.dns.answers
         - m365_defender.event.dns.ttls
         - m365_defender.event.dns.header_flags
+        - m365_defender.event.container_name
+        - m365_defender.event.container_id
+        - m365_defender.event.container_image_name
+        - m365_defender.event.process_name
+        - m365_defender.event.parent_process_name
+        - m365_defender.event.parent_process_id
+        - m365_defender.event.process_current_working_directory
       ignore_missing: true
   - remove:
       tag: remove_3f4f84fc
