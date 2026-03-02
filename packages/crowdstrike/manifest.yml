@@ -1,6 +1,6 @@
 name: crowdstrike
 title: CrowdStrike
-version: "3.6.0"
+version: "3.7.0"
 description: Collect logs from Crowdstrike with Elastic Agent.
 type: integration
 format_version: "3.4.0"
@@ -49,7 +49,7 @@ screenshots:
 policy_templates:
   - name: crowdstrike
     title: CrowdStrike
-    description: Collect logs from CrowdStrike Falcon and FDR
+    description: Collect events and data from CrowdStrike Falcon
     deployment_modes:
       default:
         enabled: true
@@ -60,14 +60,14 @@ policy_templates:
         team: security-service-integrations
     inputs:
       - type: logfile
-        title: "Collect CrowdStrike Falcon and FDR logs (input: logfile)"
-        description: "Collecting logs from CrowdStrike Falcon and FDR (input: logfile)"
+        title: Collect Falcon events and FDR logs through file system
+        description: Collect Falcon events from the SIEM Connector and Falcon Data Replicator (FDR) logs through the file system.
       - type: aws-s3
-        title: "Collect CrowdStrike Falcon Data Replicator logs (input: aws-s3)"
-        description: "Collecting logs from CrowdStrike Falcon Data Replicator (input: aws-s3)"
+        title: Collect Falcon Data Replicator logs using AWS S3 and SQS
+        description: Collect Falcon Data Replicator (FDR) logs using AWS S3 and SQS notifications.
       - type: streaming
-        title: Collect CrowdStrike Falcon Logs via Event Stream
-        description: Collecting CrowdStrike Falcon Logs via Event Stream.
+        title: Collect Falcon events using Event Streams API
+        description: Collect CrowdStrike Falcon events using the Event Streams API.
         vars:
           - name: proxy_url
             type: text
@@ -84,20 +84,20 @@ policy_templates:
             show_user: false
             description: This specifies the headers to be sent to the proxy server.
       - type: cel
-        title: Collect CrowdStrike logs via API
-        description: Collecting CrowdStrike logs via API.
+        title: Collect data using the CrowdStrike REST API
+        description: Collect CrowdStrike Falcon data (alerts, hosts, vulnerabilities) using the REST API.
         vars:
           - name: client_id
             type: text
             title: Client ID
-            description: Client ID for the CrowdStrike.
+            description: Client ID for the CrowdStrike API.
             multi: false
             required: true
             show_user: true
           - name: client_secret
             type: password
             title: Client Secret
-            description: Client Secret for the CrowdStrike.
+            description: Client Secret for the CrowdStrike API.
             multi: false
             required: true
             show_user: true
@@ -112,7 +112,7 @@ policy_templates:
           - name: token_url
             type: text
             title: Token URL
-            description: Token URL of CrowdStrike.
+            description: CrowdStrike API token URL.
             default: https://api.crowdstrike.com/oauth2/token
             required: true
             show_user: false
