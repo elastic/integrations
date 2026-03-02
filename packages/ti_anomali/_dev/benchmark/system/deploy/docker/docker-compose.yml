@@ -1,0 +1,25 @@
+version: "2.3"
+services:
+  intelligence:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: intelligence
+    ports:
+      - 8080
+    volumes:
+      - ./files:/files:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      PORT: "8080"
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/config.yml
+  threatstream:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9080/
+    command: log --webhook-content-type application/x-ndjson --start-signal=SIGHUP --delay=10s /var/log/corpus-*
