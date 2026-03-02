@@ -1,0 +1,60 @@
+{
+  "attributes": {
+    "name": "[IIS OTel] Request Rejection Availability 99.5% Rolling 30 Days",
+    "description": "This SLO tracks the request rejection availability of IIS via OTel metrics, ensuring that 99.5% of time intervals show IIS processing all incoming requests without rejections over a rolling period of 30 days to maintain reliable web serving for clients.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"iisreceiver.otel\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "iis.request.rejected",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "iis.request.rejected",
+              "filter": ""
+            }
+          ],
+          "equation": "A - B",
+          "comparator": "LTE",
+          "threshold": 0
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.995,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "IIS_OTEL",
+      "OTEL",
+      "IIS"
+    ],
+    "groupBy": [
+      "resource.attributes.iis.site"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "iis_otel-3254c2da-0a78-4053-be1a-edcdfa3477dc"
+        }
+      ]
+    }
+  },
+  "id": "iis_otel-request-rejection-availability-99.5-rolling30days",
+  "type": "slo_template"
+}
