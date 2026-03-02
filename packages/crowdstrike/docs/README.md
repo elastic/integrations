@@ -12,7 +12,7 @@ This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST
 
 The integration collects data from multiple sources within CrowdStrike Falcon and ingests it into Elasticsearch for security analysis and visualization:
 
-![CrowdStrike Integration Flowchart](../img/crowdstrike-flowchart.png)
+![CrowdStrike Integration Flowchart](../img/crowdstrike-elastic-data-flow.drawio.svg)
 
 1. **CrowdStrike Event Streams** — Real-time security events (auth, CSPM, firewall, user activity, XDR, detections). You can collect this data in two ways:
     - **Falcon SIEM Connector** — A pre-built integration that connects CrowdStrike Falcon with your SIEM. The connector collects event stream data and writes it to files; this integration reads from the connector's output path (the `output_path` in `cs.falconhoseclient.cfg`).
