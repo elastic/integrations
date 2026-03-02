@@ -13,7 +13,7 @@ For more detailed information refer to the following blogs and webinar:
 - [Webinar: ProblemChild: Detecting living-off-the-land attacks using the Elastic Stack](https://www.elastic.co/webinars/problemchild)
 
 ## Installation
-1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
+1. **Upgrading**: If upgrading from a version below v3.0.0, see the section v3.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Living off the Land Detection**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Install assets**: Install the assets by clicking **Settings > Install Living off the Land Detection assets**.
 1. **Configure the pipeline**: To configure the pipeline you can use one of the following steps:
@@ -130,12 +130,12 @@ Detects potential LotL activity by identifying malicious processes.
 
 | Job | Description |
 |---|---|
-| problem_child_rare_process_by_host | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. |
-| problem_child_high_sum_by_host | Looks for a set of one or more malicious child processes on a single host. |
-| problem_child_rare_process_by_user | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. |
-| problem_child_rare_process_by_parent | Looks for rare malicious child processes spawned by a parent process. |
-| problem_child_high_sum_by_user | Looks for a set of one or more malicious processes, started by the same user. |
-| problem_child_high_sum_by_parent | Looks for a set of one or more malicious child processes spawned by the same parent process. |
+| problem_child_rare_process_by_host_euid | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. |
+| problem_child_high_sum_by_host_euid | Looks for a set of one or more malicious child processes on a single host. |
+| problem_child_rare_process_by_user_euid | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. |
+| problem_child_rare_process_by_parent_euid | Looks for rare malicious child processes spawned by a parent process. |
+| problem_child_high_sum_by_user_euid | Looks for a set of one or more malicious processes, started by the same user. |
+| problem_child_high_sum_by_parent_euid | Looks for a set of one or more malicious child processes spawned by the same parent process. |
 
 ## Customize ML jobs for Living off the Land Attack Detection 
 
@@ -153,6 +153,22 @@ To customize the datafeed query and other settings such as model memory limit, f
 1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
 ![Living off the Land Attack Detection jobs](../img/problemchild_ml_job_6.png)
 1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
+## v3.0.0 and beyond
+
+v3.0.0 of the package introduces Entity Unique IDs (EUIDs) for use with Entity Analytics. This version is available on Elastic Stack version 9.4 and later.
+
+- Previously installed versions of ML jobs and rules will continue to run, giving you time to transition to the new EUID-based assets.
+- On installation of this version, new ML jobs and rules that utilize EUIDs will be available.
+- We recommend installing the new ML jobs first and check they are properly installed, gathering data and generating anomalies before updating to the latest version of the detection rules provided in 9.4.
+
+The new EUID ML job IDs are:
+- `problem_child_rare_process_by_host_euid`
+- `problem_child_high_sum_by_host_euid`
+- `problem_child_rare_process_by_user_euid`
+- `problem_child_rare_process_by_parent_euid`
+- `problem_child_high_sum_by_user_euid`
+- `problem_child_high_sum_by_parent_euid`
 
 ## v2.0.0 and beyond
 
