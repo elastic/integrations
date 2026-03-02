@@ -36,6 +36,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      tag: drop_non_object_crowdstrike
+      description: Drop documents where parsed event.original is not a JSON object (e.g. HTTP status 400). These cannot be meaningfully processed and would cause mapping conflicts.
+      if: 'ctx.crowdstrike != null && !(ctx.crowdstrike instanceof Map)'
   - remove:
       field:
         - host.name
@@ -63,7 +67,7 @@ processors:
         tag: convert-nt-timestamp-to-unix
         description: Convert Windows NT timestamps to UNIX timestamps for multiple fields.
         lang: painless
-        if : ctx.crowdstrike?.event != null
+        if: 'ctx.crowdstrike?.event instanceof Map'
         params:
             values:
                 - 'StartTime'
@@ -182,7 +186,7 @@ processors:
   - script:
       lang: painless
       tag: script_remove_null_event
-      if: ctx.crowdstrike?.event != null
+      if: 'ctx.crowdstrike?.event instanceof Map'
       params:
         values:
           - null
@@ -196,7 +200,7 @@ processors:
   - script:
       lang: painless
       tag: script_remove_null_metadata
-      if: ctx.crowdstrike?.metadata != null
+      if: 'ctx.crowdstrike?.metadata instanceof Map'
       params:
         values:
           - null
