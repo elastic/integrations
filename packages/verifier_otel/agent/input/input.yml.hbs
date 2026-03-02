@@ -1,0 +1,47 @@
+receivers:
+  verifier:
+    cloud_connector_id: "{{cloud_connector_id}}"
+{{#if cloud_connector_name}}
+    cloud_connector_name: "{{cloud_connector_name}}"
+{{/if}}
+    verification_id: "{{verification_id}}"
+{{#if verification_type}}
+    verification_type: "{{verification_type}}"
+{{else}}
+    verification_type: "on_demand"
+{{/if}}
+{{#if providers.aws.credentials.role_arn}}
+    providers:
+      aws:
+        credentials:
+          role_arn: "{{providers.aws.credentials.role_arn}}"
+{{#if providers.aws.credentials.external_id}}
+          external_id: "{{providers.aws.credentials.external_id}}"
+{{/if}}
+{{#if providers.aws.credentials.default_region}}
+          default_region: "{{providers.aws.credentials.default_region}}"
+{{else}}
+          default_region: "us-east-1"
+{{/if}}
+{{/if}}
+    policies:
+      - policy_id: "{{policy_id}}"
+{{#if policy_name}}
+        policy_name: "{{policy_name}}"
+{{/if}}
+        integrations:
+          - integration_type: "{{integration_type}}"
+{{#if integration_id}}
+            integration_id: "{{integration_id}}"
+{{/if}}
+{{#if integration_name}}
+            integration_name: "{{integration_name}}"
+{{/if}}
+{{#if integration_version}}
+            integration_version: "{{integration_version}}"
+{{/if}}
+
+service:
+  pipelines:
+    logs:
+      receivers: [verifier]
