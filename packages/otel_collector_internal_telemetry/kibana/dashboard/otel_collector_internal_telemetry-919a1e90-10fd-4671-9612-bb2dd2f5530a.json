@@ -1,0 +1,1821 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    },
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "5d62b583-3158-42bb-9eaf-7eb7595370b8": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_receiver_accepted_log_records IS NOT NULL\n| STATS transport = VALUES(transport) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL transport = MV_APPEND(transport, \"--ALL--\")\n| MV_EXPAND transport\n| STATS BY transport\n| SORT transport",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "logs_receiver_transport",
+                        "variableName": "logs_receiver_transport",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 2,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "79d7e102-3f59-4dba-a655-365ad2cca3dc": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_processor_incoming_items IS NOT NULL\n| WHERE otel.signal == \"logs\"\n| STATS processor = VALUES(processor) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL processor = MV_APPEND(processor, \"--ALL--\")\n| MV_EXPAND processor\n| STATS BY processor\n| SORT processor",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "logs_processor",
+                        "variableName": "logs_processor",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 3,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "8702dc3b-0c47-4a69-91cd-0bebed82ee09": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "TS metrics-collectortelemetry.otel-* | STATS BY service.instance.id, service.name \n| EVAL identifier = CONCAT(service.instance.id, \" (\",service.name,\")\")\n| KEEP identifier\n",
+                        "selectedOptions": [
+                            "302b0851-2149-4bf2-9719-fdb0c64846ef (otelcol-contrib)"
+                        ],
+                        "singleSelect": true,
+                        "title": "instance",
+                        "variableName": "instance",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "bbb9d9fd-22f6-4f05-9656-c2033fd2f886": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_exporter_sent_log_records IS NOT NULL\n| STATS exporter = VALUES(exporter) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL exporter = MV_APPEND(exporter, \"--ALL--\")\n| MV_EXPAND exporter\n| STATS BY exporter\n| SORT exporter",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "logs_exporter",
+                        "variableName": "logs_exporter",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 4,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "ef8af49b-f386-43db-81c6-ec6b31d697ef": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics*\n| WHERE otelcol_receiver_accepted_log_records  IS NOT NULL\n| STATS receiver = VALUES(receiver) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| EVAL receiver = MV_APPEND(receiver, \"--ALL--\")\n| MV_EXPAND receiver\n| STATS BY receiver\n| SORT receiver",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "logs_receiver",
+                        "variableName": "logs_receiver",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 1,
+                    "type": "esqlControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_22911b79-9e9d-4c36-b6d6-2ad27de30dee_dashboard",
+                            "id": "22911b79-9e9d-4c36-b6d6-2ad27de30dee",
+                            "label": "Overview",
+                            "order": 0,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_27150f96-4418-4ed0-948e-a1e864f09815_dashboard",
+                            "id": "27150f96-4418-4ed0-948e-a1e864f09815",
+                            "label": "Traces",
+                            "order": 1,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_8ee1a210-4e88-4848-9e52-6eb8c9030f01_dashboard",
+                            "id": "8ee1a210-4e88-4848-9e52-6eb8c9030f01",
+                            "label": "Metrics",
+                            "order": 2,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_d5d0402e-6b7f-4014-bdf1-cd7586cc1736_dashboard",
+                            "id": "d5d0402e-6b7f-4014-bdf1-cd7586cc1736",
+                            "label": "Logs",
+                            "order": 3,
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "1dc5e834-28d8-46aa-80bc-b0b945cccd90",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1dc5e834-28d8-46aa-80bc-b0b945cccd90",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "### Receiver metrics (Logs) ###"
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "d62b2af3-beba-4d78-97f0-11b008444394",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "d62b2af3-beba-4d78-97f0-11b008444394",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "ce3d5736-28a3-4ada-acb8-b4330a639fc3": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "accepted_logs",
+                                                    "customLabel": true,
+                                                    "fieldName": "accepted_logs",
+                                                    "inMetricDimension": true,
+                                                    "label": "Accapted Logs",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records, receiver, transport, service.instance.id\n| STATS \n    accepted_logs = SUM(INCREASE(otelcol_receiver_accepted_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP accepted_logs"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records, receiver, transport, service.instance.id\n| STATS \n    accepted_logs = SUM(INCREASE(otelcol_receiver_accepted_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP accepted_logs"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#16C5C0",
+                                "layerId": "ce3d5736-28a3-4ada-acb8-b4330a639fc3",
+                                "layerType": "data",
+                                "metricAccessor": "accepted_logs"
+                            }
+                        },
+                        "title": "accepted_logs",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records, receiver, transport, service.instance.id\n| STATS \n    accepted_logs = SUM(INCREASE(otelcol_receiver_accepted_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP accepted_logs"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "f5316dc1-52be-46ea-b0c7-f4b27249c356",
+                    "w": 8,
+                    "x": 0,
+                    "y": 4
+                },
+                "panelIndex": "f5316dc1-52be-46ea-b0c7-f4b27249c356",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "71587601-10af-4b1f-8049-d42167f50f0e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "log_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "log_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Logs / s ",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records, receiver, transport, service.instance.id\n| STATS log_rate = SUM(RATE(otelcol_receiver_accepted_log_records)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records, receiver, transport, service.instance.id\n| STATS log_rate = SUM(RATE(otelcol_receiver_accepted_log_records)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "log_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "71587601-10af-4b1f-8049-d42167f50f0e",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Pie",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of accepted logs for the selected receivers and transports based on the otelcol_receiver_accepted_log_records metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records, receiver, transport, service.instance.id\n| STATS log_rate = SUM(RATE(otelcol_receiver_accepted_log_records)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs Receiver - Accepted Log Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "288243b8-bc0a-49d4-9453-1d4607f0c0c1",
+                    "w": 21,
+                    "x": 8,
+                    "y": 4
+                },
+                "panelIndex": "288243b8-bc0a-49d4-9453-1d4607f0c0c1",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "2dc08531-087e-455b-8d13-3793a33a3985": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "logs_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "logs_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Logs / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_log_records, receiver, transport, service.instance.id\n| STATS logs_rate = SUM(RATE(otelcol_receiver_refused_log_records)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_log_records, receiver, transport, service.instance.id\n| STATS logs_rate = SUM(RATE(otelcol_receiver_refused_log_records)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "logs_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "2dc08531-087e-455b-8d13-3793a33a3985",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#ee72a6",
+                                                "forAccessor": "logs_rate"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Pie",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of refused logs for the selected receivers and transports based on the otelcol_receiver_refused_log_records metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_log_records, receiver, transport, service.instance.id\n| STATS logs_rate = SUM(RATE(otelcol_receiver_refused_log_records)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs Receiver - Refused Log Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "1fb9f4b4-7412-4d60-9015-62386abc2fac",
+                    "w": 19,
+                    "x": 29,
+                    "y": 4
+                },
+                "panelIndex": "1fb9f4b4-7412-4d60-9015-62386abc2fac",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "d4e5b87a-ddf3-4c7d-a7f1-b69eddd9daaa": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "refused_logs",
+                                                    "customLabel": true,
+                                                    "fieldName": "refused_logs",
+                                                    "inMetricDimension": true,
+                                                    "label": "Refused Logs",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_log_records, receiver, transport, service.instance.id\n| STATS \n    refused_logs = SUM(INCREASE(otelcol_receiver_refused_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP refused_logs"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_log_records, receiver, transport, service.instance.id\n| STATS \n    refused_logs = SUM(INCREASE(otelcol_receiver_refused_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP refused_logs"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#EE72A6",
+                                "layerId": "d4e5b87a-ddf3-4c7d-a7f1-b69eddd9daaa",
+                                "layerType": "data",
+                                "metricAccessor": "refused_logs",
+                                "secondaryLabelPosition": "before",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "refused_logs",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_receiver == \"--ALL--\" OR (receiver IS NOT NULL AND ?logs_receiver == receiver)\n| WHERE ?logs_receiver_transport == \"--ALL--\" OR (transport IS NOT NULL AND ?logs_receiver_transport == transport)\n| KEEP @timestamp, otelcol_receiver_refused_log_records, receiver, transport, service.instance.id\n| STATS \n    refused_logs = SUM(INCREASE(otelcol_receiver_refused_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP refused_logs"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "46e7060f-2004-41df-8585-723c2a877d63",
+                    "w": 8,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "46e7060f-2004-41df-8585-723c2a877d63",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "### Processor Metrics (Logs) ###"
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "cabd1473-875c-4575-830e-4cd9c470187f",
+                    "w": 48,
+                    "x": 0,
+                    "y": 16
+                },
+                "panelIndex": "cabd1473-875c-4575-830e-4cd9c470187f",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b5a1184e-b79b-48b0-9db9-aeffbd407ff9": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "07a6489d-c28b-4f93-8471-de1884eb65fb",
+                                                    "customLabel": true,
+                                                    "fieldName": "logs_increase",
+                                                    "label": "Incoming logs",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "params": {
+                                                            "id": "number"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics*",
+                                                            "sourceField": "logs_increase"
+                                                        },
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS logs_increase = AVG(INCREASE(otelcol_processor_incoming_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP logs_increase"
+                                            }
+                                        },
+                                        "ce69aa9a-473a-49d6-ba1f-9826a7bf6426": {
+                                            "columns": [],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS logs_increase = AVG(INCREASE(otelcol_processor_incoming_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP logs_increase"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS logs_increase = AVG(INCREASE(otelcol_processor_incoming_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP logs_increase"
+                            },
+                            "visualization": {
+                                "color": "#ffffff",
+                                "layerId": "b5a1184e-b79b-48b0-9db9-aeffbd407ff9",
+                                "layerType": "data",
+                                "metricAccessor": "07a6489d-c28b-4f93-8471-de1884eb65fb",
+                                "secondaryLabelPosition": "before",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS logs_increase = AVG(INCREASE(otelcol_processor_incoming_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP logs_increase"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "c0025f44-b606-4954-8735-730e4805a825",
+                    "w": 8,
+                    "x": 0,
+                    "y": 18
+                },
+                "panelIndex": "c0025f44-b606-4954-8735-730e4805a825",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "21a27ab9-3538-4980-befd-68a137bf995c": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "logs_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "logs_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Logs / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS logs_rate = AVG(RATE(otelcol_processor_incoming_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS logs_rate = AVG(RATE(otelcol_processor_incoming_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "logs_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "21a27ab9-3538-4980-befd-68a137bf995c",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Pie",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the average rate of incoming logs for the selected processors based on the otelcol_processor_incoming_items metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_incoming_items, receiver, transport, service.instance.id\n| STATS logs_rate = AVG(RATE(otelcol_processor_incoming_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs Processor - Incoming Log Rate"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "12eb6fb2-b3dd-486b-8663-7204d515eeb8",
+                    "w": 21,
+                    "x": 8,
+                    "y": 18
+                },
+                "panelIndex": "12eb6fb2-b3dd-486b-8663-7204d515eeb8",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "6a559a07-fccf-44f4-a8f2-2e9e7dc1d796": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "logs_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "logs_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Logs / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS logs_rate = AVG(RATE(otelcol_processor_outgoing_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS logs_rate = AVG(RATE(otelcol_processor_outgoing_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "logs_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "6a559a07-fccf-44f4-a8f2-2e9e7dc1d796",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#61a2ff",
+                                                "forAccessor": "logs_rate"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Pie",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the average rate of outgoing logs for the selected processors based on the otelcol_processor_outgoing_items metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS logs_rate = AVG(RATE(otelcol_processor_outgoing_items)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs Processor - Outgoing Log Rate"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "756dff6d-23e3-4c62-9d76-32d08fe1a127",
+                    "w": 19,
+                    "x": 29,
+                    "y": 18
+                },
+                "panelIndex": "756dff6d-23e3-4c62-9d76-32d08fe1a127",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "122166b1-b8d8-4c56-beec-48b184d057f0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "logs_increase",
+                                                    "customLabel": true,
+                                                    "fieldName": "logs_increase",
+                                                    "inMetricDimension": true,
+                                                    "label": "Outgoing Logs",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS logs_increase = AVG(INCREASE(otelcol_processor_outgoing_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP logs_increase"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS logs_increase = AVG(INCREASE(otelcol_processor_outgoing_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP logs_increase"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#61A2FF",
+                                "layerId": "122166b1-b8d8-4c56-beec-48b184d057f0",
+                                "layerType": "data",
+                                "metricAccessor": "logs_increase",
+                                "secondaryLabelPosition": "before",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "logs_increase",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE otel.signal == \"logs\"\n| WHERE ?logs_processor == \"--ALL--\" OR (processor IS NOT NULL AND ?logs_processor == processor)\n| KEEP @timestamp, otelcol_processor_outgoing_items, receiver, transport, service.instance.id\n| STATS logs_increase = AVG(INCREASE(otelcol_processor_outgoing_items)) BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP logs_increase"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "461e9cb1-52cb-4687-8b21-3d6c8c2d7a2b",
+                    "w": 8,
+                    "x": 0,
+                    "y": 23
+                },
+                "panelIndex": "461e9cb1-52cb-4687-8b21-3d6c8c2d7a2b",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "### Exporter metrics (Logs) ###"
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "d4d6a6ab-b835-4a59-8249-053faf45e30b",
+                    "w": 48,
+                    "x": 0,
+                    "y": 29
+                },
+                "panelIndex": "d4d6a6ab-b835-4a59-8249-053faf45e30b",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c56703fc-35f0-42fe-9c02-991d00b3a3bc": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "sent_logs",
+                                                    "customLabel": true,
+                                                    "fieldName": "sent_logs",
+                                                    "inMetricDimension": true,
+                                                    "label": "Sent Logs",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_sent_log_records, exporter, service.instance.id\n| STATS \n    sent_logs = SUM(INCREASE(otelcol_exporter_sent_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP sent_logs"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_sent_log_records, exporter, service.instance.id\n| STATS \n    sent_logs = SUM(INCREASE(otelcol_exporter_sent_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP sent_logs"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#16C5C0",
+                                "layerId": "c56703fc-35f0-42fe-9c02-991d00b3a3bc",
+                                "layerType": "data",
+                                "metricAccessor": "sent_logs",
+                                "secondaryLabelPosition": "before",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "sent_logs",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_sent_log_records, exporter, service.instance.id\n| STATS \n    sent_logs = SUM(INCREASE(otelcol_exporter_sent_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP sent_logs"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "c7e419ae-3e51-4539-944a-81f40c9ad182",
+                    "w": 8,
+                    "x": 0,
+                    "y": 31
+                },
+                "panelIndex": "c7e419ae-3e51-4539-944a-81f40c9ad182",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "45b51b24-225b-4039-ac28-f344ccb7dd08": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "logs_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "logs_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Logs / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_sent_log_records, service.instance.id\n| STATS logs_rate = SUM(RATE(metrics.otelcol_exporter_sent_log_records)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_sent_log_records, service.instance.id\n| STATS logs_rate = SUM(RATE(metrics.otelcol_exporter_sent_log_records)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "logs_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "45b51b24-225b-4039-ac28-f344ccb7dd08",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Pie",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of sent logs for the selected receivers based on the otelcol_exporter_sent_log_records metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_sent_log_records, service.instance.id\n| STATS logs_rate = SUM(RATE(metrics.otelcol_exporter_sent_log_records)) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs Exporter - Sent Logs Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "8bff4ce3-b0f2-4169-8156-dfc6709f26db",
+                    "w": 21,
+                    "x": 8,
+                    "y": 31
+                },
+                "panelIndex": "8bff4ce3-b0f2-4169-8156-dfc6709f26db",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "80df3d1d-1552-4168-a34b-1f80768f1818": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "send_failed_logs",
+                                                    "customLabel": true,
+                                                    "fieldName": "send_failed_logs",
+                                                    "inMetricDimension": true,
+                                                    "label": "Send Failed Logs",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records, exporter, service.instance.id\n| STATS \n    send_failed_logs = SUM(INCREASE(otelcol_exporter_send_failed_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP send_failed_logs"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records, exporter, service.instance.id\n| STATS \n    send_failed_logs = SUM(INCREASE(otelcol_exporter_send_failed_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP send_failed_logs"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#EE72A6",
+                                "layerId": "80df3d1d-1552-4168-a34b-1f80768f1818",
+                                "layerType": "data",
+                                "metricAccessor": "send_failed_logs",
+                                "secondaryLabelPosition": "before",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "send_failed_logs",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records, exporter, service.instance.id\n| STATS \n    send_failed_logs = SUM(INCREASE(otelcol_exporter_send_failed_log_records))\n  BY service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id\n| KEEP send_failed_logs"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "e5df8b98-998b-4ce6-a304-43f16db83115",
+                    "w": 8,
+                    "x": 0,
+                    "y": 37
+                },
+                "panelIndex": "e5df8b98-998b-4ce6-a304-43f16db83115",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                    "managed": false,
+                                    "name": "metrics*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "27f948df-b4af-4adf-a930-10079982651c": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "logs_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "logs_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Logs / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
+                                            "query": {
+                                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_send_failed_log_records , service.instance.id\n| STATS logs_rate = SUM(RATE(metrics.otelcol_exporter_send_failed_log_records )) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_send_failed_log_records , service.instance.id\n| STATS logs_rate = SUM(RATE(metrics.otelcol_exporter_send_failed_log_records )) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "logs_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "27f948df-b4af-4adf-a930-10079982651c",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#ee72a6",
+                                                "forAccessor": "logs_rate"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Pie",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Shows the sum of rates of send failed logs for the selected receivers based on the otelcol_exporter_send_failed_log_records metric.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics*\n| WHERE ?logs_exporter == \"--ALL--\" OR (exporter IS NOT NULL AND ?logs_exporter == exporter)\n| KEEP @timestamp, metrics.otelcol_exporter_send_failed_log_records , service.instance.id\n| STATS logs_rate = SUM(RATE(metrics.otelcol_exporter_send_failed_log_records )) \n  BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n| GROK ?instance \"\"\"(?\u003ctarget_instance\u003e[^(]*) \\(.*\\)\"\"\"\n| WHERE target_instance == service.instance.id"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs Exporter - Failed Logs Rate"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "75f0ce20-6af5-4654-b9e9-79c88d8416d3",
+                    "w": 19,
+                    "x": 29,
+                    "y": 31
+                },
+                "panelIndex": "75f0ce20-6af5-4654-b9e9-79c88d8416d3",
+                "type": "lens"
+            }
+        ],
+        "timeFrom": "now-24h/h",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "OTel Collector internal telemetry - Logs"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-02-23T10:28:24.340Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "otel_collector_internal_telemetry-919a1e90-10fd-4671-9612-bb2dd2f5530a",
+    "references": [
+        {
+            "id": "otel_collector_internal_telemetry-4c979b50-19eb-411c-8cfd-6ffe37fb0092",
+            "name": "1dc5e834-28d8-46aa-80bc-b0b945cccd90:link_22911b79-9e9d-4c36-b6d6-2ad27de30dee_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "otel_collector_internal_telemetry-58ba1893-9b1b-46e7-8a32-0765a5dd120a",
+            "name": "1dc5e834-28d8-46aa-80bc-b0b945cccd90:link_27150f96-4418-4ed0-948e-a1e864f09815_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "otel_collector_internal_telemetry-8f77b7f6-0ec0-462b-bb59-0607ffc464e1",
+            "name": "1dc5e834-28d8-46aa-80bc-b0b945cccd90:link_8ee1a210-4e88-4848-9e52-6eb8c9030f01_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "otel_collector_internal_telemetry-919a1e90-10fd-4671-9612-bb2dd2f5530a",
+            "name": "1dc5e834-28d8-46aa-80bc-b0b945cccd90:link_d5d0402e-6b7f-4014-bdf1-cd7586cc1736_dashboard",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
