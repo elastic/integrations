@@ -1,0 +1,60 @@
+{
+  "attributes": {
+    "name": "[Kubernetes OTel] Deployment Replica Availability 99.5% Rolling 30 Days",
+    "description": "This SLO tracks the availability of Kubernetes Deployments via OTel metrics, ensuring that 99.5% of time intervals have each Deployment meeting its desired replica count over a rolling period of 30 days to maintain reliable application serving capacity. When k8s.deployment.available < k8s.deployment.desired, the Deployment has fewer healthy replicas than configured, indicating reduced capacity or total unavailability for the hosted application.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"k8sclusterreceiver.otel\"  AND k8s.deployment.available: * AND k8s.deployment.desired: * ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "k8s.deployment.available",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "k8s.deployment.desired",
+              "filter": ""
+            }
+          ],
+          "equation": "A / B",
+          "comparator": "GTE",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "kubernetes",
+      "otel",
+      "k8s"
+    ],
+    "groupBy": [
+      "resource.attributes.k8s.deployment.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "kubernetes_otel-cluster-overview"
+        }
+      ]
+    }
+  },
+  "id": "kubernetes_otel-deployment-replica-availability-99.5-rolling30days",
+  "type": "slo_template"
+}
