@@ -1,9 +1,9 @@
 name: okta
 title: Okta
-version: "3.14.1"
+version: "3.14.2"
 description: Collect and parse event logs from Okta API with Elastic Agent.
 type: integration
-format_version: "3.2.3"
+format_version: "3.3.2"
 categories: [security, iam]
 conditions:
   kibana:
@@ -27,35 +27,13 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        is_default: true
         organization: security
         division: engineering
         team: security-service-integrations
     inputs:
       - type: httpjson
         vars:
-          - name: http_client_timeout
-            type: text
-            title: HTTP Client Timeout
-            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
-            multi: false
-            required: false
-            show_user: true
-          - name: interval
-            type: text
-            title: Interval
-            multi: false
-            required: true
-            show_user: true
-            default: 60s
-            description: Interval at which logs are pulled. Supported units for this parameter are h/m/s.
-          - name: initial_interval
-            type: text
-            title: Initial Interval
-            multi: false
-            required: true
-            show_user: true
-            default: 24h
-            description: Initial Interval for first log pull. Supported units for this parameter are h/m/s.
           - name: url
             type: text
             title: Okta System Log API URL
@@ -73,19 +51,42 @@ policy_templates:
               This is the API Key of your Okta service application. This is required for standard api key based authentication and Okta Integration Network (OIN) app authentication.
               Do not use this field if you are using standard OAuth2 authentication.
             secret: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: false
+          - name: interval
+            type: text
+            title: Interval
+            multi: false
+            required: true
+            show_user: false
+            default: 60s
+            description: Interval at which logs are pulled. Supported units for this parameter are h/m/s.
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            multi: false
+            required: true
+            show_user: false
+            default: 24h
+            description: Initial Interval for first log pull. Supported units for this parameter are h/m/s.
           - name: oin_app
             type: bool
             title: Use Okta Integration Network (OIN) Authentication
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: Use the API Key as the OIN client secret.
           - name: okta_domain_url
             type: text
             title: Okta Domain URL
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: |
               This is the URL of your Okta domain. For example, https://dev-123456.okta.com.
               This is only required for OAuth2 authentication. This is required for standard OAuth2 authentication and OIN app authentication.
@@ -95,7 +96,7 @@ policy_templates:
             title: Client ID
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: |
               This is the Client ID of your Okta service application. This is required for standard OAuth2 authentication and OIN app authentication.
               Do not use this field if you are using API Key based authentication without OIN authentication.
@@ -104,7 +105,7 @@ policy_templates:
             title: JWK JSON
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: |
               This is the private JSON Web Key (JWK) of your Okta service application.
               This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
@@ -115,7 +116,7 @@ policy_templates:
             title: PEM Encoded Key
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: |
               This is the private key of your Okta service application in PEM format.
               This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
@@ -125,7 +126,7 @@ policy_templates:
             title: JWK File
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: |
               This is the path to the file containing the private JSON Web Key (JWK) of your Okta service application.
               This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
@@ -135,7 +136,7 @@ policy_templates:
             title: PEM DPoP Key
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: |
               This is the Demonstrating Proof of Possession key of your Okta service application in PEM format.
               This is only required for OAuth2 authentication. If you have DPoP enabled in Okta and are authenticating using OAuth2.
@@ -144,7 +145,7 @@ policy_templates:
             title: Okta Scopes
             multi: true
             required: false
-            show_user: true
+            show_user: false
             default:
               - okta.logs.read
             description: |
@@ -164,7 +165,7 @@ policy_templates:
             title: SSL
             multi: false
             required: false
-            show_user: true
+            show_user: false
             description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
           - name: proxy_url
             type: text
