@@ -1,0 +1,66 @@
+{
+    "attributes": {
+        "name": "[GCP Audit OTel] API operation success rate 99.5% rolling 30 days",
+        "description": "Tracks the success rate of GCP API operations as recorded in Cloud Audit Logs, ensuring 99.5% of operations succeed over a rolling 30-day period.",
+        "indicator": {
+            "type": "sli.metric.custom",
+            "params": {
+                "index": "logs-*",
+                "filter": "data_stream.dataset : \"gcp.auditlog.otel\" ",
+                "good": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count",
+                            "filter": "NOT log.level : \"ERROR\" "
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "total": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count",
+                            "filter": ""
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "timestampField": "@timestamp",
+                "dataViewId": "logs-*"
+            }
+        },
+        "budgetingMethod": "occurrences",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.995
+        },
+        "tags": [
+            "GCP",
+            "Audit",
+            "OTel"
+        ],
+        "groupBy": [
+            "attributes.gcp.audit.service.name"
+        ],
+        "settings": {
+            "preventInitialBackfill": false,
+            "syncDelay": "1m",
+            "frequency": "1m",
+            "syncField": null
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "fe3e0426-5814-4a58-bf19-20c5d8ec387a"
+                }
+            ]
+        }
+    },
+    "id": "gcp_audit_otel-api-operation-success-rate-99.5-rolling30days",
+    "type": "slo_template"
+}
