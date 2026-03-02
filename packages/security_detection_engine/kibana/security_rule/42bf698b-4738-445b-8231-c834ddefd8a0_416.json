@@ -1,0 +1,196 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects potential password spray attacks where a single source IP attempts authentication against multiple Okta user accounts with repeated attempts per user, indicating common password guessing paced to avoid lockouts.",
+        "false_positives": [
+            "Corporate proxy or VPN exit nodes may aggregate traffic from multiple legitimate users with login issues.",
+            "Automated processes or misconfigured applications retrying authentication may trigger this rule."
+        ],
+        "from": "now-1h",
+        "interval": "15m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Okta Password Spray (Single Source)",
+        "note": "## Triage and analysis\n\n### Investigating Potential Okta Password Spray (Single Source)\n\nThis rule identifies a single source IP attempting authentication against multiple user accounts with repeated attempts per user over time. This pattern indicates password spraying where attackers try common passwords while pacing attempts to avoid lockouts.\n\n#### Possible investigation steps\n- Identify the source IP and determine if it belongs to known proxy, VPN, or cloud infrastructure.\n- Review the list of targeted user accounts and check if any authentications succeeded.\n- Analyze the timing of attempts to determine if they are paced to avoid lockout thresholds.\n- Check if Okta flagged the source as a known threat or proxy.\n- Examine user agent strings for signs of automation or consistent tooling across attempts.\n- Review the geographic location and ASN of the source IP for anomalies.\n\n### False positive analysis\n- Corporate proxies or VPN exit nodes may aggregate traffic from multiple legitimate users with login issues.\n- Automated processes or misconfigured applications retrying authentication may trigger this rule.\n- Password rotation events may cause legitimate widespread authentication failures.\n\n### Response and remediation\n- If attack is confirmed, block the source IP at the network perimeter.\n- Notify targeted users and enforce password resets for accounts that may have been compromised.\n- Enable or strengthen MFA for targeted accounts.\n- Consider implementing CAPTCHA or additional friction for suspicious authentication patterns.\n- Review Okta sign-on policies to ensure lockout thresholds are appropriately configured.\n",
+        "query": "FROM logs-okta.system-* METADATA _id, _version, _index\n| WHERE\n    event.dataset == \"okta.system\"\n    AND (event.action LIKE \"user.authentication.*\" OR event.action == \"user.session.start\")\n    AND okta.outcome.reason IN (\"INVALID_CREDENTIALS\", \"LOCKED_OUT\")\n    AND okta.actor.alternate_id IS NOT NULL\n// Build user-source context as JSON for enrichment\n| EVAL Esql.user_source_info = CONCAT(\n    \"{\\\"user\\\":\\\"\", okta.actor.alternate_id,\n    \"\\\",\\\"ip\\\":\\\"\", COALESCE(okta.client.ip::STRING, \"unknown\"),\n    \"\\\",\\\"user_agent\\\":\\\"\", COALESCE(okta.client.user_agent.raw_user_agent, \"unknown\"), \"\\\"}\"\n  )\n// FIRST STATS: Aggregate by (IP, user) to get per-user attempt counts\n// This prevents skew from outlier users with many attempts\n| STATS\n    Esql.user_attempts = COUNT(*),\n    Esql.user_source_info = VALUES(Esql.user_source_info),\n    Esql.user_agents_per_user = VALUES(okta.client.user_agent.raw_user_agent),\n    Esql.devices_per_user = VALUES(okta.client.device),\n    Esql.is_proxy = VALUES(okta.security_context.is_proxy),\n    Esql.geo_country = VALUES(client.geo.country_name),\n    Esql.geo_city = VALUES(client.geo.city_name),\n    Esql.asn_number = VALUES(source.as.number),\n    Esql.asn_org = VALUES(source.as.organization.name),\n    Esql.threat_suspected = VALUES(okta.debug_context.debug_data.threat_suspected),\n    Esql.risk_level = VALUES(okta.debug_context.debug_data.risk_level),\n    Esql.event_actions = VALUES(event.action),\n    Esql.first_seen_user = MIN(@timestamp),\n    Esql.last_seen_user = MAX(@timestamp)\n  BY okta.client.ip, okta.actor.alternate_id\n// SECOND STATS: Aggregate by IP to detect password spray pattern\n// Now we can accurately measure the distribution of attempts across users\n| STATS\n    Esql.unique_users = COUNT(*),\n    Esql.total_attempts = SUM(Esql.user_attempts),\n    Esql.max_attempts_per_user = MAX(Esql.user_attempts),\n    Esql.min_attempts_per_user = MIN(Esql.user_attempts),\n    Esql.avg_attempts_per_user = AVG(Esql.user_attempts),\n    // Spray band: 2-6 attempts per user (deliberate slow spray below lockout)\n    Esql.users_in_spray_band = SUM(CASE(Esql.user_attempts >= 2 AND Esql.user_attempts <= 6, 1, 0)),\n    // Also track users with only 1 attempt (stuffing-like) for differentiation\n    Esql.users_with_single_attempt = SUM(CASE(Esql.user_attempts == 1, 1, 0)),\n    Esql.first_seen = MIN(Esql.first_seen_user),\n    Esql.last_seen = MAX(Esql.last_seen_user),\n    Esql.target_users = VALUES(okta.actor.alternate_id),\n    Esql.user_source_mapping = VALUES(Esql.user_source_info),\n    Esql.event_action_values = VALUES(Esql.event_actions),\n    Esql.user_agent_values = VALUES(Esql.user_agents_per_user),\n    Esql.device_values = VALUES(Esql.devices_per_user),\n    Esql.is_proxy_values = VALUES(Esql.is_proxy),\n    Esql.geo_country_values = VALUES(Esql.geo_country),\n    Esql.geo_city_values = VALUES(Esql.geo_city),\n    Esql.source_asn_values = VALUES(Esql.asn_number),\n    Esql.source_asn_org_values = VALUES(Esql.asn_org),\n    Esql.threat_suspected_values = VALUES(Esql.threat_suspected),\n    Esql.risk_level_values = VALUES(Esql.risk_level)\n  BY okta.client.ip\n// Calculate spray signature metrics\n| EVAL\n    // Percentage of users in the spray band (2-6 attempts)\n    Esql.pct_users_in_spray_band = Esql.users_in_spray_band * 100.0 / Esql.unique_users,\n    // Attack duration in minutes (spray is paced, not bursty)\n    Esql.attack_duration_minutes = DATE_DIFF(\"minute\", Esql.first_seen, Esql.last_seen)\n// Password spraying detection logic:\n// - Many users targeted (>= 5)\n// - Hard cap below Okta lockout threshold (max <= 8 attempts per user)\n// - Majority of users in spray band (2-6 attempts) (at least 60%)\n// - Attack is paced over time (>= 5 minutes) (not a 10-second burst like stuffing)\n// - Minimum total attempts to reduce noise\n// Note: For IP rotation attacks, see \"Distributed Password Spray Attack in Okta\" rule\n| WHERE\n    Esql.unique_users >= 5\n    AND Esql.total_attempts >= 15\n    AND Esql.max_attempts_per_user <= 8\n    AND Esql.max_attempts_per_user >= 2\n    AND Esql.pct_users_in_spray_band >= 60.0\n    AND Esql.attack_duration_minutes >= 5\n| SORT Esql.total_attempts DESC\n| KEEP Esql.*, okta.client.ip\n",
+        "references": [
+            "https://support.okta.com/help/s/article/Troubleshooting-Distributed-Brute-Force-andor-Password-Spray-attacks-in-Okta",
+            "https://www.okta.com/identity-101/brute-force/",
+            "https://developer.okta.com/docs/reference/api/system-log/",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://www.elastic.co/security-labs/testing-okta-visibility-and-detection-dorothy",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.attack_duration_minutes",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.avg_attempts_per_user",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.device_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_action_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_city_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_country_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_proxy_values",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.last_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.max_attempts_per_user",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.min_attempts_per_user",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.pct_users_in_spray_band",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_level_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_org_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.target_users",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.threat_suspected_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.total_attempts",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_users",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_source_mapping",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.users_in_spray_band",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.users_with_single_attempt",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "okta.client.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "42bf698b-4738-445b-8231-c834ddefd8a0",
+        "severity": "medium",
+        "tags": [
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Data Source: Okta",
+            "Data Source: Okta System Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 416
+    },
+    "id": "42bf698b-4738-445b-8231-c834ddefd8a0_416",
+    "type": "security-rule"
+}

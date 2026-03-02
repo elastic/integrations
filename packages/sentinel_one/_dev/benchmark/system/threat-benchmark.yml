@@ -1,0 +1,24 @@
+---
+description: Benchmark 100000 threat events ingested
+input: httpjson
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+  enable_request_tracer: true
+data_stream:
+  name: threat
+  vars:
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: sentinel_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./threat-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./threat-benchmark/config.yml
+    fields:
+      path: ./threat-benchmark/fields.yml

@@ -1,0 +1,17 @@
+services:
+  mysql_input_otel:
+    image: mysql:${SERVICE_VERSION:-8.4.8}
+    ports:
+      - 3306
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+  mysql_input_otel_is_ready:
+    image: tianon/true:multiarch
+    depends_on:
+      mysql_input_otel:
+        condition: service_healthy

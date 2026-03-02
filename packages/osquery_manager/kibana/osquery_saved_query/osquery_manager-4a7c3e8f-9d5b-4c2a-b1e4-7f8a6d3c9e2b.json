@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Extracts Application Compatibility Cache (ShimCache) entries tracking program execution history on Windows systems. Enumerates executed programs with entry order (lower = more recent), modification timestamps for timeline analysis, execution flags (Windows 7/8), file hashes, and code signatures. Detects recently executed programs, executables from suspicious locations (Temp, AppData, Downloads), unsigned/untrusted binaries, and deleted programs. ShimCache provides forensic evidence of program execution even when programs are no longer running or have been deleted.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.appcompatcache"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "file.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "execution_tracking",
+                        "appcompatcache",
+                        "shimcache",
+                        "forensics",
+                        "code_signing",
+                        "windows"
+                    ]
+                }
+            }
+        ],
+        "id": "appcompatcache_shimcache_windows_elastic",
+        "interval": "7200",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Application Compatibility Cache (ShimCache) Execution Tracking\n-- Source: Native osquery table (shimcache)\n-- Focus: Suspicious program execution from user-writable staging locations\n\nWITH extracted AS (\n  SELECT\n    s.entry,\n    s.path,\n    datetime(s.modified_time, 'unixepoch') AS modified_time,\n    s.execution_flag,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status\n  FROM shimcache s\n  LEFT JOIN hash h ON h.path = s.path\n  LEFT JOIN authenticode a ON a.path = s.path\n  WHERE\n    -- Exclude legitimate Windows system directories (protected paths)\n    s.path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Windows\\\\WinSxS\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Windows\\\\servicing\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Program Files\\\\Windows Defender\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Program Files\\\\Windows NT\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Program Files (x86)\\\\Microsoft\\\\%'\n)\n\nSELECT *\nFROM extracted\nWHERE (\n  -- Condition 1: Unsigned binaries (no code signature) - always suspicious\n  signature_signer IS NULL\n  OR signature_status IS NULL\n  -- Condition 2: Invalid or untrusted signatures (osquery returns 'trusted' for valid)\n  OR signature_status NOT IN ('trusted', 'valid')\n  -- Condition 3: Execution from high-risk user-writable staging locations\n  OR regex_match(path, '\\\\\\\\Users\\\\\\\\[^\\\\\\\\]+\\\\\\\\(Downloads|Desktop|Documents)\\\\\\\\|\\\\\\\\Users\\\\\\\\[^\\\\\\\\]+\\\\\\\\AppData\\\\\\\\(Local\\\\\\\\Temp|Roaming)\\\\\\\\|\\\\\\\\Windows\\\\\\\\Temp\\\\\\\\|\\\\\\\\ProgramData\\\\\\\\[^\\\\\\\\]+\\\\\\\\|^C:\\\\\\\\[^\\\\\\\\]+\\\\.exe$|\\\\\\\\(Temp|tmp)\\\\\\\\', 0) IS NOT NULL\n)\n-- Exclude trusted Microsoft-signed binaries to reduce noise\nAND NOT (\n  signature_signer LIKE '%Microsoft%'\n  AND signature_status = 'trusted'\n)\nORDER BY entry ASC;",
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

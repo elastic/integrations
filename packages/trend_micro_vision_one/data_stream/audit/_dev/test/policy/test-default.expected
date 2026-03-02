@@ -1,0 +1,74 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: trend_micro_vision_one
+      name: test-default-trend_micro_vision_one
+      streams:
+        - config_version: 2
+          cursor:
+            last_update_at:
+                value: '[[.last_response.url.params.Get "endDateTime"]]'
+          data_stream:
+            dataset: trend_micro_vision_one.audit
+          interval: 5m
+          publisher_pipeline.disable_host: true
+          request.method: GET
+          request.ssl: null
+          request.timeout: 30s
+          request.transforms:
+            - set:
+                target: header.Authorization
+                value: Bearer ${SECRET_0}
+            - set:
+                target: url.params.top
+                value: "200"
+            - set:
+                default: '[[formatDate (now (parseDuration "-24h"))]]'
+                target: url.params.startDateTime
+                value: '[[formatDate ((parseDate .cursor.last_update_at).Add (parseDuration "-0s"))]]'
+            - set:
+                target: url.params.endDateTime
+                value: '[[formatDate (now)]]'
+            - set:
+                target: url.params.orderBy
+                value: loggedDateTime asc
+            - set:
+                target: url.params.labels
+                value: all
+          request.url: https://example.visionone.trendmicro.com/v3.0/audit/logs
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/httpjson/http-request-trace-*.ndjson
+            maxbackups: 5
+          response.pagination:
+            - set:
+                do_not_log_failure: true
+                fail_on_template_error: true
+                target: url.value
+                value: '[[if index .last_response.body "nextLink"]][[replaceAll " " "%20" .last_response.body.nextLink]][[end]]'
+          response.split:
+            ignore_empty_value: true
+            target: body.items
+          tags:
+            - forwarded
+            - trend_micro_vision_one-audit
+      type: httpjson
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-trend_micro_vision_one.audit-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

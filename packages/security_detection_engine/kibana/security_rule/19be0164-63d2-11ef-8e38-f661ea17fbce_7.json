@@ -1,0 +1,144 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a single AWS principal makes GetServiceQuota API calls for the EC2 service quota L-1216C47A, across more than 10 AWS regions within a 30-second window. This quota represents the vCPU limit for on-demand EC2 instances. Adversaries commonly enumerate this quota across regions to assess capacity for large-scale instance deployment, including cryptocurrency mining, malware hosting, or command-and-control infrastructure. This behavior may indicate cloud infrastructure discovery using compromised credentials or a compromised workload.",
+        "false_positives": [
+            "Organizations with mature multi-region operations may legitimately query EC2 service quotas across regions for capacity planning, automation, or compliance validation. Infrastructure-as-code tooling, quota monitoring solutions, or centralized cloud governance platforms may also generate similar activity. Validate the identity, purpose, and historical behavior of the calling principal before treating this activity as malicious."
+        ],
+        "from": "now-6m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.cloud_region_count_distinct",
+                "Esql.event_count",
+                "Esql.time_window_date_trunc",
+                "Esql.event_timestamp_values",
+                "aws.cloudtrail.user_identity.arn",
+                "Esql.aws_cloudtrail_user_identity_type_values",
+                "Esql.aws_cloudtrail_user_identity_access_key_id_values",
+                "Esql.source_ip_values",
+                "Esql.source_as_organization_name_values",
+                "Esql.user_agent_original_values",
+                "Esql.cloud_account_id_values",
+                "Esql.cloud_region_values",
+                "Esql.data_stream_namespace_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS Service Quotas Multi-Region GetServiceQuota Requests",
+        "note": "## Triage and analysis\n\n### Investigating AWS Service Quotas Multi-Region GetServiceQuota Requests\n\nAWS Service Quotas define usage limits for AWS services and are commonly referenced during capacity planning or automation. However, adversaries frequently enumerate EC2 on-demand instance quotas across many regions to identify where they can rapidly deploy compute resources for malicious purposes such as cryptocurrency mining, botnet hosting, or malware staging. This rule detects unusually fast, multi-region enumeration of the EC2 on-demand vCPU quota (`L-1216C47A`), a pattern that is uncommon for normal administrative activity and strongly associated with cloud infrastructure discovery.\n\n### Possible investigation steps\n\n**Identify the actor**\n- Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id` to determine whether the requests originated from an IAM user, role, or assumed role. Validate whether this principal is expected to perform quota discovery or capacity analysis across many regions.\n\n**Evaluate the scope of discovery**\n- Review the `cloud.region` values to determine which regions were queried and whether they align with regions normally used by your organization. Rapid enumeration of rarely used or disabled regions increases suspicion.\n\n**Inspect request origin and tooling**\n- Review `source.ip`, `source.as.organization.name`, and `user_agent.original` to determine whether the activity originated from a trusted corporate network, known cloud automation environment, or an unexpected hosting provider or VPN.\n- Unexpected user agents or hosting providers may indicate compromised credentials or an attacker-controlled instance.\n\n**Correlate with follow-on activity**\n- Search for subsequent EC2-related actions such as `RunInstances`, `RequestSpotInstances`, `CreateLaunchTemplate`, or `ModifyInstanceAttribute` following the quota discovery.\n- Review recent IAM activity for the same principal, including access key creation, role assumptions, or policy changes.\n\n**Assess intent and risk**\n- Determine whether this activity aligns with a known operational task (capacity planning, onboarding, automation testing), or whether it represents unexplained reconnaissance behavior.\n- If the principal is newly created, rarely used, or exhibiting other anomalous behavior, treat this as high risk.\n\n### False positive analysis\n- Multi-region quota discovery may be legitimate in organizations with global deployments, centralized cloud governance, or automated capacity monitoring.\n- Infrastructure-as-code pipelines, quota management tools, or internal cloud platforms may periodically enumerate quotas.\n\n### Response and remediation\n- If the activity is unauthorized or suspicious, immediately rotate or disable access keys associated with the principal and revoke active sessions.\n- Review CloudTrail activity for evidence of follow-on abuse, particularly EC2 instance launches, network changes, or IAM modifications.\n- Apply tighter IAM permissions to restrict access to Service Quotas APIs where not explicitly required.\n- Enforce MFA on IAM users and consider conditional access controls (such as source IP or VPC restrictions) for sensitive roles.\n- Notify security operations and cloud platform teams to assess potential impact and determine whether containment actions (such as SCP enforcement or account isolation) are required.\n- Update detection coverage to monitor for EC2 provisioning attempts following quota discovery to catch resource abuse early.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "from logs-aws.cloudtrail-* METADATA _id, _version, _index\n\n// filter for GetServiceQuota API calls\n| where\n  event.dataset == \"aws.cloudtrail\"\n  and event.provider == \"servicequotas.amazonaws.com\"\n  and event.action == \"GetServiceQuota\"\n\n// truncate the timestamp to a 30-second window\n| eval Esql.time_window_date_trunc = date_trunc(30 seconds, @timestamp)\n\n// dissect request parameters to extract service and quota code\n| dissect aws.cloudtrail.request_parameters \"{%{?Esql.aws_cloudtrail_request_parameters_service_code_key}=%{Esql.aws_cloudtrail_request_parameters_service_code}, %{?quota_code_key}=%{Esql.aws_cloudtrail_request_parameters_quota_code}}\"\n\n// filter for EC2 service quota L-1216C47A (vCPU on-demand instances)\n| where Esql.aws_cloudtrail_request_parameters_service_code == \"ec2\" and Esql.aws_cloudtrail_request_parameters_quota_code == \"L-1216C47A\"\n\n// keep only the relevant fields\n| keep\n    Esql.time_window_date_trunc,\n    aws.cloudtrail.user_identity.arn,\n    cloud.region,\n    Esql.aws_cloudtrail_request_parameters_service_code,\n    Esql.aws_cloudtrail_request_parameters_quota_code,\n    aws.cloudtrail.request_parameters,\n    @timestamp, \n    aws.cloudtrail.user_identity.type, \n    aws.cloudtrail.user_identity.access_key_id, \n    source.ip, \n    cloud.account.id, \n    user_agent.original, \n    source.as.organization.name, \n    data_stream.namespace\n    \n// count the number of unique regions and total API calls within the time window\n| stats\n    Esql.cloud_region_count_distinct = count_distinct(cloud.region),\n    Esql.event_count = count(*),\n    Esql.aws_cloudtrail_request_parameters_values = VALUES(aws.cloudtrail.request_parameters),\n    Esql.event_timestamp_values = VALUES(@timestamp),\n    Esql.aws_cloudtrail_user_identity_type_values = VALUES(aws.cloudtrail.user_identity.type),\n    Esql.aws_cloudtrail_user_identity_access_key_id_values = VALUES(aws.cloudtrail.user_identity.access_key_id),\n    Esql.source_ip_values = VALUES(source.ip),\n    Esql.cloud_account_id_values = VALUES(cloud.account.id),\n    Esql.user_agent_original_values = VALUES(user_agent.original),\n    Esql.source_as_organization_name_values = VALUES(source.as.organization.name),\n    Esql.cloud_region_values = VALUES(cloud.region),\n    Esql.data_stream_namespace_values = VALUES(data_stream.namespace)\n  by Esql.time_window_date_trunc, aws.cloudtrail.user_identity.arn\n\n// filter for API calls in more than 10 regions within the 30-second window\n| where\n  Esql.cloud_region_count_distinct >= 10\n  and Esql.event_count >= 10\n",
+        "references": [
+            "https://www.sentinelone.com/labs/exploring-fbot-python-based-malware-targeting-cloud-and-payment-services/",
+            "https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_GetServiceQuota.html"
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_request_parameters_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_user_identity_access_key_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_user_identity_type_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.cloud_account_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.cloud_region_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.cloud_region_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.data_stream_namespace_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_timestamp_values",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_as_organization_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_window_date_trunc",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_original_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.arn",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "19be0164-63d2-11ef-8e38-f661ea17fbce",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Service Quotas",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1580",
+                        "name": "Cloud Infrastructure Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1580/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 7
+    },
+    "id": "19be0164-63d2-11ef-8e38-f661ea17fbce_7",
+    "type": "security-rule"
+}

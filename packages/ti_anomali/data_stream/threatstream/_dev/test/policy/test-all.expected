@@ -1,0 +1,60 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_anomali
+      name: test-all-ti_anomali
+      streams:
+        - content_type: application/x-ndjson
+          data_stream:
+            dataset: ti_anomali.threatstream
+          enabled: true
+          fields:
+            _conf:
+                ioc_expiration_duration: 90d
+          fields_under_root: true
+          hmac:
+            header: X-Filebeat-Signature
+            key: ${SECRET_0}
+            prefix: sha256=
+            type: sha256
+          listen_address: localhost
+          listen_port: 8181
+          prefix: json
+          processors:
+            - add_fields:
+                fields:
+                    id: "574734885120952459"
+                    name: myproject
+                target: project
+            - add_tags:
+                tags:
+                    - web
+                    - production
+                target: environment
+          ssl:
+            certificate: /etc/pki/client/cert.pem
+            enabled: false
+            key: /etc/pki/client/cert.key
+          tags: null
+          type: http_endpoint
+          url: /
+      type: http_endpoint
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_anomali.threatstream-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

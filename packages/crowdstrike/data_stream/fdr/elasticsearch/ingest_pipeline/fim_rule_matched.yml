@@ -1,0 +1,397 @@
+---
+description: Pipeline for processing FileIntegrityMonitorRuleMatched and FileIntegrityMonitorRuleMatchedEnriched events from Falcon FileVantage.
+processors:
+
+  # event categorization fields
+  - set:
+      tag: set_event_kind_to_event_de80643c
+      field: event.kind
+      value: event
+  - append:
+      tag: append_file_to_event_category_5b7e3a2d
+      if: ctx.crowdstrike?.ObjectType != null && (ctx.crowdstrike.ObjectType == '1' || ctx.crowdstrike.ObjectType == '2')
+      field: event.category
+      value: file
+      allow_duplicates: false
+  - append:
+      tag: append_registry_to_event_category_c6ba5eba
+      if: ctx.crowdstrike?.ObjectType != null && (ctx.crowdstrike.ObjectType == '3' || ctx.crowdstrike.ObjectType == '4')
+      field: event.category
+      value: registry
+      allow_duplicates: false
+  # fall back to file category for Enriched events
+  - append:
+      tag: append_file_to_event_category_32d4d587
+      if: ctx.event.category == null
+      field: event.category
+      value: file
+  - script:
+      tag: script_set_event_type_6a155454
+      if: ctx.crowdstrike?.ObjectAccessOperationType != null
+      params:
+        op_types:
+          "1": creation
+          "2": change
+          "3": deletion
+          "4": change
+          "5": change
+          "6": change
+          "7": change
+          "8": access
+      source: |-
+        def type = params.get('op_types')[ctx.crowdstrike.ObjectAccessOperationType];
+        if (type != null) {
+          ctx.event = ctx.event ?: [:];
+          ctx.event.type = [type];
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_7270a1e4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # fall back to change type for Enriched events
+  - append:
+      tag: append_change_to_event_type_d125ca99
+      if: ctx.event.type == null
+      field: event.type
+      value: change
+
+  # field values mapping
+  - script:
+      tag: script_set_object_type_348f5b4a
+      if: ctx.crowdstrike?.ObjectType != null
+      params:
+        obj_types:
+          "1": FILE
+          "2": FOLDER
+          "3": VALUE
+          "4": KEY
+      source: |-
+        def type = params.get('obj_types')[ctx.crowdstrike.ObjectType];
+        if (type != null) {
+        	ctx.crowdstrike.ObjectType = type;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_da5b712a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_set_operation_type_70f01684
+      if: ctx.crowdstrike?.ObjectAccessOperationType != null
+      params:
+        op_types:
+          "1": CREATE
+          "2": WRITE
+          "3": DELETE
+          "4": SET
+          "5": RENAME
+          "6": ATTRIBUTES_CHANGED
+          "7": PERMISSIONS_CHANGED
+          "8": OPEN_WRITE
+      source: |-
+        def type = params.get('op_types')[ctx.crowdstrike.ObjectAccessOperationType];
+        if (type != null) {
+        	ctx.crowdstrike.ObjectAccessOperationType = type;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_689b42d4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # converts
+  - convert:
+      tag: convert_crowdstrike_ContentDiff_Exists_to_boolean_9647694e
+      field: crowdstrike.ContentDiff.Exists
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_ContentDiff_Exists_a5ef3c39
+            field:
+              - crowdstrike.ContentDiff.Exists
+        - append:
+            tag: append_error_message_4531827e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_Suppression_Suppressed_to_boolean_64590ae3
+      field: crowdstrike.Suppression.Suppressed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_Suppression_Suppressed_6d408885
+            field:
+              - crowdstrike.Suppression.Suppressed
+        - append:
+            tag: append_error_message_2bb5a411
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_PolicyRuleSeverity_to_long_29e3439d
+      field: crowdstrike.PolicyRuleSeverity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_PolicyRuleSeverity_d600dfd1
+            field:
+              - crowdstrike.PolicyRuleSeverity
+        - append:
+            tag: append_error_message_fca361b3
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_FileSize_to_long_57c441c5
+      field: crowdstrike.FileSize
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_e42344eb
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # timestamps
+  - date:
+      tag: date_crowdstrike_RuleModifiedTimeStamp_into_crowdstrike_RuleModifiedTimeStamp_8d1f9a9e
+      if: ctx.crowdstrike?.RuleModifiedTimeStamp != null && ctx.crowdstrike.RuleModifiedTimeStamp != ''
+      field: crowdstrike.RuleModifiedTimeStamp
+      target_field: crowdstrike.RuleModifiedTimeStamp
+      formats:
+        - UNIX
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_RuleModifiedTimeStamp_10560cc7
+            field:
+              - RuleModifiedTimeStamp
+        - append:
+            tag: append_error_message_a976ed0e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ECS mappings
+  - set:
+      tag: set_user_id_from_crowdstrike_User_ID_494678a0
+      field: user.id
+      copy_from: crowdstrike.User.ID
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name_from_crowdstrike_User_Name_2a157dc4
+      field: user.name
+      copy_from: crowdstrike.User.Name
+      ignore_empty_value: true
+  - set:
+      tag: set_host_hostname_from_crowdstrike_Host_Name_97f29382
+      field: host.hostname
+      copy_from: crowdstrike.Host.Name
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_name_from_crowdstrike_Policy_RuleBasePath_cb4280e1
+      field: rule.name
+      copy_from: crowdstrike.Policy.RuleBasePath
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_ruleset_from_crowdstrike_Policy_RuleGroupName_148ba698
+      field: rule.ruleset
+      copy_from: crowdstrike.Policy.RuleGroupName
+      ignore_empty_value: true
+  - set:
+      tag: set_file_hash_sha256_from_crowdstrike_ContentDiff_SHA256_ed9edf84
+      field: file.hash.sha256
+      copy_from: crowdstrike.ContentDiff.SHA256
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_id_from_crowdstrike_PolicyRuleID_d838e264
+      field: rule.id
+      copy_from: crowdstrike.PolicyRuleID
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_ruleset_from_crowdstrike_PolicyRuleGroupID_f58c49f0
+      field: rule.ruleset
+      copy_from: crowdstrike.PolicyRuleGroupID
+      ignore_empty_value: true
+  - set:
+      tag: set_file_size_from_crowdstrike_FileSize_58cea3ea
+      field: file.size
+      copy_from: crowdstrike.FileSize
+      ignore_empty_value: true
+  - set:
+      tag: set_file_owner_from_crowdstrike_NewOwner_9af693ec
+      field: file.owner
+      copy_from: crowdstrike.NewOwner
+      ignore_empty_value: true
+  - set:
+      tag: set_file_group_from_crowdstrike_NewGroup_b85bdf80
+      field: file.group
+      copy_from: crowdstrike.NewGroup
+      ignore_empty_value: true
+  - append:
+      tag: append_crowdstrike_FileAttributesNew_into_file_attributes_2d526026
+      if: ctx.crowdstrike?.FileAttributesNew != null
+      field: file.attributes
+      value: '{{{crowdstrike.FileAttributesNew}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_crowdstrike_NewFileAttributesLinux_into_file_attributes_97600240
+      if: ctx.crowdstrike?.NewFileAttributesLinux != null
+      field: file.attributes
+      value: '{{{crowdstrike.NewFileAttributesLinux}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_file_hash_sha256_into_related_hash_017aef51
+      if: ctx.file?.hash?.sha256 != null
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+  - script:
+      tag: script_set_event_severity_from_PolicyRuleSeverity_4032c1c4
+      if: ctx.crowdstrike?.PolicyRuleSeverity != null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def severity = ctx.crowdstrike.PolicyRuleSeverity;
+        if (severity == 1) {
+        	ctx.event.severity = 21;
+        } else if (severity == 2) {
+        	ctx.event.severity = 47;
+        } else if (severity == 3) {
+        	ctx.event.severity = 73;
+        } else if (severity == 4) {
+        	ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_cdf0b014
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # rename event handling for files and registry
+  - set:
+      tag: set_file_path_from_ObjectNameNew_for_rename_events_0400ebd4
+      if: ctx.crowdstrike?.ObjectAccessOperationType == 'RENAME' && (ctx.crowdstrike.ObjectType == 'FILE' || ctx.crowdstrike.ObjectType == 'FOLDER')
+      field: file.path
+      copy_from: crowdstrike.ObjectNameNew
+      ignore_empty_value: true
+  - set:
+      tag: set_file_original_path_from_ObjectName_for_rename_events_49f9c5d0
+      if: ctx.crowdstrike?.ObjectAccessOperationType == 'RENAME' && (ctx.crowdstrike.ObjectType == 'FILE' || ctx.crowdstrike.ObjectType == 'FOLDER')
+      field: file.Ext.original.path
+      copy_from: crowdstrike.ObjectName
+      ignore_empty_value: true
+  - set:
+      tag: set_registry_path_from_ObjectNameNew_for_rename_events_ee30dbc5
+      if: ctx.crowdstrike?.ObjectAccessOperationType == 'RENAME' && (ctx.crowdstrike.ObjectType == 'VALUE' || ctx.crowdstrike.ObjectType == 'KEY')
+      field: registry.path
+      copy_from: crowdstrike.ObjectNameNew
+      ignore_empty_value: true
+  - set:
+      tag: set_file_path_from_ObjectName_for_non-rename_events_d432ea88
+      if: ctx.crowdstrike?.ObjectAccessOperationType != 'RENAME' && (ctx.crowdstrike.ObjectType == 'FILE' || ctx.crowdstrike.ObjectType == 'FOLDER') && ctx.file?.path == null
+      field: file.path
+      copy_from: crowdstrike.ObjectName
+      ignore_empty_value: true
+  - set:
+      tag: set_registry_path_from_ObjectName_for_non-rename_events_ae198652
+      if: ctx.crowdstrike?.ObjectAccessOperationType != 'RENAME' && (ctx.crowdstrike.ObjectType == 'VALUE' || ctx.crowdstrike.ObjectType == 'KEY') && ctx.registry?.path == null
+      field: registry.path
+      copy_from: crowdstrike.ObjectName
+      ignore_empty_value: true
+  - set:
+      tag: set_file_type_to_dir_for_folders_3a399212
+      if: ctx.crowdstrike?.ObjectType == 'FOLDER' && ctx.file?.path != null
+      field: file.type
+      value: dir
+      ignore_empty_value: true
+  - set:
+      tag: set_file_type_to_file_for_files_f5d7d730
+      if: ctx.crowdstrike?.ObjectType == 'FILE' && ctx.file?.path != null && ctx.file?.type == null
+      field: file.type
+      value: file
+      ignore_empty_value: true
+  # file.path parsing and file.Ext.original.path parsing are handled by default.yml pipeline
+
+  - script:
+      description: Parse registry path to extract registry key and value
+      tag: parse_registry_path_to_extract_registry_key_and_value_8265f599
+      if: ctx.registry?.path != null && ctx.registry.path.length() > 0
+      source: |-
+        def path = ctx.registry.path;
+        def idx = path.lastIndexOf('\\');
+        if (idx >= 0) {
+        	ctx.registry = ctx.registry ?: [:];
+        	ctx.registry.key = path.substring(0, idx);
+        	ctx.registry.value = path.substring(idx+1);
+        } else {
+        	ctx.registry = ctx.registry ?: [:];
+        	ctx.registry.key = path;
+        }
+        // Clean up registry.key: remove \REGISTRY\(USER|MACHINE)\ prefix
+        if (ctx.registry.key != null) {
+        	def key = ctx.registry.key;
+        	if (key.startsWith('\\REGISTRY\\USER\\')) {
+        		ctx.registry.key = key.substring('\\REGISTRY\\USER\\'.length());
+        	} else if (key.startsWith('\\REGISTRY\\MACHINE\\')) {
+        		ctx.registry.key = key.substring('\\REGISTRY\\MACHINE\\'.length());
+        	}
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_b5482b4f
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # FileIntegrityMonitorRuleMatched renames
+  - rename:
+      tag: rename_PolicyIdentifier_to_Policy_ID_f03b77d2
+      field: crowdstrike.PolicyIdentifier
+      target_field: crowdstrike.Policy.ID
+      ignore_missing: true
+
+  # clean up
+  - remove:
+      tag: remove_custom_duplicate_fields_fb958877
+      field:
+        - crowdstrike.User
+        - crowdstrike.Host.Name
+        - crowdstrike.Policy.RuleBasePath
+        - crowdstrike.Policy.RuleGroupName
+        - crowdstrike.ContentDiff.SHA256
+        - crowdstrike.PolicyRuleID
+        - crowdstrike.PolicyRuleGroupID
+        - crowdstrike.FileSize
+        - crowdstrike.NewOwner
+        - crowdstrike.NewGroup
+        - crowdstrike.ObjectName
+        - crowdstrike.ObjectNameNew
+      ignore_missing: true
+
+  # error handling
+  - set:
+      tag: set_pipeline_error_into_event_kind_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_event_kind_a0b8d607
+      if: ctx.error?.message != null
+      field: event.kind
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_d1950926
+      field: error.message
+      value: Processor '{{{ _ingest.on_failure_processor_type }}}' {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}' {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_into_event_kind_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_event_kind_c274f7a2
+      field: event.kind
+      value: preserve_original_event
+      allow_duplicates: false

@@ -170,6 +170,15 @@
     - name: authentication_details
       type: keyword
       description: List of pass or fail verdicts by email authentication protocols like DMARC, DKIM, SPF or a combination of multiple authentication types (CompAuth).
+    - name: aws_resource_name
+      type: keyword
+      description: Unique identifier specific to Amazon Web Services devices, containing the Amazon resource name.
+    - name: azure_resource_id
+      type: keyword
+      description: Unique identifier of the Azure resource associated with the device.
+    - name: behavior_id
+      type: keyword
+      description: Unique identifier for the behavior.
     - name: bulk_complaint_level
       type: long
       description: Threshold assigned to email from bulk mailers, a high bulk complaint level (BCL) means the email is more likely to generate complaints, and thus more likely to be spam.
@@ -200,6 +209,18 @@
     - name: client_version
       type: keyword
       description: Version of the endpoint agent or sensor running on the machine.
+    - name: cloud_platform
+      type: keyword
+      description: Cloud platform where the event occurred.
+    - name: cloud_resource_id
+      type: keyword
+      description: Unique identifier of the cloud resource accessed.
+    - name: cloud_resource_type
+      type: keyword
+      description: Type of cloud resource.
+    - name: cloud_subscription_id
+      type: keyword
+      description: Unique identifier of the cloud service subscription.
     - name: confidence_level
       type: flattened
       description: List of confidence levels of any spam or phishing verdicts. For spam, this column shows the spam confidence level (SCL), indicating if the email was skipped (-1), found to be not spam (0,1), found to be spam with moderate confidence (5,6), or found to be spam with high confidence (9). For phishing, this column displays whether the confidence level is "High" or "Low".
@@ -215,6 +236,9 @@
     - name: crl_distribution_point_urls
       type: keyword
       description: JSON array listing the URLs of network shares that contain certificates and certificate revocation lists (CRLs).
+    - name: data_sources
+      type: keyword
+      description: Products or services that provided information for the behavior.
     - name: default_gateways
       type: keyword
       description: Default gateway addresses in JSON array format.
@@ -227,6 +251,9 @@
         - name: location
           type: keyword
           description: "Location where the email was delivered: Inbox/Folder, On-premises/External, Junk, Quarantine, Failed, Dropped, Deleted items."
+    - name: description
+      type: keyword
+      description: Description of the behavior.
     - name: destination
       type: group
       fields:
@@ -239,6 +266,9 @@
         - name: port
           type: long
           description: Destination port of related network communications or activity.
+    - name: detailed_entity_role
+      type: keyword
+      description: The roles of the entity in the behavior.
     - name: detection
       type: group
       fields:
@@ -317,6 +347,12 @@
         - name: subject
           type: keyword
           description: Subject of the email.
+    - name: end_time
+      type: date
+      description: Date and time of the last activity related to the behavior.
+    - name: entity_role
+      type: keyword
+      description: Indicates whether the entity is impacted or merely related.
     - name: entity_type
       type: keyword
       description: Type of object, such as a file, a process, a device, or a user.
@@ -356,6 +392,15 @@
     - name: folder_path
       type: keyword
       description: Folder containing the file that the recorded action was applied to.
+    - name: gcp_full_resource_name
+      type: keyword
+      description: Unique identifier specific to Google Cloud Platform devices, containing a combination of zone and ID for GCP.
+    - name: group_id
+      type: keyword
+      description: Identifier for the team or group that the message was sent to.
+    - name: group_name
+      type: keyword
+      description: Name of the team or group that the message was sent to.
     - name: initiating_process
       type: group
       fields:
@@ -479,6 +524,9 @@
     - name: is_clicked_through
       type: boolean
       description: Indicates whether the user was able to click through to the original URL or was not allowed.
+    - name: is_external_thread
+      type: boolean
+      description: Indicates if there are external recipients in the thread (1) or none (0).
     - name: is_external_user
       type: boolean
       description: Indicates whether a user inside the network doesn't belong to the organization's domain.
@@ -488,6 +536,9 @@
     - name: is_local_admin
       type: boolean
       description: Boolean indicator of whether the user is a local administrator on the machine.
+    - name: is_owned_thread
+      type: boolean
+      description: boolean value indicating whether the message is owned by your organization or not (only the messages owned by your organization can be remediated).
     - name: is_root_signer_microsoft
       type: boolean
       description: Indicates whether the signer of the root certificate is Microsoft and if the file is included in Windows operating system.
@@ -508,6 +559,12 @@
       description: Unique hash value identifying issuing certificate authority (CA).
     - name: join_type
       type: keyword
+    - name: last_edited_time
+      type: keyword
+      description: Date and time when the message was last edited.
+    - name: latest_delivery_location
+      type: keyword
+      description: Last known location of the message.
     - name: local
       type: group
       fields:
@@ -541,6 +598,12 @@
     - name: machine_group
       type: keyword
       description: Machine group of the machine. This group is used by role-based access control to determine access to the machine.
+    - name: message_id
+      type: keyword
+      description: Identifier for the message (non-unique).
+    - name: message_version
+      type: keyword
+      description: Version number of the message.
     - name: md5
       type: keyword
       description: MD5 hash of the file that the recorded action was applied to.
@@ -813,6 +876,12 @@
         - name: source_port
           type: long
           description: Source port on the remote device that initiated the activity.
+    - name: resource_id
+      type: keyword
+      description: Unique identifier of the cloud resource accessed.
+    - name: safety_tip
+      type: keyword
+      description: The safety tip that has been added on a message, if any.
     - name: sender
       type: group
       fields:
@@ -840,6 +909,12 @@
         - name: object_id
           type: keyword
           description: Unique identifier for the sender's account in Azure AD.
+    - name: sender_email_address
+      type: keyword
+      description: Email address of the sender.
+    - name: sender_type
+      type: keyword
+      description: Type of user that sent the message, for example, User, Group, Anonymous.
     - name: sensitivity
       type: group
       fields:
@@ -879,9 +954,18 @@
     - name: source_system
       type: keyword
       description: The source system for the record.
+    - name: start_time
+      type: date
+      description: Date and time of the first activity related to the behavior.
     - name: subject
       type: keyword
       description: Subject of the email.
+    - name: subscription_id
+      type: keyword
+      description: Subscription ID of the Azure subscription.
+    - name: successful_read_operations
+      type: long
+      description: The count of successful read operations.
     - name: target
       type: group
       fields:
@@ -894,6 +978,9 @@
         - name: device_name
           type: keyword
           description: Fully qualified domain name (FQDN) of the device that the recorded action was applied to.
+    - name: teams_message_id
+      type: keyword
+      description: Unique identifier for the message, as generated by Microsoft 365.
     - name: tenant
       type: group
       fields:
@@ -901,6 +988,12 @@
           type: keyword
         - name: name
           type: keyword
+    - name: thread_id
+      type: keyword
+      description: Identifier of the channel or chat thread that the message is part of.
+    - name: thread_subtype
+      type: keyword
+      description: 'Indicates the channel type, possible values: None, PrivateChannel.'
     - name: threat
       type: group
       fields:

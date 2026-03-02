@@ -245,7 +245,11 @@ processors:
             'executable': args.get(0)
           ]
         }
-
+  
+  - pipeline:
+      name: '{{ IngestPipeline "customer_ioc_event" }}'
+      tag: pipeline_customer_ioc_event
+      if: ctx.crowdstrike?.metadata?.eventType == "CustomerIOCEvent"
   - pipeline:
       name: '{{ IngestPipeline "data_protection_detection_summary" }}'
       tag: pipeline_data_protection_detection_summary

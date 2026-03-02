@@ -347,22 +347,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - gsub:
-      field: json.ClientRequestURI
-      tag: gsub_client_request_uri
-      target_field: tmp.ClientRequestURI
-      ignore_missing: true
-      pattern: '//'
-      replacement: '/'
-  - uri_parts:
-      field: tmp.ClientRequestURI
-      tag: uri_parts_client_request_uri
-      ignore_failure: true
-      if: ctx.tmp?.ClientRequestURI != null
-  - remove:
-      field: tmp.ClientRequestURI
-      tag: remove_client_request_uri
-      ignore_missing: true
   - rename:
       field: json.ContentScanObjResults
       target_field: cloudflare_logpush.http_request.content_scan.results
@@ -414,6 +398,27 @@ processors:
       copy_from: json.ClientRequestQuery
       ignore_empty_value: true
       if: ctx.url?.query == null
+  - set:
+      field: tmp.constructed_uri
+      tag: set_tmp_constructed_uri
+      value: '{{url.scheme}}://{{url.domain}}{{json.ClientRequestURI}}'
+      if: ctx.json?.ClientRequestURI != null 
+          && ctx.url?.scheme != null 
+          && ctx.url?.domain != null
+          && ctx.json.ClientRequestURI.startsWith('/')
+  - set:
+      field: tmp.constructed_uri
+      tag: set_tmp_constructed_uri_from_ClientRequestURI
+      copy_from: json.ClientRequestURI
+      if: ctx.json?.ClientRequestURI != null && !ctx.json.ClientRequestURI.startsWith('/')
+  - uri_parts:
+      field: tmp.constructed_uri
+      tag: uri_parts_tmp_constructed_uri
+      ignore_failure: true
+      if: ctx.tmp?.constructed_uri != null
+  - remove:
+      field: tmp.constructed_uri
+      ignore_missing: true
   - rename:
       field: json.ClientRequestHost
       target_field: cloudflare_logpush.http_request.client.request.host
