@@ -1,0 +1,33 @@
+{
+  "attributes": {
+    "name": "[Nginx Ingress] Controller OTel Request Latency 95% < 1s Rolling 30 Days",
+    "description": "This SLO tracks the request latency of the Nginx Ingress Controller via OTel access logs, ensuring that 95% of HTTP requests complete within 1 second over a rolling period of 30 days to maintain responsive application delivery.",
+    "indicator": {
+      "type": "sli.kql.custom",
+      "params": {
+        "index": "logs-*",
+        "filter": "data_stream.dataset: \"nginx_ingress_controller.access.otel\" AND body.structured.http.request.time: *",
+        "good": "body.structured.http.request.time < 1.0",
+        "total": "body.structured.http.request.time: *",
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.95
+    },
+    "tags": [
+      "OTEL",
+      "NGINX_INGRESS_CONTROLLER_OTEL"
+    ],
+    "groupBy": [
+      "host.name"
+    ]
+  },
+  "id": "nginx_ingress-controller-otel-request-latency-95-1s-rolling30days",
+  "type": "slo_template"
+}
