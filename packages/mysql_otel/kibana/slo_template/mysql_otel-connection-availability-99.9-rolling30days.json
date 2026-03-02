@@ -1,0 +1,59 @@
+{
+  "attributes": {
+    "name": "[MySQL OTel] Connection availability 99.9% rolling 30 days",
+    "description": "This SLO tracks the connection availability of MySQL via OTel metrics, ensuring that 99.9% of connection intervals are error-free over a rolling period of 30 days to maintain reliable database accessibility for applications.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"mysqlreceiver.otel\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "mysql.connection.errors",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "mysql.connection.errors",
+              "filter": ""
+            }
+          ],
+          "equation": "A - B",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "OTel",
+      "MYSQL"
+    ],
+    "groupBy": [
+      "*"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mysql_otel-7c507653-ae7c-4e3f-93ea-5a6121e28c16"
+        }
+      ]
+    }
+  },
+  "id": "mysql_otel-connection-availability-99.9-rolling30days",
+  "type": "slo_template"
+}

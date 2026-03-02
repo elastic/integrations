@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "[MySQL OTel] Replication freshness 99.5% rolling 30 days",
+    "description": "This SLO tracks MySQL replica freshness, ensuring that 99.5% of time intervals have replication lag below 5 seconds over a rolling period of 30 days to maintain data consistency for read replicas.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"mysqlreceiver.otel\" and mysql.replica.time_behind_source : * ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "last_value",
+              "field": "mysql.replica.time_behind_source",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 5
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "OTel",
+      "MYSQL"
+    ],
+    "groupBy": [
+      "*"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mysql_otel-73691849-6ca6-461b-b37a-b8b0d7d3d0a5"
+        }
+      ]
+    }
+  },
+  "id": "mysql_otel-replication-freshness-99.5-rolling30days",
+  "type": "slo_template"
+}
