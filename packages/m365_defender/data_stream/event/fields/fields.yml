@@ -150,6 +150,9 @@
         - name: id
           type: keyword
           description: Unique identifier for the alert.
+    - name: anonymous_successful_operations
+      type: long
+      description: The count of successful anonymous operations.
     - name: app_guard_container_id
       type: keyword
       description: Identifier for the virtualized container used by Application Guard to isolate browser activity.
@@ -170,9 +173,18 @@
     - name: authentication_details
       type: keyword
       description: List of pass or fail verdicts by email authentication protocols like DMARC, DKIM, SPF or a combination of multiple authentication types (CompAuth).
+    - name: authentication_type
+      type: keyword
+      description: The authentication method used to access the storage (for example, AccountKey, SAS, Oauth).
     - name: aws_resource_name
       type: keyword
       description: Unique identifier specific to Amazon Web Services devices, containing the Amazon resource name.
+    - name: account_application_id
+      type: keyword
+      description: The application ID associated with the cloud resource access.
+    - name: account_tenant_id
+      type: keyword
+      description: The unique identifier of the Azure tenant.
     - name: azure_resource_id
       type: keyword
       description: Unique identifier of the Azure resource associated with the device.
@@ -206,6 +218,15 @@
     - name: city
       type: keyword
       description: City where the client IP address is geolocated.
+    - name: city_name
+      type: keyword
+      description: City where the client IP address is geolocated.
+    - name: client_cloud_platform_name
+      type: keyword
+      description: The name of the cloud platform where the data center is located.
+    - name: client_system_service_name
+      type: keyword
+      description: The name of the system service is in the data center.
     - name: client_version
       type: keyword
       description: Version of the endpoint agent or sensor running on the machine.
@@ -230,12 +251,36 @@
     - name: connectors
       type: keyword
       description: Custom instructions that define organizational mail flow and how the email was routed.
+    - name: container_id
+      type: keyword
+      description: The container identifier in Kubernetes or another runtime environment.
+    - name: container_image_name
+      type: keyword
+      description: The container image name or ID, if it exists.
+    - name: container_name
+      type: keyword
+      description: Name of the container in Kubernetes or another runtime environment.
     - name: country_code
       type: keyword
       description: Two-letter code indicating the country where the client IP address is geolocated.
+    - name: country_name
+      type: keyword
+      description: The name of the country where the client IP address is geolocated.
+    - name: province_name
+      type: keyword
+      description: The name of the province or state where the client IP address is geolocated.
     - name: crl_distribution_point_urls
       type: keyword
       description: JSON array listing the URLs of network shares that contain certificates and certificate revocation lists (CRLs).
+    - name: data_aggregation_end_time
+      type: date
+      description: The end time during which the data was aggregated.
+    - name: data_aggregation_start_time
+      type: date
+      description: The start time during which the data was aggregated.
+    - name: data_source
+      type: keyword
+      description: Data source for the cloud audit events, can be GCP (for Google Cloud Platform), AWS (for Amazon Web Services), Azure (for Azure Resource Manager), Kubernetes Audit (for Kubernetes), or other cloud platforms.
     - name: data_sources
       type: keyword
       description: Products or services that provided information for the behavior.
@@ -365,6 +410,9 @@
         - name: role
           type: keyword
           description: How the entity is involved in an alert, indicating whether it is impacted or is merely related.
+    - name: failed_operations_count
+      type: long
+      description: The count of failed storage operations.
     - name: failure_reason
       type: keyword
       description: Information explaining why the recorded action failed.
@@ -389,6 +437,9 @@
         - name: type
           type: keyword
           description: File extension type.
+    - name: first_event_timestamp
+      type: date
+      description: The timestamp of the first observed operation in the aggregation period.
     - name: folder_path
       type: keyword
       description: Folder containing the file that the recorded action was applied to.
@@ -401,6 +452,9 @@
     - name: group_name
       type: keyword
       description: Name of the team or group that the message was sent to.
+    - name: has_anonymous_resource_not_found_failures
+      type: boolean
+      description: Indicates whether anonymous resource not found failures occurred.
     - name: initiating_process
       type: group
       fields:
@@ -533,18 +587,27 @@
     - name: is_impersonated
       type: boolean
       description: Indicates whether the activity was performed by one user for another (impersonated) user.
+    - name: is_known_suspicious_ip
+      type: boolean
+      description: Indicates whether the IP address is known to be suspicious.
     - name: is_local_admin
       type: boolean
       description: Boolean indicator of whether the user is a local administrator on the machine.
     - name: is_owned_thread
       type: boolean
       description: boolean value indicating whether the message is owned by your organization or not (only the messages owned by your organization can be remediated).
+    - name: is_private_ip
+      type: boolean
+      description: Indicates whether the IP address is private.
     - name: is_root_signer_microsoft
       type: boolean
       description: Indicates whether the signer of the root certificate is Microsoft and if the file is included in Windows operating system.
     - name: is_signed
       type: boolean
       description: Indicates whether the file is signed.
+    - name: is_tor_exit_node
+      type: boolean
+      description: Indicates whether the IP address is a Tor exit node.
     - name: is_trusted
       type: boolean
       description: Indicates whether the file is trusted based on the results of the WinVerifyTrust function, which checks for unknown root certificate information, invalid signatures, revoked certificates, and other questionable attributes.
@@ -559,9 +622,21 @@
       description: Unique hash value identifying issuing certificate authority (CA).
     - name: join_type
       type: keyword
+    - name: kubernetes_namespace
+      type: keyword
+      description: The Kubernetes namespace name.
+    - name: kubernetes_pod_name
+      type: keyword
+      description: The Kubernetes pod name.
+    - name: kubernetes_resource
+      type: keyword
+      description: Identifier value that includes namespace, resource type and name.
     - name: last_edited_time
       type: keyword
       description: Date and time when the message was last edited.
+    - name: last_event_timestamp
+      type: date
+      description: The timestamp of the last observed operation in the aggregation period.
     - name: latest_delivery_location
       type: keyword
       description: Last known location of the message.
@@ -631,6 +706,9 @@
     - name: device_dynamic_tags
       type: keyword
       description: Device tags assigned automatically using dynamic tagging rules.
+    - name: distinct_get_operations
+      type: long
+      description: The count of distinct GET operations performed.
     - name: merged_device_ids
       type: keyword
       description: Previous device IDs that have been assigned to the same device.
@@ -677,6 +755,12 @@
       description: Indicates whether the device is currently onboarded or not to Microsoft Defender for Endpoint or if the device is not supported.
     - name: operation_name
       type: keyword
+    - name: operation_names_list
+      type: keyword
+      description: A list of storage operations performed (for example, CreateContainer, DeleteContainer).
+    - name: operations_count
+      type: long
+      description: The total number of storage operations performed.
     - name: org_level
       type: group
       fields:
@@ -766,6 +850,21 @@
         - name: version_info_product_version
           type: keyword
           description: Product version from the version information of the newly created process.
+    - name: process_current_working_directory
+      type: keyword
+      description: Current working directory of the running process.
+    - name: parent_process_id
+      type: long
+      description: The process ID (PID) of the parent process.
+    - name: parent_process_name
+      type: keyword
+      description: The name of the parent process.
+    - name: process_name
+      type: keyword
+      description: The name of the process.
+    - name: properties_operation_name
+      type: keyword
+      description: Audit event operation name as it appears in the record, usually includes both resource type and operation.
     - name: protocol
       type: keyword
       description: Protocol used during the communication.
@@ -806,7 +905,7 @@
           description: Type of query, such as QueryGroup, QueryUser, or EnumerateUsers.
     - name: raw_event_data
       type: flattened
-      description: Raw event information from the source application or service in JSON format.
+      description: Full raw event information from the data source in JSON format.
     - name: recipient
       type: group
       fields:
@@ -854,7 +953,7 @@
           description: URL or fully qualified domain name (FQDN) that was being connected to.
     - name: report_id
       type: keyword
-      description: Event identifier based on a repeating counter. To identify unique events, this column must be used in conjunction with the DeviceName and Timestamp columns.
+      description: Unique identifier for the event.
     - name: request
       type: group
       fields:
@@ -876,6 +975,9 @@
         - name: source_port
           type: long
           description: Source port on the remote device that initiated the activity.
+    - name: resource_group
+      type: keyword
+      description: Name of the resource group where the storage account resides.
     - name: resource_id
       type: keyword
       description: Unique identifier of the cloud resource accessed.
@@ -927,6 +1029,9 @@
     - name: service_source
       type: keyword
       description: Product or service that provided the alert information.
+    - name: service_type
+      type: keyword
+      description: Specifies the type of storage service (for example, Blob, ADLS Gen2, Files.REST, Files.SMB).
     - name: severity
       type: keyword
       description: Indicates the potential impact (high, medium, or low) of the threat indicator or breach activity identified by the alert.
@@ -957,12 +1062,24 @@
     - name: start_time
       type: date
       description: Date and time of the first activity related to the behavior.
+    - name: storage_account
+      type: keyword
+      description: The identifier for the storage account.
+    - name: storage_container
+      type: keyword
+      description: The identifier for the storage container.
+    - name: storage_file_share
+      type: keyword
+      description: The identifier for the cloud storage file share.
     - name: subject
       type: keyword
       description: Subject of the email.
     - name: subscription_id
       type: keyword
       description: Subscription ID of the Azure subscription.
+    - name: successful_operations_count
+      type: long
+      description: The count of successful storage operations.
     - name: successful_read_operations
       type: long
       description: The count of successful read operations.
@@ -1015,6 +1132,9 @@
     - name: title
       type: keyword
       description: Title of the alert.
+    - name: total_response_length
+      type: long
+      description: The total response length of all GET operations during the aggregation period.
     - name: tunnel_type
       type: keyword
       description: Tunneling protocol, if the interface is used for this purpose, for example 6to4, Teredo, ISATAP, PPTP, SSTP, and SSH.
@@ -1038,9 +1158,15 @@
     - name: user_agent
       type: keyword
       description: User agent information from the web browser or other client application.
+    - name: user_agent_header
+      type: keyword
+      description: Details of the user agent accessing the storage (for example, browser or application).
     - name: user_agent_tags
       type: keyword
       description: "More information provided by Microsoft Defender for Cloud Apps in a tag in the user agent field. Can have any of the following values: Native client, Outdated browser, Outdated operating system, Robot."
+    - name: suspicious_user_agent_name
+      type: keyword
+      description: The name of the suspicious user agent accessing the cloud resource.
     - name: user_level_action
       type: keyword
       description: Action taken on the email in response to matches to a mailbox policy defined by the recipient.

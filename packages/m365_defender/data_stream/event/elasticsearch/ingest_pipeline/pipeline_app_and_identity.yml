@@ -29,6 +29,11 @@ processors:
       tag: append_event_category_e7df101f
       if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
   - append:
+      field: event.category
+      value: configuration
+      tag: append_configuration_to_event_category
+      if: ctx.m365_defender.event.category.toLowerCase().contains('cloudauditevents')
+  - append:
       field: event.type
       value: info
       tag: append_event_type
@@ -147,6 +152,171 @@ processors:
       if: ctx.json?.properties?.ApplicationId != ''
       type: string
       ignore_missing: true
+  - date:
+      field: json.properties.DataAggregationStartTime
+      tag: date_DataAggregationStartTime
+      target_field: m365_defender.event.data_aggregation_start_time
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.DataAggregationStartTime != null && ctx.json.properties.DataAggregationStartTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.DataAggregationEndTime
+      tag: date_DataAggregationEndTime
+      target_field: m365_defender.event.data_aggregation_end_time
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.DataAggregationEndTime != null && ctx.json.properties.DataAggregationEndTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.IpAddress
+      tag: convert_IpAddress_to_ip
+      target_field: m365_defender.event.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.properties?.IpAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.OperationsCount
+      tag: convert_OperationsCount_to_long
+      target_field: m365_defender.event.operations_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.SuccessfulOperationsCount
+      tag: convert_SuccessfulOperationsCount_to_long
+      target_field: m365_defender.event.successful_operations_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.IsKnownSuspiciousIp
+      tag: convert_IsKnownSuspiciousIp_to_boolean
+      target_field: m365_defender.event.is_known_suspicious_ip
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.IsPrivateIp
+      tag: convert_IsPrivateIp_to_boolean
+      target_field: m365_defender.event.is_private_ip
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.FailedOperationsCount
+      tag: convert_FailedOperationsCount_to_long
+      target_field: m365_defender.event.failed_operations_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.FirstEventTimestamp
+      tag: date_FirstEventTimestamp
+      target_field: m365_defender.event.first_event_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.FirstEventTimestamp != null && ctx.json.properties.FirstEventTimestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.LastEventTimestamp
+      tag: date_LastEventTimestamp
+      target_field: m365_defender.event.last_event_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.LastEventTimestamp != null && ctx.json.properties.LastEventTimestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.TotalResponseLength
+      tag: convert_TotalResponseLength_to_long
+      target_field: m365_defender.event.total_response_length
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.SuccessfulReadOperations
+      tag: convert_SuccessfulReadOperations_to_long
+      target_field: m365_defender.event.successful_read_operations
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.DistinctGetOperations
+      tag: convert_DistinctGetOperations_to_long
+      target_field: m365_defender.event.distinct_get_operations
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.AnonymousSuccessfulOperations
+      tag: convert_AnonymousSuccessfulOperations_to_long
+      target_field: m365_defender.event.anonymous_successful_operations
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.HasAnonymousResourceNotFoundFailures
+      tag: convert_HasAnonymousResourceNotFoundFailures_to_boolean
+      target_field: m365_defender.event.has_anonymous_resource_not_found_failures
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.IsTorExitNode
+      tag: convert_IsTorExitNode_to_boolean
+      target_field: m365_defender.event.is_tor_exit_node
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
   - script:
@@ -548,6 +718,167 @@ processors:
       target_field: m365_defender.event.account.risk_level_details
       tag: rename_json_properties_RiskLevelDetails
       ignore_missing: true
+  - rename:
+      field: json.properties.DataSource
+      tag: rename_DataSource
+      target_field: m365_defender.event.data_source
+      ignore_missing: true
+  - rename:
+      field: json.properties.OperationName
+      tag: rename_OperationName
+      target_field: m365_defender.event.properties_operation_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.ResourceId
+      tag: rename_ResourceId
+      target_field: m365_defender.event.resource_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ContainerId
+      tag: rename_ContainerId
+      target_field: m365_defender.event.container_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ContainerImageName
+      tag: rename_ContainerImageName
+      target_field: m365_defender.event.container_image_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.ContainerName
+      tag: rename_ContainerName
+      target_field: m365_defender.event.container_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.KubernetesNamespace
+      tag: rename_KubernetesNamespace
+      target_field: m365_defender.event.kubernetes_namespace
+      ignore_missing: true
+  - rename:
+      field: json.properties.KubernetesPodName
+      tag: rename_KubernetesPodName
+      target_field: m365_defender.event.kubernetes_pod_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.KubernetesResource
+      tag: rename_KubernetesResource
+      target_field: m365_defender.event.kubernetes_resource
+      ignore_missing: true
+  - rename:
+      field: json.properties.ParentProcessId
+      tag: rename_parent_process_id
+      target_field: m365_defender.event.parent_process_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ParentProcessName
+      tag: rename_ParentProcessName
+      target_field: m365_defender.event.parent_process_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.ProcessCurrentWorkingDirectory
+      tag: rename_ProcessCurrentWorkingDirectory
+      target_field: m365_defender.event.process_current_working_directory
+      ignore_missing: true
+  - rename:
+      field: json.properties.ProcessName
+      tag: rename_ProcessName
+      target_field: m365_defender.event.process_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.DataSources
+      tag: rename_DataSources
+      target_field: m365_defender.event.data_sources
+      ignore_missing: true
+  - rename:
+      field: json.properties.ResourceGroup
+      tag: rename_ResourceGroup
+      target_field: m365_defender.event.resource_group
+      ignore_missing: true
+  - rename:
+      field: json.properties.StorageAccount
+      tag: rename_StorageAccount
+      target_field: m365_defender.event.storage_account
+      ignore_missing: true
+  - rename:
+      field: json.properties.StorageContainer
+      tag: rename_StorageContainer
+      target_field: m365_defender.event.storage_container
+      ignore_missing: true
+  - rename:
+      field: json.properties.StorageFileShare
+      tag: rename_StorageFileShare
+      target_field: m365_defender.event.storage_file_share
+      ignore_missing: true
+  - rename:
+      field: json.properties.ServiceType
+      tag: rename_ServiceType
+      target_field: m365_defender.event.service_type
+      ignore_missing: true
+  - rename:
+      field: json.properties.UserAgentHeader
+      tag: rename_UserAgentHeader
+      target_field: m365_defender.event.user_agent_header
+      ignore_missing: true
+  - rename:
+      field: json.properties.OperationNamesList
+      tag: rename_OperationNamesList
+      target_field: m365_defender.event.operation_names_list
+      ignore_missing: true
+  - rename:
+      field: json.properties.AuthenticationType
+      tag: rename_AuthenticationType
+      target_field: m365_defender.event.authentication_type
+      ignore_missing: true
+  - convert:
+      field: json.properties.AccountTenantId
+      tag: convert_AccountTenantId_to_string
+      target_field: m365_defender.event.account_tenant_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountApplicationId
+      tag: rename_AccountApplicationId
+      target_field: m365_defender.event.account_application_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.SuspiciousUserAgentName
+      tag: rename_SuspiciousUserAgentName
+      target_field: m365_defender.event.suspicious_user_agent_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.HashReputationMd5List
+      tag: rename_HashReputationMd5List
+      target_field: m365_defender.event.hash_reputation_md5_list
+      ignore_missing: true
+  - rename:
+      field: json.properties.SubscriptionId
+      tag: rename_SubscriptionId
+      target_field: m365_defender.event.subscription_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.CountryName
+      tag: rename_CountryName
+      target_field: m365_defender.event.country_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.CityName
+      tag: rename_CityName
+      target_field: m365_defender.event.city_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.ProvinceName
+      tag: rename_ProvinceName
+      target_field: m365_defender.event.province_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.ClientSystemServiceName
+      tag: rename_ClientSystemServiceName
+      target_field: m365_defender.event.client_system_service_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.ClientCloudPlatformName
+      tag: rename_ClientCloudPlatformName
+      target_field: m365_defender.event.client_cloud_platform_name
+      ignore_missing: true
 
   # Destination mapping
   - set:
@@ -611,6 +942,45 @@ processors:
       field: host.type
       copy_from: m365_defender.event.device.type
       tag: set_host_type
+      ignore_empty_value: true
+
+  # Container mapping
+  - set:
+      field: container.id
+      tag: set_container_id_from_event_container_id
+      copy_from: m365_defender.event.container_id
+      ignore_empty_value: true
+  - set:
+      field: container.image.name
+      tag: set_container_image_name_from_event_container_image_name
+      copy_from: m365_defender.event.container_image_name
+      ignore_empty_value: true
+  - set:
+      field: container.name
+      tag: set_container_name_from_event_container_name
+      copy_from: m365_defender.event.container_name
+      ignore_empty_value: true
+
+  # Process mapping
+  - set:
+      field: process.parent.pid
+      tag: set_process_parent_pid_from_event_parent_process_id
+      copy_from: m365_defender.event.parent_process_id
+      ignore_empty_value: true
+  - set:
+      field: process.parent.name
+      tag: set_process_parent_name_from_event_parent_process_name
+      copy_from: m365_defender.event.parent_process_name
+      ignore_empty_value: true
+  - set:
+      field: process.working_directory
+      tag: set_process_working_directory_from_event_process_current_working_directory
+      copy_from: m365_defender.event.process_current_working_directory
+      ignore_empty_value: true
+  - set:
+      field: process.name
+      tag: set_process_name_from_event_process_name
+      copy_from: m365_defender.event.process_name
       ignore_empty_value: true
 
   # Event Outcome/Action mapping
@@ -740,25 +1110,25 @@ processors:
       field: related.user
       value: '{{{m365_defender.event.account.cloud_sid}}}'
       tag: append_related_user_9f47301a
-      if: ctx.m365_defender?.event?.account.cloud_sid != null
+      if: ctx.m365_defender?.event?.account?.cloud_sid != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.on_prem_sid}}}'
       tag: append_related_user_cd0ba510
-      if: ctx.m365_defender?.event?.account.on_prem_sid != null
+      if: ctx.m365_defender?.event?.account?.on_prem_sid != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.upn}}}'
       tag: append_related_user_ee3a78d4
-      if: ctx.m365_defender?.event?.account.upn != null
+      if: ctx.m365_defender?.event?.account?.upn != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.email_address}}}'
       tag: append_related_user_d5f12e14
-      if: ctx.m365_defender?.event?.account.email_address != null
+      if: ctx.m365_defender?.event?.account?.email_address != null
       allow_duplicates: false
   - append:
       field: related.hosts
@@ -824,6 +1194,13 @@ processors:
         - m365_defender.event.account.name
         - m365_defender.event.action.type
         - m365_defender.event.report_id
+        - m365_defender.event.container_id
+        - m365_defender.event.container_image_name
+        - m365_defender.event.container_name
+        - m365_defender.event.parent_process_id
+        - m365_defender.event.parent_process_name
+        - m365_defender.event.process_current_working_directory
+        - m365_defender.event.process_name
       ignore_missing: true
 on_failure:
   - append:
