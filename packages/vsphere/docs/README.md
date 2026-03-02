@@ -154,7 +154,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | hostname | Hostname from syslog header. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.app_name | The application name of the app that generated the log | keyword |
+| log.component | The name of the component of the application that generated the log | keyword |
+| log.component_id | Process id that generated the log | keyword |
+| log.severity | The severity of the log ()"EMERGENCY" / "ALERT" / "CRITICAL" / "ERROR" / "WARNING" / "NOTICE" / "INFO" / "DEBUG") | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
+| process.identifier | The process identifier | keyword |
 | process.program | Process from syslog header. | keyword |
 | vsphere.log.api.invocations |  | long |
 | vsphere.log.datacenter |  | keyword |
