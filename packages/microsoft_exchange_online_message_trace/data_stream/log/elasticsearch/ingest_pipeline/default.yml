@@ -67,7 +67,10 @@ processors:
   - set:
       field: event.outcome
       value: failure
-      if: ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('failed') == true
+      if: >
+        ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('failed') == true ||
+        ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('quarantined') == true ||
+        ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('filteredAsSpam') == true
   - set:
       field: event.outcome
       value: unknown
