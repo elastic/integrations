@@ -1,0 +1,36 @@
+receivers:
+  zipkin:
+    endpoint: {{endpoint}}
+    parse_string_tags: {{parse_string_tags}}
+{{#if tls_enabled}}
+    tls:
+      insecure: {{tls_insecure}}
+{{#if tls_insecure_skip_verify}}
+      insecure_skip_verify: {{tls_insecure_skip_verify}}
+{{/if}}
+{{#if tls_ca_file}}
+      ca_file: {{tls_ca_file}}
+{{/if}}
+{{#if tls_cert_file}}
+      cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
+      key_file: {{tls_key_file}}
+{{/if}}
+{{#if tls_server_name_override}}
+      server_name_override: {{tls_server_name_override}}
+{{/if}}
+{{#if tls_min_version}}
+      min_version: "{{tls_min_version}}"
+{{/if}}
+{{#if tls_max_version}}
+      max_version: "{{tls_max_version}}"
+{{/if}}
+{{#if tls_include_system_ca_certs_pool}}
+      include_system_ca_certs_pool: {{tls_include_system_ca_certs_pool}}
+{{/if}}
+{{/if}}
+service:
+  pipelines:
+    traces:
+      receivers: [zipkin]

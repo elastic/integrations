@@ -1,0 +1,57 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - traces-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                - names:
+                    - logs-generic.otel-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    transform/componentid-0:
+        trace_statements:
+            - context: span
+              statements:
+                - set(attributes["data_stream.type"], "traces")
+                - set(attributes["data_stream.dataset"], "zipkinreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+            - context: spanevent
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    zipkin/componentid-0:
+        endpoint: 0.0.0.0:9411
+        parse_string_tags: true
+secret_references: []
+service:
+    pipelines:
+        traces:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        traces/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - zipkin/componentid-0
