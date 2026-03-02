@@ -1,0 +1,1298 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_X-PCjpI6T5hBmKoR2QFiTx2HZUQxpVfyXxWtHEigyco_0"
+    },
+    "attributes": {
+        "controlGroupInput": {
+            "panelsJSON": {
+                "0e37b08b-1efb-4ee3-9708-575ca3ac8af9": {
+                    "explicitInput": {
+                        "dataViewRefName": "0e37b08b-1efb-4ee3-9708-575ca3ac8af9:optionsListDataView",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "user.email",
+                        "ignoreValidations": false,
+                        "searchTechnique": "wildcard",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "User email",
+                        "useGlobalFilters": true
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "705596b5-db2e-4c45-875d-95d98bfb7ee8": {
+                    "explicitInput": {
+                        "dataViewRefName": "705596b5-db2e-4c45-875d-95d98bfb7ee8:optionsListDataView",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "azure.administrative.hierarchy",
+                        "ignoreValidations": false,
+                        "searchTechnique": "wildcard",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Subscription",
+                        "useGlobalFilters": true
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
+        },
+        "description": "This dashboard shows expanded user activity in Azure cloud.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "generic.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "generic.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "0047d7c7-14fb-4fa8-89da-fc6a9a8022bd": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Actions",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE log.level == \"Warning\"\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT() BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "log.level",
+                                        "index": "4d02a15c-98ec-4183-b059-e71cc5f2b0ba",
+                                        "key": "log.level",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Warning"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "log.level": "Warning"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "user.name",
+                                        "index": "edfa2ecf-7981-4db2-91de-750d127fd7d7",
+                                        "key": "user.name",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "user.name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE log.level == \"Warning\"\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT() BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "layerId": "0047d7c7-14fb-4fa8-89da-fc6a9a8022bd",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar",
+                                        "showGridlines": false,
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar",
+                                "showCurrentTimeMarker": true,
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "User Activity Over Time",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "log.level",
+                                "index": "4d02a15c-98ec-4183-b059-e71cc5f2b0ba",
+                                "key": "log.level",
+                                "negate": false,
+                                "params": {
+                                    "query": "Warning"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "log.level": "Warning"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "user.name",
+                                "index": "edfa2ecf-7981-4db2-91de-750d127fd7d7",
+                                "key": "user.name",
+                                "negate": false,
+                                "type": "exists",
+                                "value": "exists"
+                            },
+                            "query": {
+                                "exists": {
+                                    "field": "user.name"
+                                }
+                            }
+                        }
+                    ],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE log.level == \"Warning\"\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT() BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "User Activity Over Time"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "97001cce-7254-443e-a12f-69b13fbd4811",
+                    "w": 24,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "97001cce-7254-443e-a12f-69b13fbd4811",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "9794445f-33c9-4b51-bdb2-782f671dc7d1": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": " @timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "success",
+                                                    "customLabel": true,
+                                                    "fieldName": "success",
+                                                    "inMetricDimension": true,
+                                                    "label": "Success",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "fail",
+                                                    "customLabel": true,
+                                                    "fieldName": "fail",
+                                                    "inMetricDimension": true,
+                                                    "label": "Fail",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\"\n| WHERE user.name IS NOT NULL\n| STATS `success` = SUM(CASE(azure.result.type == \"Success\" OR azure.result.type == \"Succeeded\", 1, 0)), `fail` = SUM(CASE(azure.result.type == \"Failed\" OR azure.result.type == \"Failure\", 1, 0)) BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "user.name",
+                                        "index": "1d850b94-0f9e-4af6-a12c-90c09dc15d03",
+                                        "key": "user.name",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "user.name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\"\n| WHERE user.name IS NOT NULL\n| STATS `success` = SUM(CASE(azure.result.type == \"Success\" OR azure.result.type == \"Succeeded\", 1, 0)), `fail` = SUM(CASE(azure.result.type == \"Failed\" OR azure.result.type == \"Failure\", 1, 0)) BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "success",
+                                            "fail"
+                                        ],
+                                        "layerId": "9794445f-33c9-4b51-bdb2-782f671dc7d1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "time_bucket",
+                                        "yConfig": [
+                                            {
+                                                "color": "#d36086",
+                                                "forAccessor": "fail"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "LISTKEYS Authorization Activity",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "user.name",
+                                "index": "1d850b94-0f9e-4af6-a12c-90c09dc15d03",
+                                "key": "user.name",
+                                "negate": false,
+                                "type": "exists",
+                                "value": "exists"
+                            },
+                            "query": {
+                                "exists": {
+                                    "field": "user.name"
+                                }
+                            }
+                        }
+                    ],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\"\n| WHERE user.name IS NOT NULL\n| STATS `success` = SUM(CASE(azure.result.type == \"Success\" OR azure.result.type == \"Succeeded\", 1, 0)), `fail` = SUM(CASE(azure.result.type == \"Failed\" OR azure.result.type == \"Failure\", 1, 0)) BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Authorization Activity (Success vs Failure)"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "73dbda75-6315-4152-824d-9536650af773",
+                    "w": 24,
+                    "x": 24,
+                    "y": 2
+                },
+                "panelIndex": "73dbda75-6315-4152-824d-9536650af773",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-05e2b6ef-827d-4b31-aa7b-73eeaf98323f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "8beef91b-d734-4c70-bbb9-fb02a39faba9",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "05e2b6ef-827d-4b31-aa7b-73eeaf98323f": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "email",
+                                                    "customLabel": true,
+                                                    "fieldName": "email",
+                                                    "label": "Email",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "name",
+                                                    "customLabel": true,
+                                                    "fieldName": "name",
+                                                    "label": "Name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "IPs",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_2",
+                                                    "inMetricDimension": true,
+                                                    "label": "Actions",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT_DISTINCT(network.peer.address), `total_2` = COUNT() BY `email` = user.email, `name` = user.name\n| WHERE `email` IS NOT NULL\n| WHERE `name` IS NOT NULL\n| SORT `total_2` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "user.name",
+                                        "index": "8beef91b-d734-4c70-bbb9-fb02a39faba9",
+                                        "key": "user.name",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "user.name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT_DISTINCT(network.peer.address), `total_2` = COUNT() BY `email` = user.email, `name` = user.name\n| WHERE `email` IS NOT NULL\n| WHERE `name` IS NOT NULL\n| SORT `total_2` DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "total"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "total_2"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "email"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "name"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "05e2b6ef-827d-4b31-aa7b-73eeaf98323f",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "Active Users Table",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "user.name",
+                                "index": "8beef91b-d734-4c70-bbb9-fb02a39faba9",
+                                "key": "user.name",
+                                "negate": false,
+                                "type": "exists",
+                                "value": "exists"
+                            },
+                            "query": {
+                                "exists": {
+                                    "field": "user.name"
+                                }
+                            }
+                        }
+                    ],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT_DISTINCT(network.peer.address), `total_2` = COUNT() BY `email` = user.email, `name` = user.name\n| WHERE `email` IS NOT NULL\n| WHERE `name` IS NOT NULL\n| SORT `total_2` DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Active Users"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "d4d708e1-d179-4688-8005-54e2162a82d2",
+                    "w": 48,
+                    "x": 0,
+                    "y": 14
+                },
+                "panelIndex": "d4d708e1-d179-4688-8005-54e2162a82d2",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "1211c3e7-7030-4784-a4e3-6e24a2340852": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "resource_type",
+                                                    "customLabel": true,
+                                                    "fieldName": "resource_type",
+                                                    "label": "Resource type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "creations",
+                                                    "customLabel": true,
+                                                    "fieldName": "creations",
+                                                    "label": "Creations",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Count",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| WHERE azure.identity.authorization.action LIKE \"*write*\"\n| STATS `total` = COUNT() BY `resource_type` = azure.identity.provider, `creations` = azure.identity.authorization.action\n| WHERE `resource_type` IS NOT NULL\n| WHERE `creations` IS NOT NULL\n| SORT `total` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "user.name",
+                                        "index": "697de65c-1da0-418f-b498-f78f281b9c9d",
+                                        "key": "user.name",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "user.name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| WHERE azure.identity.authorization.action LIKE \"*write*\"\n| STATS `total` = COUNT() BY `resource_type` = azure.identity.provider, `creations` = azure.identity.authorization.action\n| WHERE `resource_type` IS NOT NULL\n| WHERE `creations` IS NOT NULL\n| SORT `total` DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "isHistogram": false,
+                                        "layerId": "1211c3e7-7030-4784-a4e3-6e24a2340852",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "simpleView": false,
+                                        "splitAccessors": [
+                                            "creations"
+                                        ],
+                                        "xAccessor": "resource_type",
+                                        "xScaleType": "ordinal",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "total"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "legendStats": [],
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "Resource Creations [Logs Azure] (converted)",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "user.name",
+                                "index": "697de65c-1da0-418f-b498-f78f281b9c9d",
+                                "key": "user.name",
+                                "negate": false,
+                                "type": "exists",
+                                "value": "exists"
+                            },
+                            "query": {
+                                "exists": {
+                                    "field": "user.name"
+                                }
+                            }
+                        }
+                    ],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| WHERE azure.identity.authorization.action LIKE \"*write*\"\n| STATS `total` = COUNT() BY `resource_type` = azure.identity.provider, `creations` = azure.identity.authorization.action\n| WHERE `resource_type` IS NOT NULL\n| WHERE `creations` IS NOT NULL\n| SORT `total` DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Resource Creations "
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "1a6dce1d-d039-4d18-87c7-1b700da676c2",
+                    "w": 24,
+                    "x": 0,
+                    "y": 26
+                },
+                "panelIndex": "1a6dce1d-d039-4d18-87c7-1b700da676c2",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "5279fb87-edd6-4f38-be3b-e65af656c566": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "resource_type",
+                                                    "customLabel": true,
+                                                    "fieldName": "resource_type",
+                                                    "label": "Resource type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "deletions",
+                                                    "customLabel": true,
+                                                    "fieldName": "deletions",
+                                                    "label": "Deletions",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Count",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {}
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| WHERE azure.identity.authorization.action LIKE \"*delete*\"\n| STATS `total` = COUNT() BY `resource_type` = cloud.provider, `deletions` = azure.identity.authorization.action\n| WHERE `resource_type` IS NOT NULL\n| WHERE `deletions` IS NOT NULL\n| SORT `total` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "user.name",
+                                        "index": "bbf26a08-9121-4d4e-add4-4b3420fbe7f8",
+                                        "key": "user.name",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "user.name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| WHERE azure.identity.authorization.action LIKE \"*delete*\"\n| STATS `total` = COUNT() BY `resource_type` = cloud.provider, `deletions` = azure.identity.authorization.action\n| WHERE `resource_type` IS NOT NULL\n| WHERE `deletions` IS NOT NULL\n| SORT `total` DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "isHistogram": false,
+                                        "layerId": "5279fb87-edd6-4f38-be3b-e65af656c566",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "simpleView": false,
+                                        "splitAccessors": [
+                                            "deletions"
+                                        ],
+                                        "xAccessor": "resource_type",
+                                        "xScaleType": "ordinal",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "total"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "legendStats": [],
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "Resource Deletions [Logs Azure] (converted)",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "user.name",
+                                "index": "bbf26a08-9121-4d4e-add4-4b3420fbe7f8",
+                                "key": "user.name",
+                                "negate": false,
+                                "type": "exists",
+                                "value": "exists"
+                            },
+                            "query": {
+                                "exists": {
+                                    "field": "user.name"
+                                }
+                            }
+                        }
+                    ],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| WHERE azure.identity.authorization.action LIKE \"*delete*\"\n| STATS `total` = COUNT() BY `resource_type` = cloud.provider, `deletions` = azure.identity.authorization.action\n| WHERE `resource_type` IS NOT NULL\n| WHERE `deletions` IS NOT NULL\n| SORT `total` DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Resource Deletions"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "8fddd3bb-c1e6-4533-b075-1ab7361b3af0",
+                    "w": 24,
+                    "x": 24,
+                    "y": 26
+                },
+                "panelIndex": "8fddd3bb-c1e6-4533-b075-1ab7361b3af0",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d96f1b6e-9cff-4113-ab90-1a6e60570ca4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "d96f1b6e-9cff-4113-ab90-1a6e60570ca4": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "azure_resource_provider_descending",
+                                                    "customLabel": true,
+                                                    "fieldName": "azure_resource_provider_descending",
+                                                    "label": "azure.resource.provider: Descending",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Count",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT() BY `azure_resource_provider_descending` = azure.identity.provider\n| WHERE `azure_resource_provider_descending` IS NOT NULL\n| SORT `total` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "user.name",
+                                        "index": "38016f2a-9421-43f3-908e-8650dc576aec",
+                                        "key": "user.name",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "user.name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT() BY `azure_resource_provider_descending` = azure.identity.provider\n| WHERE `azure_resource_provider_descending` IS NOT NULL\n| SORT `total` DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "d96f1b6e-9cff-4113-ab90-1a6e60570ca4",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "legendStats": [
+                                            "value"
+                                        ],
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "azure_resource_provider_descending"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "kibana_palette",
+                                    "type": "palette"
+                                },
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Resource Provider Breakdown",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "user.name",
+                                "index": "38016f2a-9421-43f3-908e-8650dc576aec",
+                                "key": "user.name",
+                                "negate": false,
+                                "type": "exists"
+                            },
+                            "query": {
+                                "exists": {
+                                    "field": "user.name"
+                                }
+                            }
+                        }
+                    ],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE user.name IS NOT NULL\n| STATS `total` = COUNT() BY `azure_resource_provider_descending` = azure.identity.provider\n| WHERE `azure_resource_provider_descending` IS NOT NULL\n| SORT `total` DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Resource Provider Breakdown"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "84583e62-1aad-4f03-a25a-c4f9eaace8c0",
+                    "w": 48,
+                    "x": 0,
+                    "y": 38
+                },
+                "panelIndex": "84583e62-1aad-4f03-a25a-c4f9eaace8c0",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_82a7b334-3978-4d6f-961c-e5198337fc7e_dashboard",
+                            "id": "82a7b334-3978-4d6f-961c-e5198337fc7e",
+                            "label": "Overview",
+                            "order": 0,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_9e5274aa-9dba-4a71-981b-3cdb84be8a7a_dashboard",
+                            "id": "9e5274aa-9dba-4a71-981b-3cdb84be8a7a",
+                            "label": "Users",
+                            "order": 1,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_de366565-3768-4b6a-b3b2-b3d82567b6aa_dashboard",
+                            "id": "de366565-3768-4b6a-b3b2-b3d82567b6aa",
+                            "label": "Alerts",
+                            "order": 2,
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "6727a8dc-2e7e-4cdf-96d7-3b52bd58304c",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "6727a8dc-2e7e-4cdf-96d7-3b52bd58304c",
+                "type": "links"
+            }
+        ],
+        "timeFrom": "now-30d/d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Azure Activity OTEL] User Activity Logs Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-02-22T21:57:01.289Z",
+    "created_by": "u_X-PCjpI6T5hBmKoR2QFiTx2HZUQxpVfyXxWtHEigyco_0",
+    "id": "azure_activity_otel-36542861-33e6-4183-8996-3ffc7e3f8b9a",
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "d4d708e1-d179-4688-8005-54e2162a82d2:indexpattern-datasource-layer-05e2b6ef-827d-4b31-aa7b-73eeaf98323f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d4d708e1-d179-4688-8005-54e2162a82d2:8beef91b-d734-4c70-bbb9-fb02a39faba9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "84583e62-1aad-4f03-a25a-c4f9eaace8c0:indexpattern-datasource-layer-d96f1b6e-9cff-4113-ab90-1a6e60570ca4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "azure_activity_otel-558069ce-8cb4-4dbe-9e31-9b66a731c802",
+            "name": "6727a8dc-2e7e-4cdf-96d7-3b52bd58304c:link_82a7b334-3978-4d6f-961c-e5198337fc7e_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "azure_activity_otel-36542861-33e6-4183-8996-3ffc7e3f8b9a",
+            "name": "6727a8dc-2e7e-4cdf-96d7-3b52bd58304c:link_9e5274aa-9dba-4a71-981b-3cdb84be8a7a_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "azure_activity_otel-71becf40-a581-4adf-be6b-7fccdbf0b2ec",
+            "name": "6727a8dc-2e7e-4cdf-96d7-3b52bd58304c:link_de366565-3768-4b6a-b3b2-b3d82567b6aa_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "705596b5-db2e-4c45-875d-95d98bfb7ee8:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0e37b08b-1efb-4ee3-9708-575ca3ac8af9:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_X-PCjpI6T5hBmKoR2QFiTx2HZUQxpVfyXxWtHEigyco_0"
+}

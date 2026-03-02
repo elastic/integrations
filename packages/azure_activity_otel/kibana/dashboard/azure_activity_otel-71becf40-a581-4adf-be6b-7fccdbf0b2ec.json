@@ -1,0 +1,409 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_X-PCjpI6T5hBmKoR2QFiTx2HZUQxpVfyXxWtHEigyco_0"
+    },
+    "attributes": {
+        "controlGroupInput": {
+            "panelsJSON": {
+                "676fd632-a9c1-46ed-829b-ca5b55817379": {
+                    "explicitInput": {
+                        "dataViewRefName": "676fd632-a9c1-46ed-829b-ca5b55817379:optionsListDataView",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "azure.identity.authorization.evidence.role.assignment.scope",
+                        "ignoreValidations": false,
+                        "searchTechnique": "wildcard",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Subscription",
+                        "useGlobalFilters": true
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
+        },
+        "description": "This dashboard provides expanded alerts overview for Azure cloud.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "generic.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "generic.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_82a7b334-3978-4d6f-961c-e5198337fc7e_dashboard",
+                            "id": "82a7b334-3978-4d6f-961c-e5198337fc7e",
+                            "label": "Overview",
+                            "order": 0,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_9e5274aa-9dba-4a71-981b-3cdb84be8a7a_dashboard",
+                            "id": "9e5274aa-9dba-4a71-981b-3cdb84be8a7a",
+                            "label": "Users",
+                            "order": 1,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_de366565-3768-4b6a-b3b2-b3d82567b6aa_dashboard",
+                            "id": "de366565-3768-4b6a-b3b2-b3d82567b6aa",
+                            "label": "Alerts",
+                            "order": 2,
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "0494dbfa-46e2-4ba6-8108-89d491df108b",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "0494dbfa-46e2-4ba6-8108-89d491df108b",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "814d0ae5-ed18-49ad-942d-8cd942a901e9": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "category",
+                                                    "customLabel": false,
+                                                    "fieldName": "category",
+                                                    "label": "Filters",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Alerts",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "part_of_alerts",
+                                                    "customLabel": true,
+                                                    "fieldName": "part_of_alerts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Part of Alerts",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE azure.category == \"Alert\"\n| STATS `total` = COUNT(), `part_of_alerts` = COUNT() BY `category` = CASE(azure.result.type == \"Activated\", \"Activated\", azure.result.type == \"Resolved\", \"Resolved\", azure.result.type == \"Succeeded\", \"Succeeded\", NULL)\n| WHERE `category` IS NOT NULL\n| SORT `total` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE azure.category == \"Alert\"\n| STATS `total` = COUNT(), `part_of_alerts` = COUNT() BY `category` = CASE(azure.result.type == \"Activated\", \"Activated\", azure.result.type == \"Resolved\", \"Resolved\", azure.result.type == \"Succeeded\", \"Succeeded\", NULL)\n| WHERE `category` IS NOT NULL\n| SORT `total` DESC"
+                            },
+                            "visualization": {
+                                "breakdownByAccessor": "category",
+                                "layerId": "814d0ae5-ed18-49ad-942d-8cd942a901e9",
+                                "layerType": "data",
+                                "metricAccessor": "total",
+                                "palette": {
+                                    "name": "status",
+                                    "params": {
+                                        "colorStops": [],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "status",
+                                        "progression": "fixed",
+                                        "rangeMax": 100,
+                                        "rangeMin": 0,
+                                        "rangeType": "percent",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 33.33
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 66.66
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 100
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "center",
+                                "secondaryLabelPosition": "before",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                },
+                                "valueFontMode": "fit"
+                            }
+                        },
+                        "title": "Alerts by Status",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "filters": [],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE azure.category == \"Alert\"\n| STATS `total` = COUNT(), `part_of_alerts` = COUNT() BY `category` = CASE(azure.result.type == \"Activated\", \"Activated\", azure.result.type == \"Resolved\", \"Resolved\", azure.result.type == \"Succeeded\", \"Succeeded\", NULL)\n| WHERE `category` IS NOT NULL\n| SORT `total` DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Alerts by Status"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "162fb43e-fff3-4f50-aa9b-a713418bd651",
+                    "w": 14,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "162fb43e-fff3-4f50-aa9b-a713418bd651",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "c0e8cd55-a662-40d4-87f4-a889776f3a75": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": " @timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "activated",
+                                                    "customLabel": true,
+                                                    "fieldName": "activated",
+                                                    "inMetricDimension": true,
+                                                    "label": "Activated",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "resolved_succeeded",
+                                                    "customLabel": true,
+                                                    "fieldName": "resolved_succeeded",
+                                                    "inMetricDimension": true,
+                                                    "label": "Resolved/Succeeded",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "logs-*",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE azure.category == \"Alert\"\n| STATS `activated` = SUM(CASE(azure.result.type == \"Activated\" OR azure.result.type == \"Active\", 1, 0)), `resolved_succeeded` = SUM(CASE(azure.result.type == \"Resolved\" OR azure.result.type == \"Succeeded\", 1, 0)) BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE azure.category == \"Alert\"\n| STATS `activated` = SUM(CASE(azure.result.type == \"Activated\" OR azure.result.type == \"Active\", 1, 0)), `resolved_succeeded` = SUM(CASE(azure.result.type == \"Resolved\" OR azure.result.type == \"Succeeded\", 1, 0)) BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "activated",
+                                            "resolved_succeeded"
+                                        ],
+                                        "layerId": "c0e8cd55-a662-40d4-87f4-a889776f3a75",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "time_bucket",
+                                        "yConfig": [
+                                            {
+                                                "color": "#54b399",
+                                                "forAccessor": "resolved_succeeded"
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "forAccessor": "activated"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": "Alerts"
+                            }
+                        },
+                        "title": "Alerts Lifecycle Over Time",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "filters": [],
+                    "hide_title": false,
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE azure.category == \"Alert\"\n| STATS `activated` = SUM(CASE(azure.result.type == \"Activated\" OR azure.result.type == \"Active\", 1, 0)), `resolved_succeeded` = SUM(CASE(azure.result.type == \"Resolved\" OR azure.result.type == \"Succeeded\", 1, 0)) BY `time_bucket` = bucket(@timestamp, 50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Alerts Overview"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "e5e45365-c81a-4f7f-b58b-8d2d781329a5",
+                    "w": 34,
+                    "x": 14,
+                    "y": 2
+                },
+                "panelIndex": "e5e45365-c81a-4f7f-b58b-8d2d781329a5",
+                "type": "lens"
+            }
+        ],
+        "timeFrom": "now-30d/d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Azure Activity OTEL] Alert Logs Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-02-22T22:00:14.818Z",
+    "created_by": "u_X-PCjpI6T5hBmKoR2QFiTx2HZUQxpVfyXxWtHEigyco_0",
+    "id": "azure_activity_otel-71becf40-a581-4adf-be6b-7fccdbf0b2ec",
+    "references": [
+        {
+            "id": "azure_activity_otel-558069ce-8cb4-4dbe-9e31-9b66a731c802",
+            "name": "0494dbfa-46e2-4ba6-8108-89d491df108b:link_82a7b334-3978-4d6f-961c-e5198337fc7e_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "azure_activity_otel-36542861-33e6-4183-8996-3ffc7e3f8b9a",
+            "name": "0494dbfa-46e2-4ba6-8108-89d491df108b:link_9e5274aa-9dba-4a71-981b-3cdb84be8a7a_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "azure_activity_otel-71becf40-a581-4adf-be6b-7fccdbf0b2ec",
+            "name": "0494dbfa-46e2-4ba6-8108-89d491df108b:link_de366565-3768-4b6a-b3b2-b3d82567b6aa_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "676fd632-a9c1-46ed-829b-ca5b55817379:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_X-PCjpI6T5hBmKoR2QFiTx2HZUQxpVfyXxWtHEigyco_0"
+}
