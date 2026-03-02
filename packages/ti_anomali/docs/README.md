@@ -55,19 +55,19 @@ An example event for `intelligence` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-15T05:41:39.529550940Z",
+    "@timestamp": "2026-02-24T16:06:16.186495475Z",
     "agent": {
-        "ephemeral_id": "c4e3038f-6797-46c3-b082-cbd123c7cbe3",
-        "id": "1c061faa-0b6d-43fe-b1d8-93ca2ddea2de",
-        "name": "elastic-agent-51370",
+        "ephemeral_id": "7c020a93-a2d2-4bab-b016-51829be65ccd",
+        "id": "32eac913-154d-474e-92be-0cbce071e453",
+        "name": "elastic-agent-78256",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "anomali": {
         "threatstream": {
             "can_add_public_tags": true,
             "confidence": 60,
-            "deletion_scheduled_at": "2025-05-22T05:41:39.52955094Z",
+            "deletion_scheduled_at": "2026-03-03T16:06:16.186495475Z",
             "expiration_ts": "9999-12-31T00:00:00.000Z",
             "feed_id": 0,
             "id": "232020126",
@@ -91,16 +91,16 @@ An example event for `intelligence` looks as following:
     },
     "data_stream": {
         "dataset": "ti_anomali.intelligence",
-        "namespace": "27115",
+        "namespace": "62453",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1c061faa-0b6d-43fe-b1d8-93ca2ddea2de",
+        "id": "32eac913-154d-474e-92be-0cbce071e453",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -109,7 +109,7 @@ An example event for `intelligence` looks as following:
         ],
         "created": "2021-04-06T09:56:22.915Z",
         "dataset": "ti_anomali.intelligence",
-        "ingested": "2025-05-15T05:41:39Z",
+        "ingested": "2026-02-24T16:06:16Z",
         "kind": "enrichment",
         "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":60,\"created_by\":null,\"created_ts\":\"2021-04-06T09:56:22.915Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":232020126,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_domain\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 136\",\"severity\":\"very-high\"},\"modified_ts\":\"2021-04-06T09:56:22.915Z\",\"org\":\"\",\"owner_organization_id\":67,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/232020126/\",\"retina_confidence\":-1,\"sort\":[455403032],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":60,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":54,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"domain\",\"update_id\":100000001,\"uuid\":\"0921be47-9cc2-4265-b896-c62a7cb91042\",\"value\":\"gen1xyz.com\",\"workgroups\":[]}",
         "severity": 9,
@@ -119,6 +119,14 @@ An example event for `intelligence` looks as following:
     },
     "input": {
         "type": "cel"
+    },
+    "related": {
+        "hosts": [
+            "gen1xyz.com"
+        ],
+        "user": [
+            ""
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -132,6 +140,7 @@ An example event for `intelligence` looks as following:
                 "tlp": "WHITE"
             },
             "modified_at": "2021-04-06T09:56:22.915Z",
+            "name": "gen1xyz.com",
             "provider": "Analyst",
             "type": "domain-name",
             "url": {
@@ -211,11 +220,11 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "5b173eb1-b99b-41b7-8bd8-aee3a5e52c58",
-        "id": "574058b5-688b-43f0-ac43-68a85476b2fa",
-        "name": "elastic-agent-42471",
+        "ephemeral_id": "803014c2-9b7f-4339-bee3-b2da9e270a05",
+        "id": "5e05e54b-b733-4861-8995-fd7afdb7b2c0",
+        "name": "elastic-agent-83888",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "anomali": {
         "threatstream": {
@@ -240,16 +249,16 @@ An example event for `threatstream` looks as following:
     },
     "data_stream": {
         "dataset": "ti_anomali.threatstream",
-        "namespace": "11488",
+        "namespace": "44142",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "574058b5-688b-43f0-ac43-68a85476b2fa",
+        "id": "5e05e54b-b733-4861-8995-fd7afdb7b2c0",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -257,7 +266,7 @@ An example event for `threatstream` looks as following:
             "threat"
         ],
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2025-05-14T08:28:29Z",
+        "ingested": "2026-02-24T16:10:10Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
@@ -267,6 +276,11 @@ An example event for `threatstream` looks as following:
     },
     "input": {
         "type": "http_endpoint"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.156"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -283,11 +297,16 @@ An example event for `threatstream` looks as following:
             "confidence": "Low",
             "first_seen": "2020-10-08T12:21:50.000Z",
             "geo": {
-                "country_iso_code": "FR",
+                "city_name": "Linköping",
+                "continent_name": "Europe",
+                "country_iso_code": "SE",
+                "country_name": "Sweden",
                 "location": {
-                    "lat": -49.1,
-                    "lon": 94.4
-                }
+                    "lat": 58.4167,
+                    "lon": 15.6167
+                },
+                "region_iso_code": "SE-E",
+                "region_name": "Östergötland County"
             },
             "ip": "89.160.20.156",
             "last_seen": "2020-10-08T12:24:42.000Z",
@@ -296,6 +315,7 @@ An example event for `threatstream` looks as following:
                     "WHITE"
                 ]
             },
+            "name": "d4xgfj.example.net",
             "provider": "Default Organization",
             "type": "domain-name",
             "url": {
