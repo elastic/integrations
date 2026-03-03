@@ -1,6 +1,6 @@
 # Apache HTTP Server OpenTelemetry Assets
 
-Apache HTTP Server is a widely used open-source web server that delivers web content via HTTP. It supports modular functionality through dynamically loadable modules, including `mod_status` for runtime server performance monitoring.
+Apache HTTP Server is a widely used open-source web server that delivers web content over HTTP. It supports modular functionality through dynamically loadable modules, including `mod_status` for runtime server performance monitoring.
 
 This content pack provides dashboards, alert rules, and SLO templates for monitoring Apache HTTP Server using data collected by the OpenTelemetry Collector's Apache receiver, covering request traffic, worker pool utilization, connection management, and system resource consumption.
 
@@ -52,10 +52,10 @@ curl http://localhost/server-status?auto
 
 Configure the OpenTelemetry Collector (EDOT Collector or upstream Collector) to scrape Apache metrics and export them to Elasticsearch.
 
-- `<APACHE_STATUS_ENDPOINT>`: Full URL to the Apache server-status endpoint (e.g., `http://localhost:80/server-status?auto`)
-- `<ES_ENDPOINT>`: Elasticsearch endpoint (e.g., `https://localhost:9200`)
-- `${env:ES_USER}`: Elasticsearch username (set via environment variable)
-- `${env:ES_PASSWORD}`: Elasticsearch password (set via environment variable)
+- `<APACHE_STATUS_ENDPOINT>`: Full URL to the Apache server-status endpoint (for example, `http://localhost:80/server-status?auto`)
+- `<ES_ENDPOINT>`: Elasticsearch endpoint (for example, `https://localhost:9200`)
+- `${env:ES_USER}`: Elasticsearch username (set using an environment variable)
+- `${env:ES_PASSWORD}`: Elasticsearch password (set using an environment variable)
 
 ```yaml
 receivers:
