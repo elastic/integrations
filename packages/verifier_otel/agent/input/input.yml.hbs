@@ -10,19 +10,43 @@ receivers:
 {{else}}
     verification_type: "on_demand"
 {{/if}}
-{{#if providers.aws.credentials.role_arn}}
-    providers:
-      aws:
-        credentials:
-          role_arn: "{{providers.aws.credentials.role_arn}}"
-{{#if providers.aws.credentials.external_id}}
-          external_id: "{{providers.aws.credentials.external_id}}"
+{{#if account_type}}
+    account_type: "{{account_type}}"
 {{/if}}
-{{#if providers.aws.credentials.default_region}}
-          default_region: "{{providers.aws.credentials.default_region}}"
+{{#if namespace}}
+    namespace: "{{namespace}}"
 {{else}}
-          default_region: "us-east-1"
+    namespace: "default"
 {{/if}}
+    providers:
+      {{provider}}:
+        credentials:
+{{#if credentials_role_arn}}
+          role_arn: "{{credentials_role_arn}}"
+{{/if}}
+{{#if credentials_external_id}}
+          external_id: "{{credentials_external_id}}"
+{{/if}}
+{{#if default_region}}
+          default_region: "{{default_region}}"
+{{/if}}
+{{#if credentials_tenant_id}}
+          tenant_id: "{{credentials_tenant_id}}"
+{{/if}}
+{{#if credentials_client_id}}
+          client_id: "{{credentials_client_id}}"
+{{/if}}
+{{#if credentials_subscription_id}}
+          subscription_id: "{{credentials_subscription_id}}"
+{{/if}}
+{{#if credentials_project_id}}
+          project_id: "{{credentials_project_id}}"
+{{/if}}
+{{#if credentials_workload_identity_provider}}
+          workload_identity_provider: "{{credentials_workload_identity_provider}}"
+{{/if}}
+{{#if credentials_service_account_email}}
+          service_account_email: "{{credentials_service_account_email}}"
 {{/if}}
     policies:
       - policy_id: "{{policy_id}}"
@@ -30,15 +54,16 @@ receivers:
         policy_name: "{{policy_name}}"
 {{/if}}
         integrations:
-          - integration_type: "{{integration_type}}"
-{{#if integration_id}}
-            integration_id: "{{integration_id}}"
+          - policy_template: "{{policy_template}}"
+            package_name: "{{package_name}}"
+{{#if package_policy_id}}
+            package_policy_id: "{{package_policy_id}}"
 {{/if}}
-{{#if integration_name}}
-            integration_name: "{{integration_name}}"
+{{#if package_title}}
+            package_title: "{{package_title}}"
 {{/if}}
-{{#if integration_version}}
-            integration_version: "{{integration_version}}"
+{{#if package_version}}
+            package_version: "{{package_version}}"
 {{/if}}
 
 service:
