@@ -42,8 +42,9 @@ program: |
             },
           },
         }
-    ).as(
-      auth_resp,
+    ).as(auth_resp, has(auth_resp.?events.error) ?
+      auth_resp
+    :
       get_request(state.url)
         .with({
           "Header": {
