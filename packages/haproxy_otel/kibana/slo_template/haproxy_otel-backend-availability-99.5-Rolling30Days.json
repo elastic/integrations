@@ -1,0 +1,43 @@
+{
+  "attributes": {
+    "name": "[HAProxy OTel] Backend availability 99.5% rolling 30 days",
+    "description": "This SLO tracks backend server availability by ensuring at least one active server per backend (haproxy.active >= 1). For backends, haproxy.active is the count of active servers; a timeslice is good when the backend has at least one server serving traffic. Scoped to BACKEND entities only. Requires haproxy.active metric to be enabled in the receiver.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"haproxyreceiver.otel\" AND haproxy.service_name: \"BACKEND\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "last_value", "field": "haproxy.active"}
+          ],
+          "equation": "A",
+          "comparator": "GTE",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["haproxy", "otel"],
+    "groupBy": ["resource.attributes.haproxy.addr", "resource.attributes.haproxy.proxy_name"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "haproxy_otel-overview"},
+        {"id": "haproxy_otel-backend"},
+        {"id": "haproxy_otel-server"}
+      ]
+    }
+  },
+  "id": "haproxy_otel-backend-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}
