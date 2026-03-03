@@ -2,7 +2,7 @@
 
 Apache HTTP Server is a widely used open-source web server that delivers web content over HTTP. It supports modular functionality through dynamically loadable modules, including `mod_status` for runtime server performance monitoring.
 
-This content pack provides dashboards, alert rules, and SLO templates for monitoring Apache HTTP Server using data collected by the OpenTelemetry Collector's Apache receiver, covering request traffic, worker pool utilization, connection management, and system resource consumption.
+This package provides dashboards, alert rules, and SLO templates for monitoring Apache HTTP Server using data collected by the OpenTelemetry Collector's Apache receiver, covering request traffic, worker pool utilization, connection management, and system resource consumption.
 
 ## Compatibility
 
