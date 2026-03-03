@@ -1,0 +1,40 @@
+{
+    "id": "couchdb_otel-high-error-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[CouchDB OTel] High error rate (4xx and 5xx)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// Aggregate total and error (4xx+5xx) response rates per node\n| STATS\n    total_rate = SUM(RATE(couchdb.httpd.responses)),\n    error_rate = SUM(RATE(couchdb.httpd.responses)) WHERE attributes.http.status_code IN (\"400\", \"401\", \"403\", \"404\", \"405\", \"406\", \"409\", \"412\", \"413\", \"414\", \"415\", \"416\", \"417\", \"500\", \"501\", \"503\")\n  BY couchdb.node.name\n| WHERE total_rate > 0.01\n// Error rate as percentage — tune threshold for your error budget\n| EVAL error_rate_pct = ROUND(error_rate / total_rate * 100.0, 2)\n| WHERE error_rate_pct > 10.0\n| SORT error_rate_pct DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
