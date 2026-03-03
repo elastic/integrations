@@ -3,7 +3,6 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
-        "description": "Alerts when an Apache server receives zero new requests over a 5-minute window, which may indicate the server is unreachable, misconfigured, or experiencing an outage.",
         "name": "[Apache OTel] No requests received",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -17,19 +16,8 @@
             "active": 3
         },
         "flapping": {
-            "enabled": true,
             "lookBackWindow": 10,
             "statusChangeThreshold": 4
-        },
-        "artifacts": {
-            "dashboards": [
-                {
-                    "id": "apache_otel-overview"
-                }
-            ],
-            "investigation_guide": {
-                "blob": "## No Requests Received\n\n### Triage Steps\n1. Verify that the Apache service is running: check process status and service health.\n2. Open the [Apache OTel] Overview dashboard and confirm the Request Rate metric shows zero.\n3. Check the Active Connections panel — zero connections confirms no traffic is reaching the server.\n4. Verify network connectivity: check firewall rules, load balancer health checks, and DNS resolution.\n5. Check Apache error logs for startup failures or configuration errors.\n\n### Remediation\n- If Apache is stopped, restart the service.\n- If a firewall or load balancer is blocking traffic, restore the correct rules.\n- If a configuration change caused the issue, roll back to the last known good configuration.\n\n### Escalation\nIf the server remains unreachable for more than 5 minutes after initial triage, page the on-call engineer."
-            }
         },
         "params": {
             "searchType": "esqlQuery",

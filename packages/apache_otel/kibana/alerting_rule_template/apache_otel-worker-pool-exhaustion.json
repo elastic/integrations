@@ -3,7 +3,6 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
-        "description": "Alerts when the ratio of busy workers to total workers exceeds 80%, indicating the Apache worker pool is nearing exhaustion. A saturated worker pool causes new requests to queue or be rejected.",
         "name": "[Apache OTel] Worker pool exhaustion",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -17,19 +16,8 @@
             "active": 3
         },
         "flapping": {
-            "enabled": true,
             "lookBackWindow": 10,
             "statusChangeThreshold": 4
-        },
-        "artifacts": {
-            "dashboards": [
-                {
-                    "id": "apache_otel-overview"
-                }
-            ],
-            "investigation_guide": {
-                "blob": "## Worker Pool Exhaustion\n\n### Triage Steps\n1. Open the [Apache OTel] Overview dashboard and check the Workers by State panel to confirm the busy/idle ratio.\n2. Check the Scoreboard Worker States panel for a detailed breakdown of what workers are doing (sending, reading, keepalive, etc.).\n3. Review the Request Rate panel to determine if the saturation is caused by a traffic spike.\n4. Check the Active Connections panel to see if connection count is unusually high.\n\n### Remediation\n- Increase `MaxRequestWorkers` in the Apache configuration to allow more concurrent workers.\n- If workers are stuck in `keepalive` state, reduce `KeepAliveTimeout` or lower `MaxKeepAliveRequests`.\n- Scale horizontally by adding more Apache instances behind a load balancer.\n\n### Escalation\nIf worker utilization remains above 80% for more than 10 minutes despite remediation, page the on-call engineer."
-            }
         },
         "params": {
             "searchType": "esqlQuery",
