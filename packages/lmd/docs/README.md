@@ -10,6 +10,13 @@ For more detailed information refer to the following blogs:
 - [Detecting Lateral Movement activity: A new Kibana integration](https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration)
 - [Identifying malicious Remote Desktop Protocol (RDP) connections with Elastic Security](https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security)
 
+## Prerequisites
+
+Before installing this integration, make sure you have deployed the Elastic Defend integration.  This integration uses a transform based on data collected by Elastic Defend.
+
+If you are running Elasticsearch 8.18+, the Defend integration only collects a [subset of host information by default](https://www.elastic.co/docs/solutions/security/configure-elastic-defend/configure-data-volume-for-elastic-endpoint#host-fields).  To ensure the transform runs properly, the `[linux|mac|windows].advanced.set_extended_host_information` settings need to be set to `true.
+
+
 ## Installation
 
 1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
