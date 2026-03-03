@@ -146,8 +146,8 @@ exporters:
     endpoint: https://localhost:9200
     user: <userid>
     password: <password>
-    tls:
-      insecure_skip_verify: true
+    # tls:
+    #  insecure_skip_verify: true
     mapping:
       mode: otel
 
