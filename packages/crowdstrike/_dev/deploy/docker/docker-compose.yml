@@ -1,0 +1,41 @@
+version: '2.3'
+services:
+  crowdstrike-alert:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: crowdstrike-alert
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-alert.yml
+  crowdstrike-host:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: crowdstrike-host
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-host.yml
+  crowdstrike-vulnerability:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: crowdstrike-vulnerability
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-vulnerability.yml

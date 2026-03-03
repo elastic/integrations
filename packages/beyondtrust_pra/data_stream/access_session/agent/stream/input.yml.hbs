@@ -1,0 +1,393 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{url}}/oauth2/token
+state:
+  initial_interval: {{initial_interval}}
+redact:
+  fields: ~
+program: |
+  state.with(
+    {
+      "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+      "request_initiated_time": now.format(time_layout.RFC3339),
+    }.as(filter,
+      // to perform request to get sessions list
+      request(
+        "GET",
+        state.url.trim_right("/") + "/api/reporting?" + {
+          "generate_report": ["AccessSession"],
+          "start_time": [string(filter.start_time)],
+          "duration": ["0"],
+        }.format_query()
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_xml("access_session_schema").as(body,
+          has(body.doc.session_list.error) ?
+            {
+              "events": {
+                "error": {
+                  "message": string(body.doc.session_list.error),
+                },
+              },
+              "want_more": false,
+            }
+          : has(body.doc.session_list.session) ?
+            {
+              "events": body.doc.session_list.session.map(j,
+                j.session_details.event.map(e,
+                  {
+                    "message": e.with(
+                      {
+                        "session": j.drop(["rep_list", "customer_list", "session_details"]),
+                        ?"performed_by": optional.of(
+                          e.performed_by.with(
+                            (e.performed_by.type == "representative") ?
+                              j.rep_list.representative.filter(reps, reps.gsnumber == e.performed_by.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
+                            :
+                              j.customer_list.customer.filter(reps, reps.gsnumber == e.performed_by.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
+                          )
+                        ),
+                        "destination": has(e.destination) ?
+                          e.destination.with(
+                            (e.destination.type == "representative") ?
+                              j.rep_list.representative.filter(reps, reps.gsnumber == e.destination.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
+                            :
+                              j.customer_list.customer.filter(reps, reps.gsnumber == e.destination.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
+                          )
+                        :
+                          j.customer_list.customer[0],
+                      }
+                    ).encode_json(),
+                  }
+                )
+              ).flatten(),
+              "cursor": {
+                ?"last_timestamp": (has(body.doc.session_list.session) && body.doc.session_list.session.size() > 0) ?
+                  optional.of(filter.request_initiated_time)
+                :
+                  state.?cursor.last_timestamp,
+              },
+              "want_more": false,
+            }
+          :
+            {
+              "events": [],
+              "want_more": false,
+            }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/api/reporting: " + 
+              (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+xsd:
+  access_session_schema: |
+      <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+          xmlns:xs="http://www.w3.org/2001/XMLSchema">
+          <xs:element name="session_list">
+              <xs:complexType>
+                  <xs:choice>
+                      <xs:element name="error" type="xs:string"/>
+                      <xs:sequence>
+                          <xs:element name="session" maxOccurs="unbounded">
+                              <xs:complexType>
+                                  <xs:sequence>
+                                      <xs:element name="session_type" type="xs:string" />
+                                      <xs:element name="lseq" type="xs:string" />
+                                      <xs:element name="start_time">
+                                          <xs:complexType>
+                                              <xs:simpleContent>
+                                                  <xs:extension base="xs:dateTime">
+                                                      <xs:attribute name="timestamp" type="xs:string" use="required" />
+                                                  </xs:extension>
+                                              </xs:simpleContent>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="end_time">
+                                          <xs:complexType>
+                                              <xs:simpleContent>
+                                                  <xs:extension base="xs:dateTime">
+                                                      <xs:attribute name="timestamp" type="xs:date" use="required" />
+                                                  </xs:extension>
+                                              </xs:simpleContent>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="duration" type="xs:time" />
+                                      <xs:element name="jump_group">
+                                          <xs:complexType>
+                                              <xs:simpleContent>
+                                                  <xs:extension base="xs:string">
+                                                      <xs:attribute name="type" type="xs:string" use="required" />
+                                                      <xs:attribute name="id" type="xs:string" use="required" />
+                                                  </xs:extension>
+                                              </xs:simpleContent>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="jumpoint">
+                                          <xs:complexType>
+                                              <xs:simpleContent>
+                                                  <xs:extension base="xs:string">
+                                                      <xs:attribute name="id" type="xs:string" use="required" />
+                                                  </xs:extension>
+                                              </xs:simpleContent>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="custom_attributes">
+                                          <xs:complexType>
+                                              <xs:sequence>
+                                                  <xs:element maxOccurs="unbounded" name="custom_attribute">
+                                                      <xs:complexType>
+                                                          <xs:simpleContent>
+                                                              <xs:extension base="xs:string">
+                                                                  <xs:attribute name="display_name" type="xs:string" use="required" />
+                                                                  <xs:attribute name="code_name" type="xs:string" use="required" />
+                                                              </xs:extension>
+                                                          </xs:simpleContent>
+                                                      </xs:complexType>
+                                                  </xs:element>
+                                              </xs:sequence>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="session_chat_view_url" type="xs:string" />
+                                      <xs:element name="session_chat_download_url" type="xs:string" />
+                                      <xs:element name="session_recording_view_url" type="xs:string" />
+                                      <xs:element name="session_recording_download_url" type="xs:string" />
+                                      <xs:element name="command_shell_recordings">
+                                          <xs:complexType>
+                                              <xs:sequence>
+                                                  <xs:element name="command_shell_recording" maxOccurs="unbounded">
+                                                      <xs:complexType>
+                                                          <xs:sequence>
+                                                              <xs:element name="download_url" type="xs:string" />
+                                                              <xs:element name="view_url" type="xs:string" />
+                                                          </xs:sequence>
+                                                          <xs:attribute name="instance" type="xs:unsignedByte" use="required" />
+                                                      </xs:complexType>
+                                                  </xs:element>
+                                              </xs:sequence>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="file_transfer_count" type="xs:unsignedByte" />
+                                      <xs:element name="file_move_count" type="xs:unsignedByte" />
+                                      <xs:element name="file_delete_count" type="xs:unsignedByte" />
+                                      <xs:element name="primary_customer">
+                                          <xs:complexType>
+                                              <xs:simpleContent>
+                                                  <xs:extension base="xs:string">
+                                                      <xs:attribute name="gsnumber" type="xs:string" use="required" />
+                                                  </xs:extension>
+                                              </xs:simpleContent>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="primary_rep">
+                                          <xs:complexType>
+                                              <xs:simpleContent>
+                                                  <xs:extension base="xs:string">
+                                                      <xs:attribute name="gsnumber" type="xs:string" use="required" />
+                                                      <xs:attribute name="id" type="xs:string" use="required" />
+                                                  </xs:extension>
+                                              </xs:simpleContent>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="customer_list">
+                                          <xs:complexType>
+                                              <xs:sequence>
+                                                  <xs:element name="customer" maxOccurs="unbounded">
+                                                      <xs:complexType>
+                                                          <xs:sequence>
+                                                              <xs:element name="username" type="xs:string" />
+                                                              <xs:element name="public_ip" type="xs:string" />
+                                                              <xs:element name="private_ip" type="xs:string" />
+                                                              <xs:element name="hostname" type="xs:string" />
+                                                              <xs:element name="os" type="xs:string" />
+                                                          </xs:sequence>
+                                                          <xs:attribute name="gsnumber" type="xs:string" use="required" />
+                                                      </xs:complexType>
+                                                  </xs:element>
+                                              </xs:sequence>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="rep_list">
+                                          <xs:complexType>
+                                              <xs:sequence>
+                                                  <xs:element name="representative" maxOccurs="unbounded">
+                                                      <xs:complexType>
+                                                          <xs:sequence>
+                                                              <xs:element name="username" type="xs:string" />
+                                                              <xs:element name="display_name" type="xs:string" />
+                                                              <xs:element name="public_ip" type="xs:string" />
+                                                              <xs:element name="private_ip" type="xs:string" />
+                                                              <xs:element name="hostname" type="xs:string" />
+                                                              <xs:element name="os" type="xs:string" />
+                                                              <xs:element name="session_owner" type="xs:unsignedByte" />
+                                                              <xs:element name="seconds_involved" type="xs:unsignedShort" />
+                                                              <xs:element name="invited" type="xs:unsignedByte" />
+                                                          </xs:sequence>
+                                                          <xs:attribute name="gsnumber" type="xs:string" use="required" />
+                                                          <xs:attribute name="id" type="xs:string" use="required" />
+                                                      </xs:complexType>
+                                                  </xs:element>
+                                              </xs:sequence>
+                                          </xs:complexType>
+                                      </xs:element>
+                                      <xs:element name="session_details">
+                                          <xs:complexType>
+                                              <xs:sequence>
+                                                  <xs:element name="event" maxOccurs="unbounded">
+                                                      <xs:complexType>
+                                                          <xs:sequence>
+                                                              <xs:element name="performed_by">
+                                                                  <xs:complexType>
+                                                                      <xs:attribute name="gsnumber" type="xs:string" use="required" />
+                                                                      <xs:attribute name="type" type="xs:string" use="required" />
+                                                                  </xs:complexType>
+                                                              </xs:element>
+                                                              <xs:element name="destination">
+                                                                  <xs:complexType>
+                                                                      <xs:attribute name="gsnumber" type="xs:string" use="required" />
+                                                                      <xs:attribute name="type" type="xs:string" use="required" />
+                                                                  </xs:complexType>
+                                                              </xs:element>
+                                                              <xs:element name="body" type="xs:string" />
+                                                              <xs:element name="encoded_body" type="xs:string" />
+                                                              <xs:element name="filename" type="xs:string" />
+                                                              <xs:element name="filesize" type="xs:unsignedByte" />
+                                                              <xs:element name="files">
+                                                                  <xs:complexType>
+                                                                      <xs:sequence>
+                                                                          <xs:element name="file" maxOccurs="unbounded">
+                                                                              <xs:complexType>
+                                                                                  <xs:sequence>
+                                                                                      <xs:element name="filename" type="xs:string" />
+                                                                                      <xs:element name="filesize" type="xs:unsignedShort" />
+                                                                                  </xs:sequence>
+                                                                              </xs:complexType>
+                                                                          </xs:element>
+                                                                      </xs:sequence>
+                                                                  </xs:complexType>
+                                                              </xs:element>
+                                                              <xs:element name="system_information">
+                                                                  <xs:complexType>
+                                                                      <xs:sequence>
+                                                                          <xs:element name="category" maxOccurs="unbounded">
+                                                                              <xs:complexType>
+                                                                                  <xs:sequence>
+                                                                                      <xs:element name="description">
+                                                                                          <xs:complexType>
+                                                                                              <xs:sequence>
+                                                                                                  <xs:element name="field" maxOccurs="unbounded">
+                                                                                                      <xs:complexType>
+                                                                                                          <xs:simpleContent>
+                                                                                                              <xs:extension base="xs:string">
+                                                                                                                  <xs:attribute name="name" type="xs:string" use="required" />
+                                                                                                              </xs:extension>
+                                                                                                          </xs:simpleContent>
+                                                                                                      </xs:complexType>
+                                                                                                  </xs:element>
+                                                                                              </xs:sequence>
+                                                                                          </xs:complexType>
+                                                                                      </xs:element>
+                                                                                      <xs:element name="data">
+                                                                                          <xs:complexType>
+                                                                                              <xs:sequence>
+                                                                                                  <xs:element name="row" maxOccurs="unbounded">
+                                                                                                      <xs:complexType>
+                                                                                                          <xs:sequence>
+                                                                                                              <xs:element name="field" maxOccurs="unbounded">
+                                                                                                                  <xs:complexType>
+                                                                                                                      <xs:simpleContent>
+                                                                                                                          <xs:extension base="xs:string">
+                                                                                                                              <xs:attribute name="name" type="xs:string" use="required" />
+                                                                                                                          </xs:extension>
+                                                                                                                      </xs:simpleContent>
+                                                                                                                  </xs:complexType>
+                                                                                                              </xs:element>
+                                                                                                          </xs:sequence>
+                                                                                                      </xs:complexType>
+                                                                                                  </xs:element>
+                                                                                              </xs:sequence>
+                                                                                          </xs:complexType>
+                                                                                      </xs:element>
+                                                                                  </xs:sequence>
+                                                                                  <xs:attribute name="name" type="xs:string"/>
+                                                                              </xs:complexType>
+                                                                          </xs:element>
+                                                                      </xs:sequence>
+                                                                  </xs:complexType>
+                                                              </xs:element>
+                                                              <xs:element name="data">
+                                                                  <xs:complexType>
+                                                                      <xs:sequence>
+                                                                          <xs:element name="value" minOccurs="0" maxOccurs="unbounded">
+                                                                              <xs:complexType>
+                                                                                  <xs:attribute name="name" type="xs:string" use="required" />
+                                                                                  <xs:attribute name="value" type="xs:string" use="required" />
+                                                                              </xs:complexType>
+                                                                          </xs:element>
+                                                                      </xs:sequence>
+                                                                  </xs:complexType>
+                                                              </xs:element>
+                                                          </xs:sequence>
+                                                          <xs:attribute name="timestamp" type="xs:dateTime" use="required" />
+                                                          <xs:attribute name="event_type" type="xs:string" use="required" />
+                                                      </xs:complexType>
+                                                  </xs:element>
+                                              </xs:sequence>
+                                          </xs:complexType>
+                                      </xs:element>
+                                  </xs:sequence>
+                              </xs:complexType>
+                          </xs:element>
+                      </xs:sequence>
+                  </xs:choice>
+              </xs:complexType>
+          </xs:element>
+      </xs:schema>

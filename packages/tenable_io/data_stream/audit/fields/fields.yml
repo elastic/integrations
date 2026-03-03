@@ -1,0 +1,52 @@
+- name: tenable_io
+  type: group
+  fields:
+    - name: audit
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: The action that was taken by the user.
+        - name: actor
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The UUID of the user that took the action.
+            - name: name
+              type: keyword
+              description: The username of the user that took the action.
+        - name: crud
+          type: keyword
+          description: Indicates whether the action taken was creating (c), reading (r), updating (u), or deleting (d) an entity.
+        - name: description
+          type: keyword
+          description: A description of the event.
+        - name: fields
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+        - name: id
+          type: keyword
+          description: The unique ID of the event.
+        - name: is_anonymous
+          type: boolean
+          description: Indicates whether the action was performed anonymously.
+        - name: is_failure
+          type: boolean
+          description: Indicates whether the action the user took succeeded or failed. Every event is logged regardless of whether a user action succeeds.
+        - name: received
+          type: date
+          description: The date and time the event occurred in ISO 8601 format.
+        - name: target
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The UUID of the target entity. For example, a user UUID.
+            - name: name
+              type: keyword
+              description: The name of the target entity. For example, a username.
+            - name: type
+              type: keyword
+              description: The type of entity that was the target of the action. For example, a user.

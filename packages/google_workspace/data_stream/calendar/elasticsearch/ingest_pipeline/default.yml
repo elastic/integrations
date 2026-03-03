@@ -1,0 +1,703 @@
+---
+description: Pipeline for processing Calendar Audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.16.0
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google Workspace
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Calendar
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_flatten_event_parameters
+      if: ctx.json?.events?.parameters instanceof List
+      description: Script to flatten the event parameters.
+      source: >
+        ctx.google_workspace = ctx.google_workspace ?: [:];
+        ctx.google_workspace.calendar = ctx.google_workspace.calendar ?: [:];
+        for (def param : ctx.json.events.parameters) {
+          if (param.name == null) {
+            continue;
+          }
+          def lw_case_name = param.name.toLowerCase();
+          if (param.value != null) {
+            ctx.google_workspace.calendar[lw_case_name] = param.value;
+          } else if (param.boolValue != null) {
+            ctx.google_workspace.calendar[lw_case_name] = param.boolValue;
+          } else if (param.intValue != null) {
+            ctx.google_workspace.calendar[lw_case_name] = param.intValue;
+          } else if (param.multiValue != null) {
+            ctx.google_workspace.calendar[lw_case_name] = param.multiValue;
+          } else if (param.multiIntValue != null) {
+            ctx.google_workspace.calendar[lw_case_name] = param.multiIntValue;
+          } else if (param.multiBoolValue != null) {
+            ctx.google_workspace.calendar[lw_case_name] = param.multiBoolValue;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json.events.parameters
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      tag: rename_json_events_name
+      target_field: google_workspace.calendar.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: set_configuration_into_event_category
+      value: configuration
+  - script:
+      description: Set event category based on event name.
+      if: ctx.google_workspace?.calendar?.name != null
+      tag: set_event_category_from_calendar_name
+      lang: painless
+      params:
+        change_calendar_acls: iam
+        change_calendar_country: configuration
+        create_calendar: configuration
+        delete_calendar: configuration
+        change_calendar_description: configuration
+        change_calendar_location: configuration
+        change_calendar_timezone: configuration
+        change_calendar_title: configuration	
+        add_subscription: configuration
+        delete_subscription: configuration
+        change_appointment_schedule: configuration
+        create_appointment_schedule: configuration
+        delete_appointment_schedule: configuration
+        create_event: configuration
+        delete_event: configuration
+        add_event_guest: configuration
+        change_event_guest_response_auto: configuration
+        remove_event_guest:	configuration
+        change_event_guest_response: configuration
+        change_event: configuration
+        remove_event_from_trash: configuration
+        restore_event: configuration
+        change_event_start_time: configuration
+        change_event_title:	configuration
+        transfer_event_completed: configuration
+        transfer_event_requested: configuration
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def category = [];
+        category.add(params.get(ctx.google_workspace.calendar.name));
+        ctx.event.category = category;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set event type based on event name.
+      if: ctx.google_workspace?.calendar?.name != null
+      tag: set_event_type_from_calendar_name
+      lang: painless
+      params:
+        change_calendar_acls: change
+        change_calendar_country: change
+        create_calendar: creation
+        delete_calendar: deletion
+        change_calendar_description: change
+        export_calendar: info
+        change_calendar_location: change
+        print_preview_calendar:	info
+        change_calendar_timezone: change
+        change_calendar_title: change
+        notification_triggered: info
+        add_subscription: change
+        delete_subscription: change
+        change_appointment_schedule: change
+        create_appointment_schedule: creation
+        delete_appointment_schedule: deletion
+        create_event: creation
+        delete_event: deletion
+        add_event_guest: change
+        change_event_guest_response_auto: change
+        remove_event_guest:	change
+        change_event_guest_response: change
+        change_event: change
+        print_preview_event: info
+        remove_event_from_trash: change
+        restore_event: change
+        change_event_start_time: change
+        change_event_title:	change
+        transfer_event_completed: change
+        transfer_event_requested: info
+        interop_freebusy_lookup_outbound_successful: info
+        interop_freebusy_lookup_inbound_successful:	info
+        interop_exchange_resource_availability_lookup_successful: info
+        interop_exchange_resource_list_lookup_successful: info
+        interop_freebusy_lookup_outbound_unsuccessful: info
+        interop_freebusy_lookup_inbound_unsuccessful: info
+        interop_exchange_resource_availability_lookup_unsuccessful:	info
+        interop_exchange_resource_list_lookup_unsuccessful:	info
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def type = [];
+        type.add(params.get(ctx.google_workspace.calendar.name));
+        ctx.event.type = type;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.kind
+      tag: rename_json_kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - rename: 
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_json_etag
+      target_field: google_workspace.etag
+      ignore_missing: true
+  - rename:
+      field: json.actor.callerType
+      tag: rename_actor_callerType
+      target_field: google_workspace.actor.caller_type
+      ignore_missing: true
+  - rename:
+      field: json.actor.email
+      tag: rename_actor_email
+      target_field: google_workspace.actor.email
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_actor_email
+      copy_from: google_workspace.actor.email
+      ignore_empty_value: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_actor_email
+      copy_from: google_workspace.actor.email
+      ignore_empty_value: true
+  - dissect:
+      field: source.user.email
+      tag: dissect_user_email
+      if: ctx.source?.user?.email != null && ctx.source.user.email.contains('@')
+      pattern: '%{}@%{source.user.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.actor.key
+      tag: rename_actor_key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.actor.profileId
+      tag: rename_actor_profileId
+      target_field: google_workspace.actor.profile_id
+      ignore_missing: true
+  - set:
+      field: source.user.id
+      tag: set_source_user_id_from_actor_profile_id
+      copy_from: google_workspace.actor.profile_id
+      ignore_empty_value: true
+  - set:
+      field: user
+      tag: set_user_from_source_user
+      copy_from: source.user
+      ignore_empty_value: true
+  - rename:
+      field: json.id.applicationName
+      tag: rename_id_applicationName
+      target_field: google_workspace.id.application_name
+      ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_id_application_name
+      copy_from: google_workspace.id.application_name
+      ignore_empty_value: true
+  - rename:
+      field: json.id.customerId
+      tag: rename_id_customerId
+      target_field: google_workspace.id.customer_id
+      ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_customerId
+      copy_from: google_workspace.id.customer_id
+      ignore_empty_value: true
+  - date:
+      field: json.id.time
+      tag: date_id_time
+      target_field: google_workspace.id.time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.id?.time != null && ctx.json.id.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_id_time
+      copy_from: google_workspace.id.time
+      ignore_empty_value: true
+  - rename:
+      field: json.id.uniqueQualifier
+      tag: rename_id_uniqueQualifier
+      target_field: google_workspace.id.unique_qualifier
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_id_unique_qualifier
+      copy_from: google_workspace.id.unique_qualifier
+      ignore_empty_value: true
+  - convert:
+      field: json.ipAddress
+      tag: convert_ipAddress_to_ip
+      target_field: google_workspace.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ipAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_google_workspace_ip_address
+      copy_from: google_workspace.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_geo_from_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      tag: set_source_as_from_source_ip
+      database_file: GeoLite2-ASN.mmdb
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      tag: rename_json_events_type
+      target_field: google_workspace.calendar.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_name
+      copy_from: google_workspace.calendar.name
+      ignore_empty_value: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: '_'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.calendar.appointment_schedule_title
+      tag: rename_appointment_schedule_title
+      target_field: google_workspace.calendar.event.appointment_schedule_title
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.calendar_country
+      tag: rename_calendar_country
+      target_field: google_workspace.calendar.country
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.calendar_description
+      tag: rename_calendar_description
+      target_field: google_workspace.calendar.description
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.client_side_encrypted
+      tag: rename_client_side_encrypted
+      target_field: google_workspace.calendar.event.client_side_encrypted
+      ignore_missing: true
+  - script:
+      description: Convert Gregorian time in seconds to a Unix epoch timestamp in milliseconds.
+      if: ctx.google_workspace?.calendar?.end_time != null
+      tag: convert_gregorian_time_to_unix_timestamp
+      lang: painless
+      source: |-
+        long gregorianOffset = 62135683200L;
+        long startTimeInSeconds = Long.parseLong(ctx.google_workspace.calendar.end_time);
+        ctx.google_workspace.calendar.end_time = (startTimeInSeconds - gregorianOffset) * 1000L;
+  - date:
+      field: google_workspace.calendar.end_time
+      tag: date_end_time
+      target_field: google_workspace.calendar.event.end_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.google_workspace?.calendar?.end_time != null && ctx.google_workspace.calendar.end_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.calendar.grantee_email
+      tag: rename_grantee_email
+      target_field: google_workspace.calendar.event.grantee_email
+      ignore_missing: true
+  - set:
+      field: user.target.email
+      tag: set_user_target_email_from_calendar_event_grantee_email
+      copy_from: google_workspace.calendar.event.grantee_email
+      ignore_empty_value: true
+  - rename:
+      field: google_workspace.calendar.event_guest
+      tag: rename_event_guest
+      target_field: google_workspace.calendar.event.guest
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.event_id
+      tag: rename_event_id
+      target_field: google_workspace.calendar.event.id
+      ignore_missing: true
+  - convert:
+      field: google_workspace.calendar.is_recurring
+      tag: convert_is_recurring_to_boolean
+      target_field: google_workspace.calendar.event.is_recurring
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.calendar.old_event_title
+      tag: rename_old_event_title
+      target_field: google_workspace.calendar.event.old_title
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.organizer_calendar_id
+      tag: rename_organizer_calendar_id
+      target_field: google_workspace.calendar.event.organizer_calendar_id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.recurring
+      tag: rename_recurring
+      target_field: google_workspace.calendar.event.recurring
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.event_response_status
+      tag: rename_event_response_status
+      target_field: google_workspace.calendar.event.response_status
+      ignore_missing: true
+  - script:
+      description: Convert Gregorian time in seconds to a Unix epoch timestamp in milliseconds.
+      if: ctx.google_workspace?.calendar?.start_time != null
+      tag: convert_gregorian_time_to_unix_timestamp
+      lang: painless
+      source: |-
+        long gregorianOffset = 62135683200L;
+        long startTimeInSeconds = Long.parseLong(ctx.google_workspace.calendar.start_time);
+        ctx.google_workspace.calendar.start_time = (startTimeInSeconds - gregorianOffset) * 1000L;
+  - date:
+      field: google_workspace.calendar.start_time
+      tag: date_start_time
+      target_field: google_workspace.calendar.event.start_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.google_workspace?.calendar?.start_time != null && ctx.google_workspace.calendar.start_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.calendar.secs_in_advance
+      tag: convert_secs_in_advance_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.calendar.secs_in_advance
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.calendar.event_title
+      tag: rename_event_title
+      target_field: google_workspace.calendar.event.title
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.calendar_id
+      tag: rename_calendar_id
+      target_field: google_workspace.calendar.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.interop_error_code
+      tag: rename_interop_error_code
+      target_field: google_workspace.calendar.interop.error_code
+      ignore_missing: true
+  - set:
+      field: error.code
+      tag: set_error_code_from_interop_error_code
+      copy_from: google_workspace.calendar.interop.error_code
+      ignore_empty_value: true
+  - rename:
+      field: google_workspace.calendar.remote_ews_url
+      tag: rename_remote_ews_url
+      target_field: google_workspace.calendar.interop.remote_ews_url
+      ignore_missing: true
+  - uri_parts:
+      field: google_workspace.calendar.interop.remote_ews_url
+      tag: uri_parts_calendar_interop_remote_ews_url
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.calendar.calendar_location
+      tag: rename_calendar_location
+      target_field: google_workspace.calendar.location
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.notification_message_id
+      tag: rename_notification_message_id
+      target_field: google_workspace.calendar.notification.message_id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.notification_method
+      tag: rename_notification_method
+      target_field: google_workspace.calendar.notification.method
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.recipient_email
+      tag: rename_recipient_email
+      target_field: google_workspace.calendar.notification.recipient_email
+      ignore_missing: true
+  - set:
+      field: user.target.email
+      tag: set_user_target_email_from_calendar_notification_recipient_email
+      copy_from: google_workspace.calendar.notification.recipient_email
+      ignore_empty_value: true
+  - rename:
+      field: google_workspace.calendar.notification_type
+      tag: rename_notification_type
+      target_field: google_workspace.calendar.notification.type
+      ignore_missing: true
+  - date:
+      field: google_workspace.calendar.requested_period_end
+      tag: date_requested_period_end
+      target_field: google_workspace.calendar.requested_period_end
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.google_workspace?.calendar?.requested_period_end != null && ctx.google_workspace.calendar.requested_period_end != ''
+      on_failure:
+        - remove:
+            field: google_workspace.calendar.requested_period_end
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_workspace.calendar.requested_period_start
+      tag: date_requested_period_start
+      target_field: google_workspace.calendar.requested_period_start
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.google_workspace?.calendar?.requested_period_start != null && ctx.google_workspace.calendar.requested_period_start != ''
+      on_failure:
+        - remove:
+            field: google_workspace.calendar.requested_period_start
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.calendar.calendar_timezone
+      tag: rename_calendar_timezone
+      target_field: google_workspace.calendar.timezone
+      ignore_missing: true
+  - rename:
+      field: google_workspace.calendar.calendar_title
+      tag: rename_calendar_title
+      target_field: google_workspace.calendar.title
+      ignore_missing: true
+  - user_agent:
+      field: google_workspace.calendar.user_agent
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_actor_email_into_related_user
+      value: '{{{google_workspace.actor.email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.actor?.email != null
+  - append:
+      field: related.user
+      tag: append_calendar_event_guest_into_related_user
+      value: '{{{google_workspace.calendar.event.guest}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.calendar?.event?.guest != null
+  - append:
+      field: related.user
+      tag: append_calendar_event_grantee_email_into_related_user
+      value: '{{{google_workspace.calendar.event.grantee_email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_calendar_event_organizer_calendar_id_into_related_user
+      value: '{{{google_workspace.calendar.event.organizer_calendar_id}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.calendar?.event?.organizer_calendar_id != null
+  - append:
+      field: related.user
+      tag: append_calendar_notification_recipient_email_into_related_user
+      value: '{{{google_workspace.calendar.notification.recipient_email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.calendar?.notification?.recipient_email != null
+  - append:
+      field: related.user
+      tag: append_calendar_subscriber_calendar_id_into_related_user
+      value: '{{{google_workspace.calendar.subscriber_calendar_id}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.calendar?.subscriber_calendar_id != null
+  - append:
+      field: related.ip
+      tag: append_ip_address_into_related_ip
+      value: '{{{google_workspace.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.ip_address != null
+  - remove:
+      field:
+        - google_workspace.actor.email
+        - google_workspace.actor.profile_id
+        - google_workspace.id.application_name
+        - google_workspace.id.customer_id
+        - google_workspace.id.time
+        - google_workspace.id.unique_qualifier
+        - google_workspace.ip_address
+        - google_workspace.calendar.id
+        - google_workspace.calendar.user_agent
+        - google_workspace.calendar.interop.error_code
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - google_workspace.calendar.start_time
+        - google_workspace.calendar.end_time
+        - google_workspace.calendar.is_recurring
+      tag: remove_converted_fields
+      ignore_missing: true
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

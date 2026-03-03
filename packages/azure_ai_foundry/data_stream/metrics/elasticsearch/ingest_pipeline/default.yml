@@ -1,0 +1,43 @@
+---
+description: Pipeline for parsing azure ai foundry metrics.
+processors:
+  - rename:
+      field: azure.metrics
+      target_field: azure.ai_foundry
+      ignore_missing: true
+  - rename:
+      field: azure.ai_foundry.time_toresponse.avg
+      target_field: azure.ai_foundry.time_to_response.avg
+      ignore_missing: true
+  - rename:
+      field: azure.ai_foundry.normalized_time_tofirst_token.avg
+      target_field: azure.ai_foundry.normalized_time_to_first_token.avg
+      ignore_missing: true
+  - rename:
+      field: azure.ai_foundry.time_tolast_byte.avg
+      target_field: azure.ai_foundry.time_to_last_byte.avg
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Normalize unit percent field values. The normalized scale value between 0-1.
+      if: ctx.azure?.ai_foundry?.model_availability_rate?.avg != null
+      params:
+        param_percent: 100
+      source: >-
+        ctx.azure.ai_foundry.model_availability_rate.avg = ctx.azure.ai_foundry.model_availability_rate.avg
+                / params.param_percent;
+      ignore_failure: true
+  - script:
+      lang: painless
+      description: Normalize unit percent field values. The normalized scale value between 0-1.
+      if: ctx.azure?.ai_foundry?.provisioned_utilization?.avg != null
+      params:
+        param_percent: 100
+      source: >-
+        ctx.azure.ai_foundry.provisioned_utilization.avg = ctx.azure.ai_foundry.provisioned_utilization.avg
+                / params.param_percent;
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

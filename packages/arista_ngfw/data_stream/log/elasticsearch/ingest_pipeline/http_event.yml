@@ -1,0 +1,109 @@
+---
+description: Pipeline for processing Arista NG Firewall HTTP request and HTTP response events
+processors:
+  #################
+  ## HTTP Events ##
+  #################
+  - remove:
+      if: ctx.arista?.httpRequestEvent?.timeStamp != null
+      field: arista.httpRequestEvent.timeStamp
+      ignore_missing: true
+  - remove:
+      if: ctx.arista?.httpRequestEvent?.sessionEvent?.timeStamp != null
+      field: arista.httpRequestEvent.sessionEvent.timeStamp
+      ignore_missing: true
+  - foreach:
+      if: ctx.arista?.httpRequestEvent?.sessionEvent != null
+      field: arista.httpRequestEvent.sessionEvent
+      processor: 
+        rename:
+          field: _ingest._value
+          target_field: arista.{{{_ingest._key}}}
+          on_failure:
+            - remove:
+                field: _ingest._key
+            - append:
+                field: error.message
+                value: "{{{ _ingest.on_failure_message }}}"
+      ignore_failure: true
+  - remove:
+      field: arista.httpRequestEvent.contentLength
+      ignore_missing: true
+  - rename:
+      field: arista.httpRequestEvent.domain
+      target_field: destination.domain
+      ignore_missing: true
+  - rename:
+      field: arista.httpRequestEvent.method
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: arista.httpRequestEvent.requestId
+      target_field: arista.requestId
+      ignore_missing: true
+  - rename:
+      field: arista.httpRequestEvent.requestUri
+      target_field: arista.requestUri
+      ignore_missing: true
+  - rename:
+      field: arista.httpRequestEvent.timeStamp
+      target_field: arista.timeStamp
+      ignore_missing: true
+  - rename:
+      field: arista.domain
+      target_field: destination.domain
+      ignore_missing: true
+  - rename:
+      field: arista.method
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      if: ctx.arista?.class == 'class com.untangle.app.http.HttpRequestEvent'
+      field: arista.contentLength
+      target_field: http.request.bytes
+      ignore_missing: true
+  - rename:
+      if: ctx.arista?.class == 'class com.untangle.app.http.HttpResponseEvent'
+      field: arista.contentLength
+      target_field: http.response.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.requestUri
+      target_field: url.path
+      ignore_missing: true
+  - rename:
+      field: arista.contentFilename
+      target_field: file.name
+      ignore_failure: true
+  - dissect:
+      description: Parse HTTP request method and full URL from requestLine
+      if: ctx.arista?.requestLine != null && ctx.arista.requestLine.contains(' ')
+      field: arista.requestLine
+      pattern: '%{http.request.method} %{_temp.url_full}'
+  - uri_parts:
+      if: ctx._temp?.url_full != null
+      field: _temp.url_full
+      ignore_failure: true
+  - rename:
+      field: _temp.url_full
+      target_field: url.full
+      ignore_missing: true
+
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove Arista fields that are not necessary after parsing to ECS
+      field:
+        - arista.contentType
+        - arista.host
+        - arista.httpRequestEvent.host
+        - arista.requestId
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

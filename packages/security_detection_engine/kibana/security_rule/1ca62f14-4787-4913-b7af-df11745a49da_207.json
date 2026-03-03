@@ -1,0 +1,67 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects when a new GitHub App has been installed in your organization account. GitHub Apps extend GitHub's functionality both within and outside of GitHub. When an app is installed it is granted permissions to read or modify your repository and organization data. Only trusted apps should be installed and any newly installed apps should be investigated to verify their legitimacy. Unauthorized app installation could lower your organization's security posture and leave you exposed for future attacks.",
+        "from": "now-9m",
+        "index": [
+            "logs-github.audit-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "New GitHub App Installed",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating New GitHub App Installed\n\nGitHub Apps enhance functionality by integrating with repositories and organization data, requiring careful scrutiny upon installation. Adversaries may exploit these apps to gain unauthorized access or manipulate data. The detection rule monitors audit logs for new app installations, flagging potential threats by identifying unauthorized or suspicious integrations, thus safeguarding organizational security.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.dataset \"github.audit\" and event.action \"integration_installation.create\" to identify the newly installed GitHub App.\n- Verify the identity of the user or service account that performed the installation to ensure it aligns with expected behavior and authorized personnel.\n- Check the permissions requested by the newly installed app to assess the level of access it has to your repositories and organization data.\n- Cross-reference the app with a list of approved or trusted applications within your organization to determine if it is authorized.\n- Investigate the app's developer or vendor to ensure they are reputable and have a history of secure and reliable applications.\n- Communicate with the team or individual responsible for the installation to confirm the app's purpose and necessity within the organization.\n\n### False positive analysis\n\n- Frequent installations of trusted internal apps may trigger alerts. To manage this, maintain a list of approved internal apps and create exceptions for these in the detection rule.\n- Automated deployment tools that integrate with GitHub might cause false positives. Identify these tools and exclude their installation events from triggering alerts.\n- Regular updates or re-installations of existing apps can be mistaken for new installations. Track app version updates separately and adjust the rule to differentiate between updates and new installations.\n- Development or testing environments often install and remove apps frequently. Consider excluding these environments from the rule or setting up a separate monitoring process for them.\n\n### Response and remediation\n\n- Immediately revoke the permissions of the newly installed GitHub App to prevent any unauthorized access or data manipulation.\n- Notify the security team and relevant stakeholders about the unauthorized app installation for awareness and further investigation.\n- Conduct a review of recent repository and organization changes to identify any unauthorized modifications or data access that may have occurred.\n- If malicious activity is detected, initiate a rollback of affected repositories to a secure state prior to the app installation.\n- Escalate the incident to higher-level security management if the app installation is linked to a broader security breach or if sensitive data has been compromised.\n- Implement stricter access controls and approval processes for future GitHub App installations to prevent unauthorized installations.\n- Update detection mechanisms to include additional indicators of compromise related to GitHub App installations, enhancing future threat detection capabilities.",
+        "query": "configuration where event.dataset == \"github.audit\" and event.action == \"integration_installation.create\"\n",
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1ca62f14-4787-4913-b7af-df11745a49da",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Github",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1072",
+                        "name": "Software Deployment Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1072/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 207
+    },
+    "id": "1ca62f14-4787-4913-b7af-df11745a49da_207",
+    "type": "security-rule"
+}

@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a high count of failed Microsoft Entra ID sign-in attempts as the result of the target user account being locked out. Adversaries may attempt to brute-force user accounts by repeatedly trying to authenticate with incorrect credentials, leading to account lockouts by Entra ID Smart Lockout policies.",
+        "false_positives": [
+            "Automated processes that attempt to authenticate using expired credentials or have misconfigured authentication settings may lead to false positives."
+        ],
+        "from": "now-60m",
+        "interval": "15m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Entra ID Exccessive Account Lockouts Detected",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Entra ID Exccessive Account Lockouts Detected\n\nThis rule detects a high number of sign-in failures due to account lockouts (error code `50053`) in Microsoft Entra ID sign-in logs. These lockouts are typically caused by repeated authentication failures, often as a result of brute-force tactics such as password spraying, credential stuffing, or automated guessing. This detection is time-bucketed and aggregates attempts to identify bursts or coordinated campaigns targeting multiple users.\n\n### Possible investigation steps\n\n- Review `user_id_list` and `user_principal_name`: Check if targeted users include high-value accounts such as administrators, service principals, or shared inboxes.\n- Check `error_codes` and `result_description`: Validate that `50053` (account locked) is the consistent failure type. Messages indicating \"malicious IP\" activity suggest Microsoft\u2019s backend flagged the source.\n- Analyze `ip_list` and `source_orgs`: Identify whether the activity originated from known malicious infrastructure (e.g., VPNs, botnets, or public cloud providers). In the example, traffic originates from `MASSCOM`, which should be validated.\n- Inspect `device_detail_browser` and `user_agent`: Clients like `\"Python Requests\"` indicate scripted automation rather than legitimate login attempts.\n- Evaluate `unique_users` vs. `total_attempts`: A high ratio suggests distributed attacks across multiple accounts, characteristic of password spraying.\n- Correlate `client_app_display_name` and `incoming_token_type`: PowerShell or unattended sign-in clients may be targeted for automation or legacy auth bypass.\n- Review `conditional_access_status` and `risk_state`: If Conditional Access was not applied and risk was not flagged, policy scope or coverage should be reviewed.\n- Validate time range (`first_seen`, `last_seen`): Determine whether the attack is a short burst or part of a longer campaign.\n\n### False positive analysis\n\n- Misconfigured clients, scripts, or services with outdated credentials may inadvertently cause lockouts.\n- Repeated lockouts from known internal IPs or during credential rotation windows could be benign.\n- Legacy applications without modern auth support may repeatedly fail and trigger Smart Lockout.\n- Specific known user agents (e.g., corporate service accounts).\n- Internal IPs or cloud-hosted automation with expected failure behavior.\n\n### Response and remediation\n\n- Investigate locked accounts immediately. Confirm if the account was successfully accessed prior to lockout.\n- Reset credentials for impacted users and enforce MFA before re-enabling accounts.\n- Block malicious IPs or ASN at the firewall, identity provider, or Conditional Access level.\n- Audit authentication methods in use, and enforce modern auth (OAuth, SAML) over legacy protocols.\n- Strengthen Conditional Access policies to reduce exposure from weak locations, apps, or clients.\n- Conduct credential hygiene audits to assess reuse and rotation for targeted accounts.\n",
+        "query": "FROM logs-azure.signinlogs*\n\n| EVAL\n    time_window = DATE_TRUNC(30 minutes, @timestamp),\n    user_id = TO_LOWER(azure.signinlogs.properties.user_principal_name),\n    ip = source.ip,\n    login_error = azure.signinlogs.result_description,\n    error_code = azure.signinlogs.properties.status.error_code,\n    request_type = TO_LOWER(azure.signinlogs.properties.incoming_token_type),\n    app_name = TO_LOWER(azure.signinlogs.properties.app_display_name),\n    asn_org = source.`as`.organization.name,\n    country = source.geo.country_name,\n    user_agent = user_agent.original,\n    event_time = @timestamp\n\n| WHERE event.dataset == \"azure.signinlogs\"\n    AND event.category == \"authentication\"\n    AND azure.signinlogs.category IN (\"NonInteractiveUserSignInLogs\", \"SignInLogs\")\n    AND event.outcome == \"failure\"\n    AND azure.signinlogs.properties.authentication_requirement == \"singleFactorAuthentication\"\n    AND error_code == 50053\n    AND user_id IS NOT NULL AND user_id != \"\"\n    AND asn_org != \"MICROSOFT-CORP-MSN-AS-BLOCK\"\n\n| STATS\n    authentication_requirement = VALUES(azure.signinlogs.properties.authentication_requirement),\n    client_app_id = VALUES(azure.signinlogs.properties.app_id),\n    client_app_display_name = VALUES(azure.signinlogs.properties.app_display_name),\n    target_resource_id = VALUES(azure.signinlogs.properties.resource_id),\n    target_resource_display_name = VALUES(azure.signinlogs.properties.resource_display_name),\n    conditional_access_status = VALUES(azure.signinlogs.properties.conditional_access_status),\n    device_detail_browser = VALUES(azure.signinlogs.properties.device_detail.browser),\n    device_detail_device_id = VALUES(azure.signinlogs.properties.device_detail.device_id),\n    device_detail_operating_system = VALUES(azure.signinlogs.properties.device_detail.operating_system),\n    incoming_token_type = VALUES(azure.signinlogs.properties.incoming_token_type),\n    risk_state = VALUES(azure.signinlogs.properties.risk_state),\n    session_id = VALUES(azure.signinlogs.properties.session_id),\n    user_id = VALUES(azure.signinlogs.properties.user_id),\n    user_principal_name = VALUES(azure.signinlogs.properties.user_principal_name),\n    result_description = VALUES(azure.signinlogs.result_description),\n    result_signature = VALUES(azure.signinlogs.result_signature),\n    result_type = VALUES(azure.signinlogs.result_type),\n\n    unique_users = COUNT_DISTINCT(user_id),\n    user_id_list = VALUES(user_id),\n    login_errors = VALUES(login_error),\n    unique_login_errors = COUNT_DISTINCT(login_error),\n    error_codes = VALUES(error_code),\n    unique_error_codes = COUNT_DISTINCT(error_code),\n    request_types = VALUES(request_type),\n    app_names = VALUES(app_name),\n    ip_list = VALUES(ip),\n    unique_ips = COUNT_DISTINCT(ip),\n    source_orgs = VALUES(asn_org),\n    countries = VALUES(country),\n    unique_country_count = COUNT_DISTINCT(country),\n    unique_asn_orgs = COUNT_DISTINCT(asn_org),\n    first_seen = MIN(event_time),\n    last_seen = MAX(event_time),\n    total_attempts = COUNT()\nBY time_window\n| WHERE unique_users >= 15 AND total_attempts >= 20\n| KEEP\n    time_window, total_attempts, first_seen, last_seen,\n    unique_users, user_id_list, login_errors, unique_login_errors,\n    unique_error_codes, error_codes, request_types, app_names,\n    ip_list, unique_ips, source_orgs, countries,\n    unique_country_count, unique_asn_orgs,\n    authentication_requirement, client_app_id, client_app_display_name,\n    target_resource_id, target_resource_display_name, conditional_access_status,\n    device_detail_browser, device_detail_device_id, device_detail_operating_system,\n    incoming_token_type, risk_state, session_id, user_id,\n    user_principal_name, result_description, result_signature, result_type\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2025/05/27/new-russia-affiliated-actor-void-blizzard-targets-critical-sectors-for-espionage/",
+            "https://cloud.hacktricks.xyz/pentesting-cloud/azure-security/az-unauthenticated-enum-and-initial-entry/az-password-spraying",
+            "https://learn.microsoft.com/en-us/security/operations/incident-response-playbook-password-spray",
+            "https://www.sprocketsecurity.com/blog/exploring-modern-password-spraying",
+            "https://learn.microsoft.com/en-us/purview/audit-log-detailed-properties",
+            "https://learn.microsoft.com/en-us/entra/identity-platform/reference-error-codes",
+            "https://github.com/0xZDH/Omnispray",
+            "https://github.com/0xZDH/o365spray"
+        ],
+        "risk_score": 73,
+        "rule_id": "2d6f5332-42ea-11f0-b09a-f661ea17fbcd",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Entra ID",
+            "Data Source: Entra ID Sign-in Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            },
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            },
+                            {
+                                "id": "T1110.004",
+                                "name": "Credential Stuffing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "2d6f5332-42ea-11f0-b09a-f661ea17fbcd_1",
+    "type": "security-rule"
+}

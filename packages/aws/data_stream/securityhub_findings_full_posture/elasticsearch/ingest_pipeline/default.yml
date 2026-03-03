@@ -1,0 +1,2676 @@
+---
+description: Pipeline for processing AWS Security Hub Findings Full Posture logs.
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: state
+  - append:
+      field: event.type
+      value: info
+      tag: set_event_tiype
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: configuration
+      tag: append_event_category
+      allow_duplicates: false
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.UpdatedAt
+        - json.Id
+        - json.CreatedAt
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: observer.vendor
+      value: AWS Security Hub
+      tag: set_observer_vendor
+  - set:
+      field: cloud.provider
+      value: aws
+      tag: set_cloud_provider
+  - rename:
+      field: json.Action.ActionType
+      target_field: aws.securityhub_findings_full_posture.action.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: aws.securityhub_findings_full_posture.action.type
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.AffectedResources
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.affected_resources
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.Api
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.api
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.CallerType
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.caller.type
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.DomainDetails.Domain
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.domain_details.domain
+      ignore_missing: true
+  - date:
+      field: json.Action.AwsApiCallAction.FirstSeen
+      if: ctx.json?.Action?.AwsApiCallAction?.FirstSeen != null && ctx.json?.Action?.AwsApiCallAction?.FirstSeen != ''
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.first_seen
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.Action.AwsApiCallAction.LastSeen
+      if: ctx.json?.Action?.AwsApiCallAction?.LastSeen != null && ctx.json?.Action?.AwsApiCallAction?.LastSeen != ''
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.last_seen
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.City.CityName
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.city.name
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.Country.CountryCode
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.country.code
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.Country.CountryName
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.country.name
+      ignore_missing: true
+  - convert:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.GeoLocation.Lat
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.geolocation.latitude
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.GeoLocation?.Lat != ''
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.GeoLocation.Lon
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.geolocation.longitude
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.GeoLocation?.Lon != ''
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.ip.address_v4
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.IpAddressV4 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.Organization.Asn
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.organization.asn
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.Organization?.Asn != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.Organization.AsnOrg
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.organization.asn_organization
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.Organization.Isp
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.organization.internet_service_provider
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.RemoteIpDetails.Organization.Org
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.organization.internet_provider
+      ignore_missing: true
+  - rename:
+      field: json.Action.AwsApiCallAction.ServiceName
+      target_field: aws.securityhub_findings_full_posture.action.aws_api_call.service.name
+      ignore_missing: true
+  - convert:
+      field: json.Action.DnsRequestAction.Blocked
+      target_field: aws.securityhub_findings_full_posture.action.dns_request.blocked
+      if: ctx.json?.Action?.DnsRequestAction?.Blocked != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Action.DnsRequestAction.Domain
+      target_field: aws.securityhub_findings_full_posture.action.dns_request.domain
+      ignore_missing: true
+  - rename:
+      field: json.Action.DnsRequestAction.Protocol
+      target_field: aws.securityhub_findings_full_posture.action.dns_request.protocol
+      ignore_missing: true
+  - convert:
+      field: json.Action.NetworkConnectionAction.Blocked
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.blocked
+      if: ctx.json?.Action?.NetworkConnectionAction?.Blocked != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Action.NetworkConnectionAction.ConnectionDirection
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.direction
+      ignore_missing: true
+  - convert:
+      field: json.Action.NetworkConnectionAction.LocalPortDetails.Port
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.local.port.number
+      if: ctx.json?.Action?.NetworkConnectionAction?.LocalPortDetails?.Port != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Action.NetworkConnectionAction.LocalPortDetails.PortName
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.local.port.name
+      ignore_missing: true
+  - rename:
+      field: json.Action.NetworkConnectionAction.Protocol
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.protocol
+      ignore_missing: true
+  - rename:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.City.CityName
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.city.name
+      ignore_missing: true
+  - rename:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.Country.CountryCode
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.country.code
+      ignore_missing: true
+  - rename:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.Country.CountryName
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.country.name
+      ignore_missing: true
+  - convert:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.GeoLocation.Lat
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.geolocation.latitude
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.GeoLocation?.Lat != ''
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.GeoLocation.Lon
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.geolocation.longitude
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.GeoLocation?.Lon != ''
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.IpAddressV4
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.ip.address_v4
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.IpAddressV4 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.Organization.Asn
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.organization.asn
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.Organization?.Asn != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.Organization.AsnOrg
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.organization.asn_organization
+      ignore_missing: true
+  - rename:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.Organization.Isp
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.organization.internet_service_provider
+      ignore_missing: true
+  - rename:
+      field: json.Action.NetworkConnectionAction.RemoteIpDetails.Organization.Org
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote_ip.organization.internet_provider
+      ignore_missing: true
+  - convert:
+      field: json.Action.NetworkConnectionAction.RemotePortDetails.Port
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote.port.number
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemotePortDetails?.Port != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Action.NetworkConnectionAction.RemotePortDetails.PortName
+      target_field: aws.securityhub_findings_full_posture.action.network_connection.remote.port.name
+      ignore_missing: true
+  - convert:
+      field: json.Action.PortProbeAction.Blocked
+      target_field: aws.securityhub_findings_full_posture.action.port_probe.blocked
+      if: ctx.json?.Action?.PortProbeAction?.Blocked != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        convert:
+          field: _ingest._value.LocalIpDetails.IpAddressV4
+          target_field: _ingest._value.local.ip.address_v4
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        convert:
+          field: _ingest._value.LocalPortDetails.Port
+          target_field: _ingest._value.local.port.number
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        rename:
+          field: _ingest._value.LocalPortDetails.PortName
+          target_field: _ingest._value.local.port.name
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        rename:
+          field: _ingest._value.RemoteIpDetails.City.CityName
+          target_field: _ingest._value.remote_ip.city.name
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        rename:
+          field: _ingest._value.RemoteIpDetails.Country.CountryCode
+          target_field: _ingest._value.remote_ip.country.code
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        rename:
+          field: _ingest._value.RemoteIpDetails.Country.CountryName
+          target_field: _ingest._value.remote_ip.country.name
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        convert:
+          field: _ingest._value.RemoteIpDetails.GeoLocation.Lat
+          target_field: _ingest._value.remote_ip.geolocation.latitude
+          type: double
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        convert:
+          field: _ingest._value.RemoteIpDetails.GeoLocation.Lon
+          target_field: _ingest._value.remote_ip.geolocation.longitude
+          type: double
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        convert:
+          field: _ingest._value.RemoteIpDetails.IpAddressV4
+          target_field: _ingest._value.remote_ip.ip.address_v4
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        convert:
+          field: _ingest._value.RemoteIpDetails.Organization.Asn
+          target_field: _ingest._value.remote_ip.organization.asn
+          type: string
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        rename:
+          field: _ingest._value.RemoteIpDetails.Organization.AsnOrg
+          target_field: _ingest._value.remote_ip.organization.asn_organization
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        rename:
+          field: _ingest._value.RemoteIpDetails.Organization.Isp
+          target_field: _ingest._value.remote_ip.organization.internet_service_provider
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        rename:
+          field: _ingest._value.RemoteIpDetails.Organization.Org
+          target_field: _ingest._value.remote_ip.organization.internet_provider
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - foreach:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      processor:
+        remove:
+          field:
+            - _ingest._value.LocalIpDetails
+            - _ingest._value.LocalPortDetails
+            - _ingest._value.RemoteIpDetails
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
+  - rename:
+      field: json.Action.PortProbeAction.PortProbeDetails
+      target_field: aws.securityhub_findings_full_posture.action.port_probe.details
+      ignore_missing: true
+  - rename:
+      field: json.AwsAccountId
+      target_field: aws.securityhub_findings_full_posture.aws_account_id
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      copy_from: aws.securityhub_findings_full_posture.aws_account_id
+      ignore_failure: true
+  - rename:
+      field: json.CompanyName
+      target_field: aws.securityhub_findings_full_posture.company.name
+      ignore_missing: true
+  - set:
+      field: organization.name
+      copy_from: aws.securityhub_findings_full_posture.company.name
+      ignore_failure: true
+  - rename:
+      field: json.Compliance.RelatedRequirements
+      target_field: aws.securityhub_findings_full_posture.compliance.related_requirements
+      ignore_missing: true
+  - foreach:
+      field: aws.securityhub_findings_full_posture.compliance.related_requirements
+      if: ctx.aws?.securityhub_findings_full_posture?.compliance?.related_requirements instanceof List
+      tag: foreach_compliance_related_requirements
+      processor:
+        append:
+          field: rule.ruleset
+          value: '{{{_ingest._value}}}'
+          tag: append_related_requirements_rule_ruleset
+          allow_duplicates: false
+  - rename:
+      field: json.Compliance.Status
+      target_field: aws.securityhub_findings_full_posture.compliance.status
+      ignore_missing: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: passed
+      if: ctx.aws?.securityhub_findings_full_posture?.compliance?.status == 'PASSED'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: failed
+      if: ctx.aws?.securityhub_findings_full_posture?.compliance?.status == 'FAILED'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.aws?.securityhub_findings_full_posture?.compliance?.status == 'PASSED'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.aws?.securityhub_findings_full_posture?.compliance?.status == 'FAILED'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: unknown
+      if: ctx.event?.outcome == null
+  - foreach:
+      field: json.Compliance.StatusReasons
+      processor:
+        rename:
+          field: _ingest._value.Description
+          target_field: _ingest._value.description
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Compliance?.StatusReasons != null && ctx.json?.Compliance?.StatusReasons instanceof List
+  - foreach:
+      field: json.Compliance.StatusReasons
+      processor:
+        rename:
+          field: _ingest._value.ReasonCode
+          target_field: _ingest._value.reason_code
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Compliance?.StatusReasons != null && ctx.json?.Compliance?.StatusReasons instanceof List
+  - rename:
+      field: json.Compliance.StatusReasons
+      target_field: aws.securityhub_findings_full_posture.compliance.status_reasons
+      ignore_missing: true
+  - convert:
+      field: json.Confidence
+      target_field: aws.securityhub_findings_full_posture.confidence
+      if: ctx.json?.Confidence != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.CreatedAt
+      if: ctx.json?.CreatedAt != null && ctx.json?.CreatedAt != ''
+      target_field: aws.securityhub_findings_full_posture.created_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.UpdatedAt
+      if: ctx.json?.UpdatedAt != null && ctx.json.UpdatedAt != ''
+      target_field: aws.securityhub_findings_full_posture.updated_at
+      tag: date_updated_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_timestamp
+  - convert:
+      field: json.Criticality
+      target_field: aws.securityhub_findings_full_posture.criticality
+      if: ctx.json?.Criticality != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Description
+      target_field: aws.securityhub_findings_full_posture.description
+      ignore_missing: true
+  - set:
+      field: rule.description
+      tag: set_rule_description
+      copy_from: aws.securityhub_findings_full_posture.description
+      ignore_empty_value: true
+  - convert:
+      field: json.FindingProviderFields.Confidence
+      target_field: aws.securityhub_findings_full_posture.provider_fields.confidence
+      if: ctx.json?.FindingProviderFields?.Confidence != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.FindingProviderFields.Criticality
+      target_field: aws.securityhub_findings_full_posture.provider_fields.criticality
+      if: ctx.json?.FindingProviderFields?.Criticality != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.FindingProviderFields.RelatedFindings
+      processor:
+        rename:
+          field: _ingest._value.Id
+          target_field: _ingest._value.id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.FindingProviderFields?.RelatedFindings != null && ctx.json?.FindingProviderFields?.RelatedFindings instanceof List
+  - foreach:
+      field: json.FindingProviderFields.RelatedFindings
+      processor:
+        rename:
+          field: _ingest._value.ProductArn
+          target_field: _ingest._value.product.arn
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.FindingProviderFields?.RelatedFindings != null && ctx.json?.FindingProviderFields?.RelatedFindings instanceof List
+  - rename:
+      field: json.FindingProviderFields.RelatedFindings
+      target_field: aws.securityhub_findings_full_posture.provider_fields.related_findings
+      ignore_missing: true
+  - rename:
+      field: json.FindingProviderFields.Severity.Label
+      target_field: aws.securityhub_findings_full_posture.provider_fields.severity.label
+      ignore_missing: true
+  - rename:
+      field: json.FindingProviderFields.Severity.Original
+      target_field: aws.securityhub_findings_full_posture.provider_fields.severity.original
+      ignore_missing: true
+  - convert:
+      field: json.FindingProviderFields.Severity.Normalized
+      target_field: aws.securityhub_findings_full_posture.provider_fields.severity.normalized
+      if: ctx.json?.FindingProviderFields?.Severity?.Normalized != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.FindingProviderFields.Severity.Product
+      target_field: aws.securityhub_findings_full_posture.provider_fields.severity.product
+      if: ctx.json?.FindingProviderFields?.Severity?.Product != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.FindingProviderFields.Types
+      target_field: aws.securityhub_findings_full_posture.provider_fields.types
+      ignore_missing: true
+  - date:
+      field: json.FirstObservedAt
+      if: ctx.json?.FirstObservedAt != null && ctx.json?.FirstObservedAt != ''
+      target_field: aws.securityhub_findings_full_posture.first_observed_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.GeneratorId
+      target_field: aws.securityhub_findings_full_posture.generator.id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_generator_id
+      copy_from: aws.securityhub_findings_full_posture.generator.id
+      ignore_empty_value: true
+  - rename:
+      field: json.Compliance.SecurityControlId
+      target_field: aws.securityhub_findings_full_posture.compliance.security_control_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_security_control_id
+      copy_from: aws.securityhub_findings_full_posture.compliance.security_control_id
+      if: ctx.rule?.id == null
+      ignore_empty_value: true
+  - rename:
+      field: json.Id
+      target_field: aws.securityhub_findings_full_posture.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: aws.securityhub_findings_full_posture.id
+      ignore_failure: true
+  - date:
+      field: json.LastObservedAt
+      if: ctx.json?.LastObservedAt != null && ctx.json?.LastObservedAt != ''
+      target_field: aws.securityhub_findings_full_posture.last_observed_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.ProcessedAt
+      if: ctx.json?.ProcessedAt != null && ctx.json.ProcessedAt != ''
+      target_field: aws.securityhub_findings_full_posture.processed_at
+      tag: date_processed_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: aws.securityhub_findings_full_posture.processed_at
+      ignore_empty_value: true
+  - foreach:
+      field: json.Malware
+      processor:
+        rename:
+          field: _ingest._value.Name
+          target_field: _ingest._value.name
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Malware != null && ctx.json?.Malware instanceof List
+  - foreach:
+      field: json.Malware
+      processor:
+        rename:
+          field: _ingest._value.Path
+          target_field: _ingest._value.path
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Malware != null && ctx.json?.Malware instanceof List
+  - foreach:
+      field: json.Malware
+      processor:
+        rename:
+          field: _ingest._value.State
+          target_field: _ingest._value.state
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Malware != null && ctx.json?.Malware instanceof List
+  - foreach:
+      field: json.Malware
+      processor:
+        rename:
+          field: _ingest._value.Type
+          target_field: _ingest._value.type
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Malware != null && ctx.json?.Malware instanceof List
+  - rename:
+      field: json.Malware
+      target_field: aws.securityhub_findings_full_posture.malware
+      ignore_missing: true
+  - rename:
+      field: json.Network.DestinationDomain
+      target_field: aws.securityhub_findings_full_posture.network.destination.domain
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: aws.securityhub_findings_full_posture.network.destination.domain
+      ignore_failure: true
+  - convert:
+      field: json.Network.DestinationIpV4
+      target_field: aws.securityhub_findings_full_posture.network.destination.ip.v4
+      if: ctx.json?.Network?.DestinationIpV4 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: destination.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.destination.ip.v4}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.destination?.ip?.v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.Network.DestinationIpV6
+      target_field: aws.securityhub_findings_full_posture.network.destination.ip.v6
+      if: ctx.json?.Network?.DestinationIpV6 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: destination.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.destination.ip.v6}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.destination?.ip?.v6 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.Network.DestinationPort
+      target_field: aws.securityhub_findings_full_posture.network.destination.port
+      if: ctx.json?.Network?.DestinationPort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: aws.securityhub_findings_full_posture.network.destination.port
+      ignore_failure: true
+  - rename:
+      field: json.Network.Direction
+      target_field: aws.securityhub_findings_full_posture.network.direction
+      ignore_missing: true
+  - set:
+      field: network.direction
+      value: inbound
+      if: "ctx.aws?.securityhub_findings_full_posture?.network?.direction == 'IN'"
+  - set:
+      field: network.direction
+      value: outbound
+      if: "ctx.aws?.securityhub_findings_full_posture?.network?.direction == 'OUT'"
+  - convert:
+      field: json.Network.OpenPortRange.Begin
+      target_field: aws.securityhub_findings_full_posture.network.open_port_range.begin
+      if: ctx.json?.Network?.OpenPortRange?.Begin != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Network.OpenPortRange.End
+      target_field: aws.securityhub_findings_full_posture.network.open_port_range.end
+      if: ctx.json?.Network?.OpenPortRange?.End != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Network.Protocol
+      target_field: aws.securityhub_findings_full_posture.network.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      copy_from: aws.securityhub_findings_full_posture.network.protocol
+      ignore_failure: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - rename:
+      field: json.Network.SourceDomain
+      target_field: aws.securityhub_findings_full_posture.network.source.domain
+      ignore_missing: true
+  - set:
+      field: source.domain
+      copy_from: aws.securityhub_findings_full_posture.network.source.domain
+      ignore_failure: true
+  - convert:
+      field: json.Network.SourceIpV4
+      target_field: aws.securityhub_findings_full_posture.network.source.ip.v4
+      if: ctx.json?.Network?.SourceIpV4 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.source.ip.v4}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.source?.ip?.v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.Network.SourceIpV6
+      target_field: aws.securityhub_findings_full_posture.network.source.ip.v6
+      if: ctx.json?.Network?.SourceIpV6 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.source.ip.v6}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.source?.ip?.v6 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.Network.SourceMac
+      target_field: aws.securityhub_findings_full_posture.network.source.mac
+      ignore_missing: true
+  - gsub:
+      field: aws.securityhub_findings_full_posture.network.source.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: aws.securityhub_findings_full_posture.network.source.mac
+      ignore_missing: true
+  - set:
+      field: source.mac
+      copy_from: aws.securityhub_findings_full_posture.network.source.mac
+      ignore_failure: true
+  - convert:
+      field: json.Network.SourcePort
+      target_field: aws.securityhub_findings_full_posture.network.source.port
+      if: ctx.json?.Network?.SourcePort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      copy_from: aws.securityhub_findings_full_posture.network.source.port
+      ignore_failure: true
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.ComponentId
+          target_field: _ingest._value.component.id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.ComponentType
+          target_field: _ingest._value.component.type
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Egress.Destination.Address
+          target_field: _ingest._value.egress.destination.address
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Egress.Destination.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.Begin
+              target_field: _ingest._value.begin
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Egress.Destination.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.End
+              target_field: _ingest._value.end
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Egress.Destination.PortRanges
+          processor:
+            remove:
+              field:
+                - _ingest._value.Begin
+                - _ingest._value.End
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Egress.Destination.PortRanges
+          target_field: _ingest._value.egress.destination.port_ranges
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Egress.Protocol
+          target_field: _ingest._value.egress.protocol
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Egress.Source.Address
+          target_field: _ingest._value.egress.source.address
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Egress.Source.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.Begin
+              target_field: _ingest._value.begin
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Egress.Source.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.End
+              target_field: _ingest._value.end
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Egress.Source.PortRanges
+          processor:
+            remove:
+              field:
+                - _ingest._value.Begin
+                - _ingest._value.End
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Egress.Source.PortRanges
+          target_field: _ingest._value.egress.source.port_ranges
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Ingress.Destination.Address
+          target_field: _ingest._value.ingress.destination.address
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Ingress.Destination.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.Begin
+              target_field: _ingest._value.begin
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Ingress.Destination.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.End
+              target_field: _ingest._value.end
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Ingress.Destination.PortRanges
+          processor:
+            remove:
+              field:
+                - _ingest._value.Begin
+                - _ingest._value.End
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Ingress.Destination.PortRanges
+          target_field: _ingest._value.ingress.destination.port_ranges
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Ingress.Protocol
+          target_field: _ingest._value.ingress.protocol
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Ingress.Source.Address
+          target_field: _ingest._value.ingress.source.address
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Ingress.Source.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.Begin
+              target_field: _ingest._value.begin
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+              ignore_failure: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Ingress.Source.PortRanges
+          processor:
+            convert:
+              field: _ingest._value.End
+              target_field: _ingest._value.end
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        foreach:
+          field: _ingest._value.Ingress.Source.PortRanges
+          processor:
+            remove:
+              field:
+                - _ingest._value.Begin
+                - _ingest._value.End
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - foreach:
+      field: json.NetworkPath
+      processor:
+        rename:
+          field: _ingest._value.Ingress.Source.PortRanges
+          target_field: _ingest._value.ingress.source.port_ranges
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.NetworkPath != null && ctx.json?.NetworkPath instanceof List
+  - rename:
+      field: json.NetworkPath
+      target_field: aws.securityhub_findings_full_posture.network_path
+      ignore_missing: true
+  - rename:
+      field: json.Note.Text
+      target_field: aws.securityhub_findings_full_posture.note.text
+      ignore_missing: true
+  - date:
+      field: json.Note.UpdatedAt
+      if: ctx.json?.Note?.UpdatedAt != null && ctx.json?.Note?.UpdatedAt != ''
+      target_field: aws.securityhub_findings_full_posture.note.updated_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Note.UpdatedBy
+      target_field: aws.securityhub_findings_full_posture.note.updated_by
+      ignore_missing: true
+  - convert:
+      field: json.PatchSummary.FailedCount
+      target_field: aws.securityhub_findings_full_posture.patch_summary.failed.count
+      if: ctx.json?.PatchSummary?.FailedCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.PatchSummary.Id
+      target_field: aws.securityhub_findings_full_posture.patch_summary.id
+      ignore_missing: true
+  - convert:
+      field: json.PatchSummary.InstalledCount
+      target_field: aws.securityhub_findings_full_posture.patch_summary.installed.count
+      if: ctx.json?.PatchSummary?.InstalledCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.PatchSummary.InstalledOtherCount
+      target_field: aws.securityhub_findings_full_posture.patch_summary.installed.other.count
+      if: ctx.json?.PatchSummary?.InstalledOtherCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.PatchSummary.InstalledPendingReboot
+      target_field: aws.securityhub_findings_full_posture.patch_summary.installed.pending_reboot
+      if: ctx.json?.PatchSummary?.InstalledPendingReboot != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.PatchSummary.InstalledRejectedCount
+      target_field: aws.securityhub_findings_full_posture.patch_summary.installed.rejected.count
+      if: ctx.json?.PatchSummary?.InstalledRejectedCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.PatchSummary.MissingCount
+      target_field: aws.securityhub_findings_full_posture.patch_summary.missing.count
+      if: ctx.json?.PatchSummary?.MissingCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.PatchSummary.Operation
+      target_field: aws.securityhub_findings_full_posture.patch_summary.operation.type
+      ignore_missing: true
+  - date:
+      field: json.PatchSummary.OperationEndTime
+      if: ctx.json?.PatchSummary?.OperationEndTime != null && ctx.json?.PatchSummary?.OperationEndTime != ''
+      target_field: aws.securityhub_findings_full_posture.patch_summary.operation.end_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.PatchSummary.OperationStartTime
+      if: ctx.json?.PatchSummary?.OperationStartTime != null && ctx.json?.PatchSummary?.OperationStartTime != ''
+      target_field: aws.securityhub_findings_full_posture.patch_summary.operation.start_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.PatchSummary.RebootOption
+      target_field: aws.securityhub_findings_full_posture.patch_summary.reboot_option
+      ignore_missing: true
+  - date:
+      field: json.Process.LaunchedAt
+      if: ctx.json?.Process?.LaunchedAt != null && ctx.json?.Process?.LaunchedAt != ''
+      target_field: aws.securityhub_findings_full_posture.process.launched_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.start
+      copy_from: aws.securityhub_findings_full_posture.process.launched_at
+      ignore_failure: true
+  - rename:
+      field: json.Process.Name
+      target_field: aws.securityhub_findings_full_posture.process.name
+      ignore_missing: true
+  - set:
+      field: process.name
+      copy_from: aws.securityhub_findings_full_posture.process.name
+      ignore_failure: true
+  - convert:
+      field: json.Process.ParentPid
+      target_field: aws.securityhub_findings_full_posture.process.parent.pid
+      if: ctx.json?.Process?.ParentPid != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.parent.pid
+      copy_from: aws.securityhub_findings_full_posture.process.parent.pid
+      ignore_failure: true
+  - rename:
+      field: json.Process.Path
+      target_field: aws.securityhub_findings_full_posture.process.path
+      ignore_missing: true
+  - set:
+      field: process.executable
+      copy_from: aws.securityhub_findings_full_posture.process.path
+      ignore_failure: true
+  - convert:
+      field: json.Process.Pid
+      target_field: aws.securityhub_findings_full_posture.process.pid
+      if: ctx.json?.Process?.Pid != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.pid
+      copy_from: aws.securityhub_findings_full_posture.process.pid
+      ignore_failure: true
+  - date:
+      field: json.Process.TerminatedAt
+      if: ctx.json?.Process?.TerminatedAt != null && ctx.json?.Process?.TerminatedAt != ''
+      target_field: aws.securityhub_findings_full_posture.process.terminated_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.end
+      copy_from: aws.securityhub_findings_full_posture.process.terminated_at
+      ignore_failure: true
+  - rename:
+      field: json.ProductArn
+      target_field: aws.securityhub_findings_full_posture.product.arn
+      ignore_missing: true
+  - rename:
+      field: json.ProductFields
+      target_field: aws.securityhub_findings_full_posture.product.fields
+      ignore_missing: true
+  - rename:
+      field: json.ProductName
+      target_field: aws.securityhub_findings_full_posture.product.name
+      ignore_missing: true
+  - rename:
+      field: json.RecordState
+      target_field: aws.securityhub_findings_full_posture.record_state
+      ignore_missing: true
+  - rename:
+      field: json.Region
+      target_field: aws.securityhub_findings_full_posture.region
+      ignore_missing: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region
+      copy_from: aws.securityhub_findings_full_posture.region
+      ignore_empty_value: true
+  - foreach:
+      field: json.RelatedFindings
+      processor:
+        rename:
+          field: _ingest._value.Id
+          target_field: _ingest._value.id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.RelatedFindings != null && ctx.json?.RelatedFindings instanceof List
+  - foreach:
+      field: json.RelatedFindings
+      processor:
+        rename:
+          field: _ingest._value.ProductArn
+          target_field: _ingest._value.product.arn
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.RelatedFindings != null && ctx.json?.RelatedFindings instanceof List
+  - rename:
+      field: json.RelatedFindings
+      target_field: aws.securityhub_findings_full_posture.related_findings
+      ignore_missing: true
+  - rename:
+      field: json.Remediation.Recommendation.Text
+      target_field: aws.securityhub_findings_full_posture.remediation.recommendation.text
+      ignore_missing: true
+  - rename:
+      field: json.Remediation.Recommendation.Url
+      target_field: aws.securityhub_findings_full_posture.remediation.recommendation.url
+      ignore_missing: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference
+      copy_from: aws.securityhub_findings_full_posture.remediation.recommendation.url
+      ignore_empty_value: true
+  - set:
+      field: rule.remediation
+      tag: set_rule_remediation
+      value: "{{{aws.securityhub_findings_full_posture.remediation.recommendation.text}}}\r\n{{{aws.securityhub_findings_full_posture.remediation.recommendation.url}}}"
+      if: ctx.aws?.securityhub_findings_full_posture?.remediation?.recommendation?.url != null && ctx.aws.securityhub_findings_full_posture.remediation.recommendation.text != null
+      ignore_empty_value: true
+  - rename:
+      field: json.Resources
+      target_field: aws.securityhub_findings_full_posture.resources
+      ignore_missing: true
+  - script:
+      description: Extract fields from aws.securityhub_findings_full_posture.resources with single resource.
+      tag: script_extract_fields_from_single_resource
+      lang: painless
+      if: ctx.aws?.securityhub_findings_full_posture?.resources instanceof List && ctx.aws.securityhub_findings_full_posture.resources.size() > 0
+      source: |-
+        // Arrays won't work in general in current UI of Cloud Security Posture workflow. In AWS SecurityHub, a finding may contain multiple resources, but rarely.
+        // When a finding has single-resource, we extract fields as single-value so that the Findings UI behaves as expected for almost all cases.
+        // But in the rare multi-resource case, we extract fields into an array to not miss any affected resources for a finding. 
+        // This trade-off is okay as not many findings will be affected. When our UI natively supports multi-resources, the single-value resource extraction must be removed.
+        
+        def resources = ctx.aws.securityhub_findings_full_posture.resources;
+
+        // Define fields to be extracted. 
+        if (ctx.resource == null) {
+          ctx.resource = new HashMap();
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (ctx.host == null) {
+          ctx.host = new HashMap();
+        }
+        if (ctx.host.ip == null) {
+          ctx.host.ip = new ArrayList();
+        }
+        if (ctx.orchestrator == null) {
+          ctx.orchestrator = new HashMap();
+        }
+        if (ctx.orchestrator.cluster == null) {
+          ctx.orchestrator.cluster = new HashMap();
+        }
+        if (ctx.orchestrator.resource == null) {
+          ctx.orchestrator.resource = new HashMap();
+        }
+        if (ctx.cloud == null) {
+          ctx.cloud = new HashMap();
+        }
+        if (ctx.cloud.instance == null) {
+          ctx.cloud.instance = new HashMap();
+        }
+        if (ctx.cloud.service == null) {
+          ctx.cloud.service = new HashMap();
+        }
+
+        // This extraction logic is only for single resource case. Multiple resources are extracted inside script - script_extract_fields_from_multiple_resources.
+        if (resources.size() == 1){
+          def res = resources[0];
+
+          // Extract resource field
+          ctx.resource.type = res.Type;
+          ctx.resource.id = res.Id;
+          def res_name;
+          String[] tokenList = res.Id.splitOnToken(":");
+          if (res.Details != null && res.Details[res.Type]?.Name != null) {
+            res_name = res.Details[res.Type].Name;
+          } else {
+            res_name = tokenList[tokenList.length - 1];
+          }
+          ctx.resource.name = res_name;
+
+          // Extract ECS fields from res.Details
+          if (res.Details != null) {
+            // Extract ECS user field from res.Details
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserName != null) {
+              ctx.user.name = res.Details.AwsIamUser.UserName;
+            }
+            if (res.Type == 'AwsIamAccessKey' && res.Details.AwsIamAccessKey?.UserName != null) {
+              ctx.user.name = res.Details.AwsIamAccessKey.UserName;
+            }
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerName != null) {
+              ctx.user.name = res.Details.AwsS3Bucket.OwnerName;
+            } 
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserId != null) {
+              ctx.user.id = res.Details.AwsIamUser.UserId;
+            } 
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerId != null) {
+              ctx.user.id = res.Details.AwsS3Bucket.OwnerId;
+            }
+
+            // Extract ECS host field from res.Details
+            if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
+              ctx.host.name = res.Details.AwsEcsContainer.Name;
+            }
+            if (res.Type == 'AwsEc2Instance') {
+              if (res.Details.AwsEc2Instance?.IpV4Addresses != null) {
+                for (def ipv4 : res.Details.AwsEc2Instance.IpV4Addresses) {
+                  if (ipv4 instanceof String) {
+                    ctx.host.ip.add(ipv4);
+                  }
+                }
+              }
+              if (res.Details.AwsEc2Instance?.IpV6Addresses != null) {
+                for (def ipv6 : res.Details.AwsEc2Instance.IpV6Addresses) {
+                  if (ipv6 instanceof String) {
+                    ctx.host.ip.add(ipv6);
+                  }
+                }
+              }
+            }
+
+            // Extract ECS orchestrator field from res.Details
+            if (['AwsEcsCluster', 'AwsEcsTask'].contains(res.Type) && res.Details.AwsEcsCluster?.ClusterArn != null) {
+              ctx.orchestrator.cluster.id = res.Details.AwsEcsCluster.ClusterArn;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Arn != null) {
+              ctx.orchestrator.cluster.id = res.Details.AwsEksCluster.Arn;
+            }
+            if (res.Type == 'AwsEcsCluster' && res.Details.AwsEcsCluster?.ClusterName != null) {
+              ctx.orchestrator.cluster.name = res.Details.AwsEcsCluster.ClusterName;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Name != null) {
+              ctx.orchestrator.cluster.name = res.Details.AwsEksCluster.Name;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Version != null) {
+              ctx.orchestrator.cluster.version = res.Details.AwsEksCluster.Version;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Endpoint != null) {
+              ctx.orchestrator.cluster.url = res.Details.AwsEksCluster.Endpoint;
+            }
+
+            // Extract ECS cloud field from res.Details
+            if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details[res.Type]?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone = res.Details[res.Type].AvailabilityZone;
+            }
+            if ((['AwsEc2VpcEndpointService', 'AwsElbLoadBalancer', 'AwsRdsDbCluster'].contains(res.Type)) && res.Details[res.Type]?.AvailabilityZones != null) {
+              for (def az: res.Details[res.Type].AvailabilityZones){
+                ctx.cloud.availability_zone = az;
+              }
+            }
+            if (res.Type == 'AwsAutoScalingAutoScalingGroup' && res.Details.AwsAutoScalingAutoScalingGroup?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsAutoScalingAutoScalingGroup.AvailabilityZones){
+                ctx.cloud.availability_zone = az.Value;
+              }
+            }
+            if (res.Type == 'AwsEc2LaunchTemplate' && res.Details.AwsEc2LaunchTemplate?.LaunchTemplateData?.Placement?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone = res.Details.AwsEc2LaunchTemplate.LaunchTemplateData.Placement.AvailabilityZone;
+            }
+            if (res.Type == 'AwsElbv2LoadBalancer' && res.Details.AwsElbv2LoadBalancer?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsElbv2LoadBalancer.AvailabilityZones){
+                ctx.cloud.availability_zone = az.ZoneName;
+              }
+            }
+          }
+
+          // Extract ECS host field not in res.Details
+          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
+            ctx.host.id = res.Id;
+          }
+
+          // Extract ECS orchestrator field not in res.Details
+          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
+            ctx.orchestrator.resource.id = res.Id;
+            ctx.orchestrator.resource.name = res_name;
+            ctx.orchestrator.resource.type = res.Type;
+            if (res.Type.startsWith('AwsEks')) {
+              ctx.orchestrator.type = 'kubernetes';
+            } else {
+              ctx.orchestrator.type = 'ecs';
+            }
+          }
+          
+          // Extract ECS cloud field not in res.Details
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id = res.Id;
+            ctx.cloud.instance.name = res_name;
+          }
+          if (tokenList.length > 2) {
+            ctx.cloud.service.name = tokenList[2];
+          }
+        }
+  - script:
+      description: Extract fields from aws.securityhub_findings_full_posture.resources.
+      tag: script_extract_fields_from_multiple_resources
+      lang: painless
+      if: ctx.aws?.securityhub_findings_full_posture?.resources instanceof List && ctx.aws.securityhub_findings_full_posture.resources.size() > 1
+      source: |-
+        def resources = ctx.aws.securityhub_findings_full_posture.resources;
+
+        // Define fields to be extracted. 
+        if (ctx.resource.type == null) {
+          ctx.resource.type = new ArrayList();
+        }
+        if (ctx.resource.id == null) {
+          ctx.resource.id = new ArrayList();
+        }
+        if (ctx.resource.name == null) {
+          ctx.resource.name = new ArrayList();
+        }
+        
+        if (ctx.user.name == null) {
+          ctx.user.name = new ArrayList();
+        }
+        if (ctx.user.id == null) {
+          ctx.user.id = new ArrayList();
+        }
+        
+        if (ctx.host.id == null) {
+          ctx.host.id = new ArrayList();
+        }
+        if (ctx.host.ip == null) {
+          ctx.host.ip = new ArrayList();
+        }
+        if (ctx.host.name == null) {
+          ctx.host.name = new ArrayList();
+        }
+        
+        if (ctx.orchestrator.type == null) {
+          ctx.orchestrator.type = new ArrayList();
+        }
+        if (ctx.orchestrator.cluster.id == null) {
+          ctx.orchestrator.cluster.id = new ArrayList();
+        }
+        if (ctx.orchestrator.cluster.name == null) {
+          ctx.orchestrator.cluster.name = new ArrayList();
+        }
+        if (ctx.orchestrator.cluster.version == null) {
+          ctx.orchestrator.cluster.version = new ArrayList();
+        }
+        if (ctx.orchestrator.resource.id == null) {
+          ctx.orchestrator.resource.id = new ArrayList();
+        }
+        if (ctx.orchestrator.resource.name == null) {
+          ctx.orchestrator.resource.name = new ArrayList();
+        }
+        if (ctx.orchestrator.resource.type == null) {
+          ctx.orchestrator.resource.type = new ArrayList();
+        }
+        
+        if (ctx.cloud.instance.id == null) {
+          ctx.cloud.instance.id = new ArrayList();
+        }
+        if (ctx.cloud.instance.name == null) {
+          ctx.cloud.instance.name = new ArrayList();
+        }
+        if (ctx.cloud.service.name == null) {
+          ctx.cloud.service.name = new ArrayList();
+        }
+        if (ctx.cloud.availability_zone == null) {
+          ctx.cloud.availability_zone = new ArrayList();
+        }
+
+        for (res in resources) {
+          // Extract resource field
+          ctx.resource.type.add(res.Type);
+          ctx.resource.id.add(res.Id);
+          def res_name;
+          String[] tokenList = res.Id.splitOnToken(":");
+          if (res.Details != null && res.Details[res.Type]?.Name != null) {
+            res_name = res.Details[res.Type].Name;
+          } else {
+            res_name = tokenList[tokenList.length - 1];
+          }
+          ctx.resource.name.add(res_name);
+
+          // Extract ECS fields from res.Details
+          if (res.Details != null) {
+            // Extract ECS user field from res.Details
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserName != null) {
+              ctx.user.name.add(res.Details.AwsIamUser.UserName);
+            }
+            if (res.Type == 'AwsIamAccessKey' && res.Details.AwsIamAccessKey?.UserName != null) {
+              ctx.user.name.add(res.Details.AwsIamAccessKey.UserName);
+            }
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerName != null) {
+              ctx.user.name.add(res.Details.AwsS3Bucket.OwnerName);
+            } 
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserId != null) {
+              ctx.user.id.add(res.Details.AwsIamUser.UserId);
+            } 
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerId != null) {
+              ctx.user.id.add(res.Details.AwsS3Bucket.OwnerId);
+            }
+
+            // Extract ECS host field from res.Details
+            if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
+              ctx.host.name.add(res.Details.AwsEcsContainer.Name);
+            }
+            if (res.Type == 'AwsEc2Instance') {
+              if (res.Details.AwsEc2Instance?.IpV4Addresses != null) {
+                for (def ipv4 : res.Details.AwsEc2Instance.IpV4Addresses) {
+                  if (ipv4 instanceof String) {
+                    ctx.host.ip.add(ipv4);
+                  }
+                }
+              }
+              if (res.Details.AwsEc2Instance?.IpV6Addresses != null) {
+                for (def ipv6 : res.Details.AwsEc2Instance.IpV6Addresses) {
+                  if (ipv6 instanceof String) {
+                    ctx.host.ip.add(ipv6);
+                  }
+                }
+              }
+            }
+
+            // Extract ECS orchestrator field from res.Details
+            if (['AwsEcsCluster', 'AwsEcsTask'].contains(res.Type) && res.Details.AwsEcsCluster?.ClusterArn != null) {
+              ctx.orchestrator.cluster.id.add(res.Details.AwsEcsCluster.ClusterArn);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Arn != null) {
+              ctx.orchestrator.cluster.id.add(res.Details.AwsEksCluster.Arn);
+            }
+            if (res.Type == 'AwsEcsCluster' && res.Details.AwsEcsCluster?.ClusterName != null) {
+              ctx.orchestrator.cluster.name.add(res.Details.AwsEcsCluster.ClusterName);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Name != null) {
+              ctx.orchestrator.cluster.name.add(res.Details.AwsEksCluster.Name);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Version != null) {
+              ctx.orchestrator.cluster.version.add(res.Details.AwsEksCluster.Version);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Endpoint != null) {
+              ctx.orchestrator.cluster.url.add(res.Details.AwsEksCluster.Endpoint);
+            }
+
+            // Extract ECS cloud field from res.Details
+            if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details[res.Type]?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone.add(res.Details[res.Type].AvailabilityZone);
+            }
+            if ((['AwsEc2VpcEndpointService', 'AwsElbLoadBalancer', 'AwsRdsDbCluster'].contains(res.Type)) && res.Details[res.Type]?.AvailabilityZones != null) {
+              for (def az: res.Details[res.Type].AvailabilityZones){
+                ctx.cloud.availability_zone.add(az);
+              }
+            }
+            if (res.Type == 'AwsAutoScalingAutoScalingGroup' && res.Details.AwsAutoScalingAutoScalingGroup?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsAutoScalingAutoScalingGroup.AvailabilityZones){
+                ctx.cloud.availability_zone.add(az.Value);
+              }
+            }
+            if (res.Type == 'AwsEc2LaunchTemplate' && res.Details.AwsEc2LaunchTemplate?.LaunchTemplateData?.Placement?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone.add(res.Details.AwsEc2LaunchTemplate.LaunchTemplateData.Placement.AvailabilityZone);
+            }
+            if (res.Type == 'AwsElbv2LoadBalancer' && res.Details.AwsElbv2LoadBalancer?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsElbv2LoadBalancer.AvailabilityZones){
+                ctx.cloud.availability_zone.add(az.ZoneName);
+              }
+            }
+          }
+
+          // Extract ECS host field not in res.Details
+          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
+            ctx.host.id.add(res.Id);
+          }
+
+          // Extract ECS orchestrator field not in res.Details
+          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
+            ctx.orchestrator.resource.id.add(res.Id);
+            ctx.orchestrator.resource.name.add(res_name);
+            ctx.orchestrator.resource.type.add(res.Type);
+            if (res.Type.startsWith('AwsEks')) {
+              ctx.orchestrator.type.add('kubernetes');
+            } else {
+              ctx.orchestrator.type.add('ecs');
+            }
+          }
+          
+          // Extract ECS cloud field not in res.Details
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id.add(res.Id);
+            ctx.cloud.instance.name.add(res_name);
+          }
+          if (tokenList.length > 2) {
+            ctx.cloud.service.name.add(tokenList[2]);
+          }
+        }
+  - convert:
+      field: json.Sample
+      target_field: aws.securityhub_findings_full_posture.sample
+      if: ctx.json?.Sample != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.SchemaVersion
+      target_field: aws.securityhub_findings_full_posture.schema.version
+      ignore_missing: true
+  - rename:
+      field: json.Severity.Label
+      target_field: aws.securityhub_findings_full_posture.severity.label
+      ignore_missing: true
+  - convert:
+      field: json.Severity.Normalized
+      target_field: aws.securityhub_findings_full_posture.severity.normalized
+      if: ctx.json?.Severity?.Normalized != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws.securityhub_findings_full_posture.severity.normalized
+      tag: convert_severity_normalized
+      target_field: event.severity
+      if: ctx.aws?.securityhub_findings_full_posture?.severity?.normalized != null
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Severity.Original
+      target_field: aws.securityhub_findings_full_posture.severity.original
+      ignore_missing: true
+  - convert:
+      field: json.Severity.Product
+      target_field: aws.securityhub_findings_full_posture.severity.product
+      if: ctx.json?.Severity?.Product != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.SourceUrl
+      target_field: aws.securityhub_findings_full_posture.source_url
+      ignore_missing: true
+  - uri_parts:
+      field: aws.securityhub_findings_full_posture.source_url
+      if: ctx.aws?.securityhub_findings_full_posture?.source_url != '' && ctx.aws?.securityhub_findings_full_posture?.source_url != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.full
+      value: '{{{url.original}}}'
+      ignore_failure: true
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        rename:
+          field: _ingest._value.Category
+          target_field: _ingest._value.category
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        date:
+          field: _ingest._value.LastObservedAt
+          target_field: _ingest._value.last_observed_at
+          formats:
+            - ISO8601
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        remove:
+          field:
+            - _ingest._value.LastObservedAt
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        rename:
+          field: _ingest._value.Source
+          target_field: _ingest._value.source
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        rename:
+          field: _ingest._value.SourceUrl
+          target_field: _ingest._value.source_url
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        rename:
+          field: _ingest._value.Value
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        rename:
+          field: _ingest._value.Type
+          target_field: _ingest._value.type
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - foreach:
+      field: json.ThreatIntelIndicators
+      processor:
+        set:
+          field: threat.indicator.last_seen
+          copy_from: _ingest._value.last_observed_at
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - script:
+      description: Map box field ThreatIntelIndicator to ECS field threat.indicator.type
+      lang: painless
+      params:
+        "DOMAIN": domain-name
+        "EMAIL_ADDRESS": email-addr
+        "HASH_MD5": file
+        "HASH_SHA1": file
+        "HASH_SHA256": file
+        "HASH_SHA512": file
+        "IPV4_ADDRESS": ipv4-addr
+        "IPV6_ADDRESS": ipv6-addr
+        "MUTEX": mutex
+        "PROCESS": process
+        "URL": url
+      source: |-
+        for (ti in ctx.json.ThreatIntelIndicators) { 
+          def type = ti.type;
+          if (params.containsKey(type)) {
+            def mapped_type = params.get(type);
+            ctx.threat.indicator.type = mapped_type;
+
+            if (mapped_type == 'file') {
+              def hash_name = type.splitOnToken("_")[1].toLowerCase();
+              def hash_value = ti.value;
+
+              Map hash = new HashMap();
+              hash.put(hash_name,hash_value);
+              Map file = new HashMap();
+              file.put("hash",hash);
+              Map indicator = new HashMap();
+              indicator.indicator = new HashMap();
+              indicator.indicator.put("file", file);
+              
+              if (ctx.threat.enrichments == null) {
+                ctx.threat.enrichments = new ArrayList();
+              }
+
+              ctx.threat.enrichments.add(indicator);
+            }
+          }
+        } 
+      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  - rename:
+      field: json.ThreatIntelIndicators
+      target_field: aws.securityhub_findings_full_posture.threat_intel_indicators
+      ignore_missing: true
+  - rename:
+      field: json.Title
+      target_field: aws.securityhub_findings_full_posture.title
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: aws.securityhub_findings_full_posture.title
+      ignore_empty_value: true
+  - rename:
+      field: json.Types
+      target_field: aws.securityhub_findings_full_posture.types
+      ignore_missing: true
+  - rename:
+      field: json.UserDefinedFields
+      target_field: aws.securityhub_findings_full_posture.user_defined_fields
+      ignore_missing: true
+  - rename:
+      field: json.VerificationState
+      target_field: aws.securityhub_findings_full_posture.verification_state
+      ignore_missing: true
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            foreach:
+              field: _ingest._value.Adjustments
+              processor:
+                rename:
+                  field: _ingest._value.Metric
+                  target_field: _ingest._value.metric
+                  ignore_missing: true
+              ignore_failure: true
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            foreach:
+              field: _ingest._value.Adjustments
+              processor:
+                rename:
+                  field: _ingest._value.Reason
+                  target_field: _ingest._value.reason
+                  ignore_missing: true
+              ignore_failure: true
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            rename:
+              field: _ingest._value.Adjustments
+              target_field: _ingest._value.adjustments
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            convert:
+              field: _ingest._value.BaseScore
+              target_field: _ingest._value.base_score
+              type: double
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            rename:
+              field: _ingest._value.BaseVector
+              target_field: _ingest._value.base_vector
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            rename:
+              field: _ingest._value.Source
+              target_field: _ingest._value.source
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            rename:
+              field: _ingest._value.Version
+              target_field: _ingest._value.version
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            set:
+              field: vulnerability.score.base
+              copy_from: _ingest._value.base_score
+              ignore_failure: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            set:
+              field: vulnerability.score.version
+              copy_from: _ingest._value.version
+              ignore_failure: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.Cvss
+          processor:
+            remove:
+              field:
+                - _ingest._value.BaseScore
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.Cvss
+          target_field: _ingest._value.cvss
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.Id
+          target_field: _ingest._value.id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        set:
+          field: vulnerability.id
+          copy_from: _ingest._value.id
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.ReferenceUrls
+          target_field: _ingest._value.reference_urls
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        set:
+          field: vulnerability.reference
+          copy_from: _ingest._value.reference_urls
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.RelatedVulnerabilities
+          target_field: _ingest._value.related_vulnerabilities
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.Vendor.Name
+          target_field: _ingest._value.vendor.name
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        set:
+          field: vulnerability.scanner.vendor
+          copy_from: _ingest._value.vendor.name
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.Vendor.Url
+          target_field: _ingest._value.vendor.url
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        date:
+          field: _ingest._value.Vendor.VendorCreatedAt
+          target_field: _ingest._value.vendor.created_at
+          formats:
+            - ISO8601
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.Vendor.VendorSeverity
+          target_field: _ingest._value.vendor.severity
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        date:
+          field: _ingest._value.Vendor.VendorUpdatedAt
+          target_field: _ingest._value.vendor.updated_at
+          formats:
+            - ISO8601
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        remove:
+          field:
+            - _ingest._value.Vendor.VendorCreatedAt
+            - _ingest._value.Vendor.VendorUpdatedAt
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.Category
+              target_field: _ingest._value.category
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.Architecture
+              target_field: _ingest._value.architecture
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.Epoch
+              target_field: _ingest._value.epoch
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.FilePath
+              target_field: _ingest._value.file_path
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.Name
+              target_field: _ingest._value.name
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.PackageManager
+              target_field: _ingest._value.package_manager
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.Release
+              target_field: _ingest._value.release
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        foreach:
+          field: _ingest._value.VulnerablePackages
+          processor:
+            rename:
+              field: _ingest._value.Version
+              target_field: _ingest._value.version
+              ignore_missing: true
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - foreach:
+      field: json.Vulnerabilities
+      processor:
+        rename:
+          field: _ingest._value.VulnerablePackages
+          target_field: _ingest._value.vulnerable_packages
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
+  - rename:
+      field: json.Vulnerabilities
+      target_field: aws.securityhub_findings_full_posture.vulnerabilities
+      ignore_missing: true
+  - rename:
+      field: json.Workflow.Status
+      target_field: aws.securityhub_findings_full_posture.workflow.status
+      ignore_missing: true
+  - rename:
+      field: json.WorkflowState
+      target_field: aws.securityhub_findings_full_posture.workflow.state
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings_full_posture.action.aws_api_call.remote_ip.ip.address_v4}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.action?.aws_api_call?.remote_ip?.ip?.address_v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings_full_posture.action.network_connection.remote_ip.ip.address_v4}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.action?.network_connection?.remote_ip?.ip?.address_v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - foreach:
+      field: aws.securityhub_findings_full_posture.action.port_probe.details
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.local.ip.address_v4}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.aws?.securityhub_findings_full_posture?.action?.port_probe?.details != null && ctx.aws?.securityhub_findings_full_posture?.action?.port_probe?.details instanceof List
+  - foreach:
+      field: aws.securityhub_findings_full_posture.action.port_probe.details
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.remote_ip.ip.address_v4}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.aws?.securityhub_findings_full_posture?.action?.port_probe?.details != null && ctx.aws?.securityhub_findings_full_posture?.action?.port_probe?.details instanceof List
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.destination.ip.v4}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.destination?.ip?.v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.destination.ip.v6}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.destination?.ip?.v6 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.source.ip.v4}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.source?.ip?.v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings_full_posture.network.source.ip.v6}}}'
+      if: ctx.aws?.securityhub_findings_full_posture?.network?.source?.ip?.v6 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - aws.securityhub_findings_full_posture.created_at
+        - aws.securityhub_findings_full_posture.action.type
+        - aws.securityhub_findings_full_posture.id
+        - aws.securityhub_findings_full_posture.network.destination.domain
+        - aws.securityhub_findings_full_posture.network.destination.ip.v4
+        - aws.securityhub_findings_full_posture.network.destination.ip.v6
+        - aws.securityhub_findings_full_posture.network.destination.port
+        - aws.securityhub_findings_full_posture.network.direction
+        - aws.securityhub_findings_full_posture.network.protocol
+        - aws.securityhub_findings_full_posture.network.source.domain
+        - aws.securityhub_findings_full_posture.network.source.ip.v4
+        - aws.securityhub_findings_full_posture.network.source.ip.v6
+        - aws.securityhub_findings_full_posture.network.source.mac
+        - aws.securityhub_findings_full_posture.network.source.port
+        - aws.securityhub_findings_full_posture.process.launched_at
+        - aws.securityhub_findings_full_posture.process.name
+        - aws.securityhub_findings_full_posture.process.parent.pid
+        - aws.securityhub_findings_full_posture.process.path
+        - aws.securityhub_findings_full_posture.process.pid
+        - aws.securityhub_findings_full_posture.process.terminated_at
+      ignore_failure: true
+      ignore_missing: true
+  - foreach:
+      field: aws.securityhub_findings_full_posture.threat_intel_indicators
+      processor:
+        remove:
+          field:
+            - _ingest._value.last_observed_at
+            - _ingest._value.type
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_failure: true
+          ignore_missing: true
+      ignore_missing: true
+  - foreach:
+      field: aws.securityhub_findings_full_posture.vulnerabilities
+      processor:
+        remove:
+          field:
+            - _ingest._value.cvss.base_score
+            - _ingest._value.cvss.version
+            - _ingest._value.id
+            - _ingest._value.reference_urls
+            - _ingest._value.vendor.name
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_failure: true
+          ignore_missing: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

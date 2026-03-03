@@ -1,0 +1,451 @@
+---
+description: Pipeline for processing session object.
+processors:
+  - convert:
+      field: ses.session.auth_protocol_id
+      tag: convert_session_auth_protocol_id_to_string
+      type: string
+      if: ctx.ses?.session?.auth_protocol_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.auth_protocol_id
+            ignore_missing: true
+  - script:
+      description: Add value for session auth protocol based on session auth protocol id.
+      tag: script_to_add_auth_protocol_value
+      if: ctx.ses?.session?.auth_protocol_id != null
+      params:
+        '0': Unknown
+        '1': NTLM
+        '2': Kerberos
+        '3': Digest
+        '4': OpenID
+        '5': SAML
+        '6': OAUTH 2.0
+        '7': PAP
+        '8': CHAP
+        '9': EAP
+        '10': RADIUS
+      lang: painless
+      source: >-
+        def obj = ctx.ses.session.auth_protocol_id;
+        
+        if (params.containsKey(obj.toString())) {
+          def type = params.get(obj.toString());
+          ctx.ses.session.auth_protocol_value = type
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.session.cleartext_credentials
+      tag: convert_session_cleartext_credentials_to_boolean
+      type: boolean
+      if: ctx.ses?.session?.cleartext_credentials != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.cleartext_credentials
+            ignore_missing: true
+  - convert:
+      field: ses.session.direction_id
+      tag: convert_session_direction_id_to_string
+      type: string
+      if: ctx.ses?.session?.direction_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.direction_id
+            ignore_missing: true
+  - convert:
+      field: ses.session.id
+      tag: convert_session_id_to_long
+      type: long
+      if: ctx.ses?.session?.id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.id
+            ignore_missing: true
+  - convert:
+      field: ses.session.is_admin
+      tag: convert_session_is_admin_to_boolean
+      type: boolean
+      if: ctx.ses?.session?.is_admin != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.is_admin
+            ignore_missing: true
+  - convert:
+      field: ses.session.logon_type_id
+      tag: convert_session_logon_type_id_to_string
+      type: string
+      if: ctx.ses?.session?.logon_type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.logon_type_id
+            ignore_missing: true
+  - convert:
+      field: ses.session.port
+      tag: convert_session_port_to_long
+      type: long
+      if: ctx.ses?.session?.port != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.port
+            ignore_missing: true
+  - convert:
+      field: ses.session.remote
+      tag: convert_session_remote_to_boolean
+      type: boolean
+      if: ctx.ses?.session?.remote != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.remote
+            ignore_missing: true
+  - convert:
+      field: ses.session.remote_ip
+      tag: convert_session_remote_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.ses?.session?.remote_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.remote_ip
+            ignore_missing: true
+  - convert:
+      field: ses.session.user.account_disabled
+      tag: convert_session_user_account_disabled_to_boolean
+      type: boolean
+      if: ctx.ses?.session?.user?.account_disabled != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.user.account_disabled
+            ignore_missing: true
+  - convert:
+      field: ses.session.user.is_admin
+      tag: convert_session_user_is_admin_to_boolean
+      type: boolean
+      if: ctx.ses?.session?.user?.is_admin != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.user.is_admin
+            ignore_missing: true
+  - convert:
+      field: ses.session.user.password_expires
+      tag: convert_session_user_password_expires_to_boolean
+      type: boolean
+      if: ctx.ses?.session?.user?.password_expires != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.session.user.password_expires
+            ignore_missing: true
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_auth_protocol_id
+      processor:
+        convert:
+          field: _ingest._value.auth_protocol_id
+          tag: convert_sessions_auth_protocol_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.auth_protocol_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_cleartext_credentials
+      processor:
+        convert:
+          field: _ingest._value.cleartext_credentials
+          tag: convert_sessions_cleartext_credentials_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cleartext_credentials
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_direction_id
+      processor:
+        convert:
+          field: _ingest._value.direction_id
+          tag: convert_sessions_direction_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.direction_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_id
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_sessions_id_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_is_admin
+      processor:
+        convert:
+          field: _ingest._value.is_admin
+          tag: convert_sessions_is_admin_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_admin
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_logon_type_id
+      processor:
+        convert:
+          field: _ingest._value.logon_type_id
+          tag: convert_sessions_logon_type_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.logon_type_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_port
+      processor:
+        convert:
+          field: _ingest._value.port
+          tag: convert_sessions_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_remote
+      processor:
+        convert:
+          field: _ingest._value.remote
+          tag: convert_sessions_remote_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.remote
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_remote_ip
+      processor:
+        convert:
+          field: _ingest._value.remote_ip
+          tag: convert_sessions_remote_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.remote_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_remote_ip
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_remote_ip
+          value: '{{{_ingest._value.remote_ip}}}'
+          allow_duplicates: false
+          if: ctx.ses?.sessions != null
+  - append:
+        field: related.ip
+        tag: append_related_ip_from_remote_ip
+        value: '{{{ses.session.remote_ip}}}'
+        allow_duplicates: false
+        if: ctx.ses?.session?.remote_ip != null
+  - append:
+      field: related.user
+      tag: append_related_user_from_session_user_uid
+      value: '{{{ses.session.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.session?.user?.uid != null && ctx.ses.session.user.uid != ''
+  - append:
+      field: related.user
+      tag: append_related_user_from_session_user_name
+      value: '{{{ses.session.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.session?.user?.name != null && ctx.ses.session.user.name != ''
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_related_user_uid
+      processor:              
+        append:
+          field: related.user
+          tag: append_related_uid_from_remote_uid
+          value: '{{{_ingest._value.user.uid}}}'
+          allow_duplicates: false
+          if: ctx.ses?.sessions != null
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_related_user_name
+      processor:              
+        append:
+          field: related.user
+          tag: append_related_name_from_remote_name
+          value: '{{{_ingest._value.user.name}}}'
+          allow_duplicates: false
+          if: ctx.ses?.sessions != null
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_user_account_disabled
+      processor:
+        convert:
+          field: _ingest._value.user.account_disabled
+          tag: convert_sessions_user_account_disabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.user.account_disabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_user_is_admin
+      processor:
+        convert:
+          field: _ingest._value.user.is_admin
+          tag: convert_sessions_user_is_admin_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.user.is_admin
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.sessions
+      if: ctx.ses?.sessions instanceof List
+      tag: foreach_sessions_user_password_expires
+      processor:
+        convert:
+          field: _ingest._value.user.password_expires
+          tag: convert_sessions_user_password_expires_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.user.password_expires
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

@@ -1,0 +1,1515 @@
+---
+description: Pipeline for processing security event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Sysdig
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Sysdig Secure
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_info_to_event_type
+      value: info
+  - foreach:
+      field: json.actions
+      tag: foreach_json_actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        convert:
+          field: _ingest._value.afterEventNs
+          tag: convert_actions_afterEventNs_to_long
+          target_field: _ingest._value.after_event_ns
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.actions
+      tag: foreach_json_actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        convert:
+          field: _ingest._value.beforeEventNs
+          tag: convert_actions_beforeEventNs_to_long
+          target_field: _ingest._value.before_event_ns
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.actions
+      tag: foreach_json_actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        convert:
+          field: _ingest._value.isSuccessful
+          tag: convert_actions_isSuccessful_to_boolean
+          target_field: _ingest._value.is_successful
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.actions
+      tag: foreach_json_actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        rename:
+          field: _ingest._value.errMsg
+          tag: rename_actions_errMsg
+          target_field: _ingest._value.err_msg
+          ignore_missing: true
+  - foreach:
+      field: json.actions
+      tag: foreach_json_actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.afterEventNs
+            - _ingest._value.beforeEventNs
+            - _ingest._value.isSuccessful
+          tag: remove_actions
+          ignore_missing: true
+  - rename:
+      field: json.actions
+      tag: rename_actions
+      target_field: sysdig.event.actions
+      ignore_missing: true
+  - rename:
+      field: json.category
+      tag: rename_category
+      target_field: sysdig.event.category
+      ignore_missing: true
+  - rename:
+      field: json.content.clusterName
+      tag: rename_content_clusterName
+      target_field: sysdig.event.content.cluster_name
+      ignore_missing: true
+  - rename:
+      field: json.content.command
+      tag: rename_content_command
+      target_field: sysdig.event.content.command
+      ignore_missing: true
+  - convert:
+      field: json.content.detectedClassProbability
+      tag: convert_content_detectedClassProbability_to_double
+      target_field: sysdig.event.content.detected_class_probability
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.content.exe
+      tag: rename_content_exe
+      target_field: sysdig.event.content.exe
+      ignore_missing: true
+  - rename:
+      field: json.content.fields
+      tag: rename_content_fields
+      target_field: sysdig.event.content.fields
+      ignore_missing: true
+  - dot_expander:
+      field: proc.pid.ts
+      tag: dot_expander_proc_pid_ts
+      path: sysdig.event.content.fields
+      if: ctx.sysdig?.event?.content?.fields instanceof Map && ctx.sysdig.event.content.fields['proc.pid.ts'] != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: sysdig.event.content.fields.proc.pid.ts
+      tag: rename_content_fields_proc_pid_ts
+      target_field: sysdig.event.content.fields.proc.pid_ts
+      ignore_missing: true
+  - dot_expander:
+      field: proc.ppid.ts
+      tag: dot_expander_proc_ppid_ts
+      path: sysdig.event.content.fields
+      if: ctx.sysdig?.event?.content?.fields instanceof Map && ctx.sysdig.event.content.fields['proc.ppid.ts'] != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: sysdig.event.content.fields.proc.ppid.ts
+      tag: rename_content_fields_proc_ppid_ts
+      target_field: sysdig.event.content.fields.proc.ppid_ts
+      ignore_missing: true
+  - dot_expander:
+      field: ct.user
+      tag: dot_expander_ct_user
+      path: sysdig.event.content.fields
+      if: ctx.sysdig?.event?.content?.fields instanceof Map && ctx.sysdig.event.content.fields['ct.user'] != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: sysdig.event.content.fields.ct.user
+      tag: rename_content_fields_ct_user
+      target_field: sysdig.event.content.fields.ct.user.value
+      ignore_missing: true
+  - dot_expander:
+      field: '*'
+      tag: dot_expander_content_fields
+      path: sysdig.event.content.fields
+      override: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.event.content.fields.aws.accountId
+      tag: convert_content_fields_aws_accountId_to_string
+      target_field: sysdig.event.content.fields.aws.account_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: sysdig.event.content.fields.aws.eventName
+      tag: rename_content_fields_aws_event_name
+      target_field: sysdig.event.content.fields.aws.event_name
+      ignore_missing: true
+  - convert:
+      field: sysdig.event.content.fields.aws.sourceIP
+      tag: convert_content_fields_aws_sourceIP_to_ip
+      target_field: sysdig.event.content.fields.aws.source_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.sysdig?.event?.content?.fields?.aws?.source_ip != ''
+      on_failure:
+        - rename:
+            field: sysdig.event.content.fields.aws.sourceIP
+            tag: rename_content_fields_aws_sourceIP
+            target_field: sysdig.event.content.fields.aws.source_domain
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_content_fields_aws_source_ip_into_related_ip
+      value: '{{{sysdig.event.content.fields.aws.source_ip}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.aws?.source_ip != null
+  - append:
+      field: related.user
+      tag: append_content_fields_aws_source_ip_into_related_user
+      value: '{{{sysdig.event.content.fields.aws.user}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.aws?.user != null
+  - set:
+      field: container.id
+      tag: set_container_id_from_content_fields_container_id
+      copy_from: sysdig.event.content.fields.container.id
+      ignore_empty_value: true
+  - set:
+      field: container.image.name
+      tag: set_container_image_name_from_content_fields_container_image_repository
+      copy_from: sysdig.event.content.fields.container.image.repository
+      ignore_empty_value: true
+  - append:
+      field: container.image.tag
+      tag: append_content_fields_aws_source_ip_into_container_image_tag
+      value: '{{{sysdig.event.content.fields.container.image.tag}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.container?.image?.tag != null
+  - set:
+      field: container.name
+      tag: set_container_name_from_content_fields_container_name
+      copy_from: sysdig.event.content.fields.container.name
+      ignore_empty_value: true
+  - convert:
+      field: sysdig.event.content.fields.container.privileged
+      tag: convert_content_fields_container_privileged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.event.content.fields.container.privileged
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: container.security_context.privileged
+      tag: set_container_security_context_privileged_from_content_fields_container_privileged
+      copy_from: sysdig.event.content.fields.container.privileged
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_content_fields_ct_request_host_into_related_hosts
+      value: '{{{sysdig.event.content.fields.ct.request.host}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.ct?.request?.host != null
+  - convert:
+      field: sysdig.event.content.fields.ct.srcip
+      tag: convert_content_fields_ct_srcip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.sysdig?.event?.content?.fields?.ct?.srcip != ''
+      on_failure:
+        - rename:
+            field: sysdig.event.content.fields.ct.srcip
+            tag: rename_content_fields_ct_srcip
+            target_field: sysdig.event.content.fields.ct.srcdomain
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_content_fields_ct_srcip_into_related_ip
+      value: '{{{sysdig.event.content.fields.ct.srcip}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.ct?.srcip != null
+  - append:
+      field: related.user
+      tag: append_content_fields_ct_user_value_into_related_user
+      value: '{{{sysdig.event.content.fields.ct.user.value}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.ct?.user?.value != null
+  - convert:
+      field: sysdig.event.content.fields.ct.user.accountid
+      tag: convert_content_fields_ct_user_accountid_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_content_fields_ct_user_accountid_into_related_user
+      value: '{{{sysdig.event.content.fields.ct.user.accountid}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.ct?.user?.accountid != null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success
+      value: success
+      if: ctx.sysdig?.event?.content?.fields?.evt?.res != null && ctx.sysdig.event.content.fields.evt.res.equalsIgnoreCase('success')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.sysdig?.event?.content?.fields?.evt?.res != null && ctx.sysdig.event.content.fields.evt.res.equalsIgnoreCase('failure')
+  - convert:
+      field: sysdig.event.content.fields.fd.sip
+      tag: convert_content_fields_fd_sip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.sysdig?.event?.content?.fields?.fd?.sip != ''
+      on_failure:
+        - remove:
+            field: sysdig.event.content.fields.fd.sip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_content_fields_fd_sip_into_related_ip
+      value: '{{{sysdig.event.content.fields.fd.sip}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.fd?.sip != null
+  - convert:
+      field: sysdig.event.content.fields.fd.sport
+      tag: convert_content_fields_fd_sport_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.event.content.fields.fd.sport
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.event.content.fields.group.gid
+      tag: convert_content_fields_group_gid_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: user.group.id
+      tag: set_group_id_from_content_fields_group_gid
+      copy_from: sysdig.event.content.fields.group.gid
+      ignore_empty_value: true
+  - set:
+      field: user.group.name
+      tag: set_group_name_from_content_fields_group_name
+      copy_from: sysdig.event.content.fields.group.name
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.acmdline[2]
+      tag: rename_content_fields_proc_acmdline[2]
+      target_field: sysdig.event.content.fields.proc.acmdline_2
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.command_line
+      tag: set_process_parent_parent_command_line_from_content_fields_proc_acmdline_2
+      copy_from: sysdig.event.content.fields.proc.acmdline_2
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.acmdline[3]
+      tag: rename_content_fields_proc_acmdline[3]
+      target_field: sysdig.event.content.fields.proc.acmdline_3
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.parent.command_line
+      tag: set_process_parent_parent_parent_command_line_from_content_fields_proc_acmdline_3
+      copy_from: sysdig.event.content.fields.proc.acmdline_3
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.acmdline[4]
+      tag: rename_content_fields_proc_acmdline[4]
+      target_field: sysdig.event.content.fields.proc.acmdline_4
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.parent.parent.command_line
+      tag: set_process_parent_parent_parent_parent_command_line_from_content_fields_proc_acmdline_4
+      copy_from: sysdig.event.content.fields.proc.acmdline_4
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.aexepath[2]
+      tag: rename_content_fields_proc_aexepath[2]
+      target_field: sysdig.event.content.fields.proc.aexepath_2
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.executable
+      tag: set_process_parent_parent_executable_from_content_fields_proc_aexepath_2
+      copy_from: sysdig.event.content.fields.proc.aexepath_2
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.aexepath[3]
+      tag: rename_content_fields_proc_aexepath[3]
+      target_field: sysdig.event.content.fields.proc.aexepath_3
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.parent.executable
+      tag: set_process_parent_parent_parent_executable_from_content_fields_proc_aexepath_3
+      copy_from: sysdig.event.content.fields.proc.aexepath_3
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.aexepath[4]
+      tag: rename_content_fields_proc_aexepath[4]
+      target_field: sysdig.event.content.fields.proc.aexepath_4
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.parent.parent.executable
+      tag: set_process_parent_parent_parent_parent_executable_from_content_fields_proc_aexepath_4
+      copy_from: sysdig.event.content.fields.proc.aexepath_4
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.aname[2]
+      tag: rename_content_fields_proc_aname[2]
+      target_field: sysdig.event.content.fields.proc.aname_2
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.name
+      tag: set_process_parent_parent_name_from_content_fields_proc_aname_2
+      copy_from: sysdig.event.content.fields.proc.aname_2
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.aname[3]
+      tag: rename_content_fields_proc_aname[3]
+      target_field: sysdig.event.content.fields.proc.aname_3
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.parent.name
+      tag: set_process_parent_parent_parent_name_from_content_fields_proc_aname_3
+      copy_from: sysdig.event.content.fields.proc.aname_3
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.content.fields.proc.aname[4]
+      tag: rename_content_fields_proc_aname[4]
+      target_field: sysdig.event.content.fields.proc.aname_4
+      ignore_missing: true
+  - set:
+      field: process.parent.parent.parent.parent.name
+      tag: set_process_parent_parent_parent_parent_name_from_content_fields_proc_aname_4
+      copy_from: sysdig.event.content.fields.proc.aname_4
+      ignore_empty_value: true
+  - append:
+      field: process.args
+      tag: append_content_fields_proc_args_into_process_args
+      value: '{{{sysdig.event.content.fields.proc.args}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.proc?.args != null
+  - set:
+      field: process.command_line
+      tag: set_process_command_line_from_content_fields_proc_cmdline
+      copy_from: sysdig.event.content.fields.proc.cmdline
+      ignore_empty_value: true
+  - set:
+      field: process.working_directory
+      tag: set_process_working_directory_from_content_fields_proc_cwd
+      copy_from: sysdig.event.content.fields.proc.cwd
+      ignore_empty_value: true
+  - set:
+      field: process.executable
+      tag: set_process_executable_from_content_fields_proc_exepath
+      copy_from: sysdig.event.content.fields.proc.exepath
+      ignore_empty_value: true
+  - set:
+      field: process.hash.sha256
+      tag: set_process_hash_sha256_from_content_fields_proc_hash_sha256
+      copy_from: sysdig.event.content.fields.proc.hash.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_content_fields_proc_hash_sha256_into_related_hash
+      value: '{{{sysdig.event.content.fields.proc.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.proc?.hash?.sha256 != null
+  - set:
+      field: process.name
+      tag: set_process_name_from_content_fields_proc_name
+      copy_from: sysdig.event.content.fields.proc.name
+      ignore_empty_value: true
+  - set:
+      field: process.parent.command_line
+      tag: set_process_parent_command_line_from_content_fields_proc_pcmdline
+      copy_from: sysdig.event.content.fields.proc.pcmdline
+      ignore_empty_value: true
+  - set:
+      field: process.parent.executable
+      tag: set_process_parent_executable_from_content_fields_proc_pexepath
+      copy_from: sysdig.event.content.fields.proc.pexepath
+      ignore_empty_value: true
+  - convert:
+      field: sysdig.event.content.fields.proc.pid
+      tag: convert_content_fields_proc_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.pid
+      tag: set_process_pid_from_content_fields_proc_pid
+      copy_from: sysdig.event.content.fields.proc.pid
+      ignore_empty_value: true
+  - script:
+      description: Parse date fields.
+      tag: script_parse_date_fields
+      lang: painless
+      source: >
+        def parseDate(def rawtimestamp) {
+          long timestamp;
+          if (rawtimestamp instanceof String) {
+            timestamp = Long.parseLong(rawtimestamp);
+          } else if (rawtimestamp instanceof long) {
+            timestamp = (long) rawtimestamp;
+          }
+          if (String.valueOf(timestamp).length() == 19) {
+            long epoch = timestamp / 1000000000L;
+            long seconds = timestamp % 1000000000L;
+            return Instant.ofEpochSecond(epoch, seconds).atZone(ZoneOffset.UTC);
+          }
+          return '';
+        }
+        if (ctx.json?.timestamp != null) {
+          ctx.json.timestamp = parseDate(ctx.json.timestamp);
+        }
+        if (ctx.sysdig?.event?.content?.fields?.proc?.pid_ts != null) {
+          ctx.sysdig.event.content.fields.proc.pid_ts = parseDate(ctx.sysdig.event.content.fields.proc.pid_ts);
+        }
+        if (ctx.sysdig?.event?.content?.fields?.proc?.ppid_ts != null) {
+          ctx.sysdig.event.content.fields.proc.ppid_ts = parseDate(ctx.sysdig.event.content.fields.proc.ppid_ts);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.timestamp
+      tag: date_timestamp
+      target_field: sysdig.event.timestamp
+      formats:
+        - ISO8601
+      output_format: strict_date_optional_time_nanos
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_timestamp
+      copy_from: sysdig.event.timestamp
+      ignore_empty_value: true
+  - date:
+      field: sysdig.event.content.fields.proc.pid_ts
+      tag: date_content_fields_proc_pid_ts
+      target_field: sysdig.event.content.fields.proc.pid_ts
+      formats:
+        - ISO8601
+      output_format: strict_date_optional_time_nanos
+      if: ctx.sysdig?.event?.content?.fields?.proc?.pid_ts != null && ctx.sysdig.event.content.fields.proc.pid_ts != ''
+      on_failure:
+        - remove:
+            field: sysdig.event.content.fields.proc.pid_ts
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.start
+      tag: set_process_start_from_content_fields_proc_pid_ts
+      copy_from: sysdig.event.content.fields.proc.pid_ts
+      ignore_empty_value: true
+  - date:
+      field: sysdig.event.content.fields.proc.ppid_ts
+      tag: date_content_fields_proc_ppid_ts
+      target_field: sysdig.event.content.fields.proc.ppid_ts
+      formats:
+        - ISO8601
+      output_format: strict_date_optional_time_nanos
+      if: ctx.sysdig?.event?.content?.fields?.proc?.ppid_ts != null && ctx.sysdig.event.content.fields.proc.ppid_ts != ''
+      on_failure:
+        - remove:
+            field: sysdig.event.content.fields.proc.ppid_ts
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.parent.start
+      tag: set_process_parent_start_from_content_fields_proc_ppid_ts
+      copy_from: sysdig.event.content.fields.proc.ppid_ts
+      ignore_empty_value: true
+  - set:
+      field: process.parent.name
+      tag: set_process_parent_name_from_content_fields_proc_pname
+      copy_from: sysdig.event.content.fields.proc.pname
+      ignore_empty_value: true
+  - convert:
+      field: sysdig.event.content.fields.proc.ppid
+      tag: convert_content_fields_proc_ppid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.event.content.fields.proc.ppid
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.parent.pid
+      tag: set_process_parent_pid_from_content_fields_proc_ppid
+      copy_from: sysdig.event.content.fields.proc.ppid
+      ignore_empty_value: true
+  - convert:
+      field: sysdig.event.content.fields.proc.sid
+      tag: convert_content_fields_proc_sid_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_content_fields_user_loginname_into_related_user
+      value: '{{{sysdig.event.content.fields.user.loginname}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.user?.loginname != null
+  - convert:
+      field: sysdig.event.content.fields.user.loginuid
+      tag: convert_content_fields_user_loginuid_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_content_fields_user_loginuid_into_related_user
+      value: '{{{sysdig.event.content.fields.user.loginuid}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.user?.loginuid != null
+  - set:
+      field: user.name
+      tag: set_user_name_from_content_fields_user_name
+      copy_from: sysdig.event.content.fields.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_content_fields_user_name_into_related_user
+      value: '{{{sysdig.event.content.fields.user.name}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.user?.name != null
+  - convert:
+      field: sysdig.event.content.fields.user.uid
+      tag: convert_content_fields_user_uid_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_name_from_content_fields_user_uid
+      copy_from: sysdig.event.content.fields.user.uid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_content_fields_user_uid_into_related_user
+      value: '{{{sysdig.event.content.fields.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.fields?.user?.uid != null
+  - rename:
+      field: json.content.integrationId
+      tag: rename_content_integrationId
+      target_field: sysdig.event.content.integration_id
+      ignore_missing: true
+  - rename:
+      field: json.content.integrationType
+      tag: rename_content_integrationType
+      target_field: sysdig.event.content.integration_type
+      ignore_missing: true
+  - rename:
+      field: json.content.namespace
+      tag: rename_content_namespace
+      target_field: sysdig.event.content.namespace
+      ignore_missing: true
+  - rename:
+      field: json.content.origin
+      tag: rename_content_origin
+      target_field: sysdig.event.content.origin
+      ignore_missing: true
+  - rename:
+      field: json.content.output
+      tag: rename_content_output
+      target_field: sysdig.event.content.output
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_content_output
+      copy_from: sysdig.event.content.output
+      ignore_empty_value: true
+  - convert:
+      field: json.content.policyId
+      tag: convert_content_policyId_to_string
+      target_field: sysdig.event.content.policy_id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.content.policyNotificationChannelIds
+      tag: convert_content_policyNotificationChannelIds_to_string
+      target_field: sysdig.event.content.policy_notification_channel_ids
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.content.policyOrigin
+      tag: rename_content_policyOrigin
+      target_field: sysdig.event.content.policy_origin
+      ignore_missing: true
+  - append:
+      field: rule.author
+      tag: append_content_policy_origin_into_rule_author
+      value: '{{{sysdig.event.content.policy_origin}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.content?.policy_origin != null
+  - convert:
+      field: json.content.policyVersion
+      tag: convert_content_policyVersion_to_string
+      target_field: sysdig.event.content.policy_version
+      type: string
+      ignore_missing: true
+  - set:
+      field: rule.version
+      tag: set_rule_version_from_content_policy_version
+      copy_from: sysdig.event.content.policy_version
+      ignore_empty_value: true
+  - rename:
+      field: json.content.priority
+      tag: rename_content_priority
+      target_field: sysdig.event.content.priority
+      ignore_missing: true
+  - rename:
+      field: json.content.resourceKind
+      tag: rename_content_resourceKind
+      target_field: sysdig.event.content.resource_kind
+      ignore_missing: true
+  - rename:
+      field: json.content.resourceName
+      tag: rename_content_resourceName
+      target_field: sysdig.event.content.resource_name
+      ignore_missing: true
+  - rename:
+      field: json.content.ruleName
+      tag: rename_content_ruleName
+      target_field: sysdig.event.content.rule_name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_content_rule_name
+      copy_from: sysdig.event.content.rule_name
+      ignore_empty_value: true
+  - convert:
+      field: json.content.ruleSubType
+      tag: convert_content_ruleSubType_to_long
+      type: long
+      target_field: sysdig.event.content.rule_sub_type
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.content.ruleTags
+      tag: rename_content_ruleTags
+      target_field: sysdig.event.content.rule_tags
+      ignore_missing: true
+  - script:
+      description: Set threat.* fields.
+      tag: script_set_threat_*
+      lang: painless
+      if : ctx.sysdig?.event?.content?.rule_tags instanceof List
+      source: >
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.tactic = ctx.threat.tactic ?: [:];
+        ctx.threat.technique = ctx.threat.technique ?: [:];
+        ctx.threat.technique.subtechnique = ctx.threat.technique.subtechnique ?: [:];
+        ctx.threat.tactic.id = ctx.threat.tactic.id ?: [];
+        ctx.threat.technique.id = ctx.threat.technique.id ?: [];
+        ctx.threat.technique.subtechnique.id = ctx.threat.technique.subtechnique.id ?: [];
+        ctx.threat.tactic.name = ctx.threat.tactic.name ?: [];
+        ctx.threat.technique.name = ctx.threat.technique.name ?: [];
+        ctx.threat.technique.subtechnique.name = ctx.threat.technique.subtechnique.name ?: [];
+        Pattern pattern = /MITRE_(T[A-Z]\d{4})_(\w+)|MITRE_(T\d{4}(?:\.\d{3})?)_(\w+)/;
+        for (int i = 0; i < ctx.sysdig.event.content.rule_tags.size(); i++) {
+          def tag = ctx.sysdig.event.content.rule_tags[i];
+          def matcher = pattern.matcher(tag);
+          if (matcher.find()) {
+            if (matcher.group(1) != null && matcher.group(2) != null) {
+              ctx.threat.tactic.id.add(matcher.group(1));
+              ctx.threat.tactic.name.add(matcher.group(2));
+            } else if (matcher.group(3) != null && matcher.group(4) != null) {
+              if (matcher.group(3).contains('.')) {
+                ctx.threat.technique.subtechnique.id.add(matcher.group(3));
+                ctx.threat.technique.subtechnique.name.add(matcher.group(4));
+              } else {
+                ctx.threat.technique.id.add(matcher.group(3));
+                ctx.threat.technique.name.add(matcher.group(4));
+              }
+            }
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.content.ruleType
+      tag: convert_content_ruleType_to_long
+      type: long
+      target_field: sysdig.event.content.rule_type
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.content.runBook
+      tag: rename_content_runBook
+      target_field: sysdig.event.content.run_book
+      ignore_missing: true
+  - rename:
+      field: json.content.scanResult
+      tag: rename_content_scanResult
+      target_field: sysdig.event.content.scan_result
+      ignore_missing: true
+  - foreach:
+      field: json.content.sequence
+      tag: foreach_json_content_sequence
+      if: ctx.json?.content?.sequence instanceof List
+      processor:
+        rename:
+          field: _ingest._value.eventId
+          tag: rename_content_sequence_eventId
+          target_field: _ingest._value.event_id
+          ignore_missing: true
+  - foreach:
+      field: json.content.sequence
+      tag: foreach_json_content_sequence
+      if: ctx.json?.content?.sequence instanceof List
+      processor:
+        rename:
+          field: _ingest._value.eventName
+          tag: rename_content_sequence_eventName
+          target_field: _ingest._value.event_name
+          ignore_missing: true
+  - foreach:
+      field: json.content.sequence
+      tag: foreach_json_content_sequence
+      if: ctx.json?.content?.sequence instanceof List
+      processor:
+        rename:
+          field: _ingest._value.ingestionId
+          tag: rename_content_sequence_ingestionId
+          target_field: _ingest._value.ingestion_id
+          ignore_missing: true
+  - foreach:
+      field: json.content.sequence
+      tag: foreach_json_content_sequence
+      if: ctx.json?.content?.sequence instanceof List
+      processor:
+        convert:
+          field: _ingest._value.sourceIpAddress
+          tag: convert_content_sequence_sourceIpAddress_to_ip
+          target_field: _ingest._value.source_ip_address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.content.sequence
+      tag: foreach_json_content_sequence
+      if: ctx.json?.content?.sequence instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_content_sequence_source_ip_address_into_related_ip
+          value: '{{{_ingest._value.source_ip_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.content.sequence
+      tag: foreach_json_content_sequence
+      if: ctx.json?.content?.sequence instanceof List
+      processor:
+        rename:
+          field: _ingest._value.subIngestionId
+          tag: rename_content_sequence_subIngestionId
+          target_field: _ingest._value.sub_ingestion_id
+          ignore_missing: true
+  - foreach:
+      field: json.content.sequence
+      tag: foreach_json_content_sequence
+      if: ctx.json?.content?.sequence instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.sourceIpAddress
+          tag: remove_content_sequence
+          ignore_missing: true
+  - rename:
+      field: json.content.sequence
+      tag: rename_content_sequence
+      target_field: sysdig.event.content.sequence
+      ignore_missing: true
+  - foreach:
+      field: json.content.stats
+      tag: foreach_json_content_stats
+      if: ctx.json?.content?.stats instanceof List
+      processor:
+        convert:
+          field: _ingest._value.count
+          tag: convert_content_stats_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.count
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.content.stats
+      tag: rename_content_stats
+      target_field: sysdig.event.content.stats
+      ignore_missing: true
+  - rename:
+      field: json.content.type
+      tag: rename_content_type
+      target_field: sysdig.event.content.type
+      ignore_missing: true
+  - foreach:
+      field: json.content.zones
+      tag: foreach_json_content_zones
+      if: ctx.json?.content?.zones instanceof List
+      processor:
+        convert:
+          field: _ingest._value.zoneId
+          tag: convert_content_zones_zoneId_to_string
+          target_field: _ingest._value.id
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: json.content.zones
+      tag: foreach_json_content_zones
+      if: ctx.json?.content?.zones instanceof List
+      processor:
+        rename:
+          field: _ingest._value.zoneName
+          tag: rename_content_zones_zoneName
+          target_field: _ingest._value.name
+          ignore_missing: true
+  - foreach:
+      field: json.content.zones
+      tag: foreach_json_content_zones
+      if: ctx.json?.content?.zones instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.zoneId
+          tag: remove_content_zones
+          ignore_missing: true
+  - rename:
+      field: json.content.zones
+      tag: rename_content_zones
+      target_field: sysdig.event.content.zones
+      ignore_missing: true
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: sysdig.event.description
+      ignore_missing: true
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_description
+      copy_from: sysdig.event.description
+      ignore_empty_value: true
+  - rename:
+      field: json.engine
+      tag: rename_engine
+      target_field: sysdig.event.engine
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: sysdig.event.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_id
+      copy_from: sysdig.event.id
+      ignore_empty_value: true
+  - rename:
+      field: json.labels
+      tag: rename_labels
+      target_field: sysdig.event.labels
+      ignore_missing: true
+  - dot_expander:
+      field: '*'
+      tag: dot_expander_labels
+      path: sysdig.event.labels
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.event.labels.aws.accountId
+      tag: convert_labels_aws_accountId_to_string
+      target_field: sysdig.event.labels.aws.account_id
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_labels_aws_user_into_related_user
+      value: '{{{sysdig.event.labels.aws.user}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.labels?.aws?.user != null
+  - convert:
+      field: sysdig.event.labels.azure.instanceId
+      tag: convert_labels_azure_instanceId_to_string
+      target_field: sysdig.event.labels.azure.instance_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_labels_azure_instance_id
+      copy_from: sysdig.event.labels.azure.instance_id
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.azure.instanceName
+      tag: rename_labels_azure_instanceName
+      target_field: sysdig.event.labels.azure.instance_name
+      ignore_missing: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_labels_azure_instance_name
+      copy_from: sysdig.event.labels.azure.instance_name
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.azure.instanceSize
+      tag: rename_labels_azure_instanceSize
+      target_field: sysdig.event.labels.azure.instance_size
+      ignore_missing: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_labels_azure_instance_size
+      copy_from: sysdig.event.labels.azure.instance_size
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.azure.subscriptionId
+      tag: rename_labels_azure_subscriptionId
+      target_field: sysdig.event.labels.azure.subscription_id
+      ignore_missing: true
+  - convert:
+      field: sysdig.event.labels.cloudProvider.account.id
+      tag: convert_labels_cloudProvider_account_id_to_string
+      target_field: sysdig.event.labels.cloud_provider.account.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_labels_cloud_provider_account_id
+      copy_from: sysdig.event.labels.cloud_provider.account.id
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.cloudProvider.name
+      tag: rename_labels_cloudProvider_name
+      target_field: sysdig.event.labels.cloud_provider.name
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_from_labels_cloud_provider_name
+      copy_from: sysdig.event.labels.cloud_provider.name
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.cloudProvider.region
+      tag: rename_labels_cloudProvider_region
+      target_field: sysdig.event.labels.cloud_provider.region
+      ignore_missing: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_labels_cloud_provider_region
+      copy_from: sysdig.event.labels.cloud_provider.region
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.cloudProvider.user
+      tag: rename_labels_cloudProvider_user
+      target_field: sysdig.event.labels.cloud_provider.user
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_labels_cloud_provider_user_into_related_user
+      value: '{{{sysdig.event.labels.cloud_provider.user}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.labels?.cloud_provider?.user != null
+  - append:
+      field: container.image.hash.all
+      tag: append_labels_container_image_digest_into_container_image_hash_all
+      value: '{{{sysdig.event.labels.container.image.digest}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.labels?.container?.image?.digest != null
+  - script:
+      description: Append container image hash to related.hash field.
+      tag: script_append_container_image_hash_to_related_hash
+      lang: painless
+      if : ctx.sysdig?.event?.labels?.container?.image?.digest != null
+      source: >-
+        ctx.related = ctx.related ?: [:];
+        ctx.related.hash = ctx.related.hash ?: [];
+        String digest = ctx.sysdig.event.labels.container.image.digest;
+        int index = digest.indexOf(':');
+        String hash = digest.substring(index + 1);
+        ctx.related.hash.add(hash);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: sysdig.event.labels.gcp.availabilityZone
+      tag: rename_labels_gcp_availabilityZone
+      target_field: sysdig.event.labels.gcp.availability_zone
+      ignore_missing: true
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_labels_gcp_availability_zone
+      copy_from: sysdig.event.labels.gcp.availability_zone
+      ignore_empty_value: true
+  - convert:
+      field: sysdig.event.labels.gcp.instanceId
+      tag: convert_labels_gcp_instanceId_to_string
+      target_field: sysdig.event.labels.gcp.instance_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_labels_gcp_instance_id
+      copy_from: sysdig.event.labels.gcp.instance_id
+      ignore_empty_value: true
+      if: ctx.cloud?.instance?.id == null
+  - rename:
+      field: sysdig.event.labels.gcp.instanceName
+      tag: rename_labels_gcp_instanceName
+      target_field: sysdig.event.labels.gcp.instance_name
+      ignore_missing: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_labels_gcp_instance_name
+      copy_from: sysdig.event.labels.gcp.instance_name
+      ignore_empty_value: true
+      if: ctx.cloud?.instance?.name == null
+  - rename:
+      field: sysdig.event.labels.gcp.machineType
+      tag: rename_labels_gcp_machineType
+      target_field: sysdig.event.labels.gcp.machine_type
+      ignore_missing: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_labels_gcp_machine_type
+      copy_from: sysdig.event.labels.gcp.machine_type
+      ignore_empty_value: true
+      if: ctx.cloud?.machine?.type == null
+  - convert:
+      field: sysdig.event.labels.gcp.projectId
+      tag: convert_labels_gcp_projectId_to_string
+      target_field: sysdig.event.labels.gcp.project_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: cloud.project.id
+      tag: set_cloud_project_id_from_labels_gcp_project_id
+      copy_from: sysdig.event.labels.gcp.project_id
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.gcp.projectName
+      tag: rename_labels_gcp_projectName
+      target_field: sysdig.event.labels.gcp.project_name
+      ignore_missing: true
+  - set:
+      field: cloud.project.name
+      tag: set_cloud_project_name_from_labels_gcp_project_name
+      copy_from: sysdig.event.labels.gcp.project_name
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.host.hostName
+      tag: rename_labels_host_hostName
+      target_field: sysdig.event.labels.host.host_name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_labels_host_host_name
+      copy_from: sysdig.event.labels.host.host_name
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_labels_host_host_name
+      copy_from: sysdig.event.labels.host.host_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_labels_host_host_name_into_related_hosts
+      value: '{{{sysdig.event.labels.host.host_name}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.labels?.host?.host_name != null
+  - uppercase:
+      field: sysdig.event.labels.host.mac
+      tag: uppercase_labels_host_mac
+      ignore_missing: true
+  - gsub:
+      field: sysdig.event.labels.host.mac
+      tag: gsub_labels_host_mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.mac
+      tag: append_labels_host_mac_into_host_mac
+      value: '{{{sysdig.event.labels.host.mac}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.labels?.host?.mac != null
+  - set:
+      field: orchestrator.cluster.name
+      tag: set_orchestrator_cluster_name_from_labels_kubernetes_cluster_name
+      copy_from: sysdig.event.labels.kubernetes.cluster.name
+      ignore_empty_value: true
+  - rename:
+      field: sysdig.event.labels.kubernetes.cronJob.name
+      tag: rename_labels_kubernetes_cronJob_name
+      target_field: sysdig.event.labels.kubernetes.cron_job.name
+      ignore_missing: true
+  - rename:
+      field: sysdig.event.labels.kubernetes.daemonSet.name
+      tag: rename_labels_kubernetes_daemonSet_name
+      target_field: sysdig.event.labels.kubernetes.daemon_set.name
+      ignore_missing: true
+  - set:
+      field: orchestrator.namespace
+      tag: set_orchestrator_namespace_from_labels_kubernetes_namespace_name
+      copy_from: sysdig.event.labels.kubernetes.namespace.name
+      ignore_empty_value: true
+  - set:
+      field: orchestrator.resource.name
+      tag: set_orchestrator_resource_name_from_labels_kubernetes_pod_name
+      copy_from: sysdig.event.labels.kubernetes.pod.name
+      ignore_empty_value: true
+  - set:
+      field: orchestrator.resource.parent.type
+      tag: set_orchestrator_resource_parent_type_from_labels_kubernetes_workload_type
+      copy_from: sysdig.event.labels.kubernetes.workload.type
+      ignore_empty_value: true
+  - convert:
+      field: sysdig.event.labels.source.ip
+      tag: convert_labels_source_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.sysdig?.event?.labels?.source?.ip != ''
+      on_failure:
+        - rename:
+            field: sysdig.event.labels.source.ip
+            tag: rename_labels_source_ip
+            target_field: sysdig.event.labels.source.domain
+            ignore_missing: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_labels_source_ip
+      copy_from: sysdig.event.labels.source.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_labels_source_ip_into_related_ip
+      value: '{{{sysdig.event.labels.source.ip}}}'
+      allow_duplicates: false
+      if: ctx.sysdig?.event?.labels?.source?.ip != null
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: sysdig.event.name
+      ignore_missing: true
+  - set:
+      field: rule.ruleset
+      tag: set_rule_ruleset_from_name
+      copy_from: sysdig.event.name
+      ignore_empty_value: true
+  - rename:
+      field: json.originator
+      tag: rename_originator
+      target_field: sysdig.event.originator
+      ignore_missing: true
+  - rename:
+      field: json.rawEventCategory
+      tag: rename_rawEventCategory
+      target_field: sysdig.event.raw_event_category
+      ignore_missing: true
+  - rename:
+      field: json.rawEventOriginator
+      tag: rename_rawEventOriginator
+      target_field: sysdig.event.raw_event_originator
+      ignore_missing: true
+  - convert:
+      field: json.severity
+      tag: convert_severity_to_long
+      type: long
+      target_field: sysdig.event.severity
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_severity
+      copy_from: sysdig.event.severity
+      ignore_empty_value: true
+  - script:
+      description: Set severity value..
+      tag: script_set_severity_value
+      lang: painless
+      if: ctx.event?.severity != null
+      source: >
+        String severity_value;
+        if (ctx.event.severity >= 0 && ctx.event.severity <= 3) {
+          severity_value = "High";
+        } else if (ctx.event.severity >= 4 && ctx.event.severity <= 5) {
+          severity_value = "Medium";
+        } else if (ctx.event.severity == 6) {
+          severity_value = "Low";
+        } else if (ctx.event.severity == 7) {
+          severity_value = "Info";
+        }
+        if (severity_value != null) {
+          ctx.sysdig.event.severity_value = severity_value;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.source
+      tag: rename_source
+      target_field: sysdig.event.source
+      ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_source
+      copy_from: sysdig.event.source
+      ignore_empty_value: true
+  - rename:
+      field: json.sourceDetails.subType
+      tag: rename_sourceDetails_subType
+      target_field: sysdig.event.source_details.sub_type
+      ignore_missing: true
+  - rename:
+      field: json.sourceDetails.type
+      tag: rename_sourceDetails_type
+      target_field: sysdig.event.source_details.type
+      ignore_missing: true
+  - set:
+      field: orchestrator.type
+      tag: set_orchestrator_type
+      value: kubernetes
+      if: >-
+        ctx.sysdig?.labels?.kubernetes?.cluster?.name != null ||
+        ctx.sysdig?.labels?.kubernetes?.namespace?.name != null ||
+        ctx.sysdig?.labels?.kubernetes?.pod?.name != null ||
+        ctx.sysdig?.labels?.kubernetes?.workload?.type != null
+  - append:
+      field: event.category
+      tag: append_process_to_event_category
+      value: process
+      if: >-
+        ctx.process?.name != null ||
+        ctx.process?.pid != null ||
+        ctx.process?.command_line != null ||
+        ctx.process?.executable != null
+  - remove:
+      field:
+        - sysdig.event.content.fields.container.id
+        - sysdig.event.content.fields.container.image.repository
+        - sysdig.event.content.fields.container.image.tag
+        - sysdig.event.content.fields.container.name
+        - sysdig.event.content.fields.container.privileged
+        - sysdig.event.content.fields.group.gid
+        - sysdig.event.content.fields.group.name
+        - sysdig.event.content.fields.proc.acmdline[2]
+        - sysdig.event.content.fields.proc.acmdline[3]
+        - sysdig.event.content.fields.proc.acmdline[4]
+        - sysdig.event.content.fields.proc.aexepath[2]
+        - sysdig.event.content.fields.proc.aexepath[3]
+        - sysdig.event.content.fields.proc.aexepath[4]
+        - sysdig.event.content.fields.proc.aname[2]
+        - sysdig.event.content.fields.proc.aname[3]
+        - sysdig.event.content.fields.proc.aname[4]
+        - sysdig.event.content.fields.proc.cmdline
+        - sysdig.event.content.fields.proc.cwd
+        - sysdig.event.content.fields.proc.exepath
+        - sysdig.event.content.fields.proc.hash.sha256
+        - sysdig.event.content.fields.proc.name
+        - sysdig.event.content.fields.proc.pcmdline
+        - sysdig.event.content.fields.proc.pexepath
+        - sysdig.event.content.fields.proc.pid
+        - sysdig.event.content.fields.proc.pid_ts
+        - sysdig.event.content.fields.proc.pname
+        - sysdig.event.content.fields.proc.ppid
+        - sysdig.event.content.fields.proc.ppid_ts
+        - sysdig.event.content.fields.user.name
+        - sysdig.event.content.fields.user.uid
+        - sysdig.event.content.output
+        - sysdig.event.content.policy_origin
+        - sysdig.event.content.policy_version
+        - sysdig.event.content.rule_name
+        - sysdig.event.description
+        - sysdig.event.id
+        - sysdig.event.labels.cloud_provider.account.id
+        - sysdig.event.labels.cloud_provider.name
+        - sysdig.event.labels.cloud_provider.region
+        - sysdig.event.labels.container.image.digest
+        - sysdig.event.labels.host.host_name
+        - sysdig.event.labels.host.mac
+        - sysdig.event.labels.kubernetes.cluster.name
+        - sysdig.event.labels.kubernetes.namespace.name
+        - sysdig.event.labels.kubernetes.pod.name
+        - sysdig.event.labels.kubernetes.workload.type
+        - sysdig.event.labels.source.ip
+        - sysdig.event.name
+        - sysdig.event.severity
+        - sysdig.event.source
+        - sysdig.event.timestamp
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - json
+        - sysdig.event.content.fields.aws.accountId
+        - sysdig.event.content.fields.aws.sourceIP
+        - sysdig.event.labels.aws.accountId
+        - sysdig.event.labels.azure.instanceId
+        - sysdig.event.labels.cloudProvider.account.id
+        - sysdig.event.labels.gcp.instanceId
+        - sysdig.event.labels.gcp.projectId
+      tag: remove_json
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == '<NA>' || v == '-1' ||(v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == '<NA>' || v == '-1' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

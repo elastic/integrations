@@ -1,0 +1,19 @@
+{
+    "attributes": {
+        "created_at": "2022-08-09T16:06:35.829Z",
+        "created_by": "elastic",
+        "description": "Get executables and driver files from temp locations which attackers commonly abuse to stage tools and payloads, hash them, and provide a VirusTotal link for the analyst to check for signs of maliciousness.",
+        "id": "executables_or_drivers_in_temp_folder_vt_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT datetime(btime, 'unixepoch', 'UTC') as CreationTimeUTC, datetime(mtime, 'unixepoch', 'UTC') as ModificationTimeUTC,\n    concat('https://www.virustotal.com/gui/file/', sha1) AS VtLink, filename, issuer_name, original_program_name, file.path,\n    result, size, subject_name, uid, sha1 FROM file\nJOIN authenticode ON file.path = authenticode.path\nJOIN hash ON file.path = hash.path\nWHERE (file.directory == 'C:\\Windows\\Temp\\' OR file.directory LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\' OR\nfile.directory LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\%\\' OR file.directory LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\%\\%\\') AND\n(file.filename LIKE '%.dll' OR file.filename LIKE '%.exe' OR file.filename LIKE '%.sys')",
+        "updated_at": "2022-08-09T16:06:35.829Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.3",
+    "id": "osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2022-08-09T16:06:35.838Z",
+    "version": "WzEwMzU4LDJd"
+}

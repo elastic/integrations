@@ -1,0 +1,41 @@
+type: metrics
+title: Docker diskio metrics
+elasticsearch:
+  index_mode: "time_series"
+streams:
+  - input: docker/metrics
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - unix:///var/run/docker.sock
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: skip_major
+        type: text
+        title: Skip major device numbers in disk usage calculations
+        multi: true
+        required: false
+        show_user: true
+        default: [9, 253]
+      - name: labels.dedot
+        type: bool
+        title: De-Dot labels
+        multi: false
+        required: false
+        show_user: true
+        default: true
+        description: >
+          If True, remove dot notation on container labels
+
+    title: Docker diskio metrics
+    description: Collect Docker diskio metrics

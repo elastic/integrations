@@ -1,0 +1,32 @@
+---
+description: Pipeline for processing Arista NG Firewall session stats
+processors:
+  ########################
+  ## Session Statistics ##
+  ########################
+  - rename:
+      field: arista.endTime
+      target_field: event.end
+      ignore_missing: true
+  - rename:
+      field: arista.sessionEvent.timeStamp
+      target_field: event.start
+      ignore_missing: true
+  
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove Arista fields that are not necessary after parsing to ECS
+      field:
+        - arista.p2cBytes
+        - arista.p2sBytes
+        - arista.sessionEvent.sessionId
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

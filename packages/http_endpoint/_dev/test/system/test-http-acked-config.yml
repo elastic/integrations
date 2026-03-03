@@ -1,0 +1,23 @@
+service: test-webhook-http-ack
+service_notify_signal: SIGHUP
+input: http_endpoint
+vars:
+  data_stream.dataset: http_endpoint.http_endpoint
+  preserve_original_event: true
+  listen_address: 0.0.0.0
+  url: /json
+  # Replace 'json' with '.' when kibana.version is ^8.15.0.
+  prefix: 'json'
+  listen_port: 9516
+  basic_auth: true
+  username: abc123
+  password: abc123
+  # Remove processors when kibana.version is ^8.15.0.
+  processors: |
+    - rename:
+        fields:
+          - from: json.message
+            to: message
+    - drop_fields:
+        fields:
+          - json

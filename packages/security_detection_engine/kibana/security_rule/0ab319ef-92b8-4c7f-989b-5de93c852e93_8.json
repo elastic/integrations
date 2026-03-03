@@ -1,0 +1,82 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "A statistical model has identified command-and-control (C2) beaconing activity with high confidence. Beaconing can help attackers maintain stealthy communication with their C2 servers, receive instructions and payloads, exfiltrate data and maintain persistence in a network.",
+        "from": "now-1h",
+        "index": [
+            "ml_beaconing.all"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Statistical Model Detected C2 Beaconing Activity with High Confidence",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Statistical Model Detected C2 Beaconing Activity with High Confidence\n\nStatistical models analyze network traffic patterns to identify anomalies indicative of C2 beaconing, a tactic where attackers maintain covert communication with compromised systems. Adversaries exploit this to issue commands, exfiltrate data, and sustain network presence. The detection rule leverages a high beaconing score to flag potential threats, aiding analysts in pinpointing suspicious activities linked to C2 operations.\n\n### Possible investigation steps\n\n- Review the network traffic logs to identify the source and destination IP addresses associated with the beaconing activity flagged by the beacon_stats.beaconing_score of 3.\n- Correlate the identified IP addresses with known malicious IP databases or threat intelligence feeds to determine if they are associated with known C2 servers.\n- Analyze the frequency and pattern of the beaconing activity to assess whether it aligns with typical C2 communication patterns, such as regular intervals or specific time frames.\n- Investigate the domain names involved in the communication to check for any associations with malicious activities or suspicious registrations.\n- Examine the payloads or data transferred during the flagged communication sessions to identify any potential exfiltration of sensitive information or receipt of malicious instructions.\n- Cross-reference the involved systems with internal asset inventories to determine if they are critical assets or have been previously flagged for suspicious activities.\n- Consult with the incident response team to decide on containment or remediation actions if the investigation confirms malicious C2 activity.\n\n### False positive analysis\n\n- Regularly scheduled software updates or patch management systems may generate network traffic patterns similar to C2 beaconing. Users can create exceptions for known update servers to reduce false positives.\n- Automated backup systems that frequently communicate with cloud storage services might be flagged. Identifying and excluding these backup services from the analysis can help mitigate this issue.\n- Network monitoring tools that periodically check connectivity or system health can mimic beaconing activity. Whitelisting these monitoring tools can prevent them from being incorrectly flagged.\n- Internal applications that use polling mechanisms to check for updates or status changes may trigger alerts. Documenting and excluding these applications from the rule can minimize false positives.\n- Frequent communication with trusted third-party services, such as content delivery networks, may appear as beaconing. Establishing a list of trusted domains and excluding them from the analysis can help manage this.\n\n### Response and remediation\n\n- Isolate the affected systems from the network to prevent further communication with the C2 server and contain the threat.\n- Conduct a thorough analysis of the network traffic logs to identify any additional compromised systems or lateral movement within the network.\n- Remove any malicious software or scripts identified on the compromised systems, ensuring all traces of the C2 communication channels are eradicated.\n- Apply security patches and updates to all affected systems to close any vulnerabilities exploited by the attackers.\n- Change all credentials and authentication tokens associated with the compromised systems to prevent unauthorized access.\n- Monitor the network for any signs of re-infection or continued C2 activity, using enhanced detection rules and updated threat intelligence.\n- Escalate the incident to the appropriate internal security team or external cybersecurity experts for further investigation and to assess the potential impact on the organization.",
+        "query": "beacon_stats.beaconing_score: 3\n",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/beaconing",
+            "https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic"
+        ],
+        "related_integrations": [
+            {
+                "package": "beaconing",
+                "version": "^1.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "beacon_stats.beaconing_score",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "0ab319ef-92b8-4c7f-989b-5de93c852e93",
+        "setup": "## Setup\n\nThe rule requires the Network Beaconing Identification integration assets to be installed, as well as network logs collected by the Elastic Defend or Network Packet Capture integrations.\n\n### Network Beaconing Identification Setup\nThe Network Beaconing Identification integration consists of a statistical framework to identify C2 beaconing activity in network logs.\n\n#### Prerequisite Requirements:\n- Fleet is required for Network Beaconing Identification.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Network events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) or [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n\n#### The following steps should be executed to install assets associated with the Network Beaconing Identification integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Network Beaconing Identification and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Network",
+            "Use Case: C2 Beaconing Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1102",
+                        "name": "Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1102/",
+                        "subtechnique": [
+                            {
+                                "id": "T1102.002",
+                                "name": "Bidirectional Communication",
+                                "reference": "https://attack.mitre.org/techniques/T1102/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 8
+    },
+    "id": "0ab319ef-92b8-4c7f-989b-5de93c852e93_8",
+    "type": "security-rule"
+}

@@ -1,0 +1,42 @@
+---
+description: Pipeline for parsing nginx logs from third party api
+processors:
+  - json:
+      field: message
+      target_field: json
+  - drop:
+      if: ctx.json?.result == null
+  - fingerprint:
+      fields:
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: '_id'
+      ignore_missing: true
+  - set:
+      copy_from: json.result._raw
+      field: message
+      ignore_empty_value: true
+  - set:
+      copy_from: json.result.host
+      field: host.name
+      ignore_empty_value: true
+  - set:
+      copy_from: json.result.source
+      field: file.path
+      ignore_empty_value: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in third-party pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}

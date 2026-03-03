@@ -1,0 +1,650 @@
+---
+description: Pipeline for processing Playbook Alerts.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - set:
+      field: event.kind
+      tag: set_alert_to_event_kind
+      value: alert
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: recordedfuture.playbook_alert
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: set_panel_status_target_str
+      description: Target field may be list of objects or strings hence this will rename if it is a string.
+      if: ctx.recordedfuture?.playbook_alert?.panel_status?.targets instanceof List
+      source: |-
+        def targets = ctx.recordedfuture.playbook_alert.panel_status.targets;
+        if (targets instanceof List && targets.size() > 0 && targets[0] instanceof String) {
+          ctx.recordedfuture.playbook_alert.panel_status.targets_str = targets;
+          ctx.recordedfuture.playbook_alert.panel_status.remove("targets");
+        }
+  - script:
+      lang: painless
+      tag: set_changes_field
+      description: Target field may be list of objects or strings hence this will rename if it is a string.
+      if: ctx.recordedfuture?.playbook_alert?.panel_log_v2 instanceof List
+      source: |-
+        def panel_log= ctx.recordedfuture.playbook_alert.panel_log_v2;
+        for (panel in panel_log) {
+            if (panel.containsKey("changes") && panel.changes instanceof List) {
+                for (change in panel.changes) {
+                    if (change.containsKey("old") && change.old instanceof String) {
+                        change.old_str = change.old;
+                        change.remove("old");
+                    }
+                    if (change.containsKey("new") && change.new instanceof String) {
+                        change.new_str = change.new;
+                        change.remove("new");
+                    }
+                    if (change.containsKey("added") && change.added instanceof List && change.added.size() > 0 && change.added[0] instanceof String) {
+                        change.added_str = change.added;
+                        change.remove("added");
+                    }
+                    if (change.containsKey("removed") && change.removed instanceof List && change.removed.size() > 0 && change.removed[0] instanceof String) {
+                        change.removed_str = change.removed;
+                        change.remove("removed");
+                    }
+                }
+            }
+        }
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_action
+      if: ctx.recordedfuture?.playbook_alert?.panel_action instanceof List
+      tag: foreach_panel_action
+      processor:
+        append:
+          field: related.user
+          tag: append_panel_action_assignee_name_into_related_user
+          value: '{{{_ingest._value.assignee_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_action
+      if: ctx.recordedfuture?.playbook_alert?.panel_action instanceof List
+      tag: foreach_panel_action
+      processor:
+        date:
+          field: _ingest._value.updated
+          tag: date_panel_action_updated
+          target_field: _ingest._value.updated
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.updated
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_dns.ip_list
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_dns?.ip_list instanceof List
+      tag: foreach_panel_evidence_dns_ip_list
+      processor:
+        convert:
+          field: _ingest._value.risk_score
+          tag: convert_panel_evidence_dns_ip_list_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.risk_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_dns.mx_list
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_dns?.mx_list instanceof List
+      tag: foreach_panel_evidence_dns_mx_list
+      processor:
+        convert:
+          field: _ingest._value.risk_score
+          tag: convert_panel_evidence_dns_mx_list_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.risk_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_dns.ns_list
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_dns?.ns_list instanceof List
+      tag: foreach_panel_evidence_dns_ns_list
+      processor:
+        convert:
+          field: _ingest._value.risk_score
+          tag: convert_panel_evidence_dns_ns_list_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.risk_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.name
+      tag: set_host_name_from_playbook_alert_panel_evidence_summary_compromised_host_computer_name
+      copy_from: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.computer_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - date:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date
+      tag: date_panel_evidence_summary_compromised_host_exfiltration_date
+      target_field: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date
+      formats:
+        - ISO8601
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.compromised_host?.exfiltration_date != null && ctx.recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.exfiltration_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_playbook_alert_panel_evidence_summary_compromised_host_os
+      copy_from: recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.os
+      ignore_empty_value: true
+  - convert:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.effectively_clear
+      tag: convert_panel_evidence_summary_exposed_secret_effectively_clear_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.effectively_clear
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.infrastructure.ip
+      tag: convert_panel_evidence_summary_infrastructure_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.infrastructure?.ip != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.playbook_alert.panel_evidence_summary.infrastructure.ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_infrastructure_ip_into_related_ip
+      value: '{{{recordedfuture.playbook_alert.panel_evidence_summary.infrastructure.ip}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.infrastructure?.ip != null
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.insikt_notes
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.insikt_notes instanceof List
+      tag: foreach_evidence_summary_insikt_notes
+      processor:
+        date:
+          field: _ingest._value.published
+          tag: date_panel_evidence_summary_insikt_notes_published
+          target_field: _ingest._value.published
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.published
+                ignore_missing: true
+  - append:
+      field: threat.indicator.id
+      tag: append_recordedfuture_playbook_alert_panel_evidence_summary_malware_family_id_into_threat_indicator_id
+      value: '{{{recordedfuture.playbook_alert.panel_evidence_summary.malware_family.id}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.malware_family?.id != null
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_playbook_alert_panel_evidence_summary_malware_family_name
+      copy_from: recordedfuture.playbook_alert.panel_evidence_summary.malware_family.name
+      ignore_empty_value: true
+  - date:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration
+      tag: date_panel_evidence_summary_reregistration_expiration
+      target_field: recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration
+      formats:
+        - ISO8601
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.reregistration?.expiration != null && ctx.recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.resolved_record_list
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.resolved_record_list instanceof List
+      tag: foreach_panel_evidence_summary_resolved_record_list
+      processor:
+        convert:
+          field: _ingest._value.risk_score
+          tag: convert_panel_evidence_summary_resolved_record_list_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.risk_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.screenshot_mentions
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshot_mentions instanceof List
+      tag: foreach_panel_evidence_summary_screenshot_mentions
+      processor:
+        date:
+          field: _ingest._value.analyzed
+          tag: date_panel_evidence_summary_screenshot_mentions_analyzed
+          target_field: _ingest._value.analyzed
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.analyzed
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.screenshot_mentions
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshot_mentions instanceof List
+      tag: foreach_panel_evidence_summary_screenshot_mentions
+      processor:
+        append:
+          field: url.full
+          tag: append_panel_evidence_summary_screenshot_mentions_url_into_url_full
+          value: '{{{_ingest._value.url}}}'
+          allow_duplicates: false
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.screenshots
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshots instanceof List
+      tag: foreach_panel_evidence_summary_evidence_screenshots
+      processor:
+        date:
+          field: _ingest._value.created
+          tag: date_panel_evidence_summary_screenshots_created
+          target_field: _ingest._value.created
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.created
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_whois.body
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
+      tag: foreach_panel_evidence_whois_body
+      processor:
+        date:
+          field: _ingest._value.added
+          tag: date_panel_evidence_whois_body_added
+          target_field: _ingest._value.added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.added
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_whois.body
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
+      tag: foreach_panel_evidence_whois_body
+      processor:
+        date:
+          field: _ingest._value.removed
+          tag: date_panel_evidence_whois_body_removed
+          target_field: _ingest._value.removed
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.removed
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_whois.body
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
+      tag: foreach_panel_evidence_whois_body
+      processor:
+        date:
+          field: _ingest._value.value.createdDate
+          tag: date_panel_evidence_whois_body_value_createdDate
+          target_field: _ingest._value.value.createdDate
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.value.createdDate
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_whois.body
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
+      tag: foreach_panel_evidence_whois_body
+      processor:
+        date:
+          field: _ingest._value.value.expiresDate
+          tag: date_panel_evidence_whois_body_value_expiresDate
+          target_field: _ingest._value.value.expiresDate
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.value.expiresDate
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_whois.body
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
+      tag: foreach_panel_evidence_whois_body
+      processor:
+        convert:
+          field: _ingest._value.value.privateRegistration
+          tag: convert_panel_evidence_whois_body_value_privateRegistration_to_boolean
+          target_field: _ingest._value.value.privateRegistration
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.value.privateRegistration
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_whois.body
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
+      tag: foreach_panel_evidence_whois_body
+      processor:
+        append:
+          field: related.user
+          tag: append_contact_email_into_related_user
+          value: '{{{_ingest._value.value.contact_email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_whois.body
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_whois?.body instanceof List
+      tag: foreach_panel_evidence_whois_body
+      processor:
+        date:
+          field: _ingest._value.value.updatedDate
+          tag: date_panel_evidence_whois_body_value_updatedDate
+          target_field: _ingest._value.value.updatedDate
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.value.updatedDate
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_log_v2
+      if: ctx.recordedfuture?.playbook_alert?.panel_log_v2 instanceof List
+      tag: foreach_panel_log_v2
+      processor:
+        foreach:
+          field: _ingest._value.changes
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.added_contacts
+              ignore_failure: true
+              processor:
+                append:
+                  field: related.user
+                  tag: append_email_into_related_user
+                  value: '{{{_ingest._value.email}}}'
+                  allow_duplicates: false
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_log_v2
+      if: ctx.recordedfuture?.playbook_alert?.panel_log_v2 instanceof List
+      tag: foreach_panel_log_v2
+      processor:
+        date:
+          field: _ingest._value.created
+          tag: date_panel_log_v2_created
+          target_field: _ingest._value.created
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.created
+                ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_playbook_alert_panel_status_case_rule_id
+      copy_from: recordedfuture.playbook_alert.panel_status.case_rule_id
+      ignore_empty_value: true
+  - date:
+      field: recordedfuture.playbook_alert.panel_status.created
+      tag: date_panel_status_created
+      target_field: recordedfuture.playbook_alert.panel_status.created
+      formats:
+        - ISO8601
+      if: ctx.recordedfuture?.playbook_alert?.panel_status?.created != null && ctx.recordedfuture.playbook_alert.panel_status.created != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.playbook_alert.panel_status.created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_playbook_alert_panel_status_created
+      copy_from: recordedfuture.playbook_alert.panel_status.created
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_playbook_alert_panel_status_creator_id
+      copy_from: recordedfuture.playbook_alert.panel_status.creator_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_id_into_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_host_os_username_into_related_user
+      value: '{{{recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.os_username}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.compromised_host?.os_username != null
+  - append:
+      field: related.user
+      tag: append_panel_status_assignee_name_into_related_user
+      value: '{{{recordedfuture.playbook_alert.panel_status.assignee_name}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.playbook_alert?.panel_status?.assignee_name != null
+  - set:
+      field: user.name
+      tag: set_user_name_from_playbook_alert_panel_status_creator_name
+      copy_from: recordedfuture.playbook_alert.panel_status.creator_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.recordedfuture?.playbook_alert?.panel_status?.priority instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String name = ctx.recordedfuture.playbook_alert.panel_status.priority;
+        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (name.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (name.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (name.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: recordedfuture.playbook_alert.panel_status.risk_score
+      tag: convert_panel_status_risk_score_to_double
+      type: double
+      ignore_missing: true
+      if: ctx.recordedfuture?.playbook_alert?.panel_status?.risk_score != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.playbook_alert.panel_status.risk_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score_from_playbook_alert_panel_status_risk_score
+      copy_from: recordedfuture.playbook_alert.panel_status.risk_score
+      ignore_empty_value: true
+  - date:
+      field: recordedfuture.playbook_alert.panel_status.updated
+      tag: date_panel_status_updated
+      target_field: recordedfuture.playbook_alert.panel_status.updated
+      formats:
+        - ISO8601
+      if: ctx.recordedfuture?.playbook_alert?.panel_status?.updated != null && ctx.recordedfuture.playbook_alert.panel_status.updated != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.playbook_alert.panel_status.updated
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_playbook_alert_panel_status_updated
+      copy_from: recordedfuture.playbook_alert.panel_status.updated
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_playbook_alert_playbook_alert_id
+      copy_from: recordedfuture.playbook_alert.playbook_alert_id
+      ignore_empty_value: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.screenshot_mentions
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.screenshot_mentions instanceof List
+      tag: foreach_panel_evidence_summary_screenshots
+      processor:
+        remove:
+          field: _ingest._value.url
+          tag: remove_custom_duplicate_fields_from_recordedfuture_playbook_alert_panel_evidence_summary_screenshot_mentions
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.computer_name
+        - recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.os
+        - recordedfuture.playbook_alert.panel_evidence_summary.malware_family.id
+        - recordedfuture.playbook_alert.panel_evidence_summary.malware_family.name
+        - recordedfuture.playbook_alert.panel_status.case_rule_id
+        - recordedfuture.playbook_alert.panel_status.created
+        - recordedfuture.playbook_alert.panel_status.creator_id
+        - recordedfuture.playbook_alert.panel_status.creator_name
+        - recordedfuture.playbook_alert.panel_status.risk_score
+        - recordedfuture.playbook_alert.panel_status.updated
+        - recordedfuture.playbook_alert.playbook_alert_id
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

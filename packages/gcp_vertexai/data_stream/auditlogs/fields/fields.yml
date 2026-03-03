@@ -1,0 +1,131 @@
+- name: gcp.vertexai.audit
+  type: group
+  fields:
+    - name: type
+      type: keyword
+      description: |
+        Type of the logs.
+    - name: service_name
+      type: keyword
+      description: The name of the API service performing the operation.
+    - name: resource_name
+      type: keyword
+      description: |
+        The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'projects/PROJECT_ID/datasets/DATASET_ID'.
+    - name: resource_type
+      type: keyword
+      description: Type of resource
+    - name: resource_location
+      type: group
+      fields:
+        - name: current_locations
+          type: keyword
+          description: |
+            Current locations of the resource.
+    - name: num_response_items
+      type: long
+      description: |
+        The number of items returned from a List or Query API method, if applicable.
+    - name: authentication_info
+      type: group
+      fields:
+        - name: principal_email
+          type: keyword
+          description: The email address of the authenticated user making the request.
+        - name: authority_selector
+          type: keyword
+          description: The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority.
+        - name: principal_subject
+          type: keyword
+          description: String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities.
+        - name: service_account_key_name
+          type: keyword
+          description: The service account key that was used to request the OAuth 2.0 access token. This field identifies the service account key by its full resource name.
+        - name: service_account_delegation_info
+          type: flattened
+          description: Identity delegation history of an authenticated service account that makes the request. It contains information on the real authorities that try to access GCP resources by delegating on a service account. When multiple authorities present, they are guaranteed to be sorted based on the original ordering of the identity delegation events.
+        - name: third_party_principal
+          type: flattened
+          description: The third party identification (if any) of the authenticated user making the request. When the JSON object represented here has a proto equivalent, the proto name will be indicated in the @type property.
+    - name: request
+      type: flattened
+      description: The operation request. This may not include all request elements, such as those that are too large, privacy-sensitive, or duplicated elsewhere in the log record. When the JSON object represented here has a proto equivalent, the proto name will be indicated in the @type property
+    - name: response
+      type: flattened
+      description: The operation response. This may not include all response elements, such as those that are too large, privacy-sensitive, or duplicated elsewhere in the log record. When the JSON object represented here has a proto equivalent, the proto name will be indicated in the @type property.
+    - name: status
+      type: group
+      fields:
+        - name: code
+          type: integer
+          description: The status code, which should be an enum value of google.rpc.Code.
+        - name: message
+          type: keyword
+          description: A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client.
+        - name: details
+          type: flattened
+          description: |
+            A list of messages that carry the error details.
+    - name: policy_violation_info
+      type: group
+      fields:
+        - name: payload
+          type: flattened
+          description: Resource payload that is currently in scope and is subjected to orgpolicy conditions.
+        - name: resource_tags
+          type: flattened
+          description: Tags referenced on the resource at the time of evaluation.
+        - name: resource_type
+          type: keyword
+          description: Resource type that the orgpolicy is checked against.
+        - name: violations
+          type: nested
+          description: |
+            Provides information about the Policy violation info for the request.
+        #nested fields are handled this way due to https://github.com/elastic/integrations/pull/11016 
+        - name: violations.constraint
+          type: keyword
+          description: Constraint name.
+        - name: violations.error_message
+          type: keyword
+          description: Error message that policy is indicating.
+        - name: violations.checked_value
+          type: keyword
+          description: Value that is being checked for the policy.
+        - name: violations.policy_type
+          type: keyword
+          description: Indicates the type of the policy.
+    - name: authorization_info
+      type: nested
+      description: |
+        Authorization information for the operation.
+    - name: authorization_info.permission
+      type: keyword
+      description: The required IAM permission.
+    - name: authorization_info.granted
+      type: boolean
+      description: Whether or not authorization for resource and permission was granted.
+    - name: authorization_info.permission_type
+      type: keyword
+      description: The type of the permission, for example, DATA_READ .
+    - name: authorization_info.resource
+      type: keyword
+      description: The resource being accessed, as a REST-style string.
+    - name: authorization_info.resource_attributes
+      type: group
+      fields:
+        - name: service
+          type: keyword
+          description: |
+            The name of the service.
+        - name: name
+          type: keyword
+          description: |
+            The name of the resource.
+        - name: type
+          type: keyword
+          description: |
+            The type of the resource.
+    - name: metadata
+      type: flattened
+      description: Service-specific data about the request, response, and other information associated with the current audited event.

@@ -1,0 +1,37 @@
+version: "2.3"
+services:
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.5.0-SNAPSHOT}"
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ELASTIC_PASSWORD=changeme"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://127.0.0.1:9200/"]
+      retries: 300
+      interval: 1s
+    volumes:
+      - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./config/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
+      - es_logs:/usr/share/elasticsearch/logs
+    ports:
+      - "127.0.0.1:9201:9200"
+  logs_generation:
+    user: root
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - "ES_SERVICE_HOST=http://elasticsearch:9200"
+      - "ES_SERVICE_USERNAME=elastic"
+      - "ES_SERVICE_PASSWORD=changeme"
+    image: "alpine/curl:latest"
+    command: "./generate-logs.sh"
+    volumes:
+      - ./scripts/generate-logs.sh:/generate-logs.sh
+      - "${SERVICE_LOGS_DIR}:/var/log"
+      - es_logs:/es_logs
+volumes:
+  es_logs:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

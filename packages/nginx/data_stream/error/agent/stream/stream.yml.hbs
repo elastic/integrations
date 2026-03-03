@@ -1,0 +1,27 @@
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}
+paths:
+{{#each paths}}
+  - {{this}}
+{{/each}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+exclude_files: [".gz$"]
+multiline:
+  pattern: '^\d{4}\/\d{2}\/\d{2} '
+  negate: true
+  match: after
+processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
+- add_locale: ~

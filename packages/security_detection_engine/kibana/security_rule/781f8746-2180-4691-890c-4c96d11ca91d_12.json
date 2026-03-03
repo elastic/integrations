@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule identifies a potential network sweep. A network sweep is a method used by attackers to scan a target network, identifying active hosts, open ports, and available services to gather information on vulnerabilities and weaknesses. This reconnaissance helps them plan subsequent attacks and exploit potential entry points for unauthorized access, data theft, or other malicious activities. This rule defines a threshold-based approach to detect multiple connection attempts from a single host to numerous destination hosts over commonly used network services.",
+        "from": "now-9m",
+        "index": [
+            "packetbeat-*",
+            "filebeat-*",
+            "logs-network_traffic.*",
+            "logs-panw.panos*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 5,
+        "name": "Potential Network Sweep Detected",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Network Sweep Detected\n\nNetwork sweeps are reconnaissance techniques where attackers scan networks to identify active hosts and services, often targeting common ports. This activity helps adversaries map out network vulnerabilities for future exploitation. The detection rule identifies such sweeps by monitoring connection attempts from a single source to multiple destinations on key ports, flagging potential reconnaissance activities for further investigation.\n\n### Possible investigation steps\n\n- Review the source IP address to determine if it belongs to a known or trusted entity within the network, focusing on the private IP ranges specified in the query (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16).\n- Analyze the destination IP addresses to identify any patterns or commonalities, such as specific subnets or devices, that could indicate targeted reconnaissance.\n- Check historical logs for previous connection attempts from the same source IP to see if there is a pattern of repeated scanning behavior or if this is an isolated incident.\n- Investigate the specific ports targeted (21, 22, 23, 25, 139, 445, 3389, 5985, 5986) to determine if they are associated with critical services or known vulnerabilities within the network.\n- Correlate the detected activity with any recent changes or incidents in the network environment that might explain the behavior, such as new device deployments or configuration changes.\n- Consult threat intelligence sources to determine if the source IP or similar scanning patterns have been associated with known threat actors or campaigns.\n\n### False positive analysis\n\n- Internal network scans by IT teams can trigger the rule. Regularly scheduled scans for security assessments should be documented and their source IPs added to an exception list to prevent false alerts.\n- Automated monitoring tools that check network health might cause false positives. Identify these tools and exclude their IP addresses from the rule to avoid unnecessary alerts.\n- Load balancers or network devices that perform health checks across multiple hosts can be mistaken for network sweeps. Exclude these devices by adding their IPs to a whitelist.\n- Development or testing environments where multiple connections are made for legitimate purposes can trigger the rule. Ensure these environments are recognized and their IP ranges are excluded from monitoring.\n- Misconfigured devices that repeatedly attempt to connect to multiple hosts can appear as network sweeps. Investigate and correct the configuration, then exclude these devices if necessary.\n\n### Response and remediation\n\n- Isolate the source IP: Immediately isolate the source IP address identified in the alert from the network to prevent further reconnaissance or potential exploitation of identified vulnerabilities.\n\n- Block suspicious ports: Implement firewall rules to block incoming and outgoing traffic on the commonly targeted ports (21, 22, 23, 25, 139, 445, 3389, 5985, 5986) from the source IP to mitigate further scanning attempts.\n\n- Conduct a network-wide scan: Perform a comprehensive scan of the network to identify any unauthorized access or changes that may have occurred as a result of the network sweep.\n\n- Review and update access controls: Ensure that access controls and permissions are appropriately configured to limit exposure of critical services and sensitive data.\n\n- Monitor for recurrence: Set up enhanced monitoring and alerting for any future connection attempts from the source IP or similar patterns of network sweep activity.\n\n- Escalate to security operations: Notify the security operations team to conduct a deeper investigation into the source of the network sweep and assess any potential threats or breaches.\n\n- Document and report: Record all findings, actions taken, and lessons learned in an incident report to inform future response strategies and improve network defenses.",
+        "query": "event.action:network_flow and destination.port:(21 or 22 or 23 or 25 or 139 or 445 or 3389 or 5985 or 5986) and\nsource.ip:(10.0.0.0/8 or 172.16.0.0/12 or 192.168.0.0/16)\n",
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            },
+            {
+                "package": "panw",
+                "version": "^5.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "781f8746-2180-4691-890c-4c96d11ca91d",
+        "severity": "low",
+        "tags": [
+            "Domain: Network",
+            "Tactic: Discovery",
+            "Tactic: Reconnaissance",
+            "Use Case: Network Security Monitoring",
+            "Data Source: PAN-OS",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1046",
+                        "name": "Network Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1046/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1595",
+                        "name": "Active Scanning",
+                        "reference": "https://attack.mitre.org/techniques/T1595/",
+                        "subtechnique": [
+                            {
+                                "id": "T1595.001",
+                                "name": "Scanning IP Blocks",
+                                "reference": "https://attack.mitre.org/techniques/T1595/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "destination.ip",
+                    "value": 100
+                }
+            ],
+            "field": [
+                "source.ip"
+            ],
+            "value": 1
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 12
+    },
+    "id": "781f8746-2180-4691-890c-4c96d11ca91d_12",
+    "type": "security-rule"
+}

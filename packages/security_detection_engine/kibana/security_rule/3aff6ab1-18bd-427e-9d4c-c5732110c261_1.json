@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the modification and reading of kernel features through built-in commands. Attackers may collect information, disable or weaken Linux kernel protections. For example, an attacker may modify ASLR protection by disabling kernel.randomize_va_space, allow ptrace by setting kernel.yama.ptrace_scope to 0, or disable the NMI watchdog by setting kernel.nmi_watchdog to 0. These changes may be used to impair defenses and evade detection.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Kernel Feature Activity",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\nprocess.command_line : (\n  \"*/etc/sysctl.conf*\", \"*/etc/sysctl.d/*\", \"*/proc/sys/kernel/nmi_watchdog*\",\n  \"*/proc/sys/vm/nr_hugepages*\", \"*/proc/sys/kernel/yama/ptrace_scope*\",\n  \"*/proc/sys/kernel/randomize_va_space*\", \"*/proc/sys/vm/drop_caches*\",\n  \"*/proc/sys/kernel/sysrq*\", \"*grsecurity*\", \"*exec-shield*\",\n  \"*kernel.randomize_va_space*\", \"*kernel.yama.ptrace_scope*\",\n  \"*kernel.nmi_watchdog*\", \"*vm.nr_hugepages*\", \"*vm.drop_caches*\",\n  \"*kernel.sysrq*\"\n) and\nprocess.parent.executable != null and \n(\n  (process.name == \"tee\" and process.args like \"-*a*\") or // also detects --append\n  (process.name == \"cat\" and not process.parent.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")) or\n  (process.name == \"grep\" and process.args_count == 3 and not process.parent.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")) or\n  (process.name == \"sysctl\" and process.args like (\"*-w*\", \"*--write*\", \"*=*\")) or\n  (process.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and process.args == \"-c\" and process.args : \"*echo *\")\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "3aff6ab1-18bd-427e-9d4c-c5732110c261",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.006",
+                                "name": "Indicator Blocking",
+                                "reference": "https://attack.mitre.org/techniques/T1562/006/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1553",
+                        "name": "Subvert Trust Controls",
+                        "reference": "https://attack.mitre.org/techniques/T1553/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1082",
+                        "name": "System Information Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1082/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "3aff6ab1-18bd-427e-9d4c-c5732110c261_1",
+    "type": "security-rule"
+}

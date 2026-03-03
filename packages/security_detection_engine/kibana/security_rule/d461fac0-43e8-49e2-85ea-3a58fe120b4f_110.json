@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of the shell process (sh) via scripting (JXA or AppleScript). Adversaries may use the doShellScript functionality in JXA or do shell script in AppleScript to execute system commands.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Shell Execution via Apple Scripting",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Shell Execution via Apple Scripting\n\nAppleScript and JXA are scripting languages used in macOS to automate tasks and control applications. Adversaries exploit these by executing shell commands through functions like `doShellScript`, enabling unauthorized actions such as data exfiltration or system modification. The detection rule identifies suspicious shell processes initiated by AppleScript, focusing on specific command patterns and rapid sequence execution, indicating potential misuse.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific host.id and process.entity_id involved in the suspicious activity.\n- Examine the process arguments for osascript to determine the exact AppleScript command executed, focusing on the presence of the \"-e\" flag which indicates script execution.\n- Investigate the parent process of the shell (sh, bash, zsh) to understand the context in which the shell command was executed, using process.parent.entity_id for correlation.\n- Analyze the shell command arguments, particularly looking for potentially malicious patterns such as \"*curl*\", \"*pbcopy*\", \"*http*\", or \"*chmod*\", which may indicate data exfiltration or system modification attempts.\n- Check the sequence and timing of the processes to assess if the execution pattern aligns with typical user behavior or if it suggests automated or rapid execution indicative of a script.\n- Correlate the findings with any other security alerts or logs from the same host to identify if this activity is part of a broader attack or isolated incident.\n- If necessary, escalate the investigation by capturing additional forensic data from the affected host, such as network traffic or file system changes, to further understand the impact and scope of the activity.\n\n### False positive analysis\n\n- Routine administrative scripts may trigger the rule if they use AppleScript or JXA to automate tasks involving shell commands. To manage this, identify and whitelist these scripts by their specific command patterns or execution context.\n- Software updates or legitimate application installations might execute shell commands through AppleScript, appearing suspicious. Monitor and document these activities, and create exceptions for known update processes.\n- Development tools and environments that rely on scripting for building or testing applications can generate false positives. Exclude these processes by verifying their source and ensuring they align with expected development activities.\n- User-initiated automation tasks, such as custom scripts for personal productivity, may be flagged. Educate users on safe scripting practices and establish a process for reviewing and approving such scripts to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS host from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious shell processes identified by the detection rule, specifically those initiated by `osascript` executing shell commands.\n- Conduct a thorough review of the affected system's logs and process history to identify any additional unauthorized activities or persistence mechanisms.\n- Remove any unauthorized scripts or files that were executed or created as part of the malicious activity.\n- Reset credentials and review permissions for any accounts that may have been compromised or used in the attack.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and alerting for similar patterns of behavior, focusing on the use of `osascript` and shell command execution, to prevent recurrence.",
+        "query": "sequence by host.id with maxspan=5s\n [process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\", \"info\") and process.name == \"osascript\" and process.args : \"-e\"] by process.entity_id\n [process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.name : (\"sh\", \"bash\", \"zsh\") and process.args == \"-c\" and process.args : (\"*curl*\", \"*pbcopy*\", \"*http*\", \"*chmod*\")] by process.parent.entity_id\n",
+        "references": [
+            "https://developer.apple.com/library/archive/technotes/tn2065/_index.html",
+            "https://objectivebythesea.com/v2/talks/OBTS_v2_Thomas.pdf"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d461fac0-43e8-49e2-85ea-3a58fe120b4f",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 110
+    },
+    "id": "d461fac0-43e8-49e2-85ea-3a58fe120b4f_110",
+    "type": "security-rule"
+}

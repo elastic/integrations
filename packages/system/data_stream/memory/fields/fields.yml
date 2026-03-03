@@ -1,0 +1,75 @@
+- name: system.memory
+  type: group
+  fields:
+    - name: total
+      type: long
+      unit: byte
+      metric_type: gauge
+      description: |
+        Total memory.
+    - name: used.bytes
+      type: long
+      unit: byte
+      metric_type: gauge
+      description: |
+        Used memory.
+    - name: free
+      type: long
+      unit: byte
+      metric_type: gauge
+      description: |
+        The total amount of free memory in bytes. This value does not include memory consumed by system caches and buffers (see system.memory.actual.free).
+    - name: used.pct
+      type: scaled_float
+      unit: percent
+      metric_type: gauge
+      description: |
+        The percentage of used memory.
+    - name: actual
+      type: group
+      fields:
+        - name: used.bytes
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: |
+            Actual used memory in bytes. It represents the difference between the total and the available memory. The available memory depends on the OS. For more details, please check `system.actual.free`.
+        - name: free
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: |
+            Actual free memory in bytes. It is calculated based on the OS. On Linux this value will be MemAvailable from /proc/meminfo,  or calculated from free memory plus caches and buffers if /proc/meminfo is not available. On OSX it is a sum of free memory and the inactive memory. On Windows, it is equal to `system.memory.free`.
+        - name: used.pct
+          type: scaled_float
+          unit: percent
+          metric_type: gauge
+          description: |
+            The percentage of actual used memory.
+    - name: swap
+      type: group
+      fields:
+        - name: total
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: |
+            Total swap memory.
+        - name: used.bytes
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: |
+            Used swap memory.
+        - name: free
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: |
+            Available swap memory.
+        - name: used.pct
+          type: scaled_float
+          unit: percent
+          metric_type: gauge
+          description: |
+            The percentage of used swap memory.

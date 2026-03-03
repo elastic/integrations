@@ -1,0 +1,142 @@
+---
+processors:
+  - set:
+      field: event.ingested
+      tag: set_event_ingested
+      value: "{{_ingest.timestamp}}"
+  - grok:
+      field: elasticsearch.index.name
+      tag: grok_parse_index_name
+      patterns:
+        - '^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?(?<elasticsearch.index.datastream>[a-z_0-9\-\.]+?)(-(?:\d{4}\.\d{2}(\.\d{2})?))?(?:-\d+)?$'
+      ignore_failure: true
+  - script:
+      source: |
+        def preference = ctx.end['elasticsearch.index.tier_preference'];
+        if (preference.contains("data_frozen")) {
+          ctx.elasticsearch.index.tier = "frozen";
+        } else if (preference.contains("data_cold")) {
+          ctx.elasticsearch.index.tier = "cold";
+        } else if (preference.contains("data_warm")) {
+          ctx.elasticsearch.index.tier = "warm";
+        } else if (preference.contains("data_hot") || preference.contains("data_content")) {
+          ctx.elasticsearch.index.tier = "hot/content";
+        }
+        ctx.end.remove('elasticsearch.index.tier_preference');
+      ignore_failure: true
+      tag: script_parse_index_tier
+  # Failure to identify the tier preference will result in the index tier being set to unknown
+  # This is also the "default" case when tier preference is not available.
+  - set:
+      field: elasticsearch.index.tier
+      value: "unknown"
+      tag: set_index_tier_unknown
+      if: "ctx.elasticsearch.index.tier == null"
+  - foreach:
+      field: end
+      processor:
+        set:
+          field: "{{ _ingest._key }}"
+          value: "{{ _ingest._value }}"
+      tag: set_end_fields
+  - dot_expander:
+      field: "*"
+      tag: dot_expander
+  - date:
+      field: elasticsearch.index.creation_date
+      target_field: elasticsearch.index.creation_date
+      ignore_failure: true
+      formats:
+        - UNIX_MS
+      tag: date_parse_index_creation_date
+  - script:
+      source: |
+        ZonedDateTime currentDate = ZonedDateTime.parse(ctx['@timestamp']);
+        ZonedDateTime creationDate = ZonedDateTime.parse(ctx.elasticsearch.index.creation_date);
+        long ageInMillis = ChronoUnit.MILLIS.between(creationDate, currentDate);
+        ctx.elasticsearch.index.age = (ageInMillis / (1000 * 60 * 60 * 24)).intValue();
+      ignore_failure: true
+      tag: script_compute_index_age
+  - convert:
+      field: elasticsearch.index.primaries.docs.count
+      type: long
+      ignore_failure: true
+      tag: convert_primaries_docs_count
+  - convert:
+      field: elasticsearch.index.primaries.docs.count_delta
+      type: long
+      ignore_failure: true
+      tag: convert_primaries_docs_count_delta
+  - convert:
+      field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+      type: long
+      ignore_failure: true
+      tag: convert_primaries_store_total_data_set_size_in_bytes
+  - convert:
+      field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta
+      type: long
+      ignore_failure: true
+      tag: convert_primaries_store_total_data_set_size_in_bytes_delta
+  - convert:
+      field: elasticsearch.index.total.store.size_in_bytes
+      type: long
+      ignore_failure: true
+      tag: convert_total_store_size_in_bytes
+  - convert:
+      field: elasticsearch.index.total.store.size_in_bytes_delta
+      type: long
+      ignore_failure: true
+      tag: convert_total_store_size_in_bytes_delta
+  - convert:
+      field: elasticsearch.index.total.search.query_total
+      type: long
+      ignore_failure: true
+      tag: convert_total_search_query_total
+  - convert:
+      field: elasticsearch.index.total.search.query_total_delta
+      type: long
+      ignore_failure: true
+      tag: convert_total_search_query_total_delta
+  - convert:
+      field: elasticsearch.index.total.search.query_time_in_millis
+      type: long
+      ignore_failure: true
+      tag: convert_total_search_query_time_in_millis
+  - convert:
+      field: elasticsearch.index.total.search.query_time_in_millis_delta
+      type: long
+      ignore_failure: true
+      tag: convert_total_search_query_time_in_millis_delta
+  - convert:
+      field: elasticsearch.index.total.indexing.index_total
+      type: long
+      ignore_failure: true
+      tag: convert_total_indexing_index_total
+  - convert:
+      field: elasticsearch.index.total.indexing.index_total_delta
+      type: long
+      ignore_failure: true
+      tag: convert_total_indexing_index_total_delta
+  - convert:
+      field: elasticsearch.index.total.indexing.index_time_in_millis
+      type: long
+      ignore_failure: true
+      tag: convert_total_indexing_index_time_in_millis
+  - convert:
+      field: elasticsearch.index.total.indexing.index_time_in_millis_delta
+      type: long
+      ignore_failure: true
+      tag: convert_total_indexing_index_time_in_millis_delta
+  - remove:
+      field:
+        - start
+        - end
+      tag: remove_start_end_fields
+
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

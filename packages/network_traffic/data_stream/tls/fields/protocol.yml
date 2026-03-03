@@ -1,0 +1,231 @@
+- name: tls
+  type: group
+  fields:
+    - name: detailed
+      type: group
+      fields:
+        - name: version
+          type: keyword
+          description: >
+            The version of the TLS protocol used.
+
+          example: "TLS 1.3"
+        - name: resumption_method
+          type: keyword
+          description: >
+            If the session has been resumed, the underlying method used. One of "id" for TLS session ID or "ticket" for TLS ticket extension.
+
+        - name: client_certificate_requested
+          type: boolean
+          description: >
+            Whether the server has requested the client to authenticate itself using a client certificate.
+
+        - name: ocsp_response
+          type: keyword
+          description: >
+            The result of an OCSP request.
+
+        - name: client_hello
+          type: group
+          fields:
+            - name: version
+              type: keyword
+              description: >
+                The version of the TLS protocol by which the client wishes to communicate during this session.
+
+            - name: random
+              type: keyword
+              description: >
+                Random data used by the TLS protocol to generate the encryption key.
+
+            - name: session_id
+              type: keyword
+              description: >
+                Unique number to identify the session for the corresponding connection with the client.
+
+            - name: supported_compression_methods
+              type: keyword
+              description: >
+                The list of compression methods the client supports. See https://www.iana.org/assignments/comp-meth-ids/comp-meth-ids.xhtml
+
+            - name: extensions
+              type: group
+              description: The hello extensions provided by the client.
+              fields:
+                - name: server_name_indication
+                  type: keyword
+                  description: List of hostnames
+                - name: application_layer_protocol_negotiation
+                  type: keyword
+                  description: >
+                    List of application-layer protocols the client is willing to use.
+
+                - name: session_ticket
+                  type: keyword
+                  description: >
+                    Length of the session ticket, if provided, or an empty string to advertise support for tickets.
+
+                - name: supported_versions
+                  type: keyword
+                  description: >
+                    List of TLS versions that the client is willing to use.
+
+                - name: supported_groups
+                  type: keyword
+                  description: >
+                    List of Elliptic Curve Cryptography (ECC) curve groups supported by the client.
+
+                - name: signature_algorithms
+                  type: keyword
+                  description: >
+                    List of signature algorithms that may be use in digital signatures.
+
+                - name: ec_points_formats
+                  type: keyword
+                  description: >
+                    List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the client can parse.
+
+                - name: status_request
+                  type: group
+                  description: Status request made to the server.
+                  fields:
+                    - name: type
+                      type: keyword
+                      description: The type of the status request. Always "ocsp" if present.
+                    - name: responder_id_list_length
+                      type: short
+                      description: The length of the list of trusted responders.
+                    - name: request_extensions
+                      type: short
+                      description: The number of certificate extensions for the request.
+                - name: _unparsed_
+                  type: keyword
+                  description: >
+                    List of extensions that were left unparsed by Packetbeat.
+
+        - name: server_hello
+          type: group
+          fields:
+            - name: version
+              type: keyword
+              description: >
+                The version of the TLS protocol that is used for this session. It is the highest version supported by the server not exceeding the version requested in the client hello.
+
+            - name: random
+              type: keyword
+              description: >
+                Random data used by the TLS protocol to generate the encryption key.
+
+            - name: selected_compression_method
+              type: keyword
+              description: >
+                The compression method selected by the server from the list provided in the client hello.
+
+            - name: session_id
+              type: keyword
+              description: >
+                Unique number to identify the session for the corresponding connection with the client.
+
+            - name: extensions
+              type: group
+              description: The hello extensions provided by the server.
+              fields:
+                - name: application_layer_protocol_negotiation
+                  type: keyword
+                  description: Negotiated application layer protocol
+                - name: session_ticket
+                  type: keyword
+                  description: >
+                    Used to announce that a session ticket will be provided by the server. Always an empty string.
+
+                - name: supported_versions
+                  type: keyword
+                  description: >
+                    Negotiated TLS version to be used.
+
+                - name: ec_points_formats
+                  type: keyword
+                  description: >
+                    List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the server can parse.
+
+                - name: status_request
+                  type: group
+                  description: Status request made to the server.
+                  fields:
+                    - name: response
+                      type: boolean
+                      description: Whether a certificate status request response was made.
+                - name: _unparsed_
+                  type: keyword
+                  description: >
+                    List of extensions that were left unparsed by Packetbeat.
+
+        - name: server_certificate_chain
+          type: group
+          description: Chain of trust for the server certificate.
+          fields: &certificate_object
+            - name: alternative_names
+              type: keyword
+              description: Subject alternative names (SANs) in the certificate.
+            - name: issuer
+              type: group
+              description: Issuer certificate metadata.
+              fields: &x509_attributes
+                - name: common_name
+                  type: keyword
+                - name: country
+                  type: keyword
+                - name: distinguished_name
+                  type: keyword
+                - name: locality
+                  type: keyword
+                - name: organization
+                  type: keyword
+                - name: organizational_unit
+                  type: keyword
+                - name: postal_code
+                  type: keyword
+                - name: serial_number
+                  type: keyword
+                - name: state_or_province
+                  type: keyword
+                - name: street_address
+                  type: keyword
+            - name: subject
+              type: group
+              description: Subject certificate metadata.
+              fields: *x509_attributes
+            - name: not_after
+              type: date
+              description: End of the validity period (inclusive).
+            - name: not_before
+              type: date
+              description: Start of the validity period (inclusive).
+            - name: public_key_algorithm
+              type: keyword
+              description: Public key algorithm (e.g. RSA, DSA, ECDSA, Ed25519).
+            - name: public_key_size
+              type: long
+              description: Number of bits in the public key.
+            - name: serial_number
+              type: keyword
+              description: Base 10 representation of the certificate serial number.
+            - name: signature_algorithm
+              type: keyword
+              description: Signature algorithm (e.g. SHA256-RSA).
+            - name: version_number
+              type: keyword
+              description: The x509 certificate version. Version 3 is the latest and most common.
+        - name: client_certificate_chain
+          type: group
+          description: Chain of trust for the client certificate.
+          fields: *certificate_object
+        - name: alert_types
+          type: keyword
+          description: >
+            An array containing the TLS alert type for every alert received.
+
+- name: network_traffic.status
+  type: keyword
+  description: >
+    The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol.

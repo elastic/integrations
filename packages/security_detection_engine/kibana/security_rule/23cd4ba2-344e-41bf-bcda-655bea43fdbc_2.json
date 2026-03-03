@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the use of system search utilities like grep and find to search for private SSH keys or passwords inside a container. Unauthorized access to these sensitive files could lead to further compromise of the container environment or facilitate a container breakout to the underlying host machine.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Sensitive Keys Or Passwords Searched For Inside A Container",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Sensitive Keys Or Passwords Searched For Inside A Container\n\nContainers encapsulate applications, providing isolated environments. Adversaries may exploit search utilities like grep or find to locate sensitive credentials within containers, potentially leading to unauthorized access or container escape. The detection rule identifies suspicious searches for private keys or passwords, flagging potential credential access attempts by monitoring process activities and arguments.\n\n### Possible investigation steps\n\n- Examine the process.name and process.args fields to determine the exact command executed and assess whether it aligns with typical usage patterns or indicates malicious intent.\n- Check the user context under which the process was executed to understand if the activity was performed by a legitimate user or an unauthorized entity.\n- Investigate the container's recent activity logs to identify any other suspicious behavior or anomalies that might correlate with the search for sensitive keys or passwords.\n- Assess the potential impact by determining if any sensitive files, such as private keys or password files, were accessed or exfiltrated following the search activity.\n- If possible, correlate the event with network logs to identify any outbound connections that might suggest data exfiltration attempts.\n\n### False positive analysis\n\n- Routine administrative tasks may trigger the rule when system administrators use grep or find to audit or manage SSH keys and passwords within containers. To mitigate this, create exceptions for known administrative scripts or processes that regularly perform these tasks.\n- Automated backup or configuration management tools might search for sensitive files as part of their normal operation. Identify these tools and exclude their process IDs or specific command patterns from triggering the rule.\n- Security scanning tools that check for the presence of sensitive files could be flagged. Whitelist these tools by their process names or arguments to prevent false positives.\n- Developers or DevOps personnel might use search utilities during debugging or development processes. Establish a list of trusted users or roles and exclude their activities from the rule to reduce noise.\n- Continuous integration/continuous deployment (CI/CD) pipelines may include steps that search for keys or passwords for validation purposes. Exclude these pipeline processes by identifying their unique process arguments or container IDs.\n\n### Response and remediation\n\n- Immediately isolate the affected container to prevent further unauthorized access or potential container escape to the host system. This can be done by stopping the container or disconnecting it from the network.\n- Conduct a thorough review of the container's logs and process activities to identify any unauthorized access or data exfiltration attempts. Pay special attention to the processes and arguments flagged by the detection rule.\n- Rotate any potentially compromised credentials, including SSH keys and passwords, that were stored or accessed within the container. Ensure that new credentials are securely stored and managed.\n- Assess the container's configuration and access controls to identify and rectify any security misconfigurations that may have allowed the unauthorized search for sensitive information.\n- Implement additional monitoring and alerting for similar suspicious activities across other containers and the host environment to detect and respond to potential threats promptly.\n- Escalate the incident to the security operations team for further investigation and to determine if the threat has spread beyond the initial container.\n- Review and update container security policies and practices to prevent recurrence, including enforcing least privilege access and using secrets management solutions to handle sensitive information securely.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\nprocess.entry_leader.entry_meta.type == \"container\" and\nprocess.name in (\"grep\", \"egrep\", \"fgrep\", \"find\", \"locate\", \"mlocate\") and\nprocess.command_line like~ (\n  \"*BEGIN PRIVATE*\", \"*BEGIN OPENSSH PRIVATE*\", \"*BEGIN RSA PRIVATE*\", \"*BEGIN DSA PRIVATE*\", \"*BEGIN EC PRIVATE*\",\n  \"*pass*\", \"*ssh*\", \"*user*\", \"*id_rsa*\", \"*id_dsa*\"\n)\n",
+        "references": [
+            "https://sysdig.com/blog/cve-2021-25741-kubelet-falco/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.entry_meta.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "23cd4ba2-344e-41bf-bcda-655bea43fdbc",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\n\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Container",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "23cd4ba2-344e-41bf-bcda-655bea43fdbc_2",
+    "type": "security-rule"
+}

@@ -1,0 +1,88 @@
+---
+description: Pipeline for processing Oracle Program Global Area and System Global Area metrics
+processors:
+    - remove:
+        field: sql.driver
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: sql.query
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: sql
+        target_field: oracle
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.metrics
+        target_field: oracle.memory
+        ignore_missing: true
+    - foreach:
+        field: oracle.memory
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: " "
+                replacement: "_"
+    - rename:
+        field: oracle.memory.cache_hit_percentage
+        target_field: oracle.memory.pga.cache_hit_pct
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.aggregate_pga_auto_target
+        target_field: oracle.memory.pga.aggregate_auto_target
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.aggregate_pga_target_parameter
+        target_field: oracle.memory.pga.aggregate_target_parameter
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.total_pga_allocated
+        target_field: oracle.memory.pga.total_allocated
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.total_pga_used_for_auto_workareas
+        target_field: oracle.memory.pga.total_used_for_auto_workareas
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.global_memory_bound
+        target_field: oracle.memory.pga.global_memory_bound
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.total_pga_inuse
+        target_field: oracle.memory.pga.total_inuse
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.total_freeable_pga_memory
+        target_field: oracle.memory.pga.total_freeable_memory
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.maximum_pga_allocated
+        target_field: oracle.memory.pga.maximum_allocated
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.sga_total_memory
+        target_field: oracle.memory.sga.total_memory
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.memory.sga_free_memory
+        target_field: oracle.memory.sga.free_memory
+        ignore_missing: true
+        ignore_failure: true
+
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

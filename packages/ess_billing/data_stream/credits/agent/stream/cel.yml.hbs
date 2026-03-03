@@ -1,0 +1,90 @@
+config_version: 2
+interval: "24h"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/api/v1/billing/organization/{{organization_id}}/line_items
+state:
+  api_key: {{api_key}}
+  organization_id: "{{organization_id}}"
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    request("GET", state.url).with({
+      "Header": {
+        "Authorization": ["ApiKey " + state.api_key]
+      }
+    })
+    .do_request()
+    .as(resp, resp.StatusCode == 200
+    ?
+      bytes(resp.Body).decode_json().as(body,
+        {
+          "events": body.map(item,
+            {
+              "ess": {
+                "billing": {
+                  "organization_id": state.organization_id,
+                  "start": item.start,
+                  "end": item.end,
+                  "ecu_quantity": item.ecu_quantity,
+                  "ecu_balance": item.ecu_balance,
+                  "active": item.active,
+                  "type": item.type
+                }
+              }
+            }
+          ),
+          "want_more": false,
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + resp.Request.URL + ": " +
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

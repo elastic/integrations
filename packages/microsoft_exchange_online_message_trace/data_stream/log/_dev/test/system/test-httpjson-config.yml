@@ -1,0 +1,25 @@
+# This test validates that the input is able to perform the following
+# - Performs >1 (at minimum 2) request
+# The request tests
+# 0. Auth Works
+# 1. 2 events are collected
+# 2. Page and collect 1 additional event (hit end event)
+# 3. Interval
+# Repeat until assert passes or wait_for_data_timeout hit
+input: httpjson
+service: exchange_online
+vars:
+  url: http://{{Hostname}}:{{Port}}/ecp/reportingwebservice/reporting.svc/MessageTrace
+  client_id: test-app-id
+  client_secret: test-secret
+  tenant_id: tenant_id
+  login_url: http://{{Hostname}}:{{Port}}
+  batch_size: 2
+  interval: 5s
+data_stream:
+  vars:
+    preserve_original_event: true
+    enable_request_tracer: true
+assert:
+  hit_count: 3
+wait_for_data_timeout: 30s

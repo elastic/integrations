@@ -1,0 +1,28 @@
+---
+description: Pipeline for parsing Palo Alto Networks System metrics.
+processors:
+  - script:
+      lang: painless
+      description: >
+        Transforms percentage fields from a 0-100 range into decimal fractions (0-1).
+      source: |
+        if (ctx.panw != null && ctx.panw.system != null) {
+            if (ctx.panw.system.cpu != null) {
+                def cpuFields = ['user', 'system', 'nice', 'idle', 'wait', 'hi', 'system_int', 'steal'];
+                for (def fieldName : cpuFields) {
+                    if (ctx.panw.system.cpu[fieldName] != null) {
+                        ctx.panw.system.cpu[fieldName] = ctx.panw.system.cpu[fieldName] / 100.0;
+                    }
+                }
+            }
+            if (ctx.panw.system.containsKey('filesystem.use_percent') && ctx.panw.system['filesystem.use_percent'] != null) {
+                ctx.panw.system['filesystem.use_percent'] = ctx.panw.system['filesystem.use_percent'] / 100.0;
+            }
+        }
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

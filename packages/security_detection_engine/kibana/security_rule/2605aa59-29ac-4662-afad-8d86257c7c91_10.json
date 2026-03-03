@@ -1,0 +1,104 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule monitors for the usage of the built-in Linux DebugFS utility to access a disk device without root permissions. Linux users that are part of the \"disk\" group have sufficient privileges to access all data inside of the machine through DebugFS. Attackers may leverage DebugFS in conjunction with \"disk\" permissions to read sensitive files owned by root, such as the shadow file, root ssh private keys or other sensitive files that may allow them to further escalate privileges.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Suspicious DebugFS Root Device Access",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Suspicious DebugFS Root Device Access\n\nDebugFS is a Linux utility that provides a low-level interface to access and manipulate file systems, typically used for debugging purposes. It can be exploited by adversaries with \"disk\" group privileges to access sensitive files without root permissions, potentially leading to privilege escalation. The detection rule identifies non-root users executing DebugFS on disk devices, flagging potential unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the process execution details to identify the non-root user and group involved in the DebugFS execution by examining the user.Ext.real.id and group.Ext.real.id fields.\n- Check the command-line arguments (process.args) to determine which specific disk device was accessed and assess if the access was legitimate or necessary for the user's role.\n- Investigate the user's recent activity and login history to identify any unusual patterns or unauthorized access attempts that might indicate malicious intent.\n- Verify the user's group memberships, particularly focusing on the \"disk\" group, to understand if the user should have such privileges and if any recent changes were made to their group assignments.\n- Examine system logs and other security alerts around the time of the DebugFS execution to identify any correlated suspicious activities or potential indicators of compromise.\n- Assess the system for any unauthorized changes or access to sensitive files, such as the shadow file or root SSH keys, which could indicate privilege escalation attempts.\n\n### False positive analysis\n\n- Non-root system administrators or maintenance scripts may use DebugFS for legitimate disk diagnostics or recovery tasks. To handle this, identify and whitelist specific users or scripts that are known to perform these tasks regularly.\n- Automated backup or monitoring tools might invoke DebugFS as part of their operations. Review and exclude these tools by adding their process identifiers or user accounts to an exception list.\n- Developers or testers with disk group privileges might use DebugFS during development or testing phases. Establish a policy to document and approve such activities, and exclude these users from triggering alerts.\n- Educational or training environments where DebugFS is used for learning purposes can generate false positives. Create exceptions for these environments by specifying the associated user accounts or groups.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Revoke \"disk\" group privileges from non-essential users to limit access to disk devices and prevent misuse of DebugFS.\n- Conduct a thorough review of user accounts and group memberships to ensure only authorized personnel have \"disk\" group privileges.\n- Check for unauthorized access to sensitive files such as the shadow file or root SSH private keys and reset credentials if necessary.\n- Monitor for any additional suspicious activity on the affected system and related systems, focusing on privilege escalation attempts.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems are compromised.\n- Implement enhanced logging and monitoring for DebugFS usage and access to disk devices to detect similar threats in the future.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\nprocess.name == \"debugfs\" and process.args : \"/dev/sd*\" and not process.args == \"-R\" and\nnot user.Ext.real.id == \"0\" and not group.Ext.real.id == \"0\"\n",
+        "references": [
+            "https://book.hacktricks.xyz/linux-hardening/privilege-escalation/interesting-groups-linux-pe#disk-group"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "group.Ext.real.id",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "user.Ext.real.id",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "2605aa59-29ac-4662-afad-8d86257c7c91",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.003",
+                                "name": "Local Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 10
+    },
+    "id": "2605aa59-29ac-4662-afad-8d86257c7c91_10",
+    "type": "security-rule"
+}

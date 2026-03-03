@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of Bifrost, a known macOS Kerberos pentesting tool, which can be used to dump cached Kerberos tickets or attempt unauthorized authentication techniques such as pass-the-ticket/hash and kerberoasting.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Kerberos Attack via Bifrost",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Kerberos Attack via Bifrost\n\nKerberos is a network authentication protocol designed to provide secure identity verification for users and services. Adversaries exploit tools like Bifrost on macOS to extract Kerberos tickets or perform unauthorized authentications, such as pass-the-ticket attacks. The detection rule identifies suspicious process activities linked to Bifrost's known attack methods, focusing on specific command-line arguments indicative of credential access and lateral movement attempts.\n\n### Possible investigation steps\n\n- Review the process start event details to identify the specific command-line arguments used, focusing on those that match the suspicious patterns such as \"-action\", \"-kerberoast\", \"askhash\", \"asktgs\", \"asktgt\", \"s4u\", \"-ticket ptt\", or \"dump tickets/keytab\".\n- Correlate the process execution with user activity logs to determine if the process was initiated by a legitimate user or an unauthorized account.\n- Check for any recent changes in user permissions or group memberships that could indicate privilege escalation attempts.\n- Investigate the source and destination of any network connections made by the process to identify potential lateral movement or data exfiltration.\n- Analyze historical data for similar process executions or patterns to assess if this is an isolated incident or part of a broader attack campaign.\n- Review endpoint security logs for any additional indicators of compromise or related suspicious activities around the time of the alert.\n\n### False positive analysis\n\n- Legitimate administrative tasks on macOS systems may trigger the rule if they involve Kerberos ticket management. To handle this, identify and document routine administrative processes that use similar command-line arguments and create exceptions for these specific activities.\n- Security tools or scripts designed for Kerberos ticket management or testing may mimic Bifrost's behavior. Review and whitelist these tools if they are part of authorized security assessments or IT operations.\n- Automated system processes that interact with Kerberos for legitimate authentication purposes might be flagged. Monitor these processes and exclude them from the rule if they are verified as non-threatening and essential for system operations.\n- Developers or IT personnel testing Kerberos configurations in a controlled environment could inadvertently trigger the rule. Ensure that such environments are well-documented and excluded from monitoring to prevent false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS host from the network to prevent further unauthorized access or lateral movement.\n- Terminate any suspicious processes identified by the detection rule, particularly those involving Bifrost command-line arguments.\n- Conduct a thorough review of Kerberos ticket logs and authentication attempts to identify any unauthorized access or anomalies.\n- Revoke and reissue Kerberos tickets for affected users and services to ensure no compromised tickets are in use.\n- Update and patch the macOS system and any related software to mitigate vulnerabilities that may have been exploited.\n- Implement enhanced monitoring for Kerberos-related activities, focusing on unusual patterns or command-line arguments similar to those used by Bifrost.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n process.args like~ \"-action\" and (process.args like~ (\"-kerberoast\", \"askhash\", \"asktgs\", \"asktgt\", \"s4u\") or process.args like~ (\"-ticket\", \"ptt\") or process.args like~ \"dump\") and process.args like~ (\"tickets\", \"keytab\")\n",
+        "references": [
+            "https://github.com/its-a-feature/bifrost"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "16904215-2c95-4ac8-bf5c-12354e047192",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.003",
+                                "name": "Pass the Ticket",
+                                "reference": "https://attack.mitre.org/techniques/T1550/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1558",
+                        "name": "Steal or Forge Kerberos Tickets",
+                        "reference": "https://attack.mitre.org/techniques/T1558/",
+                        "subtechnique": [
+                            {
+                                "id": "T1558.003",
+                                "name": "Kerberoasting",
+                                "reference": "https://attack.mitre.org/techniques/T1558/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "16904215-2c95-4ac8-bf5c-12354e047192_109",
+    "type": "security-rule"
+}

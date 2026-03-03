@@ -1,0 +1,123 @@
+- name: mimecast
+  type: group
+  fields:
+    # API https://developer.services.mimecast.com/siem-tutorial-ci
+
+    - name: log_type
+      type: keyword
+
+    ### Undocumented
+    - name: recipients
+      type: keyword
+      description: >-
+        The recipient of the email.
+    - name: source
+      type: keyword
+    - name: subtype
+      type: keyword
+
+    ### Common fields
+    - name: processingId
+      type: keyword
+      description: >-
+        Unique identifier that allows you to correlate/group related events.
+    - name: aggregateId
+      type: keyword
+      description: >-
+        Unique identifier that allows you to correlate/group related events.
+    - name: timestamp
+      type: keyword
+      description: >-
+        The date and time of event.
+    - name: accountId
+      type: keyword
+      description: >-
+        The Mimecast account code for your account.
+ 
+    ### Entities (Message Summary) Logs
+    - name: attachments
+      type: keyword
+      description: >-
+        The filenames of all attachments on the emai.
+    - name: tags
+      type: keyword
+      description: >-
+        The determination if the email was untrustworthy.
+    - name: policiesApplied
+      type: group
+      description: >-
+        The policy applied to derive outcome.
+      fields:
+        - name: action
+          type: keyword
+        - name: mode
+          type: keyword
+        - name: name
+          type: keyword
+    - name: historicalMail
+      type: boolean
+      description: >-
+        Identifies whether the scan was from historical email (prior to Mimecast).
+    - name: senderEnvelope
+      type: keyword
+      description: >-
+        The sender of the email.
+    - name: senderIp
+      type: keyword
+      description: >-
+        The source IP of the sending mail server.
+    - name: subject
+      type: keyword
+      description: >-
+        The subject of the email, limited to 150 characters.
+    - name: threatState
+      type: keyword
+      description: >-
+        The action taken.
+    - name: threatType
+      type: keyword
+      description: >-
+        The type of threat identified where applicable. no detections= allowed.
+    - name: direction
+      type: keyword
+      description: >-
+        The direction of the email based on the sending and receiving domains.
+    - name: senderHeader
+      type: keyword
+      description: >-
+        The sender address found in the from header of the email.
+
+    ### Mail Flow logs
+    - name: messageId
+      type: keyword
+      description: >-
+        The internet message id of the email.
+    - name: authResults
+      type: group
+      description: >-
+        The auth result for an email, for just one of the auth types (like DKIM).
+      fields:
+        - name: aligned
+          type: boolean
+        - name: result
+          type: keyword
+        - name: type
+          type: keyword
+
+    ### URL Protect Logs(blocked events only)
+    - name: action
+      type: keyword
+      description: >-
+        The action taken for this message.
+    - name: originalUrl
+      type: keyword
+      description: >-
+        The original URL Clicked.
+    - name: redirectUrl
+      type: keyword
+      description: >-
+        The redirect URL, following original URL click.
+    - name: sourceIp
+      type: keyword
+      description: >-
+        The source IP of the original message. 

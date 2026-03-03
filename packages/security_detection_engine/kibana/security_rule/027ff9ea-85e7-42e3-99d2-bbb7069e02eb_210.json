@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of a Chromium based browser with the debugging process argument, which may indicate an attempt to steal authentication cookies. An adversary may steal web application or service session cookies and use them to gain access web applications or Internet services as an authenticated user without needing credentials.",
+        "false_positives": [
+            "Developers performing browsers plugin or extension debugging."
+        ],
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "max_signals": 33,
+        "name": "Potential Cookies Theft via Browser Debugging",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Cookies Theft via Browser Debugging\n\nChromium-based browsers support debugging features that allow developers to inspect and modify web applications. Adversaries can exploit these features to access session cookies, enabling unauthorized access to web services. The detection rule identifies suspicious browser processes using debugging arguments, which may indicate cookie theft attempts, by monitoring specific process names and arguments across different operating systems.\n\n### Possible investigation steps\n\n- Review the process details to confirm the presence of suspicious debugging arguments such as \"--remote-debugging-port=*\", \"--remote-debugging-targets=*\", or \"--remote-debugging-pipe=*\". Check if these arguments were used in conjunction with \"--user-data-dir=*\" and ensure \"--remote-debugging-port=0\" is not present.\n- Identify the user account associated with the suspicious browser process to determine if it aligns with expected behavior or if it might be compromised.\n- Investigate the source IP address and network activity associated with the process to identify any unusual or unauthorized access patterns.\n- Check for any recent changes or anomalies in the user's account activity, such as unexpected logins or access to sensitive applications.\n- Correlate the event with other security alerts or logs to identify if this activity is part of a broader attack pattern or campaign.\n- If possible, capture and analyze the network traffic associated with the process to detect any data exfiltration attempts or communication with known malicious IP addresses.\n\n### False positive analysis\n\n- Development and testing activities may trigger the rule when developers use debugging features for legitimate purposes. To manage this, create exceptions for known developer machines or user accounts frequently involved in web application development.\n- Automated testing frameworks that utilize browser debugging for testing web applications can also cause false positives. Identify and exclude processes initiated by these frameworks by specifying their unique process names or user accounts.\n- Browser extensions or tools that rely on debugging ports for functionality might be flagged. Review and whitelist these extensions or tools if they are verified as safe and necessary for business operations.\n- Remote support or troubleshooting sessions using debugging features can be mistaken for suspicious activity. Implement a policy to log and review such sessions, allowing exceptions for recognized support tools or personnel.\n- Continuous integration/continuous deployment (CI/CD) pipelines that involve browser automation may inadvertently match the rule criteria. Exclude these processes by identifying and filtering based on the CI/CD system's user accounts or process identifiers.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious browser processes identified with debugging arguments to stop potential cookie theft in progress.\n- Conduct a thorough review of access logs for the affected web applications or services to identify any unauthorized access attempts using stolen cookies.\n- Invalidate all active sessions for the affected user accounts and force a re-authentication to ensure that any stolen session cookies are rendered useless.\n- Implement stricter browser security policies, such as disabling remote debugging features in production environments, to prevent similar exploitation in the future.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems or data have been compromised.\n- Enhance monitoring and alerting for similar suspicious browser activities by refining detection rules and incorporating additional threat intelligence.",
+        "query": "process where event.type in (\"start\", \"process_started\", \"info\") and\n  process.name in (\n             \"Microsoft Edge\",\n             \"chrome.exe\",\n             \"Google Chrome\",\n             \"google-chrome-stable\",\n             \"google-chrome-beta\",\n             \"google-chrome\",\n             \"msedge.exe\") and\n   process.args : (\"--remote-debugging-port=*\",\n                   \"--remote-debugging-targets=*\",\n                   \"--remote-debugging-pipe=*\") and\n   process.args : \"--user-data-dir=*\" and not process.args:\"--remote-debugging-port=0\"\n",
+        "references": [
+            "https://github.com/defaultnamehere/cookie_crimes",
+            "https://embracethered.com/blog/posts/2020/cookie-crimes-on-mirosoft-edge/",
+            "https://github.com/rapid7/metasploit-framework/blob/master/documentation/modules/post/multi/gather/chrome_cookies.md",
+            "https://posts.specterops.io/hands-in-the-cookie-jar-dumping-cookies-with-chromiums-remote-debugger-port-34c4f468844e"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "system",
+                "version": "^1.64.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "027ff9ea-85e7-42e3-99d2-bbb7069e02eb",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Sysmon"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 210
+    },
+    "id": "027ff9ea-85e7-42e3-99d2-bbb7069e02eb_210",
+    "type": "security-rule"
+}

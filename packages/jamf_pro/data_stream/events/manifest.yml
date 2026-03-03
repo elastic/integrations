@@ -1,0 +1,80 @@
+title: Jamf Pro Events
+type: logs
+streams:
+  - input: http_endpoint
+    description: |
+      Catches jamf pro events via webhook
+    template_path: http_endpoint.yml.hbs
+    title: events
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for http endpoint connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The port number the listener binds to.
+        multi: false
+        required: true
+        show_user: true
+        default: 9202
+      - name: url
+        type: text
+        title: URL
+        description: This option specifies which URL path to accept requests on. Defaults to /jamf-pro-events.
+        multi: false
+        required: false
+        show_user: false
+        default: /jamf-pro-events
+      - name: secret_header
+        type: text
+        secret: false
+        title: Secret Header
+        description: The header to check for a specific value specified by `secret.value`.
+        required: false
+        show_user: false
+      - name: secret_value
+        type: password
+        secret: true
+        title: Secret Value
+        description: The secret stored in the header name specified by `secret.header`.
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - jamf_pro-events
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

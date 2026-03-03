@@ -1,0 +1,73 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects when a GitHub repository is deleted within your organization. Repositories are a critical component used within an organization to manage work, collaborate with others and release products to the public. Any delete action against a repository should be investigated to determine it's validity. Unauthorized deletion of organization repositories could cause irreversible loss of intellectual property and indicate compromise within your organization.",
+        "from": "now-9m",
+        "index": [
+            "logs-github.audit-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "GitHub Repository Deleted",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GitHub Repository Deleted\nGitHub repositories are essential for managing code and collaboration within organizations. Adversaries may exploit this by deleting repositories to disrupt operations or erase critical data, potentially indicating a security breach. The detection rule monitors GitHub audit logs for repository deletion events, enabling analysts to swiftly identify and investigate unauthorized actions, thereby mitigating potential data loss and compromise.\n\n### Possible investigation steps\n\n- Review the GitHub audit logs to confirm the repository deletion event by checking for entries where event.module is \"github\", event.dataset is \"github.audit\", and event.action is \"repo.destroy\".\n- Identify the user account associated with the deletion event and verify their access permissions and recent activity to determine if the action was authorized.\n- Contact the user or team responsible for the repository to confirm whether the deletion was intentional and documented.\n- Check for any recent changes in user access or permissions that could indicate a compromised account or unauthorized access.\n- Investigate any other suspicious activities or alerts related to the same user or repository around the time of the deletion event to identify potential patterns of malicious behavior.\n- Assess the impact of the repository deletion on ongoing projects and data availability, and initiate recovery procedures if necessary.\n\n### False positive analysis\n\n- Routine repository clean-up activities by authorized personnel may trigger alerts. To manage this, maintain a list of users or teams responsible for such tasks and create exceptions for their actions.\n- Automated scripts or tools used for repository management might delete repositories as part of their normal operation. Identify these scripts and exclude their actions from triggering alerts by using specific identifiers or tags.\n- Test or temporary repositories that are frequently created and deleted during development cycles can cause false positives. Implement naming conventions for these repositories and configure the rule to ignore deletions matching these patterns.\n- Scheduled repository deletions as part of a lifecycle management policy can be mistaken for unauthorized actions. Document these schedules and adjust the detection rule to accommodate these planned activities.\n\n### Response and remediation\n\n- Immediately revoke access for any user account associated with the unauthorized repository deletion to prevent further malicious actions.\n- Restore the deleted repository from backups or snapshots, if available, to recover lost data and minimize operational disruption.\n- Conduct a thorough review of recent access logs and user activities to identify any other suspicious actions or potential indicators of compromise.\n- Notify the security team and relevant stakeholders about the incident to ensure coordinated response efforts and awareness.\n- Implement additional access controls, such as multi-factor authentication and role-based access, to prevent unauthorized deletions in the future.\n- Escalate the incident to higher management and legal teams if intellectual property theft or significant data loss is suspected.\n- Enhance monitoring and alerting mechanisms to detect similar unauthorized actions promptly, leveraging the MITRE ATT&CK framework for guidance on potential threat vectors.",
+        "query": "configuration where event.module == \"github\" and event.dataset == \"github.audit\" and event.action == \"repo.destroy\"\n",
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "345889c4-23a8-4bc0-b7ca-756bd17ce83b",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Tactic: Impact",
+            "Data Source: Github",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 206
+    },
+    "id": "345889c4-23a8-4bc0-b7ca-756bd17ce83b_206",
+    "type": "security-rule"
+}

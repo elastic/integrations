@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies .url shortcut files downloaded from outside the local network. These shortcut files are commonly used in phishing campaigns.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Downloaded URL Files",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Downloaded URL Files\n\nURL shortcut files, typically used for quick access to web resources, can be exploited by attackers in phishing schemes to execute malicious content. These files, when downloaded from non-local sources, may bypass traditional security measures. The detection rule identifies such files by monitoring their creation events on Windows systems, focusing on those not initiated by standard processes like Explorer, and flags them based on their network origin, aiding in early threat detection.\n\n### Possible investigation steps\n\n- Review the file creation event details to confirm the file extension is \".url\" and verify the zone identifier is greater than 1, indicating a non-local source.\n- Investigate the process that created the .url file, ensuring it was not initiated by \"explorer.exe\" and identify the actual process responsible for the creation.\n- Check the network origin of the downloaded .url file to determine if it is from a known malicious domain or IP address.\n- Analyze the contents of the .url file to identify the target URL and assess its reputation and potential risk.\n- Correlate the event with other security alerts or logs from the same host to identify any additional suspicious activities or patterns.\n- Contact the user associated with the alert to verify if they intentionally downloaded the file and gather any additional context regarding their actions.\n\n### False positive analysis\n\n- Corporate applications that generate .url files for legitimate purposes may trigger alerts. Identify these applications and create exceptions for their processes to prevent unnecessary alerts.\n- Automated scripts or system management tools that download .url files as part of routine operations can be mistaken for threats. Review these tools and whitelist their activities if they are verified as safe.\n- User-initiated downloads from trusted internal web portals might be flagged. Educate users on safe downloading practices and consider excluding specific trusted domains from monitoring.\n- Security software updates or patches that include .url files could be misidentified. Verify the source of these updates and adjust the rule to exclude known safe update processes.\n- Collaboration platforms that share .url files for internal use may cause false positives. Evaluate the platform's behavior and exclude its processes if they are deemed secure.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of any potential malicious activity.\n- Terminate any suspicious processes that are not initiated by standard processes like Explorer, especially those related to the creation of .url files.\n- Delete the identified .url files from the system to remove the immediate threat.\n- Conduct a full antivirus and anti-malware scan on the affected system to identify and remove any additional threats.\n- Review and analyze the network logs to identify any other systems that may have downloaded similar .url files and apply the same containment measures.\n- Escalate the incident to the security operations team for further investigation and to determine if there is a broader campaign targeting the organization.\n- Update security policies and endpoint protection configurations to block the download and execution of .url files from untrusted sources in the future.",
+        "query": "file where host.os.type == \"windows\" and event.type == \"creation\" and file.extension == \"url\"\n   and file.Ext.windows.zone_identifier == 3 \n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "file.Ext.windows.zone_identifier",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "cd82e3d6-1346-4afd-8f22-38388bbf34cb",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.001",
+                                "name": "Spearphishing Attachment",
+                                "reference": "https://attack.mitre.org/techniques/T1566/001/"
+                            },
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 7
+    },
+    "id": "cd82e3d6-1346-4afd-8f22-38388bbf34cb_7",
+    "type": "security-rule"
+}

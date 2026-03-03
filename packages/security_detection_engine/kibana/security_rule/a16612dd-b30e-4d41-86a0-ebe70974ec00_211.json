@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation of an LSASS process clone via PssCaptureSnapShot where the parent process is the initial LSASS process instance. This may indicate an attempt to evade detection and dump LSASS memory for credential access.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential LSASS Clone Creation via PssCaptureSnapShot",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential LSASS Clone Creation via PssCaptureSnapShot\n\nPssCaptureSnapShot is a Windows API used for creating snapshots of processes, often for debugging. Adversaries exploit this to clone the LSASS process, aiming to extract credentials without detection. The detection rule identifies suspicious LSASS clones by monitoring process creation events where both the process and its parent are LSASS, signaling potential credential dumping attempts.\n\n### Possible investigation steps\n\n- Review the process creation event logs for the specific event code 4688 to confirm the creation of an LSASS process clone. Verify that both the process and its parent have the executable path \"?:\\Windows\\System32\\lsass.exe\".\n- Check the timeline of events to determine if there are any preceding or subsequent suspicious activities related to the LSASS process, such as unusual access patterns or modifications.\n- Investigate the user account and privileges associated with the process creation event to assess if the account has legitimate reasons to interact with LSASS or if it might be compromised.\n- Analyze network activity from the host to identify any potential data exfiltration attempts or connections to known malicious IP addresses following the LSASS clone creation.\n- Correlate this event with other security alerts or logs from the same host to identify if this is part of a broader attack pattern or isolated incident.\n- Examine the host for any signs of malware or tools commonly used for credential dumping, such as Mimikatz, that might have been used in conjunction with the LSASS clone creation.\n\n### False positive analysis\n\n- Legitimate security software or system management tools may create LSASS process snapshots for monitoring or debugging purposes. Identify these tools and create exceptions for their process creation events to avoid false positives.\n- System administrators or IT personnel might use authorized scripts or tools that interact with LSASS for legitimate reasons. Verify these activities and whitelist the associated processes to prevent unnecessary alerts.\n- During system updates or patches, certain processes might temporarily mimic suspicious behavior. Monitor these updates and temporarily adjust detection rules to accommodate expected changes in process behavior.\n- Some enterprise environments may have custom applications that interact with LSASS for performance monitoring. Document these applications and exclude their process creation events from triggering alerts.\n- Regularly review and update the list of known benign processes and tools that interact with LSASS to ensure that the detection rule remains effective without generating excessive false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further credential access or lateral movement by the adversary.\n- Terminate any suspicious LSASS clone processes identified by the detection rule to halt ongoing credential dumping activities.\n- Conduct a thorough memory analysis of the affected system to identify any additional malicious activities or tools used by the adversary.\n- Change all potentially compromised credentials, especially those with administrative privileges, to mitigate the risk of unauthorized access.\n- Review and enhance endpoint security configurations to ensure that LSASS process memory is protected from unauthorized access, such as enabling Credential Guard if applicable.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the scope of the breach.\n- Implement additional monitoring and alerting for similar suspicious activities, focusing on process creation events involving LSASS, to improve early detection of future attempts.",
+        "query": "process where host.os.type == \"windows\" and event.code:\"4688\" and\n  process.executable : \"?:\\\\Windows\\\\System32\\\\lsass.exe\" and\n  process.parent.executable : \"?:\\\\Windows\\\\System32\\\\lsass.exe\"\n",
+        "references": [
+            "https://www.matteomalvica.com/blog/2019/12/02/win-defender-atp-cred-bypass/",
+            "https://medium.com/@Achilles8284/the-birth-of-a-process-part-2-97c6fb9c42a2"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "system",
+                "version": "^1.64.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a16612dd-b30e-4d41-86a0-ebe70974ec00",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Sysmon",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 211
+    },
+    "id": "a16612dd-b30e-4d41-86a0-ebe70974ec00_211",
+    "type": "security-rule"
+}

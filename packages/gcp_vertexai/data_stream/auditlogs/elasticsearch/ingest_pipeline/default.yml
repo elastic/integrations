@@ -1,0 +1,365 @@
+---
+description: Pipeline for Google Cloud Vertex AI Audit logs
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: cloud.provider
+      value: gcp
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+  - rename:
+      field: json.protoPayload.@type
+      target_field: gcp.vertexai.audit.type
+      ignore_missing: true
+  - drop:
+      description: Drop the document if it is not of AuditLog type
+      if: ctx.gcp?.vertexai?.audit?.type != null && ctx.gcp?.vertexai?.audit?.type != 'type.googleapis.com/google.cloud.audit.AuditLog'
+  - set:
+      field: event.id
+      copy_from: json.insertId
+      if: ctx.json?.insertId != null
+  - rename:
+      field: json.logName
+      target_field: log.logger
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: log.level
+      ignore_missing: true
+  - date:
+      field: json.timestamp
+      timezone: UTC
+      formats:
+        - ISO8601
+  - rename:
+      field: json.resource.labels.project_id
+      target_field: cloud.project.id
+      if: ctx.json?.resource?.labels?.project_id != null
+  - rename:
+      field: json.resource.labels.instance_id
+      target_field: cloud.instance.id 
+      if: ctx.json?.resource?.labels?.instance_id != null
+  - rename:
+      field: json.resource.type
+      target_field: gcp.vertexai.audit.resource_type
+      if: ctx.json?.resource?.type != null
+##
+# AuthenticationInfo
+# .protoPayload.authenticationInfo
+# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#AuthenticationInfo
+##
+  - rename:
+      field: json.protoPayload.authenticationInfo.authoritySelector
+      target_field: gcp.vertexai.audit.authentication_info.authority_selector
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalEmail
+      target_field: gcp.vertexai.audit.authentication_info.principal_email
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalSubject
+      target_field: gcp.vertexai.audit.authentication_info.principal_subject
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.serviceAccountKeyName
+      target_field: gcp.vertexai.audit.authentication_info.service_account_key_name
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
+      target_field: gcp.vertexai.audit.authentication_info.service_account_delegation_info
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.thirdPartyPrincipal
+      target_field: gcp.vertexai.audit.authentication_info.third_party_principal
+      ignore_failure: true
+
+  - rename:
+      field: json.protoPayload.serviceName
+      target_field: gcp.vertexai.audit.service_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.methodName
+      target_field: event.action
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.resourceName
+      target_field: gcp.vertexai.audit.resource_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.request
+      target_field: gcp.vertexai.audit.request
+      if: ctx.json?.protoPayload?.request != null
+  - rename:
+      field: json.protoPayload.response
+      target_field: gcp.vertexai.audit.response
+      if: ctx.json?.protoPayload?.response != null
+  - rename:
+      field: json.protoPayload.resourceLocation.currentLocations
+      target_field: gcp.vertexai.audit.resource_location.current_locations
+      ignore_missing: true
+  - convert:
+      field: json.protoPayload.numResponseItems
+      target_field: gcp.vertexai.audit.num_response_items
+      type: long
+      ignore_missing: true
+
+
+# .protoPayload.Status
+# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#Status
+
+  - rename:
+      field: json.protoPayload.status.code
+      target_field: gcp.vertexai.audit.status.code
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.status.message
+      target_field: gcp.vertexai.audit.status.message
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.status.details
+      target_field: gcp.vertexai.audit.status.details
+      ignore_failure: true
+      ignore_missing: true
+
+
+##
+# if gcp.vertexai.audit.authorization_info.[0].granted is true then
+# set event.category [network, configuration] and event.type to [access, allowed];
+# Caveat
+# 1. protoPayload.resourceName is a single value while authorization_info[].resource
+# is a list.
+# 2. as per test data authorization_info may not be as per spec.
+##
+  - append:
+      field: event.category
+      value: ['network', 'configuration']
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List && ctx?.gcp?.vertexai?.audit?.authorization_info.size() == 1
+  - append:
+      field: event.type
+      value: ['access', 'allowed']
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List && ctx?.gcp?.vertexai?.audit?.authorization_info.size() == 1 && ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted != null && ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted
+  - append:
+      field: event.type
+      value: ['access', 'denied']
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List && ctx?.gcp?.vertexai?.audit?.authorization_info.size() == 1 && ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted != null && !ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted
+
+
+##
+# PolicyViolationInfo
+# .protoPayload.orgPolicyViolationInfo
+# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#policyviolationinfo
+##
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo
+      target_field: gcp.vertexai.audit.policy_violation_info.violations
+      ignore_failure: true
+  - foreach:
+      field: gcp.vertexai.audit.policy_violation_info.violations
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.errorMessage
+          target_field: _ingest._value.error_message
+      if: ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations != null && ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations instanceof List
+  - foreach:
+      field: gcp.vertexai.audit.policy_violation_info.violations
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.checkedValue
+          target_field: _ingest._value.checked_value
+      if: ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations != null && ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations instanceof List
+  - foreach:
+      field: gcp.vertexai.audit.policy_violation_info.violations
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.policyType
+          target_field: _ingest._value.policy_type
+      if: ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations != null && ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations instanceof List
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.payload
+      target_field: gcp.vertexai.audit.policy_violation_info.payload
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceType
+      target_field: gcp.vertexai.audit.policy_violation_info.resource_type
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceTags
+      target_field: gcp.vertexai.audit.policy_violation_info.resource_tags
+      ignore_failure: true
+
+##
+# RequestMetadata
+# .protoPayload.requestMetadata
+# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#requestmetadata
+##
+  - convert:
+      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null && ctx.json?.protoPayload?.requestMetadata?.callerIp != "gce-internal-ip"  && ctx.json?.protoPayload?.requestMetadata?.callerIp != "private"
+      type: ip
+      field: json.protoPayload.requestMetadata.callerIp
+      target_field: source.ip
+      ignore_missing: true
+  - remove:
+      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null
+      field: json.protoPayload.requestMetadata.callerIp
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
+      target_field: user_agent.original
+      ignore_failure: true
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+# Related fields
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{client.user.email}}}"
+      if: ctx.client?.user?.email != null
+      allow_duplicates: false
+
+
+##
+# Metadata
+# .protoPayload.metadata
+# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+##
+  - rename:
+      field: json.protoPayload.metadata
+      target_field: gcp.vertexai.audit.metadata
+      if: ctx.json?.protoPayload?.metadata != null
+
+
+
+  # email address of authenticated user (redacted) or service account
+  # principal_email -> client.user.email
+  - rename:
+      field: gcp.vertexai.audit.authentication_info.principal_email
+      target_field: client.user.email
+      if: ctx.client?.user?.email == null
+      ignore_missing: true
+  # identity of requesting first or third party
+  # principal_subject -> client.user.id
+  - rename:
+      field: gcp.vertexai.audit.authentication_info.principal_subject
+      target_field: client.user.id
+      if: ctx.client?.user?.id == null
+      ignore_missing: true
+      
+##
+# AuthorizationInfo
+# .protoPayload.authorizationInfo
+# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#authorizationinfo
+##
+  - rename:
+      field: json.protoPayload.authorizationInfo
+      target_field: gcp.vertexai.audit.authorization_info
+      ignore_failure: true
+  - foreach:
+      field: gcp.vertexai.audit.authorization_info
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.resourceAttributes
+          target_field: _ingest._value.resource_attributes
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List
+  - foreach:
+      field: gcp.vertexai.audit.authorization_info
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.permissionType
+          target_field: _ingest._value.permission_type
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List
+
+  # Remove null and empty values recursively
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+ 
+## cleanup
+  - remove:
+      field: json
+      ignore_missing: true
+
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

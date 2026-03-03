@@ -1,0 +1,25 @@
+listen_address: "{{listen_address}}"
+listen_port: {{listen_port}}
+preserve_original_event: {{preserve_original_event}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

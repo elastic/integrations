@@ -1,0 +1,95 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  username: {{username}}
+  password: {{password}}
+redact:
+  fields:
+    - username
+    - password
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state.start_time
+    :
+      state.?cursor.last_timestamp.orValue(string(int(now - duration(state.initial_interval)) * 1000))
+  ).as(start_time, state.with(
+      get_request(state.url.trim_right("/") + "/api/open/query/do?" + {
+        "query": ["node_cves | where record_created_at > " + start_time + " | sort record_created_at asc"],
+        "skip_total_count": ["true"],
+        "page": [string(state.?page.orValue(1))],
+        "count": [string(state.batch_size)],
+        "default_filters": ["false"]
+      }.format_query()).with({
+          "Header": {
+            "Authorization": ["Basic " + base64(state.username + ":" + state.password)],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "events": body.result.map(e, {
+              "message": e.encode_json(),
+            }),
+            "want_more": body.?result.hasValue() && size(body.result) >= state.batch_size,
+            "page": body.?result.hasValue() && size(body.result) >= state.batch_size ? int(state.?page.orValue(1)) + 1 : 1,
+            "start_time": start_time,
+            "cursor": {
+              ?"last_timestamp": has(body.result) && size(body.result) > 0 ?
+                optional.of(string(int(body.result[size(body.result) - 1].record_created_at)))
+              :
+                state.?cursor.last_timestamp
+            },
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/api/open/query/do?query=node_cves: " +
+              (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

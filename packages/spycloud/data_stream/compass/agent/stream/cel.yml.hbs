@@ -1,0 +1,100 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+  want_more: false
+redact:
+  fields:
+    - api_key
+program: |
+  request(
+    "GET",
+    state.url + "/compass/data?" + {
+      ?"since": (state.?want_more.orValue(false) ? optional.none()
+      :
+        (state.?cursor.last_published_date).as(date,
+          optional.of([(date.hasValue() ?
+            timestamp(state.cursor.last_published_date)
+          :
+            now - duration(state.initial_interval)
+        ).format("2006-01-02")]))
+      ),
+      ?"cursor": state.?want_more.orValue(false) ? optional.of([state.pagination_token]) : optional.none(),
+    }.format_query()
+  ).with({
+    "Header":{
+        "x-api-key": [state.api_key],
+        "User-Agent": [useragent],
+    }
+  }).do_request().as(resp, resp.StatusCode == 200 ?
+    bytes(resp.Body).decode_json().as(body,
+      {
+        "events": (has(body.results) && body.results.size() > 0) ?
+            body.results.map(e, {"message": e.encode_json()})
+          :
+            [{"message": body.encode_json()}],
+        "cursor": {
+          ?"last_published_date": (has(body.results) && body.results.size() > 0) ?
+              optional.of(string(([?state.?cursor.last_published_date] + body.results.map(e, e.spycloud_publish_date)).map(t, timestamp(t)).max()))
+            :
+              state.?cursor.last_published_date,
+        },
+        ?"pagination_token": body.?cursor,
+        "want_more": body.?cursor.orValue("") != "",
+        "initial_interval": state.initial_interval,
+        "api_key": state.api_key,
+      }
+    )
+  :
+    {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET:"+(
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+          ),
+        }
+      },
+      "want_more": false,
+      "initial_interval": state.initial_interval,
+      "api_key": state.api_key,
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#if hide_sensitive}}
+  - hide_sensitive
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

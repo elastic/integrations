@@ -1,0 +1,63 @@
+---
+description: Pipeline for parsing Hadoop Datanode Dataset metrics
+processors:
+  - rename: 
+      field: hadoop.datanode.temp.CacheCapacity
+      target_field: hadoop.datanode.cache.capacity
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.CacheUsed
+      target_field: hadoop.datanode.cache.used
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.NumBlocksCached
+      target_field: hadoop.datanode.blocks.cached
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.EstimatedCapacityLostTotal
+      target_field: hadoop.datanode.estimated_capacity_lost_total
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.Capacity
+      target_field: hadoop.datanode.disk_space.capacity
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.Remaining
+      target_field: hadoop.datanode.disk_space.remaining
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.DfsUsed
+      target_field: hadoop.datanode.dfs_used
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.NumBlocksFailedToCache
+      target_field: hadoop.datanode.blocks.failed.to_cache
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.NumBlocksFailedToUnCache
+      target_field: hadoop.datanode.blocks.failed.to_uncache
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: hadoop.datanode.temp.NumFailedVolumes
+      target_field: hadoop.datanode.volumes.failed
+      ignore_missing: true
+      ignore_failure: true
+  - date: 
+      field: hadoop.datanode.temp.LastVolumeFailureDate
+      target_field: hadoop.datanode.last_volume_failure_date
+      formats:
+        - UNIX_MS
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"

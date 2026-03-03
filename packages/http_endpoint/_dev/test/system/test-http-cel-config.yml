@@ -1,0 +1,38 @@
+service: test-webhook-http
+service_notify_signal: SIGHUP
+input: http_endpoint
+vars:
+  data_stream.dataset: http_endpoint.http_endpoint
+  preserve_original_event: true
+  listen_address: 0.0.0.0
+  url: /json
+  program: |-
+    // Make it possible to differentiate a program's execution
+    // from a non-CEL handler. We don't make most of the mito
+    // libs available in http_endpoint, so just double up by
+    // making an array of parts of the message.
+    // We don't have the containers library, so flatten using
+    // an index into the array produced by the map; the array
+    // we actually want is the array in the map body.
+    obj.map(k, [
+      {"message": k},      // event 0
+      {"message": obj[k]}, // event 1
+    ])[0]
+  # Replace 'json' with '.' when kibana.version is ^8.15.0.
+  prefix: 'json'
+  listen_port: 9515
+  basic_auth: true
+  username: abc123
+  password: abc123
+  enable_request_tracer: true
+  # Remove processors when kibana.version is ^8.15.0.
+  processors: |
+    - rename:
+        fields:
+          - from: json.message
+            to: message
+    - drop_fields:
+        fields:
+          - json
+assert:
+  hit_count: 2

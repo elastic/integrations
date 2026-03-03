@@ -1,0 +1,33 @@
+metricsets: ["system"]
+add_metadata: {{add_metadata}}
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+period: {{period}}
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{#if condition}}
+{{#if stream_condition}}
+condition: {{ condition }} and {{ stream_condition }}
+{{else}}
+condition: {{ condition }}
+{{/if}}
+{{else}}
+{{#if stream_condition}}
+condition: {{ stream_condition }}
+{{/if}}
+{{/if}}

@@ -1,0 +1,71 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url:  {{login_url}}/{{tenant_id}}/oauth2/v2.0/token
+  scopes: {{token_scopes}}
+state:
+  page_size: {{batch_size}}
+redact:
+  fields: ~
+program: |
+  request("GET",
+    state.url.trim_right("/") + "/api/machines?" + {
+      "$top": [string(state.page_size)],
+      "$skip": [string(state.?skip.orValue(0))],
+    }.format_query()
+  ).do_request().as(resp, resp.StatusCode == 200 ?
+    resp.Body.decode_json().as(body, {
+      "events": body.value.map(e, {
+        "message": e.encode_json(),
+      }),
+      "page_size": state.page_size,
+      "skip": size(body.value) == state.page_size ? int(state.?skip.orValue(0)) + int(state.page_size) : 0,
+      "want_more": size(body.value) == state.page_size,
+    })
+  :
+    {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET " + state.url.trim_right("/") + "/api/machines: " + (
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+          ),
+        },
+      },
+      "want_more": false,
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

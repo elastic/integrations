@@ -1,0 +1,160 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $event_duration := generate "event_duration" }}
+{{- $rangeofid := generate "rangeofid" -}}
+{{- $nodeid := div $rangeofid 110 -}}
+{{- $duration_start := generate "duration_start" }}
+{{- $startTime := generate "timestamp" | date_modify (print $duration_start) }}
+{{- $memory_available_bytes := generate "memory_available_bytes" }}
+{{- $memory_usage_bytes := generate "memory_usage_bytes" }}
+{{- $memory_rss_bytes := generate "memory_rss_bytes" }}
+{{- $memory_workingset_bytes := generate "memory_workingset_bytes" }}
+{{- $pagefaults := generate "pagefaults" }}
+{{- $majorpagefaults := generate "majorpagefaults" }}
+{{- $network_rx_bytes := generate "network_rx_bytes" }}
+{{- $network_rx_errors := generate "network_rx_errors" }}
+{{- $network_tx_bytes := generate "network_tx_bytes" }}
+{{- $network_tx_errors := generate "network_tx_errors" }}
+{{- $fs_capacity_bytes := generate "fs_capacity_bytes" }}                    
+{{- $fs_available_bytes := generate "fs_available_bytes" }}                     
+{{- $fs_used_bytes := generate "fs_used_bytes" }}                     
+{{- $fs_inodes_used := generate "fs_inodes_used" }}            
+{{- $fs_inodes_count := generate "fs_inodes_count" }}             
+{{- $fs_inodes_free := generate "fs_inodes_free" }}
+{{- $runtime_imagefs_capacity_bytes := generate "runtime_imagefs_capacity_bytes" }}                    
+{{- $runtime_imagefs_available_bytes := generate "runtime_imagefs_available_bytes" }}                     
+{{- $runtime_imagefs_used_bytes := generate "runtime_imagefs_used_bytes" }}  
+{{- $cpu_usage_core_ns := generate "cpu_usage_core_ns" }}   
+{{- $nanocores := generate "nanocores" }}
+{
+    "@timestamp": "{{$timestamp.Format "2006-01-02T15:04:05.999999Z07:00"}}",
+    "event": {
+        "dataset": "kubernetes.node",
+        "module": "kubernetes",
+        "agent_id_status": "verified",
+        "duration": {{ $event_duration }}
+    },
+    "data_stream": {
+        "dataset": "kubernetes.node",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "service": {
+        "type": "kubernetes",
+        "address": "kubernetes-scale-123456:10250"
+    },
+    "host": {
+        "hostname": "kubernetes-scale-123456",
+        "os": {
+            "kernel": "5.10.47-linuxkit",
+            "codename": "Core",
+            "name": "CentOS Linux",
+            "type": "linux",
+            "family": "redhat",
+            "version": "7 (Core)",
+            "platform": "centos"
+        },
+        "containerized": true,
+        "name": "kubernetes-scale-123456",
+        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "name": "node",
+        "period": 10000
+    },
+    "kubernetes": {
+        "labels": {
+            "app":"demo",
+            "pod-template-hash":"{{ $rangeofid }}",
+            "app-2":"demo-2",
+            "app-1":"demo-1"
+        },
+        "node": {
+            "memory": {
+                "available": {
+                    "bytes": {{ $memory_available_bytes }}
+                },
+                "usage": {
+                    "bytes": {{ $memory_usage_bytes }}
+                },
+                "workingset": {
+                    "bytes": {{ $memory_workingset_bytes }}
+                },
+                "rss": {
+                    "bytes": {{ $memory_rss_bytes }}
+                },
+                "pagefaults": {{ $pagefaults }},
+                "majorpagefaults": {{ $majorpagefaults }}
+            },
+            "network": {
+                "rx": {
+                    "bytes": {{ $network_rx_bytes }},
+                    "errors": {{ $network_rx_errors }}
+                },
+                "tx": {
+                    "bytes": {{ $network_tx_bytes }},
+                    "errors": {{ $network_tx_errors }}
+                }
+            },
+            "fs": {
+                "available": {
+                    "bytes": {{ $fs_available_bytes }}
+                },
+                "capacity": {
+                    "bytes": {{ $fs_capacity_bytes }}
+                },
+                "used": {
+                    "bytes": {{ $fs_used_bytes }}
+                },
+                "inodes": {
+                    "count": {{ $fs_inodes_count }},
+                    "used": {{ $fs_inodes_used }},
+                    "free": {{ $fs_inodes_free }}
+                }
+            },
+            "runtime": {
+                "imagefs": {
+                    "capacity": {
+                        "bytes": {{ $runtime_imagefs_capacity_bytes }}
+                    },
+                    "used": {
+                        "bytes": {{ $runtime_imagefs_used_bytes }}
+                    },
+                    "available": {
+                        "bytes": {{ $runtime_imagefs_available_bytes }}
+                    }
+                }
+            },
+            "start_time": "{{$startTime.Format "2006-01-02T15:04:05.000Z"}}",
+            "cpu": {
+                "usage": {
+                    "core": {
+                        "ns": {{ $cpu_usage_core_ns }}
+                    },
+                    "nanocores": {{ $nanocores }}
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "kubernetes-scale-123456",
+        "type": "metricbeat",
+        "version": "8.8.0",
+        "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
+        "id": "de42127b-4db8-4471-824e-a7b14f478663"
+    },
+    "elastic_agent": {
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "version": "8.8.0",
+        "snapshot": true
+    },
+    "orchestrator":{
+        "cluster":{
+            "name":"kubernetes-scale",
+            "url":"https://{{ generate `Ip` }}"
+         }
+    },
+    "ecs": {
+        "version": "8.5.0"
+    }
+}

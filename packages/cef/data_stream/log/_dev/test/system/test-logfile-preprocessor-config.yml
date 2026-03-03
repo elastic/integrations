@@ -1,0 +1,45 @@
+service: cef-log-logfile
+input: logfile
+data_stream:
+  vars:
+    preprocessors: |
+      - script:
+          lang: javascript
+          description: Replace incorrectly escaped pipes with unescaped in extension field.
+          source: >
+            function process(event) {
+                var field = "message";
+                var r = "";
+                var i;
+                var count = 0;
+                var m = event.Get(field);
+                // Count 7 unescaped |, to move into the Extensions field. Then replace all escaped pipes with unescaped.
+                for (i = 0; i < m.length; i++) {
+                    if (m[i] === '\\' && m[i + 1] === '|') {
+                        r += '\\|';
+                        i++; // Skip the next character
+                    } else {
+                        r += m[i];
+                        if (m[i] === '|') {
+                            count++;
+                            if (count === 7) {
+                                i++;
+                                break;
+                            }
+                        }
+                    }
+                }
+                for (; i < m.length; i++) {
+                    if (m[i] === '\\' && m[i + 1] === '|') {
+                        r += '|';
+                        i++;
+                    } else {
+                        r += m[i];
+                    }
+                }
+                event.Put(field, r);
+                return event;
+            }
+    decode_cef_timezone: UTC
+    paths:
+      - '{{SERVICE_LOGS_DIR}}/*.log'

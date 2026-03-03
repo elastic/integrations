@@ -1,0 +1,34 @@
+---
+processors:
+  - script:
+      # Before 1.9.0, `threat_connect.indicator.tags.data.tactics` was not
+      # processed. It came out of the ingest pipeline with values such as
+      # `{ "data": ["Tactic Name"], "count": 1 }` which would be retained in
+      # the `_source`, but not indexed in the source data stream. When the
+      # transform used the `_source` value to index the document in the
+      # destination data stream, the dynamic mappings there _would_ index
+      # `threat_connect.indicator.tags.data.tactics.data`, etc.
+      #
+      # Since 1.9.0, `threat_connect.indicator.tags.data.tactics` is processed
+      # to remove the `data` wrapper and it is mapped as `keyword`.
+      #
+      # When upgrading to 1.9.1, rebuilding the destination index fails because
+      # old `_source` values conflict with the new `keyword` mapping for
+      #`threat_connect.indicator.tags.data.tactics`.
+      #
+      # In 1.9.2, this processor is added to make old `_source` values
+      # compatible with the new mapping during the rebuild of the transform
+      # destination index.
+      #
+      # By default, old data is expired after 90 days, so this processing can
+      # likely be removed at some point in the future.
+      lang: painless
+      tag: ensure_tag_tactics_is_unwrapped
+      source: >
+        if (ctx.threat_connect?.indicator?.tags?.data instanceof List) {
+          for (tag_data in ctx.threat_connect.indicator.tags.data) {
+            if (tag_data.tactics instanceof Map && tag_data.tactics.data != null) {
+              tag_data.tactics = tag_data.tactics.data;
+            }
+          }
+        }

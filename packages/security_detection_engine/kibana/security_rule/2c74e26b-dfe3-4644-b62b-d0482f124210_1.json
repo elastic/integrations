@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects modifications in the msDS-ManagedAccountPrecededByLink attribute of a delegated managed service account by an unusual subject account. Attackers can abuse this attribute to take over the permission of a target account and inherit it's permissions allowing them to further elevate privileges.",
+        "from": "now-9m",
+        "history_window_start": "now-10d",
+        "index": [
+            "winlogbeat-*",
+            "logs-system.security*",
+            "logs-windows.forwarded*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Delegated Managed Service Account Modification by an Unusual User",
+        "new_terms_fields": [
+            "winlog.event_data.SubjectUserName"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating Delegated Managed Service Account Modification by an Unusual User\n\n### Possible investigation steps\n- Examine the winlog.event_data.SubjectUserName field and verify if he is allowed and used to perform this kind of dMSA changes.\n- Examine the winlog.event_data.AttributeValue field to verify the targeted account and if it's supposed to use dMSA.\n- Examine if there are any recent dMSA account creation by the same winlog.event_data.SubjectUserName.\n- Investigate the history of the identified user account to determine if there are any other suspicious activities or patterns of behavior.\n- Collaborate with the IT or security team to determine if the changes were authorized or if further action is needed to secure the environment.\n\n### False positive analysis\n\n- Migration of legacy service accounts using delegated managed service account.\n\n### Response and remediation\n\n- Immediately disable the winlog.event_data.SubjectUserName account and revert all changes performed by that account.\n- Identify and isolate the source machines from where the SubjectUserName is authenticating.\n- Reset passwords for all accounts that were potentially affected or had their permissions altered, focusing on privileged accounts to prevent adversaries from regaining access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the scope of the breach, including identifying any other compromised systems or accounts.\n- Review and update access control policies and security configurations to prevent similar attacks, ensuring that only authorized personnel have the ability to modify critical Active Directory objects or create OU child objects.",
+        "query": "event.code:5136 and winlog.event_data.AttributeLDAPDisplayName:\"msDS-ManagedAccountPrecededByLink\"\n",
+        "references": [
+            "https://www.akamai.com/blog/security-research/abusing-dmsa-for-privilege-escalation-in-active-directory"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.AttributeLDAPDisplayName",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2c74e26b-dfe3-4644-b62b-d0482f124210",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Active Directory",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.002",
+                                "name": "Domain Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/002/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "2c74e26b-dfe3-4644-b62b-d0482f124210_1",
+    "type": "security-rule"
+}

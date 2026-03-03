@@ -1,0 +1,38 @@
+version: "2.3"
+services:
+  assets:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    ports:
+      - 8080
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/assets_config.yml
+  events:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    ports:
+      - 8080
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/events_config.yml
+  system_log:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    ports:
+      - 8080
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/system_log_config.yml

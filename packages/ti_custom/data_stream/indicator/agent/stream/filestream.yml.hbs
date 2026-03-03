@@ -1,0 +1,48 @@
+paths:
+{{#each paths as |path|}}
+- {{path}}
+{{/each}}
+prospector.scanner.exclude_files: ['\.gz$']
+
+fields_under_root: true
+fields:
+  _conf:
+{{#if ioc_expiration_duration}}
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
+{{#if feed_name}}
+    feed_name: {{feed_name}}
+{{/if}}
+{{#if feed_reference}}
+    feed_reference: {{feed_reference}}
+{{/if}}
+{{#if restrict_stix}}
+    restrict_stix: {{restrict_stix}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{#if harvester_limit}}
+harvester_limit: {{harvester_limit}}
+{{/if}}
+{{#if close.on_state_change.inactive}}
+close.on_state_change.inactive: {{close.on_state_change.inactive}}
+{{/if}}
+{{#if parsers}}
+parsers:
+{{parsers}}
+{{/if}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}

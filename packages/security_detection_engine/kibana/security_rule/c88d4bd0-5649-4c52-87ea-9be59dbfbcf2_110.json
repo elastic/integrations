@@ -1,0 +1,156 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies parent process spoofing used to thwart detection. Adversaries may spoof the parent process identifier (PPID) of a new process to evade process-monitoring defenses or to elevate privileges.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Parent Process PID Spoofing",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Parent Process PID Spoofing\n\nParent Process PID Spoofing involves manipulating the parent process identifier to disguise the origin of a process, often to bypass security measures or gain elevated privileges. Adversaries exploit this by launching processes with falsified parent PIDs, making them appear benign. The detection rule identifies such anomalies by monitoring process creation events, focusing on unexpected parent-child relationships and unsigned executables, thus flagging potential spoofing attempts.\n\n### Possible investigation steps\n\n- Review the process creation event details to identify the specific executable and its path that triggered the alert. Pay attention to the process.executable field to determine if it matches any suspicious patterns like \"?:\\\\Users\\\\*.exe\" or \"?:\\\\Windows\\\\Temp\\\\*.exe\".\n- Check the process.parent.Ext.real.pid field to confirm if the parent process PID has been spoofed. Investigate the legitimacy of the parent process by examining its name and executable path.\n- Analyze the process.code_signature.status field to determine if the executable is unsigned or has a bad digest, which could indicate tampering or a lack of authenticity.\n- Investigate the user context by reviewing the user.id field to understand which user account was associated with the process creation. This can help determine if the activity aligns with expected user behavior.\n- Correlate the process creation event with other related events on the same host.id within the maxspan of 3 minutes to identify any additional suspicious activities or patterns.\n- Examine the integrity level of the process using the process.Ext.token.integrity_level_name field to assess if the process is running with elevated privileges unexpectedly.\n- Cross-reference the process with known legitimate applications by checking if the process.pe.original_file_name matches common applications like \"winword.exe\" or \"powershell.exe\" to rule out false positives.\n\n### False positive analysis\n\n- Processes like msedge.exe with sihost.exe as the parent may trigger false positives. Consider adding exceptions for these specific parent-child relationships if they are common in your environment.\n- Executables located in user directories or temporary folders may be flagged if they lack valid code signatures. Regularly review and whitelist known benign applications that operate from these paths.\n- Processes with a parent PID mismatch due to legitimate software updates or installations can be mistaken for spoofing. Monitor and document such activities to refine detection rules and reduce false alerts.\n- WerFault.exe and its variants are excluded by default, but if other legitimate system processes are frequently flagged, consider expanding the exclusion list to include them.\n- Regularly update the list of known safe executables and their expected parent processes to ensure the rule remains effective without generating unnecessary alerts.\n\n### Response and remediation\n\n- Isolate the affected host immediately to prevent further spread of the threat. Disconnect the host from the network to contain any potential malicious activity.\n- Terminate any suspicious processes identified by the alert, especially those with spoofed parent PIDs or unsigned executables, to halt any ongoing malicious actions.\n- Conduct a thorough review of the affected system's process tree and logs to identify any additional malicious processes or indicators of compromise that may have been missed.\n- Restore the affected system from a known good backup if any critical system files or configurations have been altered by the threat.\n- Update and patch the affected system to the latest security standards to close any vulnerabilities that may have been exploited by the adversary.\n- Implement enhanced monitoring on the affected host and similar systems to detect any recurrence of the threat, focusing on process creation events and parent-child process relationships.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "/* This rule is compatible with Elastic Endpoint only */\n\nsequence by host.id, user.id with maxspan=3m\n\n [process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.Ext.token.integrity_level_name != \"system\" and\n  (\n    process.pe.original_file_name : (\"winword.exe\", \"excel.exe\", \"outlook.exe\", \"powerpnt.exe\", \"eqnedt32.exe\",\n                                     \"fltldr.exe\", \"mspub.exe\", \"msaccess.exe\", \"powershell.exe\", \"pwsh.exe\",\n                                     \"cscript.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"msbuild.exe\",\n                                     \"mshta.exe\", \"wmic.exe\", \"cmstp.exe\", \"msxsl.exe\") or\n\n    (process.executable : (\"?:\\\\Users\\\\*.exe\",\n                           \"?:\\\\ProgramData\\\\*.exe\",\n                           \"?:\\\\Windows\\\\Temp\\\\*.exe\",\n                           \"?:\\\\Windows\\\\Tasks\\\\*\") and\n      (process.code_signature.exists == false or process.code_signature.status : \"errorBadDigest\")) or\n\n    process.executable : \"?:\\\\Windows\\\\Microsoft.NET\\\\*.exe\"\n  ) and\n\n  not process.executable :\n             (\"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\",\n              \"?:\\\\WINDOWS\\\\SysWOW64\\\\WerFaultSecure.exe\",\n              \"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n              \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\")\n  ] by process.pid\n [process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.Ext.real.pid > 0 and\n\n  /* process.parent.Ext.real.pid is only populated if the parent process pid doesn't match */\n  not (process.name : \"msedge.exe\" and process.parent.name : \"sihost.exe\") and\n\n   not process.executable :\n             (\"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\",\n              \"?:\\\\WINDOWS\\\\SysWOW64\\\\WerFaultSecure.exe\",\n              \"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n              \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\")\n ] by process.parent.Ext.real.pid\n",
+        "references": [
+            "https://blog.didierstevens.com/2017/03/20/",
+            "https://www.elastic.co/security-labs/elastic-security-labs-steps-through-the-r77-rootkit"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.token.integrity_level_name",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.Ext.real.pid",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c88d4bd0-5649-4c52-87ea-9be59dbfbcf2",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/",
+                        "subtechnique": [
+                            {
+                                "id": "T1134.004",
+                                "name": "Parent PID Spoofing",
+                                "reference": "https://attack.mitre.org/techniques/T1134/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/",
+                        "subtechnique": [
+                            {
+                                "id": "T1134.004",
+                                "name": "Parent PID Spoofing",
+                                "reference": "https://attack.mitre.org/techniques/T1134/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 110
+    },
+    "id": "c88d4bd0-5649-4c52-87ea-9be59dbfbcf2_110",
+    "type": "security-rule"
+}

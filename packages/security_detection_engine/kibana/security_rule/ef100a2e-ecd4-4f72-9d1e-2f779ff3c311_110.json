@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of the mimipenguin exploit script which is linux adaptation of Windows tool mimikatz. Mimipenguin exploit script is used to dump clear text passwords from a currently logged-in user. The tool exploits a known vulnerability CVE-2018-20781. Malicious actors can exploit the cleartext credentials in memory by dumping the process and extracting lines that have a high probability of containing cleartext passwords.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Linux Credential Dumping via Proc Filesystem",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Linux Credential Dumping via Proc Filesystem\n\nThe /proc filesystem in Linux provides a window into the system's processes, offering details like memory usage and command-line arguments. Adversaries exploit this by using tools like mimipenguin to extract plaintext credentials from memory, leveraging vulnerabilities such as CVE-2018-20781. The detection rule identifies suspicious sequences involving the 'ps' and 'strings' commands, which are indicative of attempts to access and parse sensitive data from the /proc filesystem.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific host.id where the suspicious activity was detected, focusing on the processes involved.\n- Examine the process execution history on the affected host to confirm the presence of the 'ps' and 'strings' commands executed in sequence, as indicated by the query.\n- Investigate the command-line arguments used with the 'ps' and 'strings' commands to determine if they match the suspicious patterns specified in the query, such as '-eo pid command' and '/tmp/*'.\n- Check for any recent modifications or suspicious files in the /tmp directory on the affected host, as this is a common location for temporary files used in attacks.\n- Analyze the system logs and any available network traffic data to identify potential lateral movement or data exfiltration attempts following the credential dumping activity.\n- Assess the system for any signs of compromise or additional malicious activity, such as unauthorized user accounts or unexpected network connections.\n- Consider isolating the affected host from the network to prevent further credential exposure and initiate a comprehensive forensic analysis to understand the full scope of the incident.\n\n### False positive analysis\n\n- System administrators or monitoring tools may use the 'ps' and 'strings' commands for legitimate system diagnostics and performance monitoring. To mitigate this, create exceptions for known administrative scripts or tools that regularly execute these commands.\n- Automated scripts for system health checks might trigger the rule if they use 'ps' and 'strings' to gather process information. Identify and whitelist these scripts by their specific command patterns or execution paths.\n- Security tools that perform regular scans or audits might mimic the behavior detected by the rule. Review and exclude these tools by their process names or execution context to prevent false alerts.\n- Developers or testers running debugging sessions may inadvertently trigger the rule when analyzing process memory. Establish a process to temporarily disable the rule or exclude specific user accounts during known testing periods.\n- Custom monitoring solutions that log process details for analysis could match the rule's criteria. Document and exclude these solutions by their unique execution characteristics or host identifiers.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further credential exposure and potential lateral movement by the adversary.\n- Terminate any suspicious processes identified by the detection rule, specifically those involving the 'ps' and 'strings' commands with the specified arguments.\n- Conduct a thorough review of the affected system's process memory and logs to identify any additional unauthorized access or data exfiltration attempts.\n- Change passwords for all user accounts on the affected system, prioritizing those with elevated privileges, to mitigate the risk of credential misuse.\n- Apply patches and updates to address CVE-2018-20781 and any other known vulnerabilities on the affected system to prevent future exploitation.\n- Enhance monitoring and logging on the affected host and similar systems to detect any recurrence of the exploit or similar suspicious activities.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on the broader network.",
+        "query": "sequence by host.id, process.parent.name with maxspan=1m\n  [process where host.os.type == \"linux\" and process.name == \"ps\" and event.action in (\"exec\", \"start\", \"exec_event\")\n   and process.args in (\"-eo\", \"pid\", \"command\")]\n  [process where host.os.type == \"linux\" and process.name == \"strings\" and event.action in (\"exec\", \"start\", \"exec_event\")\n   and process.args : \"/tmp/*\"]\n",
+        "references": [
+            "https://github.com/huntergregal/mimipenguin",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-20781"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ef100a2e-ecd4-4f72-9d1e-2f779ff3c311",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Data Source: SentinelOne",
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.007",
+                                "name": "Proc Filesystem",
+                                "reference": "https://attack.mitre.org/techniques/T1003/007/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1212",
+                        "name": "Exploitation for Credential Access",
+                        "reference": "https://attack.mitre.org/techniques/T1212/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 110
+    },
+    "id": "ef100a2e-ecd4-4f72-9d1e-2f779ff3c311_110",
+    "type": "security-rule"
+}

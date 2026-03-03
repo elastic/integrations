@@ -1,0 +1,25 @@
+paths:
+{{#each paths}}
+  - {{this}}
+{{/each}}
+exclude_files: ['.gz$']
+multiline:
+  pattern: '^(# User@Host: |# Time: )'
+  negate: true
+  match: after
+exclude_lines: ['^[\/\w\.]+, Version: .* started with:.*', '^# Time:.*']   # Exclude the header and time
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+{{#if processors}}
+{{processors}}
+{{/if}}

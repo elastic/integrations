@@ -1,0 +1,587 @@
+{
+    "attributes": {
+        "description": "This dashboard shows app metrics logs collected by the Jamf Compliance Reporter integration.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "jamf_compliance_reporter.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "jamf_compliance_reporter.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "jamf_compliance_reporter.log.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "app_metrics"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "jamf_compliance_reporter.log.dataset": "app_metrics"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-98ded84f-8942-4d53-a0c5-c1ca5bfa84a6",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "cd579c6a-c1f0-4eed-a6af-36498a58e62d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "98ded84f-8942-4d53-a0c5-c1ca5bfa84a6": {
+                                            "columnOrder": [
+                                                "4826251a-bce6-47d1-8184-8c793e6fc02b",
+                                                "4ee42989-e0d1-4b1f-adcf-9fe45ac93526"
+                                            ],
+                                            "columns": {
+                                                "4826251a-bce6-47d1-8184-8c793e6fc02b": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "4ee42989-e0d1-4b1f-adcf-9fe45ac93526": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU Percentage",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "jamf_compliance_reporter.log.app_metric_info.cpu_percentage"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "cd579c6a-c1f0-4eed-a6af-36498a58e62d",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "jamf_compliance_reporter.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "jamf_compliance_reporter.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "4ee42989-e0d1-4b1f-adcf-9fe45ac93526"
+                                        ],
+                                        "layerId": "98ded84f-8942-4d53-a0c5-c1ca5bfa84a6",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "4826251a-bce6-47d1-8184-8c793e6fc02b"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "26b820bb-5de0-4979-a8a4-2f992aabe4e3",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "26b820bb-5de0-4979-a8a4-2f992aabe4e3",
+                "title": "CPU Utilization Over Time [Logs Jamf Compliance Reporter]",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e3280c4e-9935-45c1-8716-c6be28f1b2bf",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e3280c4e-9935-45c1-8716-c6be28f1b2bf": {
+                                            "columnOrder": [
+                                                "bc98875f-49d7-4a57-829e-5cb7ccb143d3",
+                                                "d388bcb3-cead-43bb-b177-34082d218734"
+                                            ],
+                                            "columns": {
+                                                "bc98875f-49d7-4a57-829e-5cb7ccb143d3": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "OS Version",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d388bcb3-cead-43bb-b177-34082d218734",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.os.version"
+                                                },
+                                                "d388bcb3-cead-43bb-b177-34082d218734": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "e3280c4e-9935-45c1-8716-c6be28f1b2bf",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "d388bcb3-cead-43bb-b177-34082d218734"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "bc98875f-49d7-4a57-829e-5cb7ccb143d3"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Distribution of App Metrics Events by Host OS Version [Logs Jamf Compliance Reporter]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "4a142331-39c2-428e-af3c-b693e89e68eb",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "4a142331-39c2-428e-af3c-b693e89e68eb",
+                "title": "Distribution of App Metrics Events by Host OS Version [Logs Jamf Compliance Reporter]",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-6aeac12b-c950-45ee-b62d-e16771eec500",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6aeac12b-c950-45ee-b62d-e16771eec500": {
+                                            "columnOrder": [
+                                                "f88280b9-1eb1-42f2-abb7-aef75cf84910",
+                                                "adc701b8-ea7d-496f-87e5-fba5e78766cf"
+                                            ],
+                                            "columns": {
+                                                "adc701b8-ea7d-496f-87e5-fba5e78766cf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum CPU Percentage ",
+                                                    "operationType": "max",
+                                                    "scale": "ratio",
+                                                    "sourceField": "jamf_compliance_reporter.log.app_metric_info.cpu_percentage"
+                                                },
+                                                "f88280b9-1eb1-42f2-abb7-aef75cf84910": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "adc701b8-ea7d-496f-87e5-fba5e78766cf",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.hostname"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "f88280b9-1eb1-42f2-abb7-aef75cf84910",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "adc701b8-ea7d-496f-87e5-fba5e78766cf",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "6aeac12b-c950-45ee-b62d-e16771eec500",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "title": "Max CPU Utilization per Host [Logs Jamf Compliance Reporter]",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "74afe262-2bf2-4ea8-966c-2c51b623f27d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "74afe262-2bf2-4ea8-966c-2c51b623f27d",
+                "title": "Max CPU Utilization per Host [Logs Jamf Compliance Reporter]",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-47994ee6-4086-45d0-9b05-3607e2aff799",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "47994ee6-4086-45d0-9b05-3607e2aff799": {
+                                            "columnOrder": [
+                                                "2075f97d-4358-41ce-a75b-e1e1d8284ce4",
+                                                "00c36b12-671f-424b-9768-895bce4a69e3"
+                                            ],
+                                            "columns": {
+                                                "00c36b12-671f-424b-9768-895bce4a69e3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "2075f97d-4358-41ce-a75b-e1e1d8284ce4": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "00c36b12-671f-424b-9768-895bce4a69e3",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.hostname"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "2075f97d-4358-41ce-a75b-e1e1d8284ce4",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "00c36b12-671f-424b-9768-895bce4a69e3",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "47994ee6-4086-45d0-9b05-3607e2aff799",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "title": "Top 10 Host Name [Logs Jamf Compliance Reporter]",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d2f744c1-549b-4f27-aa67-f5a7ddaa85af",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "d2f744c1-549b-4f27-aa67-f5a7ddaa85af",
+                "title": "Top 10 Host Name [Logs Jamf Compliance Reporter]",
+                "type": "lens",
+                "version": "8.7.1"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs Jamf Compliance Reporter] App Metrics",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-12T04:28:43.049Z",
+    "id": "jamf_compliance_reporter-dd28ec80-b584-11ec-a813-df29637f29df",
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "26b820bb-5de0-4979-a8a4-2f992aabe4e3:indexpattern-datasource-layer-98ded84f-8942-4d53-a0c5-c1ca5bfa84a6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "26b820bb-5de0-4979-a8a4-2f992aabe4e3:cd579c6a-c1f0-4eed-a6af-36498a58e62d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4a142331-39c2-428e-af3c-b693e89e68eb:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4a142331-39c2-428e-af3c-b693e89e68eb:indexpattern-datasource-layer-e3280c4e-9935-45c1-8716-c6be28f1b2bf",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "74afe262-2bf2-4ea8-966c-2c51b623f27d:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "74afe262-2bf2-4ea8-966c-2c51b623f27d:indexpattern-datasource-layer-6aeac12b-c950-45ee-b62d-e16771eec500",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d2f744c1-549b-4f27-aa67-f5a7ddaa85af:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d2f744c1-549b-4f27-aa67-f5a7ddaa85af:indexpattern-datasource-layer-47994ee6-4086-45d0-9b05-3607e2aff799",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}

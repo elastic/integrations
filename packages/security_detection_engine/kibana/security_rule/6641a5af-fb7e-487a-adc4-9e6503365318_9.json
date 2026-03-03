@@ -1,0 +1,84 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies instances where VMware processes, such as \"vmware-vmx\" or \"vmx,\" are terminated on a Linux system by a \"kill\" command. The rule monitors for the \"end\" event type, which signifies the termination of a process. The presence of a \"kill\" command as the parent process for terminating VMware processes may indicate that a threat actor is attempting to interfere with the virtualized environment on the targeted system.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Termination of ESXI Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Termination of ESXI Process\n\nVMware ESXi is a hypervisor used to create and manage virtual machines on a host system. Adversaries may target ESXi processes like \"vmware-vmx\" to disrupt virtual environments, often using the \"kill\" command to terminate these processes. The detection rule identifies such terminations by monitoring for specific process events, helping to uncover potential threats to virtualized infrastructures.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the process name is either \"vmware-vmx\" or \"vmx\" and that the parent process is \"kill\" on a Linux host.\n- Check the timeline of events leading up to the termination to identify any preceding suspicious activities or commands executed by the same user or process.\n- Investigate the user account associated with the \"kill\" command to determine if it is authorized to manage VMware processes and if there are any signs of compromise.\n- Examine system logs and audit trails for any unauthorized access attempts or anomalies around the time of the process termination.\n- Assess the impact on the virtual environment by verifying the status of affected virtual machines and any potential service disruptions.\n- Correlate this event with other security alerts or incidents to identify if it is part of a larger attack pattern targeting the virtual infrastructure.\n\n### False positive analysis\n\n- Routine maintenance or administrative tasks may involve terminating VMware processes using the kill command. To manage this, create exceptions for known maintenance scripts or administrative user accounts that regularly perform these actions.\n- Automated scripts or monitoring tools might inadvertently terminate VMware processes as part of their operations. Identify and exclude these tools from the detection rule by specifying their process names or user accounts.\n- System updates or patches could lead to the termination of VMware processes as part of the update procedure. Exclude these events by correlating them with known update schedules or specific update-related process names.\n- Testing environments where VMware processes are frequently started and stopped for development purposes can trigger false positives. Implement exclusions for these environments by using hostnames or IP addresses associated with test systems.\n\n### Response and remediation\n\n- Immediately isolate the affected host system from the network to prevent further malicious activity and potential spread to other systems.\n- Terminate any unauthorized or suspicious processes that are still running on the affected host, especially those related to VMware ESXi, to halt any ongoing disruption.\n- Conduct a forensic analysis of the affected system to identify any additional indicators of compromise or persistence mechanisms that may have been deployed by the threat actor.\n- Restore any terminated VMware processes from a known good backup to ensure the virtual environment is returned to its operational state.\n- Review and update access controls and permissions on the affected host to ensure that only authorized personnel can execute critical commands like \"kill\" on VMware processes.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if the threat is part of a larger attack campaign.\n- Implement enhanced monitoring and alerting for similar suspicious activities across the virtualized infrastructure to detect and respond to future threats more effectively.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"end\" and process.name in (\"vmware-vmx\", \"vmx\")\nand process.parent.name == \"kill\"\n",
+        "references": [
+            "https://www.bleepingcomputer.com/news/security/massive-esxiargs-ransomware-attack-targets-vmware-esxi-servers-worldwide/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "6641a5af-fb7e-487a-adc4-9e6503365318",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1489",
+                        "name": "Service Stop",
+                        "reference": "https://attack.mitre.org/techniques/T1489/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 9
+    },
+    "id": "6641a5af-fb7e-487a-adc4-9e6503365318_9",
+    "type": "security-rule"
+}

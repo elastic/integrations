@@ -1,0 +1,104 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+scan:
+  sort: filename
+  order: asc
+exclude_files: ['\.gz$']
+{{#if tags.length}}
+tags:
+{{else}}
+{{#if preserve_original_event}}
+tags:
+{{/if}}
+{{/if}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+fields_under_root: true
+fields:
+  _conf:
+    long_fields: {{long_fields}}
+    long_fields_max_length: {{long_fields_max_length}}
+    enable_deduplication: {{enable_deduplication}}
+    prune_fields: {{prune_fields}}
+processors:
+- add_locale: ~
+{{#if enrich_metadata}}
+- decode_json_fields:
+    fields: message
+    target: crowdstrike
+- if:
+    contains:
+      log.file.path: aidmaster
+  then:
+    - cache:
+        backend:
+          capacity: {{metadata_cache_capacity}}
+          file:
+            id: aidmaster
+            write_interval: {{metadata_cache_write_interval}}
+        put:
+          ttl: {{metadata_ttl}}
+          key_field: crowdstrike.aid
+          value_field: crowdstrike
+          ignore_missing: true
+{{#unless keep_metadata}}
+    - drop_event:
+        when:
+          contains:
+            log.file.path: aidmaster
+{{/unless}}
+  else:
+    - if:
+        contains:
+          log.file.path: userinfo
+      then:
+        - cache:
+            backend:
+              capacity: {{metadata_cache_capacity}}
+              file:
+                id: userinfo
+                write_interval: {{metadata_cache_write_interval}}
+            put:
+              ttl: {{metadata_ttl}}
+              key_field: crowdstrike.UserSid_readable
+              value_field: crowdstrike
+              ignore_missing: true
+{{#unless keep_metadata}}
+        - drop_event:
+            when:
+              contains:
+                log.file.path: userinfo
+{{/unless}}
+      else:
+        - cache:
+            backend:
+              file:
+                id: aidmaster
+            get:
+              key_field: crowdstrike.aid
+              target_field: metadata.host
+              ignore_missing: true
+        - cache:
+            backend:
+              file:
+                id: userinfo
+            get:
+              key_field: crowdstrike.UserSid
+              target_field: metadata.user
+              ignore_missing: true
+- drop_fields:
+    fields:
+      - crowdstrike
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}

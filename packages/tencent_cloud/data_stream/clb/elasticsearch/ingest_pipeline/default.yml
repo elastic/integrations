@@ -1,0 +1,293 @@
+---
+description: Pipeline to process tencent_cloud clb logs
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 8.11.0
+  - set:
+      tag: copy_original_message
+      field: originalMessage
+      copy_from: message
+  - rename:
+      ignore_missing: true
+      if: ctx.event?.original == null
+      tag: rename_message
+      field: originalMessage
+      target_field: event.original
+  - remove:
+      ignore_missing: true
+      if: ctx.event?.original != null
+      tag: remove_copied_message
+      field: originalMessage
+  - remove:
+      ignore_missing: true
+      tag: remove_message
+      field: 
+        - message
+  - json:
+      tag: json_original
+      field: event.original
+      target_field: tencent_cloud.clb
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.bytes_sent
+      target_field: http.response.body.bytes
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.http_host
+      target_field: url.domain
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.http_referer
+      target_field: http.request.referrer
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.http_user_agent
+      target_field: user_agent.original
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.http_x_forwarded_for
+      target_field: network.forwarded_ip
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.protocol_type
+      target_field: network.protocol
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.remote_addr
+      target_field: source.ip
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.remote_port
+      target_field: source.port
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.request_length
+      target_field: http.request.body.bytes
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.request_method
+      target_field: http.request.method
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.server_addr
+      target_field: destination.ip
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.server_name
+      target_field: server.domain
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.server_port
+      target_field: destination.port
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.server_protocol
+      target_field: http.version
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.status
+      target_field: http.response.status_code
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.stgw_request_id
+      target_field: event.id
+  - date:
+      if: ctx.tencent_cloud?.clb?.time_local != null
+      tag: date_processor_tencent_cloud.clb.time_local
+      field: tencent_cloud.clb.time_local
+      target_field: '@timestamp'
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss Z
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.upstream_addr
+      target_field: destination.address
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.upstream_connect_time
+      target_field: event.duration
+  - rename:
+      ignore_missing: true
+      field: tencent_cloud.clb.uri
+      target_field: url.path
+  - script:
+      tag: script_drop_null_empty_values
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - geoip:
+      ignore_missing: true
+      tag: geoip_source_ip
+      field: source.ip
+      target_field: source.geo
+  - geoip:
+      ignore_missing: true
+      tag: geoip_source_asn
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      ignore_missing: true
+      tag: rename_source_as_asn
+      field: source.as.asn
+      target_field: source.as.number
+  - rename:
+      ignore_missing: true
+      tag: rename_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+  - geoip:
+      ignore_missing: true
+      tag: geoip_destination_ip
+      field: destination.ip
+      target_field: destination.geo
+  - geoip:
+      ignore_missing: true
+      tag: geoip_destination_asn
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      ignore_missing: true
+      tag: rename_destination_as_asn
+      field: destination.as.asn
+      target_field: destination.as.number
+  - append:
+      field: event.category
+      value:
+        - web
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value:
+        - access
+      allow_duplicates: false
+  - append:
+      if: ctx.http?.response?.status_code == 200
+      field: event.type
+      value:
+        - info
+      allow_duplicates: false
+  - append:
+      if: ctx.http?.response?.status_code == 405
+      field: event.type
+      value:
+        - error
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value:
+        - network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value:
+        - connection
+      allow_duplicates: false
+  - append:
+      if: >-
+        ctx.http?.request?.method == 'GET' || ctx.http?.request?.method ==
+        'POST'
+      field: event.category
+      value:
+        - database
+      allow_duplicates: false
+  - append:
+      if: ctx.http?.request?.method == 'GET'
+      field: event.type
+      value:
+        - access
+      allow_duplicates: false
+  - append:
+      if: >-
+        ctx.http?.request?.method == 'POST' || ctx.http?.request?.method ==
+        'PUT' || ctx.http?.request?.method == 'PATCH' ||
+        ctx.http?.request?.method == 'DELETE'
+      field: event.type
+      value:
+        - access
+      allow_duplicates: false
+  - append:
+      if: ctx.http?.request?.method == 'HEAD'
+      field: event.type
+      value:
+        - info
+      allow_duplicates: false
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.destination?.ip != null
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.network?.forwarded_ip != null
+      field: related.ip
+      value: '{{{network.forwarded_ip}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.url?.domain != null
+      field: related.hosts
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.server?.domain != null
+      field: related.hosts
+      value: '{{{server.domain}}}'
+      allow_duplicates: false
+  - rename:
+      ignore_missing: true
+      tag: rename_destination_as_organization_name
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+  - remove:
+      ignore_missing: true
+      tag: remove_fields
+      field: 
+        - tencent_cloud.clb.__FILENAME__
+        - tencent_cloud.clb.__TIMESTAMP__
+  - remove:
+      ignore_failure: true
+      ignore_missing: true
+      if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
+      tag: remove_original_event
+      field: event.original
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}} with tag
+        {{{_ingest.on_failure_processor_tag}}} in pipeline
+        {{{_ingest.on_failure_pipeline}}} failed with message:
+        {{{_ingest.on_failure_message}}}
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

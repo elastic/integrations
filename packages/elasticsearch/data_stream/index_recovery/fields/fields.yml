@@ -1,0 +1,114 @@
+- name: elasticsearch.index
+  type: group
+  fields:
+    - name: name
+      dimension: true
+      type: keyword
+    - name: recovery
+      type: group
+      fields:
+        - name: index
+          type: group
+          fields:
+            - name: files
+              type: group
+              fields:
+                - name: percent
+                  type: keyword
+                - name: recovered
+                  type: long
+                  metric_type: gauge
+                - name: reused
+                  type: long
+                  metric_type: gauge
+                - name: total
+                  type: long
+                  metric_type: gauge
+            - name: size
+              type: group
+              fields:
+                - name: recovered_in_bytes
+                  type: long
+                  metric_type: gauge
+                - name: reused_in_bytes
+                  type: long
+                  metric_type: gauge
+                - name: total_in_bytes
+                  type: long
+                  metric_type: gauge
+        - name: name
+          type: keyword
+        - name: total_time.ms
+          type: long
+          metric_type: gauge
+        - name: stop_time.ms
+          type: long
+          metric_type: gauge
+        - name: start_time.ms
+          type: long
+          metric_type: gauge
+        - name: id
+          type: long
+          dimension: true
+          description: |
+            Shard recovery id.
+        - name: type
+          type: keyword
+          description: |
+            Shard recovery type.
+        - name: primary
+          type: boolean
+          description: |
+            True if primary shard.
+        - name: stage
+          type: keyword
+          description: |
+            Recovery stage.
+        - name: translog
+          type: group
+          fields:
+            - name: percent
+              type: keyword
+            - name: total
+              type: long
+              metric_type: gauge
+            - name: total_on_start
+              type: long
+              metric_type: gauge
+        - name: target.transport_address
+          type: keyword
+        - name: target.id
+          type: keyword
+          description: |
+            Target node id.
+        - name: target.host
+          type: keyword
+          description: |
+            Target node host address (could be IP address or hostname).
+        - name: target.name
+          type: keyword
+          description: |
+            Target node name.
+        - name: source.transport_address
+          type: keyword
+        - name: source.id
+          type: keyword
+          description: |
+            Source node id.
+        - name: source.host
+          type: keyword
+          description: |
+            Source node host address (could be IP address or hostname).
+        - name: source.name
+          type: keyword
+          description: |
+            Source node name.
+        - name: verify_index
+          type: group
+          fields:
+            - name: check_index_time.ms
+              type: long
+              metric_type: gauge
+            - name: total_time.ms
+              type: long
+              metric_type: gauge

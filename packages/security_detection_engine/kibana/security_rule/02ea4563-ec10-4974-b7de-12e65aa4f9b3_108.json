@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of macOS built-in commands used to dump user account hashes. Adversaries may attempt to dump credentials to obtain account login information in the form of a hash. These hashes can be cracked or leveraged for lateral movement.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Dumping Account Hashes via Built-In Commands",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Dumping Account Hashes via Built-In Commands\n\nIn macOS environments, built-in commands like `defaults` and `mkpassdb` can be exploited by adversaries to extract user account hashes, which are crucial for credential access. These hashes, once obtained, can be cracked to reveal passwords or used for lateral movement within a network. The detection rule identifies suspicious process executions involving these commands and specific arguments, signaling potential credential dumping activities.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of the `defaults` or `mkpassdb` commands with arguments like `ShadowHashData` or `-dump`, as these are indicative of credential dumping attempts.\n- Identify the user account associated with the process execution to determine if the activity aligns with expected behavior for that user or if it appears suspicious.\n- Check the historical activity of the involved user account and the host to identify any patterns or anomalies that could suggest unauthorized access or lateral movement.\n- Investigate any network connections or subsequent processes initiated by the suspicious process to assess potential data exfiltration or further malicious actions.\n- Correlate the event with other security alerts or logs from the same host or user account to build a comprehensive timeline of the activity and assess the scope of the potential compromise.\n\n### False positive analysis\n\n- System administrators or security tools may legitimately use the `defaults` or `mkpassdb` commands for system maintenance or auditing purposes. To manage these, create exceptions for known administrative accounts or tools that regularly execute these commands.\n- Automated scripts or management software might invoke these commands as part of routine operations. Identify and whitelist these scripts or software to prevent unnecessary alerts.\n- Developers or IT personnel might use these commands during testing or development phases. Establish a process to temporarily exclude these activities by setting up time-bound exceptions for specific user accounts or devices.\n- Security assessments or penetration tests could trigger this rule. Coordinate with security teams to schedule and document these activities, allowing for temporary rule adjustments during the testing period.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent further lateral movement or data exfiltration.\n- Terminate any suspicious processes identified as using the `defaults` or `mkpassdb` commands with the specified arguments to halt ongoing credential dumping activities.\n- Conduct a thorough review of user accounts on the affected system to identify any unauthorized access or changes, focusing on accounts with elevated privileges.\n- Reset passwords for all potentially compromised accounts, especially those with administrative access, and enforce strong password policies.\n- Analyze system logs and network traffic to identify any additional systems that may have been accessed using the compromised credentials, and apply similar containment measures.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the full scope of the breach.\n- Implement enhanced monitoring and alerting for similar suspicious activities across the network to detect and respond to future attempts promptly.",
+        "query": "event.category:process and host.os.type:macos and event.type:start and\n process.name:(defaults or mkpassdb) and process.args:(ShadowHashData or \"-dump\")\n",
+        "references": [
+            "https://apple.stackexchange.com/questions/186893/os-x-10-9-where-are-password-hashes-stored",
+            "https://www.unix.com/man-page/osx/8/mkpassdb/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "02ea4563-ec10-4974-b7de-12e65aa4f9b3",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 108
+    },
+    "id": "02ea4563-ec10-4974-b7de-12e65aa4f9b3_108",
+    "type": "security-rule"
+}

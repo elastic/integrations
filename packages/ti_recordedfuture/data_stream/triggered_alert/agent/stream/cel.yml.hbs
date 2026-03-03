@@ -1,0 +1,92 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - api_key
+program: |
+  state.with({
+    "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+  }).as(state, state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/v3/alerts?" + {
+          "direction": ["desc"],
+          "limit": [string(state.batch_size)],
+          "triggered": [string(state.start_time) + " to now"],
+        }.format_query()
+      ).with({
+        "Header":{
+          "Content-Type": ["application/json"],
+          "X-RFToken": [state.api_key],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body,{
+          "events": (
+            has(body.data) && body.data.size() > 0 ?
+              body.data.map(item, item.hits.map(event, item.drop(["hits", "triggered_by"]).as(root,
+                {"message":root.with(event).encode_json()}
+              ))).flatten()
+            :
+              []
+           ),
+          "cursor": {
+            ?"last_timestamp": has(body.data) && body.data.size() > 0 ?
+              optional.of(body.data.map(e, timestamp(e.log.triggered)).max() + duration("1s"))
+            :
+              state.?cursor.last_timestamp
+          },
+          "want_more": has(body.data) && body.data.size() > 0,
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET "+ state.url.trim_right("/") + "/v3/alerts: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,22 @@
+---
+description: "Pipeline for Usage metrics"
+
+processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - set:
+      field: cloud.account.name
+      copy_from: cloud.account.id
+      override: false
+      ignore_empty_value: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

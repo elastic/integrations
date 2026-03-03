@@ -1,0 +1,16 @@
+---
+description: "Parses the file events"
+processors:
+  - dissect:
+      field: message
+      pattern: "%{} 'Upload' for path '%{vsphere.log.file.path}' %{} '%{client.ip}' %{} '%{event.outcome}'"
+      if: "ctx.message.contains('Upload') ?: false"
+  - lowercase:
+      field: event.outcome
+      if: ctx.event?.outcome != null
+  - append:
+      field: event.category
+      value: file
+  - append:
+      field: event.type
+      value: creation

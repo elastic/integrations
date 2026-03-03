@@ -1,0 +1,127 @@
+rules:
+  - path: /oauth/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer","refresh_token":"yyyy"}
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    request_body: /.*"after":null.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "configurationFindings": {
+                "nodes": [
+                  {
+                    "analyzedAt": "2024-08-07T12:55:52.012378Z",
+                    "id": "1243196d-a365-589a-a8aa-13817c9877b2",
+                    "remediation": null,
+                    "resource": {
+                      "id": "f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea",
+                      "name": "Root user",
+                      "nativeType": "rootUser", 
+                      "providerId": "arn:aws:iam::998231069301:root",
+                      "region": null,
+                      "cloudPlatform": "EKS",
+                      "subscription": {
+                        "cloudProvider": "AWS",
+                        "externalId": "998231069301",
+                        "id": "94e76baa-85fd-5928-b829-1669a2ca9660",
+                        "name": "wiz-integrations"
+                      },
+                      "tags": [],
+                      "type": "USER_ACCOUNT"
+                    },
+                    "result": "PASS",
+                    "rule": {
+                      "description": "description",
+                      "id": "563ed717-4fb6-47fd-929e-9c794e201d0a",
+                      "name": "Root account access keys should not exist",
+                      "remediationInstructions": "instructions",
+                      "shortId": "IAM-006"
+                    },
+                    "severity": "MEDIUM"
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "endCursor": "eyJmaWVsZHMiOlt7IkZpZWxkIjoiVGltZXN0YW1wIiwiVmFsdWUiOiIyMDIzLTA5LTA0VDExOjE5OjM3LjgwMTU0MVoifV19"
+                }
+              }
+            }
+          }
+          `}}
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    request_body: /.*"after":"eyJmaWVsZHMiOlt7IkZpZWxkIjoiVGltZXN0YW1wIiwiVmFsdWUiOiIyMDIzLTA5LTA0VDExOjE5OjM3LjgwMTU0MVoifV19".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "configurationFindings": {
+              "nodes": [
+                {
+                "analyzedAt": "2024-08-15T11:41:17.517926Z",
+                "id": "6fe49e83-2f3a-5b62-99de-beae16c7bfae",
+                "remediation": null,
+                "resource": {
+                  "id": "8a53b2d9-f6c6-59e4-bce0-736a45e9aa3f",
+                  "name": "annam-vm",
+                  "nativeType": "Microsoft.Compute/virtualMachines",
+                  "providerId": "80045425-a0a9-4457-82c2-2c5f47419d83",
+                  "region": "eastus",
+                  "subscription": {
+                  "cloudProvider": "Azure",
+                  "externalId": "434f3cbb-30f2-4bc0-8bba-cb080280652b",
+                  "id": "064ecbb5-19ee-540d-b9f5-99c3a4e2d0db",
+                  "name": "partner integrations"
+                  },
+                  "tags": [],
+                  "type": "VIRTUAL_MACHINE"
+                },
+                "result": "PASS",
+                "rule": {
+                  "description": "description",
+                  "id": "56c8890d-ad68-4659-9414-fb0ed7258c31",
+                  "name": "Virtual Machine should not be stopped (allocated) for more than a week",
+                  "remediationInstructions": "remediation",
+                  "shortId": "VirtualMachines-021"
+                },
+                "severity": "LOW",
+                "evidence": {
+                  "cloudConfigurationLink": "https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing",
+                  "configurationPath": null,
+                  "currentValue": "The VM is stopped(allocated) since 2024-08-15",
+                  "expectedValue": "The VM should be used or deallocated"
+                }
+                }
+              ],
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "eMJmaWVsZIkZpZWxkIjoiVGltZXN0YW1wIiwiVmFsdWUiOiIyMDIzLTA5LTA0VDExOjE5OjM3LjgwMTU0MVoifV19"
+              }
+              }
+            }
+          }
+          `}}

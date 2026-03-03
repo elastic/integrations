@@ -1,0 +1,75 @@
+- name: rubrik
+  type: group
+  fields:
+    - name: cluster
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: Rubrik cluster UUID.
+        - name: name
+          type: keyword
+          dimension: true
+          description: The name of the Rubrik cluster.
+        - name: type
+          type: keyword
+          dimension: true
+          description: The type of the cluster (e.g., OnPrem, Robo, Polaris).
+    - name: node_statistics
+      type: group
+      fields:
+        - name: node_id
+          type: keyword
+          dimension: true
+          description: Rubrik cluster node ID.
+        - name: cpu_stat.pct
+          type: integer
+          unit: percent
+          metric_type: gauge
+          description: CPU utilization of the node.
+        - name: used_memory.pct
+          type: integer
+          unit: percent
+          metric_type: gauge
+          description: Memory used on the node, in percentage.
+        - name: time
+          type: date
+          description: Time at which the performance metrics were retrieved.
+        - name: network
+          type: group
+          fields:
+            - name: received.bytes
+              type: long
+              description: Data received over the network, in bytes per second
+              metric_type: gauge
+              unit: byte
+            - name: transmitted.bytes
+              type: long
+              description: Data transmitted over the network, in bytes per second.
+              metric_type: gauge
+              unit: byte
+        - name: iops
+          type: group
+          fields:
+            - name: reads
+              type: long
+              description: Input/output read operations per second.
+              metric_type: gauge
+            - name: writes
+              type: long
+              description: Input/output write operations per second.
+              metric_type: gauge
+        - name: throughput
+          type: group
+          fields:
+            - name: read.bytes
+              type: long
+              description: Read Input/output throughput, in bytes per second.
+              metric_type: gauge
+              unit: byte
+            - name: write.bytes
+              type: long
+              description: Write Input/output throughput, in bytes per second.
+              metric_type: gauge
+              unit: byte

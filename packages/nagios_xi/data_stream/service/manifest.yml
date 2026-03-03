@@ -1,0 +1,57 @@
+title: "Service"
+type: logs
+streams:
+  - input: httpjson
+    vars:
+      - name: host_address
+        type: text
+        title: Hosts
+        description: Host list with host_address provided in configuration files (Please change default properties based on your configuration). If empty integration will collect all the services for all the Hosts mentioned in Services parameter.
+        multi: true
+        required: false
+        show_user: true
+      - name: display_name
+        type: text
+        title: Services
+        description: Service list with service_description provided in configuration files (Please change default properties based on your configuration). If empty integration will collect all the services for all the host_address mentioned in Hosts parameter. If Hosts is empty also integration will collect all the Services exists in Nagios XI.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - Current Load
+          - Current Users
+          - Http
+          - Ping
+          - Root Partition
+          - SSH
+          - Swap Usage
+          - Total Processes
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - nagios_xi-service
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: stream.yml.hbs
+    title: Services mertics
+    description: Collect Services mertics

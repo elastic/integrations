@@ -1,0 +1,20 @@
+metricsets: ["json"]
+namespace: "cluster"
+hosts:
+{{#each hosts}}
+  - "{{this}}/jmx?qry=Hadoop:service=ResourceManager,name=ClusterMetrics"
+  - "{{this}}/ws/v1/cluster/metrics"
+{{/each}}
+period: {{period}}
+path: "/"
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

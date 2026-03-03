@@ -1,0 +1,1002 @@
+---
+description: Pipeline for Palo Alto Cortext XDR Alerts v2 API.
+processors:
+  - fingerprint:
+      fields:
+        - panw_cortex.xdr.event_timestamp
+        - panw_cortex.xdr.event_id
+        - panw_cortex.xdr.event_type
+        - panw_cortex.xdr.alert_id
+      target_field: "_id"
+      tag: fingerprint_id
+      ignore_missing: true
+  - date:
+      field: panw_cortex.xdr.event_timestamp.0
+      tag: date_panw_cortex.xdr.event_timestamp.0
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.event_timestamp instanceof List
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.event_timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: panw_cortex.xdr.agent_host_boot_time.0
+      tag: date_panw_cortex.xdr.agent_host_boot_time.0
+      target_field: panw_cortex.xdr.agent_host_boot_time
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.agent_host_boot_time instanceof List
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.agent_host_boot_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: panw_cortex.xdr.detection_timestamp
+      tag: date_panw_cortex.xdr.detection_timestamp
+      target_field: panw_cortex.xdr.detection_timestamp
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.detection_timestamp != null
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.detection_timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: panw_cortex.xdr.detection_timestamp
+      ignore_empty_value: true
+  - date:
+      field: panw_cortex.xdr.end_match_attempt_ts
+      tag: date_panw_cortex.xdr.end_match_attempt_ts
+      target_field: panw_cortex.xdr.end_match_attempt_ts
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.end_match_attempt_ts != null
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.end_match_attempt_ts
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: panw_cortex.xdr.local_insert_ts
+      tag: date_panw_cortex.xdr.local_insert_ts
+      target_field: panw_cortex.xdr.local_insert_ts
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.local_insert_ts != null
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.local_insert_ts
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: panw_cortex.xdr.last_modified_ts
+      tag: date_panw_cortex.xdr.last_modified_ts
+      target_field: panw_cortex.xdr.last_modified_ts
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.last_modified_ts != null
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.last_modified_ts
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: panw_cortex.xdr.name
+      tag: rename_panw_cortex.xdr.name
+      target_field: message
+      ignore_missing: true
+  - set:
+      field: event.severity
+      tag: set_event.severity_0
+      value: 0
+      if: ctx.panw_cortex?.xdr?.severity == "unknown"
+  - set:
+      field: event.severity
+      tag: set_event.severity_1
+      value: 1
+      if: ctx.panw_cortex?.xdr?.severity == "informational"
+  - set:
+      field: event.severity
+      tag: set_event.severity_2
+      value: 2
+      if: ctx.panw_cortex?.xdr?.severity == "low"
+  - set:
+      field: event.severity
+      tag: set_event.severity_3
+      value: 3
+      if: ctx.panw_cortex?.xdr?.severity == "medium"
+  - set:
+      field: event.severity
+      tag: set_event.severity_4
+      value: 4
+      if: ctx.panw_cortex?.xdr?.severity == "high"
+  - set:
+      field: event.id
+      tag: set_panw_cortex.xdr.external_id
+      copy_from: panw_cortex.xdr.external_id
+      ignore_empty_value: true
+  - rename:
+      field: panw_cortex.xdr.action
+      tag: rename_panw_cortex.xdr.action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.description
+      tag: rename_panw_cortex.xdr.description
+      target_field: event.reason
+      ignore_missing: true
+      if: ctx.panw_cortex?.xdr?.description instanceof String
+  - rename:
+      field: panw_cortex.xdr.description
+      tag: rename_panw_cortex.xdr.description
+      target_field: panw_cortex.xdr.bioc_description
+      ignore_missing: true
+      if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description instanceof List
+  - set:
+      field: event.reason
+      tag: set_event.reason
+      value: Bioc Event
+      if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null
+  - rename:
+      field: panw_cortex.xdr.agent_device_domain
+      tag: rename_panw_cortex.xdr.agent_device_domain
+      target_field: host.domain
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.agent_fqdn
+      tag: rename_panw_cortex.xdr.agent_fqdn
+      target_field: host.hostname
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.host_name
+      tag: rename_panw_cortex.xdr.host_name
+      target_field: host.hostname
+      ignore_missing: true
+      if: ctx.host?.hostname == null
+  - lowercase:
+      target_field: host.name
+      tag: lowercase_host.name
+      field: host.hostname
+      if: ctx.host?.hostname != null
+  - rename:
+      field: panw_cortex.xdr.agent_os_type
+      tag: rename_panw_cortex.xdr.agent_os_type
+      target_field: host.os.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.agent_os_sub_type
+      tag: rename_panw_cortex.xdr.agent_os_sub_type
+      target_field: host.os.version
+      ignore_missing: true
+  - foreach:
+      field: panw_cortex.xdr.mac_addresses
+      tag: foreach_panw_cortex.xdr.mac_addresses
+      if: ctx.panw_cortex?.xdr?.mac_addresses instanceof List
+      processor:
+        append:
+          field: host.mac
+          tag: append_host_mac
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.mac
+      tag: append_host_mac
+      value: "{{{panw_cortex.xdr.mac_addresses}}}"
+      if: ctx.panw_cortex?.xdr?.mac_addresses instanceof String && ctx.panw_cortex.xdr.mac_addresses != ''
+      allow_duplicates: false
+  - gsub:
+      field: host.mac
+      tag: gsub_host.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
+      tag: uppercase_host.mac
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.host_ip
+      tag: rename_panw_cortex.xdr.host_ip
+      target_field: host.ip
+      ignore_missing: true
+  - convert:
+      field: panw_cortex.xdr.agent_ip_addresses_v6
+      tag: convert_panw_cortex.xdr.agent_ip_addresses_v6
+      target_field: panw_cortex.xdr.agent_ip_addresses_v6
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.agent_ip_addresses_v6
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.agent_ip_addresses_v6
+      tag: foreach_panw_cortex.xdr.agent_ip_addresses_v6
+      if: ctx.panw_cortex?.xdr?.agent_ip_addresses_v6 != null
+      processor:
+        append:
+          field: host.ip
+          tag: append_host_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: panw_cortex.xdr.endpoint_id
+      tag: rename_panw_cortex.xdr.endpoint_id
+      target_field: host.id
+      ignore_missing: true
+  - convert:
+      field: panw_cortex.xdr.agent_data_collection_status
+      tag: convert_panw_cortex.xdr.agent_data_collection_status
+      target_field: panw_cortex.xdr.agent_data_collection_status
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.agent_data_collection_status
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: panw_cortex.xdr.agent_is_vdi
+      tag: convert_panw_cortex.xdr.agent_is_vdi
+      target_field: panw_cortex.xdr.agent_is_vdi
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.agent_is_vdi
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: panw_cortex.xdr.dns_query_name
+      tag: rename_panw_cortex.xdr.dns_query_name
+      target_field: dns.question.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.cloud_provider
+      tag: rename_panw_cortex.xdr.cloud_provider
+      target_field: cloud.provider
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.container_id
+      tag: rename_panw_cortex.xdr.container_id
+      target_field: container.id
+      ignore_missing: true
+  - script:
+      if: ctx.panw_cortex?.xdr?.mitre_technique_id_and_name != null
+      lang: painless
+      tag: script_mitre_technique
+      description: "Extract Mitre Techniques and append it to Threat ECS fields"
+      source: |-
+        void addTechnique(def ctx, def x, def y) {
+          if (ctx.threat == null) {
+            ctx.threat = new HashMap();
+          }
+          if (ctx.threat.technique == null) {
+            ctx.threat.technique = new HashMap();
+          }
+          if (ctx.threat.technique.id == null) {
+            ctx.threat.technique.id = new ArrayList();
+          }
+          if (ctx.threat.technique.name == null) {
+            ctx.threat.technique.name = new ArrayList();
+          }
+          if (!ctx.threat.technique.id.contains(x)) {
+            ctx.threat.technique.id.add(x);
+          }
+          if (!ctx.threat.technique.name.contains(y)) {
+            ctx.threat.technique.name.add(y);
+          }
+        }
+        for (mitre_technique in ctx.panw_cortex.xdr.mitre_technique_id_and_name) {
+          addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
+        }
+  - script:
+      if: ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name != null
+      lang: painless
+      tag: script_mitre_tactic
+      description: "Extract Mitre Tactics and append it to Threat ECS fields"
+      source: |-
+        void addTactic(def ctx, def x, def y) {
+          if (ctx.threat == null) {
+            ctx.threat = new HashMap();
+          }
+          if (ctx.threat.tactic == null) {
+            ctx.threat.tactic = new HashMap();
+          }
+          if (ctx.threat.tactic.id == null) {
+            ctx.threat.tactic.id = new ArrayList();
+          }
+          if (ctx.threat.tactic.name == null) {
+            ctx.threat.tactic.name = new ArrayList();
+          }
+          if (!ctx.threat.tactic.id.contains(x)) {
+            ctx.threat.tactic.id.add(x);
+          }
+          if (!ctx.threat.tactic.name.contains(y)) {
+            ctx.threat.tactic.name.add(y);
+          }
+        }
+        for (mitre_tactic in ctx.panw_cortex.xdr.mitre_tactic_id_and_name) {
+          addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
+        }
+  - set:
+      field: threat.framework
+      tag: set_threat.framework
+      value: "MITRE ATT&CK"
+      if: ctx.threat?.technique != null || ctx.threat?.tactic != null
+  - convert:
+      field: panw_cortex.xdr.case_id
+      tag: convert_panw_cortex.xdr.case_id
+      target_field: panw_cortex.xdr.case_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.case_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  #The Action actor is an an activity that took place and was recorded by the agent.
+  - convert:
+      field: panw_cortex.xdr.action_remote_ip
+      tag: convert_panw_cortex.xdr.action_remote_ip
+      target_field: panw_cortex.xdr.action_remote_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.action_remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_remote_ip
+      tag: foreach_panw_cortex.xdr.action_remote_ip
+      description: v2 API returns action_remote_ip as List
+      if: ctx.panw_cortex?.xdr?.action_remote_ip instanceof List
+      processor:
+        append:
+          field: destination.ip
+          tag: append_destination.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: panw_cortex.xdr.action_remote_ip_v6
+      tag: convert_panw_cortex.xdr.action_remote_ip_v6
+      target_field: panw_cortex.xdr.action_remote_ip_v6
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.action_remote_ip_v6
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_remote_ip_v6
+      tag: foreach_panw_cortex.xdr.action_remote_ip_v6
+      description: v2 API returns action_remote_ip_v6 as List
+      if: ctx.panw_cortex?.xdr?.action_remote_ip_v6 instanceof List
+      processor:
+        append:
+          field: destination.ip
+          tag: append_destination.ip_v6
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: panw_cortex.xdr.action_remote_port
+      tag: convert_panw_cortex.xdr.action_remote_port
+      target_field: panw_cortex.xdr.action_remote_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.action_remote_port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: panw_cortex.xdr.action_remote_port
+      ignore_empty_value: true
+      tag: set_destination.port
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: panw_cortex.xdr.action_local_ip
+      tag: convert_panw_cortex.xdr.action_local_ip
+      target_field: panw_cortex.xdr.action_local_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.action_local_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_local_ip
+      tag: foreach_panw_cortex.xdr.action_local_ip
+      description: v2 API returns action_local_ip as List
+      if: ctx.panw_cortex?.xdr?.action_local_ip instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_source.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: panw_cortex.xdr.action_local_ip_v6
+      tag: convert_panw_cortex.xdr.action_local_ip_v6
+      target_field: panw_cortex.xdr.action_local_ip_v6
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.action_local_ip_v6
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_local_ip_v6
+      tag: foreach_panw_cortex.xdr.action_local_ip_v6
+      description: v2 API returns action_local_ip_v6 as List
+      if: ctx.panw_cortex?.xdr?.action_local_ip_v6 instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_source.ip_v6
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: panw_cortex.xdr.action_local_port
+      tag: convert_panw_cortex.xdr.action_local_port
+      target_field: panw_cortex.xdr.action_local_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.action_local_port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      copy_from: panw_cortex.xdr.action_local_port
+      ignore_empty_value: true
+      tag: set_source.port
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: panw_cortex.xdr.action_process_image_sha256
+      tag: rename_panw_cortex.xdr.action_process_image_sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_process_image_command_line
+      tag: rename_panw_cortex.xdr.action_process_image_command_line
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_process_image_name
+      tag: rename_panw_cortex.xdr.action_process_image_name
+      target_field: process.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_process_signature_vendor
+      tag: rename_panw_cortex.xdr.action_process_signature_vendor
+      target_field: process.code_signature.subject_name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_process_signature_status
+      tag: rename_panw_cortex.xdr.action_process_signature_status
+      target_field: process.code_signature.status
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_process_instance_id
+      tag: rename_panw_cortex.xdr.action_process_instance_id
+      target_field: process.entity_id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_file_path
+      tag: rename_panw_cortex.xdr.action_file_path
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_file_name
+      tag: rename_panw_cortex.xdr.action_file_name
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_file_md5
+      tag: rename_panw_cortex.xdr.action_file_md5
+      target_field: file.hash.md5
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_file_sha256
+      tag: rename_panw_cortex.xdr.action_file_sha256
+      target_field: file.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_registry_key_name
+      tag: rename_panw_cortex.xdr.action_registry_key_name
+      target_field: registry.key
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_registry_value_name
+      tag: rename_panw_cortex.xdr.action_registry_value_name
+      target_field: registry.value
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_registry_full_key
+      tag: rename_panw_cortex.xdr.action_registry_full_key
+      target_field: registry.path
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action_registry_data
+      tag: rename_panw_cortex.xdr.action_registry_data
+      target_field: registry.data.strings
+      ignore_missing: true
+  - set:
+      field: registry.data.strings
+      tag: set_registry.data.strings
+      value: ['{{{registry.data.strings}}}']
+      if: ctx.registry?.data?.strings instanceof String
+  #The Actor actor is the process that performed the action.
+  - rename:
+      field: panw_cortex.xdr.actor_process_os_pid
+      tag: rename_panw_cortex.xdr.actor_process_os_pid
+      target_field: process.pid
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.actor_process_instance_id
+      tag: rename_panw_cortex.xdr.actor_process_instance_id
+      target_field: process.entity_id
+      ignore_missing: true
+      if: ctx.process?.entity_id == null
+  - rename:
+      field: panw_cortex.xdr.actor_process_image_path
+      tag: rename_panw_cortex.xdr.actor_process_image_path
+      target_field: process.executable
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.actor_process_command_line
+      tag: rename_panw_cortex.xdr.actor_process_command_line
+      target_field: process.command_line
+      ignore_missing: true
+      if: ctx.process?.command_line == null
+  - rename:
+      field: panw_cortex.xdr.actor_process_image_name
+      tag: rename_panw_cortex.xdr.actor_process_image_name
+      target_field: process.name
+      ignore_missing: true
+      if: ctx.process?.name == null
+  - rename:
+      field: panw_cortex.xdr.actor_process_signature_vendor
+      tag: rename_panw_cortex.xdr.actor_process_signature_vendor
+      target_field: process.code_signature.subject_name
+      ignore_missing: true
+      if: ctx.process?.code_signature?.subject_name == null
+  - rename:
+      field: panw_cortex.xdr.actor_process_image_sha256
+      tag: rename_panw_cortex.xdr.actor_process_image_sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+      if: ctx.process?.hash?.sha256 == null
+  - rename:
+      field: panw_cortex.xdr.actor_process_image_md5
+      tag: rename_panw_cortex.xdr.actor_process_image_md5
+      target_field: process.hash.md5
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.actor_thread_thread_id
+      tag: rename_panw_cortex.xdr.actor_thread_thread_id
+      target_field: process.thread.id
+      ignore_missing: true
+  #The Causality actor—also referred to as the causality group owner (CGO)—is the parent process in the execution chain that the Cortex XDR agent identified as being responsible for initiating the process tree.
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_image_name
+      tag: rename_panw_cortex.xdr.causality_actor_process_image_name
+      target_field: process.parent.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_image_path
+      tag: rename_panw_cortex.xdr.causality_actor_process_image_path
+      target_field: process.parent.executable
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_image_md5
+      tag: rename_panw_cortex.xdr.causality_actor_process_image_md5
+      target_field: process.parent.hash.md5
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_image_sha256
+      tag: rename_panw_cortex.xdr.causality_actor_process_image_sha256
+      target_field: process.parent.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_causality_id
+      tag: rename_panw_cortex.xdr.causality_actor_causality_id
+      target_field: process.parent.entity_id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_signature_vendor
+      tag: rename_panw_cortex.xdr.causality_actor_process_signature_vendor
+      target_field: process.parent.code_signature.subject_name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_signature_status
+      tag: rename_panw_cortex.xdr.causality_actor_process_signature_status
+      target_field: process.parent.code_signature.status
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_command_line
+      tag: rename_panw_cortex.xdr.causality_actor_process_command_line
+      target_field: process.parent.command_line
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.causality_actor_process_execution_time
+      tag: rename_panw_cortex.xdr.causality_actor_process_execution_time
+      target_field: process.parent.uptime
+      ignore_missing: true
+  # Parse user.domain from user.name
+  - grok:
+      field: panw_cortex.xdr.user_name.0
+      tag: grok_panw_cortex.xdr.user_name.0
+      ignore_missing: true
+      patterns:
+        - '^%{DATA:user.domain}\\\\%{DATA:user.name}$'
+        - '^%{DATA:user.domain}\\%{DATA:user.name}$'
+        - '^%{DATA:user.name}@%{DATA:user.domain}$'
+        - '^%{DATA:user.name}$'
+      if: ctx.panw_cortex?.xdr?.user_name instanceof List
+  - set:
+      field: user.email
+      tag: set_user.email
+      copy_from: panw_cortex.xdr.user_name
+      if: ctx.panw_cortex?.xdr?.user_name instanceof List && ctx.panw_cortex?.xdr?.user_name.size() > 0 && ctx.panw_cortex.xdr.user_name.0.contains('@') && ctx.panw_cortex.xdr.user_name.0.contains('.')
+  - set:
+      field: user.id
+      tag: set_user.id
+      copy_from: panw_cortex.xdr.user_name
+      if: ctx.panw_cortex?.xdr?.user_name instanceof List && ctx.panw_cortex?.xdr?.user_name.size() > 0 && ctx.panw_cortex.xdr.user_name.0.contains('@') && ctx.panw_cortex.xdr.user_name.0.contains('.')
+  - set:
+      field: source.user
+      tag: set_source.user
+      copy_from: user
+      ignore_empty_value: true
+  - rename:
+      field: panw_cortex.xdr.fw_rule
+      tag: rename_panw_cortex.xdr.fw_rule
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.fw_rule_id
+      tag: rename_panw_cortex.xdr.fw_rule_id
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.fw_interface_from
+      tag: rename_panw_cortex.xdr.fw_interface_from
+      target_field: observer.ingress.interface.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.fw_interface_to
+      tag: rename_panw_cortex.xdr.fw_interface_to
+      target_field: observer.egress.interface.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.fw_serial_number
+      tag: rename_panw_cortex.xdr.fw_serial_number
+      target_field: observer.serial_number
+      ignore_missing: true
+  - convert:
+      field: panw_cortex.xdr.filter_rule_id
+      tag: convert_panw_cortex.xdr.filter_rule_id
+      target_field: panw_cortex.xdr.filter_rule_id
+      type: string
+      description: Consistenly make filter_rule_id as keyword
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.filter_rule_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.subject
+      tag: set_email.subject
+      copy_from: panw_cortex.xdr.fw_email_subject
+      if: ctx.panw_cortex?.xdr?.fw_email_subject instanceof String
+  - foreach:
+      field: panw_cortex.xdr.fw_email_subject
+      tag: foreach_panw_cortex.xdr.fw_email_subject
+      if: ctx.panw_cortex?.xdr?.fw_email_subject instanceof List
+      processor:
+        append:
+          field: email.subject
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: email.from.address
+      tag: append_email.from.address
+      value: "{{{panw_cortex.xdr.fw_email_sender}}}"
+      if: ctx.panw_cortex?.xdr?.fw_email_sender instanceof String
+      allow_duplicates: false
+  - foreach:
+      field: panw_cortex.xdr.fw_email_sender
+      tag: foreach_panw_cortex.xdr.fw_email_sender
+      if: ctx.panw_cortex?.xdr?.fw_email_sender instanceof List
+      processor:
+        append:
+          field: email.from.address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: email.to.address
+      tag: append_email.to.address
+      value: "{{{panw_cortex.xdr.fw_email_recipient}}}"
+      if: ctx.panw_cortex?.xdr?.fw_email_recipient instanceof String
+      allow_duplicates: false
+  - foreach:
+      field: panw_cortex.xdr.fw_email_recipient
+      tag: foreach_panw_cortex.xdr.fw_email_recipient
+      if: ctx.panw_cortex?.xdr?.fw_email_recipient instanceof List
+      processor:
+        append:
+          field: email.to.address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - geoip:
+      field: source.ip
+      tag: geoip_source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source.ip_source.as
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      tag: geoip_destination.ip_destination.as
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_related.hash
+      value: "{{{process.parent.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.process?.parent?.hash?.md5 instanceof String
+  - foreach:
+      field: process.parent.hash.md5
+      tag: foreach_process.parent.hash.md5
+      if: ctx.process?.parent?.hash?.md5 instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related.hash
+      value: "{{{process.parent.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.process?.parent?.hash?.sha256 instanceof String
+  - foreach:
+      field: process.parent.hash.sha256
+      tag: foreach_process.parent.hash.sha256
+      if: ctx.process?.parent?.hash?.sha256 instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related.hash
+      value: "{{{process.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.process?.hash?.md5 instanceof String
+  - foreach:
+      field: process.hash.md5
+      tag: foreach_process.hash.md5
+      if: ctx.process?.hash?.md5 instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related.hash
+      value: "{{{process.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.process?.hash?.sha256 instanceof String
+  - foreach:
+      field: process.hash.sha256
+      tag: foreach_process.hash.sha256
+      if: ctx.process?.hash?.sha256 instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related.hash
+      value: "{{{file.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 instanceof String
+  - foreach:
+      field: file.hash.sha256
+      tag: foreach_file.hash.sha256
+      if: ctx.file?.hash?.sha256 instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related.hash
+      value: "{{{file.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - foreach:
+      field: file.hash.md5
+      tag: foreach_file.hash.md5
+      if: ctx.file?.hash?.md5 instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_related.user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - foreach:
+      field: panw_cortex.xdr.tags
+      tag: foreach_panw_cortex.xdr.tags
+      if: ctx.panw_cortex?.xdr?.tags != null
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field:
+        - _conf
+      ignore_missing: true
+      tag: remove_fields
+  - remove:
+      field:
+        - panw_cortex.xdr.detection_timestamp
+        - panw_cortex.xdr.event_timestamp
+        - panw_cortex.xdr.severity
+        - panw_cortex.xdr.action_remote_ip
+        - panw_cortex.xdr.action_remote_port
+        - panw_cortex.xdr.action_local_ip
+        - panw_cortex.xdr.action_local_port
+        - panw_cortex.xdr.bioc_indicator
+        - panw_cortex.xdr.tags
+        - panw_cortex.xdr.mitre_technique_id_and_name
+        - panw_cortex.xdr.mitre_tactic_id_and_name
+        - panw_cortex.xdr.fw_email_subject
+        - panw_cortex.xdr.fw_email_sender
+        - panw_cortex.xdr.fw_email_recipient
+        - panw_cortex.xdr.external_id
+        - panw_cortex.xdr.user_name
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+
+# Error handling
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      tag: append_error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

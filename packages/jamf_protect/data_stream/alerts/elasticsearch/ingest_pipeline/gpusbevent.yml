@@ -1,0 +1,59 @@
+---
+description: Pipeline for processing GPUSBEvent events.
+processors:
+
+######################
+## ECS Volume Mapping ##
+######################
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.bsdName
+      target_field: volume.nt_name
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.bsdName != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.content
+      target_field: volume.file_system_type
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.content != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.busName
+      target_field: volume.bus_type
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.busName != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.productName
+      target_field: volume.product_name
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.productName != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.productId
+      target_field: volume.product_id
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.productId != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.isRemovable
+      target_field: volume.removable
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.isRemovable != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.serialNumber
+      target_field: volume.serial_number
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.serialNumber != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.size
+      target_field: volume.size
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.size != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.vendorId
+      target_field: volume.vendor_id
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.vendorId != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.vendorName
+      target_field: volume.vendor_name
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.vendorName != null
+  - rename:
+      field: jamf_protect.alerts.input.match.event.device.isWritable
+      target_field: volume.writable
+      if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.device?.isWritable != null
+
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

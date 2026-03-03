@@ -1,0 +1,104 @@
+---
+description: Build ECS fields from an OpenCTI file observable
+processors:
+
+  - set:
+      field: _tmp_file.accessed
+      value: "{{{_ingest._value.atime}}}"
+      ignore_empty_value: true
+
+  - set:
+      field: _tmp_file.created
+      value: "{{{_ingest._value.ctime}}}"
+      ignore_empty_value: true
+
+  - set:
+      field: _tmp_file.mtime
+      value: "{{{_ingest._value.mtime}}}"
+      ignore_empty_value: true
+
+  - append:
+      field: _tmp_file.name
+      value: "{{{_ingest._value.name}}}"
+      allow_duplicates: false
+  - foreach:
+      field: _ingest._value.additional_names
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_file.name
+          value: "{{{_ingest._value}}}"
+          allow_duplicates: false
+  - script:
+      description: Remove null or empty names, remove name field if no names
+      lang: painless
+      source: |
+        if (ctx._tmp_file?.name != null) {
+          def result = [];
+          for (name in ctx._tmp_file.name) {
+              if (name != null && name != '') {
+                  result.add(name);
+              }
+          }
+          if (result.length == 0) {
+            ctx._tmp_file.remove("name");
+          } else {
+            ctx._tmp_file.name = result;
+          }
+        }
+
+  - script:
+      description: Get file extensions from file names
+      lang: painless
+      source: |
+        if (ctx._tmp_file.name != null) {
+          def result = [];
+          for (fullname in ctx._tmp_file.name) {
+            // name shouldn't have a directory, but do strip it if it's there
+            def parts = /[\/\\]/.split(fullname);
+            def name = parts[parts.length - 1];
+            if (name.contains(".")) {
+              def nameParts = /\./.split(name);
+              def extension = nameParts[nameParts.length - 1];
+              if (extension.length() > 0) {
+                result.add(extension);
+              }
+            }
+          }
+          if (result.length > 0) {
+            ctx._tmp_file.extension = result;
+          }
+        }
+
+  - set:
+      field: _tmp_file.mime_type
+      value: "{{{_ingest._value.mime_type}}}"
+      ignore_empty_value: true
+
+  - set:
+      field: _tmp_file.size
+      value: "{{{_ingest._value.size}}}"
+      ignore_empty_value: true
+
+  - set:
+      field: _tmp_file.type
+      value: "file"
+      ignore_empty_value: true
+
+  - set:
+      field: _tmp_file.hash
+      copy_from: _ingest._value.hash
+      ignore_empty_value: true
+
+  # append object
+  - append:
+      field: threat.indicator.file
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.file.add(ctx._tmp_file);
+
+  - remove:
+      field: _tmp_file

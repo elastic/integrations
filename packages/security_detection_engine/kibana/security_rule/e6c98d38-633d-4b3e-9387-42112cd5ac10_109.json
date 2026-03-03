@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Authorization plugins are used to extend the authorization services API and implement mechanisms that are not natively supported by the OS, such as multi-factor authentication with third party software. Adversaries may abuse this feature to persist and/or collect clear text credentials as they traverse the registered plugins during user logon.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Authorization Plugin Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Authorization Plugin Modification\n\nAuthorization plugins in macOS extend authentication capabilities, enabling features like third-party multi-factor authentication. Adversaries may exploit these plugins to maintain persistence or capture credentials by modifying or adding unauthorized plugins. The detection rule identifies suspicious modifications by monitoring changes in specific plugin directories, excluding known legitimate plugins and trusted processes, thus highlighting potential unauthorized activities.\n\n### Possible investigation steps\n\n- Review the file path of the modified plugin to determine if it is located in the /Library/Security/SecurityAgentPlugins/ directory and verify if it is not among the known legitimate plugins like KandjiPassport.bundle or TeamViewerAuthPlugin.bundle.\n- Examine the process name associated with the modification event to ensure it is not 'shove' with a trusted code signature, as these are excluded from the detection rule.\n- Investigate the history of the modified plugin file to identify when it was created or last modified and by which user or process, to assess if the change aligns with expected administrative activities.\n- Check for any recent user logon events that might correlate with the timing of the plugin modification to identify potential unauthorized access attempts.\n- Analyze any associated network activity or connections from the host around the time of the modification to detect possible data exfiltration or communication with external command and control servers.\n- Review system logs for any other suspicious activities or anomalies that occurred around the same time as the plugin modification to gather additional context on the potential threat.\n\n### False positive analysis\n\n- Known legitimate plugins such as KandjiPassport.bundle and TeamViewerAuthPlugin.bundle may trigger alerts if they are updated or modified. Users can handle these by ensuring these plugins are included in the exclusion list within the detection rule.\n- Trusted processes like those signed by a verified code signature, such as the process named 'shove', might be flagged if they interact with the plugin directories. Users should verify the code signature and add these processes to the trusted list to prevent false positives.\n- System updates or legitimate software installations may cause temporary changes in the plugin directories. Users should monitor for these events and temporarily adjust the detection rule to exclude these known activities during the update period.\n- Custom or in-house developed plugins that are not widely recognized may be flagged. Users should ensure these plugins are properly documented and added to the exclusion list if they are verified as safe and necessary for business operations.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent potential lateral movement or further unauthorized access.\n- Review and terminate any suspicious processes associated with unauthorized plugins, especially those not signed by a trusted code signature.\n- Remove any unauthorized or suspicious plugins from the /Library/Security/SecurityAgentPlugins/ directory to eliminate persistence mechanisms.\n- Conduct a thorough credential audit for any accounts that may have been compromised, and enforce a password reset for affected users.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems are affected.\n- Implement additional monitoring on the affected system and similar endpoints to detect any further unauthorized plugin modifications.\n- Review and update security policies to ensure only authorized personnel can modify or add authorization plugins, and consider implementing stricter access controls.",
+        "query": "event.category:file and host.os.type:macos and not event.type:deletion and\n  file.path:(/Library/Security/SecurityAgentPlugins/* and\n  not (/Library/Security/SecurityAgentPlugins/KandjiPassport.bundle/* or /Library/Security/SecurityAgentPlugins/TeamViewerAuthPlugin.bundle/*)) and\n  not (process.name:shove and process.code_signature.trusted:true)\n",
+        "references": [
+            "https://developer.apple.com/documentation/security/authorization_plug-ins",
+            "https://www.xorrior.com/persistent-credential-theft/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e6c98d38-633d-4b3e-9387-42112cd5ac10",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.002",
+                                "name": "Authentication Package",
+                                "reference": "https://attack.mitre.org/techniques/T1547/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 109
+    },
+    "id": "e6c98d38-633d-4b3e-9387-42112cd5ac10_109",
+    "type": "security-rule"
+}

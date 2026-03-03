@@ -1,0 +1,19 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_ssauthint audit logs.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+  - rename:
+      field: json.texts
+      target_field: jamf_protect.telemetry.texts
+      ignore_missing: true
+  - convert:
+      field: json.arguments.known_UID_
+      target_field: jamf_protect.telemetry.arguments.known_uid
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.arguments
+      target_field: jamf_protect.telemetry.arguments.flattened
+      ignore_missing: true

@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of the Windows Command Shell process (cmd.exe) with suspicious argument values. This behavior is often observed during malware installation.",
+        "from": "now-9m",
+        "index": [
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Windows Command Shell Arguments",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Windows Command Shell Arguments\n\nThe Windows Command Shell (cmd.exe) is a critical component for executing commands and scripts. Adversaries exploit it to execute malicious scripts, download payloads, or manipulate system settings. The detection rule identifies unusual command-line arguments and patterns indicative of such abuse, filtering out known benign processes to minimize false positives. This helps in early detection of potential threats by monitoring for suspicious command executions.\n\n### Possible investigation steps\n\n- Review the command line arguments associated with the cmd.exe process to identify any suspicious patterns or keywords such as \"curl\", \"regsvr32\", \"wscript\", or \"Invoke-WebRequest\" that may indicate malicious activity.\n- Check the parent process of the cmd.exe execution to determine if it is a known benign process or if it is associated with potentially malicious activity, especially if the parent process is explorer.exe or other unusual executables.\n- Investigate the user account associated with the cmd.exe process to determine if the activity aligns with the user's typical behavior or if it appears anomalous.\n- Examine the network activity of the host to identify any unusual outbound connections or data transfers that may correlate with the suspicious command execution.\n- Cross-reference the alert with other security logs or alerts from tools like Sysmon, SentinelOne, or Microsoft Defender for Endpoint to gather additional context and corroborate findings.\n- Assess the risk score and severity of the alert to prioritize the investigation and determine if immediate response actions are necessary.\n\n### False positive analysis\n\n- Processes related to Spiceworks and wmiprvse.exe can trigger false positives. Exclude these by adding exceptions for process arguments containing \"%TEMP%\\\\Spiceworks\\\\*\" when the parent process is wmiprvse.exe.\n- Development tools like Perl, Node.js, and NetBeans may cause false alerts. Exclude these by specifying their executable paths in the exception list.\n- Citrix Secure Access Client initiated by userinit.exe can be a false positive. Exclude this by adding an exception for process arguments containing \"?:\\\\Program Files\\\\Citrix\\\\Secure Access Client\\\\nsauto.exe\" with the parent process name as userinit.exe.\n- Scheduled tasks or services like PCPitstopScheduleService.exe may trigger alerts. Exclude these by adding their paths to the exception list.\n- Command-line operations involving npm or Maven commands can be benign. Exclude these by specifying command-line patterns like \"\\\"cmd\\\" /c %NETBEANS_MAVEN_COMMAND_LINE%\" in the exception list.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of potential malware or unauthorized access.\n- Terminate any suspicious cmd.exe processes identified by the detection rule to halt malicious activity.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious files or scripts.\n- Review and restore any altered system settings or configurations to their original state to ensure system integrity.\n- Analyze the command-line arguments and parent processes involved in the alert to understand the scope and origin of the threat, and identify any additional compromised systems.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional containment measures are necessary.\n- Implement additional monitoring and detection rules to identify similar suspicious command-line activities in the future, enhancing the organization's ability to detect and respond to such threats promptly.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.name : \"cmd.exe\" and\n (\n\n  process.command_line : (\"*).Run(*\", \"*GetObject*\", \"* curl*regsvr32*\", \"*echo*wscript*\", \"*echo*ZONE.identifier*\",\n  \"*ActiveXObject*\", \"*dir /s /b *echo*\", \"*unescape(*\",  \"*findstr*TVNDRgAAAA*\", \"*findstr*passw*\", \"*start*\\\\\\\\*\\\\DavWWWRoot\\\\*\",\n  \"* explorer*%CD%*\", \"*%cd%\\\\*.js*\", \"*attrib*%CD%*\", \"*/?cMD<*\", \"*/AutoIt3ExecuteScript*..*\", \"*&cls&cls&cls&cls&cls&*\",\n  \"*&#*;&#*;&#*;&#*;*\", \"* &&s^eT*\", \"*& ChrW(*\", \"*&explorer /root*\", \"*start __ & __\\\\*\", \"*findstr /V /L *forfiles*\",\n  \"*=wscri& set *\", \"*http*!COmpUternaME!*\", \"*start *.pdf * start /min cmd.exe /c *\\\\\\\\*\", \"*pip install*System.Net.WebClient*\",\n  \"*Invoke-WebReques*Start-Process*\", \"*-command (Invoke-webrequest*\", \"*copy /b *\\\\\\\\* ping *-n*\", \"*echo*.ToCharArray*\") or\n\n  (process.args : \"echo\" and process.parent.name : (\"wscript.exe\", \"mshta.exe\")) or\n\n  process.args : (\"1>?:\\\\*.vbs\", \"1>?:\\\\*.js\") or\n\n  (process.args : \"explorer.exe\" and process.args : \"type\" and process.args : \">\" and process.args : \"start\") or\n\n  (process.parent.name : \"explorer.exe\" and\n   process.command_line :\n           (\"*&&S^eT *\",\n            \"*&& set *&& set *&& set *&& set *&& set *&& call*\",\n            \"**\\\\u00??\\\\u00??\\\\u00??\\\\u00??\\\\u00??\\\\u00??\\\\u00??\\\\u00??*\")) or\n\n   (process.parent.name : \"explorer.exe\" and process.args : \"copy\" and process.args : \"&&\" and process.args : \"\\\\\\\\*@*\\\\*\")\n  ) and\n\n  /* false positives */\n  not (process.args : \"%TEMP%\\\\Spiceworks\\\\*\" and process.parent.name : \"wmiprvse.exe\") and\n  not process.parent.executable :\n                (\"?:\\\\Perl64\\\\bin\\\\perl.exe\",\n                 \"?:\\\\Program Files\\\\nodejs\\\\node.exe\",\n                 \"?:\\\\Program Files\\\\HP\\\\RS\\\\pgsql\\\\bin\\\\pg_dumpall.exe\",\n                 \"?:\\\\Program Files (x86)\\\\PRTG Network Monitor\\\\64 bit\\\\PRTG Server.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Spiceworks\\\\bin\\\\spiceworks-finder.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Zuercher Suite\\\\production\\\\leds\\\\leds.exe\",\n                 \"?:\\\\Program Files\\\\Tripwire\\\\Agent\\\\Plugins\\\\twexec\\\\twexec.exe\",\n                 \"D:\\\\Agents\\\\?\\\\_work\\\\_tasks\\\\*\\\\SonarScanner.MSBuild.exe\",\n                 \"?:\\\\Program Files\\\\Microsoft VS Code\\\\Code.exe\",\n                 \"?:\\\\programmiweb\\\\NetBeans-*\\\\netbeans\\\\bin\\\\netbeans64.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Public Safety Suite Professional\\\\production\\\\leds\\\\leds.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Tier2Tickets\\\\button_gui.exe\",\n                 \"?:\\\\Program Files\\\\NetBeans-*\\\\netbeans\\\\bin\\\\netbeans*.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Public Safety Suite Professional\\\\production\\\\leds\\\\leds.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Tier2Tickets\\\\button_gui.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Helpdesk Button\\\\button_gui.exe\",\n                 \"?:\\\\VTSPortable\\\\VTS\\\\jre\\\\bin\\\\javaw.exe\",\n                 \"?:\\\\Program Files\\\\Bot Framework Composer\\\\Bot Framework Composer.exe\",\n                 \"?:\\\\Program Files\\\\KMSYS Worldwide\\\\eQuate\\\\*\\\\SessionMgr.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Craneware\\\\Pricing Analyzer\\\\Craneware.Pricing.Shell.exe\",\n                 \"?:\\\\Program Files (x86)\\\\jumpcloud-agent-app\\\\jumpcloud-agent-app.exe\",\n                 \"?:\\\\Program Files\\\\PostgreSQL\\\\*\\\\bin\\\\pg_dumpall.exe\",\n                 \"?:\\\\Program Files (x86)\\\\Vim\\\\vim*\\\\vimrun.exe\") and\n  not (process.args :  \"?:\\\\Program Files\\\\Citrix\\\\Secure Access Client\\\\nsauto.exe\" and process.parent.name : \"userinit.exe\") and\n  not process.args :\n            (\"?:\\\\Program Files (x86)\\\\PCMatic\\\\PCPitstopScheduleService.exe\",\n             \"?:\\\\Program Files (x86)\\\\AllesTechnologyAgent\\\\*\",\n             \"https://auth.axis.com/oauth2/oauth-authorize*\") and\n  not process.command_line :\n               (\"\\\"cmd\\\" /c %NETBEANS_MAVEN_COMMAND_LINE%\",\n                \"?:\\\\Windows\\\\system32\\\\cmd.exe /q /d /s /c \\\"npm.cmd ^\\\"install^\\\" ^\\\"--no-bin-links^\\\" ^\\\"--production^\\\"\\\"\") and\n  not (process.name : \"cmd.exe\" and process.args : \"%TEMP%\\\\Spiceworks\\\\*\" and process.args : \"http*/dataloader/persist_netstat_data\") and\n  not (process.args == \"echo\" and process.args == \"GEQ\" and process.args == \"1073741824\")\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d9ffc3d6-9de9-4b29-9395-5757d0695ecf",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 205
+    },
+    "id": "d9ffc3d6-9de9-4b29-9395-5757d0695ecf_205",
+    "type": "security-rule"
+}

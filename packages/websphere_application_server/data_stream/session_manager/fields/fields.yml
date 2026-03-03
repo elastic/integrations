@@ -1,0 +1,75 @@
+- name: websphere_application_server.session_manager
+  type: group
+  fields:
+    - name: activated_non_existent_sessions
+      description: The number of non-existent sessions that are activated.
+      type: long
+    - name: affinity_breaks
+      description: The number of session affinity breaks.
+      type: long
+    - name: app_name
+      description: Name of the Application.
+      type: keyword
+    - name: cache_discarded
+      description: The number of times the cache was discarded.
+      type: long
+    - name: external
+      type: group
+      fields:
+        - name: bytes
+          type: group
+          fields:
+            - name: read
+              description: Size of the session data (in bytes) read from persistent stores. This size is applicable only for serialized persistent sessions and similar to the externalReadTime field.
+              type: long
+            - name: written
+              description: Size of the session data (in bytes) written to persistent stores.
+              type: long
+        - name: time_seconds
+          type: group
+          fields:
+            - name: read
+              description: Time (in seconds) taken to read the session data from persistent store. For the Multirow session, the metrics are for the attribute; for the SingleRow session the metrics are for the whole session. The time is applicable only for persistent sessions. When you use a JMS persistent store, if you choose not to serialize the data, the counter is not available.
+              type: long
+            - name: written
+              description: Time (in seconds) taken to write the session data from persistent stores. This time is applicable only for (serialized) persistent sessions and is similar to the externalReadTime field.
+              type: long
+    - name: no_room_for_new_sessions
+      description: The number of times a request for a new session cannot be handled because this value exceeds the maximum session count.
+      type: long
+    - name: persistent_stores
+      type: group
+      fields:
+        - name: data_read
+          description: Total number of times the session data was read from persistent stores.
+          type: long
+        - name: data_written
+          description: Total number of times the session data being written to persistent store.
+          type: long
+    - name: sessions
+      type: group
+      fields:
+        - name: active
+          description: The number of sessions that are currently accessed by requests.
+          type: long
+        - name: created
+          description: The number of sessions that were created by the server.
+          type: long
+        - name: current
+          description: The number of live sessions till date.
+          type: long
+        - name: invalidated
+          type: group
+          fields:
+            - name: by_timeouts
+              description: The number of sessions that were invalidated by timeouts.
+              type: long
+            - name: total
+              description: The total number of sessions that were invalidated.
+              type: long
+        - name: life_time
+          description: Life time of the session.
+          type: double
+    - name: time_since_session_last_activated
+      description: Time since this session was last activated.
+      type: double

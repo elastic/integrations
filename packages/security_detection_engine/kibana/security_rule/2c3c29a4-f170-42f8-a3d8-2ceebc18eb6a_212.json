@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential abuse of the Microsoft Diagnostics Troubleshooting Wizard (MSDT) to proxy malicious command or binary execution via malicious process arguments.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Microsoft Diagnostics Wizard Execution",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Microsoft Diagnostics Wizard Execution\n\nThe Microsoft Diagnostics Troubleshooting Wizard (MSDT) is a legitimate tool used for diagnosing and resolving issues within Windows environments. However, adversaries can exploit MSDT to execute malicious commands by manipulating its process arguments, effectively using it as a proxy for harmful activities. The detection rule identifies such abuse by monitoring for unusual execution patterns, such as atypical file paths, unexpected parent processes, and non-standard executable locations, which are indicative of potential misuse. This proactive detection helps in mitigating risks associated with defense evasion tactics.\n\n### Possible investigation steps\n\n- Review the process arguments to identify any suspicious patterns, such as \"IT_RebrowseForFile=*\", \"ms-msdt:/id\", \"ms-msdt:-id\", or \"*FromBase64*\", which may indicate malicious intent.\n- Examine the parent process of msdt.exe to determine if it was launched by an unexpected or potentially malicious process like cmd.exe, powershell.exe, or mshta.exe.\n- Check the file path of the msdt.exe executable to ensure it matches the standard locations (?:\\Windows\\system32\\msdt.exe or ?:\\Windows\\SysWOW64\\msdt.exe) and investigate any deviations.\n- Investigate the user account associated with the process execution to determine if the activity aligns with their typical behavior or if it appears suspicious.\n- Correlate the event with other security alerts or logs from data sources like Microsoft Defender for Endpoint or Sysmon to identify any related malicious activities or patterns.\n- Assess the risk score and severity of the alert to prioritize the investigation and determine if immediate action is required to mitigate potential threats.\n\n### False positive analysis\n\n- Legitimate troubleshooting activities by IT staff using MSDT may trigger alerts. To manage this, create exceptions for known IT user accounts or specific machines frequently used for diagnostics.\n- Automated scripts or software updates that utilize MSDT for legitimate purposes can cause false positives. Identify these scripts and whitelist their execution paths or parent processes.\n- Custom diagnostic tools that leverage MSDT might be flagged. Review these tools and exclude their specific process arguments or executable paths if they are verified as safe.\n- Non-standard installations of MSDT in custom environments could be misidentified. Ensure that any legitimate non-standard paths are documented and excluded from monitoring.\n- Frequent use of MSDT in virtualized environments for testing purposes may lead to alerts. Consider excluding these environments or specific virtual machines from the rule.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further malicious activity and lateral movement.\n- Terminate the suspicious msdt.exe process to stop any ongoing malicious execution.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious files or processes.\n- Review and analyze the process arguments and parent processes associated with the msdt.exe execution to identify potential entry points or related malicious activities.\n- Restore any affected files or system components from a known good backup to ensure system integrity.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.\n- Implement enhanced monitoring and logging for msdt.exe and related processes to detect and respond to similar threats in the future.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n   (process.pe.original_file_name == \"msdt.exe\" or process.name : \"msdt.exe\") and\n   (\n    process.args : (\"IT_RebrowseForFile=*\", \"ms-msdt:/id\", \"ms-msdt:-id\", \"*FromBase64*\") or\n\n    (process.args : \"-af\" and process.args : \"/skip\" and\n     process.parent.name : (\"explorer.exe\", \"cmd.exe\", \"powershell.exe\", \"cscript.exe\", \"wscript.exe\", \"mshta.exe\", \"rundll32.exe\", \"regsvr32.exe\") and\n     process.args : (\"?:\\\\WINDOWS\\\\diagnostics\\\\index\\\\PCWDiagnostic.xml\", \"PCWDiagnostic.xml\", \"?:\\\\Users\\\\Public\\\\*\", \"?:\\\\Windows\\\\Temp\\\\*\")) or\n\n    (process.pe.original_file_name == \"msdt.exe\" and not process.name : \"msdt.exe\" and process.name != null) or\n\n    (process.pe.original_file_name == \"msdt.exe\" and not process.executable : (\"?:\\\\Windows\\\\system32\\\\msdt.exe\", \"?:\\\\Windows\\\\SysWOW64\\\\msdt.exe\"))\n    )\n",
+        "references": [
+            "https://twitter.com/nao_sec/status/1530196847679401984",
+            "https://lolbas-project.github.io/lolbas/Binaries/Msdt/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2c3c29a4-f170-42f8-a3d8-2ceebc18eb6a",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 212
+    },
+    "id": "2c3c29a4-f170-42f8-a3d8-2ceebc18eb6a_212",
+    "type": "security-rule"
+}

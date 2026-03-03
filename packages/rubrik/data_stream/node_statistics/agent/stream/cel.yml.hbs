@@ -1,0 +1,166 @@
+config_version: 2
+interval: {{interval}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: https://{{hostname}}.my.rubrik.com/api/client_token
+
+resource.url: https://{{hostname}}.my.rubrik.com/api/graphql
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: 
+  {{ssl}}
+{{/if}}
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+state:
+    index: 0
+    period: {{interval}}
+    pageSize: {{pageSize}}
+    queries:
+      - |
+        query ClusterNodeStatistics($first: Int, $after: String, $range: TimeRangeInput) {
+          allClusterConnection(first: $first, after: $after) {
+            count
+            nodes {
+              name
+              type
+              id
+              clusterNodeStats(timeRange: $range) {
+                nodeId
+                clusterPhysicalDataIngest
+                networkBytesReceived
+                networkBytesTransmitted
+                iopsReadsPerSecond
+                iopsWritesPerSecond
+                readThroughputBytesPerSecond
+                writeThroughputBytesPerSecond
+                clusterId
+                cpuStat
+                usedMemoryStat
+                time
+              }
+            }
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
+              startCursor
+              endCursor
+            }
+          }
+        }
+
+program: |-
+  state.with(
+    request("POST", state.url).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"]
+        },
+        "Body": {
+          "query": state.queries[state.index],
+          "variables": {
+            "first": has(state.pageSize) ? state.pageSize : null,
+            "after": has(state.cursor) ? state.cursor.after : null,
+            "range": {
+              "start": now - duration(state.period),
+              "end": now.format(time_layout.RFC3339),
+            }
+          }
+        }.encode_json()
+      }
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
+      bytes(resp.Body).decode_json().as(body,
+        {
+          "events": body.data.allClusterConnection.nodes.map(clusterNode,
+            (
+              size(clusterNode.clusterNodeStats) > 0 ?
+                clusterNode.clusterNodeStats.map(statNode,
+                  {
+                    "clusterId": clusterNode.id,
+                    "clusterName": clusterNode.name,
+                    "clusterType": clusterNode.type,
+                    "nodeId": statNode.nodeId,
+                    "cpuStat": statNode.cpuStat,
+                    "usedMemoryStat": statNode.usedMemoryStat,
+                    "networkBytesReceived": statNode.networkBytesReceived,
+                    "networkBytesTransmitted": statNode.networkBytesTransmitted,
+                    "iopsReadsPerSecond": statNode.iopsReadsPerSecond,
+                    "iopsWritesPerSecond": statNode.iopsWritesPerSecond,
+                    "readThroughputBytesPerSecond": statNode.readThroughputBytesPerSecond,
+                    "writeThroughputBytesPerSecond": statNode.writeThroughputBytesPerSecond,
+                    "time": statNode.time
+                  }
+                )
+              :
+                [
+                  {
+                    "clusterId": clusterNode.id,
+                    "clusterName": clusterNode.name,
+                    "clusterType": clusterNode.type,
+                    "nodeId": null,
+                    "cpuStat": null,
+                    "usedMemoryStat": null,
+                    "networkBytesReceived": null,
+                    "networkBytesTransmitted": null,
+                    "iopsReadsPerSecond": null,
+                    "iopsWritesPerSecond": null,
+                    "readThroughputBytesPerSecond": null,
+                    "writeThroughputBytesPerSecond": null,
+                    "time": null
+                  }
+                ]
+            )
+          ).flatten().map(event, { "message": event.encode_json() }),
+          "want_more": body.data.allClusterConnection.pageInfo.hasNextPage || int(state.index) < (size(state.queries) - 1),
+          "queries": state.queries,
+          "index": body.data.allClusterConnection.pageInfo.hasNextPage ? int(state.index) : (int(state.index) + 1) % size(state.queries),
+          "cursor": {
+            "after": body.data.allClusterConnection.pageInfo.hasNextPage ? body.data.allClusterConnection.pageInfo.endCursor : null
+          },
+        }
+      )
+      :
+      {
+        "events": [
+          {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST:" +
+              (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              )
+            }
+          }
+        ],
+        "want_more": false
+      }
+    )
+  )

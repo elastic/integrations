@@ -1,0 +1,89 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious file download activity from a Google Drive URL. This could indicate an attempt to deliver phishing payloads via a trusted webservice.",
+        "false_positives": [
+            "Approved third-party applications that use Google Drive download URLs.",
+            "Legitimate publicly shared files from Google Drive."
+        ],
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint*",
+            "logs-system.security*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious File Downloaded from Google Drive",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious File Downloaded from Google Drive\n\nGoogle Drive is a widely-used cloud storage service that allows users to store and share files. Adversaries may exploit its trusted nature to distribute malicious files, bypassing security measures by using download links with antivirus checks disabled. The detection rule identifies such activities by monitoring browser processes for specific Google Drive download patterns, flagging potential threats for further investigation.\n\n### Possible investigation steps\n\n- Review the process command line details to confirm the presence of the Google Drive download URL with the \"export=download\" and \"confirm=no_antivirus\" parameters, which indicate an attempt to bypass antivirus checks.\n- Identify the user account associated with the process to determine if the activity aligns with their typical behavior or if it appears suspicious.\n- Check the file downloaded from the Google Drive URL for any known malicious signatures or behaviors using a reputable antivirus or malware analysis tool.\n- Investigate the source of the download link to determine if it was shared via email, messaging, or another communication channel, and assess the legitimacy of the source.\n- Analyze network logs to identify any additional suspicious activity or connections related to the IP address or domain associated with the download.\n- Review historical data for any previous similar alerts or activities involving the same user or device to identify potential patterns or repeated attempts.\n\n### False positive analysis\n\n- Legitimate file sharing activities from Google Drive may trigger alerts if users frequently download files for business purposes. To manage this, create exceptions for specific users or departments known to use Google Drive extensively for legitimate work.\n- Automated scripts or tools that download files from Google Drive for regular data processing tasks might be flagged. Identify these scripts and whitelist their associated processes or command lines to prevent unnecessary alerts.\n- Educational institutions or research organizations often share large datasets via Google Drive, which could be mistakenly flagged. Implement exceptions for known educational or research-related Google Drive URLs to reduce false positives.\n- Internal IT or security teams may use Google Drive to distribute software updates or patches. Recognize these activities and exclude them by specifying trusted internal Google Drive links or user accounts.\n- Collaboration with external partners who use Google Drive for file sharing can lead to false positives. Establish a list of trusted partners and their associated Google Drive URLs to minimize unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread of potential malware or unauthorized access.\n- Quarantine the downloaded file and perform a detailed malware analysis using a sandbox environment to determine its behavior and potential impact.\n- If malware is confirmed, initiate a full system scan using updated antivirus and anti-malware tools to identify and remove any additional threats.\n- Review and analyze the process command line logs to identify any other suspicious activities or downloads that may have occurred concurrently.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.\n- Implement network-level blocking of the specific Google Drive URL or domain if it is confirmed to be malicious, to prevent future access.\n- Update endpoint detection and response (EDR) systems with indicators of compromise (IOCs) identified during the analysis to enhance detection of similar threats in the future.",
+        "query": "process where\n\n    /* common browser processes  */\n    event.action in (\"exec\", \"fork\", \"start\") and\n\n    process.name : (\"Microsoft Edge\", \"chrome.exe\", \"Google Chrome\", \"google-chrome-stable\",\n                    \"google-chrome-beta\", \"google-chrome\", \"msedge.exe\", \"firefox.exe\", \"brave.exe\",\n                    \"whale.exe\", \"browser.exe\", \"dragon.exe\", \"vivaldi.exe\", \"opera.exe\", \"firefox\",\n                    \"powershell.exe\", \"curl\", \"curl.exe\", \"wget\", \"wget.exe\") and\n\n    /* Look for Google Drive download URL with AV flag skipping */\n    (process.command_line : \"*drive.google.com*\" and process.command_line : \"*export=download*\" and process.command_line : \"*confirm=no_antivirus*\")\n",
+        "references": [
+            "https://intelligence.abnormalsecurity.com/blog/google-drive-matanbuchus-malware"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a8afdce2-0ec1-11ee-b843-f661ea17fbcd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 8
+    },
+    "id": "a8afdce2-0ec1-11ee-b843-f661ea17fbcd_8",
+    "type": "security-rule"
+}

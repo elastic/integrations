@@ -1,0 +1,19 @@
+metricsets: ["json"]
+namespace: "namenode"
+hosts:
+{{#each hosts}}
+  - "{{this}}/jmx?qry=Hadoop:name=FSNamesystem,service=NameNode"
+{{/each}}
+period: {{period}}
+path: "/"
+{{#if ssl}}
+certificate_authorities: {{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,225 @@
+{
+    "attributes": {
+        "description": "Shows the total S3 API calls for the service accounts, separated to buckets.",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "highlightAll": true,
+                "query": {
+                    "language": "kuery",
+                    "query": "data_stream.dataset:lyve_cloud.audit"
+                },
+                "version": true
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7f9460c3-f070-49fd-a28a-957c495d04f5",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "9989ff0e-6381-4404-9a4b-da4425fcaf3c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "7f9460c3-f070-49fd-a28a-957c495d04f5": {
+                                            "columnOrder": [
+                                                "58838aae-55f7-4751-8aba-68ba745f1bba",
+                                                "6d57cd0f-61f1-4314-804e-809002ebdfa6",
+                                                "1059d394-85ea-402d-b293-e9777950fd13"
+                                            ],
+                                            "columns": {
+                                                "1059d394-85ea-402d-b293-e9777950fd13": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of APIs calls",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "58838aae-55f7-4751-8aba-68ba745f1bba": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Service Accounts",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1059d394-85ea-402d-b293-e9777950fd13",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                },
+                                                "6d57cd0f-61f1-4314-804e-809002ebdfa6": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 3 values of lyve_cloud.audit.auditEntry.api.bucket",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1059d394-85ea-402d-b293-e9777950fd13",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "lyve_cloud.audit.auditEntry.api.bucket"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "9989ff0e-6381-4404-9a4b-da4425fcaf3c",
+                                        "key": "user.name",
+                                        "negate": true,
+                                        "params": {
+                                            "query": ""
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "user.name": ""
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1059d394-85ea-402d-b293-e9777950fd13"
+                                        ],
+                                        "layerId": "7f9460c3-f070-49fd-a28a-957c495d04f5",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "6d57cd0f-61f1-4314-804e-809002ebdfa6",
+                                        "xAccessor": "58838aae-55f7-4751-8aba-68ba745f1bba"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "1b38639d-c6e6-49c1-9709-43ea989e6c43",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1b38639d-c6e6-49c1-9709-43ea989e6c43",
+                "title": "S3 API calls per service account",
+                "type": "lens",
+                "version": "8.5.0-SNAPSHOT"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Lyve Cloud] S3 API calls per service account",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.5.0",
+    "id": "lyve_cloud-42d12a00-5852-11ed-a702-0d7be6ba8b3f",
+    "migrationVersion": {
+        "dashboard": "8.5.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "1b38639d-c6e6-49c1-9709-43ea989e6c43:indexpattern-datasource-layer-7f9460c3-f070-49fd-a28a-957c495d04f5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1b38639d-c6e6-49c1-9709-43ea989e6c43:9989ff0e-6381-4404-9a4b-da4425fcaf3c",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}

@@ -1,0 +1,54 @@
+- name: vectra_rux
+  type: group
+  fields:
+    - name: audit
+      type: group
+      fields:
+        - name: api_client_id
+          type: keyword
+          description: API client ID, if an event was caused by an API client interaction.
+        - name: event
+          type: group
+          fields:
+            - name: data
+              type: flattened
+              description: JSON data specific to the event type.
+            - name: action
+              type: keyword
+              description: What type of action is being audited.
+            - name: object
+              type: keyword
+              description: The object type the audited action is being performed on.
+            - name: timestamp
+              type: date
+              description: Event timestamp (UTC) in ISO-8601 format.
+        - name: id
+          type: keyword
+          description: Auto incrementing ID.
+        - name: message
+          type: keyword
+          description: Message describing the event.
+        - name: result_status
+          type: keyword
+          description: Result status of the event. "success" or "failure".
+        - name: source_ip
+          type: ip
+          description: IP address of the user/API client.
+        - name: user
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: User ID of the user account associated with the event.
+            - name: role
+              type: keyword
+              description: Role the user/API client had at the time of the event.
+            - name: type
+              type: keyword
+              description: User type.
+            - name: name
+              type: keyword
+              description: Username of the account associated with the event, at the time of the event.
+        - name: version
+          type: keyword
+          description: Vectra UI version at the time of the event.

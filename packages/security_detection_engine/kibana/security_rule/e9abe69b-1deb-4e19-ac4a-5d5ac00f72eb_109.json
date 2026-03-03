@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Adversaries can use the autostart mechanism provided by the Local Security Authority (LSA) authentication packages for privilege escalation or persistence by placing a reference to a binary in the Windows registry. The binary will then be executed by SYSTEM when the authentication packages are loaded.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-m365_defender.event-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential LSA Authentication Package Abuse",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential LSA Authentication Package Abuse\n\nThe Local Security Authority (LSA) in Windows manages authentication and security policies. Adversaries exploit LSA by modifying registry paths to include malicious binaries, which are executed with SYSTEM privileges during authentication package loading. The detection rule identifies unauthorized registry changes by non-SYSTEM users, signaling potential privilege escalation or persistence attempts.\n\n### Possible investigation steps\n\n- Review the registry change event details to identify the specific binary path added to the LSA Authentication Packages registry key.\n- Investigate the user account associated with the registry change event to determine if it is a legitimate user or potentially compromised.\n- Check the timestamp of the registry modification to correlate with any other suspicious activities or events on the system around the same time.\n- Analyze the binary referenced in the registry change for any known malicious signatures or behaviors using antivirus or threat intelligence tools.\n- Examine system logs and security events for any signs of privilege escalation or persistence techniques used by the adversary.\n- Assess the system for any additional unauthorized changes or indicators of compromise that may suggest further malicious activity.\n\n### False positive analysis\n\n- Legitimate software installations or updates may modify the LSA authentication package registry path. Users should verify if recent installations or updates coincide with the detected changes and consider excluding these specific software processes if they are deemed safe.\n- System administrators or IT management tools might perform authorized changes to the registry for maintenance or configuration purposes. Users can create exceptions for known administrative tools or processes that are regularly used for legitimate system management tasks.\n- Security software or endpoint protection solutions may alter the registry as part of their normal operation. Users should identify and whitelist these security applications to prevent unnecessary alerts.\n- Custom scripts or automation tools used within the organization might inadvertently trigger this rule. Users should review and document these scripts, ensuring they are secure, and exclude them if they are confirmed to be non-threatening.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement.\n- Terminate any suspicious processes associated with the unauthorized registry change to halt potential malicious activity.\n- Restore the modified registry path to its original state by removing any unauthorized entries in the LSA Authentication Packages registry key.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious binaries or remnants.\n- Review and reset credentials for any accounts that may have been compromised, focusing on those with elevated privileges.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for registry changes, particularly those involving LSA authentication packages, to detect and respond to similar threats in the future.",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n  registry.path : (\n      \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Lsa\\\\Authentication Packages\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Lsa\\\\Authentication Packages\"\n  ) and\n  /* exclude SYSTEM SID - look for changes by non-SYSTEM user */\n  not user.id : \"S-1-5-18\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e9abe69b-1deb-4e19-ac4a-5d5ac00f72eb",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.002",
+                                "name": "Authentication Package",
+                                "reference": "https://attack.mitre.org/techniques/T1547/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.002",
+                                "name": "Authentication Package",
+                                "reference": "https://attack.mitre.org/techniques/T1547/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "e9abe69b-1deb-4e19-ac4a-5d5ac00f72eb_109",
+    "type": "security-rule"
+}

@@ -1,0 +1,53 @@
+---
+description: Pipeline for parsing TYCHON Network Adapters
+processors:
+
+  - script:
+      tag: script
+      source: |
+        if (ctx.tychon?.host?.adapter?.link_speed?.contains(' ') == true) {
+          String[] parts = ctx.tychon.host.adapter.link_speed.splitOnToken(' ');
+          ctx.tychon.host.adapter.link_speed = Double.parseDouble(parts[0]);
+          if (parts[1] == 'Kbps') {
+            ctx.tychon.host.adapter.link_speed *= 1e3
+          } else if (parts[1] == 'Mbps') {
+            ctx.tychon.host.adapter.link_speed *= 1e6
+          } else if (parts[1] == 'Gbps') {
+            ctx.tychon.host.adapter.link_speed *= 1e9
+          }
+        } else {
+          if (ctx.tychon.host == null) {
+            ctx.tychon.host = [:];
+          }
+          if (ctx.tychon.host.adapter == null) {
+            ctx.tychon.host.adapter = [:];
+          }
+          ctx.tychon.host.adapter.link_speed = 0.0;
+        }
+        ctx.tychon.host.adapter.link_speed = (long) ctx.tychon.host.adapter.link_speed;
+
+  # ECS fields
+
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{{tychon.host.adapter.domain}}}"
+      if: ctx.tychon?.host?.adapter?.domain != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{{tychon.host.adapter.ip}}}"
+      if: ctx.tychon?.host?.adapter?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_2
+      field: related.ip
+      value: "{{{tychon.host.adapter.gateway}}}"
+      if: ctx.tychon?.host?.adapter?.gateway != null
+      allow_duplicates: false
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [configuration]

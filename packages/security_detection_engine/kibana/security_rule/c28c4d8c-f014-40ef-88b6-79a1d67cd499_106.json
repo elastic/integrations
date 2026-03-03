@@ -1,0 +1,64 @@
+{
+    "attributes": {
+        "anomaly_threshold": 25,
+        "author": [
+            "Elastic"
+        ],
+        "description": "Looks for commands related to system network connection discovery from an unusual user context. This can be due to uncommon troubleshooting activity or due to a compromised account. A compromised account may be used by a threat actor to engage in system network connection discovery in order to increase their understanding of connected services and systems. This information may be used to shape follow-up behaviors such as lateral movement or additional discovery.",
+        "false_positives": [
+            "Uncommon user command activity can be due to an engineer logging onto a server instance in order to perform manual troubleshooting or reconfiguration."
+        ],
+        "from": "now-45m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": [
+            "v3_linux_network_connection_discovery"
+        ],
+        "name": "Unusual Linux Network Connection Discovery",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Linux Network Connection Discovery\n\nIn Linux environments, network connection discovery tools help administrators understand system connectivity. Adversaries exploit these tools to map networks, aiding in lateral movement and further attacks. The detection rule leverages machine learning to identify atypical usage patterns by unusual users, signaling potential account compromise or unauthorized network probing activities.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific user account and the command executed that triggered the alert.\n- Check the user's activity history to determine if this behavior is consistent with their normal usage patterns or if it is anomalous.\n- Investigate the source IP address and hostname associated with the command execution to verify if they are known and trusted within the network.\n- Examine system logs for any additional suspicious activities or commands executed by the same user account around the time of the alert.\n- Assess the user's access permissions and recent changes to their account to identify any unauthorized modifications or potential compromise.\n- Correlate the alert with other security events or alerts to determine if this activity is part of a larger attack pattern or campaign.\n\n### False positive analysis\n\n- Routine administrative tasks by system administrators can trigger alerts. Regularly review and whitelist known administrator accounts performing legitimate network discovery.\n- Automated scripts or monitoring tools that perform network checks may be flagged. Identify and exclude these scripts from triggering alerts by adding them to an exception list.\n- Uncommon troubleshooting activities by support teams might be misidentified. Document and approve these activities to prevent false positives.\n- Scheduled maintenance activities involving network discovery should be accounted for. Create a schedule-based exception to avoid unnecessary alerts during these periods.\n- New employees or contractors performing legitimate network discovery as part of their onboarding process can be mistaken for threats. Ensure their activities are monitored and approved by the IT department.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further unauthorized access or lateral movement.\n- Terminate any suspicious processes or sessions initiated by the unusual user to halt ongoing network discovery activities.\n- Conduct a thorough review of the affected user's account activity and permissions to identify any unauthorized changes or access patterns.\n- Reset the credentials of the compromised account and enforce multi-factor authentication to prevent further unauthorized access.\n- Analyze network logs and system logs to identify any additional systems that may have been accessed or probed by the threat actor.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems or accounts are compromised.\n- Update and enhance network monitoring and alerting rules to detect similar unauthorized network discovery activities in the future.",
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "c28c4d8c-f014-40ef-88b6-79a1d67cd499",
+        "setup": "## Setup\n\nThis rule requires the installation of associated Machine Learning jobs, as well as data coming in from one of the following integrations:\n- Elastic Defend\n- Auditd Manager\n\n### Anomaly Detection Setup\n\nOnce the rule is enabled, the associated Machine Learning job will start automatically. You can view the Machine Learning job linked under the \"Definition\" panel of the detection rule. If the job does not start due to an error, the issue must be resolved for the job to commence successfully. For more details on setting up anomaly detection jobs, refer to the [helper guide](https://www.elastic.co/guide/en/kibana/current/xpack-ml-anomalies.html).\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration to your system:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n### Auditd Manager Integration Setup\nThe Auditd Manager Integration receives audit events from the Linux Audit Framework which is a part of the Linux kernel.\nAuditd Manager provides a user-friendly interface and automation capabilities for configuring and monitoring system auditing through the auditd daemon. With `auditd_manager`, administrators can easily define audit rules, track system events, and generate comprehensive audit reports, improving overall security and compliance in the system.\n\n#### The following steps should be executed in order to add the Elastic Agent System integration \"auditd_manager\" to your system:\n- Go to the Kibana home page and click \u201cAdd integrations\u201d.\n- In the query bar, search for \u201cAuditd Manager\u201d and select the integration to see more details about it.\n- Click \u201cAdd Auditd Manager\u201d.\n- Configure the integration name and optionally add a description.\n- Review optional and advanced settings accordingly.\n- Add the newly installed \u201cauditd manager\u201d to an existing or a new agent policy, and deploy the agent on a Linux system from which auditd log files are desirable.\n- Click \u201cSave and Continue\u201d.\n- For more details on the integration refer to the [helper guide](https://docs.elastic.co/integrations/auditd_manager).\n\n#### Rule Specific Setup Note\nAuditd Manager subscribes to the kernel and receives events as they occur without any additional configuration.\nHowever, if more advanced configuration is required to detect specific behavior, audit rules can be added to the integration in either the \"audit rules\" configuration box or the \"auditd rule files\" box by specifying a file to read the audit rules from.\n- For this detection rule no additional audit rules are required.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1049",
+                        "name": "System Network Connections Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1049/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 106
+    },
+    "id": "c28c4d8c-f014-40ef-88b6-79a1d67cd499_106",
+    "type": "security-rule"
+}

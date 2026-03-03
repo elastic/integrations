@@ -1,0 +1,26 @@
+---
+description: Pipeline for parsing specific fields related to kext load events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A kernel extension (kext) was loaded
+    - convert:
+        field: jamf_protect.telemetry.event.kextload.identifier
+        target_field: jamf_protect.telemetry.identifier
+        type: string
+        ignore_missing: true
+    - append:
+        field: event.type
+        value: change
+    - append:
+        field: event.category
+        value: configuration  
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -1,0 +1,648 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"c0a93e75-384c-4aa9-9d05-a320ae879b0f\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"tines.tenant_url\",\"title\":\"tines.tenant_url\",\"id\":\"c0a93e75-384c-4aa9-9d05-a320ae879b0f\",\"enhancements\":{}}}}"
+        },
+        "description": "A summary of time saved by Tines",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e5a281f5-76e9-4c88-8911-cbc587a9ed55",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8f2f0b36-c209-476e-a9d5-ea09f3d73ece": {
+                                            "columnOrder": [
+                                                "e860adcf-4782-4a74-8060-b9e10464c77a",
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX0",
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX1"
+                                            ],
+                                            "columns": {
+                                                "e860adcf-4782-4a74-8060-b9e10464c77a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Man Hours Saved",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "(sum(tines.time_saved.value)/60)/60",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e860adcf-4782-4a74-8060-b9e10464c77aX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of (sum(tines.time_saved.value)/60)/60",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tines.time_saved.value"
+                                                },
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of (sum(tines.time_saved.value)/60)/60",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "e860adcf-4782-4a74-8060-b9e10464c77aX0",
+                                                                        60
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 31,
+                                                                        "min": 1
+                                                                    },
+                                                                    "name": "divide",
+                                                                    "text": "sum(tines.time_saved.value)/60",
+                                                                    "type": "function"
+                                                                },
+                                                                60
+                                                            ],
+                                                            "location": {
+                                                                "max": 35,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "(sum(tines.time_saved.value)/60)/60",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "e860adcf-4782-4a74-8060-b9e10464c77aX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e5a281f5-76e9-4c88-8911-cbc587a9ed55",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tines.time_saved"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tines.time_saved"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+                                "layerType": "data",
+                                "metricAccessor": "e860adcf-4782-4a74-8060-b9e10464c77a"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "3ad264e8-145c-48d3-ba53-018e8840d951",
+                    "w": 6,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "3ad264e8-145c-48d3-ba53-018e8840d951",
+                "title": "",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "7d691b73-2062-4d55-8ec8-73cdb10258ec",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8f2f0b36-c209-476e-a9d5-ea09f3d73ece": {
+                                            "columnOrder": [
+                                                "0263fc29-69d4-4587-a127-23f46597abb1",
+                                                "95d5eb98-a86a-4c73-8b75-4304f520b3d0",
+                                                "95d5eb98-a86a-4c73-8b75-4304f520b3d0X0",
+                                                "95d5eb98-a86a-4c73-8b75-4304f520b3d0X1"
+                                            ],
+                                            "columns": {
+                                                "0263fc29-69d4-4587-a127-23f46597abb1": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "h"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "95d5eb98-a86a-4c73-8b75-4304f520b3d0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Man Hours Saved",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "(average(tines.time_saved.value, kql='tines.time_saved.value: *')/60)/60",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "95d5eb98-a86a-4c73-8b75-4304f520b3d0X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "95d5eb98-a86a-4c73-8b75-4304f520b3d0X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "tines.time_saved.value: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Man Hours Saved",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tines.time_saved.value"
+                                                },
+                                                "95d5eb98-a86a-4c73-8b75-4304f520b3d0X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Man Hours Saved",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "95d5eb98-a86a-4c73-8b75-4304f520b3d0X0",
+                                                                        60
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 68,
+                                                                        "min": 1
+                                                                    },
+                                                                    "name": "divide",
+                                                                    "text": "average(tines.time_saved.value, kql='tines.time_saved.value: *')/60",
+                                                                    "type": "function"
+                                                                },
+                                                                60
+                                                            ],
+                                                            "location": {
+                                                                "max": 72,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "(average(tines.time_saved.value, kql='tines.time_saved.value: *')/60)/60",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "95d5eb98-a86a-4c73-8b75-4304f520b3d0X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "7d691b73-2062-4d55-8ec8-73cdb10258ec",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tines.time_saved"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tines.time_saved"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "95d5eb98-a86a-4c73-8b75-4304f520b3d0"
+                                        ],
+                                        "layerId": "8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "xAccessor": "0263fc29-69d4-4587-a127-23f46597abb1"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "8a9cb3a7-8421-4601-a77c-07ad725b9021",
+                    "w": 42,
+                    "x": 6,
+                    "y": 0
+                },
+                "panelIndex": "8a9cb3a7-8421-4601-a77c-07ad725b9021",
+                "title": "",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "c5946be1-9745-4519-9066-391aff67e191",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8f2f0b36-c209-476e-a9d5-ea09f3d73ece": {
+                                            "columnOrder": [
+                                                "e860adcf-4782-4a74-8060-b9e10464c77a",
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX0",
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX1"
+                                            ],
+                                            "columns": {
+                                                "e860adcf-4782-4a74-8060-b9e10464c77a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total $'s Saved",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "(sum(tines.time_saved.value)*0.07)/100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e860adcf-4782-4a74-8060-b9e10464c77aX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total $'s Saved",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tines.time_saved.value"
+                                                },
+                                                "e860adcf-4782-4a74-8060-b9e10464c77aX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total $'s Saved",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "e860adcf-4782-4a74-8060-b9e10464c77aX0",
+                                                                        0.07
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 33,
+                                                                        "min": 1
+                                                                    },
+                                                                    "name": "multiply",
+                                                                    "text": "sum(tines.time_saved.value)*0.07",
+                                                                    "type": "function"
+                                                                },
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 38,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "(sum(tines.time_saved.value)*0.07)/100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "e860adcf-4782-4a74-8060-b9e10464c77aX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "c5946be1-9745-4519-9066-391aff67e191",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tines.time_saved"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tines.time_saved"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+                                "layerType": "data",
+                                "metricAccessor": "e860adcf-4782-4a74-8060-b9e10464c77a",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#ffd100",
+                                                "stop": 27586.6
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 55173.21
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": 27586.6
+                                            },
+                                            {
+                                                "color": "#ffd100",
+                                                "stop": 55173.21
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 82759.82400000001
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "subtitle": "@ rate of $0.07 per second"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "c4885a56-9388-48f6-ad3b-ba2255aff294",
+                    "w": 6,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "c4885a56-9388-48f6-ad3b-ba2255aff294",
+                "title": "",
+                "type": "lens",
+                "version": "8.6.1"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Tines] Time Saved",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.6.1",
+    "created_at": "2023-02-12T23:53:11.916Z",
+    "id": "tines-215e32f0-9e2a-11ed-9dee-d3f2ae7796f5",
+    "migrationVersion": {
+        "dashboard": "8.6.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "3ad264e8-145c-48d3-ba53-018e8840d951:indexpattern-datasource-layer-8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3ad264e8-145c-48d3-ba53-018e8840d951:e5a281f5-76e9-4c88-8911-cbc587a9ed55",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8a9cb3a7-8421-4601-a77c-07ad725b9021:indexpattern-datasource-layer-8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8a9cb3a7-8421-4601-a77c-07ad725b9021:7d691b73-2062-4d55-8ec8-73cdb10258ec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c4885a56-9388-48f6-ad3b-ba2255aff294:indexpattern-datasource-layer-8f2f0b36-c209-476e-a9d5-ea09f3d73ece",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c4885a56-9388-48f6-ad3b-ba2255aff294:c5946be1-9745-4519-9066-391aff67e191",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_c0a93e75-384c-4aa9-9d05-a320ae879b0f:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tines-fleet-managed-default",
+            "name": "tag-ref-tines-fleet-managed-default",
+            "type": "tag"
+        },
+        {
+            "id": "tines-fleet-pkg-tines-default",
+            "name": "tag-ref-tines-fleet-pkg-tines-default",
+            "type": "tag"
+        },
+        {
+            "id": "tines-fleet-managed-default",
+            "name": "tag-ref-fleet-managed-default",
+            "type": "tag"
+        },
+        {
+            "id": "tines-fleet-pkg-tines-default",
+            "name": "tag-ref-fleet-pkg-tines-default",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard"
+}

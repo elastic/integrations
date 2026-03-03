@@ -1,0 +1,31 @@
+metricsets: ["apiserver"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+period: {{period}}
+
+{{#if leaderelection }}
+{{#if condition }}
+condition: ${kubernetes_leaderelection.leader} == true and {{ condition }}
+{{ else }}
+condition: ${kubernetes_leaderelection.leader} == true
+{{/if}}
+{{ else }}
+{{#if condition }}
+condition: {{ condition }}
+{{/if}}
+{{/if}}
+
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

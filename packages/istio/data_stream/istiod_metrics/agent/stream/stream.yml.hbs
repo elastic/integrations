@@ -1,0 +1,22 @@
+metricsets: ["collector"]
+period: {{period}}
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+{{#if leaderelection}}
+condition: ${kubernetes_leaderelection.leader} == true
+{{/if}}
+{{#if metrics_path}}
+metrics_path: {{metrics_path}}
+{{/if}}
+metrics_filters.exclude:
+{{#each metrics_filters.exclude}}
+    - {{this}}
+{{/each}}
+metrics_filters.include:
+{{#each metrics_filters.include}}
+    - {{this}}
+{{/each}}
+use_types: true
+rate_counters: true

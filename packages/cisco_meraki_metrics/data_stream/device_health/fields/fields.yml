@@ -1,0 +1,440 @@
+- name: meraki
+  type: group
+  fields:
+    - name: organization_id
+      type: keyword
+      dimension: true
+    - name: device
+      type: group
+      fields:
+        - name: serial
+          type: keyword
+          description: Serial number of the device.
+          dimension: true
+        - name: firmware
+          type: keyword
+          description: Firmware version of the device.
+        - name: address
+          type: text
+          store: true
+          description: Physical address of the device.
+        - name: imei
+          type: keyword
+          description: IMEI of the device, if applicable.
+        - name: lan_ip
+          type: ip
+          description: LAN IP address of the device.
+        - name: location
+          type: geo_point
+          description: Longitude and Latitude of the device.
+        - name: mac
+          type: keyword
+          description: MAC address of the device.
+        - name: model
+          type: keyword
+          description: Model of the device.
+        - name: name
+          type: keyword
+          description: Name of the device.
+        - name: network_id
+          type: keyword
+          description: ID of the network the device belongs to.
+        - name: notes
+          type: text
+          store: true
+          description: Notes for the device, limited to 255 characters.
+        - name: product_type
+          type: keyword
+          description: Product type of the device.
+        - name: tags
+          type: keyword
+          description: List of tags assigned to the device.
+        - name: performance_score
+          type: double
+          metric_type: gauge
+        - name: license
+          type: group
+          fields:
+            - name: activation_date
+              type: date
+              description: The date the license started burning.
+            - name: claim_date
+              type: date
+              description: The date the license was claimed into the organization.
+            - name: duration_in_days
+              type: long
+              description: The duration of the individual license.
+            - name: expiration_date
+              type: date
+              description: The date the license will expire.
+            - name: head_license_id
+              type: keyword
+              description: The id of the head license this license is queued behind. If there is no head license, it returns nil.
+            - name: id
+              type: keyword
+              description: License ID.
+            - name: license_type
+              type: keyword
+              description: License type.
+            - name: order_number
+              type: keyword
+              description: Order number.
+            - name: seat_count
+              type: long
+              description: The number of seats of the license. Only applicable to SM licenses.
+            - name: state
+              type: keyword
+              description: The state of the license. All queued licenses have a status of `recentlyQueued`.
+            - name: total_duration_in_days
+              type: long
+              description: The duration of the license plus all permanently queued licenses associated with it.
+        - name: high_availability
+          type: group
+          fields:
+            - name: enabled
+              type: boolean
+              description: Indicates whether High Availability is enabled for the device. For devices that do not support HA, this will be 'false'.
+            - name: role
+              type: keyword
+              description: The HA role of the device on the network. For devices that do not support HA, this will be 'primary'.
+        - name: status
+          type: group
+          fields:
+            - name: gateway
+              type: ip
+              description: IP Gateway.
+            - name: ip_type
+              type: keyword
+              description: IP Type.
+            - name: last_reported_at
+              type: date
+              description: Device Last Reported Date.
+            - name: primary_dns
+              type: ip
+              description: Primary DNS.
+            - name: secondary_dns
+              type: keyword
+              description: Secondary DNS.
+            - name: public_ip
+              type: ip
+              description: Public IP Address.
+            - name: value
+              type: keyword
+              description: Device Status.
+        - name: channel_utilization
+          type: group
+          fields:
+            - name: wifi0
+              type: group
+              fields:
+                - name: utilization_80211
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: Percentage of wifi channel utiliation for the given radio.
+                - name: utilization_non_80211
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: Percentage of non-wifi channel utiliation for the given radio.
+                - name: utilization_total
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: Percentage of total channel utiliation for the given radio.
+            - name: wifi1
+              type: group
+              fields:
+                - name: utilization_80211
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: Percentage of wifi channel utiliation for the given radio.
+                - name: utilization_non_80211
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: Percentage of non-wifi channel utiliation for the given radio.
+                - name: utilization_total
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: Percentage of total channel utiliation for the given radio.
+    - name: switch
+      type: group
+      fields:
+        - name: port
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              dimension: true
+              description: The identifier of the switch port.
+            - name: access_policy_type
+              type: keyword
+              description: The type of the access policy of the switch port. Only applicable to access ports. Can be one of 'Open', 'Custom access policy', 'MAC allow list' or 'Sticky MAC allow list'.
+            - name: allowed_vlans
+              type: keyword
+              description: The VLANs allowed on the switch port. Only applicable to trunk ports.
+            - name: enabled
+              type: boolean
+              description: The status of the switch port.
+            - name: link_negotiation
+              type: keyword
+              description: The link speed for the switch port.
+            - name: name
+              type: keyword
+              description: The name of the switch port.
+            - name: poe_enabled
+              type: boolean
+              description: The PoE status of the switch port.
+            - name: rstp_enabled
+              type: boolean
+              description: The rapid spanning tree protocol status.
+            - name: sticky_mac_allow_list
+              type: keyword
+              description: The initial list of MAC addresses for sticky Mac allow list. Only applicable when 'accessPolicyType' is 'Sticky MAC allow list'.
+            - name: sticky_mac_allow_list_limit
+              type: long
+              description: The maximum number of MAC addresses for sticky MAC allow list. Only applicable when 'accessPolicyType' is 'Sticky MAC allow list'.
+            - name: stp_guard
+              type: keyword
+              description: The state of the STP guard ('disabled', 'root guard', 'bpdu guard' or 'loop guard').
+            - name: tags
+              type: keyword
+              description: The list of tags of the switch port.
+            - name: type
+              type: keyword
+              description: The type of the switch port ('trunk' or 'access').
+            - name: vlan
+              type: long
+              description: The VLAN of the switch port. For a trunk port, this is the native VLAN. A null value will clear the value set for trunk ports.
+            - name: voice_vlan
+              type: long
+              description: The voice VLAN of the switch port. Only applicable to access ports.
+            - name: status
+              type: group
+              fields:
+                - name: client_count
+                  type: long
+                  metric_type: gauge
+                  description: The number of clients connected through this port.
+                - name: duplex
+                  type: keyword
+                  description: The current duplex of a connected port.
+                - name: enabled
+                  type: boolean
+                  description: Whether the port is configured to be enabled.
+                - name: errors
+                  type: keyword
+                  description: All errors present on the port.
+                - name: is_uplink
+                  type: boolean
+                  description: Whether the port is the switch's uplink.
+                - name: power_usage_in_wh
+                  type: double
+                  metric_type: gauge
+                  description: How much power (in watt-hours) has been delivered by this port during the timespan.
+                - name: speed
+                  type: keyword
+                  description: The current data transfer rate which the port is operating at.
+                - name: status
+                  type: keyword
+                  description: The current connection status of the port.
+                - name: warnings
+                  type: keyword
+                  description: All warnings present on the port.
+                - name: stp_statuses
+                  type: keyword
+                  description: The current Spanning Tree Protocol statuses of the port.
+                - name: cdp
+                  type: group
+                  fields:
+                    - name: address
+                      type: keyword
+                      description: Contains network addresses of both receiving and sending devices.
+                    - name: capabilities
+                      type: keyword
+                      description: Identifies the device type, which indicates the functional capabilities of the device.
+                    - name: device_id
+                      type: keyword
+                      description: Identifies the device name.
+                    - name: management_address
+                      type: ip
+                      description: The device's management IP.
+                    - name: native_vlan
+                      type: long
+                      description: Indicates, per interface, the assumed VLAN for untagged packets on the interface.
+                    - name: platform
+                      type: keyword
+                      description: Identifies the hardware platform of the device.
+                    - name: port_id
+                      type: keyword
+                      description: Identifies the port from which the CDP packet was sent.
+                    - name: system_name
+                      type: keyword
+                      description: The system name.
+                    - name: version
+                      type: keyword
+                      description: Contains the device software release information.
+                    - name: vtp_management_domain
+                      type: keyword
+                      description: Advertises the configured VLAN Trunking Protocl (VTP)-management-domain name of the system.
+                - name: lldp
+                  type: group
+                  fields:
+                    - name: chassis_id
+                      type: keyword
+                      description: The device's chassis ID.
+                    - name: management_address
+                      type: keyword
+                      description: The device's management IP.
+                    - name: management_vlan
+                      type: long
+                      description: The device's management VLAN.
+                    - name: port_description
+                      type: keyword
+                      description: Description of the port from which the LLDP packet was sent.
+                    - name: port_id
+                      type: keyword
+                      description: Identifies the port from which the LLDP packet was sent.
+                    - name: port_vlan
+                      type: long
+                      description: The port's VLAN.
+                    - name: system_capabilities
+                      type: keyword
+                      description: Identifies the device type, which indicates the functional capabilities of the device.
+                    - name: system_description
+                      type: keyword
+                      description: The device's system description.
+                    - name: system_name
+                      type: keyword
+                      description: The device's system name.
+                - name: secure_port
+                  type: group
+                  fields:
+                    - name: active
+                      type: boolean
+                      description: Whether Secure Port is currently active for this port.
+                    - name: authentication_status
+                      type: keyword
+                      description: The current Secure Port status.
+                    - name: enabled
+                      type: boolean
+                      description: Whether Secure Port is turned on for this port.
+                    - name: config_overrides
+                      type: group
+                      fields:
+                        - name: allowed_vlans
+                          type: keyword
+                          description: The VLANs allowed on the . Only applicable to trunk ports.
+                        - name: type
+                          type: keyword
+                          description: The type of the ('trunk' or 'access').
+                        - name: vlan
+                          type: long
+                          description: The VLAN of the . For a trunk port, this is the native VLAN. A null value will clear the value set for trunk ports.
+                        - name: voice_vlan
+                          type: long
+                          description: The voice VLAN of the . Only applicable to access ports.
+                - name: throughput
+                  type: group
+                  fields:
+                    - name: recv
+                      type: double
+                      metric_type: gauge
+                      description: The average speed of the data received (in kilobits-per-second).
+                    - name: sent
+                      type: double
+                      metric_type: gauge
+                      description: The average speed of the data sent (in kilobits-per-second).
+                    - name: total
+                      type: double
+                      metric_type: gauge
+                      description: The average speed of the data sent and received (in kilobits-per-second).
+                - name: usage
+                  type: group
+                  fields:
+                    - name: recv
+                      type: long
+                      metric_type: gauge
+                      description: The amount of data received (in kilobytes).
+                    - name: sent
+                      type: long
+                      metric_type: gauge
+                      description: The amount of data sent (in kilobytes).
+                    - name: total
+                      type: long
+                      metric_type: gauge
+                      description: The total amount of data sent and received (in kilobytes).
+    - name: uplink
+      type: group
+      fields:
+        - name: last_reported_at
+          type: date
+          description: Uplink Last Reported Date.
+        - name: gateway
+          type: ip
+          description: Gateway IP.
+        - name: interface
+          type: keyword
+          dimension: true
+          description: Uplink interface.
+        - name: ip
+          type: ip
+          description: Uplink IP.
+        - name: primary_dns
+          type: ip
+          description: Primary DNS IP.
+        - name: secondary_dns
+          type: ip
+          description: Secondary DNS IP.
+        - name: public_ip
+          type: ip
+          description: Public IP.
+        - name: status
+          type: keyword
+          description: Uplink status.
+        - name: ip_assigned_by
+          type: keyword
+          description: The way in which the IP is assigned.
+        - name: apn
+          type: keyword
+          description: Access Point Name.
+        - name: connection_type
+          type: keyword
+          description: Connection Type.
+        - name: iccid
+          type: keyword
+          description: Integrated Circuit Card Identification Number.
+        - name: model
+          type: keyword
+          description: Uplink model.
+        - name: provider
+          type: keyword
+          description: Network Provider.
+        - name: signal_type
+          type: keyword
+          description: Signal Type.
+        - name: rsrp
+          type: float
+          description: Reference Signal Received Power.
+        - name: rsrq
+          type: float
+          description: Reference Signal Received Quality.
+        - name: loss
+          type: group
+          fields:
+            - name: pct
+              type: double
+              metric_type: gauge
+              unit: percent
+              description: Loss percentage.
+        - name: latency
+          type: group
+          fields:
+            - name: ms
+              type: double
+              metric_type: gauge
+              unit: ms
+              description: Latency in milliseconds.

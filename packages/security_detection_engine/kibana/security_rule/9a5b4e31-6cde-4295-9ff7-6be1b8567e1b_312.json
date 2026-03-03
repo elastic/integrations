@@ -1,0 +1,170 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a suspicious Windows explorer child process. Explorer.exe can be abused to launch malicious scripts or executables from a trusted parent process.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Explorer Child Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Explorer Child Process\n\nWindows Explorer, a core component of the Windows OS, manages file and folder navigation. Adversaries exploit its trusted status to launch malicious scripts or executables, often using DCOM to start processes like PowerShell or cmd.exe. The detection rule identifies such anomalies by monitoring child processes of Explorer with specific characteristics, excluding known benign activities, to flag potential threats.\n\n### Possible investigation steps\n\n- Review the process details to confirm the suspicious child process was indeed started by explorer.exe with the specific parent arguments indicating DCOM usage, such as \"-Embedding\".\n- Check the process command line arguments and execution context to identify any potentially malicious scripts or commands being executed by the child process.\n- Investigate the parent process explorer.exe to determine if it was started by a legitimate user action or if there are signs of compromise, such as unusual user activity or recent phishing attempts.\n- Correlate the event with other security logs or alerts from data sources like Microsoft Defender for Endpoint or Sysmon to identify any related suspicious activities or patterns.\n- Examine the network activity associated with the suspicious process to detect any unauthorized data exfiltration or communication with known malicious IP addresses.\n- Assess the system for any additional indicators of compromise, such as unexpected changes in system files or registry keys, which might suggest a broader attack.\n\n### False positive analysis\n\n- Legitimate software installations or updates may trigger the rule when they use scripts or executables like PowerShell or cmd.exe. Users can create exceptions for known software update processes by identifying their specific command-line arguments or parent process details.\n- System administrators often use scripts for maintenance tasks that might be flagged by this rule. To prevent false positives, administrators should document and exclude these routine scripts by specifying their unique process arguments or execution times.\n- Some enterprise applications may use DCOM to launch processes for legitimate purposes. Users should identify these applications and exclude their specific process signatures or parent-child process relationships from the rule.\n- Automated testing environments might execute scripts or commands that resemble suspicious activity. Users can mitigate false positives by excluding processes that are part of known testing frameworks or environments.\n- Certain security tools or monitoring software may use similar techniques to gather system information. Users should verify and exclude these tools by confirming their process names and execution patterns.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of the potential threat and to contain any malicious activity.\n- Terminate the suspicious child process identified in the alert, such as cscript.exe, wscript.exe, powershell.exe, rundll32.exe, cmd.exe, mshta.exe, or regsvr32.exe, to stop any ongoing malicious actions.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious files or processes.\n- Review and analyze the parent process explorer.exe and its command-line arguments to understand how the malicious process was initiated and to identify any potential persistence mechanisms.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if the threat is part of a larger attack campaign.\n- Implement additional monitoring and alerting for similar suspicious activities involving explorer.exe to enhance detection capabilities and prevent recurrence.\n- Review and update endpoint security policies to restrict the execution of potentially malicious scripts or executables from explorer.exe, especially when initiated via DCOM.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (\n   process.name : (\"cscript.exe\", \"wscript.exe\", \"powershell.exe\", \"rundll32.exe\", \"cmd.exe\", \"mshta.exe\", \"regsvr32.exe\") or\n   ?process.pe.original_file_name in (\"cscript.exe\", \"wscript.exe\", \"PowerShell.EXE\", \"RUNDLL32.EXE\", \"Cmd.Exe\", \"MSHTA.EXE\", \"REGSVR32.EXE\")\n  ) and\n  /* Explorer started via DCOM */\n  process.parent.name : \"explorer.exe\" and process.parent.args : \"-Embedding\" and\n  not process.parent.args:\n          (\n            /* Noisy CLSID_SeparateSingleProcessExplorerHost Explorer COM Class IDs   */\n            \"/factory,{5BD95610-9434-43C2-886C-57852CC8A120}\",\n            \"/factory,{ceff45ee-c862-41de-aee2-a022c81eda92}\"\n          )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9a5b4e31-6cde-4295-9ff7-6be1b8567e1b",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.001",
+                                "name": "Spearphishing Attachment",
+                                "reference": "https://attack.mitre.org/techniques/T1566/001/"
+                            },
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            },
+                            {
+                                "id": "T1059.005",
+                                "name": "Visual Basic",
+                                "reference": "https://attack.mitre.org/techniques/T1059/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 312
+    },
+    "id": "9a5b4e31-6cde-4295-9ff7-6be1b8567e1b_312",
+    "type": "security-rule"
+}

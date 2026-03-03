@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies instances where the 'find' command is started on a Linux system with arguments targeting specific VM-related paths, such as \"/etc/vmware/\", \"/usr/lib/vmware/\", or \"/vmfs/*\". These paths are associated with VMware virtualization software, and their presence in the find command arguments may indicate that a threat actor is attempting to search for, analyze, or manipulate VM-related files and configurations on the system.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "endgame-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "ESXI Discovery via Find",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating ESXI Discovery via Find\n\nVMware ESXi is a hypervisor used to deploy and manage virtual machines. Adversaries may exploit the 'find' command on Linux systems to locate VM-related files, potentially to gather information or manipulate configurations. The detection rule identifies suspicious 'find' command executions targeting VMware paths, excluding legitimate processes, to flag potential reconnaissance activities.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the 'find' command was executed with arguments targeting VMware paths such as \"/etc/vmware/*\", \"/usr/lib/vmware/*\", or \"/vmfs/*\".\n- Check the parent process of the 'find' command to ensure it is not \"/usr/lib/vmware/viewagent/bin/uninstall_viewagent.sh\", which is excluded from the rule as a legitimate process.\n- Investigate the user account associated with the 'find' command execution to determine if it is a known and authorized user for VMware management tasks.\n- Examine recent login and access logs for the user account to identify any unusual or unauthorized access patterns.\n- Correlate this event with other security alerts or logs to identify if there are additional signs of reconnaissance or unauthorized activity on the system.\n- Assess the system's current state and configuration to ensure no unauthorized changes have been made to VMware-related files or settings.\n\n### False positive analysis\n\n- Legitimate administrative tasks may trigger the rule if system administrators use the 'find' command to audit or manage VMware-related files. To handle this, create exceptions for known administrative scripts or user accounts that regularly perform these tasks.\n- Automated backup or monitoring scripts that scan VMware directories can also cause false positives. Identify these scripts and exclude their parent processes from the detection rule.\n- Software updates or maintenance activities involving VMware components might execute the 'find' command in a non-threatening manner. Consider scheduling these activities during known maintenance windows and temporarily adjusting the rule to prevent unnecessary alerts.\n- If the 'find' command is part of a legitimate software installation or uninstallation process, such as the VMware View Agent uninstallation, ensure these processes are whitelisted by adding their parent executable paths to the exception list.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious 'find' processes identified in the alert to halt potential reconnaissance activities.\n- Conduct a thorough review of the system's recent command history and logs to identify any unauthorized access or changes made to VM-related files.\n- Restore any altered or deleted VM-related files from a known good backup to ensure system integrity.\n- Update and patch the VMware ESXi and related software to the latest versions to mitigate any known vulnerabilities.\n- Implement stricter access controls and monitoring on VMware-related directories to prevent unauthorized access in the future.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\n  event.action in (\"exec\", \"exec_event\", \"start\", \"executed\", \"process_started\") and\n  process.name == \"find\" and process.args : (\"/etc/vmware/*\", \"/usr/lib/vmware/*\", \"/vmfs/*\") and\n  not process.parent.executable == \"/usr/lib/vmware/viewagent/bin/uninstall_viewagent.sh\"\n",
+        "references": [
+            "https://www.bleepingcomputer.com/news/security/massive-esxiargs-ransomware-attack-targets-vmware-esxi-servers-worldwide/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "33a6752b-da5e-45f8-b13a-5f094c09522f",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Auditd Manager",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1518",
+                        "name": "Software Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1518/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 111
+    },
+    "id": "33a6752b-da5e-45f8-b13a-5f094c09522f_111",
+    "type": "security-rule"
+}

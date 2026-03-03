@@ -1,0 +1,35 @@
+metricsets: ["collector"]
+period: {{period}}
+use_types: true
+rate_counters: false
+
+hosts:
+{{#each hosts}}
+    - {{this}}
+{{/each}}
+
+metrics_path: /metrics
+
+{{#if metrics_filters.exclude}}
+metrics_filters.exclude:
+{{#each metrics_filters.exclude}}
+    - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if metrics_filters.include}}
+metrics_filters.include:
+{{#each metrics_filters.include}}
+    - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+tags:
+{{#each tags as |tag i|}}
+    - {{tag}}
+{{/each}}

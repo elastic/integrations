@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Adversaries may install a root certificate on a compromised system to avoid warnings when connecting to their command and control servers. Root certificates are used in public key cryptography to identify a root certificate authority (CA). When a root certificate is installed, the system or application will trust certificates in the root's chain of trust that have been signed by the root certificate.",
+        "false_positives": [
+            "Certain applications may install root certificates for the purpose of inspecting SSL traffic."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Attempt to Install Root Certificate",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Attempt to Install Root Certificate\n\nRoot certificates are pivotal in establishing trust within public key infrastructures, enabling secure communications by verifying the authenticity of digital certificates. Adversaries exploit this by installing unauthorized root certificates on compromised macOS systems, thereby bypassing security warnings and facilitating covert command and control communications. The detection rule identifies such activities by monitoring specific process executions related to certificate management, excluding known legitimate applications, thus highlighting potential malicious attempts to subvert trust controls.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of the \"security\" process with the \"add-trusted-cert\" argument, as this indicates an attempt to add a root certificate.\n- Check the parent process of the suspicious activity to ensure it is not one of the known legitimate applications, such as Bitdefender, as specified in the exclusion list.\n- Investigate the user account associated with the process execution to determine if it is a legitimate user or potentially compromised.\n- Examine recent system logs and network activity for any signs of unauthorized access or communication with known malicious command and control servers.\n- Assess the system for any other indicators of compromise or unusual behavior that may suggest further malicious activity beyond the root certificate installation attempt.\n\n### False positive analysis\n\n- Security software installations or updates may trigger the rule as they often involve legitimate root certificate installations. Users can handle this by adding exceptions for known security software paths, such as Bitdefender, to prevent unnecessary alerts.\n- System administrators performing routine maintenance or updates might install root certificates as part of their tasks. To mitigate this, create exceptions for processes executed by trusted admin accounts or during scheduled maintenance windows.\n- Some enterprise applications may require the installation of root certificates for internal communications. Identify these applications and exclude their processes from the rule to avoid false positives.\n- Development environments on macOS systems might involve testing with self-signed certificates, which could trigger the rule. Developers can be instructed to use designated test environments or have their processes excluded during development phases.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent further unauthorized communications and potential data exfiltration.\n- Revoke any unauthorized root certificates installed on the system by accessing the Keychain Access application and removing the suspicious certificates from the System Roots keychain.\n- Conduct a thorough review of system logs and process execution history to identify any additional unauthorized changes or suspicious activities that may have occurred alongside the root certificate installation.\n- Restore the system to a known good state using backups or system snapshots taken prior to the compromise, ensuring that any malicious changes are reverted.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if other systems in the network may be affected.\n- Implement enhanced monitoring and alerting for similar activities by refining detection capabilities to include additional indicators of compromise (IOCs) related to unauthorized certificate installations.\n- Review and update security policies and configurations to prevent unauthorized certificate installations, such as enforcing stricter access controls and requiring administrative approval for certificate management actions.",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n  process.name == \"security\" and process.args like \"add-trusted-cert\" and\n  (process.parent.name like~ (\"osascript\", \"bash\", \"sh\", \"zsh\", \"Terminal\", \"Python*\") or (process.parent.code_signature.exists == false or process.parent.code_signature.trusted == false))\n",
+        "references": [
+            "https://ss64.com/osx/security-cert.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "bc1eeacf-2972-434f-b782-3a532b100d67",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1553",
+                        "name": "Subvert Trust Controls",
+                        "reference": "https://attack.mitre.org/techniques/T1553/",
+                        "subtechnique": [
+                            {
+                                "id": "T1553.004",
+                                "name": "Install Root Certificate",
+                                "reference": "https://attack.mitre.org/techniques/T1553/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "bc1eeacf-2972-434f-b782-3a532b100d67_109",
+    "type": "security-rule"
+}

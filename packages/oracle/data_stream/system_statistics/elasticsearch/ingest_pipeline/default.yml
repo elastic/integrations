@@ -1,0 +1,63 @@
+---
+description: Pipeline for processing Oracle system statistics metrics
+processors:
+    - remove:
+        field: sql.driver
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: sql.query
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: sql
+        target_field: oracle
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.metrics
+        target_field: oracle.system_statistics
+        ignore_missing: true
+        ignore_failure: true
+    - foreach:
+        field: oracle.system_statistics
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: " "
+                replacement: "_"
+    - foreach:
+        field: oracle.system_statistics
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: "\\("
+                replacement: ""
+    - foreach:
+        field: oracle.system_statistics
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: "\\)"
+                replacement: ""
+    - foreach:
+        field: oracle.system_statistics
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: "\\*"
+                replacement: ""
+    - rename:
+        field: oracle.system_statistics.process_last_non-idle_time
+        target_field: oracle.system_statistics.process_last_non_idle_time
+        ignore_missing: true
+        ignore_failure: true
+
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

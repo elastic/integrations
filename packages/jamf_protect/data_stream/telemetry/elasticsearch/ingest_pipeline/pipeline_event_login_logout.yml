@@ -1,0 +1,30 @@
+---
+description: Pipeline for parsing specific fields related to logout using /usr/bin/logout events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user logged out from /usr/bin/login
+    - append:
+        field: event.type
+        value: end
+    - append:
+        field: event.category
+        value: authentication  
+    - rename:
+        field: jamf_protect.telemetry.event.login_logout.username
+        target_field: user.name
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.login_logout.uid
+        target_field: user.id
+        type: string
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

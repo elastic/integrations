@@ -1,0 +1,160 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies User Account Control (UAC) bypass attempts by abusing an elevated COM Interface to launch a malicious program. Attackers may attempt to bypass UAC to stealthily execute code with elevated permissions.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "UAC Bypass Attempt via Elevated COM Internet Explorer Add-On Installer",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating UAC Bypass Attempt via Elevated COM Internet Explorer Add-On Installer\n\nUser Account Control (UAC) is a security feature in Windows designed to prevent unauthorized changes by prompting for elevated permissions. Adversaries may exploit elevated COM interfaces, such as the Internet Explorer Add-On Installer, to bypass UAC and execute malicious code with higher privileges. The detection rule identifies suspicious processes originating from temporary directories, launched by the IE installer with specific arguments, indicating potential UAC bypass attempts.\n\n### Possible investigation steps\n\n- Review the process details to confirm the executable path matches the pattern \"C:\\\\*\\\\AppData\\\\*\\\\Temp\\\\IDC*.tmp\\\\*.exe\" and verify if it is expected or known within the environment.\n- Investigate the parent process \"ieinstal.exe\" to determine if its execution is legitimate, checking for any unusual or unexpected usage patterns.\n- Examine the command-line arguments used by the parent process, specifically looking for the \"-Embedding\" argument, to understand the context of its execution.\n- Check the code signature of the suspicious process to determine if it is signed by a trusted entity, and assess the trustworthiness of the signature if present.\n- Correlate this event with other security alerts or logs from data sources like Elastic Endgame, Elastic Defend, Sysmon, Microsoft Defender for Endpoint, or SentinelOne to identify any related malicious activity.\n- Investigate the user account associated with the process to determine if there are any signs of compromise or unauthorized access attempts.\n- Assess the risk and impact of the potential UAC bypass attempt on the system and broader network, and take appropriate containment or remediation actions if necessary.\n\n### False positive analysis\n\n- Legitimate software installations or updates may trigger the rule if they temporarily use the specified directory structure. Users can monitor the frequency and context of these alerts to determine if they align with known software behaviors.\n- Development or testing environments might generate alerts due to the execution of scripts or applications from temporary directories. Users can create exceptions for specific environments or processes that are known to be safe.\n- System administrators or IT personnel performing legitimate administrative tasks might inadvertently trigger the rule. Users can exclude specific user accounts or processes from monitoring if they are verified as non-threatening.\n- Automated software deployment tools that use temporary directories for installation processes may cause false positives. Users can whitelist these tools by verifying their code signatures and adding them to an exception list.\n- Regularly review and update the list of trusted applications and processes to ensure that only verified and necessary exceptions are in place, minimizing the risk of overlooking genuine threats.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement.\n- Terminate any suspicious processes identified by the detection rule, specifically those originating from temporary directories and launched by \"ieinstal.exe\" with the \"-Embedding\" argument.\n- Conduct a thorough review of the affected system to identify any additional unauthorized changes or malware installations, focusing on temporary directories and COM interface usage.\n- Restore the system to a known good state using backups or system restore points, ensuring that any malicious changes are reversed.\n- Update and patch the affected system to the latest security updates to mitigate known vulnerabilities that could be exploited for UAC bypass.\n- Implement application whitelisting to prevent unauthorized executables from running, particularly those in temporary directories.\n- Escalate the incident to the security operations team for further investigation and to assess the potential impact on other systems within the network.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.executable : \"C:\\\\*\\\\AppData\\\\*\\\\Temp\\\\IDC*.tmp\\\\*.exe\" and\n process.parent.name : \"ieinstal.exe\" and process.parent.args : \"-Embedding\"\n\n /* uncomment once in winlogbeat */\n /* and not (process.code_signature.subject_name == \"Microsoft Corporation\" and process.code_signature.trusted == true) */\n",
+        "references": [
+            "https://swapcontext.blogspot.com/2020/11/uac-bypasses-from-comautoapprovallist.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "fc7c0fa4-8f03-4b3e-8336-c5feab0be022",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1559",
+                        "name": "Inter-Process Communication",
+                        "reference": "https://attack.mitre.org/techniques/T1559/",
+                        "subtechnique": [
+                            {
+                                "id": "T1559.001",
+                                "name": "Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1559/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 312
+    },
+    "id": "fc7c0fa4-8f03-4b3e-8336-c5feab0be022_312",
+    "type": "security-rule"
+}

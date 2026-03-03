@@ -1,0 +1,152 @@
+config_version: 2
+interval: 24h
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    grant_type: client_credentials
+    audience: wiz-api
+redact:
+  fields: ~
+state:
+  want_more: false
+  batch_size: {{batch_size}}
+  query: >-
+    query CloudConfigurationFindingsPage($filterBy: ConfigurationFindingFilters $first: Int $after: String $orderBy: ConfigurationFindingOrder){
+       configurationFindings(filterBy: $filterBy first: $first after: $after orderBy: $orderBy) {
+         nodes {
+          id
+          name
+          analyzedAt
+          severity
+          result
+          remediation
+          status
+          resource {
+            id
+            providerId
+            name
+            nativeType
+            type
+            region
+            cloudPlatform
+            subscription {
+              id
+              name
+              externalId
+              cloudProvider
+            }
+            tags {
+              key
+              value
+            }
+          }
+          rule {
+            id
+            shortId
+            name
+            description
+            remediationInstructions
+          }
+          evidence {
+            currentValue
+            expectedValue
+            configurationPath
+            cloudConfigurationLink
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+program: |
+  state.with(
+    post_request(
+      state.url.trim_right("/") + "/graphql",
+      "application/json",
+      {
+        "query": state.query,
+        "variables": {
+          "first": state.batch_size,
+          "after": state.?end_cursor.value.orValue(null),
+          "filterBy": {
+            "includeDeleted": false,
+            "status": ["OPEN", "RESOLVED"]
+          }
+        }
+      }.encode_json()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, body.?data.configurationFindings.nodes.orValue(null) != null ?
+        {
+          "events": body.data.configurationFindings.nodes.map(e, {
+            "message": e.encode_json(),
+          }),
+          "end_cursor": {
+            ?"value": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false) ?
+                body.?data.configurationFindings.pageInfo.endCursor
+              :
+                optional.none()
+          },
+          "want_more": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false),
+        }
+      :
+        {
+          "events": [],
+          "want_more": false,
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/graphql:" + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

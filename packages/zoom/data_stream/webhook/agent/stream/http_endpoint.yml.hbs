@@ -1,0 +1,35 @@
+listen_address: {{listen_address}}
+listen_port: {{listen_port}}
+url: {{url}}
+prefix: zoom
+content_type: "" # force ignoring content-type checks
+{{#if preserve_original_event}}
+preserve_original_event: true
+{{/if}}
+# Fill CRC settings if enabled
+{{#if crc_enabled}}
+crc.provider: zoom
+crc.secret: "{{crc_secret}}"
+{{/if}}
+# Only set the secret options if both header and value are set
+{{#if secret_header}}
+{{#if secret_value}}
+secret.header: "{{secret_header}}"
+secret.value: "{{secret_value}}"
+{{/if}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - add_locale: ~

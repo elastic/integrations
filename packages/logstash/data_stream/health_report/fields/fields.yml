@@ -1,0 +1,90 @@
+- name: logstash
+  type: group
+  fields:
+    - name: node
+      type: group
+      fields:
+        - name: name
+          type: keyword
+        - name: version
+          type: keyword
+        - name: address
+          type: keyword
+        - name: symptom
+          type: keyword
+          multi_fields:
+            - name: text
+              type: match_only_text
+        - name: uuid
+          type: keyword
+        - name: status
+          type: keyword
+    - name: pipeline
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: status
+          type: keyword
+        - name: state
+          type: keyword
+        - name: symptom
+          type: keyword
+          multi_fields:
+            - name: text
+              type: match_only_text
+        - name: diagnosis
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: cause
+              type: keyword
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: action
+              type: keyword
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: help_url
+              type: keyword
+              format: url
+              multi_fields:
+                - name: text
+                  type: match_only_text
+        - name: impacts
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: severity
+              type: short
+            - name: description
+              type: keyword
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: impact_areas
+              type: keyword
+        - name: flow
+          type: group
+          fields:
+            - name: worker_utilization
+              type: group
+              fields:
+                - name: current
+                  type: float
+                - name: last_1_hour
+                  type: float
+                - name: last_5_minutes
+                  type: float
+                - name: last_15_minutes
+                  type: float
+                - name: lifetime
+                  type: float
+                - name: last_1_minute
+                  type: float
+                - name: last_24_hours
+                  type: float

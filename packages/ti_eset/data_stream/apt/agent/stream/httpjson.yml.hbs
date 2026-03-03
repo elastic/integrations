@@ -1,0 +1,73 @@
+config_version: "2"
+
+interval: {{interval}}
+request.method: "GET"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+
+{{#if url}}
+request.url: {{url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+request.transforms:
+  - set:
+      target: header.Content-Type
+      value: application/taxii+json;version=2.1
+  - set:
+      target: header.Accept
+      value: application/taxii+json;version=2.1
+  - set:
+      target: url.params.match[type]
+      value: indicator
+  - set:
+      target: url.params.limit
+      value: {{page_size}}
+  - set:
+      target: url.params.added_after
+      value: '[[ .cursor.timestamp ]]'
+      default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z" ]]'
+
+response.pagination:
+  - set:
+      target: url.params.added_after
+      value: >-
+        [[ if .last_response.body.more ]][[ .last_response.header.Get "X-TAXII-Date-Added-Last" ]][[ end ]]
+      fail_on_template_error: true
+
+response.split:
+  target: body.objects
+  ignore_empty_value: true
+
+cursor:
+  timestamp:
+    value: >-
+      [[ if .last_response.header.Get "X-TAXII-Date-Added-Last" ]][[ .last_response.header.Get "X-TAXII-Date-Added-Last" ]][[ else ]][[.last_response.url.params.Get "added_after"]][[ end ]]
+    ignore_empty_value: true
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

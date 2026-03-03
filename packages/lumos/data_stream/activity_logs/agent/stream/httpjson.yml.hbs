@@ -1,0 +1,32 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+request.url: {{api_url}}/activity_logs
+
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: "Bearer {{api_token}}"
+
+response.pagination:
+  - set:
+      target: url.value
+      value: '{{api_url}}[[.last_response.body.links.next]]'
+      fail_on_template_error: true
+
+response.split:
+  target: body.items
+  ignore_empty_value: true
+
+cursor:
+  since:
+    value: '[[.last_event.created]]'
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

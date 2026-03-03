@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule monitors the creation/alteration of a shell configuration file. Unix systems use shell configuration files to set environment variables, create aliases, and customize the user's environment. Adversaries may modify or add a shell configuration file to execute malicious code and gain persistence in the system. This behavior is consistent with the Kaiji malware family.",
+        "false_positives": [
+            "Legitimate user shell modification activity."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Shell Configuration Creation or Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Shell Configuration Creation or Modification\n\nShell configuration files in Unix-like systems are crucial for setting up user environments by defining variables, aliases, and startup scripts. Adversaries exploit these files to execute malicious code persistently. The detection rule identifies suspicious creation or modification of these files, excluding benign processes, to flag potential threats, aligning with tactics like persistence and event-triggered execution.\n\n### Possible investigation steps\n\n- Review the specific file path involved in the alert to determine if it is a system-wide or user-specific shell configuration file, as listed in the query.\n- Identify the process executable that triggered the alert and verify if it is part of the excluded benign processes. If not, investigate the process's origin and purpose.\n- Check the modification or creation timestamp of the file to correlate with any known user activities or scheduled tasks that might explain the change.\n- Examine the contents of the modified or newly created shell configuration file for any suspicious or unauthorized entries, such as unexpected scripts or commands.\n- Investigate the user account associated with the file modification to determine if the activity aligns with their typical behavior or if the account may have been compromised.\n- Cross-reference the alert with other security logs or alerts to identify any related suspicious activities or patterns that could indicate a broader attack campaign.\n\n### False positive analysis\n\n- System package managers like dpkg, rpm, and yum often modify shell configuration files during software installations or updates. To handle these, exclude processes with executables such as /bin/dpkg or /usr/bin/rpm from triggering alerts.\n- Automated system management tools like Puppet and Chef may alter shell configuration files as part of their routine operations. Exclude these processes by adding exceptions for executables like /opt/puppetlabs/puppet/bin/puppet or /usr/bin/chef-client.\n- User account management activities, such as adding new users, can lead to shell configuration file modifications. Exclude processes like /usr/sbin/adduser or /sbin/useradd to prevent false positives in these scenarios.\n- Temporary files created by text editors (e.g., .swp files) during editing sessions can trigger alerts. Exclude file extensions such as swp, swpx, and swx to avoid these false positives.\n- Virtualization and containerization tools like Docker and Podman may modify shell configuration files as part of their operations. Exclude executables like /usr/bin/dockerd or /usr/bin/podman to manage these cases.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further malicious activity and lateral movement.\n- Review the modified or newly created shell configuration files to identify and remove any unauthorized or malicious code.\n- Restore the affected shell configuration files from a known good backup to ensure the system's environment is clean and secure.\n- Conduct a thorough scan of the system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malware or persistence mechanisms.\n- Monitor the system and network for any signs of re-infection or related suspicious activity, focusing on the indicators of compromise (IOCs) associated with the Kaiji malware family.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are affected.\n- Implement additional monitoring and alerting for changes to shell configuration files to enhance detection of similar threats in the future.",
+        "query": "file where host.os.type == \"linux\" and event.action in (\"rename\", \"creation\") and file.path : (\n  // system-wide configurations\n  \"/etc/profile\", \"/etc/profile.d/*\", \"/etc/bash.bashrc\", \"/etc/bash.bash_logout\", \"/etc/zsh/*\",\n  \"/etc/csh.cshrc\", \"/etc/csh.login\", \"/etc/fish/config.fish\", \"/etc/ksh.kshrc\",\n  // root and user configurations\n  \"/home/*/.profile\", \"/home/*/.bashrc\", \"/home/*/.bash_login\", \"/home/*/.bash_logout\", \"/home/*/.bash_profile\",\n  \"/root/.profile\", \"/root/.bashrc\", \"/root/.bash_login\", \"/root/.bash_logout\", \"/root/.bash_profile\",\n  \"/root/.bash_aliases\", \"/home/*/.bash_aliases\", \"/home/*/.zprofile\", \"/home/*/.zshrc\", \"/root/.zprofile\",\n  \"/root/.zshrc\", \"/home/*/.cshrc\", \"/home/*/.login\", \"/home/*/.logout\", \"/root/.cshrc\", \"/root/.login\",\n  \"/root/.logout\", \"/home/*/.config/fish/config.fish\", \"/root/.config/fish/config.fish\", \"/home/*/.kshrc\",\n  \"/root/.kshrc\"\n) and not (\n  process.executable in (\n    \"/bin/dpkg\", \"/usr/bin/dpkg\", \"/bin/dockerd\", \"/usr/bin/dockerd\", \"/usr/sbin/dockerd\", \"/bin/microdnf\",\n    \"/usr/bin/microdnf\", \"/bin/rpm\", \"/usr/bin/rpm\", \"/bin/snapd\", \"/usr/bin/snapd\", \"/bin/yum\", \"/usr/bin/yum\",\n    \"/bin/dnf\", \"/usr/bin/dnf\", \"/bin/podman\", \"/usr/bin/podman\", \"/bin/dnf-automatic\", \"/usr/bin/dnf-automatic\",\n    \"/bin/pacman\", \"/usr/bin/pacman\", \"/usr/bin/dpkg-divert\", \"/bin/dpkg-divert\", \"/sbin/apk\", \"/usr/sbin/apk\",\n    \"/usr/local/sbin/apk\", \"/usr/bin/apt\", \"/usr/sbin/pacman\", \"/bin/podman\", \"/usr/bin/podman\", \"/usr/bin/puppet\",\n    \"/bin/puppet\", \"/opt/puppetlabs/puppet/bin/puppet\", \"/usr/bin/chef-client\", \"/bin/chef-client\",\n    \"/bin/autossl_check\", \"/usr/bin/autossl_check\", \"/proc/self/exe\", \"/dev/fd/*\",  \"/usr/bin/pamac-daemon\",\n    \"/bin/pamac-daemon\", \"/usr/lib/snapd/snapd\", \"/usr/sbin/adduser\", \"/usr/sbin/useradd\", \"/usr/local/bin/dockerd\",\n    \"/usr/sbin/gdm\", \"/usr/bin/unzip\", \"/usr/bin/gnome-shell\", \"/sbin/mkhomedir_helper\", \"/usr/sbin/sshd\",\n    \"/opt/puppetlabs/puppet/bin/ruby\", \"/usr/bin/xfce4-session\", \"/usr/libexec/oddjob/mkhomedir\", \"/sbin/useradd\",\n    \"/usr/lib/systemd/systemd\", \"/usr/sbin/crond\", \"/usr/bin/pamac-daemon\", \"/usr/sbin/mkhomedir_helper\",\n    \"/opt/pbis/sbin/lwsmd\", \"/usr/sbin/oddjobd\"\n  ) or\n  file.extension in (\"swp\", \"swpx\", \"swx\", \"dpkg-remove\") or\n  file.Ext.original.extension == \"dpkg-new\" or\n  process.executable : (\n    \"/nix/store/*\", \"/var/lib/dpkg/*\", \"/tmp/vmis.*\", \"/snap/*\", \"/dev/fd/*\", \"/usr/lib/virtualbox/*\",\n    \"/usr/libexec/platform-python*\"\n  ) or\n  process.executable == null or\n  process.name in (\"adclient\", \"mkhomedir_helper\", \"teleport\", \"mkhomedir\", \"adduser\", \"desktopDaemon\", \"executor\", \"crio\") or\n  (process.name == \"sed\" and file.name : \"sed*\") or\n  (process.name == \"perl\" and file.name : \"e2scrub_all.tmp*\")\n)\n",
+        "references": [
+            "https://intezer.com/blog/research/kaiji-new-chinese-linux-malware-turning-to-golang/",
+            "https://www.elastic.co/security-labs/primer-on-persistence-mechanisms"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "file.Ext.original.extension",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "28f6f34b-8e16-487a-b5fd-9d22eb903db8",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.004",
+                                "name": "Unix Shell Configuration Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1546/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 9
+    },
+    "id": "28f6f34b-8e16-487a-b5fd-9d22eb903db8_9",
+    "type": "security-rule"
+}

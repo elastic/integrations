@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a new service account is created in Google Cloud Platform (GCP). A service account is a special type of account used by an application or a virtual machine (VM) instance, not a person. Applications use service accounts to make authorized API calls, authorized as either the service account itself, or as G Suite or Cloud Identity users through domain-wide delegation. If service accounts are not tracked and managed properly, they can present a security risk. An adversary may create a new service account to use during their operations in order to avoid using a standard user account and attempt to evade detection.",
+        "false_positives": [
+            "Service accounts can be created by system administrators. Verify that the behavior was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-gcp*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GCP Service Account Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GCP Service Account Creation\n\nIn GCP, service accounts enable applications and VMs to interact with APIs securely. While essential for automation, they can be exploited if improperly managed. Adversaries might create service accounts to gain persistent access without detection. The detection rule monitors audit logs for successful service account creations, flagging potential unauthorized activities for further investigation.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action:google.iam.admin.v*.CreateServiceAccount to identify the time and source of the service account creation.\n- Check the identity of the user or service that initiated the service account creation to determine if it aligns with expected administrative activities.\n- Investigate the permissions and roles assigned to the newly created service account to assess if they are excessive or unusual for its intended purpose.\n- Correlate the service account creation event with other recent activities in the environment to identify any suspicious patterns or anomalies.\n- Verify if the service account is being used by any unauthorized applications or VMs by reviewing recent API calls and access logs associated with the account.\n\n### False positive analysis\n\n- Routine service account creation by automated deployment tools or scripts can trigger false positives. Identify and document these tools, then create exceptions in the monitoring system to exclude these known activities.\n- Service accounts created by trusted internal teams for legitimate projects may also be flagged. Establish a process for these teams to notify security personnel of planned service account creations, allowing for pre-approval and exclusion from alerts.\n- Scheduled maintenance or updates that involve creating temporary service accounts can result in false positives. Coordinate with IT operations to understand their schedules and adjust monitoring rules to accommodate these activities.\n- Third-party integrations that require service accounts might be mistakenly flagged. Maintain an inventory of authorized third-party services and their associated service accounts to quickly verify and exclude these from alerts.\n\n### Response and remediation\n\n- Immediately disable the newly created service account to prevent any unauthorized access or actions.\n- Review the IAM policy and permissions associated with the service account to ensure no excessive privileges were granted.\n- Conduct a thorough audit of recent activities performed by the service account to identify any suspicious or unauthorized actions.\n- Notify the security team and relevant stakeholders about the potential security incident for further investigation and coordination.\n- Implement additional monitoring and alerting for service account creations to detect similar activities in the future.\n- If malicious activity is confirmed, follow incident response procedures to contain and remediate any impact, including revoking access and conducting a security review of affected resources.\n- Document the incident and response actions taken to improve future detection and response capabilities.",
+        "query": "event.dataset:gcp.audit and event.action:google.iam.admin.v*.CreateServiceAccount and event.outcome:success\n",
+        "references": [
+            "https://cloud.google.com/iam/docs/service-accounts"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "7ceb2216-47dd-4e64-9433-cddc99727623",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 107
+    },
+    "id": "7ceb2216-47dd-4e64-9433-cddc99727623_107",
+    "type": "security-rule"
+}

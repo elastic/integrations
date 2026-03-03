@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the load of a remote library by the WPS Office promecefpluginhost.exe executable. This may indicate the successful exploitation of CVE-2024-7262 or CVE-2024-7263 via DLL hijack abusing the ksoqing custom protocol handler.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.library-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "WPS Office Exploitation via DLL Hijack",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating WPS Office Exploitation via DLL Hijack\n\nDLL hijacking exploits the way applications load dynamic link libraries (DLLs), allowing adversaries to execute malicious code. In WPS Office, attackers may exploit vulnerabilities by loading a rogue DLL via the promecefpluginhost.exe process, leveraging the ksoqing protocol. The detection rule identifies suspicious DLL loads from temporary or network paths, signaling potential exploitation attempts.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the process name is promecefpluginhost.exe and check if the event category is either \"library\" or \"process\" with the action \"Image loaded*\".\n- Examine the DLL or file path involved in the alert to determine if it matches suspicious paths such as those in the user's Temp directory or network paths like \\\\Device\\\\Mup\\\\** or \\\\*.\n- Investigate the source of the DLL by checking the file's origin, creation date, and any associated network activity to identify potential malicious downloads or transfers.\n- Analyze the process tree to understand the parent and child processes of promecefpluginhost.exe, looking for any unusual or unexpected behavior that might indicate exploitation.\n- Check for any other alerts or logs related to the same host or user account to identify patterns or repeated attempts of exploitation.\n- Correlate the findings with known vulnerabilities CVE-2024-7262 and CVE-2024-7263 to assess if the observed activity aligns with known exploitation techniques.\n\n### False positive analysis\n\n- Legitimate software updates or installations may temporarily load DLLs from network paths or temporary directories. Users can create exceptions for known update processes or trusted software installations to prevent false alerts.\n- Some enterprise environments use network-based storage solutions that may trigger alerts when legitimate DLLs are loaded from these paths. Administrators can whitelist specific network paths or devices that are known to host trusted libraries.\n- Custom scripts or automation tools that interact with WPS Office might inadvertently load DLLs from temporary directories. Identifying and excluding these scripts or tools from monitoring can reduce false positives.\n- Security software or system maintenance tools may perform scans or operations that mimic the behavior of DLL hijacking. Users should verify and exclude these tools if they are known to cause benign alerts.\n- In environments where WPS Office is heavily used, consider monitoring the frequency and context of alerts to distinguish between normal usage patterns and potential threats, adjusting the rule parameters accordingly.\n\n### Response and remediation\n\n- Isolate the affected system from the network immediately to prevent further exploitation or lateral movement by the attacker.\n- Terminate the promecefpluginhost.exe process to stop any ongoing malicious activity and prevent further DLL hijacking attempts.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious DLLs or other malware.\n- Review and clean up the temporary and network paths identified in the detection query, specifically focusing on the AppData\\Local\\Temp\\wps\\INetCache directory and any suspicious network shares.\n- Apply patches or updates for WPS Office to address the vulnerabilities CVE-2024-7262 and CVE-2024-7263, ensuring that the software is up to date and less susceptible to exploitation.\n- Monitor for any further suspicious activity related to the ksoqing protocol or similar DLL hijacking attempts, using enhanced logging and alerting mechanisms.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.",
+        "query": "any where host.os.type == \"windows\" and process.name : \"promecefpluginhost.exe\" and\n(\n (event.category == \"library\" and\n  ?dll.path :\n     (\"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\wps\\\\INetCache\\\\*\",\n      \"\\\\Device\\\\Mup\\\\**\", \"\\\\\\\\*\")) or\n\n  ((event.category == \"process\" and event.action : \"Image loaded*\") and\n  ?file.path :\n     (\"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\wps\\\\INetCache\\\\*\",\n      \"\\\\Device\\\\Mup\\\\**\", \"\\\\\\\\*\"))\n)\n",
+        "references": [
+            "https://www.welivesecurity.com/en/eset-research/analysis-of-two-arbitrary-code-execution-vulnerabilities-affecting-wps-office/",
+            "https://mp.weixin.qq.com/s/F8hNyESBdKhwXkQPgtGpew"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dll.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ac6bc744-e82b-41ad-b58d-90654fa4ebfb",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1189",
+                        "name": "Drive-by Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1189/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 104
+    },
+    "id": "ac6bc744-e82b-41ad-b58d-90654fa4ebfb_104",
+    "type": "security-rule"
+}

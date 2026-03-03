@@ -1,0 +1,36 @@
+---
+description: Pipeline for parsing Kibana logs
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-json" }}'
+      if: |-
+        def message = ctx.message;
+        return message != null
+          && message.startsWith('{')
+          && message.endsWith('}')
+          && message.contains('"@timestamp"')
+  - set:
+      copy_from: "@timestamp"
+      field: event.created
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.kind
+      value: event
+  - remove:
+      field: http.request.mime_type
+      if: ctx.http?.request?.mime_type == null
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+  - set:
+      field: event.outcome
+      value: failure
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

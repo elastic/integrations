@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation of a group in AWS Identity and Access Management (IAM). Groups specify permissions for multiple users. Any user in a group automatically has the permissions that are assigned to the group.",
+        "false_positives": [
+            "A group may be created by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Group creations by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-60m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "interval": "10m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS IAM Group Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS IAM Group Creation\n\nAWS IAM allows organizations to manage user access and permissions securely. Groups in IAM simplify permission management by allowing multiple users to inherit the same permissions. However, adversaries may exploit this by creating unauthorized groups to gain persistent access. The detection rule monitors successful group creation events, flagging potential misuse by correlating specific AWS CloudTrail logs, thus aiding in identifying unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the AWS CloudTrail logs for the specific event.provider: iam.amazonaws.com and event.action: CreateGroup to identify the user or service that initiated the group creation.\n- Check the event.dataset: aws.cloudtrail logs for any associated event.outcome: success entries to confirm the successful creation of the group.\n- Investigate the permissions assigned to the newly created group to assess if they include any sensitive or high-privilege permissions that could pose a security risk.\n- Identify and review the IAM user or role that created the group to determine if they have a legitimate reason for this action and if their activity aligns with their typical behavior.\n- Cross-reference the group creation event with other recent IAM activities, such as user additions to the group or changes to group policies, to detect any suspicious patterns or anomalies.\n- Consult with relevant stakeholders or the user responsible for the group creation to verify the legitimacy of the action and gather additional context if necessary.\n\n### False positive analysis\n\n- Routine administrative actions by authorized personnel can trigger alerts. Regularly review and document legitimate group creation activities to differentiate them from unauthorized actions.\n- Automated scripts or tools used for infrastructure management may create groups as part of their normal operation. Identify and whitelist these scripts to prevent unnecessary alerts.\n- Temporary groups created for short-term projects or testing purposes might be flagged. Implement a naming convention for such groups and exclude them from alerts based on this pattern.\n- Scheduled tasks or maintenance activities that involve group creation should be logged and approved in advance. Use these logs to create exceptions in the detection rule.\n- Third-party integrations or services that require group creation for functionality can cause false positives. Verify these integrations and adjust the rule to exclude their known actions.\n\n### Response and remediation\n\n- Immediately review the AWS CloudTrail logs to confirm the unauthorized creation of the IAM group and identify the user or service responsible for the action.\n- Revoke any permissions associated with the newly created IAM group to prevent further unauthorized access or actions.\n- Temporarily disable or delete the unauthorized IAM group to contain the threat and prevent any potential misuse.\n- Conduct a thorough audit of recent IAM changes to identify any other unauthorized activities or anomalies that may indicate further compromise.\n- Escalate the incident to the security operations team for a detailed investigation and to assess the potential impact on the organization's security posture.\n- Implement additional monitoring and alerting for IAM group creation events to enhance detection capabilities and prevent similar incidents in the future.\n- Review and update IAM policies and permissions to ensure they follow the principle of least privilege, reducing the risk of unauthorized access.",
+        "query": "event.dataset:aws.cloudtrail and event.provider:iam.amazonaws.com and event.action:CreateGroup and event.outcome:success\n",
+        "references": [
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/iam/create-group.html",
+            "https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateGroup.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "169f3a93-efc7-4df2-94d6-0d9438c310d1",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS IAM",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/",
+                        "subtechnique": [
+                            {
+                                "id": "T1136.003",
+                                "name": "Cloud Account",
+                                "reference": "https://attack.mitre.org/techniques/T1136/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 209
+    },
+    "id": "169f3a93-efc7-4df2-94d6-0d9438c310d1_209",
+    "type": "security-rule"
+}

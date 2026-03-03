@@ -1,0 +1,96 @@
+- name: eset_protect
+  type: group
+  fields:
+    - name: detection
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: Category of detection.
+        - name: context
+          type: group
+          fields:
+            - name: circumstances
+              type: keyword
+              description: Human-friendly description of [detection]'s circumstances.
+            - name: device_uuid
+              type: keyword
+              description: Reference to [device].
+            - name: process
+              type: group
+              fields:
+                - name: path
+                  type: keyword
+                  description: Disk path to the executable.
+            - name: user_name
+              type: keyword
+              description: User name in whose context detection occurred.
+        - name: display_name
+          type: keyword
+          description: Human-friendly name of the detection. This value can be used to look up details at http://www.virusradar.com/en/threat_encyclopedia.
+        - name: network_communication
+          type: group
+          fields:
+            - name: direction
+              type: keyword
+              description: Direction of network communication.
+            - name: local
+              type: group
+              fields:
+                - name: ip_address
+                  type: ip
+                  description: IPv4 or IPv6 address of the device (i.e. the device where detection occurred).
+                - name: port
+                  type: long
+                  description: TCP or UDP port on the device (i.e. the device where detection occurred).
+            - name: protocol_name
+              type: keyword
+              description: Human readable name of the protocol used to communicate between local and remote hosts.
+            - name: remote
+              type: group
+              fields:
+                - name: ip_address
+                  type: ip
+                  description: IPv4 or IPv6 address of the remote host (i.e. not the device where detection occurred).
+                - name: port
+                  type: long
+                  description: TCP or UDP port on the remote host (i.e. not the device where detection occurred).
+        - name: object_hash_sha1
+          type: keyword
+          description: SHA1 hash of content of scanned object.
+        - name: object_name
+          type: keyword
+          description: Name/path of scanned object.
+        - name: object_type_name
+          type: keyword
+          description: Human-friendly type name of scanned object.
+        - name: object_url
+          type: keyword
+          description: URL (uniform resource locator) of scanned object.
+        - name: occur_time
+          type: date
+          description: Timestamp of detection occurrence.
+        - name: responses
+          type: group
+          fields:
+            - name: description
+              type: keyword
+              description: Human-readable description of the response.
+            - name: device_restart_required
+              type: boolean
+              description: Response needs restart of the device to be completed.
+            - name: display_name
+              type: keyword
+              description: Human-friendly name of the response.
+            - name: protection_name
+              type: keyword
+              description: Human-readable name of the protection that performed the response.
+        - name: severity_level
+          type: keyword
+          description: Severity levels abstracted to cover all the possible GUIs. Vocabulary is leaving interpretation of severity level completely to API client.
+        - name: type_name
+          type: keyword
+          description: Human-friendly type of detection.
+        - name: uuid
+          type: keyword
+          description: Universally Unique Identifier of detection.

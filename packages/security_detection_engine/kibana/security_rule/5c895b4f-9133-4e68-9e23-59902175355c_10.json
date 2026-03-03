@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This detection rule identifies a sample of suspicious Linux system file reads used for system fingerprinting, leveraged by the Metasploit Meterpreter shell to gather information about the target that it is executing its shell on. Detecting this pattern is indicative of a successful meterpreter shell connection.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Meterpreter Reverse Shell",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Meterpreter Reverse Shell\n\nMeterpreter is a sophisticated payload within the Metasploit framework, enabling attackers to execute commands and scripts on compromised systems. Adversaries exploit it to perform system reconnaissance and data exfiltration. The detection rule identifies suspicious file access patterns typical of Meterpreter's system fingerprinting activities, such as reading key system files, indicating a potential reverse shell connection.\n\n### Possible investigation steps\n\n- Review the process associated with the alert by examining the process ID (process.pid) and user ID (user.id) to determine if the process is legitimate or potentially malicious.\n- Check the host ID (host.id) to identify the specific system where the suspicious activity was detected and assess if it is a high-value target or has been previously compromised.\n- Investigate the command history and running processes on the affected host to identify any unusual or unauthorized activities that may indicate a Meterpreter session.\n- Analyze network connections from the host to detect any suspicious outbound connections that could suggest a reverse shell communication.\n- Examine the file access patterns, particularly the access to files like /etc/machine-id, /etc/passwd, /proc/net/route, /proc/net/ipv6_route, and /proc/net/if_inet6, to understand the context and purpose of these reads and whether they align with normal system operations.\n- Correlate the alert with other security events or logs from the same timeframe to identify any additional indicators of compromise or related malicious activities.\n\n### False positive analysis\n\n- System administration scripts or tools that perform regular checks on system files like /etc/machine-id or /etc/passwd may trigger this rule. To manage this, identify and whitelist these legitimate processes by their process ID or user ID.\n- Backup or monitoring software that accesses network configuration files such as /proc/net/route or /proc/net/ipv6_route can cause false positives. Exclude these applications by adding exceptions for their specific file access patterns.\n- Security tools that perform network diagnostics or inventory checks might read files like /proc/net/if_inet6. Review these tools and exclude their known benign activities from triggering the rule.\n- Custom scripts used for system health checks or inventory management that access the flagged files should be reviewed. If deemed safe, add them to an exception list based on their host ID or user ID.\n\n### Response and remediation\n\n- Isolate the affected system from the network immediately to prevent further data exfiltration or lateral movement by the attacker.\n- Terminate any suspicious processes identified by the detection rule, particularly those associated with the process IDs flagged in the alert.\n- Conduct a thorough review of the affected system's logs and file access history to identify any additional unauthorized access or data exfiltration attempts.\n- Change all credentials and keys that may have been exposed or compromised on the affected system, especially those related to user accounts identified in the alert.\n- Restore the affected system from a known good backup to ensure any malicious changes are removed, and verify the integrity of the restored system.\n- Implement network segmentation to limit the potential impact of future attacks and enhance monitoring of critical systems for similar suspicious activities.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "sample by host.id, process.pid, user.id\n  [file where host.os.type == \"linux\" and auditd.data.syscall == \"open\" and auditd.data.a2 == \"1b6\" and file.path == \"/etc/machine-id\"]\n  [file where host.os.type == \"linux\" and auditd.data.syscall == \"open\" and auditd.data.a2 == \"1b6\" and file.path == \"/etc/passwd\"]\n  [file where host.os.type == \"linux\" and auditd.data.syscall == \"open\" and auditd.data.a2 == \"1b6\" and file.path == \"/proc/net/route\"]\n  [file where host.os.type == \"linux\" and auditd.data.syscall == \"open\" and auditd.data.a2 == \"1b6\" and file.path == \"/proc/net/ipv6_route\"]\n  [file where host.os.type == \"linux\" and auditd.data.syscall == \"open\" and auditd.data.a2 == \"1b6\" and file.path == \"/proc/net/if_inet6\"]\n",
+        "references": [
+            "https://www.elastic.co/security-labs/primer-on-persistence-mechanisms",
+            "https://www.elastic.co/security-labs/linux-detection-engineering-with-auditd"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "auditd.data.a2",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "auditd.data.syscall",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5c895b4f-9133-4e68-9e23-59902175355c",
+        "setup": "## Setup\n\nThis rule requires data coming in from one of the following integrations:\n- Auditbeat\n- Auditd Manager\n\n### Auditbeat Setup\nAuditbeat is a lightweight shipper that you can install on your servers to audit the activities of users and processes on your systems. For example, you can use Auditbeat to collect and centralize audit events from the Linux Audit Framework. You can also use Auditbeat to detect changes to critical files, like binaries and configuration files, and identify potential security policy violations.\n\n#### The following steps should be executed in order to add the Auditbeat on a Linux System:\n- Elastic provides repositories available for APT and YUM-based distributions. Note that we provide binary packages, but no source packages.\n- To install the APT and YUM repositories follow the setup instructions in this [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setup-repositories.html).\n- To run Auditbeat on Docker follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-docker.html).\n- To run Auditbeat on Kubernetes follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-kubernetes.html).\n- For complete \u201cSetup and Run Auditbeat\u201d information refer to the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setting-up-and-running.html).\n\n### Auditd Manager Integration Setup\nThe Auditd Manager Integration receives audit events from the Linux Audit Framework which is a part of the Linux kernel.\nAuditd Manager provides a user-friendly interface and automation capabilities for configuring and monitoring system auditing through the auditd daemon. With `auditd_manager`, administrators can easily define audit rules, track system events, and generate comprehensive audit reports, improving overall security and compliance in the system.\n\n#### The following steps should be executed in order to add the Elastic Agent System integration \"auditd_manager\" on a Linux System:\n- Go to the Kibana home page and click \u201cAdd integrations\u201d.\n- In the query bar, search for \u201cAuditd Manager\u201d and select the integration to see more details about it.\n- Click \u201cAdd Auditd Manager\u201d.\n- Configure the integration name and optionally add a description.\n- Review optional and advanced settings accordingly.\n- Add the newly installed \u201cauditd manager\u201d to an existing or a new agent policy, and deploy the agent on a Linux system from which auditd log files are desirable.\n- Click \u201cSave and Continue\u201d.\n- For more details on the integration refer to the [helper guide](https://docs.elastic.co/integrations/auditd_manager).\n\n#### Rule Specific Setup Note\nAuditd Manager subscribes to the kernel and receives events as they occur without any additional configuration.\nHowever, if more advanced configuration is required to detect specific behavior, audit rules can be added to the integration in either the \"audit rules\" configuration box or the \"auditd rule files\" box by specifying a file to read the audit rules from.\n- For this detection rule the following additional audit rules are required to be added to the integration:\n  -w /proc/net/ -p r -k audit_proc\n  -w /etc/machine-id -p wa -k machineid\n  -w /etc/passwd -p wa -k passwd\n",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Auditd Manager",
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 10
+    },
+    "id": "5c895b4f-9133-4e68-9e23-59902175355c_10",
+    "type": "security-rule"
+}

@@ -1,0 +1,62 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected a rare process writing data to an external device. Malicious actors often use benign-looking processes to mask their data exfiltration activities. The discovery of such a process that has no legitimate reason to write data to external devices can indicate exfiltration.",
+        "from": "now-2h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "ded_rare_process_writing_to_external_device",
+        "name": "Unusual Process Writing Data to an External Device",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Process Writing Data to an External Device\n\nIn modern environments, processes may write data to external devices for legitimate reasons, such as backups or data transfers. However, adversaries can exploit this by using seemingly harmless processes to exfiltrate sensitive data. The detection rule leverages machine learning to identify rare processes engaging in such activities, flagging potential exfiltration attempts by analyzing deviations from typical behavior patterns.\n\n### Possible investigation steps\n\n- Review the process name and path to determine if it is commonly associated with legitimate activities or known software.\n- Check the user account associated with the process to verify if it has the necessary permissions and if the activity aligns with the user's typical behavior.\n- Analyze the external device's details, such as its type and connection history, to assess if it is a recognized and authorized device within the organization.\n- Investigate the volume and type of data being written to the external device to identify any sensitive or unusual data transfers.\n- Correlate the process activity with other security events or logs to identify any concurrent suspicious activities or anomalies.\n- Consult with the user or department associated with the process to confirm if the data transfer was authorized and necessary.\n\n### False positive analysis\n\n- Backup processes may trigger alerts when writing data to external devices. Users should identify and whitelist legitimate backup applications to prevent false positives.\n- Data transfer applications used for legitimate business purposes can be flagged. Regularly review and approve these applications to ensure they are not mistakenly identified as threats.\n- Software updates or installations that involve writing data to external devices might be detected. Establish a list of known update processes and exclude them from triggering alerts.\n- IT maintenance activities, such as system diagnostics or hardware testing, can cause false positives. Document and exclude these routine processes to avoid unnecessary alerts.\n- User-initiated file transfers for legitimate reasons, such as moving large datasets for analysis, should be monitored and approved to prevent misclassification.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further data exfiltration and contain the threat.\n- Identify and terminate the suspicious process writing data to the external device to stop any ongoing exfiltration activities.\n- Conduct a forensic analysis of the affected system to determine the scope of the data exfiltration, including what data was accessed or transferred.\n- Review and revoke any compromised credentials or access permissions associated with the affected process to prevent unauthorized access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement additional monitoring on the affected system and similar environments to detect any recurrence of the threat or related suspicious activities.\n- Update security policies and controls to prevent similar exfiltration attempts, such as restricting process permissions to write to external devices and enhancing endpoint protection measures.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/ded",
+            "https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "ded",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "4b95ecea-7225-4690-9938-2a2c0bad9c99",
+        "setup": "## Setup\n\nThe rule requires the Data Exfiltration Detection integration assets to be installed, as well as network and file events collected by integrations such as Elastic Defend and Network Packet Capture (for network events only).\n\n### Data Exfiltration Detection Setup\nThe Data Exfiltration Detection integration detects data exfiltration activity by identifying abnormalities in network and file events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Data Exfiltration Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- File events collected by the Elastic Defend integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n#### The following steps should be executed to install assets associated with the Data Exfiltration Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Data Exfiltration Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Data Exfiltration Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1052",
+                        "name": "Exfiltration Over Physical Medium",
+                        "reference": "https://attack.mitre.org/techniques/T1052/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 6
+    },
+    "id": "4b95ecea-7225-4690-9938-2a2c0bad9c99_6",
+    "type": "security-rule"
+}

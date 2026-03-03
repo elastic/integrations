@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Adversaries may collect the keychain storage data from a system to acquire credentials. Keychains are the built-in way for macOS to keep track of users' passwords and credentials for many services and features such as WiFi passwords, websites, secure notes and certificates.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Keychain CommandLine Interaction via Unsigned or Untrusted Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Keychain CommandLine Interaction via Unsigned or Untrusted Process\n\nmacOS keychains securely store user credentials, such as passwords and certificates, essential for system and application authentication. Adversaries may target these directories to extract sensitive information, potentially compromising user accounts and system integrity. The detection rule identifies suspicious access attempts by monitoring process activities related to keychain directories, excluding known legitimate processes and actions, thus highlighting potential unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the process details that triggered the alert, focusing on the process.args field to identify the specific keychain directory accessed and the nature of the access attempt.\n- Examine the process.parent.executable and process.executable fields to determine the origin of the process and assess whether it is a known or potentially malicious application.\n- Investigate the process.Ext.effective_parent.executable field to trace the parent process chain and identify any unusual or unauthorized parent processes that may have initiated the access.\n- Check for any recent changes or installations on the system that could explain the access attempt, such as new software or updates that might interact with keychain directories.\n- Correlate the alert with other security events or logs from the same host to identify any patterns or additional suspicious activities that could indicate a broader compromise.\n\n### False positive analysis\n\n- Processes related to legitimate security applications like Microsoft Defender, JumpCloud Agent, and Rapid7 IR Agent may trigger false positives. Users can mitigate this by ensuring these applications are included in the exclusion list for process executables and effective parent executables.\n- Routine administrative tasks involving keychain management, such as setting keychain settings or importing certificates, might be flagged. To handle this, users should add these specific actions to the exclusion list for process arguments.\n- Applications like OpenVPN Connect and JAMF management tools that interact with keychain directories for legitimate purposes can cause false alerts. Users should verify these applications are part of the exclusion list for parent executables to prevent unnecessary alerts.\n- Regular system maintenance or updates that involve keychain access might be misinterpreted as suspicious. Users should monitor these activities and adjust the exclusion criteria as needed to accommodate known maintenance processes.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes identified by the detection rule that are attempting to access keychain directories without legitimate reasons.\n- Conduct a thorough review of the system's keychain access logs to identify any unauthorized access or modifications to keychain files.\n- Change all passwords and credentials stored in the keychain on the affected system to prevent potential misuse of compromised credentials.\n- Restore the system from a known good backup if unauthorized access has led to system integrity issues or data corruption.\n- Implement additional monitoring on the affected system to detect any further unauthorized access attempts, focusing on the keychain directories and related processes.\n- Escalate the incident to the security operations team for further investigation and to determine if the threat is part of a larger attack campaign.",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and event.action == \"exec\" and\n  process.args like (\"/Users/*/Library/Keychains/*\", \"/Library/Keychains/*\", \"login.keychain-db\", \"login.keychain\") and \n  ((process.code_signature.trusted == false or process.code_signature.exists == false) or \n   (process.name in (\"bash\", \"sh\", \"zsh\", \"osascript\", \"cat\", \"echo\", \"cp\") and \n   (process.parent.code_signature.trusted == false or process.parent.code_signature.exists == false)))\n",
+        "references": [
+            "https://objective-see.com/blog/blog_0x25.html",
+            "https://securelist.com/calisto-trojan-for-macos/86543/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.trusted",
+                "type": "boolean"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "96e90768-c3b7-4df6-b5d9-6237f8bc36a8",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/",
+                        "subtechnique": [
+                            {
+                                "id": "T1555.001",
+                                "name": "Keychain",
+                                "reference": "https://attack.mitre.org/techniques/T1555/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 212
+    },
+    "id": "96e90768-c3b7-4df6-b5d9-6237f8bc36a8_212",
+    "type": "security-rule"
+}

@@ -1,0 +1,79 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell scripts with an unusually high proportion of whitespace and special characters, often indicative of obfuscation. This behavior is commonly associated with techniques such as SecureString encoding, formatting obfuscation, or character-level manipulation designed to bypass static analysis and AMSI inspection.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell Obfuscation via Special Character Overuse",
+        "query": "FROM logs-windows.powershell_operational* metadata _id, _version, _index\n| WHERE event.code == \"4104\"\n\n// Replace repeated spaces used for formatting after a new line with a single space to reduce FPs\n| EVAL dedup_space_script_block = REPLACE(powershell.file.script_block_text, \"\"\"\\n\\s+\"\"\", \"\\n \")\n\n// Look for scripts with more than 1000 chars that contain a related keyword\n| EVAL script_len = LENGTH(dedup_space_script_block)\n| WHERE script_len > 1000\n\n// Replace string format expressions with \ud83d\udd25 to enable counting the occurrence of the patterns we are looking for\n// The emoji is used because it's unlikely to appear in scripts and has a consistent character length of 1\n| EVAL replaced_with_fire = REPLACE(dedup_space_script_block, \"\"\"[\\s\\$\\{\\}\\+\\@\\=\\(\\)\\^\\\\\\\"~\\[\\]\\?\\.]\"\"\", \"\ud83d\udd25\")\n\n// Count the occurrence of numbers and their proportion to the total chars in the script\n| EVAL special_count = script_len - LENGTH(REPLACE(replaced_with_fire, \"\ud83d\udd25\", \"\"))\n| EVAL proportion = special_count::double / script_len::double\n\n// Keep the fields relevant to the query, although this is not needed as the alert is populated using _id\n| KEEP special_count, script_len, proportion, dedup_space_script_block, replaced_with_fire, powershell.file.script_block_text, powershell.file.script_block_id, file.path, powershell.sequence, powershell.total, _id, _index, host.name, agent.id, user.id\n\n// Filter for scripts with a 75%+ proportion of numbers\n| WHERE proportion > 0.75\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "6ddb6c33-00ce-4acd-832a-24b251512023",
+        "setup": "## Setup\n\nThe 'PowerShell Script Block Logging' logging policy must be enabled.\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration >\nAdministrative Templates >\nWindows PowerShell >\nTurn on PowerShell Script Block Logging (Enable)\n```\n\nSteps to implement the logging policy via registry:\n\n```\nreg add \"hklm\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\" /v EnableScriptBlockLogging /t REG_DWORD /d 1\n```\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "6ddb6c33-00ce-4acd-832a-24b251512023_2",
+    "type": "security-rule"
+}

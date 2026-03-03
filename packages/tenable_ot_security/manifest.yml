@@ -1,0 +1,88 @@
+format_version: 3.3.0
+name: tenable_ot_security
+title: Tenable OT Security
+version: 0.4.0
+source:
+  license: "Elastic-2.0"
+description: Tenable OT Security
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^8.16.1 || ^9.0.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/screenshot1.png
+    title: Overview
+    size: 600x600
+    type: image/png
+  - src: /img/screenshot2.png
+    title: Events
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/logo.svg
+    title: Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: tenable_ot_security_cloud
+    title: Tenable OT Security Cloud Events
+    description: Collect events from Tenable OT Security Cloud event reporting.
+    inputs:
+      - type: cel
+        title: Collect Events from the Tenable OT Security Cloud Events API
+        description: Extract all events from Tenable OT Security Cloud via the API.
+        vars:
+          - name: api_host
+            type: text
+            title: URL
+            description: Enter the URL of the Tenable OT Security Cloud API server, e.g., https://cloud.tenable.com.
+            show_user: true
+            required: true
+          - name: key
+            type: text
+            title: API Key
+            description: Enter the API key created on Tenable OT Security Cloud.
+            show_user: true
+            required: true
+            secret: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable Request Tracing
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+              Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+              tracer will delete any stored traces.
+              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+              for details.
+            default: false
+            multi: false
+            required: false
+            show_user: false
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Specifies the duration to wait before declaring a timeout. Valid units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: false
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: Enter the URL for proxy connections in the format\":\" http[s]://<user>:<password>@<server-name/ip>:<port>.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: Configuration for certificate authorities, supported protocols, verification modes, etc.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

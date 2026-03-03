@@ -1,0 +1,241 @@
+- name: timestamp
+  type: alias
+  path: '@timestamp'
+- name: cluster_uuid
+  type: alias
+  path: elasticsearch.cluster.id
+- name: source_node
+  type: group
+  fields:
+    - name: uuid
+      type: alias
+      path: elasticsearch.node.id
+    - name: name
+      type: alias
+      path: elasticsearch.node.name
+- name: index_recovery
+  type: group
+  fields:
+    - name: shards.start_time_in_millis
+      type: alias
+      path: elasticsearch.index.recovery.start_time.ms
+    - name: shards.stop_time_in_millis
+      type: alias
+      path: elasticsearch.index.recovery.stop_time.ms
+- name: indices_stats
+  type: group
+  fields:
+    - name: _all
+      type: group
+      fields:
+        - name: primaries
+          type: group
+          fields:
+            - name: indexing
+              type: group
+              fields:
+                - name: index_total
+                  type: alias
+                  path: elasticsearch.index.summary.primaries.indexing.index.count
+                - name: index_time_in_millis
+                  type: alias
+                  path: elasticsearch.index.summary.primaries.indexing.index.time.ms
+        - name: total
+          type: group
+          fields:
+            - name: search
+              type: group
+              fields:
+                - name: query_total
+                  type: alias
+                  path: elasticsearch.index.summary.total.search.query.count
+                - name: query_time_in_millis
+                  type: alias
+                  path: elasticsearch.index.summary.total.search.query.time.ms
+            - name: indexing
+              type: group
+              fields:
+                - name: index_total
+                  type: alias
+                  path: elasticsearch.index.summary.total.indexing.index.count
+- name: index_stats
+  type: group
+  fields:
+    - name: primaries
+      type: group
+      fields:
+        - name: docs
+          type: group
+          fields:
+            - name: count
+              path: elasticsearch.index.primaries.docs.count
+              type: alias
+        - name: indexing
+          type: group
+          fields:
+            - name: throttle_time_in_millis
+              path: elasticsearch.index.primaries.indexing.throttle_time_in_millis
+              type: alias
+            - name: index_time_in_millis
+              path: elasticsearch.index.primaries.indexing.index_time_in_millis
+              type: alias
+            - name: index_total
+              path: elasticsearch.index.primaries.indexing.index_total
+              type: alias
+        - name: refresh
+          type: group
+          fields:
+            - name: total_time_in_millis
+              path: elasticsearch.index.primaries.refresh.total_time_in_millis
+              type: alias
+        - name: store
+          type: group
+          fields:
+            - name: size_in_bytes
+              path: elasticsearch.index.primaries.store.size_in_bytes
+              type: alias
+        - name: merges
+          type: group
+          fields:
+            - name: total_size_in_bytes
+              path: elasticsearch.index.primaries.merges.total_size_in_bytes
+              type: alias
+        - name: segments
+          type: group
+          fields:
+            - name: count
+              path: elasticsearch.index.primaries.segments.count
+              type: alias
+    - name: total
+      type: group
+      fields:
+        - name: search
+          type: group
+          fields:
+            - name: query_total
+              path: elasticsearch.index.total.search.query_total
+              type: alias
+            - name: query_time_in_millis
+              path: elasticsearch.index.total.search.query_time_in_millis
+              type: alias
+        - name: query_cache
+          type: group
+          fields:
+            - name: memory_size_in_bytes
+              path: elasticsearch.index.total.query_cache.memory_size_in_bytes
+              type: alias
+        - name: fielddata
+          type: group
+          fields:
+            - name: memory_size_in_bytes
+              path: elasticsearch.index.total.fielddata.memory_size_in_bytes
+              type: alias
+        - name: indexing
+          type: group
+          fields:
+            - name: throttle_time_in_millis
+              path: elasticsearch.index.total.indexing.throttle_time_in_millis
+              type: alias
+            - name: index_time_in_millis
+              path: elasticsearch.index.total.indexing.index_time_in_millis
+              type: alias
+            - name: index_total
+              path: elasticsearch.index.total.indexing.index_total
+              type: alias
+        - name: refresh
+          type: group
+          fields:
+            - name: total_time_in_millis
+              path: elasticsearch.index.total.refresh.total_time_in_millis
+              type: alias
+        - name: request_cache
+          type: group
+          fields:
+            - name: memory_size_in_bytes
+              path: elasticsearch.index.total.request_cache.memory_size_in_bytes
+              type: alias
+        - name: store
+          type: group
+          fields:
+            - name: size_in_bytes
+              path: elasticsearch.index.total.store.size_in_bytes
+              type: alias
+        - name: merges
+          type: group
+          fields:
+            - name: total_size_in_bytes
+              path: elasticsearch.index.total.merges.total_size_in_bytes
+              type: alias
+        - name: segments
+          type: group
+          fields:
+            - name: version_map_memory_in_bytes
+              path: elasticsearch.index.total.segments.version_map_memory_in_bytes
+              type: alias
+            - name: norms_memory_in_bytes
+              path: elasticsearch.index.total.segments.norms_memory_in_bytes
+              type: alias
+            - name: count
+              path: elasticsearch.index.total.segments.count
+              type: alias
+            - name: term_vectors_memory_in_bytes
+              path: elasticsearch.index.total.segments.term_vectors_memory_in_bytes
+              type: alias
+            - name: points_memory_in_bytes
+              path: elasticsearch.index.total.segments.points_memory_in_bytes
+              type: alias
+            - name: index_writer_memory_in_bytes
+              path: elasticsearch.index.total.segments.index_writer_memory_in_bytes
+              type: alias
+            - name: memory_in_bytes
+              path: elasticsearch.index.total.segments.memory_in_bytes
+              type: alias
+            - name: doc_values_memory_in_bytes
+              path: elasticsearch.index.total.segments.doc_values_memory_in_bytes
+              type: alias
+            - name: terms_memory_in_bytes
+              path: elasticsearch.index.total.segments.terms_memory_in_bytes
+              type: alias
+            - name: fixed_bit_set_memory_in_bytes
+              path: elasticsearch.index.total.segments.fixed_bit_set_memory_in_bytes
+              type: alias
+            - name: stored_fields_memory_in_bytes
+              path: elasticsearch.index.total.segments.stored_fields_memory_in_bytes
+              type: alias
+    - name: index
+      path: elasticsearch.index.name
+      type: alias
+- name: elasticsearch
+  type: group
+  fields:
+    - name: cluster.name
+      type: keyword
+      description: |
+        Elasticsearch cluster name.
+    - name: cluster.id
+      type: keyword
+      description: |
+        Elasticsearch cluster id.
+    - name: cluster.state.id
+      type: keyword
+      description: |
+        Elasticsearch state id.
+    - name: node
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Node ID
+        - name: name
+          type: keyword
+          description: |
+            Node name.
+        - name: master
+          type: boolean
+          description: |
+            Is the node the master node?
+        - name: mlockall
+          type: boolean
+          description: |
+            Is mlockall enabled on the node?

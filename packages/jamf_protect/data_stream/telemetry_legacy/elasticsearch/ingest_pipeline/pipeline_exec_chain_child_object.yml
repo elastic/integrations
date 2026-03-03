@@ -1,0 +1,20 @@
+---
+description: Pipeline for Jamf Protect Telemetry exec_chain_child_object audit logs.
+processors:
+  - rename:
+      field: json.exec_chain_child.parent_path
+      target_field: jamf_protect.telemetry.exec_chain_child.parent.path
+      ignore_missing: true
+  - convert:
+      field: json.exec_chain_child.parent_pid
+      target_field: process.parent.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.exec_chain_child.parent_uuid
+      target_field: jamf_protect.telemetry.exec_chain_child.parent.uuid
+      ignore_missing: true

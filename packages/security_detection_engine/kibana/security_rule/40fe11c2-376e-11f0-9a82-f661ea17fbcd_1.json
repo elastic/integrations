@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Jamie Lee"
+        ],
+        "description": "Identifies when a user creates a new inbox rule in Microsoft 365 that deletes or moves emails containing suspicious keywords. Adversaries who have compromised accounts often create inbox rules to hide alerts, security notifications, or other sensitive messages by automatically deleting them or moving them to obscure folders. Common destinations include Deleted Items, Junk Email, RSS Feeds, and RSS Subscriptions. This is a New Terms rule that triggers only when the user principal name and associated source IP address have not been observed performing this activity in the past 14 days.",
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "filebeat-*",
+            "logs-o365.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Microsoft 365 Suspicious Inbox Rule to Delete or Move Emails",
+        "new_terms_fields": [
+            "user.id",
+            "source.ip"
+        ],
+        "note": "## Triage and Analysis\n\n### Investigating Microsoft 365 Suspicious Inbox Rule to Delete or Move Emails\n\nThis detection identifies the creation of potentially malicious inbox rules in Microsoft 365. These rules automatically delete or move emails with specific keywords such as \"invoice\", \"payment\", \"security\", or \"phish\". Adversaries often use these rules post-compromise to conceal warning emails, alerts from security tools, or responses from help desk teams, thereby evading detection and maintaining access.\n\nThis is a new terms rule that alerts only when the combination of `user.id` and `source.ip` has not performed this activity in the last 14 days.\n\n### Possible investigation steps\n\n- Review the `user.id` and `user.email` fields to identify the user account that created the inbox rule.\n- Confirm the rule creation action in `event.action` is `New-InboxRule` and that the `event.outcome` is `success`.\n- Investigate the `o365.audit.Parameters.SubjectContainsWords` field for sensitive or suspicious keywords such as:\n  - `invoice`, `payment`, `reset`, `phish`, `login`, `fraud`, `alert`, etc.\n- Check if the rule performs any of the following:\n  - `MoveToFolder`: suspicious folders like `RSS Feeds`, `Junk Email`, or `Deleted Items`.\n  - `DeleteMessage`: if present, suggests the rule is meant to hide communications.\n- Review the `source.ip` and `source.geo.*` fields to validate whether the IP address and location match expected user behavior.\n- Examine whether the rule was created via a suspicious interface like Exchange Admin or through external automation.\n- Check for recent sign-in anomalies, credential changes, or unusual mailbox activity for the user (e.g., email forwarding, MFA prompts).\n\n### False positive analysis\n\n- Some rules may be created by users for legitimate purposes (e.g., moving newsletters).\n- Outlook plugins or automated email management tools could create rules that resemble this behavior.\n- Newly onboarded employees might configure rules for personal filtering without malicious intent.\n\n### Response and remediation\n\n- If the rule is determined to be malicious:\n  - Remove the inbox rule immediately.\n  - Review the user\u2019s mailbox for signs of data theft or additional manipulation (e.g., auto-forwarding, altered reply-to addresses).\n  - Investigate surrounding activity such as MFA changes, token refreshes, or admin role assignments.\n  - Revoke tokens and initiate a password reset for the compromised user.\n- If broader compromise is suspected:\n  - Review audit logs for other inbox rule creations across the tenant.\n  - Check whether other users from the same source IP performed similar activity.\n  - Educate the user on safe email handling and rule creation best practices.\n- Strengthen detection:\n  - Enable Microsoft Defender for Office 365 Safe Rules.\n  - Use mailbox auditing and DLP policies to monitor hidden inbox activity.\n\n",
+        "query": "event.dataset: \"o365.audit\" and\n    event.action: \"New-InboxRule\" and event.outcome: \"success\" and\n    o365.audit.Parameters.SubjectContainsWords: (\n        *phish* or\n        *hack* or\n        *alert* or\n        *malware* or\n        *security* or\n        *invoice* or\n        *payment* or\n        *wire* or\n        *transfer* or\n        *fraud* or\n        *reset* or\n        *unusual* or\n        *protection* or\n        *login* or\n        *suspicious*\n    ) and (\n    o365.audit.Parameters.DeleteMessage: True or\n    o365.audit.Parameters.MoveToFolder: (\n        *Deleted* or\n        *Junk* or\n        *RSS*\n    )\n)\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/defender-office-365/detect-and-remediate-outlook-rules-forms-attack",
+            "https://learn.microsoft.com/en-us/defender-xdr/alert-grading-playbook-inbox-manipulation-rules",
+            "https://blog.barracuda.com/2023/09/20/threat-spotlight-attackers-inbox-rules-evade-detection"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^2.11.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.DeleteMessage",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.MoveToFolder",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.SubjectContainsWords",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "40fe11c2-376e-11f0-9a82-f661ea17fbcd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Domain: Email",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.008",
+                                "name": "Email Hiding Rules",
+                                "reference": "https://attack.mitre.org/techniques/T1564/008/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "40fe11c2-376e-11f0-9a82-f661ea17fbcd_1",
+    "type": "security-rule"
+}

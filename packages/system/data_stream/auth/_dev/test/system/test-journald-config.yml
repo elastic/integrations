@@ -1,0 +1,27 @@
+service: system-auth-journald
+input: journald
+vars:
+  condition: true
+data_stream:
+  vars:
+    paths:
+      - "/run/service_logs/system-auth.journal"
+agent:
+  base_image: systemd # Related issue: https://github.com/elastic/integrations/issues/10998
+  runtime: docker
+  provisioning_script:
+    language: "sh"
+    contents: |
+      set -eu
+      if grep fedora /etc/os-release > /dev/null ; then
+        microdnf update
+        microdnf install -y systemd
+        microdnf clean all
+      else
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes systemd
+        apt-get clean all
+      fi
+
+assert:
+  hit_count: 9

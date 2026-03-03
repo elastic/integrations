@@ -1,0 +1,216 @@
+---
+description: Pipeline for processing vendor case logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.firstObserved
+        - json.lastModifiedTime
+        - json.vendorCaseId
+      tag: fingerprint_case
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Abnormal
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Inbound Email Security
+  - date:
+      field: json.lastModifiedTime
+      tag: date_lastModifiedTime
+      target_field: abnormal_security.vendor_case.last_modified_time
+      formats:
+        - ISO8601
+      if: ctx.json?.lastModifiedTime != null && ctx.json.lastModifiedTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.firstObservedTime
+      tag: date_firstObservedTime
+      target_field: abnormal_security.vendor_case.first_observed_time
+      formats:
+        - ISO8601
+      if: ctx.json?.firstObservedTime != null && ctx.json.firstObservedTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_vendor_case_first_observed_time
+      copy_from: abnormal_security.vendor_case.first_observed_time
+      ignore_empty_value: true
+  - convert:
+      field: json.vendorCaseId
+      tag: convert_vendorCaseId
+      target_field: abnormal_security.vendor_case.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_vendor_case_id
+      copy_from: abnormal_security.vendor_case.id
+      ignore_empty_value: true
+  - remove:
+      field:
+        - abnormal_security.vendor_case.first_observed
+        - abnormal_security.vendor_case.id
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - rename:
+      field: json.vendorDomain
+      tag: rename_vendorDomain_to_domain
+      target_field: abnormal_security.vendor_case.domain
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Parse and append insights
+      tag: parse_and_append_insights
+      if: ctx.json != null && ctx.json.insights instanceof List
+      params:
+        keysToCopy:
+          - highlight
+          - description
+      source: |-
+        List keysToCopy = params.keysToCopy;
+        List insights = new ArrayList();
+
+        for (insight in ctx.json.insights) {
+          Map new_insight = new HashMap();
+          for (key in keysToCopy) {
+            if (insight.containsKey(key)) {
+              new_insight[key] = insight[key];
+            }
+          }
+          insights.add(new_insight);
+        }
+        ctx.abnormal_security.vendor_case.insights = insights;
+  
+  - script:
+      lang: painless
+      description: Parse and append timeline
+      tag: parse_and_append_timeline
+      if: ctx.json != null && ctx.json.timeline instanceof List
+      params:
+        keysToCopy:
+          - eventTimestamp
+          - senderAddress
+          - recipientAddress
+          - subject
+          - markedAs
+          - threatId
+      source: >-
+        List keysToCopy = params.keysToCopy;
+        List timeline = new ArrayList();
+        for (event in ctx.json.timeline) {
+          Map new_event = new HashMap();
+          for (key in keysToCopy) {
+            if (event.containsKey(key)) {
+             // Inline snake_case conversion logic
+              StringBuilder sb = new StringBuilder();
+              for (int i = 0; i < key.length(); i++) {
+                char c = key.charAt(i);
+                if (Character.isUpperCase(c)) {
+                  if (i > 0) {
+                    sb.append('_');
+                  }
+                  sb.append(Character.toLowerCase(c));
+                } else {
+                  sb.append(c);
+                }
+              }
+              String snake_key = sb.toString();
+              new_event[snake_key] = event[key];
+            }
+          }
+          timeline.add(new_event);
+        }
+        ctx.abnormal_security.vendor_case.timeline = timeline;
+
+ # clean up
+  - remove:
+      field: 
+        - json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

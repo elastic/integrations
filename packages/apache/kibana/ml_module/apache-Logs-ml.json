@@ -1,0 +1,419 @@
+{
+    "attributes": {
+        "id": "apache_data_stream",
+        "title": "Apache access logs",
+        "description": "Find unusual activity in HTTP access logs.",
+        "type": "Web Access Logs",
+        "logo": {
+            "icon": "logoApache"
+        },
+        "defaultIndexPattern": "logs-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "data_stream.dataset": "apache.access"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.address"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "url.original"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "http.response.status_code"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "visitor_rate_apache",
+                "config": {
+                    "groups": [
+                        "apache"
+                    ],
+                    "description": "HTTP Access Logs: Detect unusual visitor rates",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "dc_source_address",
+                        "detectors": [
+                            {
+                                "detector_description": "Apache access visitor rate",
+                                "function": "non_zero_count"
+                            }
+                        ],
+                        "influencers": []
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "10mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-apache-access-data-stream",
+                        "custom_urls": [
+                            {
+                                "url_name": "Apache logs overview",
+                                "url_value": "dashboards#/view/apache-Logs-Apache-Dashboard?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(description:\u0027\u0027,filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase))))),query:(language:kuery,query:\u0027\u0027))"
+                            },
+                            {
+                                "url_name": "Raw data",
+                                "url_value": "discover#/?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(columns:!(_source),filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase))))),index:\u0027INDEX_PATTERN_ID\u0027,interval:auto,query:(language:kuery,query:\u0027\u0027),sort:!(\u0027@timestamp\u0027,desc))"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "status_code_rate_apache",
+                "config": {
+                    "groups": [
+                        "apache"
+                    ],
+                    "description": "HTTP Access Logs: Detect unusual status code rates",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Apache access status code rate",
+                                "function": "count",
+                                "partition_field_name": "http.response.status_code"
+                            }
+                        ],
+                        "influencers": [
+                            "http.response.status_code",
+                            "source.address"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "100mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-apache-access-data-stream",
+                        "custom_urls": [
+                            {
+                                "url_name": "Apache logs overview",
+                                "url_value": "dashboards#/view/apache-Logs-Apache-Dashboard?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(description:\u0027\u0027,filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase)))),(\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:http.response.status_code,negate:!f,params:(query:\u0027$http.response.status_code$\u0027),type:phrase,value:\u0027$http.response.status_code$\u0027),query:(match:(http.response.status_code:(query:\u0027$http.response.status_code$\u0027,type:phrase))))),query:(language:kuery,query:\u0027\u0027))"
+                            },
+                            {
+                                "url_name": "Raw data",
+                                "url_value": "discover#/?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(columns:!(_source),filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase)))),(\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:http.response.status_code,negate:!f,params:(query:\u0027$http.response.status_code$\u0027),type:phrase,value:\u0027$http.response.status_code$\u0027),query:(match:(http.response.status_code:(query:\u0027$http.response.status_code$\u0027,type:phrase))))),index:\u0027INDEX_PATTERN_ID\u0027,interval:auto,query:(language:kuery,query:\u0027\u0027),sort:!(\u0027@timestamp\u0027,desc))"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "source_ip_url_count_apache",
+                "config": {
+                    "groups": [
+                        "apache"
+                    ],
+                    "description": "HTTP Access Logs: Detect unusual source IPs - high distinct count of URLs",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "Apache access source IP high dc URL",
+                                "function": "high_distinct_count",
+                                "field_name": "url.original",
+                                "over_field_name": "source.address"
+                            }
+                        ],
+                        "influencers": [
+                            "source.address"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-apache-access-data-stream",
+                        "custom_urls": [
+                            {
+                                "url_name": "Apache logs overview",
+                                "url_value": "dashboards#/view/apache-Logs-Apache-Dashboard?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(description:\u0027\u0027,filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase)))),(\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:source.address,negate:!f,params:(query:\u0027$source.address$\u0027),type:phrase,value:\u0027$source.address$\u0027),query:(match:(source.address:(query:\u0027$source.address$\u0027,type:phrase))))),query:(language:kuery,query:\u0027\u0027))"
+                            },
+                            {
+                                "url_name": "Raw data",
+                                "url_value": "discover#/?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(columns:!(_source),filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase)))),(\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:source.address,negate:!f,params:(query:\u0027$source.address$\u0027),type:phrase,value:\u0027$source.address$\u0027),query:(match:(source.address:(query:\u0027$source.address$\u0027,type:phrase))))),index:\u0027INDEX_PATTERN_ID\u0027,interval:auto,query:(language:kuery,query:\u0027\u0027),sort:!(\u0027@timestamp\u0027,desc))"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "source_ip_request_rate_apache",
+                "config": {
+                    "groups": [
+                        "apache"
+                    ],
+                    "description": "HTTP Access Logs: Detect unusual source IPs - high request rates",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "Apache access source IP high count",
+                                "function": "high_count",
+                                "over_field_name": "source.address"
+                            }
+                        ],
+                        "influencers": [
+                            "source.address"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-apache-access-data-stream",
+                        "custom_urls": [
+                            {
+                                "url_name": "Apache logs overview",
+                                "url_value": "dashboards#/view/apache-Logs-Apache-Dashboard?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(description:\u0027\u0027,filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase)))),(\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:source.address,negate:!f,params:(query:\u0027$source.address$\u0027),type:phrase,value:\u0027$source.address$\u0027),query:(match:(source.address:(query:\u0027$source.address$\u0027,type:phrase))))),query:(language:kuery,query:\u0027\u0027))"
+                            },
+                            {
+                                "url_name": "Raw data",
+                                "url_value": "discover#/?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(columns:!(_source),filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase)))),(\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:source.address,negate:!f,params:(query:\u0027$source.address$\u0027),type:phrase,value:\u0027$source.address$\u0027),query:(match:(source.address:(query:\u0027$source.address$\u0027,type:phrase))))),index:\u0027INDEX_PATTERN_ID\u0027,interval:auto,query:(language:kuery,query:\u0027\u0027),sort:!(\u0027@timestamp\u0027,desc))"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "low_request_rate_apache",
+                "config": {
+                    "groups": [
+                        "apache"
+                    ],
+                    "description": "HTTP Access Logs: Detect low request rates",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Apache access low request rate",
+                                "function": "low_count"
+                            }
+                        ],
+                        "influencers": []
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "10mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-apache-access-data-stream",
+                        "custom_urls": [
+                            {
+                                "url_name": "Apache logs overview",
+                                "url_value": "dashboards#/view/apache-Logs-Apache-Dashboard?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(description:\u0027\u0027,filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase))))),query:(language:kuery,query:\u0027\u0027))"
+                            },
+                            {
+                                "url_name": "Raw data",
+                                "url_value": "discover#/?_g=(time:(from:\u0027$earliest$\u0027,mode:absolute,to:\u0027$latest$\u0027))\u0026_a=(columns:!(_source),filters:!((\u0027$state\u0027:(store:appState),meta:(alias:!n,disabled:!f,index:\u0027INDEX_PATTERN_ID\u0027,key:data_stream.dataset,negate:!f,params:(query:\u0027apache.access\u0027),type:phrase,value:\u0027apache.access\u0027),query:(match:(data_stream.dataset:(query:\u0027apache.access\u0027,type:phrase))))),index:\u0027INDEX_PATTERN_ID\u0027,interval:auto,query:(language:kuery,query:\u0027\u0027),sort:!(\u0027@timestamp\u0027,desc))"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-visitor_rate_apache",
+                "job_id": "visitor_rate_apache",
+                "config": {
+                    "job_id": "visitor_rate_apache",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "apache.access"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "date_histogram": {
+                                "field": "@timestamp",
+                                "fixed_interval": "15m",
+                                "offset": 0,
+                                "order": {
+                                    "_key": "asc"
+                                },
+                                "keyed": false,
+                                "min_doc_count": 0
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                "dc_source_address": {
+                                    "cardinality": {
+                                        "field": "source.address"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-status_code_rate_apache",
+                "job_id": "status_code_rate_apache",
+                "config": {
+                    "job_id": "status_code_rate_apache",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "apache.access"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-source_ip_url_count_apache",
+                "job_id": "source_ip_url_count_apache",
+                "config": {
+                    "job_id": "source_ip_url_count_apache",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "apache.access"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-source_ip_request_rate_apache",
+                "job_id": "source_ip_request_rate_apache",
+                "config": {
+                    "job_id": "source_ip_request_rate_apache",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "apache.access"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-low_request_rate_apache",
+                "job_id": "low_request_rate_apache",
+                "config": {
+                    "job_id": "low_request_rate_apache",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "data_stream.dataset": "apache.access"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "date_histogram": {
+                                "field": "@timestamp",
+                                "fixed_interval": "15m",
+                                "offset": 0,
+                                "order": {
+                                    "_key": "asc"
+                                },
+                                "keyed": false,
+                                "min_doc_count": 0
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "id": "apache-Logs-ml",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "type": "ml-module"
+}

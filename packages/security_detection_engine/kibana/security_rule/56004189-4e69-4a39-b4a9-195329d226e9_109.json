@@ -1,0 +1,68 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected a suspicious Windows process. This process has been classified as suspicious in two ways. It was predicted to be suspicious by the ProblemChild supervised ML model, and it was found to be an unusual process, on a host that does not commonly manifest malicious activity. Such a process may be an instance of suspicious or malicious activity, possibly involving LOLbins, that may be resistant to detection using conventional search rules.",
+        "from": "now-45m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "problem_child_rare_process_by_host",
+        "name": "Unusual Process Spawned by a Host",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Process Spawned by a Host\n\nThe detection rule leverages machine learning to identify atypical processes on Windows systems, focusing on those that deviate from normal behavior. Adversaries often exploit legitimate system tools, known as LOLbins, to evade detection. This rule uses the ProblemChild ML model to flag processes that are both statistically unusual and potentially malicious, enhancing detection of stealthy attacks that bypass traditional methods.\n\n### Possible investigation steps\n\n- Review the process details flagged by the ProblemChild ML model, including the process name, path, and command line arguments, to understand its nature and potential purpose.\n- Check the parent process of the flagged process to determine if it was spawned by a legitimate application or a known LOLbin, which might indicate a Living off the Land attack.\n- Investigate the host's historical activity to assess whether this process or similar ones have been executed previously, focusing on any patterns of unusual behavior.\n- Correlate the process activity with user logins and network connections to identify any suspicious user behavior or external communications that coincide with the process execution.\n- Examine the system's security logs for any related alerts or anomalies around the time the process was detected, which might provide additional context or evidence of malicious activity.\n\n### False positive analysis\n\n- Routine administrative tasks may trigger false positives if they involve unusual processes or tools not commonly used on the host. Users can create exceptions for these known tasks to prevent unnecessary alerts.\n- Software updates or installations can spawn processes that are atypical but benign. Identifying and excluding these processes during known maintenance windows can reduce false positives.\n- Custom scripts or automation tools that mimic LOLbins behavior might be flagged. Users should document and whitelist these scripts if they are verified as safe and necessary for operations.\n- Legitimate third-party applications that use system binaries in uncommon ways may be misclassified. Regularly review and update the list of approved applications to ensure they are not mistakenly flagged.\n- Temporary spikes in unusual processes due to legitimate business activities, such as end-of-quarter reporting, can be managed by adjusting the detection thresholds or temporarily disabling the rule during these periods.\n\n### Response and remediation\n\n- Isolate the affected host from the network to prevent further spread or communication with potential command and control servers.\n- Terminate the suspicious process identified by the ProblemChild ML model to halt any ongoing malicious activity.\n- Conduct a thorough review of the process's parent and child processes to identify any additional malicious activity or persistence mechanisms.\n- Remove any identified LOLbins or unauthorized tools used by the adversary from the system to prevent further exploitation.\n- Restore the affected system from a known good backup if any system integrity issues are detected.\n- Update endpoint protection and monitoring tools to ensure they can detect similar threats in the future, focusing on the specific techniques used in this incident.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are affected.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/problemchild",
+            "https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "problemchild",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "56004189-4e69-4a39-b4a9-195329d226e9",
+        "setup": "## Setup\n\nThe rule requires the Living off the Land (LotL) Attack Detection integration assets to be installed, as well as Windows process events collected by integrations such as Elastic Defend or Winlogbeat.\n\n### LotL Attack Detection Setup\nThe LotL Attack Detection integration detects living-off-the-land activity in Windows process events.\n\n#### Prerequisite Requirements:\n- Fleet is required for LotL Attack Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Windows process events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration or Winlogbeat(https://www.elastic.co/guide/en/beats/winlogbeat/current/_winlogbeat_overview.html).\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To set up and run Winlogbeat, follow [this](https://www.elastic.co/guide/en/beats/winlogbeat/current/winlogbeat-installation-configuration.html) guide.\n\n#### The following steps should be executed to install assets associated with the LotL Attack Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Living off the Land Attack Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Living off the Land Attack Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 109
+    },
+    "id": "56004189-4e69-4a39-b4a9-195329d226e9_109",
+    "type": "security-rule"
+}

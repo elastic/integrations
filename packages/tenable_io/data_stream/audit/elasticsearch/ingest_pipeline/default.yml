@@ -1,0 +1,497 @@
+---
+description: Pipeline for processing Tenable Vulnerability Management audit logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.received
+        - json.id
+        - json.action
+      tag: fingerprint_audit
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json
+      tag: rename_json
+      target_field: tenable_io.audit
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - append:
+      field: event.category
+      value: configuration
+      tag: append_configuration_to_event_category
+      if: |
+        ctx.tenable_io?.audit?.action != null && [
+          'api-access-control-permissions.create',
+          'api-access-control-permissions.delete',
+          'api-access-control-permissions.update',
+          'api-exports-jobs.create',
+          'api-findings-vulnerabilities-cloud_resource-count.create',
+          'api-findings-vulnerabilities-cloud_resource.create',
+          'api-findings-vulnerabilities-host_audit-count.create',
+          'api-findings-vulnerabilities-host_audit.create',
+          'api-findings-vulnerabilities-host-count.create',
+          'api-findings-vulnerabilities-host.create',
+          'api-findings-vulnerabilities-webapp-count.create',
+          'api-findings-vulnerabilities-webapp.create',
+          'asset.hard.delete',
+          'credentials.create',
+          'dashboards-activity.create',
+          'filters-workbenches-assets.create',
+          'filters-workbenches-vulnerabilities.create',
+          'networks.create',
+          'networks.update',
+          'permissions-agent-group.update',
+          'permissions-scanner-pool.update',
+          'permissions-scanner.update',
+          'scanner-groups.create',
+          'scanner-groups.update',
+          'scanners-agent-groups-agents.update',
+          'scanners-agent-groups.create',
+          'scanners-agents-directives.create',
+          'scanners-agents.delete',
+          'scanners.delete',
+          'scans-pause.create',
+          'scans-remediation.create',
+          'scans-resume.create',
+          'scans.create',
+          'scans.delete',
+          'scans.update',
+          'settings-scanner-rekey.create',
+          'workbenches-assets.create'
+        ].contains(ctx.tenable_io.audit.action.toLowerCase())
+  - append:
+      field: event.category
+      value: iam
+      tag: append_iam_to_event_category
+      if: |
+        ctx.tenable_io?.audit?.action != null && [
+          'groups.create',
+          'user.create',
+          'user.roles.update',
+          'user.update'
+        ].contains(ctx.tenable_io.audit.action.toLowerCase())
+  - append:
+      field: event.category
+      value: session
+      tag: append_session_to_event_category
+      if: |
+        ctx.tenable_io?.audit?.action != null && [
+          'session.create',
+          'session.delete',
+          'session.impersonation.end',
+          'session.impersonation.start'
+        ].contains(ctx.tenable_io.audit.action.toLowerCase())
+  - append:
+      field: event.category
+      value: authentication
+      tag: append_authentication_to_event_category
+      if: |
+        ctx.tenable_io?.audit?.action != null && [
+          'user.authenticate.api_keys',
+          'user.authenticate.mfa',
+          'user.authenticate.password',
+          'user.impersonation.end',
+          'user.impersonation.start',
+          'user.logout'
+        ].contains(ctx.tenable_io.audit.action.toLowerCase())
+  - append:
+      field: event.type
+      value: creation
+      tag: append_creation_to_event_type
+      if: |
+        ctx.tenable_io?.audit?.action != null && ctx.tenable_io.audit.action.toLowerCase().contains('create') && ctx.event?.category != null && (
+          ctx.event.category.contains('configuration') ||
+          ctx.event.category.contains('iam')
+        )
+  - append:
+      field: event.type
+      value: deletion
+      tag: append_deletion_to_event_type
+      if: |
+        ctx.tenable_io?.audit?.action != null && ctx.tenable_io.audit.action.toLowerCase().contains('delete') && ctx.event?.category != null && (
+          ctx.event.category.contains('configuration') ||
+          ctx.event.category.contains('iam')
+        )
+  - append:
+      field: event.type
+      value: change
+      tag: append_change_to_event_type
+      if: |
+        ctx.tenable_io?.audit?.action != null && ctx.tenable_io.audit.action.toLowerCase().contains('update') && ctx.event?.category != null && (
+          ctx.event.category.contains('configuration') ||
+          ctx.event.category.contains('iam')
+        )
+  - append:
+      field: event.type
+      value: user
+      tag: append_user_to_event_type
+      if: ctx.tenable_io?.audit?.action != null && ctx.tenable_io.audit.action.toLowerCase().contains('user') && ctx.event?.category != null && ctx.event.category.contains('iam')
+  - append:
+      field: event.type
+      value: group
+      tag: append_group_to_event_type
+      if: ctx.tenable_io?.audit?.action != null && ctx.tenable_io.audit.action.toLowerCase().contains('group') && ctx.event?.category != null && ctx.event.category.contains('iam')
+  - append:
+      field: event.type
+      value: start
+      tag: append_start_to_event_type
+      if: |
+        ctx.tenable_io?.audit?.action != null && [
+          'session.create',
+          'session.impersonation.start',
+          'user.authenticate.password',
+          'user.authenticate.api_keys',
+          'user.impersonation.start',
+          'user.authenticate.mfa'
+        ].contains(ctx.tenable_io.audit.action.toLowerCase())
+  - append:
+      field: event.type
+      value: end
+      tag: append_end_to_event_type
+      if: |
+        ctx.tenable_io?.audit?.action != null && [
+          'session.delete',
+          'session.impersonation.end',
+          'user.impersonation.end',
+          'user.logout'
+        ].contains(ctx.tenable_io.audit.action.toLowerCase())
+  - append:
+      field: event.type
+      value: info
+      tag: append_info_to_event_type
+      if: ctx.event.type == null
+  - set:
+      field: event.id
+      tag: set_event_id_from_id
+      copy_from: tenable_io.audit.id
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_action
+      copy_from: tenable_io.audit.action
+      ignore_empty_value: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: '\.'
+      replacement: '-'
+      ignore_missing: true
+  - convert:
+      field: tenable_io.audit.is_failure
+      tag: convert_is_failure_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: tenable_io.audit.is_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success
+      value: success
+      if: ctx.tenable_io?.audit?.is_failure != null && ctx.tenable_io.audit.is_failure == false
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.tenable_io?.audit?.is_failure != null && ctx.tenable_io.audit.is_failure == true
+  - date:
+      field: tenable_io.audit.received
+      tag: date_received
+      target_field: tenable_io.audit.received
+      formats:
+        - ISO8601
+      if: ctx.tenable_io?.audit?.received != null && ctx.tenable_io.audit.received != ''
+      on_failure:
+        - remove:
+            field: tenable_io.audit.received
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_received
+      copy_from: tenable_io.audit.received
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_description
+      copy_from: tenable_io.audit.description
+      ignore_empty_value: true
+  - convert:
+      field: tenable_io.audit.is_anonymous
+      tag: convert_is_anonymous_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: tenable_io.audit.is_anonymous
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.id
+      tag: set_user_id_from_actor_id
+      copy_from: tenable_io.audit.actor.id
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_actor_name
+      copy_from: tenable_io.audit.actor.name
+      ignore_empty_value: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      tag: append_actor_id_to_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_name_to_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_email_to_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+  - set:
+      field: user.target.id
+      tag: set_user_target_id_from_target_id
+      copy_from: tenable_io.audit.target.id
+      ignore_empty_value: true
+      if: ctx.tenable_io?.audit?.target?.type != null && ctx.tenable_io.audit.target.type == 'User'
+  - append:
+      field: related.user
+      tag: append_target_id_to_related_user
+      value: '{{{tenable_io.audit.target.id}}}'
+      allow_duplicates: false
+      if: ctx.tenable_io?.audit?.target?.type != null && ctx.tenable_io.audit.target.type == 'User'
+  - set:
+      field: user.target.name
+      tag: set_user_target_name_from_target_name
+      copy_from: tenable_io.audit.target.name
+      ignore_empty_value: true
+      if: ctx.tenable_io?.audit?.target?.type != null && ctx.tenable_io.audit.target.type == 'User'
+  - rename:
+      field: user.target.name
+      target_field: user.target.email
+      tag: rename_user_target_email
+      if: ctx.user?.target?.name != null && ctx.user.target.name.indexOf("@") > 0
+  - dissect:
+      field: user.target.email
+      pattern: '%{user.target.name}@%{user.target.domain}'
+      tag: dissect_user_target_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.target?.name == null
+  - append:
+      field: related.user
+      tag: append_target_name_to_related_user
+      value: '{{{user.target.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - append:
+      field: related.user
+      tag: append_target_email_to_related_user
+      value: '{{{user.target.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.email != null
+  - script:
+      lang: painless
+      if: ctx.tenable_io?.audit?.fields instanceof List
+      description: Dynamically set fields object.
+      tag: script_fields_object
+      source: |-
+        def fields = new HashMap();
+        for (f in ctx.tenable_io.audit.fields) {
+          fields.put(f.key.toLowerCase(), f.value);
+        }
+        ctx.tenable_io.audit.fields = fields;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: tenable_io.audit.fields.x-forwarded-for
+      tag: split_x-forwarded-for
+      separator: ','
+      target_field: tenable_io.audit.fields.x_forwarded_for
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - trim:
+      field: tenable_io.audit.fields.x_forwarded_for
+      tag: trim_x_forwarded_for
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.audit.fields.x_forwarded_for
+      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_x_forwarded_for_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      value: "{{{tenable_io.audit.fields.x_forwarded_for.0}}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List && ctx.tenable_io.audit.fields.x_forwarded_for.size() > 0
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_as
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.audit.fields.x_forwarded_for
+      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_x_forwarded_for_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field:
+        - tenable_io.audit.fields.x-forwarded-for
+      tag: remove_x-forwarded-for
+      ignore_missing: true
+  - remove:
+      field:
+        - tenable_io.audit.id
+        - tenable_io.audit.action
+        - tenable_io.audit.received
+        - tenable_io.audit.description
+        - tenable_io.audit.actor.id
+        - tenable_io.audit.actor.name
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

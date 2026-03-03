@@ -1,0 +1,50 @@
+---
+description: Pipeline for processing Diagnostic category logs.
+processors:
+  - set:
+      field: ses.category_name
+      tag: set_category_name
+      value: Diagnostic
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_container" }}'
+      if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.container != null
+      tag: pipeline_object_container
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_cybox" }}'
+      if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.cybox != null
+      tag: pipeline_object_cybox
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_device" }}'
+      if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && (ctx.ses?.device_cloud_vm != null || ctx.ses?.device_location != null || ctx.ses?.device_networks != null)
+      tag: pipeline_object_device
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_process" }}'
+      if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.process != null
+      tag: pipeline_object_process
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_session" }}'
+      if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && (ctx.ses?.session != null || ctx.ses?.sessions != null)
+      tag: pipeline_object_session
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_source" }}'
+      if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.source != null
+      tag: pipeline_object_source
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_user" }}'
+      if: ctx.ses?.type_id != null && ['1000'].contains(ctx.ses.type_id) && ctx.ses?.user != null
+      tag: pipeline_object_user
+      ignore_missing_pipeline: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

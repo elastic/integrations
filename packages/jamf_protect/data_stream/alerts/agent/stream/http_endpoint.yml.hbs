@@ -1,0 +1,35 @@
+listen_address: {{listen_address}}
+listen_port: {{listen_port}}
+url: {{url}}
+{{#if secret_header}}
+secret.header: {{secret_header}}
+{{/if}}
+{{#if secret_value}}
+secret.value: {{secret_value}}
+{{/if}}
+{{#if preserve_original_event}}
+preserve_original_event: true
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+preserve_duplicate_custom_fields: true
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

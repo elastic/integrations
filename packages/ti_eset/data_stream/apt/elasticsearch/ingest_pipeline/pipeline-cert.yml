@@ -1,0 +1,119 @@
+---
+description: Pipeline for processing x509 events
+processors:
+  - foreach:
+      field: eti._patterns
+      processor:
+        grok:
+          field: _ingest._value
+          patterns:
+            - "^\\[?x509-certificate:hashes.MD5%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.md5}'\\]?"
+            - "^\\[?x509-certificate:hashes.SHA1%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.sha1}'\\]?"
+            - "^\\[?x509-certificate:hashes.SHA256%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.sha256}'\\]?"
+            - "^\\[?x509-certificate:serial_number%{SPACE}=%{SPACE}'%{DATA:threat.indicator.x509.serial_number}'\\]?"
+            - "^\\[?x509-certificate:signature_algorithm%{SPACE}=%{SPACE}'%{DATA:threat.indicator.x509.signature_algorithm}'\\]?"
+            - "^\\[?x509-certificate:version%{SPACE}=%{SPACE}'%{DATA:threat.indicator.x509.version_number}'\\]?"
+            - "^\\[?x509-certificate:validity_not_after%{SPACE}=%{SPACE}'%{TIMESTAMP_ISO8601:threat.indicator.x509.not_after}'\\]?"
+            - "^\\[?x509-certificate:validity_not_before%{SPACE}=%{SPACE}'%{TIMESTAMP_ISO8601:threat.indicator.x509.not_before}'\\]?"
+            - "^\\[?x509-certificate:issuer%{SPACE}=%{SPACE}'%{DATA:threat.indicator.x509.issuer.distinguished_name}'\\]?"
+            - "^\\[?x509-certificate:subject%{SPACE}=%{SPACE}'%{DATA:threat.indicator.x509.subject.distinguished_name}'\\]?"
+          ignore_failure: true
+
+  - date:
+      field: threat.indicator.x509.not_after
+      target_field: threat.indicator.x509.not_after
+      formats:
+        - "ISO8601"
+        - "yyyy-MM-dd HH:mm:ssz"
+      if: "ctx.threat?.indicator?.x509?.not_after != null"
+  - date:
+      field: threat.indicator.x509.not_before
+      target_field: threat.indicator.x509.not_before
+      formats:
+        - "ISO8601"
+        - "yyyy-MM-dd HH:mm:ssz"
+      if: "ctx.threat?.indicator?.x509?.not_before != null"
+
+  - kv:
+      field: threat.indicator.x509.issuer.distinguished_name
+      target_field: eti._issuer_fields
+      field_split: "(?<!\\\\),"
+      value_split: "="
+      trim_key: " "
+      ignore_failure: true
+      if: ctx.threat?.indicator?.x509?.issuer?.distinguished_name != null
+
+  - append:
+      field: threat.indicator.x509.issuer.common_name
+      value: "{{{eti._issuer_fields.CN}}}"
+      if: ctx.eti?._issuer_fields?.CN != null
+  - append:
+      field: threat.indicator.x509.issuer.country
+      value: "{{{eti._issuer_fields.C}}}"
+      if: ctx.eti?._issuer_fields?.C != null
+  - append:
+      field: threat.indicator.x509.issuer.locality
+      value: "{{{eti._issuer_fields.L}}}"
+      if: ctx.eti?._issuer_fields?.L != null
+  - append:
+      field: threat.indicator.x509.issuer.organization
+      value: "{{{eti._issuer_fields.O}}}"
+      if: ctx.eti?._issuer_fields?.O != null
+  - append:
+      field: threat.indicator.x509.issuer.organizational_unit
+      value: "{{{eti._issuer_fields.OU}}}"
+      if: ctx.eti?._issuer_fields?.OU != null
+  - append:
+      field: threat.indicator.x509.issuer.state_or_province
+      value: "{{{eti._issuer_fields.S}}}"
+      if: ctx.eti?._issuer_fields?.S != null
+  - append:
+      field: threat.indicator.x509.issuer.state_or_province
+      value: "{{{eti._issuer_fields.ST}}}"
+      if: ctx.eti?._issuer_fields?.ST != null
+  - append:
+      field: threat.indicator.x509.issuer.state_or_province
+      value: "{{{eti._issuer_fields.P}}}"
+      if: ctx.eti?._issuer_fields?.P != null
+
+  - kv:
+      field: threat.indicator.x509.subject.distinguished_name
+      target_field: eti._subject_fields
+      field_split: "(?<!\\\\),"
+      value_split: "="
+      trim_key: " "
+      ignore_failure: true
+      if: ctx.threat?.indicator?.x509?.subject?.distinguished_name != null
+
+  - append:
+      field: threat.indicator.x509.subject.common_name
+      value: "{{{eti._subject_fields.CN}}}"
+      if: ctx.eti?._subject_fields?.CN != null
+  - append:
+      field: threat.indicator.x509.subject.country
+      value: "{{{eti._subject_fields.C}}}"
+      if: ctx.eti?._subject_fields?.C != null
+  - append:
+      field: threat.indicator.x509.subject.locality
+      value: "{{{eti._subject_fields.L}}}"
+      if: ctx.eti?._subject_fields?.L != null
+  - append:
+      field: threat.indicator.x509.subject.organization
+      value: "{{{eti._subject_fields.O}}}"
+      if: ctx.eti?._subject_fields?.O != null
+  - append:
+      field: threat.indicator.x509.subject.organizational_unit
+      value: "{{{eti._subject_fields.OU}}}"
+      if: ctx.eti?._subject_fields?.OU != null
+  - append:
+      field: threat.indicator.x509.subject.state_or_province
+      value: "{{{eti._subject_fields.S}}}"
+      if: ctx.eti?._subject_fields?.S != null
+  - append:
+      field: threat.indicator.x509.subject.state_or_province
+      value: "{{{eti._subject_fields.ST}}}"
+      if: ctx.eti?._subject_fields?.ST != null
+  - append:
+      field: threat.indicator.x509.subject.state_or_province
+      value: "{{{eti._subject_fields.P}}}"
+      if: ctx.eti?._subject_fields?.P != null

@@ -1,0 +1,25 @@
+host: "{{udp_host}}:{{udp_port}}"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+- syslog:
+    field: message
+    format: rfc5424
+{{#if tz_offset}}
+    timezone: "{{tz_offset}}"
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}
+{{#if udp_options}}
+{{udp_options}}
+{{/if}}

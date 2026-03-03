@@ -1,0 +1,177 @@
+---
+description: Pipeline for parsing sophos firewall logs (waf pipeline)
+processors:
+#######################
+## ECS Event Mapping ##
+#######################
+- set:
+    field: event.kind
+    value: event
+- set:
+    field: event.action
+    value: allowed
+    if: 'ctx.sophos?.xg?.reason == "-"'
+- set:
+    field: event.action
+    value: denied
+    if: 'ctx.sophos?.xg?.reason != "-"'
+- set:
+    field: event.outcome
+    value: success
+    if: "ctx.sophos?.xg?.reason != null"
+- set:
+    field: event.kind
+    value: alert
+    if: 'ctx.sophos?.xg?.reason != "-"'
+- append:
+    field: event.category
+    value:
+      - malware
+      - network
+    if: 'ctx.sophos?.xg?.reason == "Antivirus"'
+- append:
+    field: event.category
+    value:
+      - intrusion_detection
+      - network
+    if: "ctx.sophos?.xg?.reason != 'Antivirus' && ctx.sophos?.xg?.reason != '-'"
+- append:
+    field: event.type
+    value:
+      - allowed
+      - connection
+    if: 'ctx.sophos?.xg?.reason == "-"'
+- append:
+    field: event.type
+    value:
+      - denied
+      - connection
+    if: 'ctx.sophos?.xg?.reason != "-"'
+
+- convert:
+    field: sophos.xg.responsetime
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.responsetime
+- script:
+    description: Convert microseconds to nanoseconds.
+    lang: painless
+    source: |
+      if (ctx.sophos?.xg?.responsetime != null && ctx.sophos.xg.responsetime > 0) {
+        ctx.event.duration = ctx.sophos.xg.responsetime * 1000; 
+      }
+
+####################################
+## ECS Server/Destination Mapping ##
+####################################
+- rename:
+    field: sophos.xg.localip
+    target_field: destination.ip
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.localip != null"
+- convert:
+    field: sophos.xg.bytessent
+    target_field: destination.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.bytessent != null"
+
+###############################
+## ECS Client/Source Mapping ##
+###############################
+- rename:
+    field: sophos.xg.sourceip
+    target_field: source.ip
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.sourceip != null"
+- convert:
+    field: sophos.xg.bytesrcv
+    target_field: source.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.bytesrcv != null"
+- rename:
+    field: sophos.xg.user_name
+    target_field: source.user.name
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.user_name != null"
+- rename:
+    field: sophos.xg.user_gp
+    target_field: source.user.group.name
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.user_gp != null"
+
+#####################
+## ECS URL Mapping ##
+#####################
+- rename:
+    field: sophos.xg.url
+    target_field: url.full
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.url != null"
+- rename:
+    field: sophos.xg.domain
+    target_field: url.domain
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.domain != null"
+
+############################
+## ECS User Agent Mapping ##
+############################
+- rename:
+    field: sophos.xg.referer
+    target_field: http.request.referrer
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.referer != null"
+- convert:
+    field: sophos.xg.httpstatus
+    target_field: destination.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.httpstatus != null"
+- rename:
+    field: sophos.xg.method
+    target_field: http.request.method
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.method != null"
+- rename:
+    field: sophos.xg.ws_protocol
+    target_field: http.version
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.ws_protocol != null"
+- rename:
+    field: sophos.xg.useragent
+    target_field: user_agent.original
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.useragent != null"
+
+#############
+## Cleanup ##
+#############
+- rename:
+    field: sophos.xg.SQLi
+    target_field: sophos.xg.sqli
+    ignore_missing: true
+- rename:
+    field: sophos.xg.XSS
+    target_field: sophos.xg.xss
+    ignore_missing: true
+- remove:
+    field:
+     - sophos.xg.bytesrcv
+     - sophos.xg.bytessent
+     - sophos.xg.httpstatus
+     - sophos.xg.responsetime
+    ignore_missing: true
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

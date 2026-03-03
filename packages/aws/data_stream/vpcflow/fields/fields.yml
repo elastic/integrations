@@ -1,0 +1,95 @@
+- name: aws.s3
+  type: group
+  fields:
+    - name: bucket.name
+      type: keyword
+      description: |
+        Name of a S3 bucket.
+    - name: bucket.arn
+      type: keyword
+      description: |
+        ARN of the S3 bucket that this log retrieved from.
+    - name: object.key
+      type: keyword
+      description: |
+        Name of the S3 object that this log retrieved from.
+    - name: metadata
+      type: flattened
+      description: |
+        AWS S3 object metadata values.
+- name: aws.vpcflow
+  type: group
+  fields:
+    - name: version
+      type: keyword
+      description: |
+        The VPC Flow Logs version. If you use the default format, the version is 2. If you specify a custom format, the version is 3.
+    - name: account_id
+      type: keyword
+      description: |
+        The AWS account ID for the flow log.
+    - name: interface_id
+      type: keyword
+      description: |
+        The ID of the network interface for which the traffic is recorded.
+    - name: action
+      type: keyword
+      description: |
+        The action that is associated with the traffic, ACCEPT or REJECT.
+    - name: log_status
+      type: keyword
+      description: |
+        The logging status of the flow log, OK, NODATA or SKIPDATA.
+    - name: instance_id
+      type: keyword
+      description: |
+        The ID of the instance that's associated with network interface for which the traffic is recorded, if the instance is owned by you.
+    - name: pkt_srcaddr
+      type: ip
+      description: |
+        The packet-level (original) source IP address of the traffic.
+    - name: pkt_dstaddr
+      type: ip
+      description: |
+        The packet-level (original) destination IP address for the traffic.
+    - name: vpc_id
+      type: keyword
+      description: |
+        The ID of the VPC that contains the network interface for which the traffic is recorded.
+    - name: subnet_id
+      type: keyword
+      description: |
+        The ID of the subnet that contains the network interface for which the traffic is recorded.
+    - name: tcp_flags
+      type: keyword
+      description: |
+        The bitmask value for the following TCP flags: 2=SYN,18=SYN-ACK,1=FIN,4=RST
+    - name: tcp_flags_array
+      type: keyword
+      description: >
+        List of TCP flags: 'fin, syn, rst, psh, ack, urg'
+
+    - name: type
+      type: keyword
+      description: |
+        The type of traffic: IPv4, IPv6, or EFA.
+    - name: pkt_dst_service
+      type: keyword
+      description: |
+        The name of the subset of IP address ranges for the pkt-dstaddr field, if the source IP address is for an AWS service.
+    - name: pkt_src_service
+      type: keyword
+      description: |
+        The name of the subset of IP address ranges for the pkt-srcaddr field, if the source IP address is for an AWS service.
+    - name: traffic_path
+      type: keyword
+      description: |
+        The path that egress traffic takes to the destination. To determine whether the traffic is egress traffic, check the `network.direction` field. The possible values can be found [here](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html#flow-logs-fields). If none of the values apply, the field is set to -.
+    - name: sublocation.type
+      type: keyword
+      description: |
+        The type of sublocation that's returned in the sublocation-id field. The possible values are: wavelength | outpost | localzone. If the traffic is not from a sublocation, the field is removed.
+    - name: sublocation.id
+      type: keyword
+      description: |
+        The ID of the sublocation that contains the network interface for which traffic is recorded. If the traffic is not from a sublocation, the field is removed.

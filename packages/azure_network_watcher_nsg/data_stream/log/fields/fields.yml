@@ -1,0 +1,96 @@
+- name: azure_network_watcher_nsg
+  type: group
+  fields:
+    - name: log
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: Category of the event.
+        - name: operation_name
+          type: keyword
+          description: Always NetworkSecurityGroupFlowEvents.
+        - name: properties
+          type: group
+          fields:
+            - name: flows
+              type: group
+              fields:
+                - name: flows
+                  type: group
+                  fields:
+                    - name: tuples
+                      type: group
+                      fields:
+                        - name: bytes
+                          type: group
+                          fields:
+                            - name: received
+                              type: long
+                              description: Total number of TCP packet bytes sent from destination to source.
+                            - name: sent
+                              type: long
+                              description: Total number of TCP packet bytes sent from source to destination.
+                        - name: destination
+                          type: group
+                          fields:
+                            - name: ip
+                              type: ip
+                              description: Destination IP address.
+                            - name: port
+                              type: long
+                              description: Destination port.
+                        - name: flow_state
+                          type: keyword
+                          description: State of the flow.
+                        - name: packets
+                          type: group
+                          fields:
+                            - name: received
+                              type: long
+                              description: Total number of TCP packets sent from destination to source.
+                            - name: sent
+                              type: long
+                              description: Total number of TCP packets sent from source to destination.
+                        - name: protocol
+                          type: keyword
+                          description: Protocol of the flow.
+                        - name: source
+                          type: group
+                          fields:
+                            - name: ip
+                              type: ip
+                              description: Source IP address.
+                            - name: port
+                              type: long
+                              description: Source port.
+                        - name: timestamp
+                          type: date
+                          description: Time stamp of when the flow occurred in UNIX epoch format.
+                        - name: traffic
+                          type: group
+                          fields:
+                            - name: decision
+                              type: keyword
+                              description: Whether traffic was allowed or denied.
+                            - name: flow
+                              type: keyword
+                              description: Direction of the traffic flow.
+                    - name: mac
+                      type: keyword
+                      description: MAC address of the network interface on which the flows are listed.
+                - name: rule
+                  type: keyword
+                  description: Rule for which the flows are listed.
+            - name: version
+              type: keyword
+              description: Version number of the flow log's event schema.
+        - name: resource_id
+          type: keyword
+          description: Resource ID of the network security group.
+        - name: system_id
+          type: keyword
+          description: System ID of the network security group.
+        - name: time
+          type: date
+          description: Time in UTC when the event was logged.

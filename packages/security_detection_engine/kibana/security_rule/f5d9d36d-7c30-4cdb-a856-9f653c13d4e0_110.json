@@ -1,0 +1,68 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job combination has identified a parent process with one or more suspicious Windows processes that exhibit unusually high malicious probability scores. These process(es) have been classified as malicious in several ways. The process(es) were predicted to be malicious by the ProblemChild supervised ML model. If the anomaly contains a cluster of suspicious processes, each process has the same parent process name, and the aggregate score of the event cluster was calculated to be unusually high by an unsupervised ML model. Such a cluster often contains suspicious or malicious activity, possibly involving LOLbins, that may be resistant to detection using conventional search rules.",
+        "from": "now-45m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "problem_child_high_sum_by_parent",
+        "name": "Parent Process Detected with Suspicious Windows Process(es)",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Parent Process Detected with Suspicious Windows Process(es)\n\nIn Windows environments, processes are often spawned by parent processes, forming a hierarchy. Adversaries exploit this by using legitimate processes to launch malicious ones, often leveraging Living off the Land Binaries (LOLBins) to evade detection. The detection rule employs machine learning to identify clusters of processes with high malicious probability, focusing on those sharing a common parent process. This approach helps uncover stealthy attacks that traditional methods might miss, enhancing defense against tactics like masquerading.\n\n### Possible investigation steps\n\n- Review the parent process name associated with the suspicious process cluster to identify if it is a known legitimate process or a potential masquerading attempt.\n- Examine the command line arguments and execution context of the suspicious processes to identify any use of LOLBins or unusual patterns that could indicate malicious activity.\n- Check the process creation timestamps and correlate them with any known events or user activities to determine if the process execution aligns with expected behavior.\n- Investigate the network activity of the suspicious processes to identify any unusual outbound connections or data exfiltration attempts.\n- Analyze the user account context under which the suspicious processes were executed to determine if there is any indication of compromised credentials or privilege escalation.\n- Cross-reference the detected processes with threat intelligence sources to identify any known indicators of compromise or related threat actor activity.\n\n### False positive analysis\n\n- Legitimate administrative tools may trigger false positives if they frequently spawn processes that resemble malicious activity. Users can create exceptions for known safe tools by whitelisting their parent process names.\n- Software updates or installations often generate clusters of processes that might be flagged as suspicious. Users should monitor these activities and exclude them if they are verified as legitimate.\n- Automated scripts or batch jobs that run regularly and spawn multiple processes can be mistaken for malicious clusters. Identifying these scripts and excluding their parent processes can reduce false positives.\n- Security software or monitoring tools that perform regular scans or updates might mimic malicious behavior. Users should ensure these tools are recognized and excluded from the rule's scope.\n- Custom business applications that are not widely recognized might be flagged. Users should document and exclude these applications if they are confirmed to be safe and necessary for operations.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of the potential threat and to contain any ongoing malicious activity.\n- Terminate the suspicious processes identified by the alert to stop any malicious actions they may be performing.\n- Conduct a thorough review of the parent process and its associated binaries to ensure they have not been tampered with or replaced by malicious versions.\n- Restore any affected files or system components from a known good backup to ensure system integrity and functionality.\n- Update and patch the system to close any vulnerabilities that may have been exploited by the adversary, focusing on those related to LOLBins and masquerading techniques.\n- Monitor the system and network for any signs of re-infection or related suspicious activity, using enhanced logging and alerting mechanisms.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/problemchild",
+            "https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "problemchild",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "f5d9d36d-7c30-4cdb-a856-9f653c13d4e0",
+        "setup": "## Setup\n\nThe rule requires the Living off the Land (LotL) Attack Detection integration assets to be installed, as well as Windows process events collected by integrations such as Elastic Defend or Winlogbeat.\n\n### LotL Attack Detection Setup\nThe LotL Attack Detection integration detects living-off-the-land activity in Windows process events.\n\n#### Prerequisite Requirements:\n- Fleet is required for LotL Attack Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Windows process events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration or Winlogbeat(https://www.elastic.co/guide/en/beats/winlogbeat/current/_winlogbeat_overview.html).\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To set up and run Winlogbeat, follow [this](https://www.elastic.co/guide/en/beats/winlogbeat/current/winlogbeat-installation-configuration.html) guide.\n\n#### The following steps should be executed to install assets associated with the LotL Attack Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Living off the Land Attack Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Living off the Land Attack Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 110
+    },
+    "id": "f5d9d36d-7c30-4cdb-a856-9f653c13d4e0_110",
+    "type": "security-rule"
+}

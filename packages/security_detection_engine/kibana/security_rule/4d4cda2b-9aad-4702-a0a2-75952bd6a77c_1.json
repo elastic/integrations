@@ -1,0 +1,75 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the creation of files named release_agent or notify_on_release, which are commonly associated with the abuse of Linux cgroup release mechanisms. In Docker or containerized environments, this behavior may indicate an attempt to exploit privilege escalation vulnerabilities such as CVE-2022-0492, where attackers use the release_agent feature to execute code on the host from within a container.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Docker Release File Creation",
+        "query": "file where host.os.type == \"linux\" and event.type == \"creation\" and file.name in (\"release_agent\", \"notify_on_release\")\n",
+        "references": [
+            "https://sysdig.com/blog/detecting-mitigating-cve-2022-0492-sysdig/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "4d4cda2b-9aad-4702-a0a2-75952bd6a77c",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Container",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1611",
+                        "name": "Escape to Host",
+                        "reference": "https://attack.mitre.org/techniques/T1611/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "4d4cda2b-9aad-4702-a0a2-75952bd6a77c_1",
+    "type": "security-rule"
+}

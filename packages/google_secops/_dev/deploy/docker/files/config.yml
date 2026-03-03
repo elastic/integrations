@@ -1,0 +1,604 @@
+rules:
+  - path: /token
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: >
+          {"access_token": "1/xxxx","expires_in": 3920,"token_type": "Bearer"}
+  - path: /v2/detect/rules/-/detections
+    methods: [GET]
+    query_params:
+      end_time: "{end_time:.*}"
+      start_time: "{start_time:.*}"
+      page_token: "xyz"
+    request_headers:
+      Authorization:
+        - "Bearer 1/xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "detections": [
+              {
+                "type": "RULE_DETECTION",
+                "detection": [
+                  {
+                    "ruleName": "rule_to_detect_status_update",
+                    "description": "This rule is to generate alerts when the event_type is STATUS_UPDATE",
+                    "urlBackToProduct": "https://example.com",
+                    "ruleId": "ru_39212a4a-170d-0000-a63d-0325f33ee011",
+                    "ruleVersion": "ru_39212a4a-170d-0000-a63d-0325f33ee011@v_1732873302_954607000",
+                    "alertState": "NOT_ALERTING",
+                    "ruleType": "SINGLE_EVENT",
+                    "ruleLabels": [
+                      {
+                        "key": "author",
+                        "value": "John"
+                      },
+                      {
+                        "key": "description",
+                        "value": "This rule is to generate alerts when the event_type is STATUS_UPDATE"
+                      },
+                      {
+                        "key": "severity",
+                        "value": "Medium"
+                      }
+                    ],
+                    "outcomes": [
+                      {
+                        "key": "risk_score",
+                        "value": "60"
+                      }
+                    ],
+                    "riskScore": 60,
+                    "variables": {
+                      "risk_score": {
+                        "type": "OUTCOME",
+                        "value": "60",
+                        "int64Val": "60"
+                      }
+                    }
+                  }
+                ],
+                "createdTime": "2025-02-01T03:12:46.687065Z",
+                "id": "de_78051e90-81ab-8ae8-b2ba-4fcf200d17e5",
+                "timeWindow": {
+                  "startTime": "2025-02-01T03:23:29Z",
+                  "endTime": "2025-02-03T03:23:29Z"
+                },
+                "collectionElements": [
+                  {
+                    "references": [
+                      {
+                        "event": {
+                          "metadata": {
+                            "eventTimestamp": "2025-02-01T03:23:29Z",
+                            "eventType": "STATUS_UPDATE",
+                            "vendorName": "JAMF",
+                            "productName": "JAMF_TELEMETRY",
+                            "productEventType": "AUE_CONNECT-32",
+                            "ingestedTimestamp": "2025-02-01T06:00:41.788616Z",
+                            "id": "TESGYUNM32/hD2MtwTXdV1OX1d90AAAAABgAAAAYAAAA=",
+                            "logType": "JAMF_TELEMETRY",
+                            "baseLabels": {
+                              "logTypes": [
+                                "JAMF_TELEMETRY"
+                              ],
+                              "allowScopedAccess": true
+                            },
+                            "enrichmentLabels": {
+                              "allowScopedAccess": true
+                            }
+                          },
+                          "additional": {
+                            "header_version": "11",
+                            "event_modifier": "0",
+                            "header_time_milliseconds_offset": "971",
+                            "exec_chain_thread_uuid": "54D5B252-34F2-4B3C-B5BA-8A5E46AA48A0",
+                            "identity_signer_type": "1",
+                            "subject_audit_id": "4294967295",
+                            "arguments_fd": "8",
+                            "subject_terminal_id_type": "4-IPv4",
+                            "identity_team_id_truncated": "false",
+                            "identity_signer_id_truncated": "false",
+                            "identity_cd_hash": "a70ddfe3eb75dd35005a9c863c4174d63148406c",
+                            "key": "087682F2-EF9D-4E4A-A48E-5D98878C3885",
+                            "identity_signer_id": "com.apple.curl"
+                          },
+                          "principal": {
+                            "hostname": "TEST-TRP94G2110",
+                            "user": {
+                              "userid": "0",
+                              "userDisplayName": "root",
+                              "groupIdentifiers": [
+                                "0"
+                              ]
+                            },
+                            "process": {
+                              "pid": "47203",
+                              "file": {
+                                "sha256": "4d8b9a54a2077c1457410843a9842ef29e0f371fb4061097095758012c031809",
+                                "md5": "b14dba7fe27186f216037a3b60599582",
+                                "sha1": "47bba82e8a43cfa14a1124a477090f9fbd0e026a",
+                                "fullPath": "/bin/bash"
+                              }
+                            },
+                            "ip": [
+                              "0.0.0.0"
+                            ],
+                            "group": {
+                              "groupDisplayName": "wheel"
+                            },
+                            "labels": [
+                              {
+                                "key": "arguments_fd",
+                                "value": "8"
+                              }
+                            ],
+                            "asset": {
+                              "productObjectId": "45DE0BEE-8056-5B41-B09A-08E259E49317",
+                              "hostname": "TEST-TRP94G2110",
+                              "hardware": [
+                                {
+                                  "serialNumber": "TRP94G2110"
+                                }
+                              ],
+                              "software": [
+                                {
+                                  "version": "Version 15.2 (Build 24C101)"
+                                }
+                              ]
+                            },
+                            "processAncestors": [
+                              {
+                                "pid": "47327",
+                                "file": {
+                                  "fullPath": "/usr/bin/curl"
+                                }
+                              }
+                            ]
+                          },
+                          "target": {
+                            "user": {
+                              "userid": "0",
+                              "userDisplayName": "root",
+                              "groupIdentifiers": [
+                                "0"
+                              ]
+                            },
+                            "group": {
+                              "groupDisplayName": "wheel"
+                            }
+                          },
+                          "about": [
+                            {
+                              "labels": [
+                                {
+                                  "key": "header_time_milliseconds_offset",
+                                  "value": "971"
+                                }
+                              ]
+                            }
+                          ],
+                          "securityResult": [
+                            {
+                              "description": "0-success",
+                              "detectionFields": [
+                                {
+                                  "key": "return_value",
+                                  "value": "0"
+                                }
+                              ]
+                            }
+                          ],
+                          "network": {
+                            "sessionId": "100001"
+                          }
+                        }
+                      }
+                    ],
+                    "label": "e"
+                  }
+                ],
+                "detectionTime": "2025-02-01T03:23:29Z"
+              }
+            ]
+          }
+          `}}
+  - path: /v2/detect/rules/-/detections
+    methods: [GET]
+    query_params:
+      end_time: "{end_time:.*}"
+      start_time: "{start_time:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "detections": [
+              {
+                "type": "RULE_DETECTION",
+                "detection": [
+                  {
+                    "ruleName": "rule_to_detect_status_update",
+                    "description": "This rule is to generate alerts when the event_type is STATUS_UPDATE",
+                    "urlBackToProduct": "https://example.com",
+                    "ruleId": "ru_39212a4a-170d-0000-a63d-0325f33ee011",
+                    "ruleVersion": "ru_39212a4a-170d-0000-a63d-0325f33ee011@v_1732873302_954607000",
+                    "alertState": "NOT_ALERTING",
+                    "ruleType": "SINGLE_EVENT",
+                    "ruleLabels": [
+                      {
+                        "key": "author",
+                        "value": "John"
+                      },
+                      {
+                        "key": "description",
+                        "value": "This rule is to generate alerts when the event_type is STATUS_UPDATE"
+                      },
+                      {
+                        "key": "severity",
+                        "value": "Medium"
+                      }
+                    ],
+                    "outcomes": [
+                      {
+                        "key": "risk_score",
+                        "value": "60"
+                      }
+                    ],
+                    "riskScore": 60,
+                    "variables": {
+                      "risk_score": {
+                        "type": "OUTCOME",
+                        "value": "60",
+                        "int64Val": "60"
+                      }
+                    }
+                  }
+                ],
+                "createdTime": "2025-02-01T03:12:46.687065Z",
+                "id": "de_78051e90-81ab-8ae8-b2ba-4fcf200d17e5",
+                "timeWindow": {
+                  "startTime": "2025-02-01T03:23:29Z",
+                  "endTime": "2025-02-03T03:23:29Z"
+                },
+                "collectionElements": [
+                  {
+                    "references": [
+                      {
+                        "event": {
+                          "metadata": {
+                            "eventTimestamp": "2025-02-03T03:23:29Z",
+                            "eventType": "STATUS_UPDATE",
+                            "vendorName": "JAMF",
+                            "productName": "JAMF_TELEMETRY",
+                            "productEventType": "AUE_CONNECT-32",
+                            "ingestedTimestamp": "2025-02-01T06:00:41.788616Z",
+                            "id": "TESGYUNM32/hD2MtwTXdV1OX1d90AAAAABgAAAAYAAAA=",
+                            "logType": "JAMF_TELEMETRY",
+                            "baseLabels": {
+                              "logTypes": [
+                                "JAMF_TELEMETRY"
+                              ],
+                              "allowScopedAccess": true
+                            },
+                            "enrichmentLabels": {
+                              "allowScopedAccess": true
+                            }
+                          },
+                          "additional": {
+                            "header_version": "11",
+                            "event_modifier": "0",
+                            "header_time_milliseconds_offset": "971",
+                            "exec_chain_thread_uuid": "54D5B252-34F2-4B3C-B5BA-8A5E46AA48A0",
+                            "identity_signer_type": "1",
+                            "subject_audit_id": "4294967295",
+                            "arguments_fd": "8",
+                            "subject_terminal_id_type": "4-IPv4",
+                            "identity_team_id_truncated": "false",
+                            "identity_signer_id_truncated": "false",
+                            "identity_cd_hash": "a70ddfe3eb75dd35005a9c863c4174d63148406c",
+                            "key": "087682F2-EF9D-4E4A-A48E-5D98878C3885",
+                            "identity_signer_id": "com.apple.curl"
+                          },
+                          "principal": {
+                            "hostname": "TEST-TRP94G2110",
+                            "user": {
+                              "userid": "0",
+                              "userDisplayName": "root",
+                              "groupIdentifiers": [
+                                "0"
+                              ]
+                            },
+                            "process": {
+                              "pid": "47203",
+                              "file": {
+                                "sha256": "4d8b9a54a2077c1457410843a9842ef29e0f371fb4061097095758012c031809",
+                                "md5": "b14dba7fe27186f216037a3b60599582",
+                                "sha1": "47bba82e8a43cfa14a1124a477090f9fbd0e026a",
+                                "fullPath": "/bin/bash"
+                              }
+                            },
+                            "ip": [
+                              "0.0.0.0"
+                            ],
+                            "group": {
+                              "groupDisplayName": "wheel"
+                            },
+                            "labels": [
+                              {
+                                "key": "arguments_fd",
+                                "value": "8"
+                              }
+                            ],
+                            "asset": {
+                              "productObjectId": "45DE0BEE-8056-5B41-B09A-08E259E49317",
+                              "hostname": "TEST-TRP94G2110",
+                              "hardware": [
+                                {
+                                  "serialNumber": "TRP94G2110"
+                                }
+                              ],
+                              "software": [
+                                {
+                                  "version": "Version 15.2 (Build 24C101)"
+                                }
+                              ]
+                            },
+                            "processAncestors": [
+                              {
+                                "pid": "47327",
+                                "file": {
+                                  "fullPath": "/usr/bin/curl"
+                                }
+                              }
+                            ]
+                          },
+                          "target": {
+                            "user": {
+                              "userid": "0",
+                              "userDisplayName": "root",
+                              "groupIdentifiers": [
+                                "0"
+                              ]
+                            },
+                            "group": {
+                              "groupDisplayName": "wheel"
+                            }
+                          },
+                          "about": [
+                            {
+                              "labels": [
+                                {
+                                  "key": "header_time_milliseconds_offset",
+                                  "value": "971"
+                                }
+                              ]
+                            }
+                          ],
+                          "securityResult": [
+                            {
+                              "description": "0-success",
+                              "detectionFields": [
+                                {
+                                  "key": "return_value",
+                                  "value": "0"
+                                }
+                              ]
+                            }
+                          ],
+                          "network": {
+                            "sessionId": "100001"
+                          }
+                        }
+                      }
+                    ],
+                    "label": "e"
+                  }
+                ],
+                "detectionTime": "2025-02-01T03:23:29Z"
+              },
+              {
+                "type": "RULE_DETECTION",
+                "detection": [
+                  {
+                    "ruleName": "rule_to_detect_status_update",
+                    "description": "This rule is to generate alerts when the event_type is STATUS_UPDATE",
+                    "urlBackToProduct": "https://example.com",
+                    "ruleId": "ru_123873a9a-170d-1234-a63d-9874f33ee011",
+                    "ruleVersion": "ru_123873a9a-170d-1234-a63d-9874f33ee011@v_1732873302_954607000",
+                    "alertState": "NOT_ALERTING",
+                    "ruleType": "SINGLE_EVENT",
+                    "ruleLabels": [
+                      {
+                        "key": "author",
+                        "value": "John"
+                      },
+                      {
+                        "key": "description",
+                        "value": "This rule is to generate alerts when the event_type is STATUS_UPDATE"
+                      },
+                      {
+                        "key": "severity",
+                        "value": "Medium"
+                      }
+                    ],
+                    "outcomes": [
+                      {
+                        "key": "risk_score",
+                        "value": "60"
+                      }
+                    ],
+                    "riskScore": 60,
+                    "variables": {
+                      "risk_score": {
+                        "type": "OUTCOME",
+                        "value": "60",
+                        "int64Val": "60"
+                      }
+                    }
+                  }
+                ],
+                "createdTime": "2025-02-01T03:12:54.177084Z",
+                "id": "de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403",
+                "timeWindow": {
+                  "startTime": "2025-02-01T03:23:28Z",
+                  "endTime": "2025-02-03T03:23:28Z"
+                },
+                "collectionElements": [
+                  {
+                    "references": [
+                      {
+                        "event": {
+                          "metadata": {
+                            "eventTimestamp": "2025-02-03T03:23:28Z",
+                            "eventType": "STATUS_UPDATE",
+                            "vendorName": "JAMF",
+                            "productName": "JAMF_TELEMETRY",
+                            "productEventType": "AUE_CONNECT-32",
+                            "ingestedTimestamp": "2025-02-01T06:00:42.443096Z",
+                            "id": "AAAAAByuGF66kDlZ79NglQZk0cQPPPPPBgSSSSSSSSS=",
+                            "logType": "JAMF_TELEMETRY",
+                            "baseLabels": {
+                              "logTypes": [
+                                "JAMF_TELEMETRY"
+                              ],
+                              "allowScopedAccess": true
+                            },
+                            "enrichmentLabels": {
+                              "allowScopedAccess": true
+                            }
+                          },
+                          "additional": {
+                            "exec_chain_thread_uuid": "5AB2623F-F6EF-4A6C-B2E4-CC7E28BEB515",
+                            "identity_signer_type": "1",
+                            "header_time_milliseconds_offset": "612",
+                            "subject_terminal_id_type": "4-IPv4",
+                            "header_version": "11",
+                            "identity_signer_id": "com.apple.curl",
+                            "identity_signer_id_truncated": "false",
+                            "event_modifier": "0",
+                            "identity_team_id_truncated": "false",
+                            "identity_cd_hash": "a70ddfe3eb75dd35005a9c863c4174d63148406c",
+                            "subject_audit_id": "4294967295",
+                            "arguments_fd": "8",
+                            "key": "6CC2ABE4-385C-4444-8BC0-FD5B618BA1C1"
+                          },
+                          "principal": {
+                            "hostname": "TEST-PPX94A9874",
+                            "user": {
+                              "userid": "0",
+                              "userDisplayName": "root",
+                              "groupIdentifiers": [
+                                "0"
+                              ]
+                            },
+                            "process": {
+                              "pid": "47203",
+                              "file": {
+                                "sha256": "4d8b9a54a2077c1457410843a9842ef29e0f371fb4061097095758012c031809",
+                                "md5": "b14dba7fe27186f216037a3b60599582",
+                                "sha1": "47bba82e8a43cfa14a1124a477090f9fbd0e026a",
+                                "fullPath": "/bin/bash"
+                              }
+                            },
+                            "ip": [
+                              "0.0.0.0"
+                            ],
+                            "group": {
+                              "groupDisplayName": "wheel"
+                            },
+                            "labels": [
+                              {
+                                "key": "arguments_fd",
+                                "value": "8"
+                              }
+                            ],
+                            "asset": {
+                              "productObjectId": "45DE0BEE-8056-5B41-B09A-08E259E49317",
+                              "hostname": "TEST-PPX94A9874",
+                              "hardware": [
+                                {
+                                  "serialNumber": "PPX94A9874"
+                                }
+                              ],
+                              "software": [
+                                {
+                                  "version": "Version 15.2 (Build 24C101)"
+                                }
+                              ]
+                            },
+                            "processAncestors": [
+                              {
+                                "pid": "47325",
+                                "file": {
+                                  "fullPath": "/usr/bin/curl"
+                                }
+                              }
+                            ]
+                          },
+                          "target": {
+                            "user": {
+                              "userid": "0",
+                              "userDisplayName": "root",
+                              "groupIdentifiers": [
+                                "0"
+                              ]
+                            },
+                            "group": {
+                              "groupDisplayName": "wheel"
+                            }
+                          },
+                          "about": [
+                            {
+                              "labels": [
+                                {
+                                  "key": "header_time_milliseconds_offset",
+                                  "value": "612"
+                                }
+                              ]
+                            }
+                          ],
+                          "securityResult": [
+                            {
+                              "description": "0-success",
+                              "detectionFields": [
+                                {
+                                  "key": "return_value",
+                                  "value": "0"
+                                }
+                              ]
+                            }
+                          ],
+                          "network": {
+                            "sessionId": "100001"
+                          }
+                        }
+                      }
+                    ],
+                    "label": "e"
+                  }
+                ],
+                "detectionTime": "2025-02-01T03:23:28Z"
+              }
+            ],
+            "nextPageToken": "xyz"
+          }
+          `}}

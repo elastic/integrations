@@ -1,0 +1,61 @@
+title: Collect DNS Server Analytical logs
+type: logs
+streams:
+  - input: etw
+    title: DNS Server Analytical logs
+    description: Collect DNS Server Analytical logs via ETW input.
+    template_path: etw.yml.hbs
+    vars:
+      - name: session_name
+        type: text
+        title: Session Name
+        description: >-
+          When specifying a provider, a new session is created. This controls the name for the new ETW session it will create. If not specified, the session will be named using the provider ID prefixed by 'Elastic-'.
+        default: Elastic-DNSServer-Analytical
+        required: false
+        show_user: true
+      - name: logfile
+        type: text
+        title: File
+        description: >-
+          Path to an .etl file to read from.
+        required: false
+        show_user: false
+      - name: trace_level
+        type: text
+        title: Trace Level
+        description: >-
+          Defines the filtering level for events based on severity. Valid options include error, warning, and information. The provider writes an event if the event's level is more severe or equal to the defined value.
+        default: information
+        required: false
+        show_user: true
+      - name: match_all_keyword
+        type: text
+        title: Match All Keyword
+        description: >-
+          This 8-byte bitmask filters events that match all specified keyword bits. Default value is 0 to let every event pass. Run `logman query providers "<provider.name>"` to list the available keywords for a specific provider.
+        default: "0x0000000000000000"
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

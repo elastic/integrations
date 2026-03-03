@@ -1,0 +1,35 @@
+services:
+  filestream-swimlane-api:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+
+  filestream-tenant-api:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+
+  filestream-turbine-api:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+
+  cel-audit-logs:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    hostname: swimlane_api_mock
+    ports:
+      - 8080
+    volumes:
+      - ./config.yml:/config.yml
+    environment:
+      PORT: "8080"
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml

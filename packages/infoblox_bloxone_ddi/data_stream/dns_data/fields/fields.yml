@@ -1,0 +1,204 @@
+- name: infoblox_bloxone_ddi.dns_data
+  type: group
+  fields:
+    - name: absolute_name
+      type: group
+      fields:
+        - name: spec
+          type: keyword
+          description: Synthetic field, used to determine zone and/or name_in_zone field for records.
+    - name: absolute_zone
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The absolute domain name of the zone where this record belongs.
+    - name: absolute
+      type: group
+      fields:
+        - name: name
+          type: group
+          fields:
+            - name: spec
+              type: keyword
+              description: The DNS protocol textual representation of absolute_name_spec.
+        - name: zone
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The DNS protocol textual representation of the absolute domain name of the zone where this record belongs.
+    - name: comment
+      type: keyword
+      description: The description for the DNS resource record. May contain 0 to 1024 characters. Can include UTF-8.
+    - name: created_at
+      type: date
+      description: The timestamp when the object has been created.
+    - name: delegation
+      type: keyword
+      description: The resource identifier.
+    - name: disabled
+      type: boolean
+      description: Indicates if the DNS resource record is disabled. A disabled object is effectively non-existent when generating configuration.
+    - name: id
+      type: keyword
+      description: The resource identifier.
+    - name: inheritance
+      type: group
+      fields:
+        - name: sources
+          type: group
+          fields:
+            - name: ttl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: long
+                  description: The inherited value.
+    - name: name_in_zone
+      type: keyword
+      description: The relative owner name to the zone origin. Must be specified for creating the DNS resource record and is read only for other operations.
+    - name: name_in
+      type: group
+      fields:
+        - name: zone
+          type: keyword
+          description: The DNS protocol textual representation of the relative owner name for the DNS zone.
+    - name: options
+      type: group
+      fields:
+        - name: address
+          type: ip
+          description: For GET operation it contains the IPv4 or IPv6 address represented by the PTR record and for POST and PATCH operations it can be used to create/update a PTR record based on the IP address it represents. In this case, in addition to the address in the options field, need to specify the view field.
+        - name: check_rmz
+          type: boolean
+          description: A boolean flag which can be set to true for POST operation to check the existence of reverse zone for creating the corresponding PTR record. Only applicable if the create_ptr option is set to true.
+        - name: create_ptr
+          type: boolean
+          description: A boolean flag which can be set to true for POST operation to automatically create the corresponding PTR record.
+    - name: provider_metadata
+      type: flattened
+      description: external DNS provider metadata.
+    - name: rdata_value
+      type: keyword
+      description: The DNS protocol textual representation of the DNS resource record data.
+    - name: rdata
+      type: group
+      fields:
+        - name: address
+          type: ip
+          description: The IPv4/IPv6 address of the host.
+        - name: cname
+          type: keyword
+          description: A domain name which specifies the canonical or primary name for the owner. The owner name is an alias. Can be empty.
+        - name: dhcid
+          type: keyword
+          description: The Base64 encoded string which contains DHCP client information.
+        - name: dname
+          type: keyword
+          description: A domain-name which specifies a host which should be authoritative for the specified class and domain. Can be absolute or relative domain name and include UTF-8.
+        - name: exchange
+          type: keyword
+          description: A domain name which specifies a host willing to act as a mail exchange for the owner name.
+        - name: expire
+          type: long
+          description: The time interval in seconds after which zone data will expire and secondary server stops answering requests for the zone.
+        - name: flags
+          type: keyword
+          description: An unsigned 8-bit integer which specifies the CAA record flags. RFC 6844 defines one (highest) bit in flag octet, remaining bits are deferred for future use. This bit is referenced as Critical. When the bit is set (flag value == 128), issuers must not issue certificates in case CAA records contain unknown property tags.
+        - name: length_kind
+          type: long
+          description: A string indicating the size in bits of a sub-subfield that is prepended to the value and encodes the length of the value.
+        - name: mname
+          type: keyword
+          description: The domain name for the master server for the zone. Can be absolute or relative domain name.
+        - name: negative_ttl
+          type: long
+          description: The time interval in seconds for which name servers can cache negative responses for zone.
+        - name: order
+          type: long
+          description: A 16-bit unsigned integer specifying the order in which the NAPTR records must be processed. Low numbers are processed before high numbers, and once a NAPTR is found whose rule “matches” the target, the client must not consider any NAPTRs with a higher value for order (except as noted below for the “flags” field. The range of the value is 0 to 65535.
+        - name: port
+          type: long
+          description: An unsigned 16-bit integer which specifies the port on this target host of this service. The range of the value is 0 to 65535. This is often as specified in Assigned Numbers but need not be.
+        - name: preference
+          type: long
+          description: An unsigned 16-bit integer which specifies the preference given to this RR among others at the same owner. Lower values are preferred. The range of the value is 0 to 65535.
+        - name: priority
+          type: long
+          description: An unsigned 16-bit integer which specifies the priority of this target host. The range of the value is 0 to 65535. A client must attempt to contact the target host with the lowest-numbered priority it can reach. Target hosts with the same priority should be tried in an order defined by the weight field.
+        - name: refresh
+          type: long
+          description: The time interval in seconds that specifies how often secondary servers need to send a message to the primary server for a zone to check that their data is current, and retrieve fresh data if it is not.
+        - name: regexp
+          type: keyword
+          description: A string containing a substitution expression that is applied to the original string held by the client in order to construct the next domain name to lookup.
+        - name: replacement
+          type: keyword
+          description: The next name to query for NAPTR, SRV, or address records depending on the value of the flags field. This can be an absolute or relative domain name. Can be empty.
+        - name: retry
+          type: long
+          description: The time interval in seconds for which the secondary server will wait before attempting to recontact the primary server after a connection failure occurs.
+        - name: rname
+          type: keyword
+          description: The domain name which specifies the mailbox of the person responsible for this zone.
+        - name: serial
+          type: long
+          description: An unsigned 32-bit integer that specifies the serial number of the zone. Used to indicate that zone data was updated, so the secondary name server can initiate zone transfer. The range of the value is 0 to 4294967295.
+        - name: services
+          type: keyword
+          description: Specifies the service(s) available down this rewrite path. It may also specify the particular protocol that is used to talk with a service. A protocol must be specified if the flags field states that the NAPTR is terminal. If a protocol is specified, but the flags field does not state that the NAPTR is terminal, the next lookup must be for a NAPTR. The client may choose not to perform the next lookup if the protocol is unknown, but that behavior must not be relied upon.
+        - name: tag
+          type: keyword
+          description: The CAA record property tag string which indicates the type of CAA record.
+        - name: target
+          type: keyword
+          description: The target domain name to which the zone will be mapped. Can be empty.
+        - name: text
+          type: keyword
+          description: The semantics of the text depends on the domain where it is found.
+        - name: type
+          type: keyword
+          description: Type of TXT (Text) record.
+        - name: value
+          type: keyword
+          description: A string which contains the CAA record property value.
+        - name: weight
+          type: long
+          description: An unsigned 16-bit integer which specifies a relative weight for entries with the same priority. The range of the value is 0 to 65535. Larger weights should be given a proportionately higher probability of being selected. Domain administrators should use weight 0 when there isn’t any server selection to do, to make the RR easier to read for humans (less noisy). In the presence of records containing weights greater than 0, records with weight 0 should have a very small chance of being selected.
+    - name: source
+      type: keyword
+      description: The DNS resource record type-specific non-protocol source. The source is a combination of indicators, each tracking how the DNS resource record appeared in system.
+    - name: tags
+      type: flattened
+      description: The tags for the DNS resource record in JSON format.
+    - name: ttl
+      type: long
+      description: The record time to live value in seconds. The range of this value is 0 to 2147483647. Defaults to TTL value from the SOA record of the zone.
+    - name: type
+      type: keyword
+      description: The DNS resource record type specified in the textual mnemonic format or in the “TYPEnnn” format where “nnn” indicates the numeric type value.
+    - name: updated_at
+      type: date
+      description: The timestamp when the object has been updated. Equals to created_at if not updated after creation.
+    - name: view
+      type: keyword
+      description: The resource identifier.
+    - name: view_name
+      type: keyword
+      description: The display name of the DNS view that contains the parent zone of the DNS resource record.
+    - name: zone
+      type: keyword
+      description: The resource identifier.

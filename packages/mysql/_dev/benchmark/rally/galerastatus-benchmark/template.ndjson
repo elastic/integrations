@@ -1,0 +1,173 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $agent_id := generate "agent_id" }}
+{{- $agent_name := generate "agent_name" }}
+{{- $agent_ephemeral_id := generate "agent_ephemeral_id" }}
+{{- $EventDuration := generate "EventDuration" }}
+{{- $service_address := generate "service_address" }}
+{{- $apply_oooe := generate "apply_oooe" }}
+{{- $apply_oool := generate "apply_oool" }}
+{{- $apply_window := generate "apply_window" }}
+{{- $deps_distance := generate "deps_distance" }}
+{{- $index_size := generate "index_size" }}
+{{- $interval := generate "interval" }}
+{{- $conf_id := generate "conf_id" }}
+{{- $cluster_size := generate "cluster_size" }}
+{{- $cluster_status := generate "cluster_status" }}
+{{- $commit_oooe := generate "commit_oooe" }}
+{{- $commit_window := generate "commit_window" }}
+{{- $connected := generate "connected" }}
+{{- $evs_evict := generate "evs_evict" }}
+{{- $evs_state := generate "evs_state" }}
+{{- $flow_ctl_paused := generate "flow_ctl_paused" }}
+{{- $flow_ctl_paused_ns := generate "flow_ctl_paused_ns" }}
+{{- $flow_ctl_recv := generate "flow_ctl_recv" }}
+{{- $flow_ctl_sent := generate "flow_ctl_sent" }}
+{{- $last_committed := generate "last_committed" }}
+{{- $bf_aborts := generate "bf_aborts" }}
+{{- $cert_failures := generate "cert_failures" }}
+{{- $commits := generate "commits" }}
+{{- $recv_queue := generate "recv_queue" }}
+{{- $recv_queue_avg := generate "recv_queue_avg" }}
+{{- $recv_queue_max := generate "recv_queue_max" }}
+{{- $recv_queue_min := generate "recv_queue_min" }}
+{{- $replays := generate "replays" }}
+{{- $send_queue := generate "send_queue" }}
+{{- $send_queue_avg := generate "send_queue_avg" }}
+{{- $send_queue_max := generate "send_queue_max" }}
+{{- $send_queue_min := generate "send_queue_min" }}
+{{- $state := generate "state" }}
+{{- $ready := generate "ready" }}
+{{- $received_count := generate "received_count" }}
+{{- $received_bytes := generate "received_bytes" }}
+{{- $data_bytes := generate "data_bytes" }}
+{{- $keys := generate "keys" }}
+{{- $keys_bytes := generate "keys_bytes" }}
+{{- $other_bytes := generate "other_bytes" }}
+{{- $count := generate "count" }}
+{{- $bytes := generate "bytes" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "{{ $agent_ephemeral_id }}",
+        "id": "{{ $agent_id }}",
+        "name": "{{ $agent_name }}",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "data_stream": {
+        "dataset": "mysql.galera_status",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "{{ $agent_id }}",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "mysql.galera_status",
+        "duration": {{ $EventDuration }},
+        "module": "mysql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "589e678e8f3f457d81e3a530d3ae6011",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "galera_status",
+        "period": 10000
+    },
+    "mysql": {
+        "galera_status": {
+            "connected": "{{ $connected }}",
+            "cluster": {
+                "size": {{ $cluster_size }},
+                "conf_id": {{ $conf_id }},
+                "status": "{{ $cluster_status }}"
+            },
+            "evs": {
+                "state": "{{ $evs_state }}",
+                "evict": "{{ $evs_evict }}"
+            },
+            "apply": {
+                "oooe": {{ $apply_oooe }},
+                "oool": {{ $apply_oool }},
+                "window": {{ $apply_window }}
+            },
+            "ready": "{{ $ready }}",
+            "flow_ctl": {
+                "paused_ns": {{ $flow_ctl_paused_ns }},
+                "paused": {{ $flow_ctl_paused }},
+                "recv": {{ $flow_ctl_recv }},
+                "sent": {{ $flow_ctl_sent }}
+            },
+            "last_committed": {{ $last_committed }},
+            "commit": {
+                "oooe": {{ $commit_oooe }},
+                "window": {{ $commit_window }}
+            },
+            "cert": {
+                "index_size": {{ $index_size }},
+                "deps_distance": {{ $deps_distance }},
+                "interval": {{ $interval }}
+            },
+            "received": {
+                "bytes": {{ $received_bytes }},
+                "count": {{ $received_count }}
+            },
+            "repl": {
+                "bytes": {{ $bytes }},
+                "keys": {{ $keys }},
+                "keys_bytes": {{ $keys_bytes }},
+                "count": {{ $count }},
+                "other_bytes": {{ $other_bytes }},
+                "data_bytes": {{ $data_bytes }}
+            },
+            "local": {
+                "replays": {{ $replays }},
+                "recv": {
+                    "queue_max": {{ $recv_queue_max }},
+                    "queue_min": {{ $recv_queue_min }},
+                    "queue_avg": {{ $recv_queue_avg }},
+                    "queue": {{ $recv_queue }}
+                },
+                "bf_aborts": {{ $bf_aborts }},
+                "commits": {{ $commits }},
+                "state": "{{ $state }}",
+                "cert_failures": {{ $cert_failures }},
+                "send": {
+                    "queue_max": {{ $send_queue_max }},
+                    "queue_min": {{ $send_queue_min }},
+                    "queue_avg": {{ $send_queue_avg }},
+                    "queue": {{ $send_queue }}
+                }
+            }
+        }
+    },
+    "service": {
+        "address": "tcp({{ $service_address }}:3306)/?readTimeout=10s\u0026timeout=10s\u0026writeTimeout=10s",
+        "type": "mysql"
+    }
+}

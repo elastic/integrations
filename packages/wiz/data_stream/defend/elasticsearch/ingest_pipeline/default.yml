@@ -1,0 +1,1004 @@
+---
+description: Pipeline for processing Wiz Defend logs.
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Defend
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Wiz
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - script:
+      tag: script_add_event_original
+      lang: painless
+      description: Add "event.original"
+      if: ctx.json instanceof Map
+      source: |
+        def stringified_orig = Json.dump(ctx.json);
+        if (stringified_orig != null) {
+          ctx.event = ctx.event ?: [:];
+          ctx.event.original = stringified_orig;
+        }
+  - rename:
+      field: json.cloudOrganizations
+      tag: rename_cloudOrganizations
+      target_field: wiz.defend.cloudOrganizations
+      ignore_missing: true
+  - date:
+      field: json.createdAt
+      tag: date_createdAt
+      target_field: wiz.defend.created_at
+      formats:
+        - ISO8601
+      if: ctx.json?.createdAt != null && ctx.json.createdAt != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: wiz.defend.description
+      ignore_missing: true
+  - rename:
+      field: json.detectionUrl
+      tag: rename_detectionUrl
+      target_field: wiz.defend.detection_url
+      ignore_missing: true
+  - set:
+      field: event.reference
+      tag: set_event_reference_from_defend_detection_url
+      copy_from: wiz.defend.detection_url
+      ignore_empty_value: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: wiz.defend.id
+      ignore_missing: true
+  - foreach:
+      field: json.mitreTactics
+      tag: foreach_mitreTactics_into_threat_tactic_id
+      if: ctx.json?.mitreTactics instanceof List
+      processor:
+        append:
+          field: threat.tactic.id
+          tag: append_mitreTactics_into_threat_tactic_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.mitreTactics
+      tag: rename_mitreTactics
+      target_field: wiz.defend.mitreTactics
+      ignore_missing: true
+  - foreach:
+      field: json.mitreTechniques
+      tag: foreach_mitreTechniques_into_threat_technique_id
+      if: ctx.json?.mitreTechniques instanceof List
+      processor:
+        append:
+          field: threat.technique.id
+          tag: append_mitreTechniques_into_threat_technique_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.mitreTechniques
+      tag: rename_mitreTechniques
+      target_field: wiz.defend.mitreTechniques
+      ignore_missing: true
+  - rename:
+      field: json.primaryActor.email
+      tag: rename_primaryActor_email
+      target_field: wiz.defend.primary_actor.email
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_primary_actor_email
+      value: '{{{wiz.defend.primary_actor.email}}}'
+      if: ctx.wiz?.defend?.primary_actor?.email != null
+      allow_duplicates: false
+  - rename:
+      field: json.primaryActor.externalId
+      tag: rename_primaryActor_externalId
+      target_field: wiz.defend.primary_actor.external_id
+      ignore_missing: true
+  - rename:
+      field: json.primaryActor.id
+      tag: rename_primaryActor_id
+      target_field: wiz.defend.primary_actor.id
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_primary_actor_id
+      value: '{{{wiz.defend.primary_actor.id}}}'
+      if: ctx.wiz?.defend?.primary_actor?.id != null
+      allow_duplicates: false
+  - rename:
+      field: json.primaryActor.name
+      tag: rename_primaryActor_name
+      target_field: wiz.defend.primary_actor.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_primary_actor_name
+      value: '{{{wiz.defend.primary_actor.name}}}'
+      if: ctx.wiz?.defend?.primary_actor?.name != null
+      allow_duplicates: false
+  - rename:
+      field: json.primaryActor.nativeType
+      tag: rename_primaryActor_nativeType
+      target_field: wiz.defend.primary_actor.native_type
+      ignore_missing: true
+  - rename:
+      field: json.primaryActor.type
+      tag: rename_primaryActor_type
+      target_field: wiz.defend.primary_actor.type
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.cloudAccount.cloudPlatform
+      tag: rename_primaryResource_cloudAccount_cloudPlatform
+      target_field: wiz.defend.primary_resource.cloud_account.cloud_platform
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.cloudAccount.externalId
+      tag: rename_primaryResource_cloudAccount_externalId
+      target_field: wiz.defend.primary_resource.cloud_account.external_id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.cloudAccount.id
+      tag: rename_primaryResource_cloudAccount_id
+      target_field: wiz.defend.primary_resource.cloud_account.id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.cloudProviderUrl
+      tag: rename_primaryResource_cloudProviderUrl
+      target_field: wiz.defend.primary_resource.cloud_provider_url
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.externalId
+      tag: rename_primaryResource_externalId
+      target_field: wiz.defend.primary_resource.external_id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.id
+      tag: rename_primaryResource_id
+      target_field: wiz.defend.primary_resource.id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.kubernetesClusterId
+      tag: rename_primaryResource_kubernetesClusterId
+      target_field: wiz.defend.primary_resource.kubernetes_cluster_id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.kubernetesClusterName
+      tag: rename_primaryResource_kubernetesClusterName
+      target_field: wiz.defend.primary_resource.kubernetes_cluster_name
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.kubernetesNamespaceId
+      tag: rename_primaryResource_kubernetesNamespaceId
+      target_field: wiz.defend.primary_resource.kubernetes_namespace_id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.kubernetesNamespaceName
+      tag: rename_primaryResource_kubernetesNamespaceName
+      target_field: wiz.defend.primary_resource.kubernetes_namespace_name
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.kubernetesNodeId
+      tag: rename_primaryResource_kubernetesNodeId
+      target_field: wiz.defend.primary_resource.kubernetes_node_id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.kubernetesNodeName
+      tag: rename_primaryResource_kubernetesNodeName
+      target_field: wiz.defend.primary_resource.kubernetes_node_name
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.name
+      tag: rename_primaryResource_name
+      target_field: wiz.defend.primary_resource.name
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.nativeType
+      tag: rename_primaryResource_nativeType
+      target_field: wiz.defend.primary_resource.native_type
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.providerUniqueId
+      tag: rename_primaryResource_providerUniqueId
+      target_field: wiz.defend.primary_resource.provider_unique_id
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.region
+      tag: rename_primaryResource_region
+      target_field: wiz.defend.primary_resource.region
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.status
+      tag: rename_primaryResource_status
+      target_field: wiz.defend.primary_resource.status
+      ignore_missing: true
+  - rename:
+      field: json.primaryResource.type
+      tag: rename_primaryResource_type
+      target_field: wiz.defend.primary_resource.type
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: wiz.defend.severity
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.wiz?.defend?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String severity = ctx.wiz.defend.severity;
+        if (severity.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (severity.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (severity.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+  - rename:
+      field: json.source
+      tag: rename_source
+      target_field: wiz.defend.source
+      ignore_missing: true
+  - rename:
+      field: json.tdrId
+      tag: rename_tdrId
+      target_field: wiz.defend.tdr_id
+      ignore_missing: true
+  - rename:
+      field: json.tdrSource
+      tag: rename_tdrSource
+      target_field: wiz.defend.tdr_source
+      ignore_missing: true
+  - rename:
+      field: json.threatId
+      tag: rename_threatId
+      target_field: wiz.defend.threat_id
+      ignore_missing: true
+  - append:
+      field: threat.indicator.id
+      tag: set_threat_indicator_id
+      value: '{{{wiz.defend.threat_id}}}'
+      allow_duplicates: false
+      if: ctx.wiz?.defend?.threat_id != null
+  - rename:
+      field: json.threatURL
+      tag: rename_threatURL
+      target_field: wiz.defend.threat_url
+      ignore_missing: true
+  - set:
+      field: threat.indicator.reference
+      tag: set_threat_indicator_reference_from_defend_threat_url
+      copy_from: wiz.defend.threat_url
+      ignore_empty_value: true
+  - date:
+      field: json.timeframe.end
+      tag: date_timeframe_end
+      target_field: wiz.defend.timeframe.end
+      formats:
+        - ISO8601
+      if: ctx.json?.timeframe?.end != null && ctx.json.timeframe.end != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.timeframe.start
+      tag: date_timeframe_start
+      target_field: wiz.defend.timeframe.start
+      formats:
+        - ISO8601
+      if: ctx.json?.timeframe?.start != null && ctx.json.timeframe.start != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.title
+      tag: rename_title
+      target_field: wiz.defend.title
+      ignore_missing: true
+  - rename:
+      field: json.trigger.ruleId
+      tag: rename_trigger_ruleId
+      target_field: wiz.defend.trigger.rule_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_defend_trigger_rule_id
+      copy_from: wiz.defend.trigger.rule_id
+      ignore_empty_value: true
+  - rename:
+      field: json.trigger.ruleName
+      tag: rename_trigger_ruleName
+      target_field: wiz.defend.trigger.rule_name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_defend_trigger_rule_name
+      copy_from: wiz.defend.trigger.rule_name
+      ignore_empty_value: true
+  - set:
+      field: wiz.defend.friendly_name
+      tag: set_wiz_defend_friendly_name_from_defend_trigger_rule_name
+      copy_from: wiz.defend.trigger.rule_name
+      ignore_empty_value: true
+  - rename:
+      field: json.trigger.source
+      tag: rename_trigger_source
+      target_field: wiz.defend.trigger.source
+      ignore_missing: true
+  - rename:
+      field: json.trigger.type
+      tag: rename_trigger_type
+      target_field: wiz.defend.trigger.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_defend_trigger_type
+      copy_from: wiz.defend.trigger.type
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action instanceof List
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.triggeringEvent.actor.actingAs.id
+      tag: rename_triggeringEvent_actor_actingAs_id
+      target_field: wiz.defend.triggering_event.actor.acting_as.id
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actor.actingAs.name
+      tag: rename_triggeringEvent_actor_actingAs_name
+      target_field: wiz.defend.triggering_event.actor.acting_as.name
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actor.actingAs.nativeType
+      tag: rename_triggeringEvent_actor_actingAs_nativeType
+      target_field: wiz.defend.triggering_event.actor.acting_as.native_type
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actor.actingAs.type
+      tag: rename_triggeringEvent_actor_actingAs_type
+      target_field: wiz.defend.triggering_event.actor.acting_as.type
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actor.externalId
+      tag: rename_triggeringEvent_actor_externalId
+      target_field: wiz.defend.triggering_event.actor.external_id
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actor.id
+      tag: rename_triggeringEvent_actor_id
+      target_field: wiz.defend.triggering_event.actor.id
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_triggering_event_actor_id
+      value: '{{{wiz.defend.triggering_event.actor.id}}}'
+      if: ctx.wiz?.defend?.triggering_event?.actor?.id != null
+      allow_duplicates: false
+  - set:
+      field: user.id
+      tag: set_user_id_from_defend_triggering_event_actor_id
+      copy_from: wiz.defend.triggering_event.actor.id
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.actor.name
+      tag: rename_triggeringEvent_actor_name
+      target_field: wiz.defend.triggering_event.actor.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_triggering_event_actor_name
+      value: '{{{wiz.defend.triggering_event.actor.name}}}'
+      if: ctx.wiz?.defend?.triggering_event?.actor?.name != null
+      allow_duplicates: false
+  - set:
+      field: user.name
+      tag: set_user_name_from_defend_triggering_event_actor_name
+      copy_from: wiz.defend.triggering_event.actor.name
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.actor.nativeType
+      tag: rename_triggeringEvent_actor_nativeType
+      target_field: wiz.defend.triggering_event.actor.native_type
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actor.providerUniqueId
+      tag: rename_triggeringEvent_actor_providerUniqueId
+      target_field: wiz.defend.triggering_event.actor.provider_unique_id
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actor.type
+      tag: rename_triggeringEvent_actor_type
+      target_field: wiz.defend.triggering_event.actor.type
+      ignore_missing: true
+  - geoip:
+      field: json.triggeringEvent.actorIP
+      target_field: source.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{json.triggeringEvent.actorIP}}}"
+      ignore_failure: true
+      if: ctx.json?.triggeringEvent?.actorIP != null
+      allow_duplicates: false
+  - convert:
+      field: json.triggeringEvent.actorIP
+      tag: convert_triggeringEvent_actorIP_to_ip
+      target_field: wiz.defend.triggering_event.actor_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.triggeringEvent?.actorIP != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.triggeringEvent.actorIPMeta.autonomousSystemNumber
+      tag: convert_triggeringEvent_actorIPMeta_autonomousSystemNumber_to_long
+      target_field: wiz.defend.triggering_event.actor_ip_meta.autonomous_system_number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.as.number
+      tag: set_source_as_number_from_defend_triggering_event_actor_ip_meta_autonomous_system_number
+      copy_from: wiz.defend.triggering_event.actor_ip_meta.autonomous_system_number
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.actorIPMeta.autonomousSystemOrganization
+      tag: rename_triggeringEvent_actorIPMeta_autonomousSystemOrganization
+      target_field: wiz.defend.triggering_event.actor_ip_meta.autonomous_system_organization
+      ignore_missing: true
+  - set:
+      field: source.as.organization.name
+      tag: set_source_as_organization_name_from_defend_triggering_event_actor_ip_meta_autonomous_system_organization
+      copy_from: wiz.defend.triggering_event.actor_ip_meta.autonomous_system_organization
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.actorIPMeta.country
+      tag: rename_triggeringEvent_actorIPMeta_country
+      target_field: wiz.defend.triggering_event.actor_ip_meta.country
+      ignore_missing: true
+  - convert:
+      field: json.triggeringEvent.actorIPMeta.isForeign
+      tag: convert_triggeringEvent_actorIPMeta_isForeign_to_boolean
+      target_field: wiz.defend.triggering_event.actor_ip_meta.is_foreign
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.triggeringEvent.actorIPMeta.relatedAttackGroupNames
+      tag: rename_triggeringEvent_actorIPMeta_relatedAttackGroupNames
+      target_field: wiz.defend.triggering_event.actor_ip_meta.related_attack_group_names
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actorIPMeta.reputation
+      tag: rename_triggeringEvent_actorIPMeta_reputation
+      target_field: wiz.defend.triggering_event.actor_ip_meta.reputation
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actorIPMeta.reputationDescription
+      tag: rename_triggeringEvent_actorIPMeta_reputationDescription
+      target_field: wiz.defend.triggering_event.actor_ip_meta.reputation_description
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.actorIPMeta.reputationSource
+      tag: rename_triggeringEvent_actorIPMeta_reputationSource
+      target_field: wiz.defend.triggering_event.actor_ip_meta.reputation_source
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.category
+      tag: rename_triggeringEvent_category
+      target_field: wiz.defend.triggering_event.category
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.cloudPlatform
+      tag: rename_triggeringEvent_cloudPlatform
+      target_field: wiz.defend.triggering_event.cloud_platform
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_from_defend_triggering_event_cloud_platform
+      copy_from: wiz.defend.triggering_event.cloud_platform
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.cloudProviderUrl
+      tag: rename_triggeringEvent_cloudProviderUrl
+      target_field: wiz.defend.triggering_event.cloud_provider_url
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.description
+      tag: rename_triggeringEvent_description
+      target_field: wiz.defend.triggering_event.description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_defend_triggering_event_description
+      copy_from: wiz.defend.triggering_event.description
+      ignore_empty_value: true
+  - date:
+      field: json.triggeringEvent.eventTime
+      tag: date_triggeringEvent_eventTime
+      target_field: wiz.defend.triggering_event.event_time
+      formats:
+        - ISO8601
+      if: ctx.json?.triggeringEvent?.eventTime != null && ctx.json.triggeringEvent.eventTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_defend_triggering_event_event_time
+      copy_from: wiz.defend.triggering_event.event_time
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.externalId
+      tag: rename_triggeringEvent_externalId
+      target_field: wiz.defend.triggering_event.external_id
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.id
+      tag: rename_triggeringEvent_id
+      target_field: wiz.defend.triggering_event.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_defend_triggering_event_id
+      copy_from: wiz.defend.triggering_event.id
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.name
+      tag: rename_triggeringEvent_name
+      target_field: wiz.defend.triggering_event.name
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.origin
+      tag: rename_triggeringEvent_origin
+      target_field: wiz.defend.triggering_event.origin
+      ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_cloudAccount_cloudPlatform
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.cloudAccount.cloudPlatform
+          tag: rename_triggeringEvent_resources_cloudAccount_cloudPlatform
+          target_field: _ingest._value.cloud_account.cloud_platform
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_cloudAccount_externalId
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.cloudAccount.externalId
+          tag: rename_triggeringEvent_resources_cloudAccount_externalId
+          target_field: _ingest._value.cloud_account.external_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_cloudAccount_id
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.cloudAccount.id
+          tag: rename_triggeringEvent_resources_cloudAccount_id
+          target_field: _ingest._value.cloud_account.id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_cloud_provider_url
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.cloudProviderUrl
+          tag: rename_triggeringEvent_resources_cloudProviderUrl
+          target_field: _ingest._value.cloud_provider_url
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_externalId
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.externalId
+          tag: rename_triggeringEvent_resources_externalId
+          target_field: _ingest._value.external_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_kubernetesClusterId
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kubernetesClusterId
+          tag: rename_triggeringEvent_resources_kubernetesClusterId
+          target_field: _ingest._value.kubernetes_cluster_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_kubernetesClusterName
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kubernetesClusterName
+          tag: rename_triggeringEvent_resources_kubernetesClusterName
+          target_field: _ingest._value.kubernetes_cluster_name
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_kubernetesNamespaceId
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kubernetesNamespaceId
+          tag: rename_triggeringEvent_resources_kubernetesNamespaceId
+          target_field: _ingest._value.kubernetes_namespace_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_kubernetesNamespaceName
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kubernetesNamespaceName
+          tag: rename_triggeringEvent_resources_kubernetesNamespaceName
+          target_field: _ingest._value.kubernetes_namespace_name
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_kubernetesNodeId
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kubernetesNodeId
+          tag: rename_triggeringEvent_resources_kubernetesNodeId
+          target_field: _ingest._value.kubernetes_node_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_kubernetesNodeName
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kubernetesNodeName
+          tag: rename_triggeringEvent_resources_kubernetesNodeName
+          target_field: _ingest._value.kubernetes_node_name
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_nativeType
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.nativeType
+          tag: rename_triggeringEvent_resources_nativeType
+          target_field: _ingest._value.native_type
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.resources
+      tag: foreach_triggeringEvent_resources_providerUniqueId
+      if: ctx.json?.triggeringEvent?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.providerUniqueId
+          tag: rename_triggeringEvent_resources_providerUniqueId
+          target_field: _ingest._value.provider_unique_id
+          ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.resources
+      tag: rename_triggeringEvent_resources
+      target_field: wiz.defend.triggering_event.resources
+      ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_triggeringEvent_runtimeDetails_processTree_container_externalId
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        rename:
+          field: _ingest._value.container.externalId
+          tag: rename_triggeringEvent_runtimeDetails_processTree_container_externalId
+          target_field: _ingest._value.container.external_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_triggeringEvent_runtimeDetails_processTree_container_imageExternalId
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        rename:
+          field: _ingest._value.container.imageExternalId
+          tag: rename_triggeringEvent_runtimeDetails_processTree_container_imageExternalId
+          target_field: _ingest._value.container.image_external_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_triggeringEvent_runtimeDetails_processTree_container_imageId
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        rename:
+          field: _ingest._value.container.imageId
+          tag: rename_triggeringEvent_runtimeDetails_processTree_container_imageId
+          target_field: _ingest._value.container.image_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_triggeringEvent_runtimeDetails_processTree_executionTime
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        date:
+          field: _ingest._value.executionTime
+          tag: date_triggeringEvent_runtimeDetails_processTree_executionTime
+          target_field: _ingest._value.execution_time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.executionTime
+                ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_triggeringEvent_runtimeDetails_processTree_userId
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        rename:
+          field: _ingest._value.userId
+          tag: rename_triggeringEvent_runtimeDetails_processTree_userId
+          target_field: _ingest._value.user_id
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_triggeringEvent_runtimeDetails_processTree_execution_time
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        remove:
+          field: _ingest._value.executionTime
+          tag: remove_triggeringEvent_runtimeDetails_processTree
+          ignore_missing: true
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_processTree_add_user_id_into_related_user
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_user_id_into_related_user
+          value: '{{{_ingest._value.user_id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_processTree_add_username_into_related_user
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_username_into_related_user
+          value: '{{{_ingest._value.username}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: foreach_processTree_add_hash_into_related_hash
+      if: ctx.json?.triggeringEvent?.runtimeDetails?.processTree instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_hash_into_related_hash
+          value: '{{{_ingest._value.hash}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.triggeringEvent.runtimeDetails.processTree
+      tag: rename_triggeringEvent_runtimeDetails_processTree
+      target_field: wiz.defend.triggering_event.runtime_details.process_tree
+      ignore_missing: true
+  - rename:
+      field: json.triggeringEvent.source
+      tag: rename_triggeringEvent_source
+      target_field: wiz.defend.triggering_event.source
+      ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_defend_triggering_event_source
+      copy_from: wiz.defend.triggering_event.source
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEvent.status
+      tag: rename_triggeringEvent_status
+      target_field: wiz.defend.triggering_event.status
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Script to set event.outcome.
+      tag: set_event_outcome
+      if: ctx.wiz?.defend?.triggering_event?.status instanceof String
+      source: |-
+        String status = ctx.wiz.defend.triggering_event.status.toLowerCase();
+        if (status.contains('success')) {
+          ctx.event.outcome = "success";
+        } else if (status.contains('fail')) {
+          ctx.event.outcome = "failure";
+        } else {
+          ctx.event.outcome = "unknown";
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.triggeringEvent.subjectResourceId
+      tag: rename_triggeringEvent_subjectResourceId
+      target_field: wiz.defend.triggering_event.subject_resource_id
+      ignore_missing: true
+  - convert:
+      field: json.triggeringEvent.subjectResourceIp
+      tag: convert_triggeringEvent_subjectResourceIp_to_ip
+      target_field: wiz.defend.triggering_event.subject_resource_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.triggeringEvent?.subjectResourceIp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: "{{{wiz.defend.triggering_event.subject_resource_ip}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.wiz?.defend?.triggering_event?.subject_resource_ip != null
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_defend_triggering_event_subject_resource_ip
+      copy_from: wiz.defend.triggering_event.subject_resource_ip
+      ignore_empty_value: true
+  - rename:
+      field: json.triggeringEventsCount
+      tag: rename_triggeringEventsCount
+      target_field: wiz.defend.triggering_events_count
+      ignore_missing: true
+  - remove:
+      field:
+        - wiz.defend.detection_url
+        - wiz.defend.threat_id
+        - wiz.defend.threat_url
+        - wiz.defend.trigger.rule_id
+        - wiz.defend.trigger.rule_name
+        - wiz.defend.trigger.type
+        - wiz.defend.triggering_event.actor.id
+        - wiz.defend.triggering_event.actor.name
+        - wiz.defend.triggering_event.actor_ip_meta.autonomous_system_number
+        - wiz.defend.triggering_event.actor_ip_meta.autonomous_system_organization
+        - wiz.defend.triggering_event.cloud_platform
+        - wiz.defend.triggering_event.description
+        - wiz.defend.triggering_event.event_time
+        - wiz.defend.triggering_event.id
+        - wiz.defend.triggering_event.source
+        - wiz.defend.triggering_event.subject_resource_ip
+        - wiz.defend.mitreTactics
+        - wiz.defend.mitreTactics
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

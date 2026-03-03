@@ -1,0 +1,27 @@
+---
+description: Pipeline for parsing azure openai metrics.
+processors:
+  - rename:
+      field: azure.metrics
+      target_field: azure.open_ai
+      ignore_missing: true
+  - rename:
+      field: azure.open_ai.azure_openairequests.total
+      target_field: azure.open_ai.requests.total
+      ignore_missing: true
+  - rename:
+      field: azure.open_ai.azure_openaiprovisioned_managed_utilization_v2.avg
+      target_field: azure.open_ai.provisioned_managed_utilization_v2.avg
+      ignore_missing: true
+  - rename:
+      field: azure.open_ai.azure_openaitime_toresponse.avg
+      target_field: azure.open_ai.time_to_response.avg
+      ignore_missing: true
+  - rename:
+      field: azure.open_ai.azure_openaicontext_tokens_cache_match_rate.avg
+      target_field: azure.open_ai.context_tokens_cache_match_rate.avg
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

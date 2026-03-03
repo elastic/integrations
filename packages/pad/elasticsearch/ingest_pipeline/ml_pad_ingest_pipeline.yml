@@ -1,0 +1,27 @@
+---
+description: Pipeline for enriching Linux logs. Calculates entropy for the process.command_line field.
+processors:
+  - script:
+      description: Script to calculate entropy for the process.command_line field.
+      lang: painless
+      source: |
+        String inputString = ctx["process"]["command_line"];
+        Map m = new HashMap();
+        for (int i = 0; i < inputString.length(); i++) {
+          char c = inputString.charAt(i);
+          m.put(c, m.getOrDefault(c, 0) + 1);
+        }
+        double result = 0.0;
+        for (entry in m.entrySet()) {
+          double frequency = entry.getValue() / (double) inputString.length();
+          result -= frequency * (Math.log(frequency) / Math.log(2));
+        }
+        ctx["process.command_line_entropy"] = result;
+      if: ctx.event?.category?.contains('process') && ctx.host?.os?.type?.toLowerCase() == 'linux' && ctx.process?.command_line!=null
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

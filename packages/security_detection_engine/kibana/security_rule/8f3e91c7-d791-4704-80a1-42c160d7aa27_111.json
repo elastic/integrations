@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies port monitor and print processor registry modifications. Adversaries may abuse port monitor and print processors to run malicious DLLs during system boot that will be executed as SYSTEM for privilege escalation and/or persistence, if permissions allow writing a fully-qualified pathname for that DLL.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-m365_defender.event-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Port Monitor or Print Processor Registration Abuse",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Port Monitor or Print Processor Registration Abuse\n\nPort monitors and print processors are integral to Windows printing, managing data flow and processing print jobs. Adversaries exploit these by registering malicious DLLs, which execute with SYSTEM privileges at boot, enabling persistence and privilege escalation. The detection rule identifies registry changes in specific paths, focusing on non-SYSTEM user modifications, to flag potential abuse.\n\n### Possible investigation steps\n\n- Review the registry path specified in the alert to confirm the presence of any unauthorized or suspicious DLLs in the paths: HKLM\\SYSTEM\\*ControlSet*\\Control\\Print\\Monitors\\* and HKLM\\SYSTEM\\*ControlSet*\\Control\\Print\\Environments\\Windows*\\Print Processors\\*.\n- Identify the user account associated with the registry change by examining the user.id field, ensuring it is not the SYSTEM account (S-1-5-18), and determine if the account has a legitimate reason to modify these registry paths.\n- Check the file properties and digital signatures of the DLLs found in the registry paths to verify their legitimacy and identify any anomalies or signs of tampering.\n- Investigate the system's event logs around the time of the registry change to gather additional context, such as other activities performed by the same user or related processes that might indicate malicious behavior.\n- Conduct a threat intelligence search on the identified DLLs and any associated file hashes to determine if they are known to be associated with malicious activity or threat actors.\n- Assess the system for any signs of privilege escalation or persistence mechanisms that may have been established as a result of the registry modification, such as new services or scheduled tasks.\n\n### False positive analysis\n\n- Legitimate software installations or updates may modify print processor or port monitor registry paths. Users should verify if recent installations or updates coincide with the detected changes.\n- System administrators performing maintenance or configuration changes might trigger alerts. Ensure that such activities are documented and cross-referenced with the alert timestamps.\n- Some third-party printing solutions may register their own DLLs in these registry paths. Identify and whitelist these known applications to prevent unnecessary alerts.\n- Automated scripts or management tools that modify printer settings could cause false positives. Review and adjust these tools to ensure they operate under expected user accounts or exclude their known behaviors.\n- Regularly review and update the exclusion list to include any new benign applications or processes that interact with the monitored registry paths.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread or communication with potential command and control servers.\n- Terminate any suspicious processes associated with the malicious DLLs identified in the registry paths to halt their execution.\n- Remove the unauthorized DLL entries from the registry paths: HKLM\\SYSTEM\\*ControlSet*\\Control\\Print\\Monitors\\* and HKLM\\SYSTEM\\*ControlSet*\\Control\\Print\\Environments\\Windows*\\Print Processors\\* to eliminate persistence mechanisms.\n- Conduct a thorough scan of the system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious files or remnants.\n- Review and reset credentials for any accounts that may have been compromised, especially those with elevated privileges, to prevent unauthorized access.\n- Implement application whitelisting to prevent unauthorized DLLs from executing, focusing on the paths identified in the alert.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are affected, ensuring comprehensive threat containment and eradication.",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n  registry.path : (\n      \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Monitors\\\\*\",\n      \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Environments\\\\Windows*\\\\Print Processors\\\\*\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Monitors\\\\*\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Environments\\\\Windows*\\\\Print Processors\\\\*\"\n  ) and registry.data.strings : \"*.dll\" and\n  /* exclude SYSTEM SID - look for changes by non-SYSTEM user */\n  not user.id : \"S-1-5-18\"\n",
+        "references": [
+            "https://www.welivesecurity.com/2020/05/21/no-game-over-winnti-group/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8f3e91c7-d791-4704-80a1-42c160d7aa27",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.010",
+                                "name": "Port Monitors",
+                                "reference": "https://attack.mitre.org/techniques/T1547/010/"
+                            },
+                            {
+                                "id": "T1547.012",
+                                "name": "Print Processors",
+                                "reference": "https://attack.mitre.org/techniques/T1547/012/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.010",
+                                "name": "Port Monitors",
+                                "reference": "https://attack.mitre.org/techniques/T1547/010/"
+                            },
+                            {
+                                "id": "T1547.012",
+                                "name": "Print Processors",
+                                "reference": "https://attack.mitre.org/techniques/T1547/012/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 111
+    },
+    "id": "8f3e91c7-d791-4704-80a1-42c160d7aa27_111",
+    "type": "security-rule"
+}

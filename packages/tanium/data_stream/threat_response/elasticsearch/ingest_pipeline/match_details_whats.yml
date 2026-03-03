@@ -1,0 +1,192 @@
+---
+description: Pipeline for processing tanium.threat_response.match_details.finding.whats[]
+processors:
+
+  - rename:
+      tag: rename_ingest_value
+      field: _ingest._value
+      target_field: _what
+
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_parent_process_user_user_domain
+      field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.user.user.domain
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_user_user_domain
+      field: _what.artifact_activity.acting_artifact.process.parent.process.user.user.domain
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.user.domain
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_user_user_domain
+      field: _what.artifact_activity.acting_artifact.process.user.user.domain
+      target_field: _what.artifact_activity.acting_artifact.process.user.domain
+      ignore_missing: true
+
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_parent_process_user_user_name
+      field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.user.user.name
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_user_user_name
+      field: _what.artifact_activity.acting_artifact.process.parent.process.user.user.name
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.user.name
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_user_user_name
+      field: _what.artifact_activity.acting_artifact.process.user.user.name
+      target_field: _what.artifact_activity.acting_artifact.process.user.name
+      ignore_missing: true
+
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_parent_process_user_user_user_id
+      field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.user.user.user_id
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_user_user_user_id
+      field: _what.artifact_activity.acting_artifact.process.parent.process.user.user.user_id
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.user.id
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_user_user_user_id
+      field: _what.artifact_activity.acting_artifact.process.user.user.user_id
+      target_field: _what.artifact_activity.acting_artifact.process.user.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_user_user_group_id
+      field: _what.artifact_activity.acting_artifact.process.user.user.group_id
+      target_field: _what.artifact_activity.acting_artifact.process.user.group_id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_parent_process_file_file_path
+      field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.file.file.path
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.file.path
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_file_file_path
+      field: _what.artifact_activity.acting_artifact.process.parent.process.file.file.path
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.file.path
+      ignore_missing: true
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_file_file_path
+      field: _what.artifact_activity.acting_artifact.process.file.file.path
+      target_field: _what.artifact_activity.acting_artifact.process.file.path
+      ignore_missing: true
+
+  - rename:
+      tag: rename_what_artifact_activity_acting_artifact_process_parent_process_parent_process_file_file_hash_md5
+      field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.file.file.hash.md5
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.file.hash.md5
+      ignore_missing: true
+
+  - date:
+      tag: date_what_artifact_activity_acting_artifact_process_parent_process_parent_process_start_time
+      field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time
+      if: ctx._what.artifact_activity?.acting_artifact?.process?.parent?.process?.parent?.process?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_what_artifact_activity_acting_artifact_process_parent_process_start_time
+      field: _what.artifact_activity.acting_artifact.process.parent.process.start_time
+      target_field: _what.artifact_activity.acting_artifact.process.parent.process.start_time
+      if: ctx._what.artifact_activity?.acting_artifact?.process?.parent?.process?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_what_artifact_activity_acting_artifact_process_start_time
+      field: _what.artifact_activity.acting_artifact.process.start_time
+      target_field: _what.artifact_activity.acting_artifact.process.start_time
+      if: ctx._what.artifact_activity?.acting_artifact?.process?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+
+  - foreach:
+      tag: foreach_what_artifact_activity_acting_artifact_process_parent_process_parent_process_handles
+      field: _what.artifact_activity.acting_artifact.process.parent.process.parent.process.handles
+      ignore_missing: true
+      processor:
+        convert:
+          tag: convert_ingest_value
+          field: _ingest._value
+          type: string
+          ignore_missing: true
+  - foreach:
+      tag: foreach_what_artifact_activity_acting_artifact_process_parent_process_handles
+      field: _what.artifact_activity.acting_artifact.process.parent.process.handles
+      ignore_missing: true
+      processor:
+        convert:
+          tag: convert_ingest_value_2
+          field: _ingest._value
+          type: string
+          ignore_missing: true
+  - foreach:
+      tag: foreach_what_artifact_activity_acting_artifact_process_handles
+      field: _what.artifact_activity.acting_artifact.process.handles
+      ignore_missing: true
+      processor:
+        convert:
+          tag: convert_ingest_value_3
+          field: _ingest._value
+          type: string
+          ignore_missing: true
+
+  - convert:
+      tag: convert_what_artifact_activity_acting_artifact_is_intel_target
+      field: _what.artifact_activity.acting_artifact.is_intel_target
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+
+  - foreach:
+      field: _what.artifact_activity.relevant_actions
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "match_details_whats_actions" }}'
+
+  - set:
+      tag: set_back_what
+      field: _ingest._value
+      copy_from: _what
+  - remove:
+      tag: remove_what
+      field: _what
+
+on_failure:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"

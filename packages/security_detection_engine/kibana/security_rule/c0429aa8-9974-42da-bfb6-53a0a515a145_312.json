@@ -1,0 +1,139 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the creation or modification of a new Group Policy based scheduled task or service. These methods are used for legitimate system administration, but can also be abused by an attacker with domain admin permissions to execute a malicious payload remotely on all or a subset of the domain joined machines.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.file-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Creation or Modification of a new GPO Scheduled Task or Service",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Creation or Modification of a new GPO Scheduled Task or Service\n\nGroup Policy Objects (GPOs) are crucial for centralized management in Windows environments, allowing administrators to configure settings across domain-joined machines. Adversaries with domain admin rights can exploit GPOs to create or modify scheduled tasks or services, deploying malicious payloads network-wide. The detection rule identifies such activities by monitoring specific file changes in GPO paths, excluding legitimate system processes, thus highlighting potential abuse for privilege escalation or persistence.\n\n### Possible investigation steps\n\n- Review the file path and name to confirm if the changes were made to \"ScheduledTasks.xml\" or \"Services.xml\" within the specified GPO paths, as these are indicative of potential unauthorized modifications.\n- Check the process that initiated the file change, ensuring it is not \"C:\\\\Windows\\\\System32\\\\dfsrs.exe\", which is excluded as a legitimate system process.\n- Investigate the user account associated with the file modification event to determine if it has domain admin rights and assess if the activity aligns with their typical behavior or role.\n- Examine recent changes in the GPO settings to identify any new or altered scheduled tasks or services that could be used for malicious purposes.\n- Correlate the event with other security logs or alerts from data sources like Elastic Endgame, Sysmon, or Microsoft Defender for Endpoint to identify any related suspicious activities or patterns.\n- Assess the impact by identifying which domain-joined machines are affected by the GPO changes and determine if any unauthorized tasks or services have been executed.\n\n### False positive analysis\n\n- Legitimate administrative changes to GPOs can trigger alerts. Regularly review and document scheduled administrative tasks to differentiate between expected and unexpected changes.\n- Automated system management tools may modify GPO scheduled tasks or services as part of routine operations. Identify these tools and create exceptions for their processes to reduce noise.\n- Updates or patches from Microsoft or other trusted vendors might alter GPO settings. Monitor update schedules and correlate changes with known update activities to verify legitimacy.\n- Internal IT scripts or processes that manage GPOs for configuration consistency can cause false positives. Ensure these scripts are well-documented and consider excluding their specific actions from monitoring.\n- Temporary changes made by IT staff for troubleshooting or testing purposes can be mistaken for malicious activity. Implement a change management process to log and approve such activities, allowing for easy exclusion from alerts.\n\n### Response and remediation\n\n- Immediately isolate affected systems from the network to prevent further spread of any malicious payloads deployed via the modified GPO scheduled tasks or services.\n- Revoke domain admin privileges from any accounts that are suspected of being compromised to prevent further unauthorized modifications to GPOs.\n- Conduct a thorough review of the modified ScheduledTasks.xml and Services.xml files to identify any unauthorized or malicious entries, and revert them to their previous legitimate state.\n- Utilize endpoint detection and response (EDR) tools to scan for and remove any malicious payloads that may have been executed on domain-joined machines as a result of the GPO modifications.\n- Notify the security operations center (SOC) and escalate the incident to the incident response team for further investigation and to determine the scope of the compromise.\n- Implement additional monitoring on GPO paths and domain admin activities to detect any further unauthorized changes or suspicious behavior.\n- Review and strengthen access controls and auditing policies for GPO management to prevent unauthorized modifications in the future.",
+        "query": "file where host.os.type == \"windows\" and event.type != \"deletion\" and event.action != \"open\" and\n file.name : (\"ScheduledTasks.xml\", \"Services.xml\") and\n  file.path : (\n    \"?:\\\\Windows\\\\SYSVOL\\\\domain\\\\Policies\\\\*\\\\MACHINE\\\\Preferences\\\\ScheduledTasks\\\\ScheduledTasks.xml\",\n    \"?:\\\\Windows\\\\SYSVOL\\\\domain\\\\Policies\\\\*\\\\MACHINE\\\\Preferences\\\\Services\\\\Services.xml\"\n  ) and\n  not process.executable : \"C:\\\\Windows\\\\System32\\\\dfsrs.exe\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.22.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "c0429aa8-9974-42da-bfb6-53a0a515a145",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Persistence",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1484",
+                        "name": "Domain or Tenant Policy Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1484/",
+                        "subtechnique": [
+                            {
+                                "id": "T1484.001",
+                                "name": "Group Policy Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1484/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 312
+    },
+    "id": "c0429aa8-9974-42da-bfb6-53a0a515a145_312",
+    "type": "security-rule"
+}

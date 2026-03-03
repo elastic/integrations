@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+  istio_is_ready:
+    image: tianon/true
+    depends_on:
+      istio:
+        condition: service_healthy
+  istio:
+    image: nginx:alpine
+    ports:
+      - 8080
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./istiod.txt:/www/data/metrics/istiod.txt
+      - ./proxy.txt:/www/data/metrics/proxy.txt
+    healthcheck:
+      interval: 1s
+      retries: 120
+      timeout: 120s
+      test: |-
+        curl -f -s http://localhost:8080/metrics/ -o /dev/null

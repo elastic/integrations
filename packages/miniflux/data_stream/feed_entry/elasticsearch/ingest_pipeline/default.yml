@@ -1,0 +1,367 @@
+---
+description: Pipeline for Miniflux data stream
+processors:
+    - set:
+        field: ecs.version
+        tag: set_ecs_version
+        value: 8.17.0
+    
+    - terminate:
+        tag: data_collection_error
+        if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+        description: error message set and no data to process.
+    - set:
+        field: event.kind
+        tag: set_event_kind_1
+        value: enrichment
+    - set:
+        field: event.category
+        tag: set_event_catgeory
+        value: [web]
+    - set:
+        field: event.type
+        tag: set_event_type
+        value: [info]
+    - rename:
+        field: message
+        tag: rename_message_to_event_original
+        target_field: event.original
+        ignore_missing: true
+        description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+        if: ctx.event?.original == null
+    - remove:
+        field: message
+        tag: remove_message
+        ignore_missing: true
+        description: The `message` field is no longer required if the document has an `event.original` field.
+        if: ctx.event?.original != null
+    - json:
+        field: event.original
+        tag: json_event_original
+        target_field: json
+        on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    - rename:
+        field: json.author
+        tag: rename_author
+        target_field: miniflux.author
+    - date:
+        field: json.changed_at
+        tag: date_changed_at
+        target_field: miniflux.changed_at
+        formats:
+            - strict_date_optional_time_nanos # yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+    - rename:
+        field: json.comments_url
+        tag: rename_comments_url
+        target_field: miniflux.comments_url
+    - rename:
+        field: json.content
+        tag: rename_content
+        target_field: miniflux.content
+    - date:
+        field: json.created_at
+        tag: date_created_at
+        target_field: miniflux.created_at
+        formats:
+            - strict_date_optional_time_nanos # yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+    - rename:
+        field: json.enclosures
+        tag: rename_enclosures
+        target_field: miniflux.enclosures
+    - rename:
+        field: json.feed.allow_self_signed_certificates
+        tag: rename_feed_allow_self_signed_certificates
+        target_field: miniflux.feed.allow_self_signed_certificates
+    - rename:
+        field: json.feed.apprise_service_urls
+        tag: rename_feed_apprise_service_urls
+        target_field: miniflux.feed.apprise_service_urls
+    - rename:
+        field: json.feed.blocklist_rules
+        tag: rename_feed_blocklist_rules
+        target_field: miniflux.feed.blocklist_rules
+    - rename:
+        field: json.feed.category.hide_globally
+        tag: rename_feed_category_hide_globally
+        target_field: miniflux.feed.category.hide_globally
+    - rename:
+        field: json.feed.category.id
+        tag: rename_feed_category_id
+        target_field: miniflux.feed.category.id
+    - rename:
+        field: json.feed.category.title
+        tag: rename_feed_category_title
+        target_field: miniflux.feed.category.title
+    - rename:
+        field: json.feed.category.user_id
+        tag: rename_feed_category_user_id
+        target_field: miniflux.feed.category.user_id
+    - date:
+        field: json.feed.checked_at
+        tag: date_feed_checked_at
+        target_field: miniflux.feed.checked_at
+        formats:
+            - strict_date_optional_time_nanos # yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+    - rename:
+        field: json.feed.cookie
+        tag: rename_feed_cookie
+        target_field: miniflux.feed.cookie
+    - rename:
+        field: json.feed.crawler
+        tag: rename_feed_crawler
+        target_field: miniflux.feed.crawler
+    - rename:
+        field: json.feed.description
+        tag: rename_feed_description
+        target_field: miniflux.feed.description
+    - rename:
+        field: json.feed.disable_http2
+        tag: rename_feed_disable_http2
+        target_field: miniflux.feed.disable_http2
+    - rename:
+        field: json.feed.disabled
+        tag: rename_feed_disabled
+        target_field: miniflux.feed.disabled
+    - rename:
+        field: json.feed.etag_header
+        tag: rename_feed_etag_header
+        target_field: miniflux.feed.etag_header
+    - rename:
+        field: json.feed.feed_url
+        tag: rename_feed_feed_url
+        target_field: miniflux.feed.feed_url
+    - rename:
+        field: json.feed.fetch_via_proxy
+        tag: rename_feed_fetch_via_proxy
+        target_field: miniflux.feed.fetch_via_proxy
+    - rename:
+        field: json.feed.hide_globally
+        tag: rename_feed_hide_globally
+        target_field: miniflux.feed.hide_globally
+    - rename: 
+        field: json.feed.icon.feed_id
+        tag: rename_feed_icon_feed_id
+        target_field: miniflux.feed.icon.feed_id
+    - rename:
+        field: json.feed.icon.icon_id
+        tag: rename_feed_icon_icon_id
+        target_field: miniflux.feed.icon.icon_id
+    - rename:
+        field: json.feed.icon.external_icon_id
+        tag: rename_feed_icon_external_icon_id
+        target_field: miniflux.feed.icon.external_icon_id
+    - rename:
+        field: json.feed.id
+        tag: rename_feed_id
+        target_field: miniflux.feed.id
+    - rename:
+        field: json.feed.ignore_http_cache
+        tag: rename_feed_ignore_http_cache
+        target_field: miniflux.feed.ignore_http_cache
+    - rename:
+        field: json.feed.keeplist_rules
+        tag: rename_feed_keeplist_rules
+        target_field: miniflux.feed.keeplist_rules
+    - rename:
+        field: json.feed.last_modified_header
+        tag: rename_feed_last_modified_header
+        target_field: miniflux.feed.last_modified_header
+    - date:
+        field: json.feed.next_check_at
+        tag: date_feed_next_check_at
+        target_field: miniflux.feed.next_check_at
+        formats:
+            - strict_date_optional_time_nanos # yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+    - rename:
+        field: json.feed.no_media_player
+        tag: rename_feed_no_media_player
+        target_field: miniflux.feed.no_media_player
+    - rename:
+        field: json.feed.ntfy_enabled
+        tag: rename_feed_ntfy_enabled
+        target_field: miniflux.feed.ntfy_enabled
+    - rename:
+        field: json.feed.ntfy_topic
+        tag: rename_feed_ntfy_topic
+        target_field: miniflux.feed.ntfy_topic
+    - rename:
+        field: json.feed.ntfy_priority
+        tag: rename_feed_ntfy_priority
+        target_field: miniflux.feed.ntfy_priority
+    - rename:
+        field: json.feed.parsing_error_count
+        tag: rename_feed_parsing_error_count
+        target_field: miniflux.feed.parsing_error_count
+    - rename:
+        field: json.feed.parsing_error_message
+        tag: rename_feed_parsing_error_message
+        target_field: miniflux.feed.parsing_error_message
+    - rename:
+        field: json.feed.password
+        tag: rename_feed_password
+        target_field: miniflux.feed.password
+    - rename:
+        field: json.feed.proxy_url
+        tag: rename_feed_proxy_url
+        target_field: miniflux.feed.proxy_url
+    - rename:
+        field: json.feed.pushover_enabled
+        tag: rename_feed_pushover_enabled
+        target_field: miniflux.feed.pushover_enabled
+    - rename:
+        field: json.feed.pushover_priority
+        tag: rename_feed_pushover_priority
+        target_field: miniflux.feed.pushover_priority
+    - rename:
+        field: json.feed.rewrite_rules
+        tag: rename_feed_rewrite_rules
+        target_field: miniflux.feed.rewrite_rules
+    - rename:
+        field: json.feed.scraper_rules
+        tag: rename_feed_scraper_rules
+        target_field: miniflux.feed.scraper_rules
+    - rename:
+        field: json.feed.site_url
+        tag: rename_feed_site_url
+        target_field: miniflux.feed.site_url
+    - rename:
+        field: json.feed.title
+        tag: rename_feed_title
+        target_field: miniflux.feed.title
+    - rename:
+        field: json.feed.urlrewrite_rules
+        tag: rename_feed_urlrewrite_rules
+        target_field: miniflux.feed.urlrewrite_rules
+    - rename:
+        field: json.feed.user_agent
+        tag: rename_feed_user_agent
+        target_field: miniflux.feed.user_agent
+    - rename:
+        field: json.feed.user_id
+        tag: rename_feed_user_id
+        target_field: miniflux.feed.user_id
+    - rename:
+        field: json.feed.username
+        tag: rename_feed_username
+        target_field: miniflux.feed.username
+    - rename:
+        field: json.feed.webhook_url
+        tag: rename_feed_webhook_url
+        target_field: miniflux.feed.webhook_url
+    - rename:
+        field: json.feed_id
+        tag: rename_feed_id
+        target_field: miniflux.feed_id
+    - rename:
+        field: json.hash
+        tag: rename_hash
+        target_field: miniflux.hash
+    - append:
+        field: related.hash
+        value: "{{{miniflux.hash}}}"
+    - rename:
+        field: json.id
+        tag: rename_id
+        target_field: miniflux.id
+    - date:
+        field: json.published_at
+        tag: date_published_at
+        target_field: miniflux.published_at
+        formats:
+            - strict_date_optional_time_nanos # yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+    - rename:
+        field: json.reading_time
+        tag: rename_reading_time
+        target_field: miniflux.reading_time
+    - rename:
+        field: json.share_code
+        tag: rename_share_code
+        target_field: miniflux.share_code
+    - rename:
+        field: json.starred
+        tag: rename_starred
+        target_field: miniflux.starred
+    - rename:
+        field: json.status
+        tag: rename_status
+        target_field: miniflux.status
+    - rename:
+        field: json.tags
+        tag: rename_tags
+        target_field: miniflux.tags
+    - rename:
+        field: json.title
+        tag: rename_title
+        target_field: miniflux.title
+    - uri_parts:
+        field: json.url
+        if: ctx.json?.url != null && ctx.json.url != ''
+        on_failure:
+            - set:
+                field: url.original
+                copy_from: url.original
+                if: ctx.json?.url != null && ctx.json.url != ''
+    - set:
+        field: url.full
+        copy_from: url.original
+        if: ctx.url?.original != null && ctx.url.original != ''
+    - rename:
+        field: json.url
+        tag: rename_url
+        target_field: miniflux.url
+    - rename:
+        field: json.user_id
+        tag: rename_user_id
+        target_field: miniflux.user_id
+
+    # Cleanup
+    - remove:
+        tag: remove_json
+        field: 
+            - json
+    - script:
+        tag: script_to_drop_null_values
+        lang: painless
+        description: Drops null/empty values recursively.
+        source: |-
+            boolean drop(Object object) {
+            if (object == null || object == '') {
+                return true;
+            } else if (object instanceof Map) {
+                ((Map) object).values().removeIf(v -> drop(v));
+                return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+                ((List) object).removeIf(v -> drop(v));
+                return (((List) object).length == 0);
+            }
+            return false;
+            }
+            drop(ctx);
+    - set:
+        field: event.kind
+        tag: set_pipeline_error_into_event_kind
+        value: pipeline_error
+        if: ctx.error?.message != null
+    - append:
+        field: tags
+        value: preserve_original_event
+        allow_duplicates: false
+        if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

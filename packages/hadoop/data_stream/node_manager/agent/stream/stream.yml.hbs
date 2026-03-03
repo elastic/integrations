@@ -1,0 +1,19 @@
+metricsets: ["json"]
+namespace: "node_manager"
+hosts:
+{{#each hosts}}
+  - "{{this}}/jmx?qry=Hadoop:service=NodeManager,name=NodeManagerMetrics"
+{{/each}}
+period: {{period}}
+path: "/"
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

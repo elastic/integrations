@@ -1,0 +1,105 @@
+---
+description: CVE Pipeline for parsing TYCHON Vulnerability Scan Results
+processors:
+
+  - set:
+      tag: set_tychon_vulnerability_due_date
+      field: tychon.vulnerability.due_date
+      value: '1970-01-01T00:00:01Z'
+      if: ctx.tychon.vulnerability?.due_date == null
+  - date:
+      tag: date_tychon_vulnerability_due_date
+      field: tychon.vulnerability.due_date
+      target_field: tychon.vulnerability.due_date
+      output_format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+      formats:
+        - strict_date_optional_time
+        - epoch_millis
+        - date
+        - 'MM/dd/yyyy'
+  - set:
+      tag: set_tychon_vulnerability_score_base
+      field: tychon.vulnerability.score.base
+      value: "0.0"
+      if: ctx.tychon.vulnerability?.score?.base == null
+  - convert:
+      tag: convert_tychon_vulnerability_score_base
+      field: tychon.vulnerability.score.base
+      type: float
+      ignore_failure: true
+  - convert:
+      tag: convert_tychon_vulnerability_year
+      field: tychon.vulnerability.year
+      type: long
+  - set:
+      tag: set_tychon_vulnerability_scanner_vendor
+      field: tychon.vulnerability.scanner.vendor
+      value: tychon
+  - set:
+      tag: set_tychon_vulnerability_category
+      field: tychon.vulnerability.category
+      value: [oval]
+  - set:
+      tag: set_tychon_vulnerability_enumeration
+      field: tychon.vulnerability.enumeration
+      value: CVE
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [vulnerability]
+
+  # ECS fields from the tychon fieldset
+
+  - script:
+      tag: script
+      source: |
+        if (ctx.tychon.vulnerability?.result == "fail") {
+          ctx.event.outcome = "failure"
+        } else if (ctx.tychon.vulnerability?.result == "pass") {
+          ctx.event.outcome = "success"
+        } else {
+          ctx.event.outcome = "unknown"
+        }
+  - set:
+      tag: set_vulnerability_category
+      field: vulnerability.category
+      copy_from: tychon.vulnerability.category
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_classification
+      field: vulnerability.classification
+      copy_from: tychon.vulnerability.classification
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_enumeration
+      field: vulnerability.enumeration
+      copy_from: tychon.vulnerability.enumeration
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_id
+      field: vulnerability.id
+      copy_from: tychon.vulnerability.id
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_reference
+      field: vulnerability.reference
+      copy_from: tychon.vulnerability.reference
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_scanner_vendor
+      field: vulnerability.scanner.vendor
+      copy_from: tychon.vulnerability.scanner.vendor
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_score_base
+      field: vulnerability.score.base
+      copy_from: tychon.vulnerability.score.base
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_severity
+      field: vulnerability.severity
+      copy_from: tychon.vulnerability.severity
+      ignore_empty_value: true

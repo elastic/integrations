@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a suspicious managed code hosting process which could indicate code injection or other form of suspicious code execution.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.file-*",
+            "logs-windows.sysmon_operational-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "endgame-*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Managed Code Hosting Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Managed Code Hosting Process\n\nManaged code hosting processes like wscript.exe, cscript.exe, and others are integral to executing scripts and managing code in Windows environments. Adversaries exploit these processes for code injection or executing malicious scripts, often evading detection. The detection rule identifies anomalies by monitoring specific process logs, flagging high-risk activities that deviate from normal operations, thus alerting analysts to potential threats.\n\n### Possible investigation steps\n\n- Review the process logs for the specific file names flagged in the alert, such as wscript.exe.log or cscript.exe.log, to identify any unusual or unauthorized script executions.\n- Correlate the suspicious process activity with user account activity to determine if the actions were performed by a legitimate user or potentially compromised account.\n- Examine the parent process of the flagged managed code hosting process to identify if it was spawned by a legitimate application or a known malicious process.\n- Check for any recent changes or modifications to the scripts or executables associated with the flagged process to identify potential tampering or unauthorized updates.\n- Investigate network connections initiated by the suspicious process to detect any communication with known malicious IP addresses or domains.\n- Utilize threat intelligence sources to cross-reference any identified indicators of compromise (IOCs) such as file hashes or IP addresses associated with the suspicious process.\n\n### False positive analysis\n\n- Legitimate administrative scripts may trigger alerts when executed by IT personnel using wscript.exe or cscript.exe. To manage this, create exceptions for known scripts and trusted user accounts.\n- Automated system maintenance tasks using mshta.exe or wmic.exe can be flagged as suspicious. Identify and whitelist these tasks if they are part of regular system operations.\n- Software updates or installations might use svchost.exe or dllhost.exe, leading to false positives. Monitor and document these activities, then exclude them from alerts if they are verified as safe.\n- Custom applications that rely on cmstp.exe or regsvr32.exe for legitimate purposes can be mistaken for threats. Validate these applications and add them to an exception list to prevent unnecessary alerts.\n- Regularly review and update the exception list to ensure it reflects current legitimate activities, minimizing the risk of overlooking genuine threats.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread or communication with potential command and control servers.\n- Terminate the suspicious process identified in the alert, such as wscript.exe, cscript.exe, or any other flagged process, to stop any ongoing malicious activity.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any additional malicious files or scripts.\n- Review and restore any system or application configurations that may have been altered by the malicious process to ensure system integrity.\n- Collect and preserve relevant logs and forensic data from the affected system for further analysis and to aid in understanding the scope and impact of the incident.\n- Notify the security operations center (SOC) or incident response team to escalate the incident for further investigation and to determine if additional systems are affected.\n- Implement additional monitoring and detection rules to enhance visibility and prevent similar threats in the future, focusing on the specific processes and behaviors identified in the alert.",
+        "query": "file where host.os.type == \"windows\" and event.type != \"deletion\" and\n  file.name : (\"wscript.exe.log\",\n               \"cscript.exe.log\",\n               \"mshta.exe.log\",\n               \"wmic.exe.log\",\n               \"svchost.exe.log\",\n               \"dllhost.exe.log\",\n               \"cmstp.exe.log\",\n               \"regsvr32.exe.log\")\n",
+        "references": [
+            "http://web.archive.org/web/20230329154538/https://blog.menasec.net/2019/07/interesting-difr-traces-of-net-clr.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "acf738b5-b5b2-4acc-bad9-1e18ee234f40",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1055",
+                        "name": "Process Injection",
+                        "reference": "https://attack.mitre.org/techniques/T1055/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 312
+    },
+    "id": "acf738b5-b5b2-4acc-bad9-1e18ee234f40_312",
+    "type": "security-rule"
+}

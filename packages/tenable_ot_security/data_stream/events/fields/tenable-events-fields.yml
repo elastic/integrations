@@ -1,0 +1,828 @@
+---
+- name: tenable_ot_security
+  title: Tenable OT Security
+  type: group
+  fields:
+    - name: events
+      type: group
+      description: Fields related to event data.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the event.
+        - name: event_type
+          type: group
+          description: Details about the type of event.
+          fields:
+            - name: type
+              type: keyword
+              description: The specific type of the event.
+            - name: group
+              type: keyword
+              description: The group classification of the event.
+            - name: description
+              type: text
+              description: A textual description of the event type.
+            - name: schema
+              type: keyword
+              description: The schema associated with the event type.
+            - name: category
+              type: keyword
+              description: The category this event falls under.
+            - name: family
+              type: keyword
+              description: The family classification of the event.
+            - name: can_capture
+              type: boolean
+              description: Indicates whether this event can be captured.
+            - name: actions
+              type: keyword
+              description: List of actions associated with the event.
+            - name: exclusion
+              type: keyword
+              description: Any exclusions that apply to this event type.
+        - name: src_ip
+          type: ip
+          description: The source IP address associated with the event.
+        - name: dst_ip
+          type: ip
+          description: The destination IP address associated with the event.
+        - name: protocol_raw
+          type: keyword
+          description: The raw protocol information for the event.
+        - name: policy
+          type: group
+          description: Fields related to policy data.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the policy.
+            - name: index
+              type: integer
+              description: The index position of the policy.
+            - name: title
+              type: text
+              description: The title of the policy.
+            - name: level
+              type: keyword
+              description: The severity level of the policy.
+            - name: disabled
+              type: boolean
+              description: Indicates whether the policy is disabled.
+            - name: archived
+              type: boolean
+              description: Indicates whether the policy is archived.
+            - name: schema
+              type: keyword
+              description: The schema associated with the policy.
+            - name: continuous
+              type: boolean
+              description: Indicates whether the policy is continuous.
+            - name: snapshot
+              type: boolean
+              description: Indicates whether the policy is a snapshot.
+            - name: system
+              type: boolean
+              description: Indicates whether the policy is a system policy.
+            - name: key
+              type: keyword
+              description: The unique key associated with the policy.
+            - name: event_type_details
+              type: group
+              description: Details related to the event type of the policy.
+              fields:
+                - name: type
+                  type: keyword
+                  description: The type of event related to the policy.
+                - name: group
+                  type: keyword
+                  description: The group classification of the event type.
+                - name: description
+                  type: text
+                  description: A description of the event type.
+                - name: schema
+                  type: keyword
+                  description: The schema associated with the event type.
+                - name: category
+                  type: keyword
+                  description: The category of the event type.
+                - name: family
+                  type: keyword
+                  description: The family classification of the event type.
+                - name: can_capture
+                  type: boolean
+                  description: Indicates whether the event type can be captured.
+                - name: actions
+                  type: keyword
+                  description: Actions associated with the event type.
+                - name: exclusion
+                  type: keyword
+                  description: Exclusion rules related to the event type.
+            - name: last_modified_date
+              type: date
+              format: ISO8601
+              description: The last modified date of the policy.
+            - name: last_modified_by
+              type: keyword
+              description: The user who last modified the policy.
+            - name: disable_after_hit
+              type: boolean
+              description: Indicates whether the policy should be disabled after a hit.
+            - name: actions
+              type: group
+              description: Fields related to actions triggered by events.
+              fields:
+                - name: aid
+                  type: keyword
+                  description: Unique identifier for the action.
+                - name: type
+                  type: keyword
+                  description: Type of action executed.
+            - name: paused
+              type: boolean
+              description: Indicates whether the process is paused.
+            - name: schedule
+              type: group
+              description: Fields related to scheduling details.
+              fields:
+                - name: group
+                  type: group
+                  description: Details about the schedule group.
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The unique identifier of the schedule group.
+                    - name: name
+                      type: keyword
+                      description: The name of the schedule group.
+                    - name: type
+                      type: keyword
+                      description: The type of schedule group.
+                    - name: archived
+                      type: boolean
+                      description: Indicates if the schedule group is archived.
+                    - name: system
+                      type: boolean
+                      description: Indicates if the schedule group is system-managed.
+                    - name: key
+                      type: keyword
+                      description: A key associated with the schedule group.
+                    - name: last_modified_date
+                      type: date
+                      format: ISO8601
+                      description: The last modification date of the schedule group.
+                    - name: last_modified_by
+                      type: keyword
+                      description: The user who last modified the schedule group.
+                    - name: used_in_restrictions
+                      type: boolean
+                      description: Indicates if the schedule group is used in restrictions.
+                    - name: usage_info
+                      type: group
+                      description: Usage information of the schedule group.
+                      fields:
+                        - name: used
+                          type: boolean
+                          description: Indicates if the schedule group is in use.
+                        - name: editable
+                          type: boolean
+                          description: Indicates if the schedule group is editable.
+                - name: negate
+                  type: boolean
+                  description: Indicates if the schedule group is negated.
+            - name: protocol_group
+              type: group
+              description: Fields related to protocol group details.
+              fields:
+                - name: group
+                  type: group
+                  description: Details about the protocol group.
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The unique identifier of the protocol group.
+                    - name: name
+                      type: keyword
+                      description: The name of the protocol group.
+                    - name: type
+                      type: keyword
+                      description: The type of protocol group.
+                    - name: archived
+                      type: boolean
+                      description: Indicates if the protocol group is archived.
+                    - name: system
+                      type: boolean
+                      description: Indicates if the protocol group is system-managed.
+                    - name: key
+                      type: keyword
+                      description: A key associated with the protocol group.
+                    - name: last_modified_date
+                      type: date
+                      format: ISO8601
+                      description: The last modification date of the protocol group.
+                    - name: last_modified_by
+                      type: keyword
+                      description: The user who last modified the protocol group.
+                    - name: usage_info
+                      type: group
+                      description: Usage information of the protocol group.
+                      fields:
+                        - name: used
+                          type: boolean
+                          description: Indicates if the protocol group is in use.
+                        - name: editable
+                          type: boolean
+                          description: Indicates if the protocol group is editable.
+                    - name: items
+                      type: group
+                      description: Protocol group items details.
+                      fields:
+                        - name: protocol
+                          type: keyword
+                          description: The protocol associated with the group item.
+                        - name: start_port
+                          type: integer
+                          description: The start port of the protocol range.
+                        - name: end_port
+                          type: integer
+                          description: The end port of the protocol range.
+                - name: negate
+                  type: boolean
+                  description: Indicates if the protocol group is negated.
+            - name: port_group
+              type: group
+              description: Fields related to port group details.
+              fields:
+                - name: group
+                  type: group
+                  description: Details about the port group.
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The unique identifier of the port group.
+                    - name: name
+                      type: keyword
+                      description: The name of the port group.
+                    - name: type
+                      type: keyword
+                      description: The type of port group.
+                    - name: archived
+                      type: boolean
+                      description: Indicates if the port group is archived.
+                    - name: system
+                      type: boolean
+                      description: Indicates if the port group is system-managed.
+                    - name: key
+                      type: keyword
+                      description: A key associated with the port group.
+                    - name: last_modified_date
+                      type: date
+                      format: ISO8601
+                      description: The last modification date of the port group.
+                    - name: last_modified_by
+                      type: keyword
+                      description: The user who last modified the port group.
+                    - name: usage_info
+                      type: group
+                      description: Usage information of the port group.
+                      fields:
+                        - name: used
+                          type: boolean
+                          description: Indicates if the port group is in use.
+                        - name: editable
+                          type: boolean
+                          description: Indicates if the port group is editable.
+                    - name: items
+                      type: group
+                      description: Port group items details.
+                      fields:
+                        - name: start_port
+                          type: integer
+                          description: The start port of the port range.
+                        - name: end_port
+                          type: integer
+                          description: The end port of the port range.
+                - name: negate
+                  type: boolean
+                  description: Indicates if the port group is negated.
+            - name: tag_group
+              type: group
+              description: Fields related to tag group details.
+              fields:
+                - name: group
+                  type: group
+                  description: Details about the tag group.
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The unique identifier of the tag group.
+                    - name: name
+                      type: keyword
+                      description: The name of the tag group.
+                    - name: type
+                      type: keyword
+                      description: The type of tag group.
+                    - name: archived
+                      type: boolean
+                      description: Indicates if the tag group is archived.
+                    - name: system
+                      type: boolean
+                      description: Indicates if the tag group is system-managed.
+                    - name: key
+                      type: keyword
+                      description: A key associated with the tag group.
+                    - name: last_modified_date
+                      type: date
+                      format: ISO8601
+                      description: The last modification date of the tag group.
+                    - name: last_modified_by
+                      type: keyword
+                      description: The user who last modified the tag group.
+                    - name: usage_info
+                      type: group
+                      description: Usage information of the tag group.
+                      fields:
+                        - name: used
+                          type: boolean
+                          description: Indicates if the tag group is in use.
+                        - name: editable
+                          type: boolean
+                          description: Indicates if the tag group is editable.
+                    - name: items
+                      type: group
+                      description: Tag group items details.
+                      fields:
+                        - name: tag_id
+                          type: keyword
+                          description: The ID of the tag.
+                        - name: tag_type
+                          type: keyword
+                          description: The type of the tag.
+                    - name: tag_type
+                      type: keyword
+                      description: The type of tags used in the group.
+                - name: negate
+                  type: boolean
+                  description: Indicates if the tag group is negated.
+            - name: value_group
+              type: group
+              description: Fields related to value group details.
+              fields:
+                - name: group
+                  type: group
+                  description: Details about the value group.
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The unique identifier of the value group.
+                    - name: min
+                      type: double
+                      description: The minimum value in the group.
+                    - name: max
+                      type: double
+                      description: The maximum value in the group.
+                    - name: any
+                      type: boolean
+                      description: Indicates if any value is allowed in the group.
+                    - name: type
+                      type: keyword
+                      description: The type of value group.
+            - name: rule_group
+              type: group
+              description: Fields related to rule group details.
+              fields:
+                - name: group
+                  type: group
+                  description: Details about the rule group.
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The unique identifier of the rule group.
+                    - name: name
+                      type: keyword
+                      description: The name of the rule group.
+                    - name: type
+                      type: keyword
+                      description: The type of rule group.
+                    - name: archived
+                      type: boolean
+                      description: Indicates if the rule group is archived.
+                    - name: system
+                      type: boolean
+                      description: Indicates if the rule group is system-managed.
+                    - name: key
+                      type: keyword
+                      description: A key associated with the rule group.
+                    - name: last_modified_date
+                      type: date
+                      format: ISO8601
+                      description: The last modification date of the rule group.
+                    - name: last_modified_by
+                      type: keyword
+                      description: The user who last modified the rule group.
+                    - name: usage_info
+                      type: group
+                      description: Usage information of the rule group.
+                      fields:
+                        - name: used
+                          type: boolean
+                          description: Indicates if the rule group is in use.
+                        - name: editable
+                          type: boolean
+                          description: Indicates if the rule group is editable.
+                    - name: items
+                      type: group
+                      description: Rule group items details.
+                      fields:
+                        - name: sid
+                          type: keyword
+                          description: The security identifier of the rule.
+                        - name: rev
+                          type: integer
+                          description: The revision number of the rule.
+                        - name: protocol
+                          type: keyword
+                          description: The protocol associated with the rule.
+                        - name: src_ips
+                          type: keyword
+                          description: Source IP addresses for the rule.
+                        - name: src_ports
+                          type: keyword
+                          description: Source ports for the rule.
+                        - name: dst_ips
+                          type: keyword
+                          description: Destination IP addresses for the rule.
+                        - name: dst_ports
+                          type: keyword
+                          description: Destination ports for the rule.
+                        - name: bidirectional
+                          type: boolean
+                          description: Indicates if the rule applies bidirectionally.
+                        - name: msg
+                          type: text
+                          description: Message or description of the rule.
+                        - name: classification
+                          type: keyword
+                          description: The classification of the rule.
+                        - name: category
+                          type: keyword
+                          description: The category of the rule.
+                        - name: created_at
+                          type: date
+                          format: ISO8601
+                          description: The creation timestamp of the rule.
+                        - name: updated_at
+                          type: date
+                          format: ISO8601
+                          description: The last update timestamp of the rule.
+                        - name: enabled
+                          type: boolean
+                          description: Indicates if the rule is enabled.
+                        - name: payload
+                          type: text
+                          description: The payload of the rule.
+                        - name: references
+                          type: group
+                          description: References associated with the rule.
+                          fields:
+                            - name: sid
+                              type: keyword
+                              description: The security identifier of the reference.
+                            - name: rev
+                              type: integer
+                              description: The revision number of the reference.
+                            - name: type
+                              type: keyword
+                              description: The type of reference.
+                            - name: value
+                              type: text
+                              description: The value of the reference.
+                        - name: references_by_type
+                          type: group
+                          description: References categorized by type.
+                          fields:
+                            - name: bugtraq
+                              type: keyword
+                              description: Bugtraq reference ID.
+                            - name: bid
+                              type: keyword
+                              description: BID reference ID.
+                            - name: cve
+                              type: keyword
+                              description: CVE reference ID.
+                            - name: secunia
+                              type: keyword
+                              description: Secunia reference ID.
+                            - name: arachnids
+                              type: keyword
+                              description: Arachnids reference ID.
+                            - name: mcafee
+                              type: keyword
+                              description: McAfee reference ID.
+                            - name: nessus
+                              type: keyword
+                              description: Nessus reference ID.
+                            - name: url
+                              type: keyword
+                              description: URL reference ID.
+                            - name: et
+                              type: keyword
+                              description: ET reference ID.
+                            - name: etpro
+                              type: keyword
+                              description: ETPro reference ID.
+                            - name: telus
+                              type: keyword
+                              description: Telus reference ID.
+                            - name: osvdb
+                              type: keyword
+                              description: OSVDB reference ID.
+                            - name: threatexpert
+                              type: keyword
+                              description: ThreatExpert reference ID.
+                            - name: md5
+                              type: keyword
+                              description: MD5 reference ID.
+                            - name: exploitdb
+                              type: keyword
+                              description: ExploitDB reference ID.
+                            - name: openpacket
+                              type: keyword
+                              description: OpenPacket reference ID.
+                            - name: securitytracker
+                              type: keyword
+                              description: SecurityTracker reference ID.
+                            - name: xforce
+                              type: keyword
+                              description: X-Force reference ID.
+                            - name: msft
+                              type: keyword
+                              description: Microsoft Security reference ID.
+                - name: negate
+                  type: boolean
+                  description: Indicates if the rule group is negated.
+            - name: exclusions
+              type: group
+              description: Fields related to event exclusions.
+              fields:
+                - name: id
+                  type: keyword
+                  description: The unique identifier of the exclusion.
+                - name: type
+                  type: keyword
+                  description: The type of exclusion.
+                - name: count
+                  type: integer
+                  description: The count of occurrences for the exclusion.
+                - name: created
+                  type: date
+                  format: ISO8601
+                  description: The creation date of the exclusion.
+                - name: created_by
+                  type: keyword
+                  description: The user who created the exclusion.
+                - name: comment
+                  type: text
+                  description: Additional comments about the exclusion.
+            - name: aggregated_events_count
+              type: group
+              description: Fields related to aggregated event counts.
+              fields:
+                - name: last24h
+                  type: integer
+                  description: The number of events in the last 24 hours.
+                - name: last7d
+                  type: integer
+                  description: The number of events in the last 7 days.
+                - name: last30d
+                  type: integer
+                  description: The number of events in the last 30 days.
+        - name: time
+          type: date
+          format: ISO8601
+          description: Timestamp of the event.
+        - name: src_mac
+          type: keyword
+          description: Source MAC address associated with the event.
+        - name: dst_mac
+          type: keyword
+          description: Destination MAC address associated with the event.
+        - name: completion
+          type: keyword
+          description: Completion status of the event.
+        - name: protocol_nice_name
+          type: keyword
+          description: User-friendly name of the protocol used.
+        - name: resolved
+          type: boolean
+          description: Indicates if the event has been resolved.
+        - name: resolved_ts
+          type: date
+          format: ISO8601
+          description: Timestamp of when the event was resolved.
+        - name: hit_id
+          type: keyword
+          description: Unique identifier for the hit event.
+        - name: severity
+          type: keyword
+          description: Severity level of the event.
+        - name: category
+          type: keyword
+          description: Category classification of the event.
+        - name: comment
+          type: text
+          description: Comments or notes related to the event.
+        - name: log_id
+          type: double
+          description: Unique identifier for the log entry.
+        - name: resolved_user
+          type: keyword
+          description: User who resolved the event.
+        - name: type
+          type: keyword
+          description: Type of the event.
+        - name: src_interface
+          type: group
+          description: Fields related to the source interface.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the source interface.
+            - name: last_seen
+              type: date
+              format: ISO8601
+              description: The last time the source interface was seen.
+            - name: first_seen
+              type: date
+              format: ISO8601
+              description: The first time the source interface was seen.
+            - name: mac
+              type: keyword
+              description: The MAC address of the source interface.
+            - name: ips
+              type: group
+              description: Details about IP addresses associated with the source interface.
+              fields:
+                - name: ip
+                  type: ip
+                  description: The IP address associated with the source interface.
+                - name: dns_names
+                  type: keyword
+                  description: A DNS name associated with the IP address.
+                - name: open_ports
+                  type: group
+                  description: Details about open ports on the IP address.
+                  fields:
+                    - name: ports
+                      type: group
+                      description: List of open ports.
+                      fields:
+                        - name: port
+                          type: integer
+                          description: The open port number.
+                        - name: scan_time
+                          type: date
+                          format: ISO8601
+                          description: The time the port was scanned.
+                        - name: source
+                          type: keyword
+                          description: The source of the scan.
+                        - name: name
+                          type: keyword
+                          description: The name of the service running on the port.
+                        - name: description
+                          type: text
+                          description: A description of the open port service.
+                    - name: scanned_once
+                      type: boolean
+                      description: Indicates if the port has been scanned at least once.
+                    - name: in_on_demand_scan
+                      type: boolean
+                      description: Indicates if the port was scanned as part of an on-demand scan.
+            - name: dns_names
+              type: keyword
+              description: A DNS name associated with the source interface.
+            - name: family
+              type: keyword
+              description: The network family of the source interface.
+            - name: ip_trail
+              type: group
+              description: IP address trail history of the source interface.
+              fields:
+                - name: ip
+                  type: ip
+                  description: An IP address in the trail.
+                - name: start_time
+                  type: date
+                  format: ISO8601
+                  description: The start time of this IP address usage.
+                - name: end_time
+                  type: date
+                  format: ISO8601
+                  description: The end time of this IP address usage.
+                - name: is_active
+                  type: boolean
+                  description: Indicates if this IP address is currently active.
+        - name: dst_interface
+          type: group
+          description: Fields related to the destination interface.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the destination interface.
+            - name: last_seen
+              type: date
+              format: ISO8601
+              description: The last time the interface was observed.
+            - name: first_seen
+              type: date
+              format: ISO8601
+              description: The first time the interface was observed.
+            - name: mac
+              type: keyword
+              description: The MAC address of the destination interface.
+            - name: ips
+              type: group
+              description: IP details associated with the destination interface.
+              fields:
+                - name: ip
+                  type: keyword
+                  description: The IP address of the destination interface.
+                - name: dns_names
+                  type: keyword
+                  description: List of DNS names.
+                - name: open_ports
+                  type: group
+                  description: Open ports information.
+                  fields:
+                    - name: ports
+                      type: group
+                      description: List of open ports.
+                      fields:
+                        - name: port
+                          type: integer
+                          description: The port number.
+                        - name: scan_time
+                          type: date
+                          format: ISO8601
+                          description: The time the port was scanned.
+                        - name: source
+                          type: keyword
+                          description: The source of the scan.
+                        - name: name
+                          type: keyword
+                          description: The name of the open port.
+                        - name: description
+                          type: text
+                          description: The description of the open port.
+                    - name: scanned_once
+                      type: boolean
+                      description: Indicates if the port was scanned once.
+                    - name: in_on_demand_scan
+                      type: boolean
+                      description: Indicates if the port was part of an on-demand scan.
+            - name: dns_names
+              type: keyword
+              description: List of DNS names.
+            - name: family
+              type: keyword
+              description: The family of the destination interface.
+            - name: ip_trail
+              type: group
+              description: IP history trail.
+              fields:
+                - name: ip
+                  type: keyword
+                  description: The IP address in the history trail.
+                - name: start_time
+                  type: date
+                  format: ISO8601
+                  description: The start time of the IP trail.
+                - name: end_time
+                  type: date
+                  format: ISO8601
+                  description: The end time of the IP trail.
+                - name: is_active
+                  type: boolean
+                  description: Indicates if the IP is currently active.
+        - name: src_names
+          type: keyword
+          description: List of source names.
+        - name: dst_names
+          type: keyword
+          description: List of destination names.
+        - name: has_details
+          type: boolean
+          description: Indicates if the network traffic has additional details.
+        - name: payload_size
+          type: long
+          description: Size of the network payload in bytes.
+        - name: protocol
+          type: keyword
+          description: Network protocol used in the traffic.
+        - name: port
+          type: integer
+          description: Network port associated with the traffic.
+        - name: continuous
+          type: boolean
+          description: Indicates if the traffic is continuous.

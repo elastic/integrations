@@ -1,0 +1,113 @@
+---
+description: Pipeline for Exposed Services
+processors:
+
+  - convert:
+      tag: convert_tychon_process_pid
+      field: tychon.process.pid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_source_port
+      field: tychon.source.port
+      type: long
+      ignore_missing: true
+  - set:
+      tag: set_tychon_source_ip
+      field: tychon.source.ip
+      value: '0.0.0.0'
+      if: ctx.tychon.source?.ip == null
+  - set:
+      tag: set_tychon_service_name
+      field: tychon.service.name
+      value: '{{{tychon.process.name}}}'
+      if: "ctx.tychon.service?.name == null"
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [network]
+
+  # ECS fields from the tychon fieldset
+
+  - append:
+      tag: append_related_hash
+      field: related.hash
+      value: "{{{tychon.process.hash.sha1}}}"
+      if: ctx.tychon?.process?.hash?.sha1 != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{{tychon.source.ip}}}"
+      if: ctx.tychon?.source?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_user
+      field: related.user
+      value: "{{{tychon.process.user.name}}}"
+      if: ctx.tychon?.process?.user?.name != null
+      allow_duplicates: false
+
+  - set:
+      tag: set_network_transport
+      field: network.transport
+      copy_from: tychon.network.transport
+      ignore_empty_value: true
+  - set:
+      tag: set_process_command_line
+      field: process.command_line
+      copy_from: tychon.process.command_line
+      ignore_empty_value: true
+  - set:
+      tag: set_process_executable
+      field: process.executable
+      copy_from: tychon.process.executable
+      ignore_empty_value: true
+  - set:
+      tag: set_process_hash_sha1
+      field: process.hash.sha1
+      copy_from: tychon.process.hash.sha1
+      ignore_empty_value: true
+  - set:
+      tag: set_process_name
+      field: process.name
+      copy_from: tychon.process.name
+      ignore_empty_value: true
+  - set:
+      tag: set_process_pid
+      field: process.pid
+      copy_from: tychon.process.pid
+      ignore_empty_value: true
+  - set:
+      tag: set_process_start
+      field: process.start
+      copy_from: tychon.process.start
+      ignore_empty_value: true
+  - set:
+      tag: set_process_user_name
+      field: process.user.name
+      copy_from: tychon.process.user.name
+      ignore_empty_value: true
+  - set:
+      tag: set_service_name
+      field: service.name
+      copy_from: tychon.service.name
+      ignore_empty_value: true
+  - set:
+      tag: set_service_state
+      field: service.state
+      copy_from: tychon.service.state
+      ignore_empty_value: true
+  - set:
+      tag: set_source_ip
+      field: source.ip
+      copy_from: tychon.source.ip
+      ignore_empty_value: true
+  - set:
+      tag: set_source_port
+      field: source.port
+      copy_from: tychon.source.port
+      ignore_empty_value: true

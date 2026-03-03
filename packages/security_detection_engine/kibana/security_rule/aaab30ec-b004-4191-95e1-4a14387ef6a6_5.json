@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential credential decrypt operations by PowerShell or unsigned processes using the Veeam.Backup.Common.dll library. Attackers can use Veeam Credentials to target backups as part of destructive operations such as Ransomware attacks.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.library-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Veeam Backup Library Loaded by Unusual Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Veeam Backup Library Loaded by Unusual Process\n\nVeeam Backup software is crucial for data protection, enabling secure backup and recovery operations. However, adversaries may exploit its credential storage by loading the Veeam.Backup.Common.dll library through unauthorized processes like PowerShell, aiming to decrypt and misuse credentials. The detection rule identifies such anomalies by flagging untrusted or unsigned processes loading this library, indicating potential credential access attempts.\n\n### Possible investigation steps\n\n- Review the process details to identify the untrusted or unsigned process that loaded the Veeam.Backup.Common.dll library, focusing on the process.name field to determine if it is PowerShell or another suspicious executable.\n- Check the process execution history and command line arguments to understand the context of the process activity, especially if the process.name is powershell.exe, pwsh.exe, or powershell_ise.exe.\n- Investigate the source and integrity of the process by examining the process.code_signature fields to determine if the process is expected or potentially malicious.\n- Analyze the timeline of events on the host to identify any preceding or subsequent suspicious activities that might indicate a broader attack pattern or lateral movement.\n- Correlate the alert with other security events or logs from the same host or network to identify any related indicators of compromise or additional affected systems.\n\n### False positive analysis\n\n- Legitimate administrative scripts or automation tasks using PowerShell may trigger the rule. Review the script's purpose and source, and if verified as safe, consider adding an exception for the specific script or process.\n- Scheduled tasks or maintenance operations that involve Veeam Backup operations might load the library through unsigned processes. Validate these tasks and exclude them if they are part of routine, secure operations.\n- Custom or third-party backup solutions that integrate with Veeam may load the library in a non-standard way. Confirm the legitimacy of these solutions and whitelist them to prevent unnecessary alerts.\n- Development or testing environments where Veeam components are frequently loaded by various processes for testing purposes can generate false positives. Implement process exclusions for these environments to reduce noise.\n- Ensure that any exclusions or exceptions are documented and reviewed regularly to maintain security posture and adapt to any changes in the environment.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes identified as loading the Veeam.Backup.Common.dll library, especially those that are unsigned or involve PowerShell.\n- Conduct a thorough review of the system's event logs and process history to identify any additional unauthorized access or actions taken by the adversary.\n- Change all credentials stored within the Veeam Backup software and any other potentially compromised accounts to prevent misuse.\n- Restore any affected systems or data from a known good backup to ensure integrity and availability.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and alerting for similar activities, focusing on unauthorized process executions and DLL loads, to improve early detection of future threats.",
+        "query": "library where host.os.type == \"windows\" and event.action == \"load\" and\n  (dll.name : \"Veeam.Backup.Common.dll\" or dll.pe.original_file_name : \"Veeam.Backup.Common.dll\") and\n  (\n    process.code_signature.trusted == false or\n    process.code_signature.exists == false or\n    process.name : (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\")\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dll.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "dll.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "aaab30ec-b004-4191-95e1-4a14387ef6a6",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "aaab30ec-b004-4191-95e1-4a14387ef6a6_5",
+    "type": "security-rule"
+}

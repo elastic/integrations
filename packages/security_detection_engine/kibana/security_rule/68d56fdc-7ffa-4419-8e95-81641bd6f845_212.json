@@ -1,0 +1,151 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies User Account Control (UAC) bypass attempts via the ICMLuaUtil Elevated COM interface. Attackers may attempt to bypass UAC to stealthily execute code with elevated permissions.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "UAC Bypass via ICMLuaUtil Elevated COM Interface",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating UAC Bypass via ICMLuaUtil Elevated COM Interface\n\nThe ICMLuaUtil Elevated COM Interface is a Windows component that facilitates User Account Control (UAC) operations, allowing certain processes to execute with elevated privileges. Adversaries exploit this by invoking the interface to bypass UAC, executing malicious code stealthily. The detection rule identifies such attempts by monitoring processes initiated by `dllhost.exe` with specific arguments, excluding legitimate processes like `WerFault.exe`, thus flagging potential privilege escalation activities.\n\n### Possible investigation steps\n\n- Review the process tree to identify the parent and child processes of the flagged `dllhost.exe` instance to understand the context of its execution.\n- Examine the command-line arguments of the `dllhost.exe` process to confirm the presence of the suspicious `/Processid:{3E5FC7F9-9A51-4367-9063-A120244FBEC7}` or `/Processid:{D2E7041B-2927-42FB-8E9F-7CE93B6DC937}` arguments.\n- Check for any recent changes or installations on the system that might have introduced the suspicious behavior, focusing on software that might interact with UAC settings.\n- Investigate the user account under which the `dllhost.exe` process was executed to determine if it has been compromised or if it has elevated privileges.\n- Correlate the event with other security logs or alerts from data sources like Sysmon or Microsoft Defender for Endpoint to identify any related suspicious activities or patterns.\n- Assess the network activity of the affected system around the time of the alert to detect any potential data exfiltration or communication with known malicious IP addresses.\n\n### False positive analysis\n\n- Legitimate software updates or installations may trigger the rule if they use the ICMLuaUtil Elevated COM Interface for necessary elevation. Users can monitor the specific software involved and create exceptions for trusted applications.\n- System maintenance tasks initiated by IT administrators might use similar processes for legitimate purposes. Identifying these tasks and excluding them from the rule can reduce false positives.\n- Certain enterprise applications may require elevated privileges and use the same COM interface. Regularly review and whitelist these applications to prevent unnecessary alerts.\n- Automated scripts or tools used for system management that invoke the interface should be evaluated. If deemed safe, they can be added to an exclusion list to avoid repeated false positives.\n- Regularly update the list of excluded processes to reflect changes in the organization's software environment, ensuring that only non-threatening behaviors are excluded.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further malicious activity and lateral movement.\n- Terminate any suspicious processes initiated by `dllhost.exe` with the specified arguments to stop the execution of potentially malicious code.\n- Conduct a thorough review of the affected system to identify any unauthorized changes or additional malicious files, and remove them.\n- Restore the system from a known good backup if any critical system files or configurations have been altered.\n- Update and patch the operating system and all installed software to mitigate any known vulnerabilities that could be exploited for UAC bypass.\n- Implement application whitelisting to prevent unauthorized applications from executing, focusing on blocking the execution of `dllhost.exe` with suspicious arguments.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on the broader network.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.parent.name == \"dllhost.exe\" and\n process.parent.args in (\"/Processid:{3E5FC7F9-9A51-4367-9063-A120244FBEC7}\", \"/Processid:{D2E7041B-2927-42FB-8E9F-7CE93B6DC937}\") and\n process.pe.original_file_name != \"WerFault.exe\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "68d56fdc-7ffa-4419-8e95-81641bd6f845",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1559",
+                        "name": "Inter-Process Communication",
+                        "reference": "https://attack.mitre.org/techniques/T1559/",
+                        "subtechnique": [
+                            {
+                                "id": "T1559.001",
+                                "name": "Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1559/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 212
+    },
+    "id": "68d56fdc-7ffa-4419-8e95-81641bd6f845_212",
+    "type": "security-rule"
+}

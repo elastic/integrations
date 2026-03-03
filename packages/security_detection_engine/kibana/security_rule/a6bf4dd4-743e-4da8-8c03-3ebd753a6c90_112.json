@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation or modification of the Event Monitor Daemon (emond) rules. Adversaries may abuse this service by writing a rule to execute commands when a defined event occurs, such as system start up or user authentication.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Emond Rules Creation or Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Emond Rules Creation or Modification\n\nThe Event Monitor Daemon (emond) on macOS is a service that executes commands based on specific system events. Adversaries can exploit this by crafting rules to trigger malicious actions during events like startup or login. The detection rule monitors for new or altered emond rule files, signaling potential unauthorized modifications that could indicate persistence tactics.\n\n### Possible investigation steps\n\n- Review the file path of the modified or newly created emond rule to determine if it matches known legitimate configurations or if it appears suspicious, focusing on paths like \"/private/etc/emond.d/rules/*.plist\" and \"/private/var/db/emondClients/*\".\n- Check the timestamp of the file creation or modification to correlate with any known user activity or scheduled tasks that could explain the change.\n- Analyze the contents of the modified or newly created plist file to identify any commands or scripts that are set to execute, looking for signs of malicious intent or unauthorized actions.\n- Investigate the user account associated with the file modification event to determine if the activity aligns with their typical behavior or if it suggests potential compromise.\n- Cross-reference the event with other security alerts or logs from the same timeframe to identify any related suspicious activities or patterns that could indicate a broader attack.\n\n### False positive analysis\n\n- System or application updates may modify emond rule files as part of legitimate maintenance activities. Users can create exceptions for known update processes by identifying the associated process names or hashes and excluding them from alerts.\n- Administrative tasks performed by IT personnel, such as configuring new system policies or settings, might involve legitimate changes to emond rules. To handle these, maintain a list of authorized personnel and their activities, and exclude these from triggering alerts.\n- Security software or management tools that automate system configurations could also modify emond rules. Identify these tools and their expected behaviors, and configure exceptions based on their typical file paths or process identifiers.\n- Scheduled maintenance scripts that interact with emond rules for system health checks or optimizations should be documented. Exclude these scripts by verifying their signatures or paths to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent potential lateral movement or further execution of malicious rules.\n- Review and back up the current emond rule files located in the specified directories to understand the scope of modifications and preserve evidence for further analysis.\n- Remove or revert any unauthorized or suspicious emond rule files to their original state to stop any malicious actions triggered by these rules.\n- Conduct a thorough scan of the system using updated antivirus or endpoint detection tools to identify and remove any additional malware or persistence mechanisms.\n- Restore the system from a known good backup if the integrity of the system is in question and unauthorized changes cannot be fully reversed.\n- Escalate the incident to the security operations team for further investigation and to determine if other systems may be affected by similar unauthorized emond rule modifications.\n- Implement enhanced monitoring and alerting for changes to emond rule files to quickly detect and respond to future unauthorized modifications.",
+        "query": "file where host.os.type == \"macos\" and event.action == \"modification\" and\n file.path like (\"/private/etc/emond.d/rules/*.plist\", \"/etc/emon.d/rules/*.plist\", \"/private/var/db/emondClients/*\")\n",
+        "references": [
+            "https://www.xorrior.com/emond-persistence/",
+            "https://www.sentinelone.com/blog/how-malware-persists-on-macos/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a6bf4dd4-743e-4da8-8c03-3ebd753a6c90",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.014",
+                                "name": "Emond",
+                                "reference": "https://attack.mitre.org/techniques/T1546/014/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 112
+    },
+    "id": "a6bf4dd4-743e-4da8-8c03-3ebd753a6c90_112",
+    "type": "security-rule"
+}

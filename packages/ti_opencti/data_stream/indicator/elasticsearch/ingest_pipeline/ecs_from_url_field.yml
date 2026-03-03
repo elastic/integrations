@@ -1,0 +1,39 @@
+---
+description: Build ECS fields from a url field
+processors:
+
+  - rename:
+      field: _ingest._value
+      target_field: _tmp_url.original
+
+  - uri_parts:
+      field: _tmp_url.original
+      target_field: _tmp_url
+      keep_original: true
+      ignore_failure: true
+
+  - remove:
+      field: _tmp_url.user_info
+      ignore_missing: true
+
+  - registered_domain:
+      field: _tmp_url.domain
+      target_field: _tmp_url
+      ignore_missing: true
+
+  - set:
+      field: _tmp_url.full
+      copy_from: _tmp_url.original
+
+  # append object
+  - append:
+      field: threat.indicator.url
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.url.add(ctx._tmp_url);
+
+  - remove:
+      field: _tmp_url

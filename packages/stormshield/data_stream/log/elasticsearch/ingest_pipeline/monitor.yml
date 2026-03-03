@@ -1,0 +1,159 @@
+---
+description: Pipeline for processing monitor logs from Stormshield appliances.
+processors:
+  - script:
+      tag: script_process_devices
+      lang: painless
+      description: Process device stat fields.
+      params:
+        special_cases:
+          - key: CPU
+            value:
+              - user_time
+              - kernel_time
+              - system_disruption
+        devices:
+          - agg
+          - ipsec
+          - sslvpn
+          - Wifi
+          - Qid
+          - Vlan
+        stats:
+          - name
+          - incoming_throughput
+          - maximum_incoming_throughput
+          - outgoing_throughput
+          - maximum_outgoing_throughput
+          - packets_accepted
+          - packets_blocked
+      source: >-
+        def deviceStats = [:];
+        def specialCases = [:];
+        ctx.stormshield.forEach((k, v) -> {
+          params.devices.forEach(d -> {
+            if (k.startsWith(d)) {
+              deviceStats[k] = [:];
+              deviceStats[k]["value"] = v;
+              deviceStats[k]["stem"] = d;
+            }
+        
+            return true;
+          });
+          params.special_cases.forEach(s -> {
+            def sp_k = s["key"];
+            def sp_v = s["value"];
+            if (k.startsWith(sp_k)) {
+              def _map = [:];
+              def values = v.splitOnToken(',', 3);
+              for (int i = 0; i < sp_v.length; ++i) {
+                _map[sp_v[i]] = Long.parseLong(values[i]);
+              }
+              specialCases[sp_k] = _map;
+            }
+
+            return true;
+          });
+        });
+        
+        if (deviceStats.isEmpty() && specialCases.isEmpty()) {
+          return;
+        }
+
+        def result = [:];
+        for (entry in deviceStats.entrySet()) {
+          def entryValue = entry.getValue();
+          def stem = entryValue["stem"];
+          if (!result.containsKey(stem)) {
+            result[stem] = [];
+          }
+          def values = entryValue["value"].splitOnToken(',', 7);
+          def item = [:];
+          item["original"] = entry.getKey();
+          for (int i = 0; i < values.length; ++i) {
+            if (i == 0) {
+              item[params.stats[i]] = values[i];
+            } else {
+              item[params.stats[i]] = Long.parseLong(values[i]);        
+            }
+          }
+          result[stem].add(item);
+          ctx.stormshield.remove(entry.getKey());
+        }
+        for (entry in result.entrySet()) {
+          result[entry.getKey()].sort((a, b) -> a["original"].compareTo(b["original"]));
+        }
+        if (!ctx.stormshield.containsKey("metadata")) {
+          ctx.stormshield["metadata"] = [:];
+        }
+        ctx.stormshield.metadata.device_stats = result;
+        for (entry in specialCases.entrySet()) {
+          ctx.stormshield.metadata.device_stats[entry.getKey()] = entry.getValue();
+          ctx.stormshield.remove(entry.getKey());
+        }
+
+
+  - script:
+      tag: script_process_ethernet
+      lang: painless
+      description: Process Ethernet stat fields.
+      params:
+        devices:
+          - Ethernet
+        stats:
+          - name
+          - incoming_throughput
+          - maximum_incoming_throughput
+          - outgoing_throughput
+          - maximum_outgoing_throughput
+          - packets_accepted
+          - packets_blocked
+      source: >-
+        def deviceStats = [:];
+        ctx.stormshield.forEach((k, v) -> {
+          params.devices.forEach(d -> {
+            if (k.startsWith(d)) {
+              deviceStats[k] = [:];
+              deviceStats[k]["value"] = v;
+              deviceStats[k]["stem"] = d;
+            }
+        
+            return true;
+          });
+        });
+        
+        if (deviceStats.isEmpty()) {
+          return;
+        }
+
+        if (!ctx.stormshield.containsKey("metadata")) {
+          ctx.stormshield.metadata = [:];
+        }
+        def ports = [];
+        for (entry in deviceStats.entrySet()) {
+          def entryKey = entry.getKey();
+          def entryValue = entry.getValue();
+          def values = entryValue["value"].splitOnToken(',', 7);
+          def item = [:];
+          ports.add(entryKey);
+          item["original"] = entryKey;
+          for (int i = 0; i < values.length; ++i) {
+            if (i == 0) {
+              item[params.stats[i]] = values[i];
+            } else {
+              item[params.stats[i]] = Long.parseLong(values[i]);        
+            }
+          }
+          ctx.stormshield.remove(entryKey);
+          ctx.stormshield.metadata[entryKey] = item;
+        }
+        ports.sort((a, b) -> a.compareTo(b));
+        ctx.stormshield.ports = ports;
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

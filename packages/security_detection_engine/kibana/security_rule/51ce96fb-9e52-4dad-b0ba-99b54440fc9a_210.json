@@ -1,0 +1,158 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the use of Distributed Component Object Model (DCOM) to run commands from a remote host, which are launched via the MMC20 Application COM Object. This behavior may indicate an attacker abusing a DCOM application to move laterally.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Incoming DCOM Lateral Movement with MMC",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Incoming DCOM Lateral Movement with MMC\n\nDistributed Component Object Model (DCOM) enables software components to communicate over a network, often used in Windows environments for remote management. Adversaries exploit DCOM to execute commands remotely, leveraging applications like MMC20 to move laterally. The detection rule identifies suspicious activity by monitoring network traffic and process creation patterns, flagging potential misuse when MMC initiates remote commands, indicating possible lateral movement or defense evasion tactics.\n\n### Possible investigation steps\n\n- Review the network traffic logs to identify the source IP address that initiated the connection to the host running mmc.exe. Verify if this IP address is known and expected within the network environment.\n- Examine the process creation logs to confirm the parent-child relationship between mmc.exe and any suspicious processes. Investigate the child processes for any unusual or unauthorized activities.\n- Check the source and destination ports (both should be >= 49152) involved in the network connection to determine if they align with typical application behavior or if they are indicative of potential misuse.\n- Investigate the timeline of events to see if there are any other related alerts or activities on the same host or originating from the same source IP address, which could provide additional context or indicate a broader attack pattern.\n- Correlate the findings with any existing threat intelligence or known attack patterns related to DCOM abuse and lateral movement to assess the potential risk and impact on the organization.\n\n### False positive analysis\n\n- Legitimate administrative tasks using MMC may trigger the rule. Regularly review and document routine administrative activities to differentiate them from suspicious behavior.\n- Automated scripts or management tools that use MMC for remote management can cause false positives. Identify and whitelist these tools by their process and network patterns.\n- Internal network scanning or monitoring tools might mimic the behavior detected by the rule. Exclude known IP addresses or ranges associated with these tools to reduce noise.\n- Scheduled tasks or maintenance operations that involve MMC could be misinterpreted as lateral movement. Ensure these tasks are logged and recognized as part of normal operations.\n- Software updates or patches that require MMC to execute remote commands might trigger alerts. Maintain an updated list of such activities and exclude them from triggering the rule.\n\n### Response and remediation\n\n- Isolate the affected host immediately from the network to prevent further lateral movement and contain the threat.\n- Terminate any suspicious processes associated with mmc.exe on the affected host to stop any ongoing malicious activity.\n- Conduct a thorough review of the affected host's event logs and network traffic to identify any additional indicators of compromise or other affected systems.\n- Reset credentials for any accounts that were accessed or potentially compromised during the incident to prevent unauthorized access.\n- Apply patches and updates to the affected systems and any other vulnerable systems in the network to mitigate known vulnerabilities that could be exploited.\n- Implement network segmentation to limit the ability of threats to move laterally within the network in the future.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional actions are necessary.",
+        "query": "sequence by host.id with maxspan=1m\n [network where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"mmc.exe\" and source.port >= 49152 and\n destination.port >= 49152 and source.ip != \"127.0.0.1\" and source.ip != \"::1\" and\n  network.direction : (\"incoming\", \"ingress\") and network.transport == \"tcp\"\n ] by process.entity_id\n [process where host.os.type == \"windows\" and event.type == \"start\" and process.parent.name : \"mmc.exe\"\n ] by process.parent.entity_id\n",
+        "references": [
+            "https://enigma0x3.net/2017/01/05/lateral-movement-using-the-mmc20-application-com-object/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.direction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "51ce96fb-9e52-4dad-b0ba-99b54440fc9a",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.003",
+                                "name": "Distributed Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1021/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.014",
+                                "name": "MMC",
+                                "reference": "https://attack.mitre.org/techniques/T1218/014/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 210
+    },
+    "id": "51ce96fb-9e52-4dad-b0ba-99b54440fc9a_210",
+    "type": "security-rule"
+}
