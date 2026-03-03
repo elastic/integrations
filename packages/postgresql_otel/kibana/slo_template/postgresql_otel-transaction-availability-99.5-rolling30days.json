@@ -1,0 +1,71 @@
+{
+  "attributes": {
+    "name": "[PostgreSQL OTel] Transaction availability 99.5% rolling 30 days",
+    "description": "This SLO tracks the transaction success rate of PostgreSQL via OTel metrics, ensuring that 99.5% of time intervals have zero new rollbacks over a rolling period of 30 days to maintain reliable data operations and application functionality.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"postgresqlreceiver.otel\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "postgresql.rollbacks",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "postgresql.rollbacks",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "postgresql.commits",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "postgresql.commits",
+              "filter": ""
+            }
+          ],
+          "equation": "(A - B) / (C - D) + (A - B)",
+          "comparator": "LT",
+          "threshold": 0.005
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "Postgresql",
+      "OTel"
+    ],
+    "groupBy": [
+      "resource.attributes.postgresql.database.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-023149b8-d4cf-41b0-a36b-80c49ee8ba6c"
+        }
+      ]
+    }
+  },
+  "id": "postgresql_otel-transaction-availability-99.5-rolling30days",
+  "type": "slo_template"
+}
