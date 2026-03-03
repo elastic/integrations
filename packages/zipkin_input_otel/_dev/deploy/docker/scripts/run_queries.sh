@@ -3,13 +3,16 @@
 set -ex
 
 TARGET_URL=${TARGET_URL:-http://backend:9000}
+SLEEP_TIME=${SLEEP_TIME:-5}
 
-# NOTE: it cannot be done using SIGHUP signal, since the backend container is also
-# killed and the traces would not be sent to the elastic-agent container.
+# NOTE: backend container is the one that requires to communicate with the elastic-agent container
+# to send the traces to the zipkin receiver port. If set the SIGHUP signal in the test system configuration
+# file, that signal would be received by the backend container and it gets killed.
+# Therefore, the SIGHUP signal is not used to start the workload and it is done here instead (separate container).
 
 # Wait for the elastic-agent container to be ready with the corresponding
 # agent policy assigned
-sleep 20
+sleep ${SLEEP_TIME}
 
 echo "Sending traces to ${TARGET_URL}/api"
 i=0
