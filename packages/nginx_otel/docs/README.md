@@ -170,6 +170,41 @@ service:
 
 The `resourcedetection/system` processor is required across all pipelines to populate host information used by the dashboard.
 
+## Dashboards
+
+This integration includes three pre-built Kibana dashboards:
+
+- **[Nginx OTel] Request Health** — Golden signals overview: errors (4xx/5xx), throughput, and saturation. Monitors request rates from access logs, error log severity, and connection states from stub_status metrics.
+- **[Nginx OTel] Server Internals** — Deep-dive into connection handling: active/reading/writing/waiting states, accept and handled rates, request processing, and dropped connections.
+- **[Nginx OTel] Traffic & Capacity** — Traffic analysis with status code distribution, top URLs, top clients, HTTP methods and versions, plus capacity planning metrics and request rate trends.
+
+Each dashboard includes a host filter control and cross-links to navigate between views.
+
+## Alerting rule templates
+
+This integration ships five alerting rule templates that you can enable and customize:
+
+| Rule | Default threshold | Window | Description |
+|------|-------------------|--------|-------------|
+| **High 4xx error rate** | > 15% | 15 min | Fires when the share of HTTP 4xx client errors exceeds the threshold per host (minimum 50 requests). |
+| **High 5xx error rate** | > 5% | 15 min | Fires when the share of HTTP 5xx server errors exceeds the threshold per host (minimum 50 requests). |
+| **High active connections** | > 256 avg | 5 min | Fires when average active connections exceed the threshold. Adjust to match your NGINX `worker_connections` setting. |
+| **Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host. |
+| **Dropped connections** | Any drop detected | 5 min | Fires when NGINX accepted more connections than it handled, indicating resource exhaustion. |
+
+All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thresholds can be adjusted to match your environment's baseline.
+
+## SLO templates
+
+This integration includes two SLO templates:
+
+| SLO | Target | Window | Description |
+|-----|--------|--------|-------------|
+| **Request availability** | 99% | Rolling 30 days | Percentage of requests that return a non-server-error response (status code < 500). Uses occurrence-based budgeting over access logs. |
+| **Connection handling rate** | 99.5% | Rolling 30 days | Percentage of 1-minute time slices where all accepted connections are handled (no drops). Uses timeslice budgeting over stub_status metrics. |
+
+Both SLOs are grouped by `host.name`, allowing per-instance tracking.
+
 ## Metrics reference
 
 ### NGINX metrics
