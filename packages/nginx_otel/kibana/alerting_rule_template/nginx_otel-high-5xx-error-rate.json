@@ -15,7 +15,7 @@
             "timeWindowSize": 15,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "FROM logs-nginx.access.otel-*\n// Flag each access log entry as a server error (5xx) or not\n| EVAL is_5xx = CASE(http.response.status_code >= 500, 1, 0)\n// Aggregate total requests and 5xx count per NGINX host\n| STATS total = COUNT(*), errors_5xx = SUM(is_5xx) BY host.name\n// Minimum sample size to avoid noisy low-traffic hosts\n| WHERE total > 50\n// Calculate 5xx error rate as a percentage\n| EVAL error_rate_pct = ROUND(errors_5xx / total * 100.0, 2)\n// Alert threshold: adjust to tune sensitivity\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
+                "esql": "FROM logs-nginx.access.otel-*\n// Flag each access log entry as a server error (5xx) or not\n| EVAL is_5xx = CASE(http.response.status_code >= 500, 1, 0)\n// Aggregate total requests and 5xx count per NGINX host\n| STATS total = COUNT(*), errors_5xx = SUM(is_5xx) BY host.name\n// Minimum sample size to avoid noisy low-traffic hosts\n| WHERE total > 50\n// Calculate 5xx error rate as a percentage\n| EVAL error_rate_pct = ROUND(TO_DOUBLE(errors_5xx) / TO_DOUBLE(total) * 100.0, 2)\n// Alert threshold: adjust to tune sensitivity\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [
