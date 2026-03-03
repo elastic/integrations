@@ -47,7 +47,11 @@ processors:
       
   - rename:
       field: changes
-      target_field: ti_strider.indicator.changes    
+      target_field: ti_strider.indicator.changes
+  - rename:
+      field: archive
+      target_field: ti_strider.indicator.archive
+      ignore_missing: true
 
   - json:
       field: ti_strider.indicator.name_secondary_raw
@@ -57,13 +61,13 @@ processors:
   - script:
       lang: painless
       tag: script-default-expired_at
-      description: Set expires_at to now when indicator is archived (archive == 1), otherwise 90 days from ingestion.
+      description: Set expires_at to now when indicator is archived (ti_strider.indicator.archive == 1), otherwise 90 days from ingestion.
       source: |
         ZonedDateTime now = ZonedDateTime.parse(ctx['@timestamp']);
-        if (ctx.archive != null && ctx.archive == 1) {
-          ctx['ti_strider']['indicator']['expires_at'] = now;
+        if (ctx.ti_strider != null && ctx.ti_strider.indicator != null && ctx.ti_strider.indicator.archive != null && ctx.ti_strider.indicator.archive == 1) {
+          ctx.ti_strider.indicator.expires_at = now;
         } else {
-          ctx['ti_strider']['indicator']['expires_at'] = now.plusDays(90);
+          ctx.ti_strider.indicator.expires_at = now.plusDays(90);
         }
       
   - remove:
