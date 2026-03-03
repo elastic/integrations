@@ -1,6 +1,6 @@
 # Apache CouchDB OpenTelemetry Assets
 
-Apache CouchDB is an open-source NoSQL document database that exposes a RESTful HTTP API for all operations. This content pack provides dashboards, alert rules, and SLO templates for CouchDB metrics collected via the OpenTelemetry CouchDB receiver, covering latency, traffic, errors, and saturation.
+Apache CouchDB is an open-source NoSQL document database that exposes a RESTful HTTP API for all operations. This content pack provides dashboards, alert rules, and SLO templates for CouchDB metrics collected using the OpenTelemetry CouchDB receiver, covering latency, traffic, errors, and saturation.
 
 ## Compatibility
 
@@ -24,10 +24,10 @@ The CouchDB receiver scrapes metrics from the `/_node/{node-name}/_stats/couchdb
 
 Configure the OpenTelemetry Collector (or Elastic Datadog OpenTelemetry Collector) to receive CouchDB metrics and export them to Elasticsearch. Use the following placeholders in the configuration:
 
-- `<COUCHDB_ENDPOINT>` — CouchDB base URL (e.g. `http://localhost:5984`).
+- `<COUCHDB_ENDPOINT>` — CouchDB base URL (for example, `http://localhost:5984`).
 - `<COUCHDB_USERNAME>` — CouchDB username for authentication.
 - `<COUCHDB_PASSWORD>` — CouchDB password. Use `env:COUCHDB_PASSWORD` and set the variable in your environment.
-- `<ES_ENDPOINT>` — Elasticsearch ingest endpoint (e.g. `https://elasticsearch:9200`).
+- `<ES_ENDPOINT>` — Elasticsearch ingest endpoint (for example, `https://elasticsearch:9200`).
 - `<ES_API_KEY>` — Elasticsearch API key for authentication. Prefer `env:ES_API_KEY` and set the variable in your environment.
 
 ```yaml
