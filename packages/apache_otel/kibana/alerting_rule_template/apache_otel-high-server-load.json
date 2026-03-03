@@ -1,0 +1,53 @@
+{
+    "id": "apache_otel-high-server-load",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the 1-minute server load average exceeds 5.0, indicating the Apache server is under heavy system load that may degrade request handling performance.",
+        "name": "[Apache OTel] High server load",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "apache"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "apache_otel-overview"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## High Server Load\n\n### Triage Steps\n1. Open the [Apache OTel] Overview dashboard and check the Server Load Over Time panel to see the load trend across 1m, 5m, and 15m averages.\n2. Check the CPU Time by Mode panel to determine if CPU time is dominated by system or user mode.\n3. Review the Request Rate panel to correlate load with traffic patterns.\n4. Check the Workers by State panel to see if worker saturation is contributing to load.\n\n### Remediation\n- Identify and terminate any runaway processes consuming excessive CPU.\n- If load is request-driven, consider enabling request rate limiting or caching.\n- Review Apache modules for inefficient processing (e.g., heavy mod_rewrite rules).\n- Scale vertically (more CPU) or horizontally (more instances).\n\n### Escalation\nIf server load remains above 5.0 for more than 15 minutes, page the on-call engineer."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-apachereceiver.otel-*\n| WHERE `apache.load.1` IS NOT NULL\n| STATS load_1m = MAX(`apache.load.1`)\n    BY resource.attributes.apache.server.name\n| WHERE load_1m > 5.0\n| SORT load_1m DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.apache.server.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

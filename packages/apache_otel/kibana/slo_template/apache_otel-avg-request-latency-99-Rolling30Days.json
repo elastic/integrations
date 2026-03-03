@@ -1,0 +1,67 @@
+{
+    "id": "apache_otel-avg-request-latency-99-Rolling30Days",
+    "type": "slo_template",
+    "attributes": {
+        "name": "[Apache OTel] Average request latency 99% rolling 30 days",
+        "description": "Tracks the average per-request processing time of Apache HTTP Server via OTel metrics, ensuring that 99% of 1-minute timeslices show average request latency below 200 ms over a rolling 30-day period to maintain responsive web serving for clients.",
+        "indicator": {
+            "type": "sli.metric.timeslice",
+            "params": {
+                "index": "metrics-*",
+                "filter": "data_stream.dataset: \"apachereceiver.otel\"",
+                "metric": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "max",
+                            "field": "apache.request.time"
+                        },
+                        {
+                            "name": "B",
+                            "aggregation": "min",
+                            "field": "apache.request.time"
+                        },
+                        {
+                            "name": "C",
+                            "aggregation": "max",
+                            "field": "apache.requests"
+                        },
+                        {
+                            "name": "D",
+                            "aggregation": "min",
+                            "field": "apache.requests"
+                        }
+                    ],
+                    "equation": "(A-B)/(C-D)",
+                    "comparator": "LT",
+                    "threshold": 200
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "timeslices",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.99,
+            "timesliceTarget": 0.95,
+            "timesliceWindow": "1m"
+        },
+        "tags": [
+            "apache",
+            "otel"
+        ],
+        "groupBy": [
+            "resource.attributes.apache.server.name"
+        ],
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "apache_otel-overview"
+                }
+            ]
+        }
+    }
+}
