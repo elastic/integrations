@@ -22,6 +22,9 @@ processors:
 - rename:
     fields:
       - {from: "message", to: "event.original"}
+# Workaround: PingFederate can emit CEF with IPv6 in brackets (e.g. src=[2a01:...]).
+# CEF v25 spec defines src as IPv4 only: https://dn790008.ca.archive.org/0/items/commoneventformatv25/CommonEventFormatV25.pdf
+# decode_cef follows the spec and does not accept bracketed IPv6. Strip brackets before decode_cef.
 - script:
     lang: javascript
     source: |
