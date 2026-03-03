@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.13.0
-	github.com/elastic/elastic-package v0.120.0
+	github.com/elastic/elastic-package v0.120.1
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.9.0
 	github.com/elastic/package-registry v1.36.0
@@ -212,7 +212,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
@@ -231,11 +231,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	helm.sh/helm/v3 v3.20.0 // indirect
 	howett.net/plist v1.0.1 // indirect
-	k8s.io/api v0.35.1 // indirect
+	k8s.io/api v0.35.2 // indirect
 	k8s.io/apiextensions-apiserver v0.35.0 // indirect
-	k8s.io/apimachinery v0.35.1 // indirect
-	k8s.io/cli-runtime v0.35.1 // indirect
-	k8s.io/client-go v0.35.1 // indirect
+	k8s.io/apimachinery v0.35.2 // indirect
+	k8s.io/cli-runtime v0.35.2 // indirect
+	k8s.io/client-go v0.35.2 // indirect
 	k8s.io/component-base v0.35.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
