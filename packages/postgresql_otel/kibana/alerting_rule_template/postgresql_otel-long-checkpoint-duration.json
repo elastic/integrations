@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-long-checkpoint-duration",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Long checkpoint duration",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Checkpoint duration (sync + write) is server-level with attributes.type\n| WHERE postgresql.bgwriter.duration IS NOT NULL\n| EVAL duration_val = TO_DOUBLE(postgresql.bgwriter.duration)\n| STATS total_duration_ms = SUM(duration_val) BY service.instance.id\n// Threshold: 30 seconds total in window; adjust for your checkpoint frequency\n| WHERE total_duration_ms > 30000"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

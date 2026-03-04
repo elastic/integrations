@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-connection-utilization-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Connection utilization high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Include both server-level (connection.max) and database-level (backends) metrics\n| WHERE postgresql.backends IS NOT NULL OR postgresql.connection.max IS NOT NULL\n// Aggregate total backends and max connections per instance\n| STATS total_backends = SUM(postgresql.backends), conn_max = MAX(postgresql.connection.max) BY service.instance.id\n// Skip instances where we could not compute utilization\n| WHERE conn_max > 0 AND total_backends IS NOT NULL\n// Utilization as percentage; adjust 80.0 threshold for your environment\n| EVAL utilization_pct = ROUND(total_backends / conn_max * 100.0, 2)\n| WHERE utilization_pct > 80.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
