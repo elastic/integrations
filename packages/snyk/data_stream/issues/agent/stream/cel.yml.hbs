@@ -133,8 +133,11 @@ program: |-
         // We are doing this work mainly for the side-effects of the rate_limit call.
         resp.with(
           // Calculate and apply rate limits.
+          // Snyk returns RFC 9110 structured X-Ratelimit-Limit values
+          // (e.g. "160, 160;w=1;name=...") that the rate_limit function
+          // cannot parse as a float. Extract the first token.
           rate_limit(
-            resp.Header,
+            resp.Header.with({"X-Ratelimit-Limit": [resp.Header[?"X-Ratelimit-Limit"][0].orValue("0").split(",")[0].trim_space()]}),
             "X-Ratelimit",
             false,
             true,
@@ -192,8 +195,9 @@ program: |-
                                   // Threading rate-limit results obtained here through to the final
                                   // result is not tenable, so we do not do any work to allow them
                                   // to be interpreted by the input and just drop them.
+                                  // See first rate_limit call for structured header comment.
                                   rate_limit(
-                                    resp.Header,
+                                    resp.Header.with({"X-Ratelimit-Limit": [resp.Header[?"X-Ratelimit-Limit"][0].orValue("0").split(",")[0].trim_space()]}),
                                     "X-Ratelimit",
                                     false,
                                     true,

@@ -22,6 +22,8 @@ This integration supports below API versions to collect data.
 | ---------------------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
 | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
+| BehaviorEntities          | Information about entities (file, process, device, user, and others) that are involved in a behavior.                                                                             |
+| BehaviorInfo              | Information about behaviors from Microsoft Defender for Cloud Apps and User and Entity Behavior Analytics (UEBA).                                                                 |
 | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
 | DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
 | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
@@ -41,6 +43,9 @@ This integration supports below API versions to collect data.
 | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
 | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
 | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+| MessageEvents             | Details about messages sent and received within your organization at the time of delivery.                                                                                        |
+| MessagePostDeliveryEvents | Information about security events that occurred after the delivery of a Microsoft Teams message in your organization.                                                             |
+| MessageUrlInfo            | Information about URLs sent through Microsoft Teams messages in your organization.                                                                                                |
 | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
 
 ## What data does this integration collect?
@@ -74,6 +79,8 @@ Follow the steps below to configure data collection from Microsoft sources.
 
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 - A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping filebeat it can start back up at the spot that it stopped processing messages.
+
+**Authentication:** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
 #### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
