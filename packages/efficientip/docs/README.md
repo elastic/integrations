@@ -26,7 +26,7 @@ This integration collects the following data types from EfficientIP DDI solution
 - **DHCP Events**: Lease assignments, renewals, releases, and IP address allocations
 - **IPAM Events**: Address space changes, subnet modifications, and infrastructure audits
 
-All events are forwarded via syslog and processed through Elastic ingest pipelines for analysis and visualization within the Elastic Stack.
+All events are forwarded using syslog and processed through Elastic ingest pipelines for analysis and visualization within the Elastic Stack.
 
 
 ## What do I need to use this integration?
@@ -53,7 +53,7 @@ Refer to the EfficientIP documentation for your version for detailed configurati
 ### Agent-based deployment
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Inputs used
 
@@ -67,7 +67,7 @@ For more details about the UDP input settings, check the [Filebeat documentation
 
 ### Collecting logs from UDP
 
-To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+To collect logs using UDP, select **Collect logs using UDP** and configure the following parameters:
 
 **Required Settings:**
 - Host
