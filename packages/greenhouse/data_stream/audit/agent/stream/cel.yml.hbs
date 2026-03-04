@@ -112,9 +112,12 @@ program: |
               ).as(headers,
                 // Build URL with query params
                 (
-                  state.url.trim_right("/") + "/events?paging=true&after_time=" + after_time +
-                  (has(state.performer_ids) && state.performer_ids != "" ? "&performer_ids=" + state.performer_ids : "") +
-                  (has(state.event_types) && state.event_types != "" ? "&event_types=" + state.event_types : "")
+                  state.url.trim_right("/") + "/events?" + {
+                    "paging": ["true"],
+                    "after_time": [after_time],
+                    ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
+                    ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
+                  }.format_query()
                 ).as(request_url,
                   // Make the audit log API request
                   request("GET", request_url).with({
@@ -128,8 +131,8 @@ program: |
                           "token_expires": auth.token_expires,
                           // Map events to messages
                           "events": has(body.results) && size(body.results) > 0 ?
-                            body.results.map(event, {
-                              "message": event.encode_json()
+                            body.results.map(e, {
+                              "message": e.encode_json()
                             })
                           :
                             [],
@@ -154,14 +157,22 @@ program: |
                       {
                         "token": "",
                         "token_expires": "",
-                        "events": [{
-                          "error": {
-                            "code": "401",
-                            "message": "OAuth access token expired or invalid. Will refresh on next interval.",
-                          }
-                        }],
+                        "events": [],
                         "want_more": false,
                         "cursor": has(state.cursor) ? state.cursor : {},
+                      }
+                    : string(resp.Body).contains("Pit_Id") || string(resp.Body).contains("pit_id") ?
+                      // Pit_Id expired - clear pagination cursor but keep last_event_time
+                      {
+                        "token": auth.token,
+                        "token_expires": auth.token_expires,
+                        "events": [],
+                        "want_more": false,
+                        "cursor": {
+                          "pit_id": "",
+                          "search_after": "",
+                          "last_event_time": has(state.cursor) && has(state.cursor.last_event_time) ? state.cursor.last_event_time : after_time,
+                        },
                       }
                     :
                       // Other error - preserve state
