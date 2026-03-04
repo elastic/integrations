@@ -1,5 +1,10 @@
 input: cel
 service: opencti_stub
+# The simplified Fleet API coerces string "false"/"true" to booleans before
+# reaching the select-type validation, so "false" fails include() against the
+# string options. Force the legacy API until Fleet fixes the schema ordering.
+# See https://github.com/elastic/kibana/issues/255976
+policy_api_format: legacy
 vars:
   url: http://{{Hostname}}:{{Port}}
   api_key: test_api_key
@@ -9,8 +14,6 @@ data_stream:
     page_size: 3
     preserve_original_event: true
     enable_request_tracer: true
-
-    # Setting not supported here, see https://github.com/elastic/kibana/issues/255976
-    # revoked: "false"
+    revoked: "false"
 assert:
   hit_count: 9
