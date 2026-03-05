@@ -1,0 +1,40 @@
+{
+  "id": "redis_otel-memory-near-max",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Redis OTel] Memory approaching maxmemory",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redis"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n  AND redis.memory.used IS NOT NULL\n  AND redis.maxmemory IS NOT NULL\n  AND redis.maxmemory > 0\n// Used memory as percentage of maxmemory\n| STATS used = MAX(redis.memory.used),\n        max_mem = MAX(redis.maxmemory)\n  BY server.address, server.port\n| EVAL usage_pct = ROUND(used / max_mem * 100.0, 2)\n// Alert when usage exceeds 90%; adjust threshold as needed\n| WHERE usage_pct > 90.0\n| SORT usage_pct DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

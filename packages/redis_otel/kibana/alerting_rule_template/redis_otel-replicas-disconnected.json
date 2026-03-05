@@ -1,0 +1,40 @@
+{
+  "id": "redis_otel-replicas-disconnected",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Redis OTel] Primary has no connected replicas",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redis"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n  AND redis.slaves.connected IS NOT NULL\n// Filter to primaries: role is primary when attributes.role exists, or check replication metrics\n// redis.slaves.connected is only relevant on primaries (replicas report 0)\n| STATS connected_replicas = MAX(redis.slaves.connected)\n  BY server.address, server.port\n// Alert when a primary expects replicas but has none (adjust if standalone is acceptable)\n// Use 0 to alert on any instance with zero replicas; for HA setups this indicates risk\n| WHERE connected_replicas == 0\n| SORT server.address ASC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
