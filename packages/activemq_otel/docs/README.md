@@ -2,7 +2,7 @@
 
 Apache ActiveMQ (Classic) is an open-source, Java-based message broker implementing the Java Message Service (JMS) API. It acts as an intermediary for asynchronous communication between distributed applications, decoupling producers from consumers.
 
-This content pack provides pre-built dashboards, alert rules, and SLO templates that visualize and alert on Apache ActiveMQ JMX metrics collected via the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper), covering broker health, capacity, message flow, destinations, and error signals.
+This content pack provides pre-built dashboards, alert rules, and SLO templates that visualize and alert on Apache ActiveMQ JMX metrics collected using the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper), covering broker health, capacity, message flow, destinations, and error signals.
 
 ## Compatibility
 
@@ -12,7 +12,7 @@ The Apache ActiveMQ OpenTelemetry assets have been tested with the [OpenTelemetr
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-You also need the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/latest/download/opentelemetry-jmx-scraper.jar) JAR and an OpenTelemetry Collector (or EDOT Collector) to receive metrics via OTLP and export them to Elasticsearch.
+You also need the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/latest/download/opentelemetry-jmx-scraper.jar) JAR and an OpenTelemetry Collector (or EDOT Collector) to receive metrics using OTLP and export them to Elasticsearch.
 
 ## Setup
 
@@ -34,7 +34,7 @@ Create `jmxremote.password` and `jmxremote.access` files with appropriate permis
 
 ### JMX Scraper Configuration
 
-The JMX Scraper runs as a standalone Java process that connects to ActiveMQ's JMX endpoint and exports metrics via OTLP to your collector. Download the [latest release](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/latest/download/opentelemetry-jmx-scraper.jar) and run it with the following configuration:
+The JMX Scraper runs as a standalone Java process that connects to ActiveMQ's JMX endpoint and exports metrics using OTLP to your collector. Download the [latest release](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/latest/download/opentelemetry-jmx-scraper.jar) and run it with the following configuration:
 
 ```bash
 java -jar opentelemetry-jmx-scraper.jar \
@@ -51,11 +51,11 @@ java -jar opentelemetry-jmx-scraper.jar \
 |-------------|-------------|---------|
 | `<ACTIVEMQ_HOST>` | Hostname or IP of the ActiveMQ broker | `activemq-broker.local` |
 | `<JMX_PORT>` | JMX port (default 1099) | `1099` |
-| `<JMX_USERNAME>` | JMX username (omit if authentication is disabled) | `monitor` |
-| `<JMX_PASSWORD>` | JMX password (omit if authentication is disabled) | `secret` |
+| `<JMX_USERNAME>` | JMX username (omit if authentication is deactivated) | `monitor` |
+| `<JMX_PASSWORD>` | JMX password (omit if authentication is deactivated) | `secret` |
 | `<COLLECTOR_HOST>` | Hostname of the OpenTelemetry Collector | `otel-collector.local` |
 
-You can also configure the scraper using environment variables (for example `OTEL_JMX_SERVICE_URL`, `OTEL_JMX_TARGET_SYSTEM`) or a properties file. See the [JMX Scraper documentation](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper) for the full configuration reference.
+You can also configure the scraper using environment variables (for example `OTEL_JMX_SERVICE_URL`, `OTEL_JMX_TARGET_SYSTEM`) or a properties file. refer the [JMX Scraper documentation](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper) for the full configuration reference.
 
 > **Tip**: You can verify JMX connectivity before starting collection by running `java -jar opentelemetry-jmx-scraper.jar -test -config otel.jmx.service.url=service:jmx:rmi:///jndi/rmi://<ACTIVEMQ_HOST>:<JMX_PORT>/jmxrmi`.
 
