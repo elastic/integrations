@@ -979,8 +979,10 @@ An example event for `index` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |  |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |  |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |  |
+| elasticsearch.index.codec |  | keyword |  |
 | elasticsearch.index.creation_date |  | date |  |
 | elasticsearch.index.hidden |  | boolean |  |
+| elasticsearch.index.mode |  | keyword |  |
 | elasticsearch.index.name | Index name. | keyword |  |
 | elasticsearch.index.primaries.docs.count |  | long | gauge |
 | elasticsearch.index.primaries.docs.deleted |  | long | gauge |
@@ -1016,8 +1018,6 @@ An example event for `index` looks as following:
 | elasticsearch.index.shards.total |  | long |  |
 | elasticsearch.index.status |  | keyword |  |
 | elasticsearch.index.tier_preference |  | keyword |  |
-| elasticsearch.index.mode | Index mode (e.g. time_series). | keyword |  |
-| elasticsearch.index.codec | Index compression codec (e.g. default, best_compression, none). | keyword |  |
 | elasticsearch.index.total.bulk.avg_size_in_bytes |  | long | gauge |
 | elasticsearch.index.total.bulk.avg_time_in_millis |  | long | gauge |
 | elasticsearch.index.total.bulk.total_operations |  | long | counter |
