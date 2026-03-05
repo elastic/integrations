@@ -1,0 +1,42 @@
+{
+    "id": "kafka_otel-under-replicated-partitions",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Kafka OTel] Under-replicated partitions",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "kafka"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Partition metrics: replicas vs in-sync replicas\n| WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL\n| STATS replicas = MAX(kafka.partition.replicas),\n    replicas_in_sync = MAX(kafka.partition.replicas_in_sync)\n  BY attributes.topic, attributes.partition\n// Alert when any replica is out of sync (replication degraded)\n// Indicates broker failures, network issues, or overloaded followers\n| WHERE replicas > replicas_in_sync\n| SORT replicas_in_sync ASC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.topic",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": false
+        }
+    }
+}
