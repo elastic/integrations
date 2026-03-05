@@ -116,7 +116,7 @@ Each `policy_template` is scoped per integration following the least-privilege p
 | `storage` | storage.objects.get, storage.objects.list |
 | `pubsub` | pubsub.subscriptions.consume |
 
-### Okta Integrations (`package_name: okta`) -- Planned
+### Okta Integrations (`package_name: okta`) — Planned
 
 | Policy Template | Permissions Verified |
 |-----------------|---------------------|
