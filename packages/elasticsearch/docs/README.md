@@ -846,6 +846,8 @@ An example event for `index` looks as following:
             "name": ".ml-state-000001",
             "tier_preference": "data_content",
             "creation_date": 1731657995821,
+            "mode": "time_series",
+            "codec": "default",
             "version": "8503000",
             "primaries": {
                 "docs": {
@@ -1014,6 +1016,8 @@ An example event for `index` looks as following:
 | elasticsearch.index.shards.total |  | long |  |
 | elasticsearch.index.status |  | keyword |  |
 | elasticsearch.index.tier_preference |  | keyword |  |
+| elasticsearch.index.mode | Index mode (e.g. time_series). | keyword |  |
+| elasticsearch.index.codec | Index compression codec (e.g. default, best_compression, none). | keyword |  |
 | elasticsearch.index.total.bulk.avg_size_in_bytes |  | long | gauge |
 | elasticsearch.index.total.bulk.avg_time_in_millis |  | long | gauge |
 | elasticsearch.index.total.bulk.total_operations |  | long | counter |
