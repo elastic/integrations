@@ -2,6 +2,14 @@
 
 This integration connects with [the REST API provided by Strider Intel](https://www.striderintel.com/shield/) to ingest threat indicators.
 
+## Test Data Provenance
+
+**Pipeline test input** (`_dev/test/pipeline/test-default-event.json`): Synthetic data with minimal placeholder values ("1", "2") designed to validate pipeline transformation logic. The structure matches the Strider Shield API response format (e.g., `itemNamePrimary`, `itemType`, `riskSignal`, `itemNameSecondary`, `dates_added`, `changes`). Two events with `isNew` values 0 and 1 exercise both code paths in the ingest pipeline.
+
+**Sample event** (`data_stream/indicator/sample_event.json`): Example event reflecting the structure of real API output, with representative indicator data for documentation purposes.
+
+**System test mock** (`_dev/deploy/docker/files/config.yml`): HTTP mock server that simulates the Strider Shield OAuth and API endpoints, returning fixture data in the same format as the production API.
+
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
