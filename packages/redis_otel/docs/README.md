@@ -2,7 +2,7 @@
 
 Redis is an open-source, in-memory data structure store used as a database, cache, message broker, and streaming engine. It delivers sub-millisecond latency for most operations and supports a rich set of data structures.
 
-This content pack provides dashboards, alert rules, and SLO templates for Redis instances monitored via the OpenTelemetry Redis receiver. The assets cover memory usage, connection management, keyspace health, replication status, persistence metrics, and command latency.
+This content pack provides dashboards, alert rules, and SLO templates for Redis instances monitored using the OpenTelemetry Redis receiver. The assets cover memory usage, connection management, keyspace health, replication status, persistence metrics, and command latency.
 
 ## Compatibility
 
