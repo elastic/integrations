@@ -15,7 +15,9 @@ The Anomali ThreatStream integration is compatible with Anomali ThreatStream RES
 
 The integration periodically query the Anomali ThreatStream REST API V2 intelligence endpoint. It authenticates using your username and API key, then retrieves the latest threat indicators.
 
-**NOTE:** The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be accessible using the alias `logs-ti_anomali_latest.intelligence`.
+::::{note}
+The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be accessible using the alias `logs-ti_anomali_latest.intelligence`.
+::::
 
 ## What Data Does This Integration Collect?
 
