@@ -1,0 +1,40 @@
+{
+  "attributes": {
+    "name": "[Nginx Ingress] Controller OTel Request Availability 99.9% Rolling 30 Days",
+    "description": "This SLO tracks the request availability of the Nginx Ingress Controller via OTel access logs, ensuring that 99.9% of HTTP requests receive non-5xx responses over a rolling period of 30 days to maintain reliable user-facing traffic routing.",
+    "indicator": {
+      "type": "sli.kql.custom",
+      "params": {
+        "index": "logs-*",
+        "filter": "data_stream.dataset: \"nginx_ingress_controller.access.otel\" AND body.structured.http.response.status_code : *",
+        "good": "body.structured.http.response.status_code < 500",
+        "total": "body.structured.http.response.status_code : *",
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.999
+    },
+    "tags": [
+      "OTEL",
+      "NGINX_INGRESS_CONTROLLER_OTEL"
+    ],
+    "groupBy": [
+      "host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nginx_ingress_controller_otel-05a72585-3900-4944-b648-2f15907872d1"
+        }
+      ]
+    }
+  },
+  "id": "nginx_ingress-controller-otel-request-availability-99.9-rolling30days",
+  "type": "slo_template"
+}
