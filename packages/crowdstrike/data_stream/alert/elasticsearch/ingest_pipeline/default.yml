@@ -2543,10 +2543,14 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      description: For tactics that are prefixed with "CS" or "TA".
+      description: Set threat.framework from threat.* fields using prefix matching and preference order.
       lang: painless
       tag: script_threat_framework
+      if: ctx.threat != null
       params:
+        framework_preference:
+          - MITRE ATT&CK
+          - CrowdStrike Falcon Detections Framework
         framework_cs: 'CrowdStrike Falcon Detections Framework'
         framework_ma: 'MITRE ATT&CK'
         falcon_tactic_names:
@@ -2560,22 +2564,21 @@ processors:
           - ai powered ioa
           - insecure security posture
       source: |
-        if (ctx.threat == null) { return; }
         def tid = ctx.threat.tactic?.id;
         def nid = ctx.threat.technique?.id;
         def tname = ctx.threat.tactic?.name;
         if ((tid == null || tid.isEmpty()) && (nid == null || nid.isEmpty()) && (tname == null || tname.isEmpty())) {
           return;
         }
-        Set list = new HashSet();
+        Set frameworks = new HashSet();
         // Handling tactics prefixed with "CS" or "TA".
         if (tid != null && !tid.isEmpty()) {
           for (String t: tid) {
             if (t.startsWith("CS")) {
-              list.add(params.framework_cs);
+              frameworks.add(params.framework_cs);
             }
             else if (t.startsWith("TA")) {
-              list.add(params.framework_ma);
+              frameworks.add(params.framework_ma);
             }
           }
         }
@@ -2583,7 +2586,7 @@ processors:
         if (nid != null && !nid.isEmpty()) {
           for (String t: nid) {
             if (t.startsWith("CS")) {
-              list.add(params.framework_cs);
+              frameworks.add(params.framework_cs);
             }
           }
         }
@@ -2591,15 +2594,27 @@ processors:
         if (tname != null && !tname.isEmpty()) {
           for (String t: tname) {
             if (params.falcon_tactic_names.contains(t.toLowerCase())) {
-              list.add(params.framework_cs);
+              frameworks.add(params.framework_cs);
             }
           }
         }
-
-        if (!list.isEmpty()) {
-            ctx.threat = ctx.threat ?: [:];
-            ctx.threat.framework = list;
+        if (frameworks.isEmpty()) {
+          return;
         }
+        if (frameworks.size() == 1) {
+          ctx.threat.framework = frameworks.iterator().next();
+          return;
+        }
+
+        for (def preferred : params.framework_preference) {
+          if (frameworks.contains(preferred)) {
+            ctx.threat.framework = preferred;
+            return;
+          }
+        }
+
+        // fallback when new frameworks are added and not yet in preference list
+        ctx.threat.framework = frameworks.iterator().next();
       on_failure:
         - append:
             field: error.message
