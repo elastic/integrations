@@ -2716,6 +2716,43 @@ processors:
       tag: set_observer_type
       ignore_empty_value: true
 
+  # Orchestrator Fields
+  - set:
+      field: orchestrator.namespace
+      copy_from: m365_defender.event.kubernetes_namespace
+      tag: set_orchestrator_namespace
+      ignore_empty_value: true
+  - set:
+      field: orchestrator.resource.name
+      copy_from: m365_defender.event.kubernetes_resource
+      tag: set_orchestrator_resource_name
+      ignore_empty_value: true
+  - set:
+      field: orchestrator.type
+      value: kubernetes
+      tag: set_orchestrator_type
+      if: ctx.m365_defender?.event?.kubernetes_namespace != null || ctx.m365_defender?.event?.kubernetes_pod_name != null || ctx.m365_defender?.event?.kubernetes_resource != null
+
+  # Cloud Fields
+  - set:
+     tag: set_cloud_provider_327008a6
+     field: cloud.provider
+     value: azure
+     if: ctx.m365_defender?.event?.azure_resource_id != null
+     override: false
+  - set:
+     tag: set_cloud_provider_cabe8ff8
+     field: cloud.provider
+     value: aws
+     if: ctx.m365_defender?.event?.aws_resource_name != null
+     override: false
+  - set:
+     tag: set_cloud_provider_50697eaa
+     field: cloud.provider
+     value: gcp
+     if: ctx.m365_defender?.event?.gcp_full_resource_name != null
+     override: false
+
   # URL/HTTP Fields
   - uri_parts:
       field: m365_defender.event.remote.url
@@ -3137,6 +3174,8 @@ processors:
         - m365_defender.event.container_name
         - m365_defender.event.container_id
         - m365_defender.event.container_image_name
+        - m365_defender.event.kubernetes_resource
+        - m365_defender.event.kubernetes_namespace
         - m365_defender.event.process_name
         - m365_defender.event.parent_process_name
         - m365_defender.event.parent_process_id
