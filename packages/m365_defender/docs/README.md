@@ -924,6 +924,7 @@ This is the `event` dataset.
 | m365_defender.event.storage_account | The identifier for the storage account. | keyword |
 | m365_defender.event.storage_container | The identifier for the storage container. | keyword |
 | m365_defender.event.storage_file_share | The identifier for the cloud storage file share. | keyword |
+| m365_defender.event.storage_ip_address | The IP addresses from which the storage was accessed. | ip |
 | m365_defender.event.subject | Subject of the email. | keyword |
 | m365_defender.event.subscription_id | Subscription ID of the Azure subscription. | keyword |
 | m365_defender.event.successful_operations_count | The count of successful storage operations. | long |

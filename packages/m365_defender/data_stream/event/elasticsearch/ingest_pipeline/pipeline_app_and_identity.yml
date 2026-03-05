@@ -179,7 +179,7 @@ processors:
   - convert:
       field: json.properties.IpAddress
       tag: convert_IpAddress_to_ip
-      target_field: m365_defender.event.ip_address
+      target_field: m365_defender.event.storage_ip_address
       type: ip
       ignore_missing: true
       if: ctx.json?.properties?.IpAddress != ''
@@ -1129,12 +1129,26 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
+  # Client Fields
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_ip_address
+      copy_from: m365_defender.event.ip_address
+      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('cloudauditevents')
+      ignore_empty_value: true
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_storage_ip_address
+      copy_from: m365_defender.event.storage_ip_address
+      if: ctx.m365_defender?.event?.is_private_ip == false
+      ignore_empty_value: true
+
   # GeoIP enrichment on non-private IP
   - geoip:
-      field: m365_defender.event.ip_address
+      field: client.ip
       tag: geoip_ip_address
-      target_field: host.geo
-      if: ctx.m365_defender?.event?.ip_address != null && ctx.m365_defender.event.ip_address != '' && ctx.m365_defender.event.is_private_ip == false
+      target_field: client.geo
+      if: ctx.client?.ip != null
       on_failure:
         - append:
             tag: append_error_message_geoip
@@ -1195,6 +1209,12 @@ processors:
       value: '{{{destination.ip}}}'
       tag: append_related_ip
       if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      tag: append_client_ip_into_related_ip
+      if: ctx.client?.ip != null
       allow_duplicates: false
   - append:
       field: related.hosts
