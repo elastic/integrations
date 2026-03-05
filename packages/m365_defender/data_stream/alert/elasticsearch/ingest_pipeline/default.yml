@@ -27,6 +27,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -37,6 +38,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
@@ -51,7 +53,7 @@ processors:
         If we get here and the 'value' array has elements it means there is an error in the input 
         configuration.
       if: ctx.json?.value instanceof List && ctx.json.value.length > 0
-      message:  |
+      message: |
         There is an unexpected 'value' array with elements. 
         This indicates a misconfiguration of the input.
   - fingerprint:
@@ -156,6 +158,7 @@ processors:
       override: true
       on_failure:
         - append:
+            tag: append_error_message_7172c928
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -171,6 +174,7 @@ processors:
       if: ctx.json?.lastUpdateDateTime != null && ctx.json.lastUpdateDateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_68a7a0b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -207,6 +211,7 @@ processors:
       if: ctx.json?.createdDateTime != null && ctx.json.createdDateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_686dd3a2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -223,6 +228,7 @@ processors:
       if: ctx.json?.lastActivityDateTime != null && ctx.json.lastActivityDateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_8b559792
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -274,6 +280,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_7616b08e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -285,6 +292,7 @@ processors:
       if: ctx.json?.firstActivityDateTime != null && ctx.json.firstActivityDateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_7c22fa58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -309,8 +317,10 @@ processors:
       keep_original: true
       on_failure:
         - remove:
+            tag: remove_json_alertWebUrl_12dda30b
             field: json.alertWebUrl
         - append:
+            tag: append_error_message_ce0a2478
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -520,8 +530,10 @@ processors:
       keep_original: true
       on_failure:
         - remove:
+            tag: remove_json_incidentWebUrl_109036dc
             field: json.incidentWebUrl
         - append:
+            tag: append_error_message_08848c8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -543,6 +555,7 @@ processors:
       if: ctx.json?.resolvedDateTime != null && ctx.json.resolvedDateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_3911a726
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -1159,7 +1172,7 @@ processors:
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_azureAdDeviceId
+      tag: foreach_json_evidence_61979541
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
@@ -2792,6 +2805,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_2b136ec5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -2818,14 +2832,17 @@ processors:
       description: Drops null/empty values recursively.
       on_failure:
         - append:
+            tag: append_error_message_0886867f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

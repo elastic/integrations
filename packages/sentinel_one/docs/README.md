@@ -10,7 +10,7 @@ This module has been tested against `SentinelOne Management Console API version 
 
 ### How it works
 
-This integration periodically queries the SentinelOne REST API to retrieve Activity, Agent, Alert, Application, Application Risk, Group, Threat and Threat Event logs.
+This integration periodically queries the SentinelOne REST API to retrieve Activity, Agent, Alert, Application, Application Risk, Group, Threat, Threat Event, and Unified Alert logs.
 
 ## What data does this integration collect?
 
@@ -24,9 +24,10 @@ This integration collects log messages of the following types:
 - `Group`: Contains configuration and status information for endpoint groups within a site or tenant.
 - `Threat`: Logs confirmed malicious detections, such as malware, exploits, or ransomware identified by SentinelOne.
 - `Threat Event`: Provides detailed event-level information related to a specific threat, including process, file, and network indicators.
+- `Unified Alert`: Collect Unified Alert logs from the Singularity™ Operations Center.
 
 ### Supported use cases
-Integrating SentinelOne Activity, Agent, Alert, Application, Application Risk, Group, Threat, and Threat Event logs with Elastic SIEM provides centralized visibility across endpoint operations and security events. Dashboards deliver insights into agent status, detections, application behavior, and threat lifecycle, helping SOC teams quickly identify malicious activity, enforce policy compliance, and accelerate investigation and response efforts.
+Integrating SentinelOne Activity, Agent, Alert, Application, Application Risk, Group, Threat, Threat Event, and Unified Alert logs with Elastic SIEM provides centralized visibility across endpoint operations and security events. Dashboards deliver insights into agent status, detections, application behavior, and threat lifecycle, helping SOC teams quickly identify malicious activity, enforce policy compliance, and accelerate investigation and response efforts.
 
 ## What do I need to use this integration?
 
@@ -56,6 +57,7 @@ To collect data from SentinelOne APIs, you must have an API token. To create an 
 | Group             | Groups -> view                  |
 | Threat            | Threats -> view                 |
 | Threat Event      | Threats -> view                 |
+| Unified Alert     | Unified Alerts -> view          |
 
 ## Note
 
@@ -104,6 +106,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **SentinelOne**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **sentinel_one**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
 ## Performance and scaling
 
@@ -2167,3 +2176,462 @@ An example event for `threat_event` looks as following:
 | sentinel_one.threat_event.user |  | keyword |
 | sentinel_one.threat_event.verified_status |  | keyword |
 
+
+### unified alert
+
+This is the `unified alert` dataset.
+
+An example event for `unified_alert` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-06T16:42:19.518Z",
+    "agent": {
+        "ephemeral_id": "6a92a6e6-ba13-45a9-b43b-ad6e113d4168",
+        "id": "416a9e43-9d12-43c1-a137-77caa655f60e",
+        "name": "elastic-agent-82584",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "container": {
+        "id": "a1b2c3d4e5f6",
+        "image": {
+            "name": "ubuntu:22.04"
+        },
+        "name": "sentinel-agent"
+    },
+    "data_stream": {
+        "dataset": "sentinel_one.unified_alert",
+        "namespace": "65959",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "416a9e43-9d12-43c1-a137-77caa655f60e",
+        "snapshot": false,
+        "version": "8.19.7"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "malware"
+        ],
+        "created": "2025-02-04T15:54:59.485Z",
+        "dataset": "sentinel_one.unified_alert",
+        "end": "2025-03-06T16:42:19.518Z",
+        "id": "01911119-abcd-7454-1234-6abcdef67893",
+        "ingested": "2026-02-16T06:15:14Z",
+        "kind": "alert",
+        "original": "{\"aiInvestigation\":null,\"analystVerdict\":\"UNDEFINED\",\"analytics\":{\"category\":\"Reputation\",\"name\":\"Agent Policy\",\"typeValue\":\"STATIC\",\"uid\":\"analytic-uid-001\"},\"assets\":[{\"accessible\":true,\"agentUuid\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"agentVersion\":\"24.2.2.20\",\"assetTypeClassifier\":\"Linux Server\",\"category\":\"Server\",\"connectivityToConsole\":\"ONLINE\",\"decommissioned\":false,\"id\":\"masked00asset000000000001\",\"lastLoggedInUser\":null,\"name\":\"host-masked\",\"origin\":\"RESOURCES\",\"osType\":\"LINUX\",\"osVersion\":\"Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic\",\"pendingReboot\":false,\"policy\":\"Default\",\"role\":\"TARGET\",\"status\":\"ACTIVE\",\"subcategory\":\"Other Server\"}],\"assignee\":null,\"attackSurfaces\":[\"ENDPOINT\"],\"availableActionIds\":null,\"classification\":\"MALWARE\",\"confidenceLevel\":\"MALICIOUS\",\"createdAt\":\"2025-02-04T15:54:59.485Z\",\"dataSources\":[],\"description\":\"Linux file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence\",\"detectedAt\":\"2025-02-04T15:54:59.485Z\",\"detectionSource\":{\"product\":\"CWS\",\"vendor\":\"SentinelOne\"},\"detectionTime\":{\"assets\":[{\"accessible\":true,\"asset\":null,\"cloud\":null,\"kubernetes\":{\"clusterName\":\"prod-cluster-01\",\"containerId\":\"a1b2c3d4e5f6\",\"containerImageName\":\"ubuntu:22.04\",\"containerLabels\":[\"app=agent\",\"tier=security\"],\"containerName\":\"sentinel-agent\",\"controllerLabels\":[\"app=sentinel\"],\"controllerName\":\"sentinel-daemonset\",\"controllerType\":\"daemonset\",\"namespaceLabels\":[\"env=prod\"],\"namespaceName\":\"security\",\"nodeLabels\":[\"node-role=worker\"],\"nodeName\":\"worker-node-01\",\"podLabels\":[\"app=sentinel\",\"pod-template-hash=xyz99\"],\"podName\":\"sentinel-daemonset-abc12\"},\"origin\":\"RESOURCES\",\"scope\":{\"accountId\":\"111222333444\",\"accountName\":\"AccountName\",\"groupName\":\"Default Group\",\"siteName\":\"Default site\"}}],\"attacker\":{\"host\":\"attacker.example.com\",\"ip\":\"1.128.0.1\"},\"scope\":{\"accountId\":\"111222333444\",\"accountName\":\"AccountName\",\"groupName\":\"Default Group\",\"siteName\":\"Default site\"},\"targetUser\":{\"domain\":\"example.com\",\"emailAddress\":\"john.doe@example.com\",\"name\":\"John Doe\"}},\"exclusionHash\":null,\"externalId\":\"9876543210987654321\",\"firstSeenAt\":\"2025-02-04T15:54:59.485Z\",\"id\":\"01911119-abcd-7454-1234-6abcdef67893\",\"lastSeenAt\":\"2025-03-06T16:42:19.518Z\",\"name\":\"eicar.com.txt detected as Malware\",\"noteExists\":false,\"process\":{\"cmdLine\":\"/usr/bin/curl -O https://example.com/file.txt\",\"file\":{\"certSubject\":\"Example Corp\",\"md5\":\"5d41402abc4b2a76b9719d911017c592\",\"name\":\"eicar.com.txt\",\"path\":\"/tmp/eicar.com.txt\",\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\"},\"parentName\":\"curl\"},\"realTime\":{\"scope\":{\"account\":{\"id\":\"111222333444\",\"name\":\"AccountName\"},\"group\":{\"id\":\"3334445556667778889\",\"name\":\"Default Group\"},\"site\":{\"id\":\"2223334445556667778\",\"name\":\"Default site\"}}},\"result\":\"UNMITIGATED\",\"severity\":\"MEDIUM\",\"sloDetails\":{\"timeToResolveData\":{\"actionComplete\":false,\"actionDue\":30,\"completion\":3600,\"completionTime\":null,\"status\":\"IN_PROGRESS\",\"target\":60,\"targetTime\":\"2025-02-05T16:00:00.000Z\"},\"timeToResponseData\":{\"actionComplete\":true,\"actionDue\":-5,\"completion\":300,\"completionTime\":\"2025-02-04T16:00:00.000Z\",\"status\":\"MET\",\"target\":15,\"targetTime\":\"2025-02-04T15:55:00.000Z\"}},\"status\":\"RESOLVED\",\"storylineId\":null,\"ticketId\":null,\"updatedAt\":\"2025-03-06T16:42:19.518Z\"}",
+        "outcome": "failure",
+        "severity": 47,
+        "start": "2025-02-04T15:54:59.485Z",
+        "type": [
+            "info"
+        ]
+    },
+    "file": {
+        "hash": {
+            "md5": "5d41402abc4b2a76b9719d911017c592",
+            "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+            "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+        },
+        "name": "eicar.com.txt",
+        "path": "/tmp/eicar.com.txt"
+    },
+    "group": {
+        "id": "3334445556667778889",
+        "name": "Default Group"
+    },
+    "host": {
+        "name": "host-masked",
+        "type": "Other Server"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "message": "eicar.com.txt detected as Malware",
+    "observer": {
+        "serial_number": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "version": "24.2.2.20"
+    },
+    "orchestrator": {
+        "cluster": {
+            "name": "prod-cluster-01"
+        },
+        "namespace": "security",
+        "resource": {
+            "label": [
+                "app=sentinel",
+                "pod-template-hash=xyz99"
+            ],
+            "name": "sentinel-daemonset-abc12",
+            "parent": {
+                "type": "daemonset"
+            }
+        }
+    },
+    "process": {
+        "command_line": "/usr/bin/curl -O https://example.com/file.txt",
+        "parent": {
+            "command_line": "curl"
+        }
+    },
+    "related": {
+        "hash": [
+            "5d41402abc4b2a76b9719d911017c592",
+            "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+            "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+        ],
+        "hosts": [
+            "masked00asset000000000001",
+            "host-masked",
+            "attacker.example.com"
+        ],
+        "ip": [
+            "1.128.0.1"
+        ],
+        "user": [
+            "john.doe@example.com",
+            "John Doe"
+        ]
+    },
+    "sentinel_one": {
+        "account": {
+            "id": "111222333444",
+            "name": "AccountName"
+        },
+        "site": {
+            "id": "2223334445556667778",
+            "name": "Default site"
+        },
+        "threat_classification": {
+            "name": "MALWARE"
+        },
+        "unified_alert": {
+            "analyst_verdict": "UNDEFINED",
+            "analytics": {
+                "category": "Reputation",
+                "name": "Agent Policy",
+                "type_value": "STATIC",
+                "uid": "analytic-uid-001"
+            },
+            "assets": [
+                {
+                    "accessible": true,
+                    "asset_type_classifier": "Linux Server",
+                    "category": "Server",
+                    "connectivity_to_console": "ONLINE",
+                    "decommissioned": false,
+                    "id": "masked00asset000000000001",
+                    "origin": "RESOURCES",
+                    "os_type": "LINUX",
+                    "os_version": "Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                    "pending_reboot": false,
+                    "policy": "Default",
+                    "role": "TARGET",
+                    "status": "ACTIVE"
+                }
+            ],
+            "attack_surfaces": [
+                "ENDPOINT"
+            ],
+            "classification": "MALWARE",
+            "confidence_level": "MALICIOUS",
+            "description": "Linux file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+            "detected_at": "2025-02-04T15:54:59.485Z",
+            "detection_source": {
+                "product": "CWS",
+                "vendor": "SentinelOne"
+            },
+            "detection_time": {
+                "assets": [
+                    {
+                        "accessible": true,
+                        "kubernetes": {
+                            "container_image_name": "ubuntu:22.04",
+                            "container_labels": [
+                                "app=agent",
+                                "tier=security"
+                            ],
+                            "controller_labels": [
+                                "app=sentinel"
+                            ],
+                            "controller_name": "sentinel-daemonset",
+                            "namespace_labels": [
+                                "env=prod"
+                            ],
+                            "node_labels": [
+                                "node-role=worker"
+                            ],
+                            "node_name": "worker-node-01"
+                        },
+                        "origin": "RESOURCES",
+                        "scope": {
+                            "account_id": "111222333444",
+                            "account_name": "AccountName",
+                            "group_name": "Default Group",
+                            "site_name": "Default site"
+                        }
+                    }
+                ],
+                "scope": {
+                    "account_id": "111222333444",
+                    "account_name": "AccountName",
+                    "group_name": "Default Group",
+                    "site_name": "Default site"
+                }
+            },
+            "external_id": "9876543210987654321",
+            "name": "eicar.com.txt detected as Malware",
+            "note_exists": false,
+            "process": {
+                "file": {
+                    "cert_subject": "Example Corp"
+                }
+            },
+            "real_time": {
+                "scope": {
+                    "account": {
+                        "id": "111222333444",
+                        "name": "AccountName"
+                    },
+                    "site": {
+                        "id": "2223334445556667778",
+                        "name": "Default site"
+                    }
+                }
+            },
+            "result": "UNMITIGATED",
+            "severity": "MEDIUM",
+            "slo_details": {
+                "time_to_resolve_data": {
+                    "action_complete": false,
+                    "action_due": 30,
+                    "completion": 3600,
+                    "status": "IN_PROGRESS",
+                    "target": 60,
+                    "target_time": "2025-02-05T16:00:00.000Z"
+                },
+                "time_to_response_data": {
+                    "action_complete": true,
+                    "action_due": -5,
+                    "completion": 300,
+                    "completion_time": "2025-02-04T16:00:00.000Z",
+                    "status": "MET",
+                    "target": 15,
+                    "target_time": "2025-02-04T15:55:00.000Z"
+                }
+            },
+            "status": "RESOLVED"
+        }
+    },
+    "source": {
+        "domain": "attacker.example.com",
+        "ip": "1.128.0.1"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "sentinel_one-unified_alert"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "john.doe@example.com",
+        "name": "John Doe"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.offset | Log offset. | long |
+| sentinel_one.account.id |  | keyword |
+| sentinel_one.account.name |  | keyword |
+| sentinel_one.site.id |  | keyword |
+| sentinel_one.site.name |  | keyword |
+| sentinel_one.threat_classification.name |  | keyword |
+| sentinel_one.unified_alert.ai_investigation.purple_ai_status | Status of the AI investigation as determined by Purple AI. | keyword |
+| sentinel_one.unified_alert.ai_investigation.status | Status of the AI investigation. | keyword |
+| sentinel_one.unified_alert.ai_investigation.verdict | Verdict of the AI investigation. | keyword |
+| sentinel_one.unified_alert.analyst_verdict | Final verdict of alert investigation as set by the analyst. | keyword |
+| sentinel_one.unified_alert.analytics.category | Analytic category. | keyword |
+| sentinel_one.unified_alert.analytics.name | Name of the analytic that generated the alert. | keyword |
+| sentinel_one.unified_alert.analytics.type_value | Analytic type value. | keyword |
+| sentinel_one.unified_alert.analytics.uid | Identifier of the analytic that generated the alert. | keyword |
+| sentinel_one.unified_alert.assets.accessible | Indicates whether user requesting the alert has access to the asset. | boolean |
+| sentinel_one.unified_alert.assets.agent_uuid | Agent UUID specific to the alert's source. | keyword |
+| sentinel_one.unified_alert.assets.agent_version | Agent Version. | keyword |
+| sentinel_one.unified_alert.assets.asset_type_classifier | Asset type classifier the most concrete definition of the Asset. | keyword |
+| sentinel_one.unified_alert.assets.category | Asset type category. | keyword |
+| sentinel_one.unified_alert.assets.connectivity_to_console | Asset's last known connectivity status to the console. | keyword |
+| sentinel_one.unified_alert.assets.decommissioned | Asset Decommissioned flag. | boolean |
+| sentinel_one.unified_alert.assets.id | Unique (per region) internal identifier of the asset generated by the asset inventory service. | keyword |
+| sentinel_one.unified_alert.assets.last_logged_in_user | User name of the last logged-in user to the device as reported by the agent. | keyword |
+| sentinel_one.unified_alert.assets.name | Asset name. | keyword |
+| sentinel_one.unified_alert.assets.origin | Origin of the asset (e.g. RESOURCES LATERAL_MOVEMENT etc). | keyword |
+| sentinel_one.unified_alert.assets.os_type | Operating system type. | keyword |
+| sentinel_one.unified_alert.assets.os_version | Operating system version string. | keyword |
+| sentinel_one.unified_alert.assets.pending_reboot | Flag indicating if asset is pending a reboot. | boolean |
+| sentinel_one.unified_alert.assets.policy | Agent policy. | keyword |
+| sentinel_one.unified_alert.assets.role | Asset role for the alert. | keyword |
+| sentinel_one.unified_alert.assets.status | Asset Activity Status. | keyword |
+| sentinel_one.unified_alert.assets.subcategory | Asset type subcategory. | keyword |
+| sentinel_one.unified_alert.assignee.email | User's email. | keyword |
+| sentinel_one.unified_alert.assignee.full_name | User's full name. | keyword |
+| sentinel_one.unified_alert.assignee.user_id | User ID. | keyword |
+| sentinel_one.unified_alert.attack_surfaces | Attack surfaces. | keyword |
+| sentinel_one.unified_alert.available_action_ids | List of IDs of available actions. | keyword |
+| sentinel_one.unified_alert.classification | SentinelOne threat classification of the alert. | keyword |
+| sentinel_one.unified_alert.confidence_level | Normalized confidence refers to the accuracy of the rule that created the alert. A rule with a low confidence means that the alert scope is wide and may create SUSPICIOUS alert rule with a high confidence may create MALICIOUS alert. | keyword |
+| sentinel_one.unified_alert.created_at | Timestamp when alert was created on the detection source side in ISO-8601 format. | date |
+| sentinel_one.unified_alert.data_sources | Data sources. | keyword |
+| sentinel_one.unified_alert.description | Description of the alert. | keyword |
+| sentinel_one.unified_alert.detected_at | Timestamp when alert was detected in ISO-8601 format. | date |
+| sentinel_one.unified_alert.detection_source.product | Name of the product for which the alert was detected. | keyword |
+| sentinel_one.unified_alert.detection_source.vendor | Name of the vendor of the product for which the alert was detected. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.accessible | Indicates whether user requesting the alert has access to the asset. | boolean |
+| sentinel_one.unified_alert.detection_time.assets.asset.agent_version | Agent version string for the asset at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.asset.console_ip_address | IP address of the console at the time of detection. | ip |
+| sentinel_one.unified_alert.detection_time.assets.asset.domain | Network domain of the asset at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.asset.ip_v4 | IPv4 address of the asset at the time of detection. | ip |
+| sentinel_one.unified_alert.detection_time.assets.asset.ip_v6 | IPv6 address of the asset at the time of detection. | ip |
+| sentinel_one.unified_alert.detection_time.assets.asset.last_logged_in_user | User name of the last logged-in user to the device as reported by the agent at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.asset.os_name | Operating system name for the asset at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.asset.os_revision | Operating system version string for the asset at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.asset.os_type | Operating system type for the asset at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.asset.policy | Agent policy for the asset at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.asset.subscription_time | Time of first registration of the asset at the time of detection in ISO-8601 format. | date |
+| sentinel_one.unified_alert.detection_time.assets.cloud.account_id | Identifier of the cloud provider specific account / project / subscription at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.cloud_provider | Name of the cloud provider at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.image | Cloud specific image identifier at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.instance_id | Cloud instance identifier at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.instance_size | Instance size at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.location | Cloud location at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.network | Cloud network at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.account_id | AWS account identifier at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.image_id | AWS/Azure/GCP image identifier at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.instance_id | Cloud instance identifier at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.instance_type | Cloud instance type at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.project_id | GCP project ID at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.region | Cloud region at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.resource_group | Azure resource group at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.role | AWS instance role at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.security_groups | AWS security group identifiers at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.service_account | GCP service account at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.subnet_ids | AWS subnet identifiers at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.subscription_id | Azure subscription identifier at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.tags | Cloud tags at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.vpc_id | AWS VPC identifier at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.provider_details.zone | GCP zone at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.cloud.tags | Cloud tags at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.cluster_name | Name of the Kubernetes cluster at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.container_id | Container ID at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.container_image_name | Name of the container image at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.container_labels | List of labels associated with the container at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.container_name | Name of the container at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.controller_labels | List of labels associated with the kubernetes controller at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.controller_name | Name of the kubernetes controller at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.controller_type | Type of the kubernetes controller at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.namespace_labels | List of labels associated with the kubernetes namespace at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.namespace_name | Name of the kubernetes namespace at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.node_labels | List of labels associated with the kubernetes node at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.node_name | Name of the kubernetes node at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.pod_labels | List of labels associated with the kubernetes pod at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.kubernetes.pod_name | Name of the pod at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.origin | Origin of the asset (e.g. RESOURCES LATERAL_MOVEMENT etc). | keyword |
+| sentinel_one.unified_alert.detection_time.assets.scope.account_id | Account ID. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.scope.account_name | Account name. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.scope.group_name | Group name. | keyword |
+| sentinel_one.unified_alert.detection_time.assets.scope.site_name | Site name. | keyword |
+| sentinel_one.unified_alert.detection_time.attacker.host | Host name of the attacker endpoint at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.attacker.ip | IP address of the attacker endpoint at the time of detection. | ip |
+| sentinel_one.unified_alert.detection_time.scope.account_id | Account ID. | keyword |
+| sentinel_one.unified_alert.detection_time.scope.account_name | Account name. | keyword |
+| sentinel_one.unified_alert.detection_time.scope.group_name | Group name. | keyword |
+| sentinel_one.unified_alert.detection_time.scope.site_name | Site name. | keyword |
+| sentinel_one.unified_alert.detection_time.target_user.domain | Domain where was the target user defined at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.target_user.email_address | Email address of the target user at the time of detection. | keyword |
+| sentinel_one.unified_alert.detection_time.target_user.name | Username of the target user at the time of detection. | keyword |
+| sentinel_one.unified_alert.exclusion_hash | Exclusion hash. | keyword |
+| sentinel_one.unified_alert.external_id | External identifier of the alert as provided by the detection source. | keyword |
+| sentinel_one.unified_alert.first_seen_at | Timestamp when the finding was first observed in ISO-8601 format. | date |
+| sentinel_one.unified_alert.id | Unique (per region) internal identifier of the alert generated by the alert service. | keyword |
+| sentinel_one.unified_alert.last_seen_at | Timestamp when the finding was most recently observed in ISO-8601 format. | date |
+| sentinel_one.unified_alert.name | Name of the alert. | keyword |
+| sentinel_one.unified_alert.note_exists | Indicates whether at least 1 alert note exists. | boolean |
+| sentinel_one.unified_alert.process.cmd_line | Full command line used to launch an application service process or job. | keyword |
+| sentinel_one.unified_alert.process.file.cert_subject | Subject distinguished name of the process file's signing certificate. | keyword |
+| sentinel_one.unified_alert.process.file.md5 | MD5 hash of the process file. | keyword |
+| sentinel_one.unified_alert.process.file.name | Process file name. | keyword |
+| sentinel_one.unified_alert.process.file.path | Full path to the process file. | keyword |
+| sentinel_one.unified_alert.process.file.sha1 | SHA-1 hash of the process file. | keyword |
+| sentinel_one.unified_alert.process.file.sha256 | SHA-256 hash of the process file. | keyword |
+| sentinel_one.unified_alert.process.parent_name | Originating parent process name. | keyword |
+| sentinel_one.unified_alert.real_time.scope.account.id | Account ID. | keyword |
+| sentinel_one.unified_alert.real_time.scope.account.name | Account name. | keyword |
+| sentinel_one.unified_alert.real_time.scope.group.id | Group ID. | keyword |
+| sentinel_one.unified_alert.real_time.scope.group.name | Group name. | keyword |
+| sentinel_one.unified_alert.real_time.scope.site.id | Site ID. | keyword |
+| sentinel_one.unified_alert.real_time.scope.site.name | Site name. | keyword |
+| sentinel_one.unified_alert.result | Mitigation status of the alert on the underlying asset set automatically based on the asset's automation policies or analyst's actions. | keyword |
+| sentinel_one.unified_alert.severity | Normalized identifier of the alert severity. The normalized severity is a measurement the effort and expense required to manage and resolve an alert. | keyword |
+| sentinel_one.unified_alert.slo_details.time_to_resolve_data.action_complete | Whether the SLO has been completed. | boolean |
+| sentinel_one.unified_alert.slo_details.time_to_resolve_data.action_due | Minutes until/after target time (negative if overdue positive if ahead). | long |
+| sentinel_one.unified_alert.slo_details.time_to_resolve_data.completion | Completion value for the SLO in seconds (time from alert creation to completion). | long |
+| sentinel_one.unified_alert.slo_details.time_to_resolve_data.completion_time | Timestamp when the SLO was completed in ISO-8601 format. | date |
+| sentinel_one.unified_alert.slo_details.time_to_resolve_data.status | Current status of the SLO. | keyword |
+| sentinel_one.unified_alert.slo_details.time_to_resolve_data.target | Target value for the SLO (e.g. target response time in minutes). | long |
+| sentinel_one.unified_alert.slo_details.time_to_resolve_data.target_time | Target timestamp for SLO completion in ISO-8601 format. | date |
+| sentinel_one.unified_alert.slo_details.time_to_response_data.action_complete | Whether the SLO has been completed. | boolean |
+| sentinel_one.unified_alert.slo_details.time_to_response_data.action_due | Minutes until/after target time (negative if overdue positive if ahead). | long |
+| sentinel_one.unified_alert.slo_details.time_to_response_data.completion | Completion value for the SLO in seconds (time from alert creation to completion). | long |
+| sentinel_one.unified_alert.slo_details.time_to_response_data.completion_time | Timestamp when the SLO was completed in ISO-8601 format. | date |
+| sentinel_one.unified_alert.slo_details.time_to_response_data.status | Current status of the SLO. | keyword |
+| sentinel_one.unified_alert.slo_details.time_to_response_data.target | Target value for the SLO (e.g. target response time in minutes). | long |
+| sentinel_one.unified_alert.slo_details.time_to_response_data.target_time | Target timestamp for SLO completion in ISO-8601 format. | date |
+| sentinel_one.unified_alert.status | Status of alert investigation as set by the analyst. | keyword |
+| sentinel_one.unified_alert.storyline_id | Storyline ID. | keyword |
+| sentinel_one.unified_alert.ticket_id | Alert external ticket ID. | keyword |
+| sentinel_one.unified_alert.updated_at | Timestamp when the finding was last updated in ISO-8601 format. | date |
+
+
+### Inputs used
+
+These inputs are used in this integration:
+
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [HTTP JSON](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson)
+
+### API usage
+
+This integration dataset uses the following APIs:
+
+- `Activity`: **Get Activities** endpoint from **SentinelOne Management API v2.1**.
+- `Agent`: **Get Agents** endpoint from **SentinelOne Management API v2.1**.
+- `Alert`: **Get alerts** endpoint from **SentinelOne Management API v2.1**.
+- `Application`: **Get Application Inventory Endpoints** and **Get Application Inventory** endpoints from **SentinelOne Management API v2.1**.
+- `Application Risk`: **Get CVE data** endpoint from **SentinelOne Management API v2.1**.
+- `Group`: **Get Groups** endpoint from **SentinelOne Management API v2.1**.
+- `Threat`: **Get Threats** endpoint from **SentinelOne Management API v2.1**.
+- `Threat Event`: **Get Events** and **Get Threats** endpoints from **SentinelOne Management API v2.1**.
+- `Unified Alert`: **Unified Alert Management GraphQL API**.
+
+#### ILM Policy
+
+To facilitate application, application risk, and threat event data, source data stream-backed indices `.ds-logs-sentinel_one.application-*`, `.ds-logs-sentinel_one.application_risk-*`, and `.ds-logs-sentinel_one.threat_event-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-sentinel_one.application-default_policy`, `logs-sentinel_one.application_risk-default_policy`, and `logs-sentinel_one.threat_event-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
