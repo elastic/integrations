@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-memory-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Memory utilisation high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "resources"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// sys_rss / sys_totalmem > 0.85 indicates memory pressure, OOM risk\n// Adjust threshold for your host memory allocation\n| WHERE metrics.sys_rss IS NOT NULL AND metrics.sys_totalmem IS NOT NULL\n  AND metrics.sys_totalmem > 0\n| EVAL mem_util = metrics.sys_rss / metrics.sys_totalmem\n| WHERE mem_util > 0.85\n| STATS mem_util = MAX(mem_util), rss = MAX(metrics.sys_rss)\n  BY resource.attributes.service.instance.id, attributes.node_id\n| SORT mem_util DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

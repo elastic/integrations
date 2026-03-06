@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-liveness-heartbeat-failures",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Liveness heartbeat failures",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "liveness"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// liveness_heartbeatfailures is a counter; any increase indicates node losing liveness\n| WHERE metrics.liveness_heartbeatfailures IS NOT NULL AND metrics.liveness_heartbeatfailures > 0\n| STATS failures = MAX(metrics.liveness_heartbeatfailures)\n  BY resource.attributes.service.instance.id, attributes.node_id\n| SORT failures DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

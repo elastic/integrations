@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-scrape-down",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Scrape target down",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "scrape"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// up = 0 indicates scrape target unreachable; node may be down\n| WHERE metrics.up IS NOT NULL AND metrics.up == 0\n| STATS up = MIN(metrics.up)\n  BY resource.attributes.service.instance.id\n| SORT resource.attributes.service.instance.id ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

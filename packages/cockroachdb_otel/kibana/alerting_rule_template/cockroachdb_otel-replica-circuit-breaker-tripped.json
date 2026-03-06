@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-replica-circuit-breaker-tripped",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Replica circuit breaker tripped",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "kv"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// Replicas that stopped serving to avoid hanging; requires investigation\n| WHERE metrics.kv_replica_circuit_breaker_num_tripped_replicas IS NOT NULL\n  AND metrics.kv_replica_circuit_breaker_num_tripped_replicas > 0\n| STATS tripped = MAX(metrics.kv_replica_circuit_breaker_num_tripped_replicas)\n  BY resource.attributes.service.instance.id, attributes.node_id\n| SORT tripped DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

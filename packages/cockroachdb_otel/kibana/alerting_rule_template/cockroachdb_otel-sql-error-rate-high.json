@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-sql-error-rate-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] SQL error rate high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "sql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// exec_error / (exec_success + exec_error) > 5% indicates SQL layer failures\n// Use MAX for counters to get latest cumulative values in window\n| WHERE metrics.exec_success IS NOT NULL AND metrics.exec_error IS NOT NULL\n| STATS successes = MAX(metrics.exec_success), errors = MAX(metrics.exec_error)\n  BY resource.attributes.service.instance.id, attributes.node_id\n| EVAL total = successes + errors\n| WHERE total > 100\n| EVAL error_rate = errors / total\n| WHERE error_rate > 0.05\n| SORT error_rate DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[CockroachDB OTel] Unavailable ranges 99.5% rolling 30 days",
+    "description": "This SLO tracks cluster availability by ensuring that 99.5% of 1-minute time intervals have zero unavailable ranges (ranges without Raft quorum) over a rolling 30 days. Unavailable ranges cannot serve reads or writes and represent the most critical failure mode for CockroachDB.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"prometheusreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "ranges_unavailable"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "cockroachdb",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "cockroachdb_otel-overview" },
+      { "id": "cockroachdb_otel-kv-layer" }
+    ]
+  },
+  "id": "cockroachdb_otel-unavailable-ranges-99.5-Rolling30Days",
+  "type": "slo_template"
+}

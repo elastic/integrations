@@ -1,0 +1,35 @@
+{
+  "id": "cockroachdb_otel-disk-capacity-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Disk capacity low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-prometheusreceiver.otel-*\n// capacity_available / capacity < 0.1 means < 10% free; adjust threshold as needed\n| WHERE metrics.capacity IS NOT NULL AND metrics.capacity > 0\n  AND metrics.capacity_available IS NOT NULL\n| EVAL pct_available = metrics.capacity_available / metrics.capacity\n| WHERE pct_available < 0.1\n| STATS pct_available = MIN(pct_available), capacity_available = MIN(metrics.capacity_available)\n  BY resource.attributes.service.instance.id, attributes.node_id, attributes.store\n| SORT pct_available ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
