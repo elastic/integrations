@@ -71,7 +71,7 @@ To collect logs from your Juniper SRX devices, you'll need to meet these vendor-
 
 You'll also need to prepare your Elastic environment with the following:
 - Install and enroll an Elastic Agent in Fleet or configure it to run in standalone mode.
-- Install the Juniper SRX integration package, version `1.26.0` or higher, in Kibana.
+- Install the Juniper SRX integration package in Kibana.
 - Ensure network access is available for the agent to receive inbound syslog traffic on your specified port.
 
 ## How do I deploy this integration?
@@ -199,15 +199,6 @@ You might encounter the following issues when configuring the Juniper SRX integr
 - Parsing failures: Check the `error.message` field in Kibana. If it contains "Provided Grok expressions do not match", it typically indicates the device is sending logs in standard syslog format instead of the required `structured-data` format.
 - Incomplete or truncated logs: If log messages are cut off, you might need to increase the `max_message_size` in the integration's UDP or TCP options to accommodate large structured-data payloads.
 
-### Vendor resources
-
-The following resources provide additional information for troubleshooting Juniper SRX syslog configurations:
-- [Junos CLI reference | structured-data](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/structured-data-edit-system.html)
-- [Direct System Log Messages to a Remote Destination - Juniper Networks](https://www.juniper.net/documentation/us/en/software/junos/network-mgmt/topics/topic-map/directing-system-log-messages-to-a-remote-destination.html)
-- [Example: Forward structured system syslog messages from SRX - Juniper Support](https://supportportal.juniper.net/s/article/JSA-STRM-SRX-Example-How-to-forward-structured-system-syslog-messages-from-SRX-to-JSA)
-- [KB16502 - Configure System Logging](https://supportportal.juniper.net/s/article/SRX-Getting-Started-Configure-System-Logging)
-- [Juniper SRX Product Documentation](https://www.juniper.net/documentation/en_US/release-independent/junos/information-products/pathway-pages/srx-series/product/)
-
 ## Performance and scaling
 
 To ensure optimal performance in high-volume environments, consider the following:
@@ -227,8 +218,9 @@ For more information on architectures that can be used for scaling this integrat
 The following resources provide additional information about Juniper SRX logging and configuration:
 - [Juniper SRX Product Page](https://www.juniper.net/documentation/en_US/release-independent/junos/information-products/pathway-pages/srx-series/product/)
 - [Junos Documentation on Structured Data](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/structured-data-edit-system.html)
+- [Direct System Log Messages to a Remote Destination - Juniper Networks](https://www.juniper.net/documentation/us/en/software/junos/network-mgmt/topics/topic-map/directing-system-log-messages-to-a-remote-destination.html)
+- [Example: Forward structured system syslog messages from SRX - Juniper Support](https://supportportal.juniper.net/s/article/JSA-STRM-SRX-Example-How-to-forward-structured-system-syslog-messages-from-SRX-to-JSA)
 - [KB16502 - Configure System Logging](https://supportportal.juniper.net/s/article/SRX-Getting-Started-Configure-System-Logging)
-- [Juniper SRX integration | Elastic integrations](https://www.elastic.co/docs/reference/integrations/juniper_srx)
 
 ### Data streams
 

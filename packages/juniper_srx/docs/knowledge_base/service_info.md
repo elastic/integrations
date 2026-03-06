@@ -20,6 +20,37 @@ This integration can collect the following types of data:
 - **Security Intelligence Logs:** Logs related to security intelligence actions (`RT_SECINTEL`).
 - **Juniper SRX logs (logs):** Captures all the security and system processes mentioned above in structured-data format.
 
+The following JunOS processes and tags are supported:
+
+| JunOS processes | JunOS tags                                |
+|-----------------|-------------------------------------------|
+| RT_FLOW         | RT_FLOW_SESSION_CREATE                    |
+|                 | RT_FLOW_SESSION_CLOSE                     |
+|                 | RT_FLOW_SESSION_DENY                      |
+|                 | APPTRACK_SESSION_CREATE                   |
+|                 | APPTRACK_SESSION_CLOSE                    |
+|                 | APPTRACK_SESSION_VOL_UPDATE               |
+| RT_IDS          | RT_SCREEN_TCP                             |
+|                 | RT_SCREEN_UDP                             |
+|                 | RT_SCREEN_ICMP                            |
+|                 | RT_SCREEN_IP                              |
+|                 | RT_SCREEN_TCP_DST_IP                      |
+|                 | RT_SCREEN_TCP_SRC_IP                      |
+| RT_UTM          | WEBFILTER_URL_PERMITTED                   |
+|                 | WEBFILTER_URL_BLOCKED                     |
+|                 | AV_VIRUS_DETECTED_MT                      |
+|                 | CONTENT_FILTERING_BLOCKED_MT              |
+|                 | ANTISPAM_SPAM_DETECTED_MT                 |
+| RT_IDP          | IDP_ATTACK_LOG_EVENT                      |
+|                 | IDP_APPDDOS_APP_STATE_EVENT               |
+| RT_AAMW         | SRX_AAMW_ACTION_LOG                       |
+|                 | AAMW_MALWARE_EVENT_LOG                    |
+|                 | AAMW_HOST_INFECTED_EVENT_LOG              |
+|                 | AAMW_ACTION_LOG                           |
+| RT_SECINTEL     | SECINTEL_ACTION_LOG                       |
+
+
+
 ## Compatibility
 
 This integration is compatible with **Juniper SRX Series Firewalls** running JunOS versions that support structured-data logging. The device must be capable of generating syslog messages in the `structured-data` + `brief` format for successful parsing.
@@ -78,7 +109,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 4. Commit the changes on the SRX device.
 
 ### Vendor Set up Resources
--[Junos CLI reference | structured-data](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/structured-data-edit-system.html)
+- [Junos CLI reference | structured-data](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/structured-data-edit-system.html)
 - [Juniper Module | Filebeat Reference - Elastic](https://www.elastic.co/guide/en/beats/filebeat/8.19/filebeat-module-juniper.html)
 - [Direct System Log Messages to a Remote Destination - Juniper Networks](https://www.juniper.net/documentation/us/en/software/junos/network-mgmt/topics/topic-map/directing-system-log-messages-to-a-remote-destination.html)
 - [Example: Forward structured system syslog messages from SRX - Juniper Support](https://supportportal.juniper.net/s/article/JSA-STRM-SRX-Example-How-to-forward-structured-system-syslog-messages-from-SRX-to-JSA)
@@ -138,7 +169,7 @@ After configuration is complete, verify that data is flowing correctly.
 4. Verify logs appear in the results. Expand a log entry and confirm these fields:
    - `event.dataset` (should match `juniper_srx.log`)
    - `source.ip` and/or `destination.ip`
-   - `event.action` (e.g., `session-close` or `session-deny`)
+   - `event.action` (e.g., `flow_close` or `flow_deny`)
    - `event.outcome`
 5. Navigate to **Analytics > Dashboards** and search for "Juniper SRX" to view pre-built visualizations.
 
