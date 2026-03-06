@@ -1,3 +1,34 @@
+- version: "2.0.0"
+  changes:
+    - description: >-
+        Change assets document fingerprint from full-body hash to id plus
+        timestamps. Assets now produce a new document only when a timestamp
+        field changes, preserving update history without creating duplicates
+        from non-temporal field noise.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/17670
+    - description: >-
+        The _id scheme change means every existing asset document will be
+        duplicated until lifecycle policy removes the old versions. Customers
+        upgrading from 1.0.0 should install 1.1.0 first and allow at least
+        one successful asset collection interval before upgrading to this
+        version.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/17670
+- version: "1.1.0"
+  changes:
+    - description: >-
+        Fix assets data stream to use time-based incremental fetching instead of
+        cursor-based pagination, preventing stale cursor errors after max_executions
+        interruptions. Change @timestamp from firstSeen to ingest time so assets
+        appear in recent dashboard time ranges. Guard max_executions template variable
+        across all data streams.
+        Upgrade note: a follow-up release will change the document fingerprint from
+        a full-body hash to an id-only hash. To avoid duplicate asset documents,
+        upgrade to this version first and allow at least one successful asset collection
+        interval before upgrading to the fingerprint release. Do not skip this version.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/17669
 - version: "1.0.1"
   changes:
     - description: Use triple-brace Mustache templating when referencing variables in ingest pipelines.

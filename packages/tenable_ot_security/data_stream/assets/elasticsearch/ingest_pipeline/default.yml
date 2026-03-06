@@ -8,9 +8,16 @@ processors:
 
   - fingerprint:
       fields:
-        - tenable_ot_security.assets
+        - tenable_ot_security.assets.id
+        - tenable_ot_security.assets.firstSeen
+        - tenable_ot_security.assets.lastSeen
+        - tenable_ot_security.assets.lastHit
+        - tenable_ot_security.assets.lastSnapshot
+        - tenable_ot_security.assets.lastUpdate
+        - tenable_ot_security.assets.runStatusTime
       tag: fingerprinting
       target_field: "_id"
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -126,11 +133,6 @@ processors:
   - set:
       field: event.dataset
       value: tenable_ot_security.assets
-
-  - set:
-      field: "@timestamp"
-      copy_from: tenable_ot_security.assets.first_seen
-      ignore_empty_value: true
 
   - set:
       field: event.id
