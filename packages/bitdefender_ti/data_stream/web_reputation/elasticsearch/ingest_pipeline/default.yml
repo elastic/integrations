@@ -1,0 +1,292 @@
+---
+description: Pipeline for processing Bitdefender Web reputation threat indicators
+
+processors:
+  # ------------------------------------------------------------------
+  # Drop revoked indicators
+  # ------------------------------------------------------------------
+  - drop:
+      if: ctx.revoked == true
+
+  # ------------------------------------------------------------------
+  # Core event metadata (REQUIRED)
+  # ------------------------------------------------------------------
+  - set:
+      field: event.kind
+      value: enrichment
+
+  - set:
+      field: event.category
+      value: [threat]
+
+  - set:
+      field: event.type
+      value: [indicator]
+
+  - set:
+      field: threat.feed.vendor
+      value: Bitdefender
+
+  - set:
+      field: threat.feed.name
+      value: web-feed
+
+  - set:
+      field: threat.indicator.provider
+      value: Bitdefender
+
+  # ------------------------------------------------------------------
+  # Timestamps (CRITICAL for TI UI)
+  # ------------------------------------------------------------------
+  - date:
+      field: timestamp
+      target_field: "@timestamp"
+      formats: [UNIX, ISO8601]
+      if: ctx.timestamp != null
+
+  - date:
+      field: first_seen
+      target_field: threat.indicator.first_seen
+      formats: [UNIX, ISO8601]
+      if: ctx.first_seen != null
+      ignore_failure: true
+
+  - date:
+      field: timestamp
+      target_field: threat.indicator.last_seen
+      formats: [UNIX, ISO8601]
+      if: ctx.timestamp != null
+
+  # ------------------------------------------------------------------
+  # Indicator value
+  # ------------------------------------------------------------------
+  # Bitdefender "url" can be a plain domain or a URL with path/query.
+  # Keep full URL for type=url and extract host into threat.indicator.url.domain.
+  - script:
+      if: ctx.url != null
+      lang: painless
+      source: |
+        String raw = ctx.url.toString();
+        if (ctx.threat == null) ctx.threat = new HashMap();
+        if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+        if (ctx.threat.indicator.url == null) ctx.threat.indicator.url = new HashMap();
+
+        if (ctx.type == 'url') {
+          ctx.threat.indicator.url.full = raw;
+          ctx.threat.indicator.name = raw;
+
+          // Extract host safely without using disallowed Java URI classes.
+          String s = raw;
+          int scheme = s.indexOf("://");
+          if (scheme >= 0) {
+            s = s.substring(scheme + 3);
+          }
+          int slash = s.indexOf("/");
+          if (slash >= 0) {
+            s = s.substring(0, slash);
+          }
+          int q = s.indexOf("?");
+          if (q >= 0) {
+            s = s.substring(0, q);
+          }
+          int hash = s.indexOf("#");
+          if (hash >= 0) {
+            s = s.substring(0, hash);
+          }
+          int at = s.lastIndexOf("@");
+          if (at >= 0 && at + 1 < s.length()) {
+            s = s.substring(at + 1);
+          }
+          int colon = s.indexOf(":");
+          if (colon >= 0) {
+            s = s.substring(0, colon);
+          }
+          if (s != null && s.length() > 0) {
+            ctx.threat.indicator.url.domain = s.toLowerCase();
+          } else {
+            ctx.threat.indicator.url.domain = raw;
+          }
+        } else {
+          // domain entry
+          ctx.threat.indicator.url.domain = raw;
+          ctx.threat.indicator.name = raw;
+        }
+
+  # Raw vendor field is mapped into threat.indicator.url.*, avoid undeclared top-level url.
+  - remove:
+      field: url
+      ignore_missing: true
+
+  # Indicator type
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: ctx.type == "domain"
+
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: ctx.type == "url"
+
+  # ------------------------------------------------------------------
+  # Indicator identity (THIS FIXES last_seen aggregation)
+  # ------------------------------------------------------------------
+  - fingerprint:
+      fields:
+        - threat.feed.name
+        - threat.indicator.type
+        - threat.indicator.name
+      target_field: threat.indicator.id
+
+  - set:
+      field: _id
+      copy_from: threat.indicator.id
+      ignore_empty_value: true
+
+  # ------------------------------------------------------------------
+  # Indicator attributes
+  # ------------------------------------------------------------------
+  - rename:
+      field: confidence
+      target_field: bitdefender.confidence_score
+      ignore_missing: true
+
+  - script:
+      if: ctx.bitdefender?.confidence_score != null
+      lang: painless
+      source: |
+        def raw = ctx.bitdefender.confidence_score;
+        double score;
+        if (raw instanceof Number) {
+          score = ((Number) raw).doubleValue();
+        } else {
+          try {
+            score = Double.parseDouble(raw.toString());
+          } catch (Exception e) {
+            if (ctx.threat == null) ctx.threat = new HashMap();
+            if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+            ctx.threat.indicator.confidence = raw.toString();
+            return;
+          }
+        }
+
+        if (ctx.threat == null) ctx.threat = new HashMap();
+        if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+        ctx.threat.indicator.confidence = score >= 67 ? "high" : (score >= 34 ? "medium" : "low");
+
+  - rename:
+      field: TTL
+      target_field: threat.indicator.ttl
+      ignore_missing: true
+
+  - script:
+      if: ctx.threat?.indicator?.ttl != null
+      lang: painless
+      source: |
+        def ttl = ctx.threat.indicator.ttl;
+        if (!(ttl instanceof Number)) {
+          return;
+        }
+        long ttlMillis = ((Number) ttl).longValue() * 1000L;
+        ZonedDateTime base = null;
+        if (ctx.threat?.indicator?.first_seen != null) {
+          base = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
+        } else if (ctx['@timestamp'] != null) {
+          base = ZonedDateTime.parse(ctx['@timestamp']);
+        }
+        if (base != null) {
+          ctx.threat.indicator.valid_until = base.plus(ttlMillis, java.time.temporal.ChronoUnit.MILLIS).toString();
+        }
+
+  # ------------------------------------------------------------------
+  # Geo / correlation
+  # ------------------------------------------------------------------
+  - rename:
+      field: countries
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+
+  - rename:
+      field: host_ips
+      target_field: related.ip
+      ignore_missing: true
+
+  # ------------------------------------------------------------------
+  # Vendor enrichment
+  # ------------------------------------------------------------------
+  - rename:
+      field: threat_types
+      target_field: bitdefender.threat_types
+      ignore_missing: true
+
+  - rename:
+      field: web_content_categories
+      target_field: bitdefender.web_content_categories
+      ignore_missing: true
+
+  - rename:
+      field: popularity
+      target_field: bitdefender.popularity
+      ignore_missing: true
+
+  # ------------------------------------------------------------------
+  # Tags (SAFE)
+  # ------------------------------------------------------------------
+  - rename:
+      field: tags
+      target_field: bitdefender.tags
+      ignore_missing: true
+
+  - foreach:
+      field: bitdefender.tags
+      processor:
+        append:
+          field: tags
+          value: "{{{_ingest._value}}}"
+
+  - script:
+      if: ctx.threat?.indicator != null
+      lang: painless
+      source: |
+        def parts = new ArrayList();
+        if (ctx.bitdefender?.threat_types != null) {
+          parts.add("types=" + ctx.bitdefender.threat_types.toString());
+        }
+        if (ctx.bitdefender?.web_content_categories != null) {
+          parts.add("categories=" + ctx.bitdefender.web_content_categories.toString());
+        }
+        if (ctx.bitdefender?.tags != null) {
+          parts.add("tags=" + ctx.bitdefender.tags.toString());
+        }
+        if (ctx.bitdefender?.popularity != null) {
+          parts.add("popularity=" + ctx.bitdefender.popularity);
+        }
+        if (!parts.isEmpty()) {
+          ctx.threat.indicator.description = String.join("; ", parts);
+        }
+
+        if (ctx.threat?.indicator?.type == 'url' && ctx.threat?.indicator?.url?.full != null) {
+          ctx.threat.indicator.reference = ctx.threat.indicator.url.full;
+        } else if (ctx.threat?.indicator?.url?.domain != null) {
+          ctx.threat.indicator.reference = "https://" + ctx.threat.indicator.url.domain;
+        }
+
+  # ------------------------------------------------------------------
+  # Dataset metadata
+  # ------------------------------------------------------------------
+  - set:
+      field: event.dataset
+      value: bitdefender_ti.web_reputation
+
+  - set:
+      field: event.module
+      value: bitdefender_ti
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+  - append:
+      field: error.message
+      value: "Processor failure: {{{_ingest.on_failure_message}}}"
