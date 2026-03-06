@@ -1,0 +1,30 @@
+{
+  "attributes": {
+    "name": "[PostgreSQL OTel] Connection availability 99.5% rolling 30 days",
+    "description": "This SLO tracks PostgreSQL connection utilization (active backends / max_connections) via OTel metrics, ensuring that 99.5% of 1-minute time intervals show utilization below 80% over a rolling period of 30 days to prevent connection exhaustion and maintain application availability.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"postgresqlreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "sum", "field": "postgresql.backends"},
+            {"name": "B", "aggregation": "max", "field": "postgresql.connection.max"}
+          ],
+          "equation": "A/B",
+          "comparator": "LT",
+          "threshold": 0.8
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {"duration": "30d", "type": "rolling"},
+    "objective": {"target": 0.995, "timesliceTarget": 0.95, "timesliceWindow": "1m"},
+    "tags": ["postgresql", "otel"],
+    "groupBy": ["resource.attributes.service.instance.id"]
+  },
+  "id": "postgresql_otel-connection-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

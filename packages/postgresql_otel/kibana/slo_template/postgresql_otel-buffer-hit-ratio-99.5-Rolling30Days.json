@@ -1,0 +1,32 @@
+{
+  "attributes": {
+    "name": "[PostgreSQL OTel] Buffer cache hit ratio 99.5% rolling 30 days",
+    "description": "This SLO tracks PostgreSQL buffer cache hit ratio (blks_hit / (blks_hit + blks_read)) via OTel metrics, ensuring that 99.5% of 1-minute time intervals show hit ratio above 99% over a rolling period of 30 days to maintain efficient I/O and query performance.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"postgresqlreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "postgresql.blks_hit"},
+            {"name": "B", "aggregation": "min", "field": "postgresql.blks_hit"},
+            {"name": "C", "aggregation": "max", "field": "postgresql.blks_read"},
+            {"name": "D", "aggregation": "min", "field": "postgresql.blks_read"}
+          ],
+          "equation": "(A-B)/((A-B)+(C-D))",
+          "comparator": "GTE",
+          "threshold": 0.99
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {"duration": "30d", "type": "rolling"},
+    "objective": {"target": 0.995, "timesliceTarget": 0.95, "timesliceWindow": "1m"},
+    "tags": ["postgresql", "otel"],
+    "groupBy": ["resource.attributes.postgresql.database.name"]
+  },
+  "id": "postgresql_otel-buffer-hit-ratio-99.5-Rolling30Days",
+  "type": "slo_template"
+}

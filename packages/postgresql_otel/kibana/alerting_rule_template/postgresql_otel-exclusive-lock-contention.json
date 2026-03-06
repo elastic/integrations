@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-exclusive-lock-contention",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Exclusive lock contention",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Locks by mode; ExclusiveLock and AccessExclusiveLock indicate contention\n| WHERE postgresql.database.locks IS NOT NULL\n| WHERE attributes.mode IN (\"ExclusiveLock\", \"AccessExclusiveLock\")\n| STATS lock_count = SUM(postgresql.database.locks) BY service.instance.id, attributes.mode\n// Threshold: > 5 exclusive locks; adjust for your workload\n| WHERE lock_count > 5"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
