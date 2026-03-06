@@ -1,0 +1,76 @@
+receivers:
+  postgresql:
+    {{#if endpoint}}
+    endpoint: {{endpoint}}
+    {{/if}}
+    {{#if transport}}
+    transport: {{transport}}
+    {{/if}}
+    username: {{username}}
+    password: {{password}}
+    {{#if databases}}
+    databases:
+      {{#each databases}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+    tls:
+      {{#if insecure}}
+      insecure: {{insecure}}
+      {{/if}}
+      {{#if insecure_skip_verify}}
+      insecure_skip_verify: {{insecure_skip_verify}}
+      {{/if}}
+      {{#if ca_pem}}
+      ca_pem: {{ca_pem}}
+      {{/if}}
+      {{#if cert_pem}}
+      cert_pem: {{cert_pem}}
+      {{/if}}
+      {{#if key_pem}}
+      key_pem: {{key_pem}}
+      {{/if}}
+    events:
+      db.server.query_sample:
+        enabled: true
+      db.server.top_query:
+        enabled: true
+    query_sample_collection:
+      {{#if query_sample_max_rows_per_query}}
+      max_rows_per_query: {{query_sample_max_rows_per_query}}
+      {{/if}}
+    top_query_collection:
+      {{#if top_query_max_rows_per_query}}
+      max_rows_per_query: {{top_query_max_rows_per_query}}
+      {{/if}}
+      {{#if top_query_top_n_query}}
+      top_n_query: {{top_query_top_n_query}}
+      {{/if}}
+    metrics:
+      postgresql.database.locks:
+        enabled: true
+      postgresql.tup_updated:
+        enabled: true
+      postgresql.tup_returned:
+        enabled: true
+      postgresql.tup_fetched:
+        enabled: true
+      postgresql.tup_inserted:
+        enabled: true
+      postgresql.tup_deleted:
+        enabled: true
+      postgresql.blks_hit:
+        enabled: true
+      postgresql.blks_read:
+        enabled: true
+    connection_pool:
+      max_idle_time: 10m
+      max_lifetime: 0
+      max_idle: 2
+      max_open: 5
+service:
+  pipelines:
+    metrics:
+      receivers: [postgresql]
