@@ -119,7 +119,7 @@ The following parameters from your CrowdStrike instance are required:
 ### Collect data using CrowdStrike Falcon Data Replicator (FDR)
 
 The CrowdStrike Falcon Data Replicator allows CrowdStrike users to replicate data from CrowdStrike
-managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is available in S3.
+managed S3 buckets. When new data is written to S3, notifications are sent to a CrowdStrike-managed SQS queue (using S3 event notifications configured in AWS), so this integration can consume them.
 
 This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed
 SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket
@@ -174,7 +174,7 @@ There are three types of AWS credentials that can be used:
 
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are the two parts of access keys.
 They are long-term credentials for an IAM user, or the AWS account root user.
-Please see [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
+See [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
 for more details.
 
 ##### Temporary security credentials
@@ -187,7 +187,7 @@ MFA-enabled IAM users would need to submit an MFA code
 while calling `GetSessionToken`. `default_region` identifies the AWS Region
 whose servers you want to send your first API request to by default.
 
-This is typically the Region closest to you, but it can be any Region. Please see
+This is typically the Region closest to you, but it can be any Region. See
 [Temporary Security Credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html)
 for more details.
 
@@ -214,7 +214,7 @@ temporary security credentials for your role session.
 IAM role Amazon Resource Name (ARN) can be used to specify which AWS IAM role to assume to generate
 temporary credentials.
 
-Please see [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) for more details.
+See [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) for more details.
 
 ##### Supported Formats
 1. Use access keys: Access keys include `access_key_id`, `secret_access_key`
@@ -225,7 +225,7 @@ and/or `session_token`.
     If not, the package will check for credential profile name.
     If neither is given, default credential profile will be used.
 
-  Please make sure credentials are given under either a credential profile or
+  Ensure credentials are given under either a credential profile or
   access keys.
 3. Use `credential_profile_name` and/or `shared_credential_file`:
     If `access_key_id`, `secret_access_key` and `role_arn` are all not given, then
@@ -238,7 +238,7 @@ and/or `session_token`.
     If it's empty, the default directory will be used.
     In Windows, shared credentials file is at `C:\Users\<yourUserName>\.aws\credentials`.
     For Linux, macOS or Unix, the file is located at `~/.aws/credentials`.
-    Please see [Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
+    See [Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
     for more details.
 
 #### Supported FDR data
@@ -276,7 +276,7 @@ Elastic Agent is required to stream data from the AWS SQS, Event Streams API, RE
 
 ### Vulnerability API returns 404 Not found
 
-This error may occur for the following reasons:
+This error can occur for the following reasons:
 1. Too many records in the response.
 2. The pagination token has expired. Tokens expire 120 seconds after a call is made.
 
@@ -284,7 +284,7 @@ To resolve this, adjust the `Batch Size` setting in the integration to reduce th
 
 ### Duplicate Events
 
-The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events may be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of CrowdStrike fields that uniquely identify the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique, thus avoiding duplicates.
+The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events can be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of CrowdStrike fields that uniquely identify the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique and prevent duplicates.
 
 If duplicate events are ingested, to help find them, the integration's `event.id` field is populated by concatenating a few CrowdStrike fields that uniquely identify the event. These fields are `id`, `aid`, and `cid` from the CrowdStrike event. The fields are separated with pipe `|`.
 For example, if your CrowdStrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
@@ -300,7 +300,7 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 | High                       | 73               |
 | Critical                   | 99               |
 
-If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
+The integration sets `event.severity` according to the mapping in the table above. If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
 
 | CrowdStrike Severity | Severity Name |
 |------------------------|:-------------:|
