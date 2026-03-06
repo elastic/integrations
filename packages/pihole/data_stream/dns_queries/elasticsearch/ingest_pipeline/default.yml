@@ -1,0 +1,116 @@
+---
+description: "Process Pi-hole DNS query logs"
+processors:
+  # Add ECS version and event metadata
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      field: event.kind
+      value: "event"
+  - set:
+      field: event.category
+      value: ["network"]
+  - set:
+      field: event.type
+      value: ["protocol"]
+  - set:
+      field: event.module
+      value: "pihole"
+  - set:
+      field: event.dataset
+      value: "pihole.dns_queries"
+
+  # Add data_stream fields
+  - set:
+      field: data_stream.type
+      value: "logs"
+  - set:
+      field: data_stream.dataset
+      value: "pihole.dns_queries"
+  - set:
+      field: data_stream.namespace
+      value: "default"
+
+  # Convert Unix timestamp (with fractional seconds) to ISO format
+  - date:
+      field: time
+      target_field: '@timestamp'
+      formats:
+        - UNIX
+
+  # Map DNS query fields to ECS
+  - rename:
+      field: domain
+      target_field: dns.question.name
+      ignore_missing: true
+  - rename:
+      field: type
+      target_field: dns.question.type
+      ignore_missing: true
+  - rename:
+      field: reply_type
+      target_field: dns.response_code
+      ignore_missing: true
+  - rename:
+      field: client_ip
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: client_name
+      target_field: source.domain
+      ignore_missing: true
+  - rename:
+      field: upstream_name
+      target_field: destination.ip
+      ignore_missing: true
+
+  # Map Pi-hole specific fields
+  - rename:
+      field: id
+      target_field: pihole.query.id
+      ignore_missing: true
+  - rename:
+      field: status
+      target_field: pihole.query.status
+      ignore_missing: true
+  - rename:
+      field: dnssec
+      target_field: pihole.query.dnssec
+      ignore_missing: true
+  - rename:
+      field: reply_time
+      target_field: pihole.query.reply_time
+      ignore_missing: true
+  - rename:
+      field: cname
+      target_field: pihole.cname
+      ignore_missing: true
+  - rename:
+      field: list_id
+      target_field: pihole.list_id
+      ignore_missing: true
+  - rename:
+      field: ede_code
+      target_field: pihole.ede.code
+      ignore_missing: true
+  - rename:
+      field: ede_text
+      target_field: pihole.ede.text
+      ignore_missing: true
+
+  # Add observer information
+  - set:
+      field: observer.vendor
+      value: "Pi-hole"
+  - set:
+      field: observer.product
+      value: "Pi-hole"
+  - set:
+      field: observer.type
+      value: "dns"
+
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
