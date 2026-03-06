@@ -1,0 +1,547 @@
+---
+description: Pipeline for processing managed_device logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - append:
+      field: event.category
+      tag: append_host_into_event_category
+      value: host
+  - fingerprint:
+      fields:
+        - json.time
+        - json.tenantId
+        - json.properties.DeviceId
+        - json.properties.LastContact
+        - json.properties.CreatedDate
+      tag: fingerprint_managed_device
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.properties.AADTenantId
+      tag: rename_properties_AADTenantId
+      target_field: microsoft_intune.managed_device.properties.aad_tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.AndroidPatchLevel
+      tag: rename_properties_AndroidPatchLevel
+      target_field: microsoft_intune.managed_device.properties.android_patch_level
+      ignore_missing: true
+  - rename:
+      field: json.properties.BatchId
+      tag: rename_properties_BatchId
+      target_field: microsoft_intune.managed_device.properties.batch_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.CategoryName
+      tag: rename_properties_CategoryName
+      target_field: microsoft_intune.managed_device.properties.category_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.CompliantState
+      tag: rename_properties_CompliantState
+      target_field: microsoft_intune.managed_device.properties.compliant_state
+      ignore_missing: true
+  - date:
+      field: json.properties.CreatedDate
+      tag: date_properties_CreatedDate
+      target_field: microsoft_intune.managed_device.properties.created_date
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSSS'
+      if: ctx.json?.properties?.CreatedDate != null && ctx.json.properties.CreatedDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_device_CreatedDate
+      copy_from: microsoft_intune.managed_device.properties.created_date
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.DeviceId
+      tag: rename_properties_DeviceId
+      target_field: microsoft_intune.managed_device.properties.device_id
+      ignore_missing: true
+  - set:
+      field: device.id
+      tag: set_device_id_from_device_DeviceId
+      copy_from: microsoft_intune.managed_device.properties.device_id
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.DeviceName
+      tag: rename_properties_DeviceName
+      target_field: microsoft_intune.managed_device.properties.device_name
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_device_DeviceName
+      copy_from: microsoft_intune.managed_device.properties.device_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_device_DeviceName_into_related_hosts
+      value: '{{{microsoft_intune.managed_device.properties.device_name}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.device_name != null
+  - rename:
+      field: json.properties.DeviceRegistrationState
+      tag: rename_properties_DeviceRegistrationState
+      target_field: microsoft_intune.managed_device.properties.device_registration_state
+      ignore_missing: true
+  - rename:
+      field: json.properties.DeviceState
+      tag: rename_properties_DeviceState
+      target_field: microsoft_intune.managed_device.properties.device_state
+      ignore_missing: true
+  - rename:
+      field: json.properties.EasID
+      tag: rename_properties_EasID
+      target_field: microsoft_intune.managed_device.properties.eas_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.EncryptionStatusString
+      tag: rename_properties_EncryptionStatusString
+      target_field: microsoft_intune.managed_device.properties.encryption_status_string
+      ignore_missing: true
+  - convert:
+      field: json.properties.GraphDeviceIsManaged
+      tag: convert_properties_GraphDeviceIsManaged_to_boolean
+      target_field: microsoft_intune.managed_device.properties.graph_device_is_managed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.IMEI
+      tag: rename_properties_IMEI
+      target_field: microsoft_intune.managed_device.properties.imei
+      ignore_missing: true
+  - date:
+      field: json.properties.InGracePeriodUntil
+      tag: date_properties_InGracePeriodUntil
+      target_field: microsoft_intune.managed_device.properties.in_grace_period_until
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSSS'
+      if: ctx.json?.properties?.InGracePeriodUntil != null && ctx.json.properties.InGracePeriodUntil != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.IntuneAccountId
+      tag: rename_properties_IntuneAccountId
+      target_field: microsoft_intune.managed_device.properties.intune_account_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.JailBroken
+      tag: rename_properties_JailBroken
+      target_field: microsoft_intune.managed_device.properties.jail_broken
+      ignore_missing: true
+  - rename:
+      field: json.properties.JoinType
+      tag: rename_properties_JoinType
+      target_field: microsoft_intune.managed_device.properties.join_type
+      ignore_missing: true
+  - date:
+      field: json.properties.LastContact
+      tag: date_properties_LastContact
+      target_field: microsoft_intune.managed_device.properties.last_contact
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSSS'
+      if: ctx.json?.properties?.LastContact != null && ctx.json.properties.LastContact != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.MEID
+      tag: rename_properties_MEID
+      target_field: microsoft_intune.managed_device.properties.meid
+      ignore_missing: true
+  - rename:
+      field: json.properties.ManagedBy
+      tag: rename_properties_ManagedBy
+      target_field: microsoft_intune.managed_device.properties.managed_by
+      ignore_missing: true
+  - rename:
+      field: json.properties.ManagedDeviceName
+      tag: rename_properties_ManagedDeviceName
+      target_field: microsoft_intune.managed_device.properties.managed_device_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.Manufacturer
+      tag: rename_properties_Manufacturer
+      target_field: microsoft_intune.managed_device.properties.manufacturer
+      ignore_missing: true
+  - rename:
+      field: json.properties.Model
+      tag: rename_properties_Model
+      target_field: microsoft_intune.managed_device.properties.model
+      ignore_missing: true
+  - set:
+      field: device.model.name
+      tag: set_device_model_name_from_device_Model
+      copy_from: microsoft_intune.managed_device.properties.model
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.OS
+      tag: rename_properties_OS
+      target_field: microsoft_intune.managed_device.properties.os
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_from_device_OS
+      copy_from: microsoft_intune.managed_device.properties.os
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.OSVersion
+      tag: rename_properties_OSVersion
+      target_field: microsoft_intune.managed_device.properties.os_version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_device_OSVersion
+      copy_from: microsoft_intune.managed_device.properties.os_version
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.Ownership
+      tag: rename_properties_Ownership
+      target_field: microsoft_intune.managed_device.properties.ownership
+      ignore_missing: true
+  - rename:
+      field: json.properties.PhoneNumber
+      tag: rename_properties_PhoneNumber
+      target_field: microsoft_intune.managed_device.properties.phone_number
+      ignore_missing: true
+  - rename:
+      field: json.properties.PrimaryUser
+      tag: rename_properties_PrimaryUser
+      target_field: microsoft_intune.managed_device.properties.primary_user
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_device_PrimaryUser
+      copy_from: microsoft_intune.managed_device.properties.primary_user
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_device_PrimaryUser_into_related_user
+      value: '{{{microsoft_intune.managed_device.properties.primary_user}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.primary_user != null
+  - rename:
+      field: json.properties.ReferenceId
+      tag: rename_properties_ReferenceId
+      target_field: microsoft_intune.managed_device.properties.reference_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.SerialNumber
+      tag: rename_properties_SerialNumber
+      target_field: microsoft_intune.managed_device.properties.serial_number
+      ignore_missing: true
+  - set:
+      field: device.serial_number
+      tag: set_device_serial_number_from_device_SerialNumber
+      copy_from: microsoft_intune.managed_device.properties.serial_number
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.SkuFamily
+      tag: rename_properties_SkuFamily
+      target_field: microsoft_intune.managed_device.properties.sku_family
+      ignore_missing: true
+  - convert:
+      field: json.properties.StorageFree
+      tag: convert_properties_StorageFree_to_long
+      target_field: microsoft_intune.managed_device.properties.storage_free
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.StorageTotal
+      tag: convert_properties_StorageTotal_to_long
+      target_field: microsoft_intune.managed_device.properties.storage_total
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.SubscriberCarrierNetwork
+      tag: rename_properties_SubscriberCarrierNetwork
+      target_field: microsoft_intune.managed_device.properties.subscriber_carrier_network
+      ignore_missing: true
+  - rename:
+      field: json.properties.SupervisedStatusString
+      tag: rename_properties_SupervisedStatusString
+      target_field: microsoft_intune.managed_device.properties.supervised_status_string
+      ignore_missing: true
+  - rename:
+      field: json.properties.UPN
+      tag: rename_properties_UPN
+      target_field: microsoft_intune.managed_device.properties.upn
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_device_UPN
+      copy_from: microsoft_intune.managed_device.properties.upn
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_device_UPN_into_related_user
+      value: '{{{microsoft_intune.managed_device.properties.upn}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.upn != null
+  - rename:
+      field: json.properties.UserEmail
+      tag: rename_properties_UserEmail
+      target_field: microsoft_intune.managed_device.properties.user_email
+      ignore_missing: true
+  - append:
+      field: user.email
+      tag: append_microsoft_intune_device_UserEmail_into_user_email
+      value: '{{{microsoft_intune.managed_device.properties.user_email}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.user_email != null
+  - append:
+      field: related.user
+      tag: append_device_UserEmail_into_related_user
+      value: '{{{microsoft_intune.managed_device.properties.user_email}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.user_email != null
+  - rename:
+      field: json.properties.UserName
+      tag: rename_properties_UserName
+      target_field: microsoft_intune.managed_device.properties.user_name
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_device_UserName
+      copy_from: microsoft_intune.managed_device.properties.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_device_UserName_into_related_user
+      value: '{{{microsoft_intune.managed_device.properties.user_name}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.user_name != null
+  - rename:
+      field: json.properties.WifiMacAddress
+      tag: rename_properties_WifiMacAddress
+      target_field: microsoft_intune.managed_device.properties.wifi_mac_address
+      ignore_missing: true
+  - append:
+      field: host.mac
+      tag: append_microsoft_intune_device_WifiMacAddress_into_host_mac
+      value: '{{{microsoft_intune.managed_device.properties.wifi_mac_address}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.wifi_mac_address != null
+  - gsub:
+      field: host.mac
+      tag: format_mac_address_without_separators
+      target_field: host.mac
+      pattern: '^([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})$'
+      replacement: '$1-$2-$3-$4-$5-$6'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: host.mac
+      tag: uppercase_host_mac
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: append_device_WifiMacAddress_into_related_hosts
+      value: '{{{microsoft_intune.managed_device.properties.wifi_mac_address}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.wifi_mac_address != null
+  - rename:
+      field: json.category
+      tag: rename_category
+      target_field: microsoft_intune.managed_device.category
+      ignore_missing: true
+  - rename:
+      field: json.operationName
+      tag: rename_operationName
+      target_field: microsoft_intune.managed_device.operation_name
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_device_operationName
+      copy_from: microsoft_intune.managed_device.operation_name
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resultType
+      tag: rename_resultType
+      target_field: microsoft_intune.managed_device.result_type
+      ignore_missing: true
+  - rename:
+      field: json.tenantId
+      tag: rename_tenantId
+      target_field: microsoft_intune.managed_device.tenant_id
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_device_tenantId
+      copy_from: microsoft_intune.managed_device.tenant_id
+      ignore_empty_value: true
+  - date:
+      field: json.time
+      tag: date_time
+      target_field: microsoft_intune.managed_device.time
+      formats:
+        - ISO8601
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_device_time
+      copy_from: microsoft_intune.managed_device.time
+      ignore_empty_value: true
+  - remove:
+      field:
+        - microsoft_intune.managed_device.properties.created_date
+        - microsoft_intune.managed_device.properties.device_id
+        - microsoft_intune.managed_device.properties.device_name
+        - microsoft_intune.managed_device.properties.model
+        - microsoft_intune.managed_device.properties.os
+        - microsoft_intune.managed_device.properties.os_version
+        - microsoft_intune.managed_device.properties.primary_user
+        - microsoft_intune.managed_device.properties.serial_number
+        - microsoft_intune.managed_device.properties.upn
+        - microsoft_intune.managed_device.properties.user_email
+        - microsoft_intune.managed_device.properties.user_name
+        - microsoft_intune.managed_device.operation_name
+        - microsoft_intune.managed_device.tenant_id
+        - microsoft_intune.managed_device.time
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
