@@ -28,7 +28,7 @@
         },
         "jobs": [
             {
-                "id": "dga_high_sum_probability",
+                "id": "dga_high_sum_probability_euid",
                 "config": {
                     "groups": [
                         "security",
@@ -48,6 +48,7 @@
                         ],
                         "influencers": [
                             "source.ip",
+                            "host.entity.id_computed",
                             "host.name"
                         ]
                     },
@@ -63,13 +64,13 @@
         ],
         "datafeeds": [
             {
-                "id": "datafeed-dga_high_sum_probability",
-                "job_id": "dga_high_sum_probability",
+                "id": "datafeed-dga_high_sum_probability_euid",
+                "job_id": "dga_high_sum_probability_euid",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "dga_high_sum_probability",
+                    "job_id": "dga_high_sum_probability_euid",
                     "query": {
                         "bool": {
                             "filter": [
@@ -99,6 +100,13 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "script_fields": {
+                        "host.entity.id_computed": {
+                            "script": {
+                                "id": "euid_host_entity"
+                            }
                         }
                     }
                 }

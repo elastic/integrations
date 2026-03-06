@@ -34,7 +34,7 @@
         },
         "jobs": [
             {
-                "id": "problem_child_rare_process_by_host",
+                "id": "problem_child_rare_process_by_host_euid",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -54,7 +54,9 @@
                         ],
                         "influencers": [
                             "process.name",
+                            "host.entity.id_computed",
                             "host.name",
+                            "user.entity.id_computed",
                             "user.name",
                             "process.command_line"
                         ]
@@ -69,7 +71,7 @@
                 }
             },
             {
-                "id": "problem_child_high_sum_by_host",
+                "id": "problem_child_high_sum_by_host_euid",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -96,7 +98,9 @@
                         ],
                         "influencers": [
                             "process.name",
+                            "host.entity.id_computed",
                             "host.name",
+                            "user.entity.id_computed",
                             "user.name",
                             "process.command_line"
                         ]
@@ -111,7 +115,7 @@
                 }
             },
             {
-                "id": "problem_child_rare_process_by_user",
+                "id": "problem_child_rare_process_by_user_euid",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -131,7 +135,9 @@
                         ],
                         "influencers": [
                             "process.name",
+                            "user.entity.id_computed",
                             "user.name",
+                            "host.entity.id_computed",
                             "host.name",
                             "process.command_line"
                         ]
@@ -146,7 +152,7 @@
                 }
             },
             {
-                "id": "problem_child_rare_process_by_parent",
+                "id": "problem_child_rare_process_by_parent_euid",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -168,7 +174,9 @@
                             "process.name",
                             "process.parent.name",
                             "process.command_line",
+                            "host.entity.id_computed",
                             "host.name",
+                            "user.entity.id_computed",
                             "user.name"
                         ]
                     },
@@ -182,7 +190,7 @@
                 }
             },
             {
-                "id": "problem_child_high_sum_by_user",
+                "id": "problem_child_high_sum_by_user_euid",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -209,7 +217,9 @@
                         ],
                         "influencers": [
                             "process.name",
+                            "user.entity.id_computed",
                             "user.name",
+                            "host.entity.id_computed",
                             "host.name",
                             "process.command_line"
                         ]
@@ -224,7 +234,7 @@
                 }
             },
             {
-                "id": "problem_child_high_sum_by_parent",
+                "id": "problem_child_high_sum_by_parent_euid",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -253,7 +263,9 @@
                             "process.name",
                             "process.parent.name",
                             "process.command_line",
+                            "host.entity.id_computed",
                             "host.name",
+                            "user.entity.id_computed",
                             "user.name"
                         ]
                     },
@@ -269,13 +281,13 @@
         ],
         "datafeeds": [
             {
-                "id": "datafeed-problem_child_rare_process_by_host",
-                "job_id": "problem_child_rare_process_by_host",
+                "id": "datafeed-problem_child_rare_process_by_host_euid",
+                "job_id": "problem_child_rare_process_by_host_euid",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_rare_process_by_host",
+                    "job_id": "problem_child_rare_process_by_host_euid",
                     "query": {
                         "bool": {
                             "minimum_should_match": 1,
@@ -312,17 +324,29 @@
                                 }
                             ]
                         }
+                    },
+                    "script_fields": {
+                        "user.entity.id_computed": {
+                            "script": {
+                                "id": "euid_user_entity"
+                            }
+                        },
+                        "host.entity.id_computed": {
+                            "script": {
+                                "id": "euid_host_entity"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_high_sum_by_host",
-                "job_id": "problem_child_high_sum_by_host",
+                "id": "datafeed-problem_child_high_sum_by_host_euid",
+                "job_id": "problem_child_high_sum_by_host_euid",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_high_sum_by_host",
+                    "job_id": "problem_child_high_sum_by_host_euid",
                     "query": {
                         "bool": {
                             "minimum_should_match": 1,
@@ -359,17 +383,29 @@
                                 }
                             ]
                         }
+                    },
+                    "script_fields": {
+                        "user.entity.id_computed": {
+                            "script": {
+                                "id": "euid_user_entity"
+                            }
+                        },
+                        "host.entity.id_computed": {
+                            "script": {
+                                "id": "euid_host_entity"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_rare_process_by_user",
-                "job_id": "problem_child_rare_process_by_user",
+                "id": "datafeed-problem_child_rare_process_by_user_euid",
+                "job_id": "problem_child_rare_process_by_user_euid",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_rare_process_by_user",
+                    "job_id": "problem_child_rare_process_by_user_euid",
                     "query": {
                         "bool": {
                             "minimum_should_match": 1,
@@ -406,17 +442,29 @@
                                 }
                             ]
                         }
+                    },
+                    "script_fields": {
+                        "user.entity.id_computed": {
+                            "script": {
+                                "id": "euid_user_entity"
+                            }
+                        },
+                        "host.entity.id_computed": {
+                            "script": {
+                                "id": "euid_host_entity"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_rare_process_by_parent",
-                "job_id": "problem_child_rare_process_by_parent",
+                "id": "datafeed-problem_child_rare_process_by_parent_euid",
+                "job_id": "problem_child_rare_process_by_parent_euid",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_rare_process_by_parent",
+                    "job_id": "problem_child_rare_process_by_parent_euid",
                     "query": {
                         "bool": {
                             "minimum_should_match": 1,
@@ -453,17 +501,29 @@
                                 }
                             ]
                         }
+                    },
+                    "script_fields": {
+                        "user.entity.id_computed": {
+                            "script": {
+                                "id": "euid_user_entity"
+                            }
+                        },
+                        "host.entity.id_computed": {
+                            "script": {
+                                "id": "euid_host_entity"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_high_sum_by_user",
-                "job_id": "problem_child_high_sum_by_user",
+                "id": "datafeed-problem_child_high_sum_by_user_euid",
+                "job_id": "problem_child_high_sum_by_user_euid",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_high_sum_by_user",
+                    "job_id": "problem_child_high_sum_by_user_euid",
                     "query": {
                         "bool": {
                             "minimum_should_match": 1,
@@ -500,17 +560,29 @@
                                 }
                             ]
                         }
+                    },
+                    "script_fields": {
+                        "user.entity.id_computed": {
+                            "script": {
+                                "id": "euid_user_entity"
+                            }
+                        },
+                        "host.entity.id_computed": {
+                            "script": {
+                                "id": "euid_host_entity"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_high_sum_by_parent",
-                "job_id": "problem_child_high_sum_by_parent",
+                "id": "datafeed-problem_child_high_sum_by_parent_euid",
+                "job_id": "problem_child_high_sum_by_parent_euid",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_high_sum_by_parent",
+                    "job_id": "problem_child_high_sum_by_parent_euid",
                     "query": {
                         "bool": {
                             "minimum_should_match": 1,
@@ -546,6 +618,18 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "script_fields": {
+                        "user.entity.id_computed": {
+                            "script": {
+                                "id": "euid_user_entity"
+                            }
+                        },
+                        "host.entity.id_computed": {
+                            "script": {
+                                "id": "euid_host_entity"
+                            }
                         }
                     }
                 }
