@@ -1,0 +1,121 @@
+rules:
+  # GET /api/v0/object/?name={domain_or_email}
+  # First endpoint to get object_id for a domain or email
+  - path: /api/v0/object/
+    methods: ["GET"]
+    query_params:
+      name:
+        - test@example.com
+    request_headers:
+      Authorization:
+        - "Token test-api-key-12345"
+      App-ID:
+        - "1080999989"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json; charset=utf-8"
+        body: |-
+          {"object_id": 123456789, "name": "test@example.com", "type": "email"}
+
+  # POST /api/v0/emails/_search/
+  # Second endpoint to search for emails using object_id
+  - path: /api/v0/emails/_search/
+    methods: ["POST"]
+    query_params:
+      object_id:
+        - "123456789"
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Token test-api-key-12345"
+      App-ID:
+        - "1080999989"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json; charset=utf-8"
+        body: |-
+          {
+            "count": 1,
+            "emails": [
+              {
+                "msg_id": "SYS-TEST-001",
+                "message_id": "<system.test.001@example.com>",
+                "date": "2026-02-08 08:00:00",
+                "direction": 1,
+                "comm_partner": "sender@external.com",
+                "owner": "recipient@mydomain.com",
+                "owner_domain": "mydomain.com",
+                "subject": "System test email",
+                "attachments": [
+                  {
+                    "name": "report.pdf",
+                    "size": 524288
+                  }
+                ],
+                "classification": {
+                  "id": 2,
+                  "text": "clean"
+                },
+                "status": {
+                  "id": 1,
+                  "text": "Delivered"
+                },
+                "reason": "ham",
+                "reason_intern": "noreason:ho2",
+                "gateway": "test-gateway-sys",
+                "source_hostname": "mail.external.com",
+                "source_ip": "203.0.113.25",
+                "destination_hostname": "mail.mydomain.com",
+                "destination_ip": "198.51.100.10",
+                "crypt_type_in": {
+                  "id": 7,
+                  "text": "TLS"
+                },
+                "crypt_type_out": {
+                  "id": 7,
+                  "text": "TLS"
+                },
+                "private": false,
+                "smtp_dialog": [
+                  "2026-02-08T08:00:00Z;TLS;mail.mydomain.com[198.51.100.10];250 2.6.0 Message accepted;END_SEND;CIPHER=STRONG;TLS_VER=TLSv1.3"
+                ],
+                "smtp_status": "2026-02-08T08:00:00Z;TLS;mail.mydomain.com[198.51.100.10];250 2.6.0 Message accepted;END_SEND;CIPHER=STRONG;TLS_VER=TLSv1.3",
+                "smtp_status_code": "250",
+                "has_url_rewritten": false,
+                "is_archived": true,
+                "history": "",
+                "ttl": "2037-01-01T00:00:00Z",
+                "ttl_reason": [
+                  "da120",
+                  "ga-1",
+                  "ua-1",
+                  "c-1"
+                ],
+                "fix_ids": "",
+                "es_mail_id": "test-region,2026_02_08,sys-test-001",
+                "last_remediation_actions": "",
+                "last_remediation_type": "",
+                "last_remediation_folder": "",
+                "last_remediation_effectiveness": "",
+                "last_report_type": "",
+                "last_remediation": {
+                  "remediation_type": null,
+                  "remediation_actions": null,
+                  "remediation_folder": null,
+                  "remediation_tag": null,
+                  "remediation_effectiveness": false,
+                  "report_type": null,
+                  "has_url_rewritten": false
+                },
+                "size": {
+                  "value": 524288,
+                  "unit": "bytes"
+                }
+              }
+            ]
+          }
