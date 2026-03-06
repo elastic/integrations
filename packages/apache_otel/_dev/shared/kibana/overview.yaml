@@ -1,0 +1,382 @@
+---
+# Apache OTel Overview Dashboard
+# Comprehensive Apache HTTP Server metrics dashboard using OpenTelemetry receiver
+# Uses ES|QL with TS command for time-series optimization
+#
+# Requirements:
+#   - data_stream.dataset == "apachereceiver.otel"
+#   - Apache HTTP Server monitored via OpenTelemetry collector
+#
+# Metrics: uptime, requests, traffic, cpu.load, cpu.time, workers, connections,
+#          scoreboard, load.1/5/15, connections.async
+dashboards:
+  - id: apache_otel-overview
+    name: '[Apache OTel] Overview'
+    description: Overview of Apache HTTP Server health and performance from OpenTelemetry metrics.
+    controls:
+      - type: options
+        label: Server name
+        data_view: metrics-*
+        field: resource.attributes.apache.server.name
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+    filters:
+      - field: data_stream.dataset
+        equals: apachereceiver.otel
+    panels:
+      # Overview Markdown (left column, spans 2 metric rows)
+      - title: '[Apache OTel] Overview'
+        hide_title: true
+        size: {w: 16, h: 12}
+        position: {x: 0, y: 0}
+        markdown:
+          content: |
+            ## [Apache OTel] Overview
+
+            This dashboard provides an overview of Apache HTTP Server health and performance via OpenTelemetry metrics:
+            - Request rate and traffic throughput
+            - Worker pool utilization (busy vs idle)
+            - Active and asynchronous connection counts
+            - Server load averages (1m, 5m, 15m)
+            - CPU load and CPU time breakdown by mode
+
+      # KPI Metrics Row 1 (y=0)
+      - title: Uptime
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 16, y: 0}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.uptime IS NOT NULL
+            - STATS uptime_sec = MAX(LAST_OVER_TIME(apache.uptime))
+          primary:
+            field: uptime_sec
+            label: Uptime
+            format:
+              type: duration
+              decimals: 0
+      - title: Request Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 24, y: 0}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.requests IS NOT NULL
+            - STATS request_rate = SUM(RATE(apache.requests))
+          primary:
+            field: request_rate
+            label: Request Rate
+            format:
+              type: number
+              decimals: 1
+              suffix: ' req/s'
+      - title: Traffic Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 32, y: 0}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.traffic IS NOT NULL
+            - STATS traffic_rate = SUM(RATE(apache.traffic))
+          primary:
+            field: traffic_rate
+            label: Traffic Rate
+            format:
+              type: bytes
+              decimals: 1
+              suffix: /s
+      - title: CPU Load
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 40, y: 0}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.cpu.load IS NOT NULL
+            - STATS cpu_load = MAX(AVG_OVER_TIME(apache.cpu.load))
+          primary:
+            field: cpu_load
+            label: CPU Load
+            format:
+              type: number
+              decimals: 2
+              suffix: ' %'
+
+      # KPI Metrics Row 2 (y=6)
+      - title: Active Connections
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 16, y: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.current_connections IS NOT NULL
+            - STATS connections = MAX(LAST_OVER_TIME(apache.current_connections))
+          primary:
+            field: connections
+            label: Active Connections
+            format:
+              type: number
+              decimals: 0
+      - title: Busy Workers
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 24, y: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - 'WHERE apache.workers IS NOT NULL AND attributes.state == "busy"'
+            - STATS busy = MAX(LAST_OVER_TIME(apache.workers))
+          primary:
+            field: busy
+            label: Busy Workers
+            format:
+              type: number
+              decimals: 0
+      - title: Idle Workers
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 32, y: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - 'WHERE apache.workers IS NOT NULL AND attributes.state == "idle"'
+            - STATS idle = MAX(LAST_OVER_TIME(apache.workers))
+          primary:
+            field: idle
+            label: Idle Workers
+            format:
+              type: number
+              decimals: 0
+      - title: Server Load (1m)
+        hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 40, y: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE `apache.load.1` IS NOT NULL
+            - STATS load_1m = MAX(AVG_OVER_TIME(`apache.load.1`))
+          primary:
+            field: load_1m
+            label: Server Load (1m)
+            format:
+              type: number
+              decimals: 2
+
+      # Section: Traffic & Performance (y=12)
+      - title: Traffic & Performance
+        hide_title: true
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 12}
+        markdown:
+          content: '## Traffic & Performance'
+
+      # XY Charts: Traffic & Performance (y=15)
+      - title: Request Rate Over Time
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 15}
+        esql:
+          type: line
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.requests IS NOT NULL
+            - STATS request_rate = SUM(RATE(apache.requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: request_rate
+              label: Requests/sec
+              format:
+                type: number
+                decimals: 1
+      - title: Traffic Throughput Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 15}
+        esql:
+          type: line
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.traffic IS NOT NULL
+            - STATS traffic_rate = SUM(RATE(apache.traffic)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: traffic_rate
+              label: Bytes/sec
+              format:
+                type: bytes
+                decimals: 2
+
+      # Section: Workers & Connections (y=27)
+      - title: Workers & Connections
+        hide_title: true
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 27}
+        markdown:
+          content: '## Workers & Connections'
+
+      # XY Charts: Workers & Connections (y=30)
+      - title: Workers by State Over Time
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 30}
+        esql:
+          type: area
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.workers IS NOT NULL
+            - STATS workers = MAX(LAST_OVER_TIME(apache.workers)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: workers
+              label: Workers
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.state
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: busy
+                color: '#E7664C'
+              - value: idle
+                color: '#54B399'
+      - title: Active Connections Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 30}
+        esql:
+          type: line
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.current_connections IS NOT NULL
+            - STATS connections = MAX(LAST_OVER_TIME(apache.current_connections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+              label: Active Connections
+              format:
+                type: number
+                decimals: 0
+
+      # More Workers & Connections (y=42)
+      - title: Scoreboard Worker States Over Time
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 42}
+        esql:
+          type: bar
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.scoreboard IS NOT NULL
+            - STATS count = MAX(LAST_OVER_TIME(apache.scoreboard)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: count
+              label: Workers
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.state
+      - title: Async Connections by State Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 42}
+        esql:
+          type: area
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.connections.async IS NOT NULL
+            - STATS connections = MAX(LAST_OVER_TIME(apache.connections.async)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.connection_state
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+              label: Connections
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.connection_state
+
+      # Section: System Resources (y=54)
+      - title: System Resources
+        hide_title: true
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 54}
+        markdown:
+          content: '## System Resources'
+
+      # XY Charts: System Resources (y=57)
+      - title: Server Load Over Time
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 57}
+        esql:
+          type: line
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - >-
+              FORK
+              ( WHERE `apache.load.1` IS NOT NULL | STATS load = MAX(AVG_OVER_TIME(`apache.load.1`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL period = "1 minute" )
+              ( WHERE `apache.load.5` IS NOT NULL | STATS load = MAX(AVG_OVER_TIME(`apache.load.5`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL period = "5 minutes" )
+              ( WHERE `apache.load.15` IS NOT NULL | STATS load = MAX(AVG_OVER_TIME(`apache.load.15`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL period = "15 minutes" )
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: load
+              label: Load
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: period
+      - title: CPU Time by Mode Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 57}
+        esql:
+          type: area
+          query:
+            - TS metrics-apachereceiver.otel-*
+            - WHERE apache.cpu.time IS NOT NULL
+            - STATS cpu_time_rate = SUM(RATE(apache.cpu.time)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.mode
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: cpu_time_rate
+              label: CPU jiffs/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.mode
