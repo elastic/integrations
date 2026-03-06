@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-connection-errors-spike",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] Connection errors spike",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-haproxyreceiver.otel-*\n// Connection errors (counter) \u2014 use INCREASE for window delta\n| WHERE haproxy.connections.errors IS NOT NULL\n| STATS err_increase = SUM(INCREASE(haproxy.connections.errors))\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n// Adjust threshold for sensitivity (10 = 10 new errors in window)\n| WHERE err_increase > 10\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT err_increase DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
