@@ -135,7 +135,7 @@ The integration emits OTEL logs with the following structure:
 | `cloud_connector.name` | Cloud Connector name |
 | `cloud_connector.namespace` | Kibana Space the Cloud Connector belongs to (default: `default`) |
 | `data_stream.type` | Always `logs` |
-| `data_stream.dataset` | Always `cloud_connector.permission_verification` |
+| `data_stream.dataset` | Always `verifier_otel.verification` |
 | `data_stream.namespace` | Data stream namespace, matches `cloud_connector.namespace` |
 | `verification.id` | Verification session ID |
 | `verification.timestamp` | When verification started |
