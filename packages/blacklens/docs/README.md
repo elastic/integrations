@@ -56,46 +56,55 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-11-12T09:39:58.489Z",
     "agent": {
-        "ephemeral_id": "6f67dab1-a41b-450f-a155-a71e23a90def",
-        "id": "078a56bf-68d7-4243-a5de-83dfb7e00e88",
-        "name": "elastic-agent-18047",
+        "ephemeral_id": "33939e93-54ef-4184-b92b-bc8f02e179a6",
+        "id": "f98f4444-6fca-4500-83b6-a8c5e8f32bf1",
+        "name": "elastic-agent-49577",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.15.2"
     },
     "blacklens": {
         "alert": {
-            "id": 1001,
-            "outcome": "affected",
-            "severity": "medium",
-            "status": "resolved",
-            "title": "New Open Port",
-            "type": "Port Scanner",
-            "type_id": 100,
-            "updated_date": "2024-11-12T09:39:58.489Z"
+            "activities": [
+                {
+                    "category": "threat",
+                    "created_date": "2025-12-30T16:11:40.195989Z",
+                    "description": "A Critical severity external vulnerability 'Blind SQL Injection via HTTP Header' has been detected on asset 'demo.example.com'",
+                    "id": "73dcaa88-09e1-4c58-9fa5-5495f8dac2a4",
+                    "trace_id": "40eda190-83fd-4a1b-8155-3a1c7434b319",
+                    "type": "ExternalVulnerabilityCreated"
+                }
+            ],
+            "analysis": "completed",
+            "category": "vulnerability",
+            "id": "7ea10c5d-559a-4c55-8608-2e060956de68",
+            "name": "External Vulnerability Detected",
+            "severity": "high",
+            "status": "new",
+            "updated_date": "2025-12-31T16:10:56.155Z"
         }
     },
     "data_stream": {
         "dataset": "blacklens.alerts",
-        "namespace": "38546",
+        "namespace": "41265",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "078a56bf-68d7-4243-a5de-83dfb7e00e88",
+        "id": "f98f4444-6fca-4500-83b6-a8c5e8f32bf1",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.15.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2026-01-19T05:27:59.414Z",
+        "created": "2025-12-09T05:45:05.855Z",
         "dataset": "blacklens.alerts",
         "id": "1001",
-        "ingested": "2026-01-19T05:28:02Z",
+        "ingested": "2025-12-09T05:45:08Z",
         "type": [
             "indicator"
         ]
@@ -115,14 +124,20 @@ An example event for `alerts` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| blacklens.alert.details | Alert Details | nested |
-| blacklens.alert.id | Unique Alert ID | integer |
-| blacklens.alert.outcome | Determines whether the current alert triggers further events | keyword |
+| blacklens.alert.activities.category |  | keyword |
+| blacklens.alert.activities.created_date |  | date |
+| blacklens.alert.activities.data |  | nested |
+| blacklens.alert.activities.description |  | keyword |
+| blacklens.alert.activities.id |  | keyword |
+| blacklens.alert.activities.trace_id |  | keyword |
+| blacklens.alert.activities.type |  | keyword |
+| blacklens.alert.activities.updated_date |  | date |
+| blacklens.alert.analysis | Determines whether the current alert triggers further events | keyword |
+| blacklens.alert.category | Alert category | keyword |
+| blacklens.alert.id | Unique Alert ID | keyword |
+| blacklens.alert.name | Name of the given Alert | keyword |
 | blacklens.alert.severity | Alert Severity | keyword |
 | blacklens.alert.status | Current Status of the Alert | keyword |
-| blacklens.alert.title | Title/Description of the given Alert | keyword |
-| blacklens.alert.type | Alert Type (Engine) | keyword |
-| blacklens.alert.type_id | Alert Type ID (Engine) | integer |
 | blacklens.alert.updated_date | Activity last updated time (UTC). | date |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
