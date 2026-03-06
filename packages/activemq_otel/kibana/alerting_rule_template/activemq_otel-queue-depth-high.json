@@ -1,0 +1,36 @@
+{
+  "id": "activemq_otel-queue-depth-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[ActiveMQ OTel] Queue depth high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "activemq",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-activemq.otel-*\n// activemq.message.current is gauge; exclude advisory/system destinations\n| WHERE activemq.message.current IS NOT NULL\n  AND activemq.destination.name IS NOT NULL\n  AND activemq.destination.name NOT IN (\"ActiveMQ.DLQ\", \"ActiveMQ.Advisory.MasterBroker\", \"ActiveMQ.Advisory.Queue\", \"ActiveMQ.Advisory.Topic\")\n| STATS queue_depth = MAX(LAST_OVER_TIME(activemq.message.current)) BY activemq.broker.name, activemq.destination.name\n// Alert when queue depth exceeds 1000; adjust for your expected throughput\n| WHERE queue_depth > 1000\n| SORT queue_depth DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "activemq.destination.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
