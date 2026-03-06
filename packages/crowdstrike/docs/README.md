@@ -765,6 +765,7 @@ By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhos
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
 Current supported event types are:
+- CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
 - EppDetectionSummaryEvent
@@ -842,6 +843,7 @@ Current supported event types are:
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.DomainName |  | keyword |
 | crowdstrike.event.EgressEventId |  | keyword |
 | crowdstrike.event.EgressSessionId |  | keyword |
 | crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
@@ -898,6 +900,8 @@ Current supported event types are:
 | crowdstrike.event.IOARuleName | Name given to the custom IOA rule that triggered. | keyword |
 | crowdstrike.event.IOCType | CrowdStrike type for indicator of compromise. | keyword |
 | crowdstrike.event.IOCValue | CrowdStrike value for indicator of compromise. | keyword |
+| crowdstrike.event.IPv4 |  | ip |
+| crowdstrike.event.IPv6 |  | ip |
 | crowdstrike.event.IdpPolicyRuleAction | Identity Protection policy rule action. | keyword |
 | crowdstrike.event.IdpPolicyRuleName | Identity Protection policy rule name. | keyword |
 | crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |

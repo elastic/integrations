@@ -108,6 +108,7 @@ By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhos
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
 Current supported event types are:
+- CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
 - EppDetectionSummaryEvent
