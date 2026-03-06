@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-apiserver-unavailable",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] API Server Unavailable",
+        "tags": [
+            "Kubernetes",
+            "API Server",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when no API server metrics are received \u2014 server may be down.\n//\n// What triggers this alert:\n// Zero documents received from the API server data stream within the time window.\n//\n// What it means:\n// Complete control plane failure or monitoring pipeline issue.\n//\n// Common causes:\n// API server crash, network partition, monitoring agent failure, cluster-wide outage.\n//\n// Action needed:\n// Immediately check cluster health, API server status, and network connectivity.\n//\n// To scope to a cluster, add: AND `orchestrator.cluster.name` == \"YOUR_CLUSTER\"\nTS metrics-kubernetes.apiserver-*\n| STATS doc_count = COUNT(*) BY `orchestrator.cluster.name`\n| WHERE doc_count < 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-service-syncloadbalancerfailed-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Service SyncLoadBalancerFailed Error",
+        "tags": [
+            "Kubernetes",
+            "Service",
+            "LoadBalancer"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert on Kubernetes Service SyncLoadBalancerFailed events.\n//\n// What triggers this alert:\n// Cloud load balancer provisioning or update failed \u2014 service not externally accessible.\n//\n// Common causes:\n// Cloud provider quota limits, API errors, insufficient permissions, network config issues.\n//\n// Action needed:\n// Check cloud provider console, verify service account permissions, review quota limits.\n//\n// To scope to a namespace, add: AND `kubernetes.event.metadata.namespace` == \"YOUR_NAMESPACE\"\nFROM metrics-kubernetes.event-*\n| WHERE `kubernetes.event.involved_object.kind` == \"Service\"\n  AND `kubernetes.event.source.component` == \"service-controller\"\n  AND `kubernetes.event.reason` == \"SyncLoadBalancerFailed\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.event.metadata.namespace`,\n     `kubernetes.event.involved_object.name`, `kubernetes.event.involved_object.kind`,\n     `kubernetes.event.reason`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

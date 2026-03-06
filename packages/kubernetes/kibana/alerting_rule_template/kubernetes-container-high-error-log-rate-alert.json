@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-container-high-error-log-rate-alert",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Container High Error Log Rate Alert",
+        "tags": [
+            "Kubernetes",
+            "Container",
+            "Logs"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "10m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 20,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when the error log ratio exceeds 0.4% for a specific container.\n//\n// What triggers this alert:\n// Ratio of ERROR-level logs to total logs exceeds 0.004 (0.4%).\n//\n// Placeholders to replace:\n// - Replace \"important_container_name\" with your target container name.\n// - Optionally add label filters, e.g.:\n//   AND `kubernetes.node.labels.cloud_google_com/gke-boot-disk` == \"your_value\"\n// - Adjust threshold (0.004 = 0.4%) based on your normal error rate.\n//\n// What it means:\n// Error rate exceeds baseline \u2014 potential service issues.\n//\n// Action needed:\n// Review application logs, check recent deployments, investigate error patterns.\n//\n// Handles division by zero: filters out containers with zero total logs.\nFROM logs-*\n| WHERE `kubernetes.container.name` == \"important_container_name\"\n| STATS\n    error_count = COUNT(*) WHERE `log.level` == \"ERROR\",\n    total_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.container.name`\n| WHERE total_count > 0\n| EVAL error_ratio = ROUND(error_count / TO_DOUBLE(total_count), 6)\n| WHERE error_ratio > 0.004"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
