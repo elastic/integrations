@@ -1,0 +1,43 @@
+{
+  "id": "azure_activity_otel-failed-administrative-operations",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Azure Activity OTel] Failed administrative operations",
+    "ruleTypeId": ".es-query",
+    "tags": ["observability", "azure", "activity-logs"],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-*\n// Restrict to Azure Activity Logs (Administrative category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"Administrative\"\n// Capture both Failure and Failed result types (Azure uses inconsistent casing)\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n// Derive actor for grouping (user.name or principal ID)\n| EVAL actor = COALESCE(user.name, azure.identity.authorization.evidence.principal.id, \"unknown\")\n// Aggregate by operation and actor for context; adjust minimum count to reduce noise\n| STATS failed_count = COUNT(*), sample_timestamps = VALUES(@timestamp) BY azure.operation.name, actor, network.peer.address\n// Minimum failures to alert — tune based on environment noise\n| WHERE failed_count >= 3\n| SORT failed_count DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "azure.operation.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    },
+    "artifacts": {
+      "dashboards": [
+        { "id": "azure_activity_otel-overview" },
+        { "id": "azure_activity_otel-administrative-operations" }
+      ]
+    }
+  }
+}
