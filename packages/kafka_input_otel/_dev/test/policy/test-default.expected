@@ -1,0 +1,145 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                - names:
+                    - metrics-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                - names:
+                    - traces-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "kafkareceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+        metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["data_stream.type"], "metrics")
+                - set(attributes["data_stream.dataset"], "kafkareceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+        trace_statements:
+            - context: span
+              statements:
+                - set(attributes["data_stream.type"], "traces")
+                - set(attributes["data_stream.dataset"], "kafkareceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+            - context: spanevent
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    kafka/componentid-0:
+        autocommit:
+            enable: true
+            interval: 1s
+        brokers:
+            - localhost:9092
+        client_id: otel-collector
+        group_id: otel-collector
+        group_rebalance_strategy: cooperative-sticky
+        heartbeat_interval: 3s
+        initial_offset: latest
+        logs:
+            encoding: otlp_proto
+            topics:
+                - otlp_logs
+        max_fetch_size: 1048576
+        max_fetch_wait: 250ms
+        max_partition_fetch_size: 1048576
+        message_marking:
+            after: false
+            on_error: false
+        metadata:
+            full: true
+            refresh_interval: 10m
+            retry:
+                backoff: 250ms
+                max: 3
+        metrics:
+            encoding: otlp_proto
+            topics:
+                - otlp_metrics
+        min_fetch_size: 1
+        protocol_version: 2.1.0
+        resolve_canonical_bootstrap_servers_only: false
+        session_timeout: 10s
+        telemetry:
+            metrics:
+                kafka_receiver_records_delay:
+                    enabled: false
+        traces:
+            encoding: otlp_proto
+            topics:
+                - otlp_spans
+        use_leader_epoch: true
+secret_references: []
+service:
+    pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - kafka/componentid-0
+        metrics:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        metrics/componentid-1:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - kafka/componentid-0
+        traces:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        traces/componentid-2:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - kafka/componentid-0

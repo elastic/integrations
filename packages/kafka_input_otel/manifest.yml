@@ -1,0 +1,491 @@
+format_version: 3.6.0
+name: kafka_input_otel
+title: "Kafka OpenTelemetry Input"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Consume telemetry data (logs, metrics, traces) from Kafka using the OpenTelemetry Collector Kafka receiver."
+type: input
+categories:
+  - message_queue
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/kafka_otel_logo.svg
+    title: Kafka OTel logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: kafkareceiver
+    type: logs
+    dynamic_signal_types: true
+    title: Kafka OpenTelemetry Input
+    description: Consume telemetry data from Kafka using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      # Core Connection Settings
+      - name: brokers
+        type: text
+        title: Brokers
+        description: List of Kafka broker addresses.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - localhost:9092
+      - name: group_id
+        type: text
+        title: Consumer Group ID
+        description: Consumer group for message consumption.
+        required: false
+        show_user: true
+        default: otel-collector
+      # Advanced Connection Settings
+      - name: protocol_version
+        type: text
+        title: Protocol Version
+        description: Kafka protocol version.
+        required: false
+        show_user: false
+        default: "2.1.0"
+      - name: client_id
+        type: text
+        title: Client ID
+        description: Consumer client identifier.
+        required: false
+        show_user: false
+        default: otel-collector
+      - name: rack_id
+        type: text
+        title: Rack ID
+        description: Rack identifier for replica selection preference.
+        required: false
+        show_user: false
+      - name: resolve_canonical_bootstrap_servers_only
+        type: bool
+        title: Resolve Canonical Bootstrap Servers Only
+        description: Whether to resolve then reverse-lookup broker IPs during startup.
+        required: false
+        show_user: false
+        default: false
+      - name: use_leader_epoch
+        type: bool
+        title: Use Leader Epoch (Experimental)
+        description: Enable leader epoch (KIP-320) for log truncation detection.
+        required: false
+        show_user: false
+        default: true
+      # Consumer Settings
+      - name: initial_offset
+        type: select
+        title: Initial Offset
+        description: Starting offset if none previously committed.
+        required: false
+        show_user: false
+        default: latest
+        options:
+          - value: latest
+            text: Latest
+          - value: earliest
+            text: Earliest
+      - name: session_timeout
+        type: duration
+        title: Session Timeout
+        description: Timeout for detecting client failures in group management.
+        required: false
+        show_user: false
+        default: 10s
+      - name: heartbeat_interval
+        type: duration
+        title: Heartbeat Interval
+        description: Expected time between heartbeats to coordinator.
+        required: false
+        show_user: false
+        default: 3s
+      - name: group_rebalance_strategy
+        type: select
+        title: Group Rebalance Strategy
+        description: Partition assignment strategy.
+        required: false
+        show_user: false
+        default: cooperative-sticky
+        options:
+          - value: range
+            text: Range
+          - value: roundrobin
+            text: Round Robin
+          - value: sticky
+            text: Sticky
+          - value: cooperative-sticky
+            text: Cooperative Sticky
+      - name: group_instance_id
+        type: text
+        title: Group Instance ID
+        description: Static member identifier within consumer group.
+        required: false
+        show_user: false
+      - name: min_fetch_size
+        type: integer
+        title: Minimum Fetch Size
+        description: Minimum message bytes to fetch in request.
+        required: false
+        show_user: false
+        default: 1
+      - name: max_fetch_size
+        type: integer
+        title: Maximum Fetch Size
+        description: Maximum message bytes to fetch per request.
+        required: false
+        show_user: false
+        default: 1048576
+      - name: max_fetch_wait
+        type: duration
+        title: Maximum Fetch Wait
+        description: Maximum broker wait time before returning data.
+        required: false
+        show_user: false
+        default: 250ms
+      - name: max_partition_fetch_size
+        type: integer
+        title: Maximum Partition Fetch Size
+        description: Default message bytes per partition.
+        required: false
+        show_user: false
+        default: 1048576
+      # Signal-Specific Settings - Logs
+      - name: logs_topics
+        type: text
+        title: Logs Topics
+        description: Topics to consume logs from.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - otlp_logs
+      - name: logs_encoding
+        type: select
+        title: Logs Encoding
+        description: Encoding format for log messages.
+        required: false
+        show_user: true
+        default: otlp_proto
+        options:
+          - value: otlp_proto
+            text: OTLP Proto
+          - value: otlp_json
+            text: OTLP JSON
+          - value: raw
+            text: Raw
+          - value: text
+            text: Text (Using UTF-8 to decode)
+          - value: json
+            text: JSON
+          - value: azure_resource_logs
+            text: Azure Resource Logs
+      - name: logs_exclude_topics
+        type: text
+        title: Logs Exclude Topics
+        description: Regex patterns to exclude log topics.
+        multi: true
+        required: false
+        show_user: false
+      # Signal-Specific Settings - Metrics
+      - name: metrics_topics
+        type: text
+        title: Metrics Topics
+        description: Topics to consume metrics from.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - otlp_metrics
+      - name: metrics_encoding
+        type: select
+        title: Metrics Encoding
+        description: Encoding format for metric messages.
+        required: false
+        show_user: true
+        default: otlp_proto
+        options:
+          - value: otlp_proto
+            text: OTLP Proto
+          - value: otlp_json
+            text: OTLP JSON
+      - name: metrics_exclude_topics
+        type: text
+        title: Metrics Exclude Topics
+        description: Regex patterns to exclude metric topics.
+        multi: true
+        required: false
+        show_user: false
+      # Signal-Specific Settings - Traces
+      - name: traces_topics
+        type: text
+        title: Traces Topics
+        description: Topics to consume traces from.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - otlp_spans
+      - name: traces_encoding
+        type: select
+        title: Traces Encoding
+        description: Encoding format for trace messages.
+        required: false
+        show_user: true
+        default: otlp_proto
+        options:
+          - value: otlp_proto
+            text: OTLP Proto
+          - value: otlp_json
+            text: OTLP JSON
+          - value: jaeger_proto
+            text: Jaeger Proto
+          - value: jaeger_json
+            text: Jaeger JSON
+          - value: zipkin_proto
+            text: Zipkin Proto
+          - value: zipkin_json
+            text: Zipkin JSON
+          - value: zipkin_thrift
+            text: Zipkin Thrift
+      - name: traces_exclude_topics
+        type: text
+        title: Traces Exclude Topics
+        description: Regex patterns to exclude trace topics.
+        multi: true
+        required: false
+        show_user: false
+      # SASL Authentication
+      - name: sasl_mechanism
+        type: select
+        title: SASL Mechanism
+        description: SASL mechanism for authentication.
+        required: false
+        show_user: false
+        options:
+          - value: PLAIN
+            text: PLAIN
+          - value: SCRAM-SHA-256
+            text: SCRAM-SHA-256
+          - value: SCRAM-SHA-512
+            text: SCRAM-SHA-512
+          - value: AWS_MSK_IAM_OAUTHBEARER
+            text: AWS MSK IAM
+      - name: sasl_username
+        type: text
+        title: SASL Username
+        description: Username for SASL authentication.
+        required: false
+        show_user: false
+      - name: sasl_password
+        type: password
+        title: SASL Password
+        description: Password for SASL authentication.
+        required: false
+        show_user: false
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+      - name: sasl_aws_msk_region
+        type: text
+        title: AWS MSK Region
+        description: AWS Region for MSK IAM authentication.
+        required: false
+        show_user: false
+      # Kerberos Authentication
+      - name: kerberos_service_name
+        type: text
+        title: Kerberos Service Name
+        description: Kerberos service name.
+        required: false
+        show_user: false
+      - name: kerberos_realm
+        type: text
+        title: Kerberos Realm
+        description: Kerberos realm.
+        required: false
+        show_user: false
+      - name: kerberos_username
+        type: text
+        title: Kerberos Username
+        description: Kerberos username for KDC authentication.
+        required: false
+        show_user: false
+      - name: kerberos_password
+        type: password
+        title: Kerberos Password
+        description: Kerberos password for KDC authentication.
+        required: false
+        show_user: false
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+      - name: kerberos_config_file
+        type: text
+        title: Kerberos Config File
+        description: Path to Kerberos configuration file.
+        required: false
+        show_user: false
+      - name: kerberos_keytab_file
+        type: text
+        title: Kerberos Keytab File
+        description: Path to keytab file.
+        required: false
+        show_user: false
+      - name: kerberos_use_keytab
+        type: bool
+        title: Use Kerberos Keytab
+        description: Use keytab instead of password.
+        required: false
+        show_user: false
+        default: false
+      - name: kerberos_disable_fast_negotiation
+        type: bool
+        title: Disable Kerberos FAST Negotiation
+        description: Disable PA-FX-FAST negotiation.
+        required: false
+        show_user: false
+        default: false
+      # TLS Configuration
+      - name: tls_enabled
+        type: bool
+        title: Enable TLS
+        description: Enable TLS for Kafka connection.
+        required: false
+        show_user: false
+        default: false
+      - name: tls_ca_file
+        type: text
+        title: TLS CA File
+        description: Path to CA certificate file for TLS verification.
+        required: false
+        show_user: false
+      - name: tls_cert_file
+        type: text
+        title: TLS Certificate File
+        description: Path to client certificate file for TLS authentication.
+        required: false
+        show_user: false
+      - name: tls_key_file
+        type: text
+        title: TLS Key File
+        description: Path to client private key file for TLS authentication.
+        required: false
+        show_user: false
+      - name: tls_insecure_skip_verify
+        type: bool
+        title: Skip TLS Verification
+        description: Skip TLS certificate verification. Not recommended for production.
+        required: false
+        show_user: false
+        default: false
+      # Metadata Configuration
+      - name: metadata_full
+        type: bool
+        title: Full Metadata
+        description: Maintain full metadata; when disabled, no initial broker request on startup.
+        required: false
+        show_user: false
+        default: true
+      - name: metadata_refresh_interval
+        type: duration
+        title: Metadata Refresh Interval
+        description: Frequency of cluster metadata refresh.
+        required: false
+        show_user: false
+        default: 10m
+      - name: metadata_retry_max
+        type: integer
+        title: Metadata Retry Max
+        description: Number of metadata retry attempts.
+        required: false
+        show_user: false
+        default: 3
+      - name: metadata_retry_backoff
+        type: duration
+        title: Metadata Retry Backoff
+        description: Wait time between metadata retries.
+        required: false
+        show_user: false
+        default: 250ms
+      # Auto-Commit Settings
+      - name: autocommit_enable
+        type: bool
+        title: Enable Auto-Commit
+        description: Auto-commit updated offsets to broker.
+        required: false
+        show_user: false
+        default: true
+      - name: autocommit_interval
+        type: duration
+        title: Auto-Commit Interval
+        description: Frequency of offset commits.
+        required: false
+        show_user: false
+        default: 1s
+      # Message Marking
+      - name: message_marking_after
+        type: bool
+        title: Mark Messages After Pipeline
+        description: Mark messages after pipeline execution.
+        required: false
+        show_user: false
+        default: false
+      - name: message_marking_on_error
+        type: bool
+        title: Mark Messages on Error
+        description: Mark messages on non-permanent errors.
+        required: false
+        show_user: false
+        default: false
+      - name: message_marking_on_permanent_error
+        type: bool
+        title: Mark Messages on Permanent Error
+        description: Mark messages on permanent errors.
+        required: false
+        show_user: false
+      # Header Extraction
+      - name: header_extraction_extract_headers
+        type: bool
+        title: Extract Headers
+        description: Allows user to attach header fields to resource attributes.
+        required: false
+        show_user: false
+        default: false
+      - name: header_extraction_headers
+        type: text
+        title: Headers to Extract
+        description: List of headers to extract from Kafka records (exact match).
+        multi: true
+        required: false
+        show_user: false
+      # Telemetry
+      - name: telemetry
+        type: yaml
+        title: Telemetry Configuration
+        description: Configuration for receiver telemetry.
+        required: false
+        show_user: false
+        default: |
+          # By default `kafka_receiver_records_delay` is disabled
+          metrics:
+            kafka_receiver_records_delay:
+              enabled: false
+      # Error Backoff Configuration
+      - name: error_backoff
+        type: yaml
+        title: Error Backoff Configuration
+        description: Configuration for error backoff behavior.
+        required: false
+        show_user: false
+owner:
+  github: elastic/ecosystem
+  type: elastic

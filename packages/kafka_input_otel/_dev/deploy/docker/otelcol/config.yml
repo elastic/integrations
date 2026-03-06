@@ -1,0 +1,50 @@
+# OTel Collector config for system tests: receives OTLP from telemetrygen,
+# exports to Kafka. Dual export: otlp_proto to otlp_* topics, otlp_json to otlp_*_json topics.
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+exporters:
+  kafka/proto:
+    brokers:
+      - kafka_service:9092
+    logs:
+      topic: otlp_logs
+      encoding: otlp_proto
+    metrics:
+      topic: otlp_metrics
+      encoding: otlp_proto
+    traces:
+      topic: otlp_spans
+      encoding: otlp_proto
+  kafka/json:
+    brokers:
+      - kafka_service:9092
+    logs:
+      topic: otlp_logs_json
+      encoding: otlp_json
+    metrics:
+      topic: otlp_metrics_json
+      encoding: otlp_json
+    traces:
+      topic: otlp_spans_json
+      encoding: otlp_json
+
+service:
+  extensions: [health_check]
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [kafka/proto, kafka/json]
+    metrics:
+      receivers: [otlp]
+      exporters: [kafka/proto, kafka/json]
+    traces:
+      receivers: [otlp]
+      exporters: [kafka/proto, kafka/json]
