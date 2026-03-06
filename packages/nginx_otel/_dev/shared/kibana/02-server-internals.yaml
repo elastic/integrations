@@ -1,0 +1,246 @@
+---
+dashboards:
+  - name: "[Nginx OTel] Server Internals"
+    id: nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901
+    description: "Connection states, request processing, and capacity for Nginx."
+    settings:
+      sync:
+        colors: true
+    controls:
+      - type: options
+        label: Nginx instance
+        data_view: metrics-*
+        field: host.name
+        fill_width: true
+        multiple: false
+    filters:
+      - field: data_stream.dataset
+        equals: nginxreceiver.otel
+    panels:
+      # Navigation bar
+      - markdown:
+          content: |
+            **[Request Health](/app/dashboards#/view/nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890)** | **[Server Internals](/app/dashboards#/view/nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901)** | **[Traffic & Capacity](/app/dashboards#/view/nginx_otel-c3d4e5f6-a7b8-9012-cdef-123456789012)**
+        hide_title: true
+        size: {w: whole, h: 3}
+
+      # Description
+      - markdown:
+          content: |
+            ## Server Internals
+
+            Deep-dive into NGINX connection handling and request processing internals.
+
+            - **Connection states**: Active, reading, writing, waiting breakdown
+            - **New connections**: Accept and handled rates over time
+            - **Request processing**: Cumulative request counter and request rate
+            - **Connection drops**: Dropped connections trend (accepted − handled)
+            - **Processed connections**: Cumulative handled connections
+        hide_title: true
+        size: {w: third, h: 12}
+
+      # Metric cards — top row
+      - title: Active
+        hide_title: true
+        size: {w: quarter, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          primary:
+            formula: "average(nginx.connections_current, kql='state: active')"
+            label: Active
+            format:
+              type: number
+              decimals: 0
+
+      - title: Reading
+        hide_title: true
+        size: {w: 10, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          primary:
+            formula: "average(nginx.connections_current, kql='state: reading')"
+            label: Reading
+            format:
+              type: number
+              decimals: 0
+
+      - title: Writing
+        hide_title: true
+        size: {w: 10, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          primary:
+            formula: "average(nginx.connections_current, kql='state: writing')"
+            label: Writing
+            format:
+              type: number
+              decimals: 0
+
+      # Metric cards — bottom row
+      - title: Waiting
+        hide_title: true
+        size: {w: third, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          primary:
+            formula: "average(nginx.connections_current, kql='state: waiting')"
+            label: Waiting
+            format:
+              type: number
+              decimals: 0
+
+      - title: Dropped
+        hide_title: true
+        size: {w: third, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          primary:
+            formula: "max(nginx.connections_accepted)-max(nginx.connections_handled)"
+            label: Dropped
+
+      # Connection States Over Time
+      - title: Connection States Over Time
+        size: {w: half, h: 14}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "average(nginx.connections_current, kql='state: active')"
+              label: Active
+              color: "#E7664C"
+            - formula: "average(nginx.connections_current, kql='state: reading')"
+              label: Reading
+              color: "#68bc00"
+            - formula: "average(nginx.connections_current, kql='state: writing')"
+              label: Writing
+              color: "#009ce0"
+            - formula: "average(nginx.connections_current, kql='state: waiting')"
+              label: Waiting
+              color: "#F1D86F"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Connections
+
+      # New Connections / Interval
+      - title: New Connections / Interval
+        size: {w: half, h: 14}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "differences(max(nginx.connections_accepted))"
+              label: Accepts rate
+              color: "#68bc00"
+            - formula: "differences(max(nginx.connections_handled))"
+              label: Handled rate
+              color: "#009ce0"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Rate
+
+      # Total Requests (cumulative)
+      - title: Total Requests (cumulative)
+        size: {w: half, h: 12}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - aggregation: max
+              field: nginx.requests
+              label: Total
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            missing_values: Linear
+            show_as_dotted: true
+            y_left_axis:
+              title: Requests (cumulative)
+
+      # Request Rate
+      - title: Request Rate
+        size: {w: half, h: 12}
+        lens:
+          type: area
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "differences(max(nginx.requests))"
+              label: Request rate
+              color: "#54B399"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Requests / interval
+
+      # Dropped Connections Over Time
+      - title: Dropped Connections Over Time
+        size: {w: half, h: 12}
+        lens:
+          type: area
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "max(nginx.connections_accepted)-max(nginx.connections_handled)"
+              label: Drops
+              color: "#E7664C"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Dropped connections
+
+      # Processed Connections (cumulative)
+      - title: Processed Connections (cumulative)
+        size: {w: half, h: 12}
+        lens:
+          type: line
+          data_view: metrics-*
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - aggregation: max
+              field: nginx.connections_handled
+              label: Processed
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            missing_values: Linear
+            show_as_dotted: true
+            y_left_axis:
+              title: Handled connections (cumulative)

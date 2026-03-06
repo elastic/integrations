@@ -1,0 +1,37 @@
+{
+    "id": "nginx_otel-error-log-spike",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Nginx OTel] Error log spike",
+        "tags": [
+            "Nginx OTel"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "FROM logs-nginx.error.otel-*\n// Filter to severe log entries only\n| WHERE log.level IN (\"error\", \"crit\", \"alert\", \"emerg\")\n// Count error entries per host\n| STATS error_count = COUNT(*) BY host.name\n// Alert when error count exceeds threshold in the time window\n// Adjust threshold based on expected baseline error volume\n| WHERE error_count > 50\n| SORT error_count DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

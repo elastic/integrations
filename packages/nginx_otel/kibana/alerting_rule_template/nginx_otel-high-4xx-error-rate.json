@@ -1,0 +1,37 @@
+{
+    "id": "nginx_otel-high-4xx-error-rate",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Nginx OTel] High 4xx error rate",
+        "tags": [
+            "Nginx OTel"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "FROM logs-nginx.access.otel-*\n// Flag each access log entry as a client error (4xx) or not\n| EVAL is_4xx = CASE(http.response.status_code >= 400 AND http.response.status_code < 500, 1, 0)\n// Aggregate total requests and 4xx count per NGINX host\n| STATS total = COUNT(*), errors_4xx = SUM(is_4xx) BY host.name\n// Minimum sample size to avoid noisy low-traffic hosts\n| WHERE total > 50\n// Calculate 4xx error rate as a percentage\n| EVAL error_rate_pct = ROUND(TO_DOUBLE(errors_4xx) / TO_DOUBLE(total) * 100.0, 2)\n// Alert threshold: 15% is a reasonable starting point for client errors\n| WHERE error_rate_pct > 15.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
