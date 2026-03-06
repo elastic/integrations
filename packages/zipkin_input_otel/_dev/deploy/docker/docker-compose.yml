@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+  run_queries:
+    image: curlimages/curl
+    environment:
+      - TARGET_URL=http://backend:9000
+    volumes:
+      - ./scripts/run_queries.sh:/run_queries.sh
+    command: ["sh", "/run_queries.sh"]
+    depends_on:
+      backend:
+        condition: service_healthy
+  # Scenario based on the example defined in
+  # https://github.com/openzipkin/brave-example/tree/a71b18511b4fc8cbbe67ea2a6fd5ca43048c2465/docker
+  # https://github.com/openzipkin/brave-example/blob/a71b18511b4fc8cbbe67ea2a6fd5ca43048c2465/README.md#running-the-example
+  # The backend container is used to generate traces that are sent to the elastic-agent container.
+  backend:
+    image: ghcr.io/openzipkin/brave-example:armeria
+    entrypoint: start-backend
+    environment:
+      - ZIPKIN_BASEURL=http://elastic-agent:9411
