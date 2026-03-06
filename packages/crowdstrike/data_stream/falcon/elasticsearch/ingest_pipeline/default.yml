@@ -419,6 +419,143 @@ processors:
       ignore_empty_value: true
       tag: rename_event_deviceid
       if: ctx.device?.id == null
+
+# Threat Fields.
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_tactic_name
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+          field: threat.tactic.name
+          tag: append_crowdstrike_event_MitreAttack_Tactic_into_threat_tactic_name
+          value: '{{{_ingest._value.Tactic}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_tactic_id
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+          field: threat.tactic.id
+          tag: append_crowdstrike_event_MitreAttack_TacticID_into_threat_tactic_id
+          value: '{{{_ingest._value.TacticID}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_technique_name
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+          field: threat.technique.name
+          tag: append_crowdstrike_event_MitreAttack_Technique_into_threat_technique_name
+          value: '{{{_ingest._value.Technique}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_technique_id
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+          field: threat.technique.id
+          tag: append_crowdstrike_event_MitreAttack_TechniqueID_into_threat_technique_id
+          value: '{{{_ingest._value.TechniqueID}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_pattern_id
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        convert:
+          field: _ingest._value.PatternID
+          tag: convert_mitre_attack_pattern_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_ingest_value_pattern_id
+                field: _ingest._value.PatternID
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set threat.framework from threat.* fields using prefix matching and preference order.
+      lang: painless
+      tag: script_threat_framework
+      if: ctx.threat != null
+      params:
+        framework_preference:
+          - MITRE ATT&CK
+          - CrowdStrike Falcon Detections Framework
+        framework_cs: 'CrowdStrike Falcon Detections Framework'
+        framework_ma: 'MITRE ATT&CK'
+        falcon_tactic_names:
+          - malware
+          - exploit
+          - post-exploit
+          - machine learning
+          - custom intelligence
+          - falcon overwatch
+          - falcon intel
+          - ai powered ioa
+          - insecure security posture
+      source: |
+        def tid = ctx.threat.tactic?.id;
+        def nid = ctx.threat.technique?.id;
+        def tname = ctx.threat.tactic?.name;
+        if ((tid == null || tid.isEmpty()) && (nid == null || nid.isEmpty()) && (tname == null || tname.isEmpty())) {
+          return;
+        }
+        Set frameworks = new HashSet();
+        // Handling tactics prefixed with "CS" or "TA".
+        if (tid != null && !tid.isEmpty()) {
+          for (String t: tid) {
+            if (t.startsWith("CS")) {
+              frameworks.add(params.framework_cs);
+            }
+            else if (t.startsWith("TA")) {
+              frameworks.add(params.framework_ma);
+            }
+          }
+        }
+        // Handling techniques prefixed with "CS".
+        if (nid != null && !nid.isEmpty()) {
+          for (String t: nid) {
+            if (t.startsWith("CS")) {
+              frameworks.add(params.framework_cs);
+            }
+          }
+        }
+        // Handling falcon specific tactics.
+        if (tname != null && !tname.isEmpty()) {
+          for (String t: tname) {
+            if (params.falcon_tactic_names.contains(t.toLowerCase())) {
+              frameworks.add(params.framework_cs);
+            }
+          }
+        }
+
+        if (frameworks.isEmpty()) {
+          return;
+        }
+        if (frameworks.size() == 1) {
+          ctx.threat.framework = frameworks.iterator().next();
+          return;
+        }
+
+        for (def preferred : params.framework_preference) {
+          if (frameworks.contains(preferred)) {
+            ctx.threat.framework = preferred;
+            return;
+          }
+        }
+
+        // fallback when new frameworks are added and not yet in preference list
+        ctx.threat.framework = frameworks.iterator().next();
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # This removes any fields that are mapped to ECS, but have not been renamed.
   # This is to prevent the fields from being duplicated in the event.
   - remove:
@@ -471,6 +608,32 @@ processors:
         - crowdstrike.event.UserId
         - crowdstrike.event.UserName
       ignore_missing: true
+
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null/empty values.
+      tag: remove_nulls
+      source: |-
+        void handleMap(Map map) {
+            map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        void handleList(List list) {
+            list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        handleMap(ctx);
 
 on_failure:
   - append:
