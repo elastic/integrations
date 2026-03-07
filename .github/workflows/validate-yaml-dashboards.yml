@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'packages/**/_dev/build/kibana/**/*.yaml'
+      - 'packages/**/_dev/shared/kibana/**/*.yaml'
       - 'packages/**/kibana/dashboard/*.json'
       - '.github/workflows/validate-yaml-dashboards.yml'
 
@@ -33,7 +33,7 @@ jobs:
           set -e
           
           # Find YAML files changed in the PR diff
-          CHANGED_YAML_FILES=$(git diff --name-only origin/main...HEAD -- 'packages/**/_dev/build/kibana/**/*.yaml' 2>/dev/null || true)
+          CHANGED_YAML_FILES=$(git diff --name-only origin/main...HEAD -- 'packages/**/_dev/shared/kibana/**/*.yaml' 2>/dev/null || true)
           
           if [ -z "$CHANGED_YAML_FILES" ]; then
             echo "No YAML dashboard files changed in this PR"
@@ -51,7 +51,7 @@ jobs:
           echo "changed_files=$CHANGED_FILES_ESCAPED" >> $GITHUB_OUTPUT
           
           # Find unique input directories to avoid redundant compilation
-          # Group files by their input directory (e.g., packages/aws_vpcflow_otel/_dev/build/kibana)
+          # Group files by their input directory (e.g., packages/aws_vpcflow_otel/_dev/shared/kibana)
           UNIQUE_DIRS=$(echo "$CHANGED_YAML_FILES" | xargs -n1 dirname | sort -u | tr '\n' ' ' | sed 's/ $//')
           echo "Unique input directories (for compilation):"
           echo "$UNIQUE_DIRS"
