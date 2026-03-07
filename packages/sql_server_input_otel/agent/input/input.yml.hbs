@@ -1,0 +1,58 @@
+receivers:
+  sqlserver:
+{{#if server}}
+    server: {{server}}
+{{/if}}
+{{#if port}}
+    port: {{port}}
+{{/if}}
+{{#if username}}
+    username: {{username}}
+{{/if}}
+{{#if password}}
+    password: {{password}}
+{{/if}}
+{{#if datasource}}
+    datasource: {{datasource}}
+{{/if}}
+{{#if instance_name}}
+    instance_name: {{instance_name}}
+{{/if}}
+{{#if computer_name}}
+    computer_name: {{computer_name}}
+{{/if}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+    events:
+      db.server.query_sample:
+        enabled: {{enable_query_sample_events}}
+      db.server.top_query:
+        enabled: {{enable_top_query_events}}
+{{#if enable_query_sample_events}}
+    query_sample_collection:
+      max_rows_per_query: {{query_sample_max_rows_per_query}}
+{{/if}}
+{{#if enable_top_query_events}}
+    top_query_collection:
+      lookback_time: {{top_query_lookback_time}}
+      max_query_sample_count: {{top_query_max_query_sample_count}}
+      top_query_count: {{top_query_count}}
+      collection_interval: {{top_query_collection_interval}}
+{{/if}}
+{{#if resource_attributes}}
+    resource_attributes: {{resource_attributes}}
+{{/if}}
+{{#if metrics}}
+    metrics: {{metrics}}
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    logs:
+      receivers: [sqlserver]
+      processors: [resourcedetection/system]
+    metrics:
+      receivers: [sqlserver]
+      processors: [resourcedetection/system]
