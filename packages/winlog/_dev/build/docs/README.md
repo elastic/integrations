@@ -5,6 +5,17 @@ You can get a list of available event log channels by running [`Get-WinEvent -Li
 If `Get-WinEvent` is not available, [`Get-EventLog *`](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-eventlog) may be used.
 Custom ingest pipelines may be added by setting one up in [Ingest Node Pipelines](/app/management/ingest/ingest_pipelines/).
 
+## Choosing the right integration for Windows event logs
+
+Use the Custom Windows event logs integration when you need to collect events from Windows event log channels that are not covered by the prebuilt integrations. This integration provides flexibility, but does not include specialized ingest pipelines—the data is collected in its raw form.
+
+**Before using this integration**, check if one of these alternatives better fits your use case:
+
+- **[System integration](https://www.elastic.co/docs/reference/integrations/system)**: Collects from the `Application`, `System`, and `Security` channels with specialized ingest pipelines that enrich the data for observability dashboards and alerting.
+- **[Windows integration](https://www.elastic.co/docs/reference/integrations/windows)**: Collects from PowerShell, Sysmon, Windows Defender, AppLocker, and ForwardedEvents channels with security-focused ingest pipelines.
+
+Using the System or Windows integrations for their supported channels provides better out-of-the-box value because their ingest pipelines parse and enrich the event data, making it more useful for dashboards, searches, and security detections.
+
 ## Configuration
 
 ### Windows Event ID clause limit
