@@ -1,6 +1,7 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
@@ -12,10 +13,12 @@ processors:
       value: indicator
       tag: append_indicator_type
   - set:
+      tag: set_event_action_8e0d2082
       field: event.action
       value: recon-notification
       if: ctx.crowdstrike?.event?.ItemType == null
   - set:
+      tag: set_event_action_d066e9f9
       field: event.action
       value: "recon-notification-{{{crowdstrike.event.ItemType}}}"
       if: ctx.crowdstrike?.event?.ItemType != null
@@ -76,7 +79,6 @@ processors:
         - UNIX
       tag: date_item_posted_timestamp
       if: 'ctx.crowdstrike?.event?.ItemPostedTimestamp != null && String.valueOf(ctx.crowdstrike.event.ItemPostedTimestamp).length() <= 11'
-
 
 on_failure:
   - append:
