@@ -307,12 +307,25 @@ processors:
       ignore_missing: true
 
   # convert values
+  - script:
+      tag: script_normalize_event_time_to_unix_ms
+      lang: painless
+      description: Normalize eventTime to UNIX_MS format.
+      if: ctx.trend_micro_vision_one?.network_activity?.event?.time != null && ctx.trend_micro_vision_one.network_activity.event.time != ''
+      source: >-
+        def eventTime = Long.parseLong(ctx.trend_micro_vision_one.network_activity.event.time.toString());
+        if (eventTime < 10000000000L) {
+          ctx.trend_micro_vision_one.network_activity.event.time = eventTime * 1000L;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: trend_micro_vision_one.network_activity.event.time
       tag: date_event_time
       target_field: trend_micro_vision_one.network_activity.event.time
       formats:
-        - UNIX
         - UNIX_MS
       if: ctx.trend_micro_vision_one?.network_activity?.event?.time != null && ctx.trend_micro_vision_one.network_activity.event.time != ''
       on_failure:
