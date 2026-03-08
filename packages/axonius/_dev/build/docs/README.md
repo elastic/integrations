@@ -107,6 +107,18 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 3. In the search bar, type **Axonius**.
 4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only updated axonius logs are available to the end users. Each transform creates a destination index named `logs-axonius_latest.dest_*` which only contains active and updated axonius logs. The logs match rules and dashboards are updated to list only updated logs.
+Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
+
+| Source Data stream                 | Destination Index Pattern                        | Destination Alias                       |
+|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
+| `logs-axonius.adapter-*`           | `logs-axonius_latest.dest_adapter-*`             | `logs-axonius_latest.adapter`           |
+| `logs-axonius.alert_finding-*`     | `logs-axonius_latest.dest_alert_finding-*`       | `logs-axonius_latest.alert_finding`     |
+| `logs-axonius.exposure-*`          | `logs-axonius_latest.dest_exposure-*`            | `logs-axonius_latest.exposure`          |
+| `logs-axonius.gateway-*`           | `logs-axonius_latest.dest_gateway-*`             | `logs-axonius_latest.gateway`           |
+| `logs-axonius.incident-*`          | `logs-axonius_latest.dest_incident-*`            | `logs-axonius_latest.incident`          |
+| `logs-axonius.user-*`              | `logs-axonius_latest.dest_user-*`                | `logs-axonius_latest.user`              |
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).

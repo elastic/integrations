@@ -107,6 +107,18 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 3. In the search bar, type **Axonius**.
 4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only updated axonius logs are available to the end users. Each transform creates a destination index named `logs-axonius_latest.dest_*` which only contains active and updated axonius logs. The logs match rules and dashboards are updated to list only updated logs.
+Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
+
+| Source Data stream                 | Destination Index Pattern                        | Destination Alias                       |
+|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
+| `logs-axonius.adapter-*`           | `logs-axonius_latest.dest_adapter-*`             | `logs-axonius_latest.adapter`           |
+| `logs-axonius.alert_finding-*`     | `logs-axonius_latest.dest_alert_finding-*`       | `logs-axonius_latest.alert_finding`     |
+| `logs-axonius.exposure-*`          | `logs-axonius_latest.dest_exposure-*`            | `logs-axonius_latest.exposure`          |
+| `logs-axonius.gateway-*`           | `logs-axonius_latest.dest_gateway-*`             | `logs-axonius_latest.gateway`           |
+| `logs-axonius.incident-*`          | `logs-axonius_latest.dest_incident-*`            | `logs-axonius_latest.incident`          |
+| `logs-axonius.user-*`              | `logs-axonius_latest.dest_user-*`                | `logs-axonius_latest.user`              |
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -175,11 +187,11 @@ An example event for `adapter` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-20T07:17:21.981Z",
+    "@timestamp": "2026-03-08T10:29:49.689Z",
     "agent": {
-        "ephemeral_id": "768d8493-ab45-4049-8d9a-9ac7aa606274",
-        "id": "c136ea77-f424-4c6d-b2a4-139a7d4e1a73",
-        "name": "elastic-agent-24110",
+        "ephemeral_id": "9a81630d-c062-42af-8986-2201678e7e3e",
+        "id": "7f353f45-1956-4d42-a68f-1d562b665594",
+        "name": "elastic-agent-56763",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -219,14 +231,14 @@ An example event for `adapter` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.adapter",
-        "namespace": "51088",
+        "namespace": "97527",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "c136ea77-f424-4c6d-b2a4-139a7d4e1a73",
+        "id": "7f353f45-1956-4d42-a68f-1d562b665594",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -234,7 +246,7 @@ An example event for `adapter` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.adapter",
         "id": "a_cloud_guru_adapter",
-        "ingested": "2026-02-20T07:17:24Z",
+        "ingested": "2026-03-08T10:29:52Z",
         "kind": "event",
         "original": "{\"adapter_configs\":{},\"connections\":[{\"active\":true,\"adapter_name\":\"a_cloud_guru_adapter\",\"connection_adapter_config\":{},\"connection_advanced_config\":{},\"connection_config\":{},\"connection_discovery\":{},\"connection_id\":\"conn_12345\",\"curl\":null,\"did_notify_error\":false,\"error\":null,\"failed_connections_limit_exceeded\":false,\"id\":\"conn_12345\",\"last_fetch_time\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"last_successful_fetch\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"note\":\"\",\"status\":\"success\",\"tunnel_id\":\"khnsjhgvcskdbvnksdjahubnkvdhb\",\"uuid\":\"c69070fgredffedfgrfedcfd9e5e145e4861f2843d1951ab2\"}],\"connections_count\":{\"error_count\":0,\"inactive_count\":0,\"success_count\":1,\"total_count\":1,\"warning_count\":0},\"id\":\"a_cloud_guru_adapter\",\"is_master\":true,\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"node_name\":\"Primary\",\"plugin_name\":\"a_cloud_guru_adapter\",\"status\":\"success\",\"unique_plugin_name\":\"a_cloud_guru_adapter_0\"}",
         "outcome": "success"
@@ -292,11 +304,11 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-20T07:21:31.842Z",
+    "@timestamp": "2026-03-08T10:36:22.699Z",
     "agent": {
-        "ephemeral_id": "390e68f5-c2b8-4c11-805e-9b3ed4744b79",
-        "id": "897f7ecb-bc62-4a51-9b47-8e65f022b1e3",
-        "name": "elastic-agent-13556",
+        "ephemeral_id": "c4c5da8b-3d8f-49c8-9394-d28c443b2121",
+        "id": "bb06870c-9cd5-4b78-996a-85700cff78c2",
+        "name": "elastic-agent-13827",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -324,21 +336,21 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "25498",
+        "namespace": "81026",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "897f7ecb-bc62-4a51-9b47-8e65f022b1e3",
+        "id": "bb06870c-9cd5-4b78-996a-85700cff78c2",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "axonius.user",
-        "ingested": "2026-02-20T07:21:34Z",
+        "ingested": "2026-03-08T10:36:25Z",
         "kind": "event",
         "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}"
     },
@@ -411,11 +423,11 @@ An example event for `gateway` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-20T07:19:49.619Z",
+    "@timestamp": "2026-03-08T10:34:24.064Z",
     "agent": {
-        "ephemeral_id": "bf5853a2-5d41-42d8-8c29-ad10bb375c83",
-        "id": "e6b5ebbc-d8f1-4b15-8ad7-1ba1d3738d7a",
-        "name": "elastic-agent-75276",
+        "ephemeral_id": "6232d0e4-1c81-4525-8c9e-fc1dec972f15",
+        "id": "59805247-73ac-40fd-8735-4bd1a66b01da",
+        "name": "elastic-agent-33691",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -445,14 +457,14 @@ An example event for `gateway` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.gateway",
-        "namespace": "42808",
+        "namespace": "80572",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "e6b5ebbc-d8f1-4b15-8ad7-1ba1d3738d7a",
+        "id": "59805247-73ac-40fd-8735-4bd1a66b01da",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -467,7 +479,7 @@ An example event for `gateway` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.gateway",
         "id": "tunnel3",
-        "ingested": "2026-02-20T07:19:52Z",
+        "ingested": "2026-03-08T10:34:27Z",
         "kind": "event",
         "original": "{\"backup_ids\":[\"backup1\",\"backup2\"],\"default\":false,\"dns_server\":\"1.128.0.0\",\"email_recipients\":[\"john.doe@example.com\"],\"email_when_connected\":false,\"email_when_disconnected\":false,\"id\":\"tunnel3\",\"name\":\"Gateway_1\",\"status\":\"pending\",\"tunnel_proxy_settings\":{\"enabled\":false,\"tunnel_proxy_addr\":\"addr\",\"tunnel_proxy_port\":8080,\"tunnel_proxy_user\":\"tunnel-proxy-01\"}}"
     },
@@ -652,9 +664,9 @@ An example event for `exposure` looks as following:
 {
     "@timestamp": "2025-12-03T00:02:28.000Z",
     "agent": {
-        "ephemeral_id": "16afa343-3eeb-467e-9a3f-5e1757c0c3b6",
-        "id": "d2438702-db67-4a2d-992d-0a78703bfaed",
-        "name": "elastic-agent-75554",
+        "ephemeral_id": "cd5890a3-cb62-40b1-aa86-d3685872b4dc",
+        "id": "d6d8fa5b-5338-4451-8462-24abaa401d06",
+        "name": "elastic-agent-24426",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -704,14 +716,14 @@ An example event for `exposure` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.exposure",
-        "namespace": "47334",
+        "namespace": "98169",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "d2438702-db67-4a2d-992d-0a78703bfaed",
+        "id": "d6d8fa5b-5338-4451-8462-24abaa401d06",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -721,7 +733,7 @@ An example event for `exposure` looks as following:
             "vulnerability"
         ],
         "dataset": "axonius.exposure",
-        "ingested": "2026-02-20T07:19:02Z",
+        "ingested": "2026-03-08T10:31:56Z",
         "kind": "event",
         "type": [
             "info"
@@ -760,26 +772,26 @@ The `alert_finding` data stream provides alert findings asset logs from axonius.
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | axonius.alert_finding.adapter_list_length |  | long |
 | axonius.alert_finding.adapters |  | keyword |
+| axonius.alert_finding.alert_config_id |  | keyword |
+| axonius.alert_finding.alert_id |  | keyword |
 | axonius.alert_finding.asset_type |  | keyword |
-| axonius.alert_finding.event.data.alert_config_id |  | keyword |
-| axonius.alert_finding.event.data.alert_id |  | keyword |
-| axonius.alert_finding.event.data.finding_asset_type |  | keyword |
-| axonius.alert_finding.event.data.finding_check_and_notify |  | keyword |
-| axonius.alert_finding.event.data.finding_message |  | keyword |
-| axonius.alert_finding.event.data.finding_name |  | keyword |
-| axonius.alert_finding.event.data.finding_severity |  | keyword |
-| axonius.alert_finding.event.data.id |  | keyword |
-| axonius.alert_finding.event.data.id_raw |  | keyword |
-| axonius.alert_finding.event.data.plugin_unique_name |  | keyword |
-| axonius.alert_finding.event.data.source |  | keyword |
-| axonius.alert_finding.event.data.status |  | keyword |
-| axonius.alert_finding.event.data.trigger_date |  | date |
 | axonius.alert_finding.event.plugin_name |  | keyword |
 | axonius.alert_finding.event.plugin_unique_name |  | keyword |
 | axonius.alert_finding.event.quick_id |  | keyword |
+| axonius.alert_finding.finding_asset_type |  | keyword |
+| axonius.alert_finding.finding_check_and_notify |  | keyword |
+| axonius.alert_finding.finding_message |  | keyword |
+| axonius.alert_finding.finding_name |  | keyword |
+| axonius.alert_finding.finding_severity |  | keyword |
 | axonius.alert_finding.friendly_name |  | keyword |
+| axonius.alert_finding.id |  | keyword |
+| axonius.alert_finding.id_raw |  | keyword |
 | axonius.alert_finding.internal_axon_id |  | keyword |
+| axonius.alert_finding.plugin_unique_name |  | keyword |
+| axonius.alert_finding.source |  | keyword |
+| axonius.alert_finding.status |  | keyword |
 | axonius.alert_finding.transform_unique_id |  | keyword |
+| axonius.alert_finding.trigger_date |  | date |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -797,9 +809,9 @@ An example event for `alert_finding` looks as following:
 {
     "@timestamp": "2025-04-14T13:38:49.000Z",
     "agent": {
-        "ephemeral_id": "136bf9ed-db28-4585-9278-9bc6617b4d5e",
-        "id": "387ec988-2b83-47ac-b771-4623cabe898a",
-        "name": "elastic-agent-27249",
+        "ephemeral_id": "ebde8c49-0a66-49b9-860a-6d2997ff932b",
+        "id": "6f1a1813-fc58-4325-b0df-63c91b0d3fb4",
+        "name": "elastic-agent-55783",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -809,41 +821,39 @@ An example event for `alert_finding` looks as following:
             "adapters": [
                 "axonius_findings_adapter"
             ],
+            "alert_config_id": "66447fe5e6c4840f32a5b94f",
+            "alert_id": "984",
             "asset_type": "alert_findings",
             "event": {
-                "data": {
-                    "alert_config_id": "66447fe5e6c4840f32a5b94f",
-                    "alert_id": "984",
-                    "finding_asset_type": "adapters_fetch_history",
-                    "finding_check_and_notify": "Every global discovery cycle",
-                    "finding_name": "Failed Adapters",
-                    "finding_severity": "high",
-                    "id": "d919d74b380c16c8ea9d",
-                    "id_raw": "67fd0fe9c0cc9f012ad936ad",
-                    "plugin_unique_name": "axonius_findings_adapter",
-                    "source": "alert_rule",
-                    "status": "open",
-                    "trigger_date": "2025-04-14T13:38:49.000Z"
-                },
                 "plugin_name": "axonius_findings_adapter",
                 "plugin_unique_name": "axonius_findings_adapter",
                 "quick_id": "axonius_findings_adapter!d919d74b380c16c8ea9d"
             },
+            "finding_asset_type": "adapters_fetch_history",
+            "finding_check_and_notify": "Every global discovery cycle",
+            "finding_name": "Failed Adapters",
+            "finding_severity": "high",
             "friendly_name": "Failed Adapters",
+            "id": "d919d74b380c16c8ea9d",
+            "id_raw": "67fd0fe9c0cc9f012ad936ad",
             "internal_axon_id": "f8b16b93ecf0c0c4d7d10b797b9f839a",
-            "transform_unique_id": "w1+34emZxJa3DZk0q9QeacisnaY="
+            "plugin_unique_name": "axonius_findings_adapter",
+            "source": "alert_rule",
+            "status": "open",
+            "transform_unique_id": "w1+34emZxJa3DZk0q9QeacisnaY=",
+            "trigger_date": "2025-04-14T13:38:49.000Z"
         }
     },
     "data_stream": {
         "dataset": "axonius.alert_finding",
-        "namespace": "69512",
+        "namespace": "33595",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "387ec988-2b83-47ac-b771-4623cabe898a",
+        "id": "6f1a1813-fc58-4325-b0df-63c91b0d3fb4",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -851,7 +861,7 @@ An example event for `alert_finding` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.alert_finding",
         "id": "66447fe5e6c4840f32a5b94f",
-        "ingested": "2026-02-20T07:18:14Z",
+        "ingested": "2026-03-08T10:30:57Z",
         "kind": "alert"
     },
     "input": {
@@ -876,53 +886,53 @@ The `incident` data stream provides incident asset logs from axonius.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| axonius.incident.accurate_for_datetime |  | date |
 | axonius.incident.adapter_list_length |  | long |
 | axonius.incident.adapters |  | keyword |
+| axonius.incident.alert_labels |  | keyword |
+| axonius.incident.alert_source |  | keyword |
+| axonius.incident.alert_state.alert_created_at |  | date |
+| axonius.incident.alert_state.alert_high_since |  | date |
+| axonius.incident.alert_state.alert_last_seen |  | date |
+| axonius.incident.alert_state.alert_orca_score_number |  | double |
+| axonius.incident.alert_state.alert_risk_level |  | keyword |
+| axonius.incident.alert_state.alert_score |  | long |
+| axonius.incident.alert_state.alert_severity |  | keyword |
+| axonius.incident.alert_state.alert_status |  | keyword |
+| axonius.incident.alert_state.alert_status_time |  | date |
+| axonius.incident.alert_type |  | keyword |
+| axonius.incident.application_and_account_name |  | keyword |
+| axonius.incident.asset_distribution_major_version |  | keyword |
+| axonius.incident.asset_distribution_name |  | keyword |
+| axonius.incident.asset_distribution_version |  | keyword |
 | axonius.incident.asset_type |  | keyword |
+| axonius.incident.description |  | keyword |
+| axonius.incident.details |  | keyword |
 | axonius.incident.event.accurate_for_datetime |  | date |
 | axonius.incident.event.adapter_categories |  | keyword |
 | axonius.incident.event.client_used |  | keyword |
-| axonius.incident.event.data.accurate_for_datetime |  | date |
-| axonius.incident.event.data.alert_labels |  | keyword |
-| axonius.incident.event.data.alert_source |  | keyword |
-| axonius.incident.event.data.alert_state.alert_created_at |  | date |
-| axonius.incident.event.data.alert_state.alert_high_since |  | date |
-| axonius.incident.event.data.alert_state.alert_last_seen |  | date |
-| axonius.incident.event.data.alert_state.alert_orca_score_number |  | double |
-| axonius.incident.event.data.alert_state.alert_risk_level |  | keyword |
-| axonius.incident.event.data.alert_state.alert_score |  | long |
-| axonius.incident.event.data.alert_state.alert_severity |  | keyword |
-| axonius.incident.event.data.alert_state.alert_status |  | keyword |
-| axonius.incident.event.data.alert_state.alert_status_time |  | date |
-| axonius.incident.event.data.alert_type |  | keyword |
-| axonius.incident.event.data.application_and_account_name |  | keyword |
-| axonius.incident.event.data.asset_distribution_major_version |  | keyword |
-| axonius.incident.event.data.asset_distribution_name |  | keyword |
-| axonius.incident.event.data.asset_distribution_version |  | keyword |
-| axonius.incident.event.data.description |  | keyword |
-| axonius.incident.event.data.details |  | keyword |
-| axonius.incident.event.data.fetch_time |  | date |
-| axonius.incident.event.data.first_fetch_time |  | date |
-| axonius.incident.event.data.from_last_fetch |  | boolean |
-| axonius.incident.event.data.id |  | keyword |
-| axonius.incident.event.data.id_raw |  | keyword |
-| axonius.incident.event.data.is_fetched_from_adapter |  | boolean |
-| axonius.incident.event.data.last_fetch_connection_id |  | keyword |
-| axonius.incident.event.data.last_fetch_connection_label |  | keyword |
-| axonius.incident.event.data.not_fetched_count |  | long |
-| axonius.incident.event.data.pretty_id |  | keyword |
-| axonius.incident.event.data.recommendation |  | keyword |
-| axonius.incident.event.data.source_application |  | keyword |
-| axonius.incident.event.data.tenant_number |  | keyword |
-| axonius.incident.event.data.type |  | keyword |
 | axonius.incident.event.initial_plugin_unique_name |  | keyword |
 | axonius.incident.event.plugin_name |  | keyword |
 | axonius.incident.event.plugin_type |  | keyword |
 | axonius.incident.event.plugin_unique_name |  | keyword |
 | axonius.incident.event.quick_id |  | keyword |
 | axonius.incident.event.type |  | keyword |
+| axonius.incident.fetch_time |  | date |
+| axonius.incident.first_fetch_time |  | date |
+| axonius.incident.from_last_fetch |  | boolean |
+| axonius.incident.id |  | keyword |
+| axonius.incident.id_raw |  | keyword |
 | axonius.incident.internal_axon_id |  | keyword |
+| axonius.incident.is_fetched_from_adapter |  | boolean |
+| axonius.incident.last_fetch_connection_id |  | keyword |
+| axonius.incident.last_fetch_connection_label |  | keyword |
+| axonius.incident.not_fetched_count |  | long |
+| axonius.incident.pretty_id |  | keyword |
+| axonius.incident.recommendation |  | keyword |
+| axonius.incident.source_application |  | keyword |
+| axonius.incident.tenant_number |  | keyword |
 | axonius.incident.transform_unique_id |  | keyword |
+| axonius.incident.type |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -940,19 +950,45 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2025-12-07T12:02:42.000Z",
     "agent": {
-        "ephemeral_id": "ef643de9-e17b-4b74-ab1a-3f63d0da1383",
-        "id": "25ffad4d-9e2b-477f-a274-43c5a21da3be",
-        "name": "elastic-agent-79170",
+        "ephemeral_id": "e312e6ef-a2ad-4bc3-a684-e31d3be751fe",
+        "id": "0c49058d-c08f-4d6b-9b0f-3ca3db43f47c",
+        "name": "elastic-agent-65706",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "axonius": {
         "incident": {
+            "accurate_for_datetime": "2025-12-07T12:02:42.000Z",
             "adapter_list_length": 1,
             "adapters": [
                 "orca_adapter"
             ],
+            "alert_labels": [
+                "easy_exploitation",
+                "fix_available",
+                "mitre: initial access",
+                "remote_code_execution"
+            ],
+            "alert_source": "sshd",
+            "alert_state": {
+                "alert_created_at": "2025-02-17T21:01:22.000Z",
+                "alert_high_since": "2025-02-20T15:09:00.000Z",
+                "alert_last_seen": "2025-03-30T18:30:48.000Z",
+                "alert_orca_score_number": 5.7,
+                "alert_risk_level": "medium",
+                "alert_score": 3,
+                "alert_severity": "hazardous",
+                "alert_status": "open",
+                "alert_status_time": "2025-02-20T15:09:00.000Z"
+            },
+            "alert_type": "Service Vulnerability",
+            "application_and_account_name": "orca/orca-demo",
+            "asset_distribution_major_version": "20",
+            "asset_distribution_name": "Ubuntu",
+            "asset_distribution_version": "20.04",
             "asset_type": "incidents",
+            "description": "The following vulnerabilities were found on service: sshd 8.2p1",
+            "details": "We have found vulnerabilities on service: sshd 8.2p1",
             "event": {
                 "accurate_for_datetime": "2025-12-07T12:02:42.000Z",
                 "adapter_categories": [
@@ -960,50 +996,6 @@ An example event for `incident` looks as following:
                     "VA Tool"
                 ],
                 "client_used": "67fd09bc731ccb5730923102",
-                "data": {
-                    "accurate_for_datetime": "2025-12-07T12:02:42.000Z",
-                    "alert_labels": [
-                        "easy_exploitation",
-                        "fix_available",
-                        "mitre: initial access",
-                        "remote_code_execution"
-                    ],
-                    "alert_source": "sshd",
-                    "alert_state": {
-                        "alert_created_at": "2025-02-17T21:01:22.000Z",
-                        "alert_high_since": "2025-02-20T15:09:00.000Z",
-                        "alert_last_seen": "2025-03-30T18:30:48.000Z",
-                        "alert_orca_score_number": 5.7,
-                        "alert_risk_level": "medium",
-                        "alert_score": 3,
-                        "alert_severity": "hazardous",
-                        "alert_status": "open",
-                        "alert_status_time": "2025-02-20T15:09:00.000Z"
-                    },
-                    "alert_type": "Service Vulnerability",
-                    "application_and_account_name": "orca/orca-demo",
-                    "asset_distribution_major_version": "20",
-                    "asset_distribution_name": "Ubuntu",
-                    "asset_distribution_version": "20.04",
-                    "description": "The following vulnerabilities were found on service: sshd 8.2p1",
-                    "details": "We have found vulnerabilities on service: sshd 8.2p1",
-                    "fetch_time": "2025-12-07T12:02:41.000Z",
-                    "first_fetch_time": "2025-04-14T13:27:14.000Z",
-                    "from_last_fetch": true,
-                    "id": "008f93f11614b34c1604",
-                    "id_raw": "5feaae27-359a-4d78-960c-41b29075cdd7",
-                    "is_fetched_from_adapter": true,
-                    "last_fetch_connection_id": "67fd09bc731ccb5730923102",
-                    "last_fetch_connection_label": "orca-demo",
-                    "not_fetched_count": 0,
-                    "pretty_id": "AX-3129186338",
-                    "recommendation": "Patch the listed packages",
-                    "source_application": "Orca",
-                    "tenant_number": [
-                        "2"
-                    ],
-                    "type": "Incidents"
-                },
                 "initial_plugin_unique_name": "orca_adapter_0",
                 "plugin_name": "orca_adapter",
                 "plugin_type": "Adapter",
@@ -1011,20 +1003,36 @@ An example event for `incident` looks as following:
                 "quick_id": "orca_adapter_0!008f93f11614b34c1604",
                 "type": "entitydata"
             },
+            "fetch_time": "2025-12-07T12:02:41.000Z",
+            "first_fetch_time": "2025-04-14T13:27:14.000Z",
+            "from_last_fetch": true,
+            "id": "008f93f11614b34c1604",
+            "id_raw": "5feaae27-359a-4d78-960c-41b29075cdd7",
             "internal_axon_id": "ba839822a8de6bb63318af3184434ae1",
-            "transform_unique_id": "C/glUmsoIRqZIqJLnK9BZo1KeAI="
+            "is_fetched_from_adapter": true,
+            "last_fetch_connection_id": "67fd09bc731ccb5730923102",
+            "last_fetch_connection_label": "orca-demo",
+            "not_fetched_count": 0,
+            "pretty_id": "AX-3129186338",
+            "recommendation": "Patch the listed packages",
+            "source_application": "Orca",
+            "tenant_number": [
+                "2"
+            ],
+            "transform_unique_id": "C/glUmsoIRqZIqJLnK9BZo1KeAI=",
+            "type": "Incidents"
         }
     },
     "data_stream": {
         "dataset": "axonius.incident",
-        "namespace": "61889",
+        "namespace": "56627",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "25ffad4d-9e2b-477f-a274-43c5a21da3be",
+        "id": "0c49058d-c08f-4d6b-9b0f-3ca3db43f47c",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1033,7 +1041,7 @@ An example event for `incident` looks as following:
         "created": "2025-02-17T21:01:22.000Z",
         "dataset": "axonius.incident",
         "end": "2025-03-30T18:30:48.000Z",
-        "ingested": "2026-02-20T07:20:42Z",
+        "ingested": "2026-03-08T10:35:26Z",
         "kind": "alert",
         "provider": "sshd",
         "reason": "We have found vulnerabilities on service: sshd 8.2p1",

@@ -57,43 +57,55 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_rename_event_data_fields
+      lang: painless
+      description: Renames all event.data.* fields to root level (removes event.data prefix)
+      source: |-
+        if (ctx.axonius?.alert_finding?.event?.data instanceof Map) {
+          Map eventData = ctx.axonius.alert_finding.event.data;
+          for (String key : new ArrayList(eventData.keySet())) {
+            ctx.axonius.alert_finding[key] = eventData[key];
+          }
+          ctx.axonius.alert_finding.event.remove('data');
+        }
   - set:
       field: event.id
-      tag: set_event_id_from_alert_finding_event_data_alert_config_id
-      copy_from: axonius.alert_finding.event.data.alert_config_id
+      tag: set_event_id_from_alert_finding_alert_config_id
+      copy_from: axonius.alert_finding.alert_config_id
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message_from_alert_finding_event_data_finding_message
-      copy_from: axonius.alert_finding.event.data.finding_message
+      tag: set_message_from_alert_finding_finding_message
+      copy_from: axonius.alert_finding.finding_message
       ignore_empty_value: true
   - date:
-      field: axonius.alert_finding.event.data.trigger_date
-      tag: date_event_data_trigger_date
-      target_field: axonius.alert_finding.event.data.trigger_date
+      field: axonius.alert_finding.trigger_date
+      tag: date_trigger_date
+      target_field: axonius.alert_finding.trigger_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.alert_finding?.event?.data?.trigger_date != null && ctx.axonius.alert_finding.event.data.trigger_date != ''
+      if: ctx.axonius?.alert_finding?.trigger_date != null && ctx.axonius.alert_finding.trigger_date != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_alert_finding_event_trigger_date
-      copy_from: axonius.alert_finding.event.data.trigger_date
+      tag: set_@timestamp_from_alert_finding_trigger_date
+      copy_from: axonius.alert_finding.trigger_date
       ignore_empty_value: true
   - set:
       field: axonius.alert_finding.friendly_name
-      tag: set_friendly_name_from_alert_finding_event_data_finding_name
-      copy_from: axonius.alert_finding.event.data.finding_name
+      tag: set_friendly_name_from_alert_finding_finding_name
+      copy_from: axonius.alert_finding.finding_name
       ignore_empty_value: true
   - remove:
       field:
-        - axonius.alert_finding.event.data.finding_message
-        - axonius.alert_finding.event.data.trigger_date
+        - axonius.alert_finding.finding_message
+        - axonius.alert_finding.trigger_date
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')

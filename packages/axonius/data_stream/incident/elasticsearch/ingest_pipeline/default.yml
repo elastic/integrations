@@ -58,6 +58,18 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_rename_event_data_fields
+      lang: painless
+      description: Renames all event.data.* fields to root level (removes event.data prefix)
+      source: |-
+        if (ctx.axonius?.incident?.event?.data instanceof Map) {
+          Map eventData = ctx.axonius.incident.event.data;
+          for (String key : new ArrayList(eventData.keySet())) {
+            ctx.axonius.incident[key] = eventData[key];
+          }
+          ctx.axonius.incident.event.remove('data');
+        }
   - date:
       field: axonius.incident.event.accurate_for_datetime
       tag: date_event_accurate_for_datetime
@@ -77,75 +89,75 @@ processors:
       copy_from: axonius.incident.event.accurate_for_datetime
       ignore_empty_value: true
   - date:
-      field: axonius.incident.event.data.accurate_for_datetime
-      tag: date_event_data_accurate_for_datetime
-      target_field: axonius.incident.event.data.accurate_for_datetime
+      field: axonius.incident.accurate_for_datetime
+      tag: date_accurate_for_datetime
+      target_field: axonius.incident.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.incident?.event?.data?.accurate_for_datetime != null && ctx.axonius.incident.event.data.accurate_for_datetime != ''
+      if: ctx.axonius?.incident?.accurate_for_datetime != null && ctx.axonius.incident.accurate_for_datetime != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.provider
-      tag: set_event_provider_from_incident_event_data_alert_source
-      copy_from: axonius.incident.event.data.alert_source
+      tag: set_event_provider_from_incident_alert_source
+      copy_from: axonius.incident.alert_source
       ignore_empty_value: true
   - date:
-      field: axonius.incident.event.data.alert_state.alert_created_at
-      tag: date_event_data_alert_state_alert_created_at
-      target_field: axonius.incident.event.data.alert_state.alert_created_at
+      field: axonius.incident.alert_state.alert_created_at
+      tag: date_alert_state_alert_created_at
+      target_field: axonius.incident.alert_state.alert_created_at
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.incident?.event?.data?.alert_state?.alert_created_at != null && ctx.axonius.incident.event.data.alert_state.alert_created_at != ''
+      if: ctx.axonius?.incident?.alert_state?.alert_created_at != null && ctx.axonius.incident.alert_state.alert_created_at != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_incident_event_data_alert_state_alert_created_at
-      copy_from: axonius.incident.event.data.alert_state.alert_created_at
+      tag: set_event_created_from_incident_alert_state_alert_created_at
+      copy_from: axonius.incident.alert_state.alert_created_at
       ignore_empty_value: true
   - date:
-      field: axonius.incident.event.data.alert_state.alert_high_since
-      tag: date_event_data_alert_state_alert_high_since
-      target_field: axonius.incident.event.data.alert_state.alert_high_since
+      field: axonius.incident.alert_state.alert_high_since
+      tag: date_alert_state_alert_high_since
+      target_field: axonius.incident.alert_state.alert_high_since
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.incident?.event?.data?.alert_state?.alert_high_since != null && ctx.axonius.incident.event.data.alert_state.alert_high_since != ''
+      if: ctx.axonius?.incident?.alert_state?.alert_high_since != null && ctx.axonius.incident.alert_state.alert_high_since != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: axonius.incident.event.data.alert_state.alert_last_seen
-      tag: date_event_data_alert_state_alert_last_seen
-      target_field: axonius.incident.event.data.alert_state.alert_last_seen
+      field: axonius.incident.alert_state.alert_last_seen
+      tag: date_alert_state_alert_last_seen
+      target_field: axonius.incident.alert_state.alert_last_seen
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.incident?.event?.data?.alert_state?.alert_last_seen != null && ctx.axonius.incident.event.data.alert_state.alert_last_seen != ''
+      if: ctx.axonius?.incident?.alert_state?.alert_last_seen != null && ctx.axonius.incident.alert_state.alert_last_seen != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end_from_incident_event_data_alert_state_alert_last_seen
-      copy_from: axonius.incident.event.data.alert_state.alert_last_seen
+      tag: set_event_end_from_incident_alert_state_alert_last_seen
+      copy_from: axonius.incident.alert_state.alert_last_seen
       ignore_empty_value: true
   - convert:
-      field: axonius.incident.event.data.alert_state.alert_orca_score_number
-      tag: convert_event_data_alert_state_alert_orca_score_number_to_double
+      field: axonius.incident.alert_state.alert_orca_score_number
+      tag: convert_alert_state_alert_orca_score_number_to_double
       type: double
       ignore_missing: true
       on_failure:
@@ -153,8 +165,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: axonius.incident.event.data.alert_state.alert_score
-      tag: convert_event_data_alert_state_alert_score_to_long
+      field: axonius.incident.alert_state.alert_score
+      tag: convert_alert_state_alert_score_to_long
       type: long
       ignore_missing: true
       on_failure:
@@ -163,66 +175,66 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.risk_score
-      tag: set_event_risk_score_from_incident_event_data_alert_state_alert_score
-      copy_from: axonius.incident.event.data.alert_state.alert_score
+      tag: set_event_risk_score_from_incident_alert_state_alert_score
+      copy_from: axonius.incident.alert_state.alert_score
       ignore_empty_value: true
   - date:
-      field: axonius.incident.event.data.alert_state.alert_status_time
-      tag: date_event_data_alert_state_alert_status_time
-      target_field: axonius.incident.event.data.alert_state.alert_status_time
+      field: axonius.incident.alert_state.alert_status_time
+      tag: date_alert_state_alert_status_time
+      target_field: axonius.incident.alert_state.alert_status_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.incident?.event?.data?.alert_state?.alert_status_time != null && ctx.axonius.incident.event.data.alert_state.alert_status_time != ''
+      if: ctx.axonius?.incident?.alert_state?.alert_status_time != null && ctx.axonius.incident.alert_state.alert_status_time != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: axonius.incident.event.data.asset_distribution_major_version
-      tag: convert_event_data_asset_distribution_major_version_into_keyword
+      field: axonius.incident.asset_distribution_major_version
+      tag: convert_asset_distribution_major_version_into_keyword
       type: string
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_incident_event_data_description
-      copy_from: axonius.incident.event.data.description
+      tag: set_message_from_incident_description
+      copy_from: axonius.incident.description
       ignore_empty_value: true
   - set:
       field: event.reason
-      tag: set_event_reason_from_incident_event_data_details
-      copy_from: axonius.incident.event.data.details
+      tag: set_event_reason_from_incident_details
+      copy_from: axonius.incident.details
       ignore_empty_value: true
   - date:
-      field: axonius.incident.event.data.fetch_time
-      tag: date_event_data_fetch_time
-      target_field: axonius.incident.event.data.fetch_time
+      field: axonius.incident.fetch_time
+      tag: date_fetch_time
+      target_field: axonius.incident.fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.incident?.event?.data?.fetch_time != null && ctx.axonius.incident.event.data.fetch_time != ''
+      if: ctx.axonius?.incident?.fetch_time != null && ctx.axonius.incident.fetch_time != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: axonius.incident.event.data.first_fetch_time
-      tag: date_event_data_first_fetch_time
-      target_field: axonius.incident.event.data.first_fetch_time
+      field: axonius.incident.first_fetch_time
+      tag: date_first_fetch_time
+      target_field: axonius.incident.first_fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.incident?.event?.data?.first_fetch_time != null && ctx.axonius.incident.event.data.first_fetch_time != ''
+      if: ctx.axonius?.incident?.first_fetch_time != null && ctx.axonius.incident.first_fetch_time != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: axonius.incident.event.data.from_last_fetch
-      tag: convert_event_data_from_last_fetch_to_boolean
+      field: axonius.incident.from_last_fetch
+      tag: convert_from_last_fetch_to_boolean
       type: boolean
       ignore_missing: true
       on_failure:
@@ -230,8 +242,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: axonius.incident.event.data.is_fetched_from_adapter
-      tag: convert_event_data_is_fetched_from_adapter_to_boolean
+      field: axonius.incident.is_fetched_from_adapter
+      tag: convert_is_fetched_from_adapter_to_boolean
       type: boolean
       ignore_missing: true
       on_failure:
@@ -239,8 +251,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: axonius.incident.event.data.not_fetched_count
-      tag: convert_event_data_not_fetched_count_to_long
+      field: axonius.incident.not_fetched_count
+      tag: convert_not_fetched_count_to_long
       type: long
       ignore_missing: true
       on_failure:
@@ -251,12 +263,12 @@ processors:
   - remove:
       field:
         - axonius.incident.event.accurate_for_datetime
-        - axonius.incident.event.data.alert_source
-        - axonius.incident.event.data.alert_state.alert_created_at
-        - axonius.incident.event.data.alert_state.alert_last_seen
-        - axonius.incident.event.data.alert_state.alert_score
-        - axonius.incident.event.data.description
-        - axonius.incident.event.data.details
+        - axonius.incident.alert_source
+        - axonius.incident.alert_state.alert_created_at
+        - axonius.incident.alert_state.alert_last_seen
+        - axonius.incident.alert_state.alert_score
+        - axonius.incident.description
+        - axonius.incident.details
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
