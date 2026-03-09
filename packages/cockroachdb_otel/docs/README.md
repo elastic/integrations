@@ -6,11 +6,14 @@ The CockroachDB OpenTelemetry assets provide dashboards, alert rules, and SLO te
 
 ## Compatibility
 
-The CockroachDB OpenTelemetry assets have been tested with the OpenTelemetry Prometheus receiver (opentelemetry-collector-contrib).
+The CockroachDB OpenTelemetry assets have been tested with:
 
-CockroachDB versions tested against:
+- OpenTelemetry Collector Contrib `prometheusreceiver` v0.146.0
+- Elastic Distribution of OpenTelemetry (EDOT) Collector v9.2.1
 
-- CockroachDB v22.x, v23.x
+CockroachDB tested against:
+
+- CockroachDB v24.3
 
 ## Requirements
 
