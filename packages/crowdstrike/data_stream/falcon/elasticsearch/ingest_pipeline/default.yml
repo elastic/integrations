@@ -13,6 +13,7 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
@@ -34,16 +35,20 @@ processors:
       target_field: crowdstrike
       on_failure:
         - append:
+            tag: append_error_message_8bb0f55c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_981d9741
       field:
         - host.name
       ignore_missing: true
   - set:
+      tag: set_observer_vendor_c6436b11
       field: observer.vendor
       value: Crowdstrike
   - set:
+      tag: set_observer_product_8aa28b50
       field: observer.product
       value: Falcon
   # Can be both string and int, depending on type, should always be string, field is mapped as keyword
@@ -63,7 +68,7 @@ processors:
         tag: convert-nt-timestamp-to-unix
         description: Convert Windows NT timestamps to UNIX timestamps for multiple fields.
         lang: painless
-        if : ctx.crowdstrike?.event != null
+        if: ctx.crowdstrike?.event != null
         params:
             values:
                 - 'StartTime'
@@ -78,8 +83,8 @@ processors:
                 - 'PrecedingActivityTimeStamp'
                 - 'StartTimestamp'
                 - 'UTCTimestamp'
-# Process to convert LDAP/WIN32 FILETIME to Unix (milliseconds) timestamp.
-# More details can be found here https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 and here https://www.epochconverter.com/ldap
+        # Process to convert LDAP/WIN32 FILETIME to Unix (milliseconds) timestamp.
+        # More details can be found here https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 and here https://www.epochconverter.com/ldap
         source: |
             def convertToUnix(def longValue) {
                 if (longValue > 0x0100000000000000L) {
@@ -106,7 +111,7 @@ processors:
       tag: convert-Tags-and-copy-to-tags
       description: Convert tags from nested type and append to ctx.tags.
       lang: painless
-      if : ctx.crowdstrike?.event?.Tags != null
+      if: ctx.crowdstrike?.event?.Tags != null
       source: |
             if (ctx.crowdstrike.event.Tags instanceof List) {
                 for (tag in ctx.crowdstrike.event.Tags) {
@@ -165,6 +170,7 @@ processors:
   #
   # Leave crowdstrike values in place, since they have their own semantics.
   - script:
+      tag: script_5d52b95d
       lang: painless
       if: ctx.crowdstrike?.event?.SeverityName instanceof String
       source: |-
@@ -245,7 +251,8 @@ processors:
             'executable': args.get(0)
           ]
         }
-  
+
+
   - pipeline:
       name: '{{ IngestPipeline "customer_ioc_event" }}'
       tag: pipeline_customer_ioc_event
@@ -373,10 +380,12 @@ processors:
       tag: fingerprint
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -385,18 +394,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -405,14 +418,16 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-# If `device.id`` is not already mapped inside respective pipelines using SensorId, use `event.DeviceId` to map it.
+  # If `device.id`` is not already mapped inside respective pipelines using SensorId, use `event.DeviceId` to map it.
   - set:
       field: device.id
       copy_from: crowdstrike.event.DeviceId
@@ -422,7 +437,8 @@ processors:
   # This removes any fields that are mapped to ECS, but have not been renamed.
   # This is to prevent the fields from being duplicated in the event.
   - remove:
-      field: 
+      tag: remove_6a6abdd1
+      field:
         - _tmp_
         - crowdstrike.event.Technique
         - crowdstrike.event.TechniqueId

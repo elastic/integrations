@@ -83,7 +83,7 @@ processors:
       tag: rename_pattern_disposition_description
   - rename:
       field: crowdstrike.event.FalconHostLink
-      target_field: event.reference    
+      target_field: event.reference
       ignore_missing: true
       tag: rename_falcon_host_link
   - rename:
@@ -91,12 +91,13 @@ processors:
       target_field: message
       ignore_missing: true
       tag: rename_detect_description
-  - set: 
+  - set:
       field: rule.description
       copy_from: message
       tag: set_rule_description
       if: ctx.message != null
   - set:
+      tag: set_process_name_0cc9dd81
       field: process.name
       copy_from: crowdstrike.event.FileName
       ignore_empty_value: true
@@ -107,22 +108,22 @@ processors:
       tag: rename_machine_domain
   - rename:
       field: crowdstrike.event.ComputerName
-      target_field: host.name     
+      target_field: host.name
       ignore_missing: true
       tag: rename_computer_name
   - rename:
       field: crowdstrike.event.SHA256String
-      target_field: file.hash.sha256    
+      target_field: file.hash.sha256
       ignore_missing: true
       tag: rename_sha256_string
   - rename:
       field: crowdstrike.event.MD5String
-      target_field: file.hash.md5     
+      target_field: file.hash.md5
       ignore_missing: true
       tag: rename_md5_string
   - rename:
       field: crowdstrike.event.SHA1String
-      target_field: file.hash.sha1     
+      target_field: file.hash.sha1
       ignore_missing: true
       tag: rename_sha1_string
   - append:
@@ -174,7 +175,7 @@ processors:
       ignore_missing: true
       tag: uppercase_mac_address
       if: ctx.host?.mac != null
-  - set: 
+  - set:
       field: threat.framework
       value: CrowdStrike Falcon Detections Framework
       tag: set_threat_framework_cs
@@ -183,8 +184,7 @@ processors:
         (ctx.crowdstrike?.event?.TacticId != null && ctx.crowdstrike.event.TacticId.startsWith("CS"))
         || (ctx.crowdstrike?.event?.TechniqueId != null && ctx.crowdstrike.event.TechniqueId.startsWith("CS"))
         || (ctx.crowdstrike?.event?.Tactic != null && ['malware','exploit','post-exploit','machine learning','custom intelligence','falcon overwatch','falcon intel','ai powered ioa','insecure security posture'].contains(ctx.crowdstrike.event.Tactic.toLowerCase()))
-
-  - set: 
+  - set:
       field: threat.framework
       value: MITRE ATT&CK
       override: false
