@@ -23,8 +23,6 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        # Redirect all output (including stderr) to a log file
-        exec > /var/log/workload.log 2>&1
         echo "Check binaries..."
         which docker && which sh
         echo "Waiting for Docker daemon at $DOCKER_HOST..."
@@ -58,4 +56,4 @@ services:
         docker run -d --name stressful alpine sh -c "while true; do sleep 1; echo 'Hello, World!'; done"
         echo "Stressful container running."
         # Keep this container alive
-        tail -f /var/log/workload.log
+        docker logs -f stressful
