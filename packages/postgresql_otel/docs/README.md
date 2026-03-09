@@ -6,7 +6,9 @@ This content pack provides dashboards, alert rules, and SLO templates for Postgr
 
 ## Compatibility
 
-The PostgreSQL OpenTelemetry assets have been tested with OpenTelemetry PostgreSQL receiver v0.145.0.
+The PostgreSQL OpenTelemetry assets have been tested with:
+- OpenTelemetry PostgreSQL receiver v0.145.0
+- PostgreSQL 16.13
 
 ## Requirements
 
