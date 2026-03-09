@@ -130,12 +130,12 @@ Detects potential LotL activity by identifying malicious processes.
 
 | Job | Description |
 |---|---|
-| problem_child_rare_process_by_host_euid | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. |
-| problem_child_high_sum_by_host_euid | Looks for a set of one or more malicious child processes on a single host. |
-| problem_child_rare_process_by_user_euid | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. |
-| problem_child_rare_process_by_parent_euid | Looks for rare malicious child processes spawned by a parent process. |
-| problem_child_high_sum_by_user_euid | Looks for a set of one or more malicious processes, started by the same user. |
-| problem_child_high_sum_by_parent_euid | Looks for a set of one or more malicious child processes spawned by the same parent process. |
+| problem_child_rare_process_by_host_ea | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. |
+| problem_child_high_sum_by_host_ea | Looks for a set of one or more malicious child processes on a single host. |
+| problem_child_rare_process_by_user_ea | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. |
+| problem_child_rare_process_by_parent_ea | Looks for rare malicious child processes spawned by a parent process. |
+| problem_child_high_sum_by_user_ea | Looks for a set of one or more malicious processes, started by the same user. |
+| problem_child_high_sum_by_parent_ea | Looks for a set of one or more malicious child processes spawned by the same parent process. |
 
 ## Customize ML jobs for Living off the Land Attack Detection 
 
@@ -156,19 +156,19 @@ To customize the datafeed query and other settings such as model memory limit, f
 
 ## v3.0.0 and beyond
 
-v3.0.0 of the package introduces Entity Unique IDs (EUIDs) for use with Entity Analytics. This version is available on Elastic Stack version 9.4 and later.
+v3.0.0 of the package introduces Entity Analytics support for Elastic Stack version 9.4, adding new fields for proper entity resolution.
 
-- Previously installed versions of ML jobs and rules will continue to run, giving you time to transition to the new EUID-based assets.
-- On installation of this version, new ML jobs and rules that utilize EUIDs will be available.
+- Previously installed versions of ML jobs and rules will continue to run, giving you time to transition to the new Entity Analytics assets.
+- On installation of this version, new ML jobs and rules that utilize Entity Analytics will be available.
 - We recommend installing the new ML jobs first and check they are properly installed, gathering data and generating anomalies before updating to the latest version of the detection rules provided in 9.4.
 
-The new EUID ML job IDs are:
-- `problem_child_rare_process_by_host_euid`
-- `problem_child_high_sum_by_host_euid`
-- `problem_child_rare_process_by_user_euid`
-- `problem_child_rare_process_by_parent_euid`
-- `problem_child_high_sum_by_user_euid`
-- `problem_child_high_sum_by_parent_euid`
+The new Entity Analytics ML job IDs are:
+- `problem_child_rare_process_by_host_ea`
+- `problem_child_high_sum_by_host_ea`
+- `problem_child_rare_process_by_user_ea`
+- `problem_child_rare_process_by_parent_ea`
+- `problem_child_high_sum_by_user_ea`
+- `problem_child_high_sum_by_parent_ea`
 
 ## v2.0.0 and beyond
 

@@ -1,10 +1,10 @@
 
 dest:
-  index: ml_network_ded_euid-3.0.0
+  index: ml_network_ded_ea-3.0.0
   aliases:
-    - alias: ml_network_ded_euid.latest
+    - alias: ml_network_ded_ea.latest
       move_on_creation: true
-    - alias: ml_network_ded_euid.all
+    - alias: ml_network_ded_ea.all
       move_on_creation: false
   pipeline: 3.0.0-ml_ded_ingest_pipeline
 description: This transform runs every 30 minutes and collects network logs to detect data exfiltration in your environment for the past month up to the runtime.
@@ -18,14 +18,15 @@ pivot:
       avg:
         field: source.bytes
   group_by:
-    'host.entity.id_computed':
+    'host.name':
       terms:
-        script:
-          id: euid_host_entity
-    'user.entity.id_computed':
+        field: host.name
+    'user.name':
       terms:
-        script:
-          id: euid_user_entity
+        field: user.name
+    event.module:
+      terms:
+        field: event.module
     'network.direction':
       terms:
         field: network.direction

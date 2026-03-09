@@ -20,11 +20,11 @@ source:
         - terms:
             '_tier': [ "data_cold", "data_frozen" ]
 dest:
-  index: ml_windows_privilege_type_pad_euid-2.0.0
+  index: ml_windows_privilege_type_pad_ea-2.0.0
   aliases:
-    - alias: ml_windows_privilege_type_pad_euid.latest
+    - alias: ml_windows_privilege_type_pad_ea.latest
       move_on_creation: true
-    - alias: ml_windows_privilege_type_pad_euid.all
+    - alias: ml_windows_privilege_type_pad_ea.all
       move_on_creation: false
 description: This transform runs hourly and collects special privileges assigned to a user in the Windows events for the Privileged Access Detection package.
 frequency: 1h
@@ -34,14 +34,18 @@ pivot:
       max:
         field: '@timestamp'
   group_by:
-    'host.entity.id_computed':
+    agent.name:
       terms:
-        script:
-          id: euid_host_entity
-    'user.entity.id_computed':
+        field: agent.name
+    'host.name':
       terms:
-        script:
-          id: euid_user_entity
+        field: host.name
+    'user.name':
+      terms:
+        field: user.name
+    event.module:
+      terms:
+        field: event.module
     'privilege_type':
       terms:
         field: winlog.event_data.PrivilegeList

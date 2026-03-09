@@ -29,7 +29,7 @@ source:
           script:
             source: "if (doc['host.ip'].size() != 0){emit(doc['host.ip'][0]);}"
 dest:
-  index: "ml-rdp-lmd_euid"
+  index: "ml-rdp-lmd_ea"
 description: This transform runs hourly and collects windows RDP session information for Lateral Movement Detection package.
 frequency: 1h
 pivot:
@@ -53,17 +53,18 @@ pivot:
           complete_time: session.complete_time.value
         script: Math.round((params.complete_time - params.start_time)/1000)
   group_by:
-    'host.entity.id_computed':
+    'host.name':
       terms:
-        script:
-          id: euid_host_entity
+        field: host.name
     'destination.ip':
       terms:
         field: destination.ip
-    'user.entity.id_computed':
+    'user.name':
       terms:
-        script:
-          id: euid_user_entity
+        field: user.name
+    event.module:
+      terms:
+        field: event.module
     'source.ip':
       terms:
         field: process.Ext.session_info.client_address

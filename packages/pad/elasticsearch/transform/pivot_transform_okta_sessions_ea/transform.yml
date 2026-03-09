@@ -18,11 +18,11 @@ source:
         - terms:
             '_tier': [ "data_cold", "data_frozen" ]
 dest:
-  index: ml_okta_multiple_user_sessions_pad_euid-2.0.0
+  index: ml_okta_multiple_user_sessions_pad_ea-2.0.0
   aliases:
-    - alias: ml_okta_multiple_user_sessions_pad_euid.latest
+    - alias: ml_okta_multiple_user_sessions_pad_ea.latest
       move_on_creation: true
-    - alias: ml_okta_multiple_user_sessions_pad_euid.all
+    - alias: ml_okta_multiple_user_sessions_pad_ea.all
       move_on_creation: false
 description: This transform runs hourly and collects user session information for Okta events for the Privileged Access Detection package.
 frequency: 1h
@@ -39,10 +39,12 @@ pivot:
         term:
           'okta.event_type': "user.session.end"
   group_by:
-    'user.entity.id_computed':
+    'user.name':
       terms:
-        script:
-          id: euid_user_entity
+        field: user.name
+    event.module:
+      terms:
+        field: event.module
     'agent.name':
       terms:
         field: agent.name

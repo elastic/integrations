@@ -86,7 +86,7 @@ For more detailed information refer to the following blogs:
 
 | Job | Description |
 |---|---|
-| dga_high_sum_probability_euid | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.| 
+| dga_high_sum_probability_ea | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.| 
 
 ## Customize ML jobs for Domain Generation Algorithm Detection 
 
@@ -107,14 +107,14 @@ To customize the datafeed query and other settings such as model memory limit, f
 
 ## v3.0.0 and beyond
 
-v3.0.0 of the package introduces Entity Unique IDs (EUIDs) for use with Entity Analytics. This version is available on Elastic Stack version 9.4 and later.
+v3.0.0 of the package introduces Entity Analytics support for Elastic Stack version 9.4, adding new fields for proper entity resolution.
 
-- Previously installed versions of ML jobs and rules will continue to run, giving you time to transition to the new EUID-based assets.
-- On installation of this version, new ML jobs and rules that utilize EUIDs will be available.
+- Previously installed versions of ML jobs and rules will continue to run, giving you time to transition to the new Entity Analytics assets.
+- On installation of this version, new ML jobs and rules that utilize Entity Analytics will be available.
 - We recommend installing the new ML jobs first and check they are properly installed, gathering data and generating anomalies before updating to the latest version of the detection rules provided in 9.4.
 
-The new EUID ML job IDs are:
-- `dga_high_sum_probability_euid`
+The new Entity Analytics ML job IDs are:
+- `dga_high_sum_probability_ea`
 
 ## v2.0.0 and beyond
 
