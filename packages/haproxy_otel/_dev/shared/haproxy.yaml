@@ -1,0 +1,1260 @@
+# HAProxy monitoring dashboards — layered drill-down from overview to frontend, backend, and server.
+# Index: metrics-haproxyreceiver.otel-*
+# For ES superusers and administrators of large production clusters.
+
+dashboards:
+  # ─── Overview ─────────────────────────────────────────────────────────
+  - id: haproxy_otel-overview
+    name: '[HAProxy OTel] Overview'
+    description: Top-level health across all proxies — error rates, traffic volume, latency summary, session saturation, server availability.
+    filters:
+      - field: data_stream.dataset
+        equals: haproxyreceiver.otel
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    controls:
+      - type: options
+        label: Proxy
+        data_view: metrics-*
+        field: haproxy.proxy_name
+      - type: options
+        label: HAProxy Instance
+        data_view: metrics-*
+        field: haproxy.addr
+    panels:
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: haproxy_otel-overview
+            - label: Frontend
+              dashboard: haproxy_otel-frontend
+            - label: Backend
+              dashboard: haproxy_otel-backend
+            - label: Server
+              dashboard: haproxy_otel-server
+
+      - hide_title: true
+        size: {w: 12, h: 8}
+        markdown:
+          content: |
+            ## [HAProxy OTel] Overview
+
+            Top-level health across all HAProxy proxies:
+            - Request rate and traffic volume
+            - Error rates (connection, request, response)
+            - Latency summary (response time, session time)
+            - Session saturation and capacity headroom
+            - Backend server availability
+
+      - title: Total Request Rate
+        hide_title: true
+        size: {w: 12, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.requests.total IS NOT NULL
+            - STATS req_rate = SUM(RATE(haproxy.requests.total))
+          primary:
+            field: req_rate
+            label: req/s
+            format:
+              type: number
+              decimals: 1
+              suffix: "/s"
+
+      - title: Connection Rate
+        hide_title: true
+        size: {w: 12, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.connections.rate IS NOT NULL
+            - STATS conn_rate = AVG(haproxy.connections.rate)
+          primary:
+            field: conn_rate
+            label: conn/s
+            format:
+              type: number
+              decimals: 1
+              suffix: "/s"
+
+      - title: Error Rate (Request + Response + Connection)
+        hide_title: true
+        size: {w: 12, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - STATS req_e = SUM(RATE(haproxy.requests.errors)), resp_e = SUM(RATE(haproxy.responses.errors)), conn_e = SUM(RATE(haproxy.connections.errors))
+            - EVAL err_rate = COALESCE(req_e, 0) + COALESCE(resp_e, 0) + COALESCE(conn_e, 0)
+          primary:
+            field: err_rate
+            label: errors/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Avg Response Time
+        hide_title: true
+        size: {w: 12, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.responses.average_time IS NOT NULL
+            - STATS avg_rt = AVG(AVG_OVER_TIME(haproxy.responses.average_time))
+          primary:
+            field: avg_rt
+            label: ms
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+
+      - title: Active Sessions
+        hide_title: true
+        size: {w: 12, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.sessions.count IS NOT NULL
+            - STATS sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count))
+          primary:
+            field: sessions
+            label: sessions
+            format:
+              type: number
+              compact: true
+
+      - title: Active Backend Servers
+        hide_title: true
+        size: {w: 12, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND" AND haproxy.active IS NOT NULL
+            - STATS active = SUM(LAST_OVER_TIME(haproxy.active))
+          primary:
+            field: active
+            label: servers
+            format:
+              type: number
+              decimals: 0
+
+      - title: Requests by Status Code Over Time
+        size: {w: 48, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL
+            - STATS requests = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.status_code
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: requests
+              label: Requests/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.status_code
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "2xx"
+                color: '#54B399'
+              - value: "3xx"
+                color: '#6DCCB1'
+              - value: "4xx"
+                color: '#D6BF57'
+              - value: "5xx"
+                color: '#E7664C'
+              - value: "1xx"
+                color: '#79AAD9'
+              - value: "other"
+                color: '#DDDDDD'
+          legend:
+            visible: show
+            position: right
+
+      - title: Error Rates Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - STATS req_err = SUM(RATE(haproxy.requests.errors)), resp_err = SUM(RATE(haproxy.responses.errors)), conn_err = SUM(RATE(haproxy.connections.errors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL req_err = COALESCE(req_err, 0)
+            - EVAL resp_err = COALESCE(resp_err, 0)
+            - EVAL conn_err = COALESCE(conn_err, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: req_err
+              label: Request errors/s
+              format:
+                type: number
+                decimals: 2
+            - field: resp_err
+              label: Response errors/s
+              format:
+                type: number
+                decimals: 2
+            - field: conn_err
+              label: Connection errors/s
+              format:
+                type: number
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+
+      - title: Session Saturation (Current / Limit)
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.sessions.count IS NOT NULL
+            - STATS sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: sessions
+              label: Active sessions
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: Latency Over Time (Response & Session Avg)
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.responses.average_time IS NOT NULL OR haproxy.sessions.average IS NOT NULL
+            - STATS resp_time = AVG(AVG_OVER_TIME(haproxy.responses.average_time)), sess_time = AVG(AVG_OVER_TIME(haproxy.sessions.average)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: resp_time
+              label: Response avg (ms)
+              format:
+                type: number
+                decimals: 1
+            - field: sess_time
+              label: Session avg (ms)
+              format:
+                type: number
+                decimals: 1
+          legend:
+            visible: show
+            position: right
+
+      - title: Bytes Throughput Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL
+            - STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL bytes_in = COALESCE(bytes_in, 0)
+            - EVAL bytes_out = COALESCE(bytes_out, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: bytes_in
+              label: Bytes in/s
+              format:
+                type: bytes
+            - field: bytes_out
+              label: Bytes out/s
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      - title: Top Proxies by Request Rate
+        size: {w: 24, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.requests.total IS NOT NULL
+            - STATS req_rate = SUM(RATE(haproxy.requests.total)) BY haproxy.proxy_name, haproxy.service_name
+            - WHERE haproxy.service_name == "FRONTEND" OR haproxy.service_name == "BACKEND"
+            - SORT req_rate DESC
+            - LIMIT 20
+          dimensions:
+            - field: haproxy.proxy_name
+              label: Proxy
+            - field: haproxy.service_name
+              label: Type
+          metrics:
+            - field: req_rate
+              label: Requests/s
+              format:
+                type: number
+                decimals: 1
+          paging:
+            enabled: true
+            page_size: 10
+
+  # ─── Frontend ────────────────────────────────────────────────────────
+  - id: haproxy_otel-frontend
+    name: '[HAProxy OTel] Frontend'
+    description: Per-frontend request rates, connection rates, session utilisation, bytes throughput, request errors, denied requests, and status code distribution.
+    filters:
+      - field: data_stream.dataset
+        equals: haproxyreceiver.otel
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    controls:
+      - type: options
+        label: Proxy (Frontend)
+        data_view: metrics-*
+        field: haproxy.proxy_name
+      - type: options
+        label: HAProxy Instance
+        data_view: metrics-*
+        field: haproxy.addr
+    panels:
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: haproxy_otel-overview
+            - label: Frontend
+              dashboard: haproxy_otel-frontend
+            - label: Backend
+              dashboard: haproxy_otel-backend
+            - label: Server
+              dashboard: haproxy_otel-server
+
+      - hide_title: true
+        size: {w: 12, h: 8}
+        markdown:
+          content: |
+            ## [HAProxy OTel] Frontend
+
+            Per-frontend metrics for client-facing listeners:
+            - Request and connection rates
+            - Session utilisation and bytes throughput
+            - Request errors and denied requests
+            - HTTP status code distribution
+
+      - title: Request Rate
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.total IS NOT NULL
+            - STATS req_rate = SUM(RATE(haproxy.requests.total))
+          primary:
+            field: req_rate
+            label: req/s
+            format:
+              type: number
+              decimals: 1
+              suffix: "/s"
+
+      - title: Connection Rate
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND haproxy.connections.rate IS NOT NULL
+            - STATS conn_rate = AVG(haproxy.connections.rate)
+          primary:
+            field: conn_rate
+            label: conn/s
+            format:
+              type: number
+              decimals: 1
+              suffix: "/s"
+
+      - title: Request Errors
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.errors IS NOT NULL
+            - STATS err_rate = SUM(RATE(haproxy.requests.errors))
+          primary:
+            field: err_rate
+            label: errors/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Denied Requests
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.denied IS NOT NULL
+            - STATS denied = SUM(RATE(haproxy.requests.denied))
+          primary:
+            field: denied
+            label: denied/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Request Rate by Frontend Over Time
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.total IS NOT NULL
+            - STATS req_rate = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: req_rate
+              label: Requests/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Connection Rate by Frontend Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND haproxy.connections.rate IS NOT NULL
+            - STATS conn_rate = AVG(haproxy.connections.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: conn_rate
+              label: Connections/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Status Code Distribution
+        size: {w: 24, h: 12}
+        esql:
+          type: pie
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL
+            - STATS requests = SUM(RATE(haproxy.requests.total)) BY attributes.status_code
+            - SORT requests DESC
+            - LIMIT 6
+          metrics:
+            - field: requests
+          dimensions:
+            - field: attributes.status_code
+              label: Status Code
+          appearance:
+            donut: medium
+          legend:
+            visible: show
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "2xx"
+                color: '#54B399'
+              - value: "3xx"
+                color: '#6DCCB1'
+              - value: "4xx"
+                color: '#D6BF57'
+              - value: "5xx"
+                color: '#E7664C'
+
+      - title: Bytes Throughput by Frontend
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND (haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL)
+            - STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - EVAL bytes_in = COALESCE(bytes_in, 0)
+            - EVAL bytes_out = COALESCE(bytes_out, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: bytes_in
+              label: Bytes in/s
+              format:
+                type: bytes
+            - field: bytes_out
+              label: Bytes out/s
+              format:
+                type: bytes
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Request Errors by Frontend Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.errors IS NOT NULL
+            - STATS err_rate = SUM(RATE(haproxy.requests.errors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: err_rate
+              label: Errors/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Frontend Summary Table
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "FRONTEND"
+            - STATS req_rate = SUM(RATE(haproxy.requests.total)), conn_rate = AVG(haproxy.connections.rate), err_rate = SUM(RATE(haproxy.requests.errors)), denied_rate = SUM(RATE(haproxy.requests.denied)), sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY haproxy.proxy_name, haproxy.addr
+            - SORT req_rate DESC
+            - LIMIT 50
+          dimensions:
+            - field: haproxy.proxy_name
+              label: Proxy
+            - field: haproxy.addr
+              label: Instance
+          metrics:
+            - field: req_rate
+              label: Req/s
+              format:
+                type: number
+                decimals: 1
+            - field: conn_rate
+              label: Conn/s
+              format:
+                type: number
+                decimals: 1
+            - field: err_rate
+              label: Errors/s
+              format:
+                type: number
+                decimals: 2
+            - field: denied_rate
+              label: Denied/s
+              format:
+                type: number
+                decimals: 2
+            - field: sessions
+              label: Sessions
+              format:
+                type: number
+                decimals: 0
+          paging:
+            enabled: true
+            page_size: 10
+
+  # ─── Backend ─────────────────────────────────────────────────────────
+  - id: haproxy_otel-backend
+    name: '[HAProxy OTel] Backend'
+    description: Per-backend aggregate latency, error breakdown, session saturation, server selection distribution, retries, and redispatches.
+    filters:
+      - field: data_stream.dataset
+        equals: haproxyreceiver.otel
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    controls:
+      - type: options
+        label: Proxy (Backend)
+        data_view: metrics-*
+        field: haproxy.proxy_name
+      - type: options
+        label: HAProxy Instance
+        data_view: metrics-*
+        field: haproxy.addr
+    panels:
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: haproxy_otel-overview
+            - label: Frontend
+              dashboard: haproxy_otel-frontend
+            - label: Backend
+              dashboard: haproxy_otel-backend
+            - label: Server
+              dashboard: haproxy_otel-server
+
+      - hide_title: true
+        size: {w: 12, h: 8}
+        markdown:
+          content: |
+            ## [HAProxy OTel] Backend
+
+            Per-backend aggregate metrics for server pools:
+            - Latency (connection, queue, response, session time)
+            - Error breakdown (connection, response, denied)
+            - Session saturation and server selection
+            - Retries and redispatches
+
+      - title: Active Servers
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND" AND haproxy.active IS NOT NULL
+            - STATS active = SUM(LAST_OVER_TIME(haproxy.active))
+          primary:
+            field: active
+            label: servers
+            format:
+              type: number
+              decimals: 0
+
+      - title: Connection Errors/s
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND" AND haproxy.connections.errors IS NOT NULL
+            - STATS conn_err = SUM(RATE(haproxy.connections.errors))
+          primary:
+            field: conn_err
+            label: errors/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Response Errors/s
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND" AND haproxy.responses.errors IS NOT NULL
+            - STATS resp_err = SUM(RATE(haproxy.responses.errors))
+          primary:
+            field: resp_err
+            label: errors/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Retries + Redispatches/s
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND"
+            - STATS retries = SUM(RATE(haproxy.connections.retries)), redispatches = SUM(RATE(haproxy.requests.redispatched))
+            - EVAL total = COALESCE(retries, 0) + COALESCE(redispatches, 0)
+          primary:
+            field: total
+            label: retries+redis/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Latency by Backend Over Time
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND" AND (haproxy.responses.average_time IS NOT NULL OR haproxy.sessions.average IS NOT NULL OR haproxy.connections.average_time IS NOT NULL OR haproxy.requests.average_time IS NOT NULL)
+            - STATS resp_time = AVG(AVG_OVER_TIME(haproxy.responses.average_time)), sess_time = AVG(AVG_OVER_TIME(haproxy.sessions.average)), conn_time = AVG(AVG_OVER_TIME(haproxy.connections.average_time)), queue_time = AVG(AVG_OVER_TIME(haproxy.requests.average_time)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: resp_time
+              label: Response (ms)
+              format:
+                type: number
+                decimals: 1
+            - field: sess_time
+              label: Session (ms)
+              format:
+                type: number
+                decimals: 1
+            - field: conn_time
+              label: Connect (ms)
+              format:
+                type: number
+                decimals: 1
+            - field: queue_time
+              label: Queue (ms)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Error Breakdown by Backend Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND"
+            - STATS conn_err = SUM(RATE(haproxy.connections.errors)), resp_err = SUM(RATE(haproxy.responses.errors)), denied = SUM(RATE(haproxy.responses.denied)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - EVAL conn_err = COALESCE(conn_err, 0)
+            - EVAL resp_err = COALESCE(resp_err, 0)
+            - EVAL denied = COALESCE(denied, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: conn_err
+              label: Connection errors/s
+              format:
+                type: number
+                decimals: 2
+            - field: resp_err
+              label: Response errors/s
+              format:
+                type: number
+                decimals: 2
+            - field: denied
+              label: Denied/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Server Selection Rate by Backend
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND" AND haproxy.server_selected.total IS NOT NULL
+            - STATS selections = SUM(RATE(haproxy.server_selected.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: selections
+              label: Selections/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Session Saturation by Backend
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND" AND haproxy.sessions.count IS NOT NULL
+            - STATS sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: sessions
+              label: Active sessions
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Retries and Redispatches by Backend
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND"
+            - STATS retries = SUM(RATE(haproxy.connections.retries)), redispatches = SUM(RATE(haproxy.requests.redispatched)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+            - EVAL retries = COALESCE(retries, 0)
+            - EVAL redispatches = COALESCE(redispatches, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: retries
+              label: Retries/s
+              format:
+                type: number
+                decimals: 2
+            - field: redispatches
+              label: Redispatches/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: haproxy.proxy_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Backend Summary Table
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name == "BACKEND"
+            - STATS active = SUM(LAST_OVER_TIME(haproxy.active)), req_rate = SUM(RATE(haproxy.requests.total)), resp_time = AVG(AVG_OVER_TIME(haproxy.responses.average_time)), conn_err = SUM(RATE(haproxy.connections.errors)), resp_err = SUM(RATE(haproxy.responses.errors)), retries = SUM(RATE(haproxy.connections.retries)), redispatches = SUM(RATE(haproxy.requests.redispatched)), sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY haproxy.proxy_name, haproxy.addr
+            - SORT req_rate DESC
+            - LIMIT 50
+          dimensions:
+            - field: haproxy.proxy_name
+              label: Backend
+            - field: haproxy.addr
+              label: Instance
+          metrics:
+            - field: active
+              label: Active
+              format:
+                type: number
+                decimals: 0
+            - field: req_rate
+              label: Req/s
+              format:
+                type: number
+                decimals: 1
+            - field: resp_time
+              label: Resp ms
+              format:
+                type: number
+                decimals: 1
+            - field: conn_err
+              label: Conn err/s
+              format:
+                type: number
+                decimals: 2
+            - field: resp_err
+              label: Resp err/s
+              format:
+                type: number
+                decimals: 2
+            - field: retries
+              label: Retries/s
+              format:
+                type: number
+                decimals: 2
+            - field: redispatches
+              label: Redis/s
+              format:
+                type: number
+                decimals: 2
+            - field: sessions
+              label: Sessions
+              format:
+                type: number
+                decimals: 0
+          paging:
+            enabled: true
+            page_size: 10
+
+  # ─── Server ──────────────────────────────────────────────────────────
+  - id: haproxy_otel-server
+    name: '[HAProxy OTel] Server'
+    description: Per-server health, latency, error rates, failed health checks, downtime, sessions, and throughput. Compare across servers within a backend.
+    filters:
+      - field: data_stream.dataset
+        equals: haproxyreceiver.otel
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    controls:
+      - type: options
+        label: Proxy (Backend)
+        data_view: metrics-*
+        field: haproxy.proxy_name
+      - type: options
+        label: HAProxy Instance
+        data_view: metrics-*
+        field: haproxy.addr
+    panels:
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: haproxy_otel-overview
+            - label: Frontend
+              dashboard: haproxy_otel-frontend
+            - label: Backend
+              dashboard: haproxy_otel-backend
+            - label: Server
+              dashboard: haproxy_otel-server
+
+      - hide_title: true
+        size: {w: 12, h: 8}
+        markdown:
+          content: |
+            ## [HAProxy OTel] Server
+
+            Per-server metrics for backend pool members:
+            - Health (active/backup, weight)
+            - Latency and error rates
+            - Failed health checks and downtime
+            - Sessions and throughput comparison
+
+      - title: Active Servers
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND" AND haproxy.active IS NOT NULL
+            - STATS active = SUM(LAST_OVER_TIME(haproxy.active))
+          primary:
+            field: active
+            label: active
+            format:
+              type: number
+              decimals: 0
+
+      - title: Servers with Failed Checks
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND" AND haproxy.failed_checks IS NOT NULL
+            - STATS failed = SUM(RATE(haproxy.failed_checks))
+          primary:
+            field: failed
+            label: failed checks/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Response Errors/s
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND" AND haproxy.responses.errors IS NOT NULL
+            - STATS err_rate = SUM(RATE(haproxy.responses.errors))
+          primary:
+            field: err_rate
+            label: errors/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Client Cancellations/s
+        hide_title: true
+        size: {w: 18, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND" AND haproxy.clients.canceled IS NOT NULL
+            - STATS canceled = SUM(RATE(haproxy.clients.canceled))
+          primary:
+            field: canceled
+            label: canceled/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Response Time by Server Over Time
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND" AND haproxy.responses.average_time IS NOT NULL
+            - STATS resp_time = AVG(AVG_OVER_TIME(haproxy.responses.average_time)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name, haproxy.service_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: resp_time
+              label: Response (ms)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: haproxy.service_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Server Selection Distribution
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: unstacked
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND" AND haproxy.server_selected.total IS NOT NULL
+            - STATS selections = SUM(RATE(haproxy.server_selected.total)) BY haproxy.proxy_name, haproxy.service_name
+            - SORT selections DESC
+            - LIMIT 15
+          dimension:
+            field: haproxy.service_name
+            label: Server
+          metrics:
+            - field: selections
+              label: Selections/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: haproxy.proxy_name
+
+      - title: Error Rates by Server
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: unstacked
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND"
+            - STATS conn_err = SUM(RATE(haproxy.connections.errors)), resp_err = SUM(RATE(haproxy.responses.errors)), retries = SUM(RATE(haproxy.connections.retries)) BY haproxy.proxy_name, haproxy.service_name
+            - EVAL conn_err = COALESCE(conn_err, 0)
+            - EVAL resp_err = COALESCE(resp_err, 0)
+            - EVAL retries = COALESCE(retries, 0)
+            - EVAL total_err = conn_err + resp_err + retries
+            - SORT total_err DESC
+            - LIMIT 15
+          dimension:
+            field: haproxy.service_name
+            label: Server
+          metrics:
+            - field: conn_err
+              label: Conn err/s
+              format:
+                type: number
+                decimals: 2
+            - field: resp_err
+              label: Resp err/s
+              format:
+                type: number
+                decimals: 2
+            - field: retries
+              label: Retries/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: haproxy.proxy_name
+
+      - title: Sessions by Server Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND" AND haproxy.sessions.count IS NOT NULL
+            - STATS sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name, haproxy.service_name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: sessions
+              label: Sessions
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: haproxy.service_name
+          legend:
+            visible: show
+            position: right
+
+      - title: Server Detail Table
+        size: {w: 48, h: 18}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-haproxyreceiver.otel-*
+            - WHERE haproxy.service_name != "FRONTEND" AND haproxy.service_name != "BACKEND"
+            - STATS active = SUM(LAST_OVER_TIME(haproxy.active)), weight = AVG(LAST_OVER_TIME(haproxy.weight)), resp_time = AVG(AVG_OVER_TIME(haproxy.responses.average_time)), conn_err = SUM(RATE(haproxy.connections.errors)), resp_err = SUM(RATE(haproxy.responses.errors)), failed_checks = SUM(RATE(haproxy.failed_checks)), selections = SUM(RATE(haproxy.server_selected.total)), sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY haproxy.proxy_name, haproxy.service_name, haproxy.addr
+            - SORT selections DESC
+            - LIMIT 100
+          dimensions:
+            - field: haproxy.proxy_name
+              label: Backend
+            - field: haproxy.service_name
+              label: Server
+            - field: haproxy.addr
+              label: Instance
+          metrics:
+            - field: active
+              label: Active
+              format:
+                type: number
+                decimals: 0
+            - field: weight
+              label: Weight
+              format:
+                type: number
+                decimals: 0
+            - field: resp_time
+              label: Resp ms
+              format:
+                type: number
+                decimals: 1
+            - field: conn_err
+              label: Conn err/s
+              format:
+                type: number
+                decimals: 2
+            - field: resp_err
+              label: Resp err/s
+              format:
+                type: number
+                decimals: 2
+            - field: failed_checks
+              label: Failed chk/s
+              format:
+                type: number
+                decimals: 2
+            - field: selections
+              label: Selections/s
+              format:
+                type: number
+                decimals: 1
+            - field: sessions
+              label: Sessions
+              format:
+                type: number
+                decimals: 0
+          paging:
+            enabled: true
+            page_size: 15
