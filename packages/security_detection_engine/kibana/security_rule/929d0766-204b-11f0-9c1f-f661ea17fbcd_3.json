@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects potentially suspicious OAuth authorization activity in Microsoft 365 where first-party Microsoft applications from the FOCI (Family of Client IDs) group request access to Microsoft Graph or legacy Azure AD resources. Developer tools like Azure CLI, Visual Studio Code, and Azure PowerShell accessing these resources are flagged, as they are commonly abused in phishing campaigns like ConsentFix. Additionally, any FOCI family application accessing the deprecated Windows Azure Active Directory resource is flagged since this API is rarely used legitimately and attackers target it for stealth. First-party apps are trusted by default in all tenants and cannot be blocked, making them ideal for OAuth phishing attacks.",
+        "from": "now-25m",
+        "index": [
+            "logs-o365.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "M365 Identity OAuth Phishing via First-Party Microsoft Application",
+        "note": "## Triage and analysis\n\n### Investigating M365 Identity OAuth Phishing via First-Party Microsoft Application\n\nThis rule detects OAuth authorization activity where FOCI (Family of Client IDs) applications access Microsoft Graph or legacy Azure AD resources. Adversaries exploit these trusted first-party apps in phishing campaigns like ConsentFix to steal authorization codes and exchange them for tokens from attacker infrastructure. The rule specifically looks for `OAuth2:Authorize` requests with `Redirect` status, which indicates the user was redirected after authorization and the OAuth code was exposed.\n\nThe rule uses split detection logic: developer tools (Azure CLI, VSCode, PowerShell) accessing either Graph or legacy AAD are flagged, while any FOCI app accessing legacy AAD is flagged since this deprecated API is rarely used legitimately and attackers target it for stealth.\n\n### Possible investigation steps\n\n- Review `o365.audit.UserId` to identify the impacted account and validate whether the user expected to authorize the application.\n- Check `o365.audit.ActorIpAddress` for unexpected IPs, especially outside corporate ranges or from proxy/VPN networks.\n- Examine `user_agent.original` and `o365.audit.DeviceProperties` for suspicious patterns (automation tools, headless browsers, unusual browser/OS combinations).\n- Confirm `o365.audit.Target.ID` to identify the resource being accessed. Legacy AAD (`00000002-0000-0000-c000-000000000000`) access is unusual for most users.\n- Review `o365.audit.ExtendedProperties.RequestType` and `ResultStatusDetail` - `OAuth2:Authorize` with `Redirect` indicates the OAuth code was exposed to the user.\n- Look for subsequent `OAuth2:Token` events from different IPs using the same `o365.audit.UserId`, which indicates token exchange from attacker infrastructure.\n- Pivot to `azure.graphactivitylogs` to check for follow-up Graph API activity (mailbox enumeration, file access) from unfamiliar locations.\n- Correlate with `azure.signinlogs` for additional sign-in context and device details.\n\n### False positive analysis\n\n- Developers or IT users intentionally using Visual Studio Code, Azure CLI, or Azure PowerShell to connect to Microsoft 365.\n- Legitimate VS Code extensions that sync or query Graph API data (calendars, tasks, cloud-hosted notebooks).\n- Enterprise automation or CI/CD pipelines using these tools with user-delegated permissions.\n- Exclude known user agents and hosts that regularly use these applications against Graph.\n- Whitelist specific source IPs or devices tied to developer machines.\n\n### Response and remediation\n\n- Contact the user to confirm if they expected this login or may have shared an OAuth code via phishing page, Signal, or WhatsApp.\n- If unauthorized, revoke all refresh tokens for the user and reset credentials.\n- Review recent Microsoft Graph activity (email, file access, Teams) for signs of data exfiltration.\n- Block or restrict future use of OAuth tokens from unknown apps or IPs via Conditional Access.\n- Check `azure.auditlogs` for device registration events and remove any unauthorized registrations.\n- Educate users about OAuth phishing techniques and the risks of sharing authorization codes.\n",
+        "query": "event.dataset: \"o365.audit\"\n    and event.action: \"UserLoggedIn\"\n    and o365.audit.ExtendedProperties.RequestType: \"OAuth2:Authorize\"\n    and o365.audit.ExtendedProperties.ResultStatusDetail: \"Redirect\"\n    and o365.audit.UserType: (\"0\" or \"2\" or \"3\" or \"5\" or \"6\" or \"10\")\n    and (\n        (\n            o365.audit.ApplicationId: (\n                \"aebc6443-996d-45c2-90f0-388ff96faa56\" or\n                \"04b07795-8ddb-461a-bbee-02f9e1bf7b46\" or\n                \"1950a258-227b-4e31-a9cf-717495945fc2\"\n            )\n            and o365.audit.Target.ID: (\n                \"00000003-0000-0000-c000-000000000000\" or\n                \"00000002-0000-0000-c000-000000000000\"\n            )\n        ) or\n        (\n            o365.audit.ApplicationId: (\n                \"00b41c95-dab0-4487-9791-b9d2c32c80f2\" or\n                \"1fec8e78-bce4-4aaf-ab1b-5451cc387264\" or\n                \"26a7ee05-5602-4d76-a7ba-eae8b7b67941\" or\n                \"27922004-5251-4030-b22d-91ecd9a37ea4\" or\n                \"4813382a-8fa7-425e-ab75-3b753aab3abb\" or\n                \"ab9b8c07-8f02-4f72-87fa-80105867a763\" or\n                \"d3590ed6-52b3-4102-aeff-aad2292ab01c\" or\n                \"872cd9fa-d31f-45e0-9eab-6e460a02d1f1\" or\n                \"af124e86-4e96-495a-b70a-90f90ab96707\" or\n                \"2d7f3606-b07d-41d1-b9d2-0d0c9296a6e8\" or\n                \"844cca35-0656-46ce-b636-13f48b0eecbd\" or\n                \"87749df4-7ccf-48f8-aa87-704bad0e0e16\" or\n                \"cf36b471-5b44-428c-9ce7-313bf84528de\" or\n                \"0ec893e0-5785-4de6-99da-4ed124e5296c\" or\n                \"22098786-6e16-43cc-a27d-191a01a1e3b5\" or\n                \"4e291c71-d680-4d0e-9640-0a3358e31177\" or\n                \"57336123-6e14-4acc-8dcf-287b6088aa28\" or\n                \"57fcbcfa-7cee-4eb1-8b25-12d2030b4ee0\" or\n                \"66375f6b-983f-4c2c-9701-d680650f588f\" or\n                \"9ba1a5c7-f17a-4de9-a1f1-6178c8d51223\" or\n                \"a40d7d7d-59aa-447e-a655-679a4107e548\" or\n                \"a569458c-7f2b-45cb-bab9-b7dee514d112\" or\n                \"b26aadf8-566f-4478-926f-589f601d9c74\" or\n                \"c0d2a505-13b8-4ae0-aa9e-cddd5eab0b12\" or\n                \"d326c1ce-6cc6-4de2-bebc-4591e5e13ef0\" or\n                \"e9c51622-460d-4d3d-952d-966a5b1da34c\" or\n                \"eb539595-3fe1-474e-9c1d-feb3625d1be5\" or\n                \"ecd6b820-32c2-49b6-98a6-444530e5a77a\" or\n                \"f05ff7c9-f75a-4acd-a3b5-f4b6a870245d\" or\n                \"f44b1140-bc5e-48c6-8dc0-5cf5a53c0e34\" or\n                \"be1918be-3fe3-4be9-b32b-b542fc27f02e\" or\n                \"cab96880-db5b-4e15-90a7-f3f1d62ffe39\" or\n                \"d7b530a4-7680-4c23-a8bf-c52c121d2e87\" or\n                \"dd47d17a-3194-4d86-bfd5-c6ae6f5651e3\" or\n                \"e9b154d0-7658-433b-bb25-6b8e0a8a7c59\"\n            )\n            and o365.audit.Target.ID: \"00000002-0000-0000-c000-000000000000\"\n        )\n    )\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-azure-monitor-sign-ins-log-schema",
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/",
+            "https://pushsecurity.com/blog/consentfix",
+            "https://github.com/secureworks/family-of-client-ids-research"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ApplicationId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ExtendedProperties.RequestType",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ExtendedProperties.ResultStatusDetail",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Target.ID",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.UserType",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "929d0766-204b-11f0-9c1f-f661ea17fbcd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Resources: Investigation Guide",
+            "Tactic: Initial Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 3
+    },
+    "id": "929d0766-204b-11f0-9c1f-f661ea17fbcd_3",
+    "type": "security-rule"
+}

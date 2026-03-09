@@ -111,6 +111,7 @@ When CloudWatch log collection is enabled, you can retrieve logs from all log st
 | aws_bedrock.invocation.input.messages_content_kinds | The different content formats related to the input messages/prompts. | keyword |
 | aws_bedrock.invocation.messages.content.text |  | match_only_text |
 | aws_bedrock.invocation.messages.content.type |  | keyword |
+| aws_bedrock.invocation.messages.role |  | keyword |
 | aws_bedrock.invocation.model_id |  | keyword |
 | aws_bedrock.invocation.output.completion_text | The formatted LLM text model responses. Only a limited number of LLM text models are supported. | text |
 | aws_bedrock.invocation.output.output_body_json |  | flattened |

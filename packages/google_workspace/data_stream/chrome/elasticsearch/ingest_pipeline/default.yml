@@ -199,6 +199,77 @@ processors:
       target_field: google_workspace.chrome.owner_domain
       ignore_missing: true
   - convert:
+      field: google_workspace.chrome.is_encrypted
+      tag: convert_is_encrypted
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.chrome.is_encrypted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: google_workspace.chrome.local_ip
+      tag: split_local_ip
+      separator: ','
+      target_field: google_workspace.chrome.local_ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - trim:
+      field: google_workspace.chrome.local_ip
+      tag: trim_local_ip
+      ignore_missing: true
+  - foreach:
+      field: google_workspace.chrome.local_ip
+      if: ctx.google_workspace?.chrome?.local_ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_local_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: google_workspace.chrome.remote_ip
+      tag: split_remote_ip
+      separator: ','
+      target_field: google_workspace.chrome.remote_ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - trim:
+      field: google_workspace.chrome.remote_ip
+      tag: trim_remote_ip
+      ignore_missing: true
+  - foreach:
+      field: google_workspace.chrome.remote_ip
+      if: ctx.google_workspace?.chrome?.remote_ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_remote_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.ipAddress
       tag: convert_json_ipAddress_to_ip
       target_field: google_workspace.chrome.ip_address
@@ -332,10 +403,28 @@ processors:
       if: ctx.google_workspace?.chrome?.actor?.email != null
   - append:
       field: related.ip
-      tag: append_ip_address_into_related_user
+      tag: append_ip_address_into_related_ip
       value: '{{{google_workspace.chrome.ip_address}}}'
       allow_duplicates: false
       if: ctx.google_workspace?.chrome?.ip_address != null
+  - foreach:
+      field: google_workspace.chrome.local_ip
+      if: ctx.google_workspace?.chrome?.local_ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_local_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_workspace.chrome.remote_ip
+      if: ctx.google_workspace?.chrome?.remote_ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_remote_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.hash
       tag: append_content_hash_into_related_user

@@ -890,26 +890,26 @@ An example event for `threat_intel_malware_customer` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-19T01:28:37.099Z",
+    "@timestamp": "2024-11-18T16:08:00.000Z",
     "agent": {
-        "ephemeral_id": "62b45a46-b430-4a60-8d39-150102c2cf5f",
-        "id": "4fbcd1c3-faac-4981-863e-cee2d3dfc5b2",
-        "name": "elastic-agent-38980",
+        "ephemeral_id": "1ecad07f-284c-4ee4-8186-330abb2d63c3",
+        "id": "9dc76eb3-dc6c-41c1-896e-86b2bf2be049",
+        "name": "elastic-agent-54045",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "9.2.3"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_customer",
-        "namespace": "64794",
+        "namespace": "36057",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4fbcd1c3-faac-4981-863e-cee2d3dfc5b2",
+        "id": "9dc76eb3-dc6c-41c1-896e-86b2bf2be049",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "9.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -918,29 +918,27 @@ An example event for `threat_intel_malware_customer` looks as following:
             "email",
             "malware"
         ],
-        "created": "2025-12-16T05:35:55.350Z",
         "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2025-12-16T05:35:56Z",
+        "ingested": "2026-01-13T14:23:04Z",
         "kind": "enrichment",
-        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
+        "module": "mimecast",
+        "original": "{\"created\":\"2024-11-18T16:08Z\",\"id\":\"indicator--366fad17-1142-4f18-a488-802b2127b30c\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T16:08Z\",\"pattern\":\"[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T16:08Z\"}",
         "type": [
             "indicator"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
-        "labels": [
-            "malicious-activity"
-        ],
-        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
+        "id": "indicator--366fad17-1142-4f18-a488-802b2127b30c",
+        "labels": "malicious-activity",
+        "pattern": "[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']",
         "type": "indicator"
     },
     "related": {
         "hash": [
-            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+            "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"
         ]
     },
     "tags": [
@@ -953,11 +951,11 @@ An example event for `threat_intel_malware_customer` looks as following:
         "indicator": {
             "file": {
                 "hash": {
-                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+                    "sha256": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"
                 }
             },
-            "first_seen": "2021-11-19T01:28:37.099Z",
-            "modified_at": "2021-11-19T01:28:37.099Z",
+            "first_seen": "2024-11-18T16:08:00.000Z",
+            "modified_at": "2024-11-18T16:08:00.000Z",
             "type": "file"
         }
     }
@@ -1009,26 +1007,26 @@ An example event for `threat_intel_malware_grid` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-19T01:28:37.099Z",
+    "@timestamp": "2024-11-18T23:45:00.000Z",
     "agent": {
-        "ephemeral_id": "d897aeba-64c6-493c-abca-30b90eb0ffda",
-        "id": "d6f54d61-9d99-4de7-a4d1-e20a59ca7044",
-        "name": "elastic-agent-16610",
+        "ephemeral_id": "d7003063-6ec7-4c71-8a70-25aaab828f63",
+        "id": "4d6fa746-7af3-4e44-8d6f-72cae18cc0ff",
+        "name": "elastic-agent-97618",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "9.2.3"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_grid",
-        "namespace": "24530",
+        "namespace": "35643",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d6f54d61-9d99-4de7-a4d1-e20a59ca7044",
+        "id": "4d6fa746-7af3-4e44-8d6f-72cae18cc0ff",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "9.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1037,29 +1035,27 @@ An example event for `threat_intel_malware_grid` looks as following:
             "email",
             "malware"
         ],
-        "created": "2025-12-16T05:37:55.074Z",
         "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2025-12-16T05:37:56Z",
+        "ingested": "2026-01-13T14:24:43Z",
         "kind": "enrichment",
-        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
+        "module": "mimecast",
+        "original": "{\"created\":\"2024-11-18T23:45Z\",\"id\":\"indicator--46e1c0cf-a90c-413d-94b2-7fa889e79fe7\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T23:45Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T23:45Z\"}",
         "type": [
             "indicator"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
-        "labels": [
-            "malicious-activity"
-        ],
-        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
+        "id": "indicator--46e1c0cf-a90c-413d-94b2-7fa889e79fe7",
+        "labels": "malicious-activity",
+        "pattern": "[file:hashes.'SHA-256' = 'f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670']",
         "type": "indicator"
     },
     "related": {
         "hash": [
-            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+            "f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670"
         ]
     },
     "tags": [
@@ -1072,11 +1068,11 @@ An example event for `threat_intel_malware_grid` looks as following:
         "indicator": {
             "file": {
                 "hash": {
-                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+                    "sha256": "f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670"
                 }
             },
-            "first_seen": "2021-11-19T01:28:37.099Z",
-            "modified_at": "2021-11-19T01:28:37.099Z",
+            "first_seen": "2024-11-18T23:45:00.000Z",
+            "modified_at": "2024-11-18T23:45:00.000Z",
             "type": "file"
         }
     }

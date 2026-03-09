@@ -4,6 +4,8 @@ The Domain Generation Algorithm (DGA) Detection package contains assets to detec
 
 This package leverages event logs on Linux, macOS, and Windows. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
+**Note**: In versions 2.0.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
+
 For more detailed information refer to the following blogs:
 - [Detect domain generation algorithm (DGA) activity with new Kibana integration](https://www.elastic.co/security-labs/detect-domain-generation-algorithm-activity-with-new-kibana-integration)
 - [Combining supervised and unsupervised machine learning for DGA detection](https://www.elastic.co/blog/supervised-and-unsupervised-machine-learning-for-dga-detection)
@@ -86,6 +88,23 @@ For more detailed information refer to the following blogs:
 |---|---|
 | dga_high_sum_probability | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.| 
 
+## Customize ML jobs for Domain Generation Algorithm Detection 
+
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Domain Generation Algorithm Detection ML jobs, follow the steps below.
+1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
+![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_1.png)
+1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.
+![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_2.png)
+1. You may also update the model memory limit if your environment has high data volume or if the job requires additional resources. Go to the **Job details** section and update the **Model memory limit** and hit **Save**. For more information on resizing ML jobs, refer to the [documentation](https://www.elastic.co/docs/explore-analyze/machine-learning/anomaly-detection/anomaly-detection-scale#set-model-memory-limit).
+![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_3.png)
+1. In order to do more advanced changes to your job, clone the job by selecting **Clone job** from the **Actions** menu.
+![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_4.png)
+1. In the cloned job, you can update datafeed settings such as **Frequency** and **Query delay**, which help control how often data is analyzed and account for ingestion delays.
+![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_5.png)
+1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
+![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_6.png)
+1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
 ## v2.0.0 and beyond
 
 v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to DGA Detection, we recommend upgrading to v2.0.0 after doing the following:
@@ -98,8 +117,6 @@ v2.0.0 of the package introduces breaking changes, namely deprecating detection 
 Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `DGA`
 - Upgrade the DGA package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
 - Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below
-
-In version 2.0.1 and after, the package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
 ## Licensing
 

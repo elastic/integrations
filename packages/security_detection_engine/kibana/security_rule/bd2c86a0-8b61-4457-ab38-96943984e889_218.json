@@ -1,0 +1,137 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell script block content that references Win32 keylogging primitives such as key state polling or low-level input hooks. Adversaries use keylogging to capture credentials and other sensitive user input.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Keylogging Script",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating PowerShell Keylogging Script\n\nThis alert indicates that PowerShell Script Block Logging recorded code referencing Win32 API functions commonly used to capture keystrokes or register low-level keyboard or mouse hooks. These primitives are frequently used by offensive tooling and custom implants to collect credentials and other sensitive input.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Identify the execution scope and prioritize response:\n  - Review `host.name` and `host.id` to understand where the activity occurred and whether the asset is high value.\n  - Review `user.name`, `user.domain`, and `user.id` to determine the executing account and whether the activity is expected for that user.\n  - Use `@timestamp` to establish when the script block executed and to anchor a timeline for related activity on the same host.\n\n- Analyze the script block content for intent and capability:\n  - Review `powershell.file.script_block_text` and note which capability is present:\n    - Key state polling: `GetAsyncKeyState`, `NtUserGetAsyncKeyState`, `GetKeyboardState`.\n    - Input hooking: `SetWindowsHookEx`, `SetWindowsHookExA`, `SetWindowsHookExW`, or `NtUserSetWindowsHookEx` with hook constants like `WM_KEYBOARD_LL`, `WH_KEYBOARD_LL`, or `WH_MOUSE_LL`, and hook flow indicators such as `LowLevelKeyboardProc` or `CallNextHookEx`.\n    - Foreground window context capture often used to label keystrokes: `GetForegroundWindow`, `GetWindowTextA`, `GetWindowTextW`.\n    - Commodity keylogging functions or modules: `Get-Keystrokes`.\n  - Determine whether the script block only defines helper functions or actively invokes hook registration or polling loops (higher confidence of active collection).\n  - Look for common interop patterns used to call Win32 APIs from PowerShell (for example, `Add-Type`, `DllImport`, or embedded C#) and for logic that maps virtual key codes to readable output.\n  - Identify any referenced output handling within the script text (for example, file writes, buffering, encoding, or remote transmission routines) and capture those strings for scoping.\n\n- Reconstruct the full script when content is split across multiple events:\n  - If `powershell.total` is greater than 1 or the content appears truncated, collect all events that share the same `powershell.file.script_block_id`.\n  - Rebuild the script by ordering fragments using `powershell.sequence` until the expected `powershell.total` is reached.\n  - If expected sequences are missing, widen the time range around `@timestamp` to account for ingestion delays or gaps before concluding reconstruction.\n  - Preserve the fully reconstructed script text as evidence and for further scoping.\n\n- Determine the source of the script and how it was introduced:\n  - If `file.path` and `file.name` are present, treat the script as file-backed and assess whether the location and name are consistent with approved tooling and change control.\n  - Prioritize review when `file.path` suggests a user-writable or transient location, or when `file.name` is unusual for your environment.\n  - If file origin fields are not present, treat the execution as inline or dynamically generated and focus on surrounding PowerShell activity from the same `user.id` and `host.id` around `@timestamp`.\n  - Correlate the alert time on the same host with available process telemetry to identify the PowerShell host process and its parent process, then evaluate whether the execution chain aligns with expected administrative behavior.\n\n- Check for evidence of collection, staging, or downstream actions:\n  - Within `powershell.file.script_block_text`, identify any referenced output locations, file names, or remote destinations that could indicate where captured input is stored or transmitted.\n  - Review nearby endpoint file and network telemetry (if available) for unexpected file creation/modification in user-writable locations and unusual outbound connections following the alert time.\n  - Review authentication telemetry around the alert time to understand which accounts may have been exposed on the affected host during the suspected collection window.\n  - Look for repeated executions from the same `host.id` and `user.id` over time, which can indicate persistence or scheduled collection.\n\n- Scope for additional executions and impacted hosts:\n  - Search for other alerts or script block events that match the same `powershell.file.script_block_id`, the same `file.name`, or distinctive substrings from `powershell.file.script_block_text` across the environment.\n  - Identify whether the same `user.id` executed similar script blocks on multiple hosts or whether multiple users are affected on the same host, which may indicate broader compromise.\n  - If multiple hosts show the same file-backed script (`file.name` and `file.path`), determine whether it is a legitimate deployment versus unauthorized propagation.\n\n### False positive analysis\n\n- Some legitimate PowerShell automation may reference low-level input or window APIs for specialized use cases such as accessibility utilities, kiosk or lab automation, macro/hotkey tooling, or authorized security testing.\n- False positives are more likely when the script is part of a known internal toolkit with a documented business purpose, runs on a limited and expected host scope, and lacks evidence of sustained collection loops or output handling.\n- Treat as higher risk when the script content includes continuous polling or hook registration combined with logic that records, formats, stores, or prepares data for transmission, or when the activity occurs on user workstations outside of expected maintenance windows.\n\n### Response and remediation\n\n- If the activity is unauthorized or suspicious:\n  - Contain the host to prevent further input collection and limit follow-on actions.\n  - Preserve evidence from the alert, including the complete `powershell.file.script_block_text` reconstructed via `powershell.file.script_block_id`, `powershell.sequence`, and `powershell.total`, and any associated `file.path` and `file.name` values.\n  - Use the script content to extract any indicators (for example, output file names, remote destinations, or unique strings) and scope for related activity on other hosts.\n  - Assume potential credential exposure on the affected host and follow incident response procedures for credential reset, session revocation, and review of privileged access activity during the suspected collection window.\n  - Remediate the initial access path and remove any persistence or secondary payloads identified during correlation, including removing unauthorized scripts referenced by `file.path`.\n\n- If the activity is confirmed benign:\n  - Document the legitimate script or tool, expected operators (`user.id`), and expected host scope (`host.id`).\n  - Apply narrowly scoped tuning based on stable, repeatable identifiers (for example, specific `file.path` and expected accounts) to reduce recurring noise while maintaining coverage for unauthorized keylogging behavior.\n",
+        "query": "event.category:process and host.os.type:windows and\n  (\n    powershell.file.script_block_text : (GetAsyncKeyState or NtUserGetAsyncKeyState or GetKeyboardState or \"Get-Keystrokes\") or\n    powershell.file.script_block_text : (\n      (SetWindowsHookEx or SetWindowsHookExA or SetWindowsHookExW or NtUserSetWindowsHookEx) and\n      (\n        GetForegroundWindow or GetWindowTextA or GetWindowTextW or \"WM_KEYBOARD_LL\" or \"WH_MOUSE_LL\" or\n        \"WH_KEYBOARD_LL\" or \"LowLevelKeyboardProc\" or \"CallNextHookEx\"\n      )\n   )\n  ) and not user.id : \"S-1-5-18\" and\n  not powershell.file.script_block_text : (\n    \"sentinelbreakpoints\" and \"Set-PSBreakpoint\"\n  )\n",
+        "references": [
+            "https://github.com/EmpireProject/Empire/blob/master/data/module_source/collection/Get-Keystrokes.ps1",
+            "https://github.com/MojtabaTajik/FunnyKeylogger/blob/master/FunnyLogger.ps1"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "bd2c86a0-8b61-4457-ab38-96943984e889",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Resources: Investigation Guide",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1056",
+                        "name": "Input Capture",
+                        "reference": "https://attack.mitre.org/techniques/T1056/",
+                        "subtechnique": [
+                            {
+                                "id": "T1056.001",
+                                "name": "Keylogging",
+                                "reference": "https://attack.mitre.org/techniques/T1056/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1106",
+                        "name": "Native API",
+                        "reference": "https://attack.mitre.org/techniques/T1106/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 218
+    },
+    "id": "bd2c86a0-8b61-4457-ab38-96943984e889_218",
+    "type": "security-rule"
+}

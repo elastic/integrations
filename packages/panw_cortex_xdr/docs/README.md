@@ -305,116 +305,272 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-10-21T11:31:28.980Z",
+    "@timestamp": "2023-11-29T23:09:23.118Z",
     "agent": {
-        "ephemeral_id": "d9c5fa42-aaa9-453f-b630-1db03ac0b6ba",
-        "id": "e9e18206-e8bb-4395-bbd0-add8a0fb212c",
-        "name": "elastic-agent-45737",
+        "ephemeral_id": "a0d177ad-9718-457c-a632-fb07a95f4a53",
+        "id": "fb8225aa-8e6e-4e78-81cd-07a99ca64805",
+        "name": "elastic-agent-26720",
         "type": "filebeat",
-        "version": "8.16.5"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "panw_cortex_xdr.alerts",
-        "namespace": "74649",
+        "namespace": "42727",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e9e18206-e8bb-4395-bbd0-add8a0fb212c",
+        "id": "fb8225aa-8e6e-4e78-81cd-07a99ca64805",
         "snapshot": false,
-        "version": "8.16.5"
+        "version": "8.19.4"
     },
     "event": {
-        "action": "BLOCKED",
+        "action": "DETECTED",
         "agent_id_status": "verified",
         "category": [
             "malware"
         ],
-        "created": "2020-10-21T11:31:28.980Z",
+        "created": "2019-09-22T13:36:03.318Z",
         "dataset": "panw_cortex_xdr.alerts",
-        "id": "800800",
-        "ingested": "2025-10-28T12:12:31Z",
+        "id": "<external_id>",
+        "ingested": "2026-01-29T10:28:28Z",
         "kind": "alert",
-        "original": "{\"action\":\"BLOCKED\",\"action_pretty\":\"Prevented (Blocked)\",\"agent_data_collection_status\":true,\"agent_device_domain\":null,\"agent_fqdn\":\"test\",\"agent_is_vdi\":null,\"agent_os_sub_type\":\"XP\",\"agent_os_type\":\"Windows\",\"agent_version\":\"1.2.3.4\",\"alert_id\":\"1001\",\"attempt_counter\":55,\"bioc_category_enum_key\":null,\"bioc_indicator\":null,\"category\":\"Exploit\",\"deduplicate_tokens\":null,\"description\":\"Local privilege escalation prevented\",\"detection_timestamp\":1603279888980,\"end_match_attempt_ts\":1603552062824,\"endpoint_id\":\"12345678\",\"events\":{\"action_country\":\"UNKNOWN\",\"action_external_hostname\":null,\"action_file_macro_sha256\":null,\"action_file_md5\":null,\"action_file_name\":null,\"action_file_path\":null,\"action_file_sha256\":null,\"action_local_ip\":null,\"action_local_port\":null,\"action_process_causality_id\":null,\"action_process_image_command_line\":null,\"action_process_image_name\":null,\"action_process_image_sha256\":null,\"action_process_instance_id\":null,\"action_process_signature_status\":\"N/A\",\"action_process_signature_vendor\":null,\"action_registry_data\":null,\"action_registry_full_key\":null,\"action_registry_key_name\":null,\"action_registry_value_name\":null,\"action_remote_ip\":null,\"action_remote_port\":null,\"actor_causality_id\":null,\"actor_process_causality_id\":null,\"actor_process_command_line\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_md5\":null,\"actor_process_image_name\":\"virus.exe\",\"actor_process_image_path\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_sha256\":\"133ee989293f92736301280c6f14c89d521200c17dcdcecca30cd20705332d44\",\"actor_process_instance_id\":\"1234\",\"actor_process_os_pid\":1234,\"actor_process_signature_status\":\"N/A\",\"actor_process_signature_vendor\":null,\"actor_thread_thread_id\":null,\"agent_host_boot_time\":null,\"agent_install_type\":\"NA\",\"association_strength\":null,\"causality_actor_causality_id\":null,\"causality_actor_process_command_line\":null,\"causality_actor_process_execution_time\":null,\"causality_actor_process_image_md5\":null,\"causality_actor_process_image_name\":null,\"causality_actor_process_image_path\":null,\"causality_actor_process_image_sha256\":null,\"causality_actor_process_signature_status\":\"N/A\",\"causality_actor_process_signature_vendor\":null,\"dns_query_name\":null,\"dst_action_country\":null,\"dst_action_external_hostname\":null,\"dst_action_external_port\":null,\"dst_agent_id\":null,\"dst_association_strength\":null,\"dst_causality_actor_process_execution_time\":null,\"event_id\":null,\"event_sub_type\":null,\"event_timestamp\":1603279888980,\"event_type\":\"Process Execution\",\"fw_app_category\":null,\"fw_app_id\":null,\"fw_app_subcategory\":null,\"fw_app_technology\":null,\"fw_device_name\":null,\"fw_email_recipient\":null,\"fw_email_sender\":null,\"fw_email_subject\":null,\"fw_interface_from\":null,\"fw_interface_to\":null,\"fw_is_phishing\":\"N/A\",\"fw_misc\":null,\"fw_rule\":null,\"fw_rule_id\":null,\"fw_serial_number\":null,\"fw_url_domain\":null,\"fw_vsys\":null,\"fw_xff\":null,\"module_id\":\"Privilege Escalation Protection\",\"os_actor_causality_id\":null,\"os_actor_effective_username\":null,\"os_actor_process_causality_id\":null,\"os_actor_process_command_line\":null,\"os_actor_process_image_name\":null,\"os_actor_process_image_path\":null,\"os_actor_process_image_sha256\":null,\"os_actor_process_instance_id\":null,\"os_actor_process_os_pid\":null,\"os_actor_process_signature_status\":\"N/A\",\"os_actor_process_signature_vendor\":null,\"os_actor_thread_thread_id\":null,\"story_id\":null,\"user_name\":null},\"external_id\":\"800800\",\"filter_rule_id\":null,\"host_ip\":[\"10.0.255.20\"],\"host_name\":\"Test\",\"is_whitelisted\":false,\"local_insert_ts\":1603279967500,\"mac\":null,\"mac_address\":[\"00:11:22:33:44:55\"],\"matching_service_rule_id\":null,\"matching_status\":\"FAILED\",\"mitre_tactic_id_and_name\":[\"\"],\"mitre_technique_id_and_name\":[\"\"],\"name\":\"Kernel Privilege Escalation\",\"severity\":\"high\",\"source\":\"XDR Agent\",\"starred\":false}",
-        "reason": "Local privilege escalation prevented",
-        "severity": 4,
+        "original": "{\"action\":\"DETECTED\",\"action_country\":[\"UNKNOWN\"],\"action_external_hostname\":null,\"action_file_macro_sha256\":null,\"action_file_md5\":null,\"action_file_name\":null,\"action_file_path\":null,\"action_file_sha256\":null,\"action_local_ip\":null,\"action_local_ip_v6\":null,\"action_local_port\":null,\"action_pretty\":\"Detected\",\"action_process_causality_id\":null,\"action_process_image_command_line\":null,\"action_process_image_name\":null,\"action_process_image_sha256\":null,\"action_process_instance_id\":null,\"action_process_signature_status\":[\"N/A\"],\"action_process_signature_vendor\":null,\"action_registry_data\":null,\"action_registry_full_key\":null,\"action_registry_key_name\":null,\"action_registry_value_name\":null,\"action_remote_ip\":null,\"action_remote_ip_v6\":null,\"action_remote_port\":null,\"actor_causality_id\":[\"\\u003cactor_causality_id\\u003e\"],\"actor_process_causality_id\":[\"\\u003cprocess_causality_id\\u003e\"],\"actor_process_command_line\":[\"\\u003ccommand_line\\u003e\"],\"actor_process_image_md5\":[\"\\u003cimage_md5\\u003e\"],\"actor_process_image_name\":[\"\\u003cimage_name\\u003e\"],\"actor_process_image_path\":[\"\\u003cimage_path\\u003e\"],\"actor_process_image_sha256\":[\"\\u003cimage_sha256\\u003e\"],\"actor_process_instance_id\":[\"\\u003cinstance_id\\u003e\"],\"actor_process_os_pid\":[996],\"actor_process_signature_status\":[\"Signed\"],\"actor_process_signature_vendor\":[\"\\u003csignature_vendor\\u003e\"],\"actor_thread_thread_id\":[7452],\"agent_data_collection_status\":null,\"agent_device_domain\":null,\"agent_fqdn\":null,\"agent_host_boot_time\":[1669128165772],\"agent_install_type\":\"STANDARD\",\"agent_ip_addresses_v6\":null,\"agent_is_vdi\":false,\"agent_os_sub_type\":\"\\u003cos_sub_type\\u003e\",\"agent_os_type\":\"\\u003cos_type\\u003e\",\"agent_version\":\"\\u003cagent_version\\u003e\",\"alert_id\":\"1\",\"alert_type\":\"Unclassified\",\"association_strength\":[50],\"attempt_counter\":0,\"bioc_category_enum_key\":null,\"bioc_indicator\":null,\"case_id\":9629,\"category\":\"\\u003ccategory\\u003e\",\"causality_actor_causality_id\":[\"\\u003ccausality_id\\u003e\"],\"causality_actor_process_command_line\":[\"\\u003ccommand_line\\u003e\"],\"causality_actor_process_execution_time\":[1669528171295],\"causality_actor_process_image_md5\":[\"\\u003cimage_md5\\u003e\"],\"causality_actor_process_image_name\":[\"\\u003cimage_name\\u003e\"],\"causality_actor_process_image_path\":[\"\\u003cimage_path\\u003e\"],\"causality_actor_process_image_sha256\":[\"\\u003csha256\\u003e\"],\"causality_actor_process_signature_status\":[\"Signed\"],\"causality_actor_process_signature_vendor\":[\"\\u003csignature_vendor\\u003e\"],\"cloud_provider\":null,\"cluster_name\":null,\"container_id\":null,\"contains_featured_host\":[\"NO\"],\"contains_featured_ip\":[\"NO\"],\"contains_featured_user\":[\"NO\"],\"deduplicate_tokens\":null,\"description\":\"The user domain\\\\username enabled a default account. The default account enabled: domain\\\\username\",\"detection_timestamp\":1569159363318,\"dns_query_name\":null,\"dss_country\":null,\"dss_department\":null,\"dss_groups\":null,\"dss_job_title\":null,\"dst_action_country\":null,\"dst_action_external_hostname\":null,\"dst_action_external_port\":null,\"dst_agent_id\":[\"\\u003cagent_id\\u003e\"],\"dst_association_strength\":null,\"dst_causality_actor_process_execution_time\":null,\"dynamic_fields\":null,\"end_match_attempt_ts\":null,\"endpoint_id\":\"\\u003cendpoint_id\\u003e\",\"event_id\":[\"\\u003cevent_id\\u003e\"],\"event_sub_type\":[1],\"event_timestamp\":[1701299363118],\"event_type\":[\"Process Execution\"],\"events\":null,\"external_id\":\"\\u003cexternal_id\\u003e\",\"filter_rule_id\":null,\"fw_app_category\":null,\"fw_app_id\":null,\"fw_app_subcategory\":null,\"fw_app_technology\":null,\"fw_device_name\":null,\"fw_email_recipient\":null,\"fw_email_sender\":null,\"fw_email_subject\":null,\"fw_interface_from\":null,\"fw_interface_to\":null,\"fw_is_phishing\":[\"N/A\"],\"fw_misc\":null,\"fw_rule\":null,\"fw_rule_id\":null,\"fw_serial_number\":null,\"fw_url_domain\":null,\"fw_vsys\":null,\"fw_xff\":null,\"host_ip\":[\"192.168.2.2\"],\"host_name\":\"\\u003chost_name\\u003e\",\"identity_sub_type\":null,\"identity_type\":null,\"image_name\":null,\"is_pcap\":false,\"is_whitelisted\":false,\"last_modified_ts\":null,\"local_insert_ts\":1673372647792,\"mac_addresses\":null,\"matching_service_rule_id\":\"\\u003cservice_rule_id\\u003e\",\"matching_status\":\"MATCHED\",\"mitre_tactic_id_and_name\":[\"TA0005 - Defense Evasion\"],\"mitre_technique_id_and_name\":[\"T1089 - Disabling Security Tools\"],\"module_id\":null,\"name\":\"A user enabled the Windows DefaultAccount\",\"operation_name\":null,\"original_tags\":[\"EG:k8s agents\",\"EG:windows\",\"ET:DESKTOP-FCCIPAN\"],\"os_actor_causality_id\":null,\"os_actor_effective_username\":null,\"os_actor_process_causality_id\":[\"\\u003cprocess_causality_id\\u003e\"],\"os_actor_process_command_line\":[\"\\u003ccommand_line\\u003e\"],\"os_actor_process_image_name\":[\"\\u003cimage_name\\u003e\"],\"os_actor_process_image_path\":[\"\\u003cimage_path\\u003e\"],\"os_actor_process_image_sha256\":[\"\\u003cimage_sha256\\u003e\"],\"os_actor_process_instance_id\":[\"\\u003cinstance_id\\u003e\"],\"os_actor_process_os_pid\":[996],\"os_actor_process_signature_status\":[\"Signed\"],\"os_actor_process_signature_vendor\":[\"\\u003cSignature_vendor\\u003e\"],\"os_actor_thread_thread_id\":[7205],\"project\":null,\"referenced_resource\":null,\"resolution_comment\":null,\"resolution_status\":\"STATUS_010_NEW\",\"resource_sub_type\":null,\"resource_type\":null,\"severity\":\"low\",\"source\":null,\"starred\":true,\"story_id\":null,\"tags\":[\"ET:DESKTOP-FCCIPAN\",\"EG:k8s agents\",\"EG:windows\"],\"user_agent\":null,\"user_name\":[\"\\u003cuser_name\\u003e\"]}",
+        "reason": "The user domain\\username enabled a default account. The default account enabled: domain\\username",
+        "severity": 2,
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "test",
-        "id": "12345678",
+        "hostname": "<host_name>",
+        "id": "<endpoint_id>",
         "ip": [
-            "10.0.255.20"
+            "192.168.2.2"
         ],
-        "name": "test",
+        "name": "<host_name>",
         "os": {
-            "name": "Windows",
-            "version": "XP"
+            "name": "<os_type>",
+            "version": "<os_sub_type>"
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
-    "message": "Kernel Privilege Escalation",
+    "message": "A user enabled the Windows DefaultAccount",
     "panw_cortex": {
         "xdr": {
-            "action_pretty": "Prevented (Blocked)",
-            "agent_data_collection_status": true,
-            "agent_version": "1.2.3.4",
-            "alert_id": "1001",
-            "attempt_counter": 55,
-            "category": "Exploit",
-            "end_match_attempt_ts": "2020-10-24T15:07:42.824Z",
-            "events": {
-                "actor_process_signature_status": "N/A",
-                "agent_install_type": "NA",
-                "event_type": "Process Execution",
-                "fw_is_phishing": "N/A",
-                "module_id": "Privilege Escalation Protection",
-                "os_actor_process_signature_status": "N/A"
-            },
-            "is_whitelisted": false,
-            "local_insert_ts": "2020-10-21T11:32:47.500Z",
-            "mac_address": [
-                "00:11:22:33:44:55"
+            "action_country": [
+                "UNKNOWN"
             ],
-            "matching_status": "FAILED",
-            "source": "XDR Agent",
-            "starred": false
+            "action_pretty": "Detected",
+            "actor_causality_id": [
+                "<actor_causality_id>"
+            ],
+            "actor_process_causality_id": [
+                "<process_causality_id>"
+            ],
+            "actor_process_signature_status": [
+                "Signed"
+            ],
+            "agent_host_boot_time": "2022-11-22T14:42:45.772Z",
+            "agent_install_type": "STANDARD",
+            "agent_is_vdi": false,
+            "agent_version": "<agent_version>",
+            "alert_id": "1",
+            "alert_type": "Unclassified",
+            "association_strength": [
+                50
+            ],
+            "attempt_counter": 0,
+            "case_id": 9629,
+            "category": "<category>",
+            "contains_featured_host": [
+                "NO"
+            ],
+            "contains_featured_ip": [
+                "NO"
+            ],
+            "contains_featured_user": [
+                "NO"
+            ],
+            "dst_agent_id": [
+                "<agent_id>"
+            ],
+            "event_id": [
+                "<event_id>"
+            ],
+            "event_sub_type": [
+                1
+            ],
+            "event_type": [
+                "Process Execution"
+            ],
+            "fw_is_phishing": [
+                "N/A"
+            ],
+            "is_pcap": false,
+            "is_whitelisted": false,
+            "local_insert_ts": "2023-01-10T17:44:07.792Z",
+            "matching_service_rule_id": "<service_rule_id>",
+            "matching_status": "MATCHED",
+            "original_tags": [
+                "EG:k8s agents",
+                "EG:windows",
+                "ET:DESKTOP-FCCIPAN"
+            ],
+            "os_actor_process_causality_id": [
+                "<process_causality_id>"
+            ],
+            "os_actor_process_command_line": [
+                "<command_line>"
+            ],
+            "os_actor_process_image_name": [
+                "<image_name>"
+            ],
+            "os_actor_process_image_path": [
+                "<image_path>"
+            ],
+            "os_actor_process_image_sha256": [
+                "<image_sha256>"
+            ],
+            "os_actor_process_instance_id": [
+                "<instance_id>"
+            ],
+            "os_actor_process_os_pid": [
+                996
+            ],
+            "os_actor_process_signature_status": [
+                "Signed"
+            ],
+            "os_actor_process_signature_vendor": [
+                "<Signature_vendor>"
+            ],
+            "os_actor_thread_thread_id": [
+                7205
+            ],
+            "resolution_status": "STATUS_010_NEW",
+            "starred": true
         }
     },
     "process": {
         "code_signature": {
-            "status": "N/A"
+            "status": [
+                "N/A"
+            ],
+            "subject_name": [
+                "<signature_vendor>"
+            ]
         },
-        "command_line": "c:\\tmp\\virus.exe",
-        "entity_id": "1234",
-        "executable": "c:\\tmp\\virus.exe",
+        "command_line": [
+            "<command_line>"
+        ],
+        "entity_id": [
+            "<instance_id>"
+        ],
+        "executable": [
+            "<image_path>"
+        ],
         "hash": {
-            "sha256": "133ee989293f92736301280c6f14c89d521200c17dcdcecca30cd20705332d44"
+            "md5": [
+                "<image_md5>"
+            ],
+            "sha256": [
+                "<image_sha256>"
+            ]
         },
-        "name": "virus.exe",
+        "name": [
+            "<image_name>"
+        ],
         "parent": {
             "code_signature": {
-                "status": "N/A"
-            }
+                "status": [
+                    "Signed"
+                ],
+                "subject_name": [
+                    "<signature_vendor>"
+                ]
+            },
+            "command_line": [
+                "<command_line>"
+            ],
+            "entity_id": [
+                "<causality_id>"
+            ],
+            "executable": [
+                "<image_path>"
+            ],
+            "hash": {
+                "md5": [
+                    "<image_md5>"
+                ],
+                "sha256": [
+                    "<sha256>"
+                ]
+            },
+            "name": [
+                "<image_name>"
+            ],
+            "uptime": [
+                1669528171295
+            ]
         },
-        "pid": 1234
+        "pid": [
+            996
+        ],
+        "thread": {
+            "id": [
+                7452
+            ]
+        }
     },
     "related": {
         "hash": [
-            "133ee989293f92736301280c6f14c89d521200c17dcdcecca30cd20705332d44"
+            "<image_md5>",
+            "<sha256>",
+            "<image_sha256>"
+        ],
+        "user": [
+            "<user_name>"
         ]
+    },
+    "source": {
+        "user": {
+            "name": "<user_name>"
+        }
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "panw_cortex_xdr"
-    ]
+        "panw_cortex_xdr",
+        "ET:DESKTOP-FCCIPAN",
+        "EG:k8s agents",
+        "EG:windows"
+    ],
+    "threat": {
+        "framework": "MITRE ATT&CK",
+        "tactic": {
+            "id": [
+                "TA0005"
+            ],
+            "name": [
+                "Defense Evasion"
+            ]
+        },
+        "technique": {
+            "id": [
+                "T1089"
+            ],
+            "name": [
+                "Disabling Security Tools"
+            ]
+        }
+    },
+    "user": {
+        "name": "<user_name>"
+    }
 }
 ```
 
@@ -590,6 +746,82 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.uuid |  | keyword |
 
 
+An example event for `event` looks as following:
+
+```json
+{
+    "@timestamp": "2026-01-09T09:53:25.240Z",
+    "agent": {
+        "ephemeral_id": "41b0fb66-8a23-49d9-ad8f-de62d6617c6f",
+        "id": "6a5b6dac-f7f7-4ab2-bfed-80a8c1b2bd0c",
+        "name": "elastic-agent-55081",
+        "type": "filebeat",
+        "version": [
+            "8.18.0"
+        ]
+    },
+    "cloud": {
+        "provider": "google cloud"
+    },
+    "data_stream": {
+        "dataset": "panw_cortex_xdr.event",
+        "namespace": "14968",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "6a5b6dac-f7f7-4ab2-bfed-80a8c1b2bd0c",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "panw_cortex_xdr.event",
+        "ingested": "2026-01-09T09:53:28Z",
+        "kind": "event"
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/x-ndjson",
+                "name": "test-event.log"
+            }
+        }
+    },
+    "input": {
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/test-event.log"
+        },
+        "offset": 0
+    },
+    "observer": {
+        "product": "Cortex XDR",
+        "vendor": "Palo Alto Networks"
+    },
+    "panw_cortex": {
+        "xdr": {
+            "event": {
+                "agent": {
+                    "os_type": "NO_HOST"
+                }
+            }
+        }
+    },
+    "tags": [
+        "forwarded",
+        "panw_cortex_xdr-event"
+    ]
+}
+```
+
 ### Incidents
 
 This is the `Incidents` dataset.
@@ -656,24 +888,24 @@ An example event for `incidents` looks as following:
 {
     "@timestamp": "2023-08-14T01:20:00.230Z",
     "agent": {
-        "ephemeral_id": "398985c4-b091-496b-a36b-5e870f37e924",
-        "id": "784f4c9e-c6da-4d41-9344-bed20d992724",
-        "name": "elastic-agent-58463",
+        "ephemeral_id": "e1814412-1326-41f3-b153-5bd708d40552",
+        "id": "7f5f6bca-166d-46a2-874d-55a948603d37",
+        "name": "elastic-agent-65535",
         "type": "filebeat",
-        "version": "8.16.5"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "panw_cortex_xdr.incidents",
-        "namespace": "14108",
+        "namespace": "39520",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "784f4c9e-c6da-4d41-9344-bed20d992724",
+        "id": "7f5f6bca-166d-46a2-874d-55a948603d37",
         "snapshot": false,
-        "version": "8.16.5"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -683,7 +915,7 @@ An example event for `incidents` looks as following:
         "created": "2023-08-14T01:20:00.230Z",
         "dataset": "panw_cortex_xdr.incidents",
         "id": "893",
-        "ingested": "2025-10-28T12:14:32Z",
+        "ingested": "2026-01-29T10:01:50Z",
         "kind": "alert",
         "original": "{\"aggregated_score\":5,\"alert_categories\":[\"Exfiltration\"],\"alert_count\":1,\"alerts_grouping_status\":\"Enabled\",\"assigned_user_mail\":null,\"assigned_user_pretty_name\":null,\"creation_time\":1691976000230,\"critical_severity_alert_count\":0,\"description\":\"'Large Upload (Generic)' generated by XDR Analytics detected on host test1234 involving user nt authority\\\\system\",\"detection_time\":null,\"high_severity_alert_count\":0,\"host_count\":1,\"hosts\":[\"test1234:b567c1a651e66999158aef5d864dad25\"],\"incident_id\":\"893\",\"incident_name\":null,\"incident_sources\":[\"XDR Analytics\"],\"low_severity_alert_count\":1,\"manual_description\":null,\"manual_score\":null,\"manual_severity\":null,\"med_severity_alert_count\":0,\"mitre_tactics_ids_and_names\":[\"TA0010 - Exfiltration\"],\"mitre_techniques_ids_and_names\":[\"T1048 - Exfiltration Over Alternative Protocol\"],\"modification_time\":1691976000230,\"notes\":null,\"original_tags\":[\"DS:PANW/XDR Agent\",\"EG:win-server-ex-ransomeware_report\",\"EG:win-server-default\"],\"predicted_score\":5,\"resolve_comment\":null,\"resolved_timestamp\":null,\"rule_based_score\":null,\"severity\":\"low\",\"starred\":false,\"status\":\"new\",\"tags\":[\"DS:PANW/XDR Agent\",\"EG:win-server-default\",\"EG:win-server-ex-ransomeware_report\"],\"user_count\":1,\"users\":[\"nt authority\\\\system\"],\"wildfire_hits\":0,\"xdr_url\":\"https://test.xdr.eu.paloaltonetworks.com/incident-view?caseId=893\"}",
         "reason": "'Large Upload (Generic)' generated by XDR Analytics detected on host test1234 involving user nt authority\\system",

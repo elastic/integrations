@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the use of WinRAR or 7-Zip to create encrypted archives. Adversaries often compress and encrypt data in preparation for exfiltration.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Encrypting Files with WinRar or 7z",
+        "note": "## Triage and analysis\n\n### Investigating Encrypting Files with WinRar or 7z\n\nAttackers may compress and/or encrypt data collected before exfiltration. Compressing data can help stage and obfuscate content and may reduce the amount of data sent over the network. Encryption can be used to hide the contents of the archive and make the activity less apparent during review.\n\nThese steps are often performed in preparation for exfiltration, meaning the intrusion may be in its later stages.\n\n#### Possible investigation steps\n\n- Review the process ancestry (parent process tree) for the archiving command. Identify what launched WinRAR/7-Zip and whether the parent is expected in your environment.\n- Validate the executable: check file path, signature, hash prevalence, and whether the binary is the expected vendor build.\n- Identify the archive output location and name. Look for staging locations (e.g., user profile temp directories, public folders, removable media paths) and unusual naming patterns.\n- Retrieve the created archive if policy allows. Determine whether the contents are sensitive or business-critical.\n- Check whether the encryption password is present in the command line. If present, treat as high confidence data staging.\n- If the password is not available and the archive format is `.zip` (or WinRAR is not using the `-hp` option), enumerate filenames within the archive to understand what was staged.\n- Review other alerts and related activity for the same host/user over the last 48 hours (credential access, discovery, lateral movement, and outbound transfers).\n- Investigate whether the archive was transferred off-host (e.g., browser uploads, cloud sync clients, RMM tools, SMB to unusual destinations, or other outbound network activity).\n\n### False positive analysis\n\n- Backup, packaging, and software distribution workflows may legitimately create password-protected archives.\n- IT administrators and automation may use WinRAR/7-Zip for log collection, incident response packaging, or data transfer.\n- Validate the parent process and context using `process.parent.executable` and `process.parent.command_line`, and confirm whether the archive destination and file set match an expected workflow.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Prioritize cases that involve personally identifiable information (PII) or other classified data.\n- Isolate the involved hosts to prevent further post-compromise behavior.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords for these accounts and other potentially compromised credentials, such as email, business systems, and web services.\n- Run a full antimalware scan. This may reveal additional artifacts left in the system, persistence mechanisms, and malware components.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection through the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n(\n  (\n    (\n      process.name : (\"rar.exe\", \"WinRAR.exe\") or ?process.code_signature.subject_name == \"win.rar GmbH\" or\n      ?process.pe.original_file_name == \"WinRAR.exe\"\n    ) and\n    process.args == \"a\" and process.args : (\"-hp*\", \"-p*\", \"/hp*\", \"/p*\")\n  ) or\n  (\n    (process.name : (\"7z.exe\", \"7za.exe\") or ?process.pe.original_file_name in (\"7z.exe\", \"7za.exe\")) and\n    process.args == \"a\" and process.args : \"-p*\"\n  )\n) and\n  not process.parent.executable : (\n        \"C:\\\\Program Files\\\\*.exe\",\n        \"C:\\\\Program Files (x86)\\\\*.exe\",\n        \"?:\\\\ManageEngine\\\\*\\\\jre\\\\bin\\\\java.exe\",\n        \"?:\\\\Nox\\\\bin\\\\Nox.exe\",\n        \"\\\\Device\\\\HarddiskVolume?\\\\Program Files\\\\*.exe\",\n        \"\\\\Device\\\\HarddiskVolume?\\\\Program Files (x86)\\\\*.exe\",\n        \"\\\\Device\\\\HarddiskVolume?\\\\ManageEngine\\\\*\\\\jre\\\\bin\\\\java.exe\",\n        \"\\\\Device\\\\HarddiskVolume?\\\\Nox\\\\bin\\\\Nox.exe\"\n      )\n",
+        "references": [
+            "https://www.welivesecurity.com/2020/12/02/turla-crutch-keeping-back-door-open/",
+            "https://www.elastic.co/security-labs/siestagraph-new-implant-uncovered-in-asean-member-foreign-ministry"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "45d273fb-1dca-457d-9855-bcb302180c21",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1005",
+                        "name": "Data from Local System",
+                        "reference": "https://attack.mitre.org/techniques/T1005/"
+                    },
+                    {
+                        "id": "T1560",
+                        "name": "Archive Collected Data",
+                        "reference": "https://attack.mitre.org/techniques/T1560/",
+                        "subtechnique": [
+                            {
+                                "id": "T1560.001",
+                                "name": "Archive via Utility",
+                                "reference": "https://attack.mitre.org/techniques/T1560/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 218
+    },
+    "id": "45d273fb-1dca-457d-9855-bcb302180c21_218",
+    "type": "security-rule"
+}

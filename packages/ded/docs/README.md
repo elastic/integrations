@@ -4,6 +4,8 @@ The Data Exfiltration Detection (DED) package contains assets for detecting data
 
 This package leverages event logs. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information. The transform only supports Linux and Windows. The **Anomaly Detection Jobs** section outlines platform support for each job.
 
+**Note**: In versions 2.1.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
+
 For more detailed information refer to the following blog:
 - [Detect data exfiltration activity with Kibana’s new integration](https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration)
 
@@ -42,22 +44,24 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 | ------------------- | ------------------------------------------- | ------------ | ------------------------ | ------------------ |
 | ded.pivot_transform | Collects network logs from your environment | logs-*       | ml_network_ded-[version] | ml_network_ded.all |
 
+**Note**: The transform applies only to network data and does not currently support macOS network logs.
+
 When querying the destination index (`ml_network_ded-<VERSION>`) for network logs, we advise using the alias for the destination index (`ml_network_ded.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 
 ## Customize Data Exfiltration Detection Transform
 
-To customize filters in the Data Exfiltration Detection transform, follow the below steps. You can use these instructions to add or remove filters for fields such as `process.name`, `source.ip`, `destination.ip`, and others.
-1. Go to **Stack Management > Data > Transforms > `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
+To customize filters in the Data Exfiltration Detection transform, follow the below steps. You can use these instructions to update basic settings or to update filters for fields such as `process.name`, `source.ip`, `destination.ip`, and others.
+1. To update settings such as retention policy, frequency, or destination configuration, stop the transform, click **Edit** from the **Actions** bar, make the required changes, and start the transform again.
+![Data Exfiltration Detection transform](../img/ded_transform_update.png)
+1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
 1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
-![Data Exfiltration Detection Rules](../img/ded_transform_1.png)
+![Data Exfiltration Detection transform](../img/ded_transform_1.png)
 1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
-![Data Exfiltration Detection Rules](../img/ded_transform_2.png)
+![Data Exfiltration Detection transform](../img/ded_transform_2.png)
 1. Scroll down and select the **Next** button at the bottom right. Under the **Transform details** section, enter a new **Transform ID** and **Destination index** of your choice, then click on the **Next** button.
-![Data Exfiltration Detection Rules](../img/ded_transform_3.png)
+![Data Exfiltration Detection transform](../img/ded_transform_3.png)
 1. Lastly, select the **Create and Start** option. Your updated transform will now start collecting data. **Note:** Do not forget to update your data view based on the new **Destination index** you have just created.
-![Data Exfiltration Detection Rules](../img/ded_transform_4.png)
-
-The transform applies only to network data and does not currently support macOS network logs.
+![Data Exfiltration Detection transform](../img/ded_transform_4.png)
 
 ## Dashboard
 
@@ -74,6 +78,23 @@ After the data view for the dashboard is configured, the **Data Exfiltration Det
 | ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            | file |
 | ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            | file |
 | ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              | file |
+
+## Customize ML jobs for Data Exfiltration Detection 
+
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Data Exfiltration Detection ML jobs, follow the steps below.
+1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
+![Data Exfiltration Detection jobs](../img/ded_ml_job_1.png)
+1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.
+![Data Exfiltration Detection jobs](../img/ded_ml_job_2.png)
+1. You may also update the model memory limit if your environment has high data volume or if the job requires additional resources. Go to the **Job details** section and update the **Model memory limit** and hit **Save**. For more information on resizing ML jobs, refer to the [documentation](https://www.elastic.co/docs/explore-analyze/machine-learning/anomaly-detection/anomaly-detection-scale#set-model-memory-limit).
+![Data Exfiltration Detection jobs](../img/ded_ml_job_3.png)
+1. In order to do more advanced changes to your job, clone the job by selecting **Clone job** from the **Actions** menu.
+![Data Exfiltration Detection jobs](../img/ded_ml_job_4.png)
+1. In the cloned job, you can update datafeed settings such as **Frequency** and **Query delay**, which help control how often data is analyzed and account for ingestion delays.
+![Data Exfiltration Detection jobs](../img/ded_ml_job_5.png)
+1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
+![Data Exfiltration Detection jobs](../img/ded_ml_job_6.png)
+1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
 
 ## v2.0.0 and beyond
 
@@ -100,8 +121,6 @@ Depending on the version of the package you're using, you might also be able to 
 Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `Data Exfiltration`.
 - Upgrade the Data Exfiltration Detection package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
 - Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
-
-In version 2.1.1, the package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
 ## Licensing
 

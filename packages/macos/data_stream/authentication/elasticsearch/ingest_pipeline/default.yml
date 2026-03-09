@@ -1,0 +1,90 @@
+---
+description: Pipeline for processing authentication logs.
+processors:
+  - append:
+      field: event.category
+      tag: set_event_category
+      value: authentication
+  - append:
+      field: event.type
+      tag: append_info_into_event_type_in_authentication
+      value: info
+  - pipeline:
+      name: '{{ IngestPipeline "common-pipeline" }}'
+      tag: run-common-pipeline
+  - grok:
+      description: Grok the eventMessage.
+      tag: grok-event-message
+      field: macos.event.message.description
+      ignore_missing: true
+      patterns:
+        - '^-\[%{WORD} %{WORD}\] \|%{SPACE}final sessionDictionary:\{(?:%{SPACE}DirectLogoutType = %{NUMBER:macos.event.message.direct_logout_type:int};)?(?:%{SPACE}GroupID = %{NUMBER:group.id};)?(?:%{SPACE}GuestAccount = %{NUMBER:macos.event.message.guest_account:int};)?(?:%{SPACE}HomeDirectoryPath = %{DATA:macos.event.message.home_directory_path};)?(?:%{SPACE}SessionAgentPID = %{NUMBER:macos.event.message.session_agent_pid};)?(?:%{SPACE}UserGUID = %{DATA:user.group.id};)?(?:%{SPACE}UserID = %{NUMBER:user.id};)?(?:%{SPACE}UserLongName = %{DATA:user.full_name};)?(?:%{SPACE}UserName = %{DATA:user.name};)?\n\}'
+        - '^-\[%{WORD} %{WORD}\] \|(?:%{SPACE}shortUsername = %{WORD:user.name},)?(?:%{SPACE}userID = %{NUMBER:user.id},)?(?:%{SPACE}groupID = %{NUMBER:group.id})'
+        - '%{GREEDYDATA:macos.event.message.original}'
+  - gsub:
+      field: user.group.id
+      pattern: '\"'
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: user.name
+      pattern: '\"'
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: user.full_name
+      pattern: '\"'
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_unified_log_event_message_user_id_into_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_unified_log_event_message_user_long_name_into_related_user
+      value: '{{{user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
+  - append:
+      field: related.user
+      tag: append_unified_log_event_message_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_unified_log_event_message_user_guid_into_related_user
+      value: '{{{user.group.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.group?.id != null
+  - remove:
+      field:
+        - macos.event.message.original
+      tag: remove_non_required_fields
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

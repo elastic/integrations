@@ -160,10 +160,17 @@ processors:
       - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
       - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
       - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - "^CN=(?<tmp.file.x509.subject.common_name>.*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - "^CN=(?<tmp.file.x509.subject.common_name>.*),%{SPACE}O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
       if: ctx.winlog?.user_data?.Fqbn != "-"
 
     ## Use the append processor to create arrays from the single
     ## strings extracted by the previous grok processor
+  - append:
+      field: file.x509.subject.common_name
+      value: "{{tmp.file.x509.subject.common_name}}"
+      ignore_failure: true
+
   - append:
       field: file.x509.subject.country
       value: "{{tmp.file.x509.subject.country}}"

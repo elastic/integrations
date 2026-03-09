@@ -1678,7 +1678,7 @@ rules:
           "code": "AuthenticationFailed",
           "message": "Authentication failed."
           }
-  - path: /admin/serviceAnnouncement/healthOverviews/Microsoft 365 suite
+  - path: /admin/serviceAnnouncement/healthOverviews
     methods: ["GET"]
     request_headers:
       Authorization:
@@ -1690,9 +1690,24 @@ rules:
             - "application/json"
         body: |-
           {
-          "service":"Microsoft 365 suite",
-          "status":"serviceDegradation",
-          "id":"OSDPPlatform"
+              "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#admin/serviceAnnouncement/healthOverviews",
+              "value": [
+                  {
+                        "service": "Microsoft Entra",
+                        "status": "serviceOperational",
+                        "id": "OrgLiveID"
+                  },
+                  {
+                        "service": "Microsoft 365 suite",
+                        "status": "serviceDegradation",
+                        "id": "OSDPPlatform"
+                  },
+                  {
+                        "service": "Microsoft 365 Copilot Chat",
+                        "status": "serviceOperational",
+                        "id": "CopilotChat"
+                  }
+                ]
           }
       - status_code: 404
         headers:

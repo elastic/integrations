@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "created_at": "2026-01-28T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect Windows Security/System event log clearing activity (Event IDs 1102, 104) via windows_eventlog. Related to MITRE T1070.001 (Indicator Removal on Host: Clear Windows Event Logs).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "configuration"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "change"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.event_log_cleared"
+                }
+            },
+            {
+                "key": "event.code",
+                "value": {
+                    "field": "event_id"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "field": "provider_name"
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "event_time"
+                }
+            },
+            {
+                "key": "rule.name",
+                "value": {
+                    "field": "detection_method"
+                }
+            },
+            {
+                "key": "rule.description",
+                "value": {
+                    "field": "detection_reason"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "user_name"
+                }
+            },
+            {
+                "key": "user.domain",
+                "value": {
+                    "field": "user_domain"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "user_sid"
+                }
+            },
+            {
+                "key": "user.full_name",
+                "value": {
+                    "field": "full_username"
+                }
+            },
+            {
+                "key": "log.level",
+                "value": {
+                    "field": "log_channel"
+                }
+            },
+
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "defense_evasion",
+                        "event_log",
+                        "windows"
+                    ]
+                }
+            }
+        ],
+        "id": "event_log_cleared_windows_elastic",
+        "interval": "3600",
+        "timeout": 180,
+        "platform": "windows",
+        "query": "-- Defense Evasion: Event Log Cleared Detection\n-- Related to MITRE T1070.001 (Indicator Removal on Host: Clear Windows Event Logs)\n-- Detects Security and System event log clearing activities\n-- Event ID 1102: Security log cleared\n-- Event ID 104: System log cleared\n\nWITH extracted AS (\n  SELECT\n    datetime,\n    eventid,\n    provider_name,\n    channel,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserName') AS user_name,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectDomainName') AS user_domain,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserSid') AS user_sid,\n    CASE\n      WHEN eventid = 1102 THEN 'Security Event Log Cleared'\n      WHEN eventid = 104 THEN 'System Event Log Cleared'\n      ELSE 'Event Log Cleared'\n    END AS detection_reason,\n    CASE\n      WHEN channel = 'Security' THEN 'Security Log'\n      WHEN channel = 'System' THEN 'System Log'\n      ELSE channel\n    END AS log_channel\n  FROM windows_eventlog\n  WHERE channel IN ('Security', 'System')\n    AND eventid IN (1102, 104)\n)\n\nSELECT\n  datetime AS event_time,  -- Already ISO8601 from windows_eventlog table\n  eventid AS event_id,\n  provider_name,\n  channel,\n  log_channel,\n  user_name,\n  user_domain,\n  COALESCE(user_domain || char(92) || user_name, user_name, 'Unknown') AS full_username,\n  user_sid,\n  detection_reason,\n  'EVENT_LOG_CLEARED' AS detection_method\nFROM extracted\nORDER BY datetime DESC;\n",
+        "updated_at": "2026-01-28T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-f2a9c7d5-e3b1-4f8a-9c2e-6d4b8a1e3f5c",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-28T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

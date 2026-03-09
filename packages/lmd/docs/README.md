@@ -4,6 +4,8 @@ The Lateral movement detection model package contains assets that detect lateral
 
 This package leverages event logs. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information. The transform only supports Linux and Windows. The **Anomaly Detection Jobs** section outlines platform support for each job.
 
+**Note**: In versions 2.1.2 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
+
 For more detailed information refer to the following blogs:
 - [Detecting Lateral Movement activity: A new Kibana integration](https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration)
 - [Identifying malicious Remote Desktop Protocol (RDP) connections with Elastic Security](https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security)
@@ -39,6 +41,21 @@ For more detailed information refer to the following blogs:
 ## Dashboard
 
 After the anomaly detectors and the data views for the dashboard are configured, the **Lateral Movement Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the lateral movement detection package.
+
+## Customize Lateral Movement Detection Transform
+
+To customize filters in the Lateral Movement Detection transform, follow the below steps. You can use these instructions to update basic settings or to update filters for fields such as `process.name`, `@timestamp`, and others.
+1. To update settings such as retention policy, frequency, or destination configuration, stop the transform, click **Edit** from the **Actions** bar, make the required changes, and start the transform again.
+![Lateral Movement Detection transform](../img/lmd_transform_update.png)
+1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-lmd.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
+1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
+![Lateral Movement Detection transform](../img/lmd_transform_1.png)
+1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
+![Lateral Movement Detection transform](../img/lmd_transform_2.png)
+1. Scroll down and select the **Next** button at the bottom right. Under the **Transform details** section, enter a new **Transform ID** and **Destination index** of your choice, then click on the **Next** button.
+![Lateral Movement Detection transform](../img/lmd_transform_3.png)
+1. Lastly, select the **Create and Start** option. Your updated transform will now start collecting data. **Note:** Do not forget to update your data view based on the new **Destination index** you have just created.
+![Lateral Movement Detection transform](../img/lmd_transform_4.png)
 
 ### Install ProblemChild package to detect malicious processes
 
@@ -121,6 +138,23 @@ Detects potential lateral movement activity by identifying malicious file transf
 | lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               |
 | lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               |
 
+## Customize ML jobs for Lateral Movement Detection
+
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Lateral Movement Detection ML jobs, follow the steps below.
+1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
+![Lateral Movement Detection jobs](../img/lmd_ml_job_1.png)
+1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.
+![Lateral Movement Detection jobs](../img/lmd_ml_job_2.png)
+1. You may also update the model memory limit if your environment has high data volume or if the job requires additional resources. Go to the **Job details** section and update the **Model memory limit** and hit **Save**. For more information on resizing ML jobs, refer to the [documentation](https://www.elastic.co/docs/explore-analyze/machine-learning/anomaly-detection/anomaly-detection-scale#set-model-memory-limit).
+![Lateral Movement Detection jobs](../img/lmd_ml_job_3.png)
+1. In order to do more advanced changes to your job, clone the job by selecting **Clone job** from the **Actions** menu.
+![Lateral Movement Detection jobs](../img/lmd_ml_job_4.png)
+1. In the cloned job, you can update datafeed settings such as **Frequency** and **Query delay**, which help control how often data is analyzed and account for ingestion delays.
+![Lateral Movement Detection jobs](../img/lmd_ml_job_5.png)
+1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
+![Lateral Movement Detection jobs](../img/lmd_ml_job_6.png)
+1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
 ## v2.0.0 and beyond
 
 v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to Lateral Movement Detection, we recommend upgrading to v2.0.0 after doing the following:
@@ -156,8 +190,6 @@ Depending on the version of the package you're using, you might also be able to 
 Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `Lateral Movement`.
 - Upgrade the Lateral Movement Detection package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
 - Install the new rules as described in the [Enabling detection rules](#enabling-detection-rules) section below
-
-In version 2.1.2, the package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
 ## Licensing
 

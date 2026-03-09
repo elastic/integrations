@@ -332,50 +332,25 @@ processors:
       lang: painless
       source: |
         def sourceRulesList = new ArrayList();
-        ctx.wiz.issue.source_rule = ctx.wiz.issue.source_rule ?: [:];
         for (def rule : ctx.json.sourceRules) {
-          boolean doSourceRule = sourceRulesList.size() == 0;
           def mappedRule = new HashMap();
           if (rule.__typename != null) {
             mappedRule.put('__typename', rule.__typename);
-            if (doSourceRule) {
-              ctx.wiz.issue.source_rule.__typename = rule.__typename;
-            }
           }
           if (rule.id != null) {
             mappedRule.put('id', rule.id);
-            if (doSourceRule) {
-              ctx.wiz.issue.source_rule.id = rule.id;
-            }
           }
           if (rule.name != null) {
             mappedRule.put('name', rule.name);
-            if (doSourceRule) {
-              ctx.wiz.issue.source_rule.name = rule.name;
-            }
           }
           if (rule.description != null) {
             mappedRule.put('description', rule.description);
-            if (doSourceRule && (rule.__typename != null)) {
-              if (rule.__typename == "Control") {
-                ctx.wiz.issue.source_rule.control_description = rule.description;
-              }
-              if (rule.__typename == "CloudConfigurationEvent") {
-                ctx.wiz.issue.source_rule.control_cloud_configuration_rule_description = rule.description;
-              }
-              if (rule.__typename == "CloudEventRule") {
-                ctx.wiz.issue.source_rule.cloud_event_rule_description = rule.description;
-              }
-              if (ctx.message == null) {
-                ctx.message = rule.description;
-              }
+            if (ctx.message == null) {
+              ctx.message = rule.description;
             }
           }
           if (rule.resolutionRecommendation != null) {
             mappedRule.put('resolution_recommendation', rule.resolutionRecommendation);
-            if (doSourceRule) {
-              ctx.wiz.issue.source_rule.resolution_recommendation = rule.resolutionRecommendation;
-             }
           }
           if (rule.remediationInstructions != null) {
             mappedRule.put('remediation_instructions', rule.remediationInstructions);
@@ -384,15 +359,9 @@ processors:
             def risksList = new ArrayList();
             risksList.addAll(rule.risks);
             mappedRule.put('risks', risksList);
-            if (doSourceRule) {
-              ctx.wiz.issue.source_rule.risks = risksList;
-            }
           }
           if (rule.securitySubCategories != null) {
             mappedRule.put('security_sub_categories', rule.securitySubCategories);
-            if (doSourceRule) {
-              ctx.wiz.issue.source_rule.security_sub_categories = rule.securitySubCategories;
-             }
           }
           if (rule.type != null) {
             mappedRule.put('type', rule.type);
@@ -447,7 +416,6 @@ processors:
         - wiz.issue.entity_snapshot.region
         - wiz.issue.created_at
         - wiz.issue.id
-        - wiz.issue.source_rule.control_description
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

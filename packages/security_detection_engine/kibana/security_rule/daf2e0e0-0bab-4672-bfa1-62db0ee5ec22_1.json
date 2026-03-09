@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when there is activity on a private GitHub repository from an unusual IP address. Adversaries may access private repositories from unfamiliar IPs to exfiltrate sensitive code or data, potentially indicating a compromise or unauthorized access.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-github.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Github Activity on a Private Repository from an Unusual IP",
+        "new_terms_fields": [
+            "source.ip",
+            "github.repo"
+        ],
+        "query": "event.dataset:\"github.audit\" and event.action:(\"git.push\" or \"git.clone\") and github.repository_public:false\n",
+        "references": [
+            "https://www.wiz.io/blog/shai-hulud-2-0-ongoing-supply-chain-attack",
+            "https://trigger.dev/blog/shai-hulud-postmortem",
+            "https://posthog.com/blog/nov-24-shai-hulud-attack-post-mortem"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repository_public",
+                "type": "boolean"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "daf2e0e0-0bab-4672-bfa1-62db0ee5ec22",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Tactic: Initial Access",
+            "Tactic: Persistence",
+            "Data Source: Github",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": []
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "daf2e0e0-0bab-4672-bfa1-62db0ee5ec22_1",
+    "type": "security-rule"
+}

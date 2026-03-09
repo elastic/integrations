@@ -1,0 +1,34 @@
+{
+    "id": "aws-bedrock-agentcore-gateway-high-latency",
+    "type": "alerting_rule_template",
+    "attributes": {
+      "name": "[AWS Bedrock AgentCore] Gateway high latency",
+      "tags": ["AWS", "Amazon Bedrock AgentCore"],
+      "ruleTypeId": ".es-query",
+      "schedule": {
+        "interval": "5m"
+      },
+      "params": {
+        "searchType": "esqlQuery",
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m",
+        "esqlQuery": {
+          "esql": "// Alert triggers when high latency is detected during AWS Bedrock AgentCore Gateway invocations.\n//\n// Gateway serves as a unified API endpoint that enables agents to securely connect to\n// enterprise tools and resources. High latency can indicate network issues, slow\n// downstream services, or resource constraints.\n//\n// Latency measures the average time elapsed between receiving the gateway request\n// and returning the response, measured in milliseconds.\n//\n// The alert is grouped by cloud account, region, and resource to pinpoint the\n// specific gateway experiencing high latency.\n//\n// To adjust sensitivity, change the threshold in the WHERE clause (default: 5000ms = 5 seconds).\n// For more details, see: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-gateway-metrics.html\n\nFROM metrics-aws_bedrock_agentcore.metrics-*\n| WHERE aws.dimensions.Operation == \"InvokeGateway\"\n| STATS avg_latency_ms = avg(aws.bedrock_agentcore.metrics.Latency.avg) BY cloud.account.id, cloud.region, aws.dimensions.Resource\n| WHERE avg_latency_ms > 5000"
+        },
+        "groupBy": "row",
+        "timeField": "event.ingested"
+      },
+      "alertDelay": {
+        "active": 1
+      }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+  }
+
+
+
+
+
+

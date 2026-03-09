@@ -61,10 +61,10 @@ isPackagePublished() {
 commitExists() {
   local commit_sha=$1
   local branch=$2
-  git checkout $branch
+  git checkout "$branch"
   local searchResult=""
-  searchResult="$(git branch --contains $commit_sha --format="%(refname:short)" | grep -E ^${branch}$)"
-  git checkout $BUILDKITE_BRANCH
+  searchResult="$(git branch --contains "$commit_sha" --format="%(refname:short)" | grep -E ^${branch}$)"
+  git checkout "$BUILDKITE_BRANCH"
   if [ "${searchResult}" == "${branch}" ]; then
     echo "The commit $commit_sha exists in the branch $branch"
     return 0
@@ -113,7 +113,7 @@ removeOtherPackages() {
 }
 
 update_git_config() {
-    pushd $WORKSPACE > /dev/null
+    pushd "$WORKSPACE" > /dev/null
     git config --global user.name "${GITHUB_USERNAME}"
     git config --global user.email "${GITHUB_EMAIL}"
 
@@ -183,6 +183,11 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
 
+    # Copy tools.go so we have the dev scripts dependencies required
+    echo "Copying tools.go from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "tools.go"
+    git add tools.go
+
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     go mod tidy
 
@@ -214,16 +219,16 @@ updateBackportBranchContents() {
   if [ "$DRY_RUN" == "true" ];then
     echo "DRY_RUN mode, nothing will be pushed."
     # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev, .go-version, .github/CODEOWNERS and package to be backported)
-    git --no-pager diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME .buildkite/ dev/ go.sum go.mod .go-version .github/CODEOWNERS "packages/${PACKAGE_FOLDER_NAME}"
+    git --no-pager diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME .buildkite/ dev/ go.sum go.mod .go-version tools.go .github/CODEOWNERS "packages/${PACKAGE_FOLDER_NAME}"
   else
     echo "Pushing..."
-    git push origin $BACKPORT_BRANCH_NAME
+    git push origin "$BACKPORT_BRANCH_NAME"
   fi
 
   cleanup_gh
 }
 
-if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}(\-.*)?$ ]]; then
+if ! [[ "${PACKAGE_VERSION}" =~ ^[0-9]+(\.[0-9]+){2}(\-.*)?$ ]]; then
   buildkite-agent annotate "The entered package version ${PACKAGE_VERSION} doesn't match the pattern" --style "error"
   exit 1
 fi
@@ -262,7 +267,7 @@ if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
 fi
 
 echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
-if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_FOLDER_NAME}/manifest.yml | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
+if ! git show -p "${BASE_COMMIT}" "packages/${PACKAGE_FOLDER_NAME}/manifest.yml" | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
   buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
   exit 1
 fi

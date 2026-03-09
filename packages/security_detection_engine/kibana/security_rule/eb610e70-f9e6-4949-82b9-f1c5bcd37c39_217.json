@@ -1,0 +1,137 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts that requests Kerberos service tickets via KerberosRequestorSecurityToken. Attackers request service tickets to perform Kerberoasting against service accounts.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Kerberos Ticket Request",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating PowerShell Kerberos Ticket Request\n\nThis alert indicates that PowerShell script block content referenced `KerberosRequestorSecurityToken`, a .NET type that can be used to request Kerberos service tickets. In adversary tradecraft, repeated or targeted service ticket requests can support Kerberoasting by obtaining ticket material for offline password cracking of service accounts.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Analyze `powershell.file.script_block_text` to determine whether the reference reflects active ticket requesting or incidental text:\n  - Identify instantiation patterns (for example, creating a new `KerberosRequestorSecurityToken` object) versus references in comments, strings, or documentation.\n  - Identify any service identifiers in the script (for example, SPN-like strings in the form `SERVICE/HOST`) to understand which services are being targeted.\n  - Look for signs of bulk activity (loops, arrays/lists of targets, or repeated ticket requests) that would be atypical for troubleshooting and more consistent with Kerberoasting.\n  - Look for evidence of ticket material handling or staging (formatting large blobs, encoding/decoding, writing output to disk, or preparing data for transfer) in the same or nearby script blocks.\n\n- Reconstruct complete script content when split across multiple events:\n  - If `powershell.total` indicates multiple fragments, pivot on `powershell.file.script_block_id` and order by `powershell.sequence` to rebuild the full script block before drawing conclusions.\n  - Note whether the detected fragment is a helper function, an imported module snippet, or part of a larger multi-stage script.\n\n- Use script size and origin to guide triage:\n  - Review `powershell.file.script_block_length` to understand whether the script block is a small snippet or a larger embedded tool/module.\n  - Review `file.path`, `file.directory`, and `file.name` (when present) to determine whether the script originated from a controlled location. If these fields are absent, treat the activity as potentially interactive or fileless and prioritize reconstructing the full script content.\n\n- Validate execution context and expectedness:\n  - Review `user.name`, `user.domain`, and `user.id` to determine whether the account is expected to perform Kerberos troubleshooting or authentication testing from PowerShell.\n  - Review `host.name` and `host.id` to determine whether the host is an expected administrative endpoint (for example, a management workstation) or an atypical system for this activity.\n  - Check for repeated alerts for the same `user.id` or `host.id` over a short period, which can indicate automation or systematic targeting.\n\n- Assess potential scope and impact:\n  - Identify whether the same script content (or the same file name/path, when available) appears across multiple hosts or users, which can indicate a distributed execution campaign.\n  - If the script content indicates specific target services, identify the corresponding service accounts in your identity inventory and prioritize high-privilege or broadly scoped services for review.\n\n- Correlate with adjacent telemetry around `@timestamp` (if available in your environment):\n  - Review authentication auditing on domain controllers for Kerberos service ticket requests near the alert time and attribute requests to the initiating account and source host to confirm whether ticket requests occurred and whether there was a burst across multiple services.\n  - Review endpoint process telemetry for the same host and time window to identify how PowerShell was initiated and whether the parent activity aligns with an expected administrative workflow.\n  - Review other PowerShell script block events for the same `user.id` and `host.id` before and after the alert for follow-on behaviors such as discovery, credential access, persistence, or data staging.\n\n- Scope the behavior across the environment:\n  - Search for additional occurrences of `KerberosRequestorSecurityToken` in `powershell.file.script_block_text` to identify other potentially affected hosts, users, or time periods.\n  - Compare the observed script content and file origin (when available) with known-good scripts to determine whether the behavior is novel or consistent with approved operational activity.\n\n### False positive analysis\n\n- Legitimate Kerberos troubleshooting, authentication validation, or service connectivity testing can request service tickets from PowerShell, especially in environments with custom identity tooling.\n- Some administrative automation may request service tickets for a small, fixed set of internal services as part of health checks or integration testing.\n- Benign activity is more likely when the script source is known and controlled, the executing account and host are expected for identity administration, and the behavior is limited in scope (few services, short duration, no evidence of ticket material staging).\n\n### Response and remediation\n\n- If the activity is confirmed or strongly suspected malicious:\n  - Follow incident response procedures to contain the affected host(s) and prevent additional credential access and lateral movement.\n  - Identify the services and accounts potentially targeted based on the script content and Kerberos auditing, then prioritize credential rotation for impacted service accounts and review their privilege and group memberships.\n  - Hunt for additional evidence of ticket collection and cracking workflows by reviewing related PowerShell script blocks on the same host/user and by reviewing Kerberos service ticket request patterns over the same time period.\n  - Assess whether the initiating user account is compromised and take appropriate actions (credential reset, session invalidation, and access review) based on your organization's response process.\n\n- If the activity is confirmed benign:\n  - Document the script owner, purpose, and expected execution context (expected `user.name`, `host.name`, and script location) to speed up future triage.\n  - Where possible, move scripts to controlled locations and limit execution to authorized administrative accounts and hosts.\n  - Continue monitoring for deviations, such as execution by new accounts, execution from unusual hosts, or expansion to a larger set of targeted services.\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    KerberosRequestorSecurityToken\n  ) and not user.id : (\"S-1-5-18\" or \"S-1-5-20\") and\n  not powershell.file.script_block_text : (\n    (\"sentinelbreakpoints\" and (\"Set-PSBreakpoint\" or \"Set-HookFunctionTabs\")) or\n    (\"function global\" and \"\\\\windows\\\\sentinel\\\\4\")\n  )\n",
+        "references": [
+            "https://cobalt.io/blog/kerberoast-attack-techniques",
+            "https://github.com/EmpireProject/Empire/blob/master/data/module_source/credentials/Invoke-Kerberoast.ps1"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "eb610e70-f9e6-4949-82b9-f1c5bcd37c39",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1558",
+                        "name": "Steal or Forge Kerberos Tickets",
+                        "reference": "https://attack.mitre.org/techniques/T1558/",
+                        "subtechnique": [
+                            {
+                                "id": "T1558.003",
+                                "name": "Kerberoasting",
+                                "reference": "https://attack.mitre.org/techniques/T1558/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 217
+    },
+    "id": "eb610e70-f9e6-4949-82b9-f1c5bcd37c39_217",
+    "type": "security-rule"
+}

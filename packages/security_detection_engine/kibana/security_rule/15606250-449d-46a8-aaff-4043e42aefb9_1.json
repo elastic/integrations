@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the creation or modification of a StartupParameters.plist file, indicating the presence of a StartupItem on the system. StartupItems have been deprecated on modern macOS systems (post Mavericks) in favor of Launch Daemons but still function. Creation of a StartupItem should be highly suspicious as legitimate applications no longer use this method for persistence.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious StartupItem Plist Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious StartupItem Plist Creation\n\nStartupItems are a deprecated macOS persistence mechanism that predates LaunchDaemons and was phased out after OS X Mavericks. Despite deprecation, the StartupItem infrastructure still functions on modern macOS versions for backward compatibility. Because legitimate software no longer uses StartupItems, the creation of a StartupParameters.plist file in /Library/StartupItems/ or /System/Library/StartupItems/ is highly anomalous and strongly indicates malicious activity seeking persistence through an overlooked mechanism.\n\n### Possible investigation steps\n\n- Examine the file.path to identify the specific StartupItem directory and verify that it was newly created versus modified.\n- Review the StartupParameters.plist contents using plutil to identify the Description, Provides, OrderPreference, and other configuration values.\n- Locate the StartupItem script in the same directory (typically named after the item) and analyze its contents for malicious commands.\n- Check the process.executable that created the StartupItem to understand the initial delivery mechanism.\n- Review file creation timestamps to correlate the StartupItem creation with other suspicious activity on the system.\n- Search for additional files or binaries that may have been deployed alongside the StartupItem.\n- Check for corresponding entries in /etc/rc files that may interact with the StartupItem.\n\n### False positive analysis\n\n- Very old legacy applications may use StartupItems for backward compatibility. Verify the software's legitimacy and whether it is still supported.\n- Some enterprise or industrial software may not have been updated to use modern persistence mechanisms. Confirm with IT operations if legacy software is expected.\n- Apple's shove process is already excluded in the query as it may interact with StartupItem directories during system maintenance.\n\n### Response and remediation\n\n- Remove the entire StartupItem directory containing the malicious StartupParameters.plist and associated scripts.\n- Verify that the StartupItem was not successfully executed by checking system logs for execution evidence.\n- Reboot the system to confirm the StartupItem has been fully removed and no longer executes.\n- Investigate the initial access vector that allowed creation of the StartupItem.\n- Search for other deprecated persistence mechanisms on the system that may indicate comprehensive malware deployment.\n- Review other systems in the environment for similar StartupItem creations.\n- Monitor the /Library/StartupItems/ directory for future unauthorized file creation.\n- Consider implementing file integrity monitoring on persistence directories to detect future modifications.\n",
+        "query": "file where host.os.type == \"macos\" and event.type != \"deletion\" and \n  file.name == \"StartupParameters.plist\" and \n  file.path like (\"/System/Library/StartupItems/*/StartupParameters.plist\", \n  \"/Library/StartupItems/*/StartupParameters.plist\") and\n  not (process.code_signature.signing_id == \"com.apple.shove\" and process.code_signature.trusted == true)\n",
+        "references": [
+            "https://www.virusbulletin.com/uploads/pdf/conference/vb2014/VB2014-Wardle.pdf"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.signing_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "15606250-449d-46a8-aaff-4043e42aefb9",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1037",
+                        "name": "Boot or Logon Initialization Scripts",
+                        "reference": "https://attack.mitre.org/techniques/T1037/",
+                        "subtechnique": [
+                            {
+                                "id": "T1037.005",
+                                "name": "Startup Items",
+                                "reference": "https://attack.mitre.org/techniques/T1037/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "15606250-449d-46a8-aaff-4043e42aefb9_1",
+    "type": "security-rule"
+}

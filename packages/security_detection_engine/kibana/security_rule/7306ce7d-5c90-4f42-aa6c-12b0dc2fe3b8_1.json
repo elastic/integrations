@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects Elastic Defend behavior alerts that are observed for the first time today when compared against the previous 5 days of alert history. It highlights low-volume, newly observed alerts tied to a specific detection rule, analysts can use this to prioritize triage and response.",
+        "from": "now-7205m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Newly Observed Elastic Defend Behavior Alert",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Newly Observed Elastic Defend Behavior Alert\n\nElastic Defend behavior alerts indicate suspicious activity observed on an endpoint that may not yet be widespread or repeated.\nThis rule surfaces newly observed, low-frequency behavior alerts affecting a single agent within the current day, which can\nrepresent early-stage malware execution, initial persistence attempts, or hands-on-keyboard activity.\n\nBecause the alert has not been seen previously for this rule and host, it should be prioritized for validation to determine\nwhether it represents a true compromise or rare benign activity.\n\n### Investigation Steps\n\n- Identify the affected host and review the associated Elastic Defend rule name to understand the behavior that triggered the alert.\n- Review the process details, including executable path, parent process, command line, and SHA-256 hash.\n- Determine whether the process is expected on the host by validating its origin, signer, and execution context.\n- Examine the alert timeline to confirm that all activity occurred within a short time window and assess whether behavior escalated.\n- Correlate with additional endpoint telemetry such as:\n  - Process creation and termination\n  - File modifications\n  - Network connections\n  - Registry or persistence-related activity\n- Check whether the process hash, command line, or related indicators are known malicious or associated with recent campaigns.\n- Validate the user context under which the activity occurred and assess whether it aligns with normal behavior for that account.\n\n### False Positive Considerations\n\n- Newly deployed or updated software may introduce behavior not previously observed on the host.\n- Administrative scripts or automation tools can trigger behavior-based detections when first introduced.\n- Security tooling, IT management agents, or EDR integrations may generate new behavior alerts during updates or configuration changes.\n- Development or testing environments may produce one-off behaviors that resemble malicious techniques.\n\n### Response and Remediation\n\n- If the activity is confirmed malicious, isolate the affected host to prevent further execution or lateral movement.\n- Terminate malicious processes and remove any dropped files or persistence mechanisms.\n- Collect forensic artifacts to understand initial access and execution flow.\n- Patch or remediate any vulnerabilities or misconfigurations that enabled the behavior.\n- If benign, document the finding and consider tuning or exception handling to reduce future noise.\n- Continue monitoring the host and environment for recurrence of the behavior or related alerts.",
+        "query": "from logs-endpoint.alerts-*\n| WHERE event.code == \"behavior\" and rule.name is not null\n| STATS Esql.alerts_count = count(*),\n        Esql.first_time_seen = MIN(@timestamp),\n        Esql.last_time_seen = MAX(@timestamp),\n        Esql.agents_distinct_count = COUNT_DISTINCT(agent.id),\n        Esql.process_executable = VALUES(process.executable),\n        Esql.process_parent_executable = VALUES(process.parent.executable),\n        Esql.process_command_line = VALUES(process.command_line),\n        Esql.process_hash_sha256 = VALUES(process.hash.sha256),\n        Esql.host_id = VALUES(host.id),\n        Esql.user_name = VALUES(user.name) by rule.name\n// first time seen in the last 5 days - defined in the rule schedule Additional look-back time\n| eval Esql.recent = DATE_DIFF(\"minute\", Esql.first_time_seen, now())\n// first time seen is within 10m of the rule execution time\n| where Esql.recent <= 10 and Esql.agents_distinct_count == 1 and Esql.alerts_count <= 10 and (Esql.last_time_seen == Esql.first_time_seen)\n| keep rule.name, Esql.*\n",
+        "references": [
+            "https://github.com/elastic/protections-artifacts/tree/main/behavior"
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.agents_distinct_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.alerts_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_time_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.last_time_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_hash_sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_parent_executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.recent",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "rule.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7306ce7d-5c90-4f42-aa6c-12b0dc2fe3b8",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "7306ce7d-5c90-4f42-aa6c-12b0dc2fe3b8_1",
+    "type": "security-rule"
+}
