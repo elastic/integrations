@@ -127,13 +127,6 @@ processors:
     detectors: ["system"]
     system:
       hostname_sources: ["os"]
-      resource_attributes:
-        host.name:
-          enabled: true
-        host.id:
-          enabled: false
-        host.arch:
-          enabled: true
 ```
 
 ### Exporters and pipelines
