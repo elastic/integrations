@@ -39,7 +39,7 @@ server {
 
 ### Receivers
 
-The collector configuration uses three receivers:
+The collector configuration uses `nginx` and `filelog` receivers:
 
 - **`nginx`** — Scrapes performance metrics from the NGINX `stub_status` endpoint.
 - **`filelog/nginx_access`** — Tails the NGINX access log file.
