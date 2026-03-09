@@ -26,7 +26,7 @@ If you are running version 8.18+, the Defend integration only collects a [subset
     1. Use the new data view (`logs-*, ml-rdp-lmd`) to create anomaly detection jobs for this package.
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Supplied configurations**.
     1. Select **Lateral Movement Detection** and click **Run data recognizer**.
-    1. Next to the data view name you created in the previous step, click the link to "create jobs".
+    1. Next to the data view name you created in the previous step, click the link to "create jobs."
     1. Verify the settings for the jobs and click **Create jobs** to finalize job creation.
     1. **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [lmd-ml file](https://github.com/elastic/integrations/blob/main/packages/lmd/kibana/ml_module/lmd-ml.json#L10). For example, this would be available in `logs-endpoint.events.*` if you used Elastic Defend to collect events.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana.
