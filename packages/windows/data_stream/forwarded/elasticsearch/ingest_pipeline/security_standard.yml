@@ -860,6 +860,19 @@ processors:
             ctx.event[k] = v;
           }
         });
+  # Copy registry path from ObjectName for Object Access events.
+  # 4656: handle requested, 4657: registry value modified, 4658: handle closed,
+  # 4660: object deleted, 4663: attempt to access object.
+  - set:
+      field: registry.path
+      copy_from: winlog.event_data.ObjectName
+      ignore_empty_value: true
+      if: >-
+        ctx.event?.code != null &&
+        ['4656', '4657', '4658', '4660', '4663'].contains(String.valueOf(ctx.event.code)) &&
+        ctx.winlog?.event_data?.ObjectName != null &&
+        ctx.winlog.event_data.ObjectName != '' &&
+        ctx.winlog.event_data.ObjectName.startsWith('\\REGISTRY\\')
   - script:
       lang: painless
       ignore_failure: false
