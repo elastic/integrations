@@ -1,14 +1,14 @@
 {
-  "id": "cockroachdb_otel-liveness-heartbeat-failures",
+  "id": "cockroachdb_otel-rpc-unhealthy",
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "name": "[CockroachDB OTel] Liveness heartbeat failures",
+    "name": "[CockroachDB OTel] Unhealthy RPC connections",
     "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "cockroachdb",
-      "availability"
+      "network"
     ],
     "schedule": {
       "interval": "1m"
@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "TS metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND liveness_heartbeatfailures IS NOT NULL\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n// INCREASE for counter: any increase indicates heartbeat failures\n| STATS increase = SUM(INCREASE(liveness_heartbeatfailures)) BY attributes.node_id, host.name\n| WHERE increase > 0\n| SORT increase DESC"
+        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND rpc_connection_unhealthy IS NOT NULL\n  AND rpc_connection_unhealthy > 0\n// > 0 indicates possible network partition\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS unhealthy = MAX(rpc_connection_unhealthy) BY attributes.node_id, host.name\n| SORT unhealthy DESC"
       },
       "size": 0,
       "threshold": [0],

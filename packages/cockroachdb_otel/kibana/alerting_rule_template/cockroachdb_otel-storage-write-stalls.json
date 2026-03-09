@@ -1,14 +1,14 @@
 {
-  "id": "cockroachdb_otel-liveness-heartbeat-failures",
+  "id": "cockroachdb_otel-storage-write-stalls",
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "name": "[CockroachDB OTel] Liveness heartbeat failures",
+    "name": "[CockroachDB OTel] Storage write stalls detected",
     "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "cockroachdb",
-      "availability"
+      "storage"
     ],
     "schedule": {
       "interval": "1m"
@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "TS metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND liveness_heartbeatfailures IS NOT NULL\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n// INCREASE for counter: any increase indicates heartbeat failures\n| STATS increase = SUM(INCREASE(liveness_heartbeatfailures)) BY attributes.node_id, host.name\n| WHERE increase > 0\n| SORT increase DESC"
+        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND storage_write_stalls IS NOT NULL\n  AND storage_write_stalls > 0\n// Store-level metric: intentional write stalls due to disk backpressure\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS stalls = MAX(storage_write_stalls) BY attributes.node_id, attributes.store, host.name\n| SORT stalls DESC"
       },
       "size": 0,
       "threshold": [0],

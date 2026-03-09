@@ -1,17 +1,17 @@
 {
-  "id": "cockroachdb_otel-liveness-heartbeat-failures",
+  "id": "cockroachdb_otel-io-admission-overload",
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "name": "[CockroachDB OTel] Liveness heartbeat failures",
+    "name": "[CockroachDB OTel] IO admission control overload",
     "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "cockroachdb",
-      "availability"
+      "storage"
     ],
     "schedule": {
-      "interval": "1m"
+      "interval": "5m"
     },
     "alertDelay": {
       "active": 2
@@ -23,13 +23,13 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "TS metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND liveness_heartbeatfailures IS NOT NULL\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n// INCREASE for counter: any increase indicates heartbeat failures\n| STATS increase = SUM(INCREASE(liveness_heartbeatfailures)) BY attributes.node_id, host.name\n| WHERE increase > 0\n| SORT increase DESC"
+        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND admission_io_overload IS NOT NULL\n  AND admission_io_overload > 1.0\n// Values > 1.0 indicate storage overload; adjust threshold if needed\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS overload = MAX(admission_io_overload) BY attributes.node_id, attributes.store, host.name\n| SORT overload DESC"
       },
       "size": 0,
       "threshold": [0],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
-      "timeWindowSize": 5,
+      "timeWindowSize": 10,
       "timeWindowUnit": "m",
       "groupBy": "row",
       "termField": "attributes.node_id",
