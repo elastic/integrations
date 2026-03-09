@@ -1,17 +1,17 @@
 # NGINX metrics and logs from OpenTelemetry Collector
 
-The NGINX OTEL integration allows you to monitor [Nginx](https://nginx.org/), a high-performance web server, reverse proxy, and load balancer. NGINX is widely used for serving web content, proxying traffic, and load balancing across multiple servers.
+The NGINX OpenTelemetry Assets package allows you to monitor [Nginx](https://nginx.org/), a high-performance web server, reverse proxy, and load balancer. NGINX is widely used for serving web content, proxying traffic, and load balancing across multiple servers.
 
-Use the NGINX OTEL integration to collect and analyze performance metrics and logs from your NGINX instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting performance issues.
+Use the NGINX OpenTelemetry Assets package to collect and analyze performance metrics and logs from your NGINX instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting performance issues.
 
-For example, if you want to monitor the request rate or connection status of your NGINX server, you can use the [NGINX Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver) to collect metrics such as `nginx.requests` or `nginx.connections_current`, and the [Filelog Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) to collect access and error logs. The NGINX OTEL integration lets you visualize these in Kibana dashboards, set up alerts for high error rates, or troubleshoot by analyzing metric and log trends.
+For example, if you want to monitor the request rate or connection status of your NGINX server, you can use the [NGINX Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver) to collect metrics such as `nginx.requests` or `nginx.connections_current`, and the [Filelog Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) to collect access and error logs. The NGINX OpenTelemetry Assets package lets you visualize these in Kibana dashboards, set up alerts for high error rates, or troubleshoot by analyzing metric and log trends.
 
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-1. Compatibility and supported versions: This integration is compatible with systems running either [EDOT Collector](https://www.elastic.co/docs/reference/opentelemetry/quickstart/) or vanilla upstream Collector and NGINX with the `stub_status` module enabled. This integration has been tested with OTEL collector version [v0.129.0](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.129.0), EDOT collector version [9.0](https://www.elastic.co/docs/reference/opentelemetry/compatibility/collectors), and NGINX version 1.27.5. 
+1. Compatibility and supported versions: This package is compatible with systems running either [EDOT Collector](https://www.elastic.co/docs/reference/opentelemetry/quickstart/) or vanilla upstream Collector and NGINX with the `stub_status` module enabled. This package has been tested with OTEL collector version [v0.146.1](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.146.1), EDOT collector version [9.0](https://www.elastic.co/docs/reference/opentelemetry/compatibility/collectors), and NGINX version 1.27.5. 
 
 2. Permissions required: The collector requires access to the NGINX `stub_status` endpoint (for example, http://localhost:80/nginx_status) and read access to the NGINX log files (typically `/var/log/nginx/access.log` and `/var/log/nginx/error.log`). When running the collector, make sure you have the appropriate permissions.
 
@@ -172,7 +172,7 @@ The `resourcedetection/system` processor is required across all pipelines to pop
 
 ## Dashboards
 
-This integration includes three pre-built Kibana dashboards:
+This package includes three pre-built Kibana dashboards:
 
 - **[Nginx OTel] Request Health** — Golden signals overview: errors (4xx/5xx), throughput, and saturation. Monitors request rates from access logs, error log severity, and connection states from stub_status metrics.
 - **[Nginx OTel] Server Internals** — Deep-dive into connection handling: active/reading/writing/waiting states, accept and handled rates, request processing, and dropped connections.
@@ -182,7 +182,7 @@ Each dashboard includes a host filter control and cross-links to navigate betwee
 
 ## Alerting rule templates
 
-This integration ships five alerting rule templates that you can enable and customize:
+This package ships five alerting rule templates that you can enable and customize:
 
 | Rule | Default threshold | Window | Description |
 |------|-------------------|--------|-------------|
@@ -196,7 +196,7 @@ All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thres
 
 ## SLO templates
 
-This integration includes two SLO templates:
+This package includes two SLO templates:
 
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
