@@ -39,7 +39,23 @@ services:
         echo "Starting stressful container..."
         # Identify if container already exists to avoid conflict on restart
         docker rm -f stressful || true
-        docker run -d --name stressful alpine sh -c "while true; do :; done"
+        # Pull alpine with retries to handle transient registry/network errors (same idea as elastic-package retry)
+        # Use $$ so Docker Compose does not expand variables at compose time; the shell in the container will expand them at runtime.
+        retries=5
+        count=0
+        until docker pull alpine; do
+          exit=$$?
+          wait=$$((2 ** count))
+          count=$$((count + 1))
+          if [ $$count -lt "$$retries" ]; then
+            echo "Retry $$count/$$retries exited $$exit, retrying in $$wait seconds..."
+            sleep $$wait
+          else
+            echo "Retry $$count/$$retries exited $$exit, no more retries left."
+            exit $$exit
+          fi
+        done
+        docker run -d --name stressful alpine sh -c "while true; do sleep 1; echo 'Hello, World!'; done"
         echo "Stressful container running."
         # Keep this container alive
         tail -f /var/log/workload.log
