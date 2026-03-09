@@ -71,7 +71,10 @@ program: |-
                 }
               ),
               "cursor": {
-                "last_timestamp": (size(nodes) > 0) ? nodes[size(nodes) - 1].lastUpdate : state.?cursor.last_timestamp,
+                "last_timestamp": (size(nodes) > 0) ?
+                  nodes[size(nodes) - 1].lastUpdate 
+                :
+                  state.?cursor.last_timestamp.orValue(timeframe.startTime),
               },
               "want_more": body.data.assets.pageInfo.hasNextPage,
             }
@@ -128,7 +131,6 @@ state:
         }
         pageInfo {
           hasNextPage
-          endCursor
         }
       }
     }
