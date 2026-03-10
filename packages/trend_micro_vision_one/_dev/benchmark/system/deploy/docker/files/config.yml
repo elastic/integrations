@@ -1,0 +1,113 @@
+rules:
+  - path: /v3.0/workbench/alerts
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        body: |-
+          {"totalCount":100,"count":10,"items":[
+            {{- $g := glob "/var/log/corpus-*" -}}
+            {{- range $g -}}
+              {{- file . -}}
+            {{- end -}}
+            {"schemaVersion":"1.0","id":"WB-BENCH-LAST","investigationStatus":"New","workbenchLink":"https://portal.visionone.trendmicro.com/workbench","alertProvider":"SAE","model":"Benchmark Alert","score":50,"severity":"medium","createdDateTime":"2020-04-30T00:01:15Z","updatedDateTime":"2023-04-30T00:01:16Z","description":"Benchmark last alert item.","impactScope":{"desktopCount":0,"serverCount":0,"accountCount":0,"emailAddressCount":0,"entities":[]},"indicators":[],"matchedRules":[]}
+          ]}
+  - path: /v3.0/audit/logs
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        body: |-
+          {"items":[
+            {{- $g := glob "/var/log/corpus-*" -}}
+            {{- range $g -}}
+              {{- file . -}}
+            {{- end -}}
+            {"loggedDateTime":"2022-02-24T07:29:48Z","loggedUser":"Root Account","loggedRole":"Master Administrator","accessType":"Console","category":"Logon and Logoff","activity":"Benchmark audit","result":"Successful","details":{"property1":"benchmark"}}
+          ]}
+  - path: /v3.0/search/detections
+    methods: ['GET']
+    request_headers:
+      TMV1-Query: "uuid:*"
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        body: |-
+          {"progressRate":100,"items":[
+            {{- $g := glob "/var/log/corpus-*" -}}
+            {{- range $g -}}
+              {{- file . -}}
+            {{- end -}}
+            {"act":"Clean","actResult":"Quarantined successfully","app":"HTTP","appGroup":"HTTP","behaviorCat":"Grey-Detection","blocking":"Web reputation","cat":50,"detectionType":"File","deviceDirection":"outbound","deviceGUID":"bench-device","dpt":53,"dst":["81.2.69.142"],"endpointGUID":"bench-endpoint","endpointHostName":"bench-host","endpointIp":["81.2.69.142"],"eventId":"100117","eventName":"SECURITY_RISK_DETECTION","eventSubName":"Attack Discovery","eventTime":1602724592000,"eventTimeDT":"2021-06-10T01:38:38+00:00","fileHash":"3395856ce81f2b7382dee72602f798b642f14140","fileName":["benchmark.exe"],"fileSize":"0","hostName":"bench-host","malName":"Benchmark_test","malType":"Virus/Malware","objectCmd":["bench.exe"],"objectFileHashSha1":"00496B4D53CEFE031B9702B3385C9F4430999932","objectFileHashSha256":"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7","objectFilePath":"C:\\bench\\file.exe","objectName":"bench.exe","pname":"Apex One","processCmd":"bench.exe","processFileHashSha1":"00496B4D53CEFE031B9702B3385C9F4430999932","processFileHashSha256":"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7","processFilePath":"C:\\bench\\process.exe","processName":"bench","productCode":"sao","pver":"20.0.0.877","request":"https://example.com","rt":"2020-10-15T01:16:32.000Z","rt_utc":"2020-10-15T01:16:32.000Z","searchDL":"DDL","severity":2,"spt":58871,"src":["81.2.69.192"],"tags":["XSAE.F2140"],"uuid":"bench-uuid-last"}
+          ]}
+  - path: /v3.0/search/endpointActivities
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        body: |-
+          {"items":[
+            {{- $g := glob "/var/log/corpus-*" -}}
+            {{- range $g -}}
+              {{- file . -}}
+            {{- end -}}
+            {"dpt":443,"dst":"81.2.69.142","endpointGuid":"bench-guid","endpointHostName":"bench-host","endpointIp":["1.128.0.0"],"eventId":"1","eventSubId":2,"objectIntegrityLevel":8192,"eventTime":1699876543210,"eventTimeDT":"2023-11-13T10:15:43.210000+00:00","hostName":"bench-host","logonUser":["bench@example.com"],"objectCmd":"bench.exe","objectFileHashSha1":"A1B2C3D4E5F6789012345678901234567890ABCD","objectFilePath":"C:\\bench\\cmd.exe","objectHostName":"bench.example.com","objectIp":"81.2.69.144","objectIps":["81.2.69.144"],"objectPort":8080,"objectRegistryData":"bench","objectRegistryKeyHandle":"hklm\\software","objectRegistryValue":"bench","objectSigner":["Microsoft Windows"],"objectSignerValid":[true],"objectUser":"DOMAIN\\bench","os":"Windows 10","parentCmd":"explorer.exe","parentFileHashSha1":"B2C3D4E5F67890123456789012345678901ABCDE","parentFilePath":"C:\\Windows\\explorer.exe","processCmd":"bench.exe","processFileHashSha1":"C3D4E5F678901234567890123456789012ABCDEF","processFilePath":"C:\\bench\\cmd.exe","request":"https://bench.example.com","searchDL":"EDR","spt":49152,"src":"1.128.0.0","srcFileHashSha1":"D4E5F6789012345678901234567890123ABCDEFG","srcFilePath":"C:\\bench\\installer.exe","tags":["MITRE.T1059.001"],"uuid":"bench-uuid-last"}
+          ],"progressRate":0}
+  - path: /v3.0/search/networkActivities
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        body: |-
+          {"items":[
+            {{- $g := glob "/var/log/corpus-*" -}}
+            {{- range $g -}}
+              {{- file . -}}
+            {{- end -}}
+            {"endpointHostName":"bench-host","customerId":"bench-cust","osName":"Windows 10","dst":"81.2.69.142","endpointGuid":"bench-guid","principalName":"bench@example.com","request":"https://bench.example.com","act":1,"src":"1.128.0.0","serverTls":"TLS 1.3","eventTime":1699876543,"serverProtocol":"HTTP/2","userAgent":"benchmark-agent","rt":1699876545,"tenantGuid":"bench-tenant","eventName":"SWG_ACTIVITY_LOG","application":"Benchmark","ruleName":"Bench_Policy","clientIp":"175.16.199.0","requestBase":"bench.example.com","score":95,"userDomain":"example.com","suid":"Benchmark User","duration":45,"eventSubName":"Benchmark event","fileHash":"","fileHashSha256":"","fileName":"","fileSize":0,"fileType":"","sender":"Benchmark Gateway","detectionType":0,"profile":"standard","userDepartment":"IT","requestMethod":"GET","pname":"2200","pver":"2.1","deviceGUID":"bench-device","ruleType":"access","ruleUuid":"bench-rule","spt":49152,"dpt":443,"policyUuid":"bench-policy","companyName":"Benchmark Corp"}
+          ],"progressRate":0}
+  - path: /v3.0/datalake/dataPipelines
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {"items":[{"createdDateTime":"2022-08-20T12:34:56Z","description":"managed-by-elastic-integrations-trend_micro_vision_one-telemetry","id":"bench-pipeline-001","subType":["all"],"type":"telemetry"}],"count":1}
+  - path: /v3.0/datalake/dataPipelines
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 201
+        body: ""
+  - path: /v3.0/datalake/dataPipelines/bench-pipeline-001/packages
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {"items":[{"id":"bench-pkg-001","createdDateTime":"2021-10-30T19:55:00Z"}],"count":1,"totalCount":1,"requestedDateTime":"2021-10-30T19:00:00Z","latestPackageCreatedDateTime":"2021-10-30T19:55:00Z"}
+      - status_code: 200
+        body: |
+          {"items":[],"count":0,"totalCount":0,"requestedDateTime":"2021-10-30T20:00:00Z","latestPackageCreatedDateTime":"2021-10-30T19:55:00Z"}
+  - path: /v3.0/datalake/dataPipelines/bench-pipeline-001/packages/bench-pkg-001
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        body: |-
+          {{- $g := glob "/var/log/corpus-*" -}}
+          {{- range $g -}}
+            {{- file . -}}
+          {{- end -}}
+          {"eventTime":"1741046000999","authId":"999","endpointGuid":"bench-guid","endpointHostName":"bench-host","endpointIp":["10.2.0.4"],"endpointMacAddress":["7c:1e:52:82:20:31"],"eventHashId":"1234567890","eventId":3,"eventSourceType":1,"eventSubId":204,"processCmd":"svchost.exe","processFilePath":"C:\\Windows\\System32\\svchost.exe","processName":"svchost.exe","processPid":1234,"productCode":"xes","pver":"1.2.0.5960","uuid":"bench-uuid-last"}
