@@ -13,7 +13,9 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+{{#if max_executions}}
 max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{api_host}}
 tags:
 {{#if preserve_original_event}}
@@ -31,51 +33,65 @@ processors:
 {{/if}}
 
 program: |-
-  request(
-  	"POST",
-  	state.url.trim_right("/") + "/graphql"
-  ).with(
-  	{
-  		"Header": {
-  			"Content-Type": ["application/json"],
-  			"Accept": ["application/json"],
-  			"X-ApiKeys": ["key=" + state.key],
-  		},
-  		"Body": {
-  			"query": state.query,
-  			"variables": {
-  				"first": state.limit,
-  				"after": state.?cursor.end_cursor.orValue(null),
-  			},
-  		}.encode_json(),
-  	}
-  ).do_request().as(resp,
-  	bytes(resp.Body).decode_json().as(body,
-  		body.data.assets.nodes.as(nodes,
-  			state.with(
-  				{
-  					"events": nodes.map(e,
-  						{
-  							"message": e,
-  							?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
-  						}
-  					),
-  					"cursor": {"end_cursor": (size(nodes) > 0) ? body.data.assets.pageInfo.endCursor : state.?cursor.end_cursor},
-  					"want_more": body.data.assets.pageInfo.hasNextPage,
-  				}
-  			)
-  		)
-  	)
+  {"startTime": state.?cursor.last_timestamp.orValue(timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339))}.as(timeframe,
+    request(
+      "POST",
+      state.url.trim_right("/") + "/graphql"
+    ).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"],
+          "Accept": ["application/json"],
+          "X-ApiKeys": ["key=" + state.key],
+        },
+        "Body": {
+          "query": state.query,
+          "variables": {
+            "first": state.limit,
+            "filter": {
+              "op": "Or",
+              "expressions": [
+                {"field": "lastUpdate", "op": "GreaterEqual", "values": timeframe.startTime},
+                {"field": "firstSeen", "op": "GreaterEqual", "values": timeframe.startTime},
+              ]
+            },
+            "sort": [{"field": "lastUpdate", "direction": "AscNullFirst"}],
+          },
+        }.encode_json(),
+      }
+    ).do_request().as(resp,
+      bytes(resp.Body).decode_json().as(body,
+        body.data.assets.nodes.as(nodes,
+          state.with(
+            {
+              "events": nodes.map(e,
+                {
+                  "message": e,
+                  ?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+                }
+              ),
+              "cursor": {
+                "last_timestamp": (size(nodes) > 0) ?
+                  nodes[size(nodes) - 1].lastUpdate 
+                :
+                  state.?cursor.last_timestamp.orValue(timeframe.startTime),
+              },
+              "want_more": body.data.assets.pageInfo.hasNextPage,
+            }
+          )
+        )
+      )
+    )
   )
 
 state:
-  want_more: false
   key: {{key}}
   limit: {{limit}}
+  initial_interval: {{initial_interval}}
   preserve_original_event: {{preserve_original_event}}
   query: >-
-    query getAssets($first: Int, $after: String) {
-      assets(first: $first, after: $after) {
+    query getAssets($first: Int, $filter: AssetExpressionsParams, $sort: [AssetSortParams!]) {
+      assets(first: $first, filter: $filter, sort: $sort) {
         nodes {
           id
           name
@@ -115,7 +131,6 @@ state:
         }
         pageInfo {
           hasNextPage
-          endCursor
         }
       }
     }
