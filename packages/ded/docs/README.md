@@ -98,12 +98,13 @@ To customize the datafeed query and other settings such as model memory limit, f
 
 ## v3.0.0 and beyond
 
-v3.0.0 of the package introduces Entity Analytics support for Elastic Stack version 9.4, adding new fields for proper entity resolution.
+v3.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
 
-- Previously installed versions of ML jobs, transforms, and rules will continue to run, giving you time to transition to the new Entity Analytics assets.
-- On installation of this version, new ML jobs, transforms, and rules that utilize Entity Analytics will be available.
-- We recommend installing the new ML jobs and transforms first and check they are properly installed, gathering data and generating anomalies before updating to the latest version of the detection rules provided in 9.4.
+- The new ML jobs include an `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
+- Previously installed ML jobs, transforms, and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
+- We recommend installing the new ML jobs and transforms first and verifying that they are properly set up, collecting data, and generating anomalies before upgrading to the latest detection rules included in 9.4.
 - The new Entity Analytics transforms write to separate destination indices postfixed with `_ea`. Create a new data view for the Entity Analytics anomaly detection jobs using the new destination indices/aliases listed below. Do not mix old and new transform destination indices in the same data view.
+- New dashboards are available in this version with the suffix "(Entity Analytics)" in the title. If you are still running jobs or transforms from before this version, the original dashboards without the suffix remain available.
 
 The new Entity Analytics ML job IDs are:
 - `ded_high_sent_bytes_destination_geo_country_iso_code_ea`
