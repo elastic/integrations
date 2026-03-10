@@ -16,6 +16,7 @@ processors:
       field: event.original
       patterns:
         - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}@%{DATA:user.domain}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
+        - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
         - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.domain}\s%{DATA}:%{IP:client.ip}%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
         - '^%{GREEDYDATA:message}$'
   - grok:
@@ -64,6 +65,7 @@ processors:
       target_field: "event.created"
       formats:
         - "MMM dd HH:mm:ss"
+        - "MMM  d HH:mm:ss"
       timezone: "{{{event.timezone}}}"
       if: ctx.event?.timezone != null && ctx.event?.created != null
       on_failure:
@@ -78,6 +80,7 @@ processors:
       target_field: "event.created"
       formats:
         - "MMM dd HH:mm:ss"
+        - "MMM  d HH:mm:ss"
       if: ctx.event?.timezone == null && ctx.event?.created != null
       on_failure:
         - remove:
