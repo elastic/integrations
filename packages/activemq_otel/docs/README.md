@@ -6,7 +6,7 @@ This content pack provides pre-built dashboards, alert rules, and SLO templates 
 
 ## Compatibility
 
-The Apache ActiveMQ OpenTelemetry assets have been tested with the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper) (`otel.jmx.target.system=activemq`). Apache ActiveMQ (Classic) tested against versions 5.x and 6.x.
+The Apache ActiveMQ OpenTelemetry assets have been tested with the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper) v1.53.0 (`otel.jmx.target.system=activemq`) and OpenTelemetry Collector Contrib v0.145.0. Apache ActiveMQ (Classic) tested against versions 5.x and 6.x.
 
 ## Requirements
 
