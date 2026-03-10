@@ -1,0 +1,212 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts that uses format placeholders like \"{0}{1}\" with the -f operator or ::Format to reorder strings at runtime. Attackers use format-based reconstruction to hide commands or payload strings and evade static analysis and AMSI.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell Obfuscation via String Reordering",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating Potential PowerShell Obfuscation via String Reordering\n\nThis alert indicates a PowerShell script block used indexed format placeholders (for example, \"{0}{1}\") with runtime formatting (for example, the `-f` operator or `::Format`) to reorder and reconstruct strings. This technique can hide meaningful strings (commands, URLs, artifact names) from straightforward text inspection and can be used as part of staged execution.\n\nBecause the detection requires repeated occurrences of these patterns in a larger script block, triage should focus on (1) execution context (host and user), (2) script origin (file-backed vs. in-memory/interactive), and (3) what strings are being reconstructed and what actions they enable.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `Esql.script_block_tmp`: Transformed script block where detection patterns replace original content with a marker to support scoring/counting and quickly spot match locations.\n- `Esql.script_block_pattern_count`: Count of matches for the detection pattern(s) observed in the script block content.\n- `powershell.file.script_block_entropy_bits`: Shannon entropy of the script block. Higher values may indicate obfuscation.\n- `powershell.file.script_block_surprisal_stdev`: Standard deviation of surprisal across the script block. Low values indicate uniform randomness. High values indicate mixed patterns and variability.\n- `powershell.file.script_block_unique_symbols`: Count of distinct characters present in the script block.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Confirm the execution context and initial scope:\n  - Identify the affected endpoint using `host.name` and `host.id`. Check for other security alerts or suspicious activity on the same host around the alert time.\n  - Identify the account context using `user.name`, `user.domain`, and `user.id`. Prioritize alerts where the user is unexpected for the host role or where the user does not typically run PowerShell.\n  - If `file.path` / `file.directory` / `file.name` are present, capture the script location and assess whether the path and filename are expected for that host and user. If file fields are missing, treat the activity as potentially interactive or in-memory and increase emphasis on correlated telemetry.\n\n- Review the script block content and determine what is being reconstructed:\n  - Start with `Esql.script_block_tmp` to quickly locate where formatting patterns occur, then use `powershell.file.script_block_text` as the authoritative source for analysis and evidence.\n  - Identify how formatting is used:\n    - Placeholder-only or placeholder-heavy format strings that primarily consist of `{n}` tokens.\n    - Out-of-order placeholder indexes (for example, `{3}{0}{2}{1}`) and repeated reordering blocks.\n    - Multiple reconstruction stages where formatted output is subsequently reformatted or concatenated.\n  - Reconstruct key strings by mapping placeholder indexes to the arguments/fragments used in each formatting operation. Record any reconstructed strings that indicate follow-on behavior (remote addresses, filenames, persistence identifiers, or execution flow).\n\n- Use the available scoring and statistics fields to guide prioritization:\n  - Review `Esql.script_block_pattern_count` to understand how heavily the script relies on formatting-based reconstruction. Higher counts generally increase suspicion.\n  - Review `powershell.file.script_block_entropy_bits`, `powershell.file.script_block_unique_symbols`, `powershell.file.script_block_surprisal_stdev`, and `powershell.file.script_block_length` to differentiate structured, readable scripts from highly variable or packed content.\n  - Treat these values as supporting signals; base the decision primarily on reconstructed strings and correlated activity.\n\n- Reconstruct full script content when split across multiple events:\n  - Pivot on `powershell.file.script_block_id` to gather all fragments for the same script block.\n  - Order fragments using `powershell.sequence` and confirm completeness using `powershell.total` before drawing conclusions.\n\n- Correlate and validate impact using adjacent telemetry available in your environment:\n  - Review other PowerShell script blocks from the same `host.id` and `user.id` to identify staging, deobfuscation, or follow-on execution.\n  - Correlate with endpoint telemetry for the same host and timeframe to understand how PowerShell was started and what occurred next (process ancestry, network activity, file/registry changes, and authentication activity). Use reconstructed strings to focus this correlation.\n\n- Expand the hunt to assess prevalence:\n  - Search for the same or similar content in `powershell.file.script_block_text` (shared fragments, repeated placeholder patterns) across other hosts.\n  - Use `Esql.script_block_pattern_count` and the script block statistics fields to identify other high-similarity or high-complexity scripts that may represent the same technique.\n\n### False positive analysis\n\n- Legitimate automation can use indexed placeholders to build dynamic output, reports, or templated configuration content. Benign usage is more likely when the resulting strings are human-readable and the script has an expected on-disk origin (`file.path` / `file.name`) and consistent execution over time.\n- Some internally developed frameworks generate PowerShell dynamically and may include repeated formatting patterns. Validate ownership of the script source and whether execution by the identified `user.id` on the identified `host.id` is expected.\n- Localization or templating logic may use indexed placeholders. This is typically associated with readable templates and stable execution patterns rather than multi-stage reconstruction of operational strings.\n\n### Response and remediation\n\n- If malicious or suspicious activity is confirmed:\n  - Contain the affected endpoint identified by `host.name` / `host.id` to prevent further execution and limit lateral movement.\n  - Preserve evidence, including `powershell.file.script_block_text`, `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`, and the alert enrichment fields (`Esql.script_block_tmp`, `Esql.script_block_pattern_count`, and script block statistics).\n  - Use reconstructed strings to drive scoping and impact assessment (look for related activity on the same host, and search for the same indicators across other hosts and users).\n\n- Eradication and recovery:\n  - Identify the execution mechanism and remove it (for example, an unexpected script file, a startup trigger, or other persistence identified during correlation).\n  - Remove or quarantine related artifacts discovered during analysis and validate that similar activity is not occurring on other endpoints.\n\n- If the activity is determined to be benign:\n  - Document the expected script source (`file.path` / `file.name`), the responsible team, and the expected execution context (`host.id`, `user.id`) to support faster triage of future alerts.\n  - Monitor for deviations from the established baseline (new hosts, new users, or materially different reconstructed strings).\n",
+        "query": "from logs-windows.powershell_operational* metadata _id, _version, _index\n| where event.code == \"4104\" and powershell.file.script_block_text like \"*{0}*\"\n\n// Filter out smaller scripts that are unlikely to implement obfuscation using the patterns we are looking for\n| eval Esql.script_block_length = length(powershell.file.script_block_text)\n| where Esql.script_block_length > 500\n\n// replace the patterns we are looking for with the \ud83d\udd25 emoji to enable counting them\n// The emoji is used because it's unlikely to appear in scripts and has a consistent character length of 1\n| eval Esql.script_block_tmp = replace(\n    powershell.file.script_block_text,\n    \"\"\"((\\{\\d+\\}){2,}[\"']\\s?-f|::Format[^\\{]+(\\{\\d+\\}){2,})\"\"\",\n    \"\ud83d\udd25\"\n)\n\n// count how many patterns were detected by calculating the number of \ud83d\udd25 characters inserted\n| eval Esql.script_block_pattern_count = length(Esql.script_block_tmp) - length(replace(Esql.script_block_tmp, \"\ud83d\udd25\", \"\"))\n\n// keep the fields relevant to the query, although this is not needed as the alert is populated using _id\n| keep\n    Esql.script_block_pattern_count,\n    Esql.script_block_length,\n    Esql.script_block_tmp,\n    powershell.file.*,\n    file.path,\n    file.directory,\n    powershell.sequence,\n    powershell.total,\n    _id,\n    _version,\n    _index,\n    host.name,\n    host.id,\n    agent.id,\n    user.id\n\n// Filter for scripts that match the pattern at least five times\n| where Esql.script_block_pattern_count >= 5\n\n// Exclude Noisy Patterns\n\n// Icinga Framework\n| where not file.directory == \"C:\\\\Program Files\\\\WindowsPowerShell\\\\Modules\\\\icinga-powershell-framework\\\\cache\"\n  // ESQL requires this condition, otherwise it only returns matches where file.directory exists.\n  or file.directory IS NULL\n\n| where not (powershell.file.script_block_text LIKE \"*GitBranchStatus*\" AND \n    powershell.file.script_block_text LIKE \"*$s.BranchBehindStatusSymbol.Text*\")\n| where not\n    // https://wtfbins.wtf/17\n    (\n        (powershell.file.script_block_text like \"*sentinelbreakpoints*\" or\n         powershell.file.script_block_text like \"*:::::\\\\\\\\windows\\\\\\\\sentinel*\")\n        and\n        (powershell.file.script_block_text like \"*$local:Bypassed*\" or\n         powershell.file.script_block_text like \"*origPSExecutionPolicyPreference*\")\n    )\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.script_block_length",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.script_block_pattern_count",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.script_block_tmp",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_entropy_bits",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_entropy_normalized",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_length",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_surprisal_stdev",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_unique_symbols",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.sequence",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.total",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e903ce9a-5ce6-4246-bb14-75ed3ec2edf5",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 11
+    },
+    "id": "e903ce9a-5ce6-4246-bb14-75ed3ec2edf5_11",
+    "type": "security-rule"
+}
