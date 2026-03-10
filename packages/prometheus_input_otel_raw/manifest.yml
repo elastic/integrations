@@ -1,0 +1,51 @@
+format_version: 3.5.0
+name: prometheus_input_otel_raw
+title: "Prometheus OTel Scrape (Bring Your Own Config)"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Scrape Prometheus metrics endpoints using the OpenTelemetry Collector Prometheus receiver with raw scrape configuration"
+type: input
+categories:
+  - monitoring
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_prometheus_otel.svg
+    title: Prometheus OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: prometheusreceiver
+    type: metrics
+    title: Prometheus Metrics (Raw Config)
+    description: Paste your existing Prometheus scrape configuration directly
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      # TODO: Consider adding secret: true to this field once Fleet Server resolves
+      # the secret handling issue for OTel input packages.
+      # See: https://github.com/elastic/fleet-server/issues/6277
+      # Note: Users would need to re-enter the config from scratch when editing.
+      - name: scrape_configs
+        type: yaml
+        title: Prometheus Scrape Configuration
+        required: true
+        description: |
+          Paste your Prometheus scrape_configs YAML directly from prometheus.yml.
+          Example:
+          ```yaml
+          - job_name: 'myapp'
+            scrape_interval: 15s
+            static_configs:
+              - targets: ['localhost:9090']
+          ```
+        show_user: true
+owner:
+  github: elastic/ecosystem
+  type: elastic

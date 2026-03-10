@@ -254,6 +254,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
+| file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |

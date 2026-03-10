@@ -1,0 +1,1021 @@
+{
+    "attributes": {
+        "description": "Forensic pack for process execution analysis — prefetch, shimcache, process listing, and suspicious process detection across all platforms.",
+        "name": "forensic-process-execution",
+        "version": 1,
+        "queries": [
+            {
+                "id": "prefetch_windows_elastic",
+                "query": "-- Windows Prefetch Execution Artifacts Analysis\n-- Source: Native osquery table (prefetch)\n-- Parses .pf files to extract executable names, run counts, timestamps, and accessed resources\n-- Focus: Evidence of program execution history for forensic investigation (malware, lateral movement tools, deleted executables)\nSELECT\n  datetime(last_run_time, 'unixepoch') AS last_execution,\n  filename,\n  hash,\n  run_count,\n  other_run_times,\n  size,\n  volume_serial,\n  datetime(volume_creation, 'unixepoch') AS volume_creation_time,\n  accessed_files_count,\n  accessed_directories_count,\n  accessed_files,\n  accessed_directories,\n  path AS prefetch_file_path\nFROM prefetch\nWHERE last_run_time > (strftime('%s', 'now') - 7776000)\n  AND filename NOT LIKE 'SEARCHINDEXER%'\n  AND filename NOT LIKE 'SEARCHPROTOCOLHOST%'\n  AND filename NOT LIKE 'SEARCHFILTERHOST%'\n  AND filename NOT LIKE 'RUNTIMEBROKER%'\n  AND filename NOT LIKE 'BACKGROUNDTASKHOST%'\n  AND filename NOT LIKE 'WMIPRVSE%'\n  AND filename NOT LIKE 'DLLHOST%'\n  AND filename NOT LIKE 'TASKHOSTW%'\nORDER BY last_run_time DESC",
+                "interval": 3600,
+                "platform": "windows",
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.prefetch"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "last_execution"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "prefetch_file_path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "execution_artifacts",
+                                "forensics",
+                                "prefetch",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "appcompatcache_shimcache_windows_elastic",
+                "query": "-- Application Compatibility Cache (ShimCache) Execution Tracking\n-- Source: Native osquery table (shimcache)\n-- Focus: Suspicious program execution from user-writable staging locations\n\nWITH extracted AS (\n  SELECT\n    s.entry,\n    s.path,\n    datetime(s.modified_time, 'unixepoch') AS modified_time,\n    s.execution_flag,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status\n  FROM shimcache s\n  LEFT JOIN hash h ON h.path = s.path\n  LEFT JOIN authenticode a ON a.path = s.path\n  WHERE\n    -- Exclude legitimate Windows system directories (protected paths)\n    s.path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Windows\\\\WinSxS\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Windows\\\\servicing\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Program Files\\\\Windows Defender\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Program Files\\\\Windows NT\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Program Files (x86)\\\\Microsoft\\\\%'\n)\n\nSELECT *\nFROM extracted\nWHERE (\n  -- Condition 1: Unsigned binaries (no code signature) - always suspicious\n  signature_signer IS NULL\n  OR signature_status IS NULL\n  -- Condition 2: Invalid or untrusted signatures (osquery returns 'trusted' for valid)\n  OR signature_status NOT IN ('trusted', 'valid')\n  -- Condition 3: Execution from high-risk user-writable staging locations\n  OR regex_match(path, '\\\\\\\\Users\\\\\\\\[^\\\\\\\\]+\\\\\\\\(Downloads|Desktop|Documents)\\\\\\\\|\\\\\\\\Users\\\\\\\\[^\\\\\\\\]+\\\\\\\\AppData\\\\\\\\(Local\\\\\\\\Temp|Roaming)\\\\\\\\|\\\\\\\\Windows\\\\\\\\Temp\\\\\\\\|\\\\\\\\ProgramData\\\\\\\\[^\\\\\\\\]+\\\\\\\\|^C:\\\\\\\\[^\\\\\\\\]+\\\\.exe$|\\\\\\\\(Temp|tmp)\\\\\\\\', 0) IS NOT NULL\n)\n-- Exclude trusted Microsoft-signed binaries to reduce noise\nAND NOT (\n  signature_signer LIKE '%Microsoft%'\n  AND signature_status = 'trusted'\n)\nORDER BY entry ASC;",
+                "interval": 7200,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.appcompatcache"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "execution_tracking",
+                                "appcompatcache",
+                                "shimcache",
+                                "forensics",
+                                "code_signing",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "process_listing_windows_elastic",
+                "query": "-- Windows Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, code signatures, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.handle_count,\n    p.on_disk,\n    p.elevated_token,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    a.result AS signature_status,\n    a.subject_name AS signature_signer\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN authenticode a ON p.path = a.path;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.process_listing"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.parent.command_line",
+                        "value": {
+                            "field": "parent_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "forensics",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "process_listing_linux_elastic",
+                "query": "-- Linux Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.nice,\n    p.on_disk,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path;",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.process_listing"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.parent.command_line",
+                        "value": {
+                            "field": "parent_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "group.id",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "forensics",
+                                "linux"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "process_listing_darwin_elastic",
+                "query": "-- macOS Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, code signatures, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.nice,\n    p.on_disk,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    CASE\n        WHEN s.signed = 1 THEN 'signed'\n        WHEN s.signed = 0 THEN 'unsigned'\n        ELSE 'unknown'\n    END AS signature_status,\n    s.authority AS signature_signer,\n    s.identifier AS bundle_identifier,\n    s.team_identifier\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN signature s ON p.path = s.path;",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.process_listing"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.parent.command_line",
+                        "value": {
+                            "field": "parent_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "group.id",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.team_id",
+                        "value": {
+                            "field": "team_identifier"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "forensics",
+                                "macos"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "suspicious_processes_windows_elastic",
+                "query": "-- Windows Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    p.elevated_token,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    a.result AS signature_status,\n    a.subject_name AS signature_signer,\n    CASE\n        WHEN a.result IS NOT NULL AND a.result != 'trusted' THEN 'untrusted_signature'\n        WHEN a.result IS NULL AND p.path NOT LIKE 'C:\\\\Windows\\\\%' THEN 'unsigned_non_system'\n        WHEN p.path LIKE '%\\\\Temp\\\\%' OR p.path LIKE '%\\\\tmp\\\\%' THEN 'suspicious_path_temp'\n        WHEN p.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 'suspicious_path_appdata_temp'\n        WHEN p.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 'suspicious_path_public'\n        WHEN p.path LIKE '%\\\\Downloads\\\\%' THEN 'suspicious_path_downloads'\n        WHEN p.name IN ('powershell.exe', 'pwsh.exe') AND (p.cmdline LIKE '%encodedcommand%' OR p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-enc %' OR p.cmdline LIKE '%bypass%' OR p.cmdline LIKE '%hidden%') THEN 'powershell_suspicious_args'\n        WHEN p.name = 'cmd.exe' AND (p.cmdline LIKE '%/c %' OR p.cmdline LIKE '%/k %') AND pp.name NOT IN ('explorer.exe', 'cmd.exe', 'powershell.exe', 'pwsh.exe') THEN 'cmd_unusual_parent'\n        WHEN p.name IN ('mshta.exe', 'wscript.exe', 'cscript.exe') THEN 'script_host_execution'\n        WHEN p.name IN ('certutil.exe', 'bitsadmin.exe') AND (p.cmdline LIKE '%http%' OR p.cmdline LIKE '%ftp%' OR p.cmdline LIKE '%decode%' OR p.cmdline LIKE '%urlcache%') THEN 'lolbin_download'\n        WHEN p.name = 'rundll32.exe' AND (p.cmdline LIKE '%javascript%' OR p.cmdline LIKE '%vbscript%') THEN 'rundll32_script'\n        WHEN p.name IN ('regsvr32.exe', 'msiexec.exe') AND p.cmdline LIKE '%http%' THEN 'lolbin_remote_payload'\n        WHEN p.name IN ('msbuild.exe', 'installutil.exe', 'regasm.exe', 'regsvcs.exe') THEN 'dotnet_lolbin'\n        WHEN p.name IN ('eventvwr.exe', 'fodhelper.exe', 'computerdefaults.exe', 'sdclt.exe') AND pp.name NOT IN ('explorer.exe', 'svchost.exe') THEN 'uac_bypass_tool'\n        WHEN p.name = 'wmic.exe' AND (p.cmdline LIKE '%process%call%create%' OR p.cmdline LIKE '%/node:%') THEN 'wmic_execution'\n        WHEN pp.name = 'wmiprvse.exe' OR pp.name = 'wsmprovhost.exe' THEN 'remote_execution_parent'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN authenticode a ON p.path = a.path\nWHERE p.path != ''\nAND p.name NOT IN ('Registry', 'Memory Compression')\nAND (\n    -- Untrusted signatures (explicit non-trusted result)\n    (a.result IS NOT NULL AND a.result != 'trusted')\n    -- Unsigned non-system binaries\n    OR (a.result IS NULL AND p.path NOT LIKE 'C:\\\\Windows\\\\%' AND p.path NOT LIKE 'C:\\\\Program Files\\\\%' AND p.path NOT LIKE 'C:\\\\Program Files (x86)\\\\%')\n    -- Suspicious execution paths (narrowed to reduce noise)\n    OR p.path LIKE '%\\\\Temp\\\\%'\n    OR p.path LIKE '%\\\\tmp\\\\%'\n    OR p.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%'\n    OR p.path LIKE '%\\\\Users\\\\Public\\\\%'\n    OR p.path LIKE '%\\\\Downloads\\\\%'\n    -- PowerShell abuse patterns\n    OR (p.name IN ('powershell.exe', 'pwsh.exe') AND (\n        p.cmdline LIKE '%encodedcommand%'\n        OR p.cmdline LIKE '%-e %'\n        OR p.cmdline LIKE '%-enc %'\n        OR p.cmdline LIKE '%bypass%'\n        OR p.cmdline LIKE '%hidden%'\n        OR p.cmdline LIKE '%downloadstring%'\n        OR p.cmdline LIKE '%iex%'\n        OR p.cmdline LIKE '%invoke-expression%'\n        OR p.cmdline LIKE '%webclient%'\n    ))\n    -- Script host execution\n    OR p.name IN ('mshta.exe', 'wscript.exe', 'cscript.exe')\n    -- LOLBin download/decode\n    OR (p.name IN ('certutil.exe', 'bitsadmin.exe') AND (p.cmdline LIKE '%http%' OR p.cmdline LIKE '%decode%' OR p.cmdline LIKE '%urlcache%'))\n    -- Rundll32 script execution\n    OR (p.name = 'rundll32.exe' AND (p.cmdline LIKE '%javascript%' OR p.cmdline LIKE '%vbscript%'))\n    -- Remote payload LOLBins\n    OR (p.name IN ('regsvr32.exe', 'msiexec.exe') AND p.cmdline LIKE '%http%')\n    -- .NET LOLBins (AppLocker bypass)\n    OR p.name IN ('msbuild.exe', 'installutil.exe', 'regasm.exe', 'regsvcs.exe')\n    -- UAC bypass tools with unusual parents\n    OR (p.name IN ('eventvwr.exe', 'fodhelper.exe', 'computerdefaults.exe', 'sdclt.exe') AND pp.name NOT IN ('explorer.exe', 'svchost.exe'))\n    -- WMIC lateral movement / execution\n    OR (p.name = 'wmic.exe' AND (p.cmdline LIKE '%process%call%create%' OR p.cmdline LIKE '%/node:%'))\n    -- Remote execution indicators\n    OR pp.name IN ('wmiprvse.exe', 'wsmprovhost.exe')\n    -- Process running from memory (not on disk)\n    OR p.on_disk = 0\n);",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.suspicious_processes"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.parent.command_line",
+                        "value": {
+                            "field": "parent_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "suspicious_process",
+                                "threat_hunting",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "suspicious_processes_linux_elastic",
+                "query": "-- Linux Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    CASE\n        WHEN p.path LIKE '/tmp/%' OR p.path LIKE '/var/tmp/%' THEN 'suspicious_path_tmp'\n        WHEN p.path LIKE '/dev/shm/%' THEN 'suspicious_path_devshm'\n        WHEN p.path LIKE '/home/%/.%' THEN 'hidden_in_home'\n        WHEN p.cmdline LIKE '%/dev/tcp/%' OR p.cmdline LIKE '%/dev/udp/%' THEN 'reverse_shell_devtcp'\n        WHEN p.cmdline LIKE '%nc %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %') THEN 'netcat_shell'\n        WHEN p.cmdline LIKE '%ncat %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %') THEN 'ncat_shell'\n        WHEN p.cmdline LIKE '%bash -i%' OR p.cmdline LIKE '%sh -i%' THEN 'interactive_shell'\n        WHEN p.name IN ('python', 'python3', 'perl', 'ruby', 'php') AND p.cmdline LIKE '%socket%' THEN 'script_socket'\n        WHEN p.cmdline LIKE '%curl%|%sh%' OR p.cmdline LIKE '%wget%|%sh%' OR p.cmdline LIKE '%curl%|%bash%' OR p.cmdline LIKE '%wget%|%bash%' THEN 'download_and_execute'\n        WHEN p.cmdline LIKE '%base64 -d%' OR p.cmdline LIKE '%base64 --decode%' THEN 'base64_decode'\n        WHEN p.name LIKE '.%' THEN 'hidden_process_name'\n        WHEN p.cmdline LIKE '%stratum%' OR p.cmdline LIKE '%xmr%' OR p.cmdline LIKE '%monero%' OR p.cmdline LIKE '%nicehash%' OR p.cmdline LIKE '%pool.%' THEN 'crypto_miner'\n        WHEN p.cmdline LIKE '%nsenter%' OR p.cmdline LIKE '%--target 1%' THEN 'container_escape'\n        WHEN p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' THEN 'root_unusual_path'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nWHERE p.path != ''\nAND (\n    -- Suspicious execution paths\n    p.path LIKE '/tmp/%'\n    OR p.path LIKE '/var/tmp/%'\n    OR p.path LIKE '/dev/shm/%'\n    OR p.path LIKE '/home/%/.%'\n    -- Reverse shell patterns\n    OR p.cmdline LIKE '%/dev/tcp/%'\n    OR p.cmdline LIKE '%/dev/udp/%'\n    -- Netcat reverse shells\n    OR (p.cmdline LIKE '%nc %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %'))\n    OR (p.cmdline LIKE '%ncat %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %'))\n    OR (p.cmdline LIKE '%socat %' AND p.cmdline LIKE '%exec%')\n    -- Interactive shell spawning\n    OR p.cmdline LIKE '%bash -i%'\n    OR p.cmdline LIKE '%sh -i%'\n    -- Script interpreters with network activity\n    OR (p.name IN ('python', 'python3', 'python2', 'perl', 'ruby', 'php') AND p.cmdline LIKE '%socket%')\n    -- Download and execute patterns\n    OR p.cmdline LIKE '%curl%|%sh%'\n    OR p.cmdline LIKE '%wget%|%sh%'\n    OR p.cmdline LIKE '%curl%|%bash%'\n    OR p.cmdline LIKE '%wget%|%bash%'\n    -- Base64 decode (often used in obfuscation)\n    OR (p.cmdline LIKE '%base64%' AND (p.cmdline LIKE '%-d%' OR p.cmdline LIKE '%--decode%'))\n    -- Hidden process names\n    OR p.name LIKE '.%'\n    -- Running from memory\n    OR p.on_disk = 0\n    -- Crypto-miner indicators\n    OR p.cmdline LIKE '%stratum%'\n    OR p.cmdline LIKE '%xmr%'\n    OR p.cmdline LIKE '%monero%'\n    OR p.cmdline LIKE '%nicehash%'\n    OR p.cmdline LIKE '%pool.%mining%'\n    OR p.cmdline LIKE '%cryptonight%'\n    OR p.cmdline LIKE '%randomx%'\n    -- Container escape indicators\n    OR p.cmdline LIKE '%nsenter%'\n    OR (p.cmdline LIKE '%--target%' AND p.cmdline LIKE '%--mount%')\n    OR (p.cmdline LIKE '%--target 1%')\n    -- Root processes from unusual locations\n    OR (p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/opt/%' AND p.path NOT LIKE '/lib/%')\n);",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.suspicious_processes"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.parent.command_line",
+                        "value": {
+                            "field": "parent_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "group.id",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "suspicious_process",
+                                "threat_hunting",
+                                "linux"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "suspicious_processes_darwin_elastic",
+                "query": "-- macOS Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    CASE\n        WHEN s.signed = 1 THEN 'signed'\n        WHEN s.signed = 0 THEN 'unsigned'\n        ELSE 'unknown'\n    END AS signature_status,\n    s.authority AS signature_signer,\n    s.identifier AS bundle_identifier,\n    s.team_identifier,\n    CASE\n        WHEN s.signed = 0 OR s.signed IS NULL THEN 'unsigned_binary'\n        WHEN p.path LIKE '/tmp/%' OR p.path LIKE '/var/tmp/%' THEN 'suspicious_path_tmp'\n        WHEN p.path LIKE '/private/tmp/%' THEN 'suspicious_path_private_tmp'\n        WHEN p.path LIKE '/Users/Shared/%' THEN 'suspicious_path_shared'\n        WHEN p.path LIKE '%/.%' THEN 'hidden_path'\n        WHEN p.path LIKE '/Users/%/Library/%' AND s.signed = 0 THEN 'unsigned_in_library'\n        WHEN p.name = 'osascript' AND (p.cmdline LIKE '%JavaScript%' OR p.cmdline LIKE '%do shell script%') THEN 'osascript_abuse'\n        WHEN p.name = 'curl' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%') THEN 'curl_pipe_shell'\n        WHEN p.cmdline LIKE '%xattr -d com.apple.quarantine%' OR p.cmdline LIKE '%xattr -c%' THEN 'quarantine_removal'\n        WHEN p.name IN ('python', 'python3', 'perl', 'ruby') AND p.cmdline LIKE '%socket%' THEN 'script_socket'\n        WHEN p.cmdline LIKE '%base64%' AND p.cmdline LIKE '%-D%' THEN 'base64_decode'\n        WHEN p.name LIKE '.%' THEN 'hidden_process_name'\n        WHEN p.cmdline LIKE '%stratum%' OR p.cmdline LIKE '%xmr%' OR p.cmdline LIKE '%monero%' OR p.cmdline LIKE '%nicehash%' OR p.cmdline LIKE '%pool.%' THEN 'crypto_miner'\n        WHEN p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/System/%' AND p.path NOT LIKE '/Applications/%' THEN 'root_unusual_path'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN signature s ON p.path = s.path\nWHERE p.path != ''\nAND (\n    -- Unsigned or ad-hoc signed binaries\n    s.signed = 0 OR s.signed IS NULL\n    -- Suspicious execution paths\n    OR p.path LIKE '/tmp/%'\n    OR p.path LIKE '/var/tmp/%'\n    OR p.path LIKE '/private/tmp/%'\n    OR p.path LIKE '/Users/Shared/%'\n    OR p.path LIKE '%/.%'\n    -- osascript abuse (AppleScript for command execution)\n    OR (p.name = 'osascript' AND (\n        p.cmdline LIKE '%JavaScript%'\n        OR p.cmdline LIKE '%do shell script%'\n        OR p.cmdline LIKE '%NSAppleScript%'\n    ))\n    -- Download and execute patterns\n    OR (p.name = 'curl' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%'))\n    OR (p.name = 'wget' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%'))\n    -- Quarantine attribute removal (Gatekeeper bypass)\n    OR p.cmdline LIKE '%xattr -d com.apple.quarantine%'\n    OR p.cmdline LIKE '%xattr -c%'\n    OR p.cmdline LIKE '%xattr -r -d%'\n    -- Script interpreters with network activity\n    OR (p.name IN ('python', 'python3', 'python2', 'perl', 'ruby', 'php') AND p.cmdline LIKE '%socket%')\n    -- Base64 decode (obfuscation)\n    OR (p.cmdline LIKE '%base64%' AND p.cmdline LIKE '%-D%')\n    -- Hidden process names\n    OR p.name LIKE '.%'\n    -- Running from memory\n    OR p.on_disk = 0\n    -- Crypto-miner indicators (T1496 Resource Hijacking)\n    OR p.cmdline LIKE '%stratum%'\n    OR p.cmdline LIKE '%xmr%'\n    OR p.cmdline LIKE '%monero%'\n    OR p.cmdline LIKE '%nicehash%'\n    OR p.cmdline LIKE '%pool.%mining%'\n    OR p.cmdline LIKE '%cryptonight%'\n    OR p.cmdline LIKE '%randomx%'\n    -- Root processes from unusual locations\n    OR (p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/System/%' AND p.path NOT LIKE '/Applications/%' AND p.path NOT LIKE '/Library/%')\n);",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.suspicious_processes"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.parent.command_line",
+                        "value": {
+                            "field": "parent_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "group.id",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.team_id",
+                        "value": {
+                            "field": "team_identifier"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "suspicious_process",
+                                "threat_hunting",
+                                "macos"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-c8a1b2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d",
+    "references": [],
+    "type": "osquery-pack-asset"
+}

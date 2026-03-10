@@ -23,6 +23,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ab90b5c9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -32,8 +33,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_crowdstrike_event_ContentPatterns_ConfidenceLevel_b676cd34
             field: crowdstrike.event.ContentPatterns.ConfidenceLevel
         - append:
+            tag: append_error_message_06f0ca6b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -43,8 +46,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_crowdstrike_event_ContentPatterns_MatchCount_80ca383c
             field: crowdstrike.event.ContentPatterns.MatchCount
         - append:
+            tag: append_error_message_3c072e8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -54,8 +59,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_crowdstrike_event_FilesEgressedCount_2907b839
             field: crowdstrike.event.FilesEgressedCount
         - append:
+            tag: append_error_message_6339ac56
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -65,8 +72,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_crowdstrike_event_UserNotified_35bb8357
             field: crowdstrike.event.UserNotified
         - append:
+            tag: append_error_message_a6eea08b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -76,8 +85,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_crowdstrike_event_UserMapped_87635939
             field: crowdstrike.event.UserMapped
         - append:
+            tag: append_error_message_09142f9e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -87,8 +98,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_crowdstrike_event_IsClipboard_a661bb33
             field: crowdstrike.event.IsClipboard
         - append:
+            tag: append_error_message_3be036d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -101,6 +114,7 @@ processors:
       if: ctx.crowdstrike?.event?.EventTimestamp != null
       on_failure:
         - append:
+            tag: append_error_message_061def81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Anomaly-based detections contains SessionStartTimestamp and SessionEndTimestamp fields
@@ -114,6 +128,7 @@ processors:
       if: ctx.crowdstrike?.event?.SessionStartTimestamp != null
       on_failure:
         - append:
+            tag: append_error_message_d22c109c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -126,6 +141,7 @@ processors:
       if: ctx.crowdstrike?.event?.SessionEndTimestamp != null
       on_failure:
         - append:
+            tag: append_error_message_bcb83d0c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -139,6 +155,7 @@ processors:
         ctx.event['duration'] = ChronoUnit.NANOS.between(event_start, event_end);
       on_failure:
         - append:
+            tag: append_error_message_16889e98
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -206,6 +223,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_e648f418
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -308,13 +326,14 @@ processors:
       tag: remove_custom_duplicate_fields
       ignore_missing: true
 
-# error handling
+  # error handling
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

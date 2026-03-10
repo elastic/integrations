@@ -20,11 +20,11 @@ const DefaultCodeownersPath = ".github/CODEOWNERS"
 func Check() error {
 	codeowners, err := readGithubOwners(DefaultCodeownersPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("error reading %s: %w", DefaultCodeownersPath, err)
 	}
 	const packagesDir = "packages"
 	if err := validatePackages(codeowners, packagesDir); err != nil {
-		return err
+		return fmt.Errorf("error validating packages in directory '%s': %w", packagesDir, err)
 	}
 
 	return nil
@@ -65,7 +65,7 @@ type githubOwners struct {
 func validatePackages(codeowners *githubOwners, packagesDir string) error {
 	packageDirEntries, err := os.ReadDir(packagesDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("error reading directory '%s': %w", packagesDir, err)
 	}
 
 	if len(packageDirEntries) == 0 {
@@ -83,12 +83,12 @@ func validatePackages(codeowners *githubOwners, packagesDir string) error {
 		packageManifestPath := path.Join(packagePath, "manifest.yml")
 		err = codeowners.checkManifest(packageManifestPath)
 		if err != nil {
-			return err
+			return fmt.Errorf("error checking manifest '%s': %w", packageManifestPath, err)
 		}
 
 		err = codeowners.checkDataStreams(packagePath)
 		if err != nil {
-			return err
+			return fmt.Errorf("error checking data streams from '%s': %w", packagePath, err)
 		}
 
 	}
