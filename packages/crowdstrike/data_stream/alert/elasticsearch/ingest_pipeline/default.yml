@@ -2529,11 +2529,6 @@ processors:
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.tactic_id != null
   - rename:
-      field: json.technique
-      tag: rename_technique
-      target_field: crowdstrike.alert.technique
-      ignore_missing: true
-  - rename:
       field: json.tags
       tag: rename_tags
       target_field: crowdstrike.alert.tags
@@ -2627,9 +2622,9 @@ processors:
       target_field: crowdstrike.alert.target.service_access_identifier
       ignore_missing: true
   - rename:
-      field: json.mitre_attack
-      tag: rename_mitre_attack
-      target_field: crowdstrike.alert.mitre_attack
+      field: json.technique
+      tag: rename_technique
+      target_field: crowdstrike.alert.technique
       ignore_missing: true
   - append:
       field: threat.technique.name
@@ -2648,7 +2643,13 @@ processors:
       value: '{{{crowdstrike.alert.technique_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.technique_id != null
+  - rename:
+      field: json.mitre_attack
+      tag: rename_mitre_attack
+      target_field: crowdstrike.alert.mitre_attack
+      ignore_missing: true
   - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_50e8fec3
       field: crowdstrike.alert.mitre_attack
       if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
       processor:
@@ -2658,6 +2659,7 @@ processors:
           value: '{{{_ingest._value.tactic}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_a75d3917
       field: crowdstrike.alert.mitre_attack
       if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
       processor:
@@ -2667,6 +2669,7 @@ processors:
           value: '{{{_ingest._value.tactic_id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_c9b5d563
       field: crowdstrike.alert.mitre_attack
       if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
       processor:
@@ -2676,6 +2679,7 @@ processors:
           value: '{{{_ingest._value.technique}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_6a5df41b
       field: crowdstrike.alert.mitre_attack
       if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
       processor:
@@ -2685,6 +2689,7 @@ processors:
           value: '{{{_ingest._value.technique_id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_5448da51
       field: crowdstrike.alert.mitre_attack
       if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
       processor:
@@ -2775,6 +2780,7 @@ processors:
         ctx.threat.framework = frameworks.iterator().next();
       on_failure:
         - append:
+            tag: append_error_message_f73582d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
