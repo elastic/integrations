@@ -68,7 +68,7 @@ service:
 
 ### Metrics
 
-CockroachDB metrics are scraped via the Prometheus receiver from CockroachDB's `/_status/vars` endpoint. Refer to the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/prometheusreceiver/README.md) documentation and [CockroachDB metrics documentation](https://www.cockroachlabs.com/docs/stable/monitoring-and-alerting.html) for details on available metrics.
+CockroachDB metrics are scraped using the Prometheus receiver from CockroachDB's `/_status/vars` endpoint. Refer to the [Prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/prometheusreceiver/README.md) documentation and [CockroachDB metrics documentation](https://www.cockroachlabs.com/docs/stable/monitoring-and-alerting.html) for details on available metrics.
 
 ## Dashboards
 
