@@ -48,6 +48,13 @@ receivers:
           static_configs:
             - targets: [<COCKROACHDB_TARGET>]
 
+processors:
+  resource/dataset:
+    attributes:
+      - key: data_stream.dataset
+        value: cockroachdb
+        action: upsert
+
 exporters:
   elasticsearch/otel:
     endpoint: <ES_ENDPOINT>
@@ -59,6 +66,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus/cockroachdb]
+      processors: [resource/dataset]
       exporters: [elasticsearch/otel]
 ```
 

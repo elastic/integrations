@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_runnable_goroutines_per_cpu IS NOT NULL\n  AND sys_runnable_goroutines_per_cpu > 30\n// Values > 30 indicate CPU overload\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS goroutines_per_cpu = MAX(sys_runnable_goroutines_per_cpu) BY attributes.node_id, host.name\n| SORT goroutines_per_cpu DESC"
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_runnable_goroutines_per_cpu IS NOT NULL\n  AND sys_runnable_goroutines_per_cpu > 30\n// Values > 30 indicate CPU overload\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS goroutines_per_cpu = MAX(sys_runnable_goroutines_per_cpu) BY attributes.node_id, host.name\n| SORT goroutines_per_cpu DESC"
       },
       "size": 0,
       "threshold": [0],

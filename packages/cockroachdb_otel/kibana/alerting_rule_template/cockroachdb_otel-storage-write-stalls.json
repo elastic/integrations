@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND storage_write_stalls IS NOT NULL\n  AND storage_write_stalls > 0\n// Store-level metric: intentional write stalls due to disk backpressure\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS stalls = MAX(storage_write_stalls) BY attributes.node_id, attributes.store, host.name\n| SORT stalls DESC"
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND storage_write_stalls IS NOT NULL\n  AND storage_write_stalls > 0\n// Store-level metric: intentional write stalls due to disk backpressure\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS stalls = MAX(storage_write_stalls) BY attributes.node_id, attributes.store, host.name\n| SORT stalls DESC"
       },
       "size": 0,
       "threshold": [0],

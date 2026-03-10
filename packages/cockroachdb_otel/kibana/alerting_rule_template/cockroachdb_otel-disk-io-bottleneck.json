@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_host_disk_iopsinprogress IS NOT NULL\n  AND sys_host_disk_iopsinprogress > 10\n// Persistent double digits indicate I/O bottleneck\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS iops_queued = MAX(sys_host_disk_iopsinprogress) BY attributes.node_id, host.name\n| SORT iops_queued DESC"
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_host_disk_iopsinprogress IS NOT NULL\n  AND sys_host_disk_iopsinprogress > 10\n// Persistent double digits indicate I/O bottleneck\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS iops_queued = MAX(sys_host_disk_iopsinprogress) BY attributes.node_id, host.name\n| SORT iops_queued DESC"
       },
       "size": 0,
       "threshold": [0],

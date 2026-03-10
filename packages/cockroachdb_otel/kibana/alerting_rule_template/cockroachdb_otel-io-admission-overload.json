@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND admission_io_overload IS NOT NULL\n  AND admission_io_overload > 1.0\n// Values > 1.0 indicate storage overload; adjust threshold if needed\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS overload = MAX(admission_io_overload) BY attributes.node_id, attributes.store, host.name\n| SORT overload DESC"
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND admission_io_overload IS NOT NULL\n  AND admission_io_overload > 1.0\n// Values > 1.0 indicate storage overload; adjust threshold if needed\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS overload = MAX(admission_io_overload) BY attributes.node_id, attributes.store, host.name\n| SORT overload DESC"
       },
       "size": 0,
       "threshold": [0],

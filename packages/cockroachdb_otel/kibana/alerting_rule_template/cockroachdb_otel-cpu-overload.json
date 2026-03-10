@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-prometheusreceiver.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_cpu_combined_percent_normalized IS NOT NULL\n  AND sys_cpu_combined_percent_normalized > 0.8\n// Node-level: CockroachDB process CPU; > 0.8 indicates overload\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS cpu_pct = ROUND(MAX(sys_cpu_combined_percent_normalized) * 100.0, 1) BY attributes.node_id, host.name\n| SORT cpu_pct DESC"
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_cpu_combined_percent_normalized IS NOT NULL\n  AND sys_cpu_combined_percent_normalized > 0.8\n// Node-level: CockroachDB process CPU; > 0.8 indicates overload\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS cpu_pct = ROUND(MAX(sys_cpu_combined_percent_normalized) * 100.0, 1) BY attributes.node_id, host.name\n| SORT cpu_pct DESC"
       },
       "size": 0,
       "threshold": [0],
