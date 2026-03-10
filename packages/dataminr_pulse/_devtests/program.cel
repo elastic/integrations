@@ -19,7 +19,7 @@ timestamp(now).as(fetch_ts,
                   }.format_query()
                 ).as(auth_resp,
                   auth_resp.StatusCode == 200 ?
-                    bytes(auth_resp.Body).decode_json().as(token_data,
+                    (size(auth_resp.Body) > 0 ? bytes(auth_resp.Body).decode_json() : {}).as(token_data,
                       has(token_data.dmaToken) && token_data.dmaToken != "" ?
                         {
                           "updated_state": state.with({
@@ -33,8 +33,7 @@ timestamp(now).as(fetch_ts,
                               "client_id": state.client_id,
                               "expires_at": has(token_data.expire) ? int(token_data.expire) : 0,
                               "http_status_code": auth_resp.StatusCode,
-                              "fetch_timestamp": fetch_ts,
-                              "remaining_executions": remaining_executions
+                              "fetch_timestamp": fetch_ts
                             }.encode_json()
                           },
                           "should_fetch": true,
@@ -51,8 +50,7 @@ timestamp(now).as(fetch_ts,
                               "error_message": "No valid token received",
                               "http_status_code": auth_resp.StatusCode,
                               "fetch_timestamp": fetch_ts,
-                              "response_body": string(auth_resp.Body),
-                              "remaining_executions": remaining_executions
+                              "response_body": string(auth_resp.Body)
                             }.encode_json()
                           },
                           "should_fetch": false,
@@ -77,8 +75,7 @@ timestamp(now).as(fetch_ts,
                                 "error_message": error_msg,
                                 "error_code": has(error_body.errors) && size(error_body.errors) > 0 ? int(error_body.errors[0].code) : 0,
                                 "http_status_code": auth_resp.StatusCode,
-                                "fetch_timestamp": fetch_ts,
-                                "remaining_executions": remaining_executions
+                                "fetch_timestamp": fetch_ts
                               }.encode_json()
                             },
                             "should_fetch": false,
@@ -97,8 +94,7 @@ timestamp(now).as(fetch_ts,
                                 "error_code": has(error_body.errors) && size(error_body.errors) > 0 ? int(error_body.errors[0].code) : 0,
                                 "http_status_code": auth_resp.StatusCode,
                                 "fetch_timestamp": fetch_ts,
-                                "response_body": string(auth_resp.Body),
-                                "remaining_executions": remaining_executions
+                                "response_body": string(auth_resp.Body)
                               }.encode_json()
                             },
                             "should_fetch": false,
@@ -120,12 +116,7 @@ timestamp(now).as(fetch_ts,
               prep.should_fetch ?
                 (prep.updated_state.next_cursor != "" ?
                   prep.updated_state.base_url + prep.updated_state.next_cursor :
-                  prep.updated_state.url + "?" + (has(prep.updated_state.list_ids) && prep.updated_state.list_ids != "" ? {
-                    "pageSize": [string(prep.updated_state.page_size)],
-                    "lists": [string(prep.updated_state.list_ids)]
-                  } : {
-                    "pageSize": [string(prep.updated_state.page_size)]
-                  }).format_query()
+                  prep.updated_state.url + "?" + {"pageSize": [string(prep.updated_state.page_size)]}.format_query()
                 ).as(request_url,
                   get_request(request_url).with({
                     "Header": {
@@ -135,7 +126,7 @@ timestamp(now).as(fetch_ts,
                     }
                   }).do_request().as(api_resp,
                     api_resp.StatusCode == 200 ?
-                      bytes(api_resp.Body).decode_json().as(response_body,
+                      (size(api_resp.Body) > 0 ? bytes(api_resp.Body).decode_json() : {}).as(response_body,
                         prep.updated_state.with({
                           "events": (has(prep.auth_event.message) ? [prep.auth_event] : []) +
                             (has(response_body.alerts) && size(response_body.alerts) > 0 ?
@@ -157,8 +148,7 @@ timestamp(now).as(fetch_ts,
                                 "http_status_code": api_resp.StatusCode,
                                 "cursor_used": prep.updated_state.next_cursor != "" ? prep.updated_state.next_cursor : "initial",
                                 "fetched_alerts": has(response_body.alerts) ? size(response_body.alerts) : 0,
-                                "fetch_timestamp": fetch_ts,
-                                "remaining_executions": remaining_executions
+                                "fetch_timestamp": fetch_ts
                               }.encode_json()
                             }],
                           "next_cursor": has(response_body.nextPage) && response_body.nextPage != "" ? string(response_body.nextPage) : "",
@@ -187,8 +177,7 @@ timestamp(now).as(fetch_ts,
                                   "http_status_code": api_resp.StatusCode,
                                   "cursor_used": prep.updated_state.next_cursor != "" ? prep.updated_state.next_cursor : "initial",
                                   "fetched_alerts": 0,
-                                  "fetch_timestamp": fetch_ts,
-                                  "remaining_executions": remaining_executions
+                                  "fetch_timestamp": fetch_ts
                                 }.encode_json()
                               }],
                               "access_token": prep.updated_state.access_token,
@@ -208,8 +197,7 @@ timestamp(now).as(fetch_ts,
                                   "cursor_used": prep.updated_state.next_cursor != "" ? prep.updated_state.next_cursor : "initial",
                                   "fetched_alerts": 0,
                                   "fetch_timestamp": fetch_ts,
-                                  "response_body": string(api_resp.Body),
-                                  "remaining_executions": remaining_executions
+                                  "response_body": string(api_resp.Body)
                                 }.encode_json()
                               }],
                               "access_token": prep.updated_state.access_token,

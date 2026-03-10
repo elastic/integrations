@@ -26,15 +26,12 @@ state:
   client_id: {{client_id}}
   client_secret: {{client_secret}}
   version: "{{version}}"
-  {{#if list_ids}}
-  list_ids: {{list_ids}}
-  {{/if}}
   page_size: {{page_size}}
   next_cursor: ""
   access_token: ""
   expires_at: 0
-  want_more: false
   last_fetch_timestamp: 0
+  retry_count: 0
 redact:
   fields:
     - client_id
@@ -57,7 +54,7 @@ program: |
               "client_secret": [state.client_secret]
             }.format_query()
           ).as(auth_resp,
-            bytes(auth_resp.Body).decode_json().as(auth_body,
+            (size(auth_resp.Body) > 0 ? bytes(auth_resp.Body).decode_json() : {}).as(auth_body,
               auth_resp.StatusCode == 200 && has(auth_body.dmaToken) && auth_body.dmaToken != "" ?
                 {
                   "new_state": state.with({
@@ -71,8 +68,7 @@ program: |
                       "client_id": state.client_id,
                       "expires_at": has(auth_body.expire) ? int(auth_body.expire) : 0,
                       "http_status_code": auth_resp.StatusCode,
-                      "fetch_timestamp": fetch_ts,
-                      "remaining_executions": remaining_executions
+                      "fetch_timestamp": fetch_ts
                     }.encode_json()
                   },
                   "should_fetch": true,
@@ -96,8 +92,8 @@ program: |
                             "error_message": error_message,
                             "error_code": error_code,
                             "http_status_code": auth_resp.StatusCode,
-                            "fetch_timestamp": fetch_ts,
-                            "remaining_executions": remaining_executions
+                            "retry_number": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
+                            "fetch_timestamp": fetch_ts
                           }
                         :
                           {
@@ -108,8 +104,7 @@ program: |
                             "error_code": error_code,
                             "http_status_code": auth_resp.StatusCode,
                             "fetch_timestamp": fetch_ts,
-                            "response_body": string(auth_resp.Body),
-                            "remaining_executions": remaining_executions
+                            "response_body": string(auth_resp.Body)
                           }
                         ).encode_json()
                       },
@@ -143,7 +138,7 @@ program: |
                   "x-application-version": [state.version]
               }
             }).do_request().as(api_resp,
-              bytes(api_resp.Body).decode_json().as(api_body,
+              (size(api_resp.Body) > 0 ? bytes(api_resp.Body).decode_json() : {}).as(api_body,
                 api_resp.StatusCode == 200 ?
                   auth_result.new_state.with({
                     "events": (has(auth_result.auth_event.message) ? [auth_result.auth_event] : []) +
@@ -166,7 +161,7 @@ program: |
                                             {
                                               "message": alert.with({
                                                 "intelAgents": alert.intelAgents,
-                                                "discoveredEntity": entity,
+                                                "discovered_entity": entity,
                                                 "entityType": entity.type,
                                                 "is_main": (entity.type == first_entity.type && entity.name == first_entity.name) ? "yes" : "no",
                                                 "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
@@ -235,14 +230,14 @@ program: |
                           "http_status_code": api_resp.StatusCode,
                           "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
                           "fetched_alerts": has(api_body.alerts) ? size(api_body.alerts) : 0,
-                          "fetch_timestamp": fetch_ts,
-                          "remaining_executions": remaining_executions
+                          "fetch_timestamp": fetch_ts
                         }.encode_json()
                       }],
                     "next_cursor": has(api_body.nextPage) && api_body.nextPage != "" ? string(api_body.nextPage) : "",
                     "access_token": auth_result.new_state.access_token,
                     "expires_at": auth_result.new_state.expires_at,
                     "last_fetch_timestamp": fetch_ts,
+                    "retry_count": 0,
                     "want_more": false
                   })
                 :
@@ -257,13 +252,14 @@ program: |
                         "error_message": "Authentication failed - token will be regenerated",
                         "http_status_code": api_resp.StatusCode,
                         "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
+                        "retry_number": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
                         "fetched_alerts": 0,
-                        "fetch_timestamp": fetch_ts,
-                        "remaining_executions": remaining_executions
+                        "fetch_timestamp": fetch_ts
                       }.encode_json()
                     }],
                     "access_token": "",
                     "expires_at": 0,
+                    "retry_count": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
                     "want_more": true
                   })
                 :
@@ -280,9 +276,9 @@ program: |
                             "error_message": error_message,
                             "http_status_code": api_resp.StatusCode,
                             "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
+                            "retry_number": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
                             "fetched_alerts": 0,
-                            "fetch_timestamp": fetch_ts,
-                            "remaining_executions": remaining_executions
+                            "fetch_timestamp": fetch_ts
                           }
                         :
                           {
@@ -295,14 +291,14 @@ program: |
                             "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
                             "fetched_alerts": 0,
                             "fetch_timestamp": fetch_ts,
-                            "response_body": string(api_resp.Body),
-                            "remaining_executions": remaining_executions
+                            "response_body": string(api_resp.Body)
                           }
                         ).encode_json()
                       }],
                       "access_token": auth_result.new_state.access_token,
                       "expires_at": auth_result.new_state.expires_at,
                       "next_cursor": (api_resp.StatusCode == 400 || api_resp.StatusCode == 404) ? "" : auth_result.new_state.next_cursor,
+                      "retry_count": is_retryable ? (has(state.retry_count) ? int(state.retry_count) : 0) + 1 : 0,
                       "want_more": is_retryable
                     })
                   )
@@ -313,6 +309,7 @@ program: |
         :
           auth_result.new_state.with({
             "events": [auth_result.auth_event],
+            "retry_count": (has(auth_result.want_more) && auth_result.want_more) ? (has(state.retry_count) ? int(state.retry_count) : 0) + 1 : 0,
             "want_more": has(auth_result.want_more) ? auth_result.want_more : false
           })
       )
