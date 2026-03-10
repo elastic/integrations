@@ -15,6 +15,11 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                - names:
                     - metrics-*-*
                   privileges:
                     - auto_configure
@@ -24,6 +29,12 @@ processors:
         detectors:
             - system
     transform/componentid-1:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "mysqlreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
         metric_statements:
             - context: datapoint
               statements:
@@ -55,30 +66,41 @@ receivers:
                 enabled: true
             mysql.table_open_cache:
                 enabled: true
+        events:
+            db.server.query_sample:
+                enabled: true
+            db.server.top_query:
+                enabled: false
         query_sample_collection:
             max_rows_per_query: 100
         statement_events:
             digest_text_limit: 120
             limit: 250
             time_limit: 24h
-        top_query_collection:
-            collection_interval: 60s
-            lookback_time: 60
-            max_query_sample_count: 1000
-            query_plan_cache_size: 1000
-            query_plan_cache_ttl: 1h
-            top_query_count: 200
         transport: tcp
         username: root
 secret_references: []
 service:
     pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - mysql/componentid-0
         metrics:
             exporters:
                 - elasticsearch/componentid-0
             receivers:
                 - forward
-        metrics/componentid-0:
+        metrics/componentid-1:
             exporters:
                 - forward
             processors:

@@ -1,6 +1,7 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
@@ -16,6 +17,7 @@ processors:
       value: user_activity_audit_event
       tag: set_user_activity_audit_event
   - grok:
+      tag: grok_crowdstrike_event_UserId_70ae09b7
       field: crowdstrike.event.UserId
       patterns:
         - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
@@ -29,12 +31,12 @@ processors:
       if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - rename:
       field: crowdstrike.event.OperationName
-      target_field: message     
+      target_field: message
       ignore_missing: true
       tag: rename_operation_name
   - rename:
       field: crowdstrike.event.UserIp
-      target_field: source.ip     
+      target_field: source.ip
       ignore_missing: true
       tag: rename_user_ip
       if: ctx.crowdstrike?.event?.UserIp != null && ctx.crowdstrike?.event?.UserIp != ""

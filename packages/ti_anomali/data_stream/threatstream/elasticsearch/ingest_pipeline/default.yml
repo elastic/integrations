@@ -395,30 +395,32 @@ processors:
 
   #
   # Map field severity to event severity as follows:
-  #   low       => 3
-  #   medium    => 5
-  #   high      => 7
-  #   very-high => 9
+  #   low       => 21
+  #   medium    => 47
+  #   high      => 73
+  #   very-high => 99
   #
-  - set:
-      field: event.severity
-      value: 3
-      if: 'ctx.json?.severity == "low"'
-
-  - set:
-      field: event.severity
-      value: 5
-      if: 'ctx.json?.severity == "medium"'
-
-  - set:
-      field: event.severity
-      value: 7
-      if: 'ctx.json?.severity == "high"'
-
-  - set:
-      field: event.severity
-      value: 9
-      if: 'ctx.json?.severity == "very-high"'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.json?.severity != null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String severity_value = ctx.json.severity;
+        if (severity_value.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (severity_value.equalsIgnoreCase("very-high")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   #
   # Field trusted_circles_ids is a comma-separated string
