@@ -73,7 +73,9 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.destination.invited | Integer value (1) present only if the user is an invited user. | boolean |
 | beyondtrust_pra.access_session.destination.os | The operating system of the user's computer. | keyword |
 | beyondtrust_pra.access_session.destination.private_ip | The user's private IP address. | ip |
+| beyondtrust_pra.access_session.destination.private_port | The user's private port. | long |
 | beyondtrust_pra.access_session.destination.public_ip | The user's public IP address. | ip |
+| beyondtrust_pra.access_session.destination.public_port | The user's public port. | long |
 | beyondtrust_pra.access_session.destination.seconds_involved | Integer value indicating the number of seconds the user was involved in this session. | long |
 | beyondtrust_pra.access_session.destination.session_owner | Integer value (1 or 0) indicating whether the user was the owner of the session or was merely a conference member. | keyword |
 | beyondtrust_pra.access_session.destination.type | Indicating whether this action was directed to the system, a customer, or a user. | keyword |
@@ -91,7 +93,9 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.performed_by.invited | Integer value (1) present only if the user is an invited user. | boolean |
 | beyondtrust_pra.access_session.performed_by.os | The operating system of the user's computer. | keyword |
 | beyondtrust_pra.access_session.performed_by.private_ip | The user's private IP address. | ip |
+| beyondtrust_pra.access_session.performed_by.private_port | The user's private port. | long |
 | beyondtrust_pra.access_session.performed_by.public_ip | The user's public IP address. | ip |
+| beyondtrust_pra.access_session.performed_by.public_port | The user's public port. | long |
 | beyondtrust_pra.access_session.performed_by.seconds_involved | Integer value indicating the number of seconds the user was involved in this session. | long |
 | beyondtrust_pra.access_session.performed_by.session_owner | Integer value (1 or 0) indicating whether the user was the owner of the session or was merely a conference member. | keyword |
 | beyondtrust_pra.access_session.performed_by.type | Indicates whether this action was performed by the system, a endpoint, or a representative. | keyword |
