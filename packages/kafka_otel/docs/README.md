@@ -89,9 +89,6 @@ Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-
 | **[Kafka OTel] Consumer Groups** | Detailed consumer lag, offset tracking, per-partition lag breakdown, and consumer group membership. |
 | **[Kafka OTel] Topics & Partitions** | Topic and partition metrics including partition counts, offsets, and retained message volume. |
 | **[Kafka OTel] Replication Health** | Partition replication status, under-replicated partitions, and replica sync status. |
-|-----------|-------------|
-| **[Kafka OTel] Overview** | Broker count, replication health, consumer group summary, and topic topology. |
-| **[Kafka OTel] Consumer Groups & Lag Analysis** | Detailed consumer lag, offset tracking, per-partition lag breakdown, and consumer group membership. |
 
 ## Alert rules
 
