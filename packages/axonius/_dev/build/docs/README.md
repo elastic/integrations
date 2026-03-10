@@ -107,7 +107,7 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 3. In the search bar, type **Axonius**.
 4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
-An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only updated axonius logs are available to the end users. Each transform creates a destination index named `logs-axonius_latest.dest_*` which only contains active and updated axonius logs. The logs match rules and dashboards are updated to list only updated logs.
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for each data stream, to provide a view of the most recent, active Axonius data. Use the relevant destination alias from the table below to access the latest data, whether for use in dashboards, rules, or elsewhere.
 Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
 
 | Source Data stream                 | Destination Index Pattern                        | Destination Alias                       |
