@@ -13,6 +13,7 @@ processors:
       value: info
       tag: append_info_type
   - set:
+      tag: set_event_action_2bbdf18c
       field: event.action
       value: xdr-detection
   - append:
@@ -21,6 +22,7 @@ processors:
       tag: append_author
       if: ctx.crowdstrike?.event?.Author != null
   - rename:
+      tag: rename_crowdstrike_event_Name_to_rule_name_fcf360bf
       field: crowdstrike.event.Name
       target_field: rule.name
       ignore_missing: true
@@ -134,7 +136,7 @@ processors:
       allow_duplicates: false
       tag: append_users
       if: ctx.crowdstrike?.event?.Users != null && !ctx.crowdstrike?.event?.Users.contains(",")
-  - set: 
+  - set:
       field: rule.description
       copy_from: message
       tag: set_rule_description
