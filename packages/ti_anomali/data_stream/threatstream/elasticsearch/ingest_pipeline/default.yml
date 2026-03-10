@@ -7,7 +7,7 @@ processors:
   - set:
       tag: set_ecs_version_f5923549
       field: ecs.version
-      value: '8.17.0'
+      value: '9.3.0'
   - set:
       tag: set_event_kind_a131107f
       field: event.kind
@@ -415,6 +415,7 @@ processors:
       tag: geoip_threat_indicator_ip
       target_field: threat.indicator.geo
       ignore_missing: true
+      if: ctx.threat?.indicator?.ip != null
       on_failure:
         - append:
             tag: append_error_message_c00a8bf5
@@ -616,6 +617,33 @@ processors:
         - json.country
       ignore_missing: true
 
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
   #
   # Save fields without an ECS mapping under `threatintel.anomalithreatstream`.
   #
@@ -623,6 +651,17 @@ processors:
       tag: rename_json_to_anomali_threatstream_993fbb76
       field: json
       target_field: anomali.threatstream
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - set:
@@ -634,4 +673,4 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
