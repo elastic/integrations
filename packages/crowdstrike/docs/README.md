@@ -1215,6 +1215,11 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
 | crowdstrike.event.MatchedClassification.ID |  | keyword |
 | crowdstrike.event.MatchedClassification.Name |  | keyword |
+| crowdstrike.event.MitreAttack.PatternID |  | keyword |
+| crowdstrike.event.MitreAttack.Tactic |  | keyword |
+| crowdstrike.event.MitreAttack.TacticID |  | keyword |
+| crowdstrike.event.MitreAttack.Technique |  | keyword |
+| crowdstrike.event.MitreAttack.TechniqueID |  | keyword |
 | crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
 | crowdstrike.event.MobileAppsDetails.AndroidAppLabel |  | keyword |
 | crowdstrike.event.MobileAppsDetails.AndroidAppVersionName |  | keyword |
