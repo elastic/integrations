@@ -101,7 +101,8 @@ Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-
 | **[Kafka OTel] Broker count dropped** | Broker count falls below expected threshold (default 2) for an instance. | Critical |
 | **[Kafka OTel] Under-replicated partitions** | One or more partitions have replicas out of sync with the leader. | Critical |
 | **[Kafka OTel] Consumer group has zero members** | A consumer group has no active members and consumption has halted. | High |
-| **[Kafka OTel] High consumer group lag sum** | Lag sum for a group-topic exceeds threshold (default 10,000 messages). | High |
+| **[Kafka OTel] High consumer group lag sum** | Lag sum for a group-topic exceeds threshold (default 50,000 messages). | High |
+| **[Kafka OTel] High per-partition lag** | Per-partition lag exceeds threshold (default 10,000 messages) for any group-topic-partition. | Medium |
 | **[Kafka OTel] High per-partition lag** | Per-partition lag exceeds threshold (default 5,000 messages) for any group-topic-partition. | Medium |
 
 ## SLO templates
