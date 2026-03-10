@@ -1,0 +1,39 @@
+{
+  "id": "microsoft_sqlserver_otel-database-io-latency-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[SQL Server OTel] Database I/O latency high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "sqlserver"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-sqlserverreceiver.otel-default\n// Per-database file I/O latency (counter); INCREASE over window indicates storage pressure\n| WHERE metrics.sqlserver.database.latency IS NOT NULL\n    AND metrics.sqlserver.database.operations IS NOT NULL\n| STATS lat_increase = SUM(INCREASE(metrics.sqlserver.database.latency)),\n       ops_increase = SUM(INCREASE(metrics.sqlserver.database.operations))\n  BY instance_id = COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\"),\n     database_name = COALESCE(resource.attributes.sqlserver.database.name, \"\"),\n     file_type = COALESCE(attributes.file_type, file_type, \"\"),\n     direction = COALESCE(attributes.direction, direction, \"\")\n// Avg latency per op > 0.1s (100ms) when we have operations in the window\n| WHERE ops_increase > 0 AND (lat_increase / ops_increase) > 0.1\n| KEEP instance_id, database_name, file_type, direction, lat_increase, ops_increase"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "instance_id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
