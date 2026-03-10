@@ -80,7 +80,6 @@ service:
 
 Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/kafkametricsreceiver/documentation.md) of the OpenTelemetry Kafka Metrics receiver for details on available metrics.
 
-## Dashboards
 
 ## Dashboards
 
@@ -103,7 +102,6 @@ Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-
 | **[Kafka OTel] Consumer group has zero members** | A consumer group has no active members and consumption has halted. | High |
 | **[Kafka OTel] High consumer group lag sum** | Lag sum for a group-topic exceeds threshold (default 50,000 messages). | High |
 | **[Kafka OTel] High per-partition lag** | Per-partition lag exceeds threshold (default 10,000 messages) for any group-topic-partition. | Medium |
-| **[Kafka OTel] High per-partition lag** | Per-partition lag exceeds threshold (default 5,000 messages) for any group-topic-partition. | Medium |
 
 ## SLO templates
 
