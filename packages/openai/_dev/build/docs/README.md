@@ -1,17 +1,22 @@
 # OpenAI
 
-The OpenAI integration allows you to monitor OpenAI API usage metrics. OpenAI is an AI research and deployment company that offers [API platform](https://openai.com/api) for their industry-leading foundation models.
+The OpenAI integration allows you to monitor OpenAI API usage metrics and collect organization audit logs. OpenAI is an AI research and deployment company that offers [API platform](https://openai.com/api) for their industry-leading foundation models.
 
-With the OpenAI integration, you can track API usage metrics across their models, as well as for vector store and code interpreter. You will use Kibana to visualize your data, create alerts if usage limits are approaching, and view metrics when you troubleshoot issues. For example, you can track token usage and API calls per model.
+With the OpenAI integration, you can track API usage metrics across their models, as well as for vector store and code interpreter. You can also collect audit logs from the OpenAI platform to monitor user actions, API key lifecycle events, and organization configuration changes. You will use Kibana to visualize your data, create alerts if usage limits are approaching, view metrics when you troubleshoot issues, and analyze audit events for security and compliance. For example, you can track token usage and API calls per model, as well as login attempts, API key creation/deletion, and role assignments.
 
 ## Data collection
 
-The OpenAI integration leverages the [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) to collect detailed usage metrics. The Usage API delivers comprehensive insights into your API activity, helping you understand and optimize your organization's OpenAI API usage.
+The OpenAI integration leverages two OpenAI APIs for data collection:
+
+- **Usage API**: The [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) delivers comprehensive insights into your API activity, helping you understand and optimize your organization's OpenAI API usage.
+
+- **Audit Logs API**: The [OpenAI Audit Logs API](https://platform.openai.com/docs/api-reference/audit-logs) collects organization audit logs, providing visibility into user actions, API key lifecycle events, login attempts, role assignments, and other platform activity for security oversight and compliance.
 
 ## Data streams
 
 The OpenAI integration collects the following data streams:
 
+- `audit`: Collects organization audit logs.
 - `audio_speeches`: Collects audio speeches usage metrics.
 - `audio_transcriptions`: Collects audio transcriptions usage metrics.
 - `code_interpreter_sessions`: Collects code interpreter sessions usage metrics.
@@ -27,7 +32,7 @@ The OpenAI integration collects the following data streams:
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 
-You need an OpenAI account with a valid [Admin key](https://platform.openai.com/settings/organization/admin-keys) for programmatic access to [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage).
+You need an OpenAI account with a valid [Admin key](https://platform.openai.com/settings/organization/admin-keys) for programmatic access to the [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) and [OpenAI Audit Logs API](https://platform.openai.com/docs/api-reference/audit-logs). To fetch audit logs, you must enable audit logging on the OpenAI platform in your organization settings under Data controls > Data retention. Audit logs also require Organization Owner permissions.
 
 ## Setup
 
@@ -39,7 +44,7 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval" and "Bucket width".
+Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval" and "Bucket width" for usage metrics, and "Initial interval" and "Interval" for audit logs.
 
 ### Initial interval
 
@@ -104,6 +109,14 @@ The integration starts at 10:00 AM, collects data from 10:00 AM the previous day
 **ECS Field Reference**
 
 Refer to this [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+### Audit logs
+
+The `audit` data stream captures organization audit logs from the OpenAI platform.
+
+{{event "audit"}}
+
+{{fields "audit"}}
 
 ### Audio speeches
 

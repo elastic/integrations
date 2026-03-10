@@ -1,0 +1,324 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: openai.audit
+  - fingerprint:
+      fields:
+        - openai.audit.id
+      tag: fingerprint_event_original
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+  - append:
+      field: event.type
+      tag: append_change_into_event_type
+      value: change
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: OpenAI
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: OpenAI
+  - set:
+      field: service.id
+      tag: set_service_id_from_audit_actor_api_key_service_account_id
+      copy_from: openai.audit.actor.api_key.service_account.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_audit_actor_api_key_user_email_into_related_user
+      value: '{{{openai.audit.actor.api_key.user.email}}}'
+      allow_duplicates: false
+      if: ctx.openai?.audit?.actor?.api_key?.user?.email != null
+  - append:
+      field: related.user
+      tag: append_audit_actor_api_key_user_id_into_related_user
+      value: '{{{openai.audit.actor.api_key.user.id}}}'
+      allow_duplicates: false
+      if: ctx.openai?.audit?.actor?.api_key?.user?.id != null
+  - convert:
+      field: openai.audit.actor.session.ip_address
+      tag: convert_actor_session_ip_address_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.openai.audit?.actor?.session?.ip_address != ''
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_audit_actor_session_ip_address
+      copy_from: openai.audit.actor.session.ip_address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_audit_actor_session_ip_address_into_related_ip
+      value: '{{{openai.audit.actor.session.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.openai?.audit?.actor?.session?.ip_address != null
+  - convert:
+      field: openai.audit.actor.session.ip_address_details.asn
+      tag: convert_actor_session_ip_address_details_asn_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.as.number
+      tag: set_source_as_number_from_audit_actor_session_ip_address_details_asn
+      copy_from: openai.audit.actor.session.ip_address_details.asn
+      ignore_empty_value: true
+  - set:
+      field: source.geo.city_name
+      tag: set_source_geo_city_name_from_audit_actor_session_ip_address_details_city
+      copy_from: openai.audit.actor.session.ip_address_details.city
+      ignore_empty_value: true
+  - set:
+      field: source.geo.country_iso_code
+      tag: set_source_geo_country_iso_code_from_audit_actor_session_ip_address_details_country
+      copy_from: openai.audit.actor.session.ip_address_details.country
+      ignore_empty_value: true
+  - convert:
+      field: openai.audit.actor.session.ip_address_details.latitude
+      tag: convert_actor_session_ip_address_details_latitude_to_long
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.geo.location.lat
+      tag: set_source_geo_location_from_audit_actor_session_ip_address_details_latitude
+      copy_from: openai.audit.actor.session.ip_address_details.latitude
+      ignore_empty_value: true
+  - convert:
+      field: openai.audit.actor.session.ip_address_details.longitude
+      tag: convert_actor_session_ip_address_details_longitude_to_long
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.geo.location.lon
+      tag: set_openai_audit_actor_session_ip_address_details_longitude_into_source_geo_location
+      copy_from: openai.audit.actor.session.ip_address_details.longitude
+      ignore_empty_value: true
+  - set:
+      field: source.geo.region_name
+      tag: set_source_geo_region_name_from_audit_actor_session_ip_address_details_region
+      copy_from: openai.audit.actor.session.ip_address_details.region
+      ignore_empty_value: true
+  - set:
+      field: source.geo.region_iso_code
+      tag: set_source_geo_region_iso_code_from_audit_actor_session_ip_address_details_region_code
+      copy_from: openai.audit.actor.session.ip_address_details.region_code
+      ignore_empty_value: true
+  - set:
+      field: tls.client.ja3
+      tag: set_tls_client_ja3_from_audit_actor_session_ja3
+      copy_from: openai.audit.actor.session.ja3
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_audit_actor_session_user_email
+      copy_from: openai.audit.actor.session.user.email
+      ignore_empty_value: true
+  - dissect:
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+      tag: dissect_user_email
+      field: user.email
+      pattern: '%{}@%{user.domain}'
+  - append:
+      field: related.user
+      tag: append_audit_actor_session_user_email_into_related_user
+      value: '{{{openai.audit.actor.session.user.email}}}'
+      allow_duplicates: false
+      if: ctx.openai?.audit?.actor?.session?.user?.email != null
+  - set:
+      field: user.id
+      tag: set_user_id_from_audit_actor_session_user_id
+      copy_from: openai.audit.actor.session.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_audit_actor_session_user_id_into_related_user
+      value: '{{{openai.audit.actor.session.user.id}}}'
+      allow_duplicates: false
+      if: ctx.openai?.audit?.actor?.session?.user?.id != null
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_audit_actor_session_user_agent
+      copy_from: openai.audit.actor.session.user_agent
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_audit_type
+      copy_from: openai.audit.type
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: '[.]'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.event?.action != ''
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.event?.action != null && ctx.event.action != ''
+  - date:
+      field: openai.audit.effective_at
+      tag: date_effective_at
+      target_field: openai.audit.effective_at
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.openai.audit?.effective_at != null && ctx.openai.audit.effective_at != ''
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_effective_at
+      copy_from: openai.audit.effective_at
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_audit_id
+      copy_from: openai.audit.id
+      ignore_empty_value: true
+  - remove:
+      field:
+        - openai.audit.actor.api_key.service_account.id
+        - openai.audit.actor.session.ip_address
+        - openai.audit.actor.session.ip_address_details.asn
+        - openai.audit.actor.session.ip_address_details.city
+        - openai.audit.actor.session.ip_address_details.country
+        - openai.audit.actor.session.ip_address_details.latitude
+        - openai.audit.actor.session.ip_address_details.longitude
+        - openai.audit.actor.session.ip_address_details.region
+        - openai.audit.actor.session.ip_address_details.region_code
+        - openai.audit.actor.session.ja3
+        - openai.audit.actor.session.user.email
+        - openai.audit.actor.session.user.id
+        - openai.audit.actor.session.user_agent
+        - openai.audit.type
+        - openai.audit.effective_at
+        - openai.audit.id
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
