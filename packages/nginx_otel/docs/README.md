@@ -179,11 +179,11 @@ This package ships five alerting rule templates that you can enable and customiz
 
 | Rule | Default threshold | Window | Description |
 |------|-------------------|--------|-------------|
-| **High 4xx error rate** | > 15% | 15 min | Fires when the share of HTTP 4xx client errors exceeds the threshold per host (minimum 50 requests). |
-| **High 5xx error rate** | > 5% | 15 min | Fires when the share of HTTP 5xx server errors exceeds the threshold per host (minimum 50 requests). |
-| **High active connections** | > 256 avg | 5 min | Fires when average active connections exceed the threshold. Adjust to match your NGINX `worker_connections` setting. |
-| **Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host. |
-| **Dropped connections** | Any drop detected | 5 min | Fires when NGINX accepted more connections than it handled, indicating resource exhaustion. |
+| **[Nginx OTel] High 4xx error rate** | > 15% | 15 min | Fires when the share of HTTP 4xx client errors exceeds the threshold per host (minimum 50 requests). |
+| **[Nginx OTel] High 5xx error rate** | > 5% | 15 min | Fires when the share of HTTP 5xx server errors exceeds the threshold per host (minimum 50 requests). |
+| **[Nginx OTel] High active connections** | > 256 avg | 5 min | Fires when average active connections exceed the threshold. Adjust to match your NGINX `worker_connections` setting. |
+| **[Nginx OTel] Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host. |
+| **[Nginx OTel] Dropped connections** | Any drop detected | 5 min | Fires when NGINX accepted more connections than it handled, indicating resource exhaustion. |
 
 All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thresholds can be adjusted to match your environment's baseline.
 
@@ -193,8 +193,8 @@ This package includes two SLO templates:
 
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
-| **Request availability** | 99% | Rolling 30 days | Percentage of requests that return a non-server-error response (status code < 500). Uses occurrence-based budgeting over access logs. |
-| **Connection handling rate** | 99.5% | Rolling 30 days | Percentage of 1-minute time slices where all accepted connections are handled (no drops). Uses timeslice budgeting over stub_status metrics. |
+| **[Nginx OTel] Request availability** | 99% | Rolling 30 days | Percentage of requests that return a non-server-error response (status code < 500). Uses occurrence-based budgeting over access logs. |
+| **[Nginx OTel] Connection handling rate** | 99.5% | Rolling 30 days | Percentage of 1-minute time slices where all accepted connections are handled (no drops). Uses timeslice budgeting over stub_status metrics. |
 
 Both SLOs are grouped by `host.name`, allowing per-instance tracking.
 
