@@ -66,10 +66,7 @@ processors:
           if (obj instanceof Map) {
             def newObj = [:];
             for (entry in obj.entrySet()) {
-              if (!entry.getKey().contains("@")) {
-                String newKey = camelToSnake(entry.getKey());
-                newObj[newKey] = convertToSnakeCase(entry.getValue());
-              }
+              newObj[camelToSnake(entry.getKey())] = convertToSnakeCase(entry.getValue());
             }
             return newObj;
           } else if (obj instanceof List) {
@@ -623,7 +620,7 @@ processors:
       ignore_missing: true
       if: ctx.trend_micro_vision_one?.detection?.request == null
 
-  # convert aptRelated ('0'/'1') to related_apt (boolean)
+  # convert apt_related ('0'/'1') to related_apt (boolean)
   - set:
       field: trend_micro_vision_one.detection.related_apt
       tag: set_related_apt_to_false
@@ -939,7 +936,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      description: Resolved numeric risk level to text value.
+      description: Resolve numeric risk level to text value.
       tag: script_resolve_risk_level_to_text_value
       params:
         cccaRiskLevel:
@@ -1426,11 +1423,6 @@ processors:
       field: process.pid
       tag: set_process_pid_from_process_pid
       copy_from: trend_micro_vision_one.detection.process.pid
-      ignore_empty_value: true
-  - set:
-      field: process.entity_id
-      tag: set_process_entity_id
-      value: '{{{process.pid}}}'
       ignore_empty_value: true
 
   # rule.*

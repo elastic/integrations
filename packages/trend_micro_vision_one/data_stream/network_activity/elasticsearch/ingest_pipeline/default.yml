@@ -64,10 +64,7 @@ processors:
           if (obj instanceof Map) {
             def newObj = [:];
             for (entry in obj.entrySet()) {
-              if (!entry.getKey().contains("@")) {
-                String newKey = camelToSnake(entry.getKey());
-                newObj[newKey] = convertToSnakeCase(entry.getValue());
-              }
+              newObj[camelToSnake(entry.getKey())] = convertToSnakeCase(entry.getValue());
             }
             return newObj;
           } else if (obj instanceof List) {
@@ -353,7 +350,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      description: Resolved numeric action id to text value.
+      description: Resolve numeric action id to text value.
       tag: script_resolve_action_id_to_text_value
       params:
         act:

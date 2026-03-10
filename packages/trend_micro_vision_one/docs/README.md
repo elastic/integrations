@@ -117,22 +117,22 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-04-30T00:01:16.000Z",
     "agent": {
-        "ephemeral_id": "36203336-68a0-4f4c-a21b-aa91d01f8ea4",
-        "id": "c3fec8b8-b266-415f-aac9-ee3460f72cce",
-        "name": "elastic-agent-93349",
+        "ephemeral_id": "2c226d58-b707-4bea-a4d1-18ec22aee598",
+        "id": "337bb2ff-67e7-4ed1-8cdf-6dd296ce74ae",
+        "name": "elastic-agent-65496",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.alert",
-        "namespace": "17828",
+        "namespace": "59337",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c3fec8b8-b266-415f-aac9-ee3460f72cce",
+        "id": "337bb2ff-67e7-4ed1-8cdf-6dd296ce74ae",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -144,7 +144,7 @@ An example event for `alert` looks as following:
         "created": "2020-04-30T00:01:15.000Z",
         "dataset": "trend_micro_vision_one.alert",
         "id": "WB-9002-20200427-0002",
-        "ingested": "2026-03-07T13:23:11Z",
+        "ingested": "2026-03-10T12:44:12Z",
         "kind": "alert",
         "original": "{\"alertProvider\":\"SAE\",\"createdDateTime\":\"2020-04-30T00:01:15Z\",\"description\":\"A backdoor was possibly implanted after a user received a possible spear phishing email message.\",\"id\":\"WB-9002-20200427-0002\",\"impactScope\":{\"accountCount\":0,\"desktopCount\":0,\"emailAddressCount\":0,\"entities\":[{\"entityId\":\"5257b401-2fd7-469c-94fa-39a4f11eb925\",\"entityType\":\"host\",\"entityValue\":\"user@email.com\",\"provenance\":[\"Alert\"],\"relatedEntities\":[\"CODERED\\\\\\\\user\"],\"relatedIndicatorIds\":[1]}],\"serverCount\":0},\"indicators\":[{\"field\":\"request url\",\"filterIds\":[\"f862df72-7f5e-4b2b-9f7f-9148e875f908\"],\"id\":1,\"provenance\":[\"Alert\"],\"relatedEntities\":[\"user@example.com\"],\"type\":\"url\",\"value\":\"http://www.example.com/ab001.zip\"}],\"investigationStatus\":\"New\",\"matchedRules\":[{\"id\":\"5f52d1f1-53e7-411a-b74f-745ee81fa30b\",\"matchedFilters\":[{\"id\":\"ccf86fc1-688f-4131-a46f-1d7a6ee2f88e\",\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"matchedEvents\":[{\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"type\":\"TELEMETRY_REGISTRY\",\"uuid\":\"fa9ff47c-e1b8-459e-a3d0-a5b104b854a5\"}],\"mitreTechniqueIds\":[\"T1192\"],\"name\":\"(T1192) Spearphishing Link\"}],\"name\":\"Possible SpearPhishing Email\"}],\"model\":\"Possible APT Attack\",\"schemaVersion\":\"1.0\",\"score\":63,\"severity\":\"critical\",\"updatedDateTime\":\"2023-04-30T00:01:16Z\",\"workbenchLink\":\"https://THE_WORKBENCH_URL\"}",
         "severity": 99,
@@ -355,22 +355,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-24T07:29:48.000Z",
     "agent": {
-        "ephemeral_id": "eee8d099-5bd1-4acb-b5e5-9ac3c86ba5fa",
-        "id": "1d29e28f-1b50-4be1-b296-8323ec0c9883",
-        "name": "elastic-agent-84496",
+        "ephemeral_id": "6fd5120c-96c3-4edc-9085-091b748cdcb7",
+        "id": "00167f68-9645-4211-bad9-bf9f85988000",
+        "name": "elastic-agent-39307",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.audit",
-        "namespace": "97186",
+        "namespace": "13784",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "1d29e28f-1b50-4be1-b296-8323ec0c9883",
+        "id": "00167f68-9645-4211-bad9-bf9f85988000",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -379,9 +379,9 @@ An example event for `audit` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2026-03-07T13:23:45.548Z",
+        "created": "2026-03-10T12:44:59.476Z",
         "dataset": "trend_micro_vision_one.audit",
-        "ingested": "2026-03-07T13:23:48Z",
+        "ingested": "2026-03-10T12:45:02Z",
         "kind": "event",
         "original": "{\"accessType\":\"Console\",\"activity\":\"string\",\"category\":\"Logon and Logoff\",\"details\":{\"property1\":\"string\",\"property2\":\"string\"},\"loggedDateTime\":\"2022-02-24T07:29:48Z\",\"loggedRole\":\"Master Administrator\",\"loggedUser\":\"Root Account\",\"result\":\"Unsuccessful\"}",
         "outcome": "failure",
@@ -464,15 +464,15 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2020-10-15T01:16:32.000Z",
     "agent": {
-        "ephemeral_id": "024d7da2-b5a8-4128-8328-a02586fd5e80",
-        "id": "dca85c1f-08b0-4393-9333-f1c89c57f66b",
-        "name": "elastic-agent-50832",
+        "ephemeral_id": "3cf9aaa8-9858-4ee5-b6e5-d490934f4833",
+        "id": "33779bb8-490d-4f54-846f-5d3b3c6896c1",
+        "name": "elastic-agent-53448",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.detection",
-        "namespace": "48726",
+        "namespace": "16237",
         "type": "logs"
     },
     "destination": {
@@ -486,7 +486,7 @@ An example event for `detection` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "dca85c1f-08b0-4393-9333-f1c89c57f66b",
+        "id": "33779bb8-490d-4f54-846f-5d3b3c6896c1",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -496,10 +496,10 @@ An example event for `detection` looks as following:
         "category": [
             "intrusion_detection"
         ],
-        "created": "2026-03-07T13:24:25.727Z",
+        "created": "2026-03-10T12:45:49.924Z",
         "dataset": "trend_micro_vision_one.detection",
         "id": "100117",
-        "ingested": "2026-03-07T13:24:28Z",
+        "ingested": "2026-03-10T12:45:52Z",
         "kind": "event",
         "original": "{\"act\":\"Clean\",\"actResult\":\"Quarantined successfully\",\"app\":\"HTTP\",\"appGroup\":\"HTTP\",\"aptRelated\":\"0\",\"behaviorCat\":\"Grey-Detection\",\"blocking\":\"Web reputation\",\"cat\":50,\"cccaDetection\":\"Yes\",\"cccaDetectionSource\":\"GLOBAL_INTELLIGENCE\",\"cccaRiskLevel\":3,\"clientFlag\":\"dst\",\"cnt\":\"1\",\"component\":[\"PATTERN_VSAPI 17.101.92 2021-09-30 04:23:27-07:00\"],\"compressedFileSize\":\"0\",\"detectionType\":\"File\",\"deviceDirection\":\"outbound\",\"deviceGUID\":\"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\",\"deviceMacAddress\":\"00-00-5E-00-53-23\",\"deviceProcessName\":\"/snap/core/10126/usr/lib/snapd/snapd\",\"dhost\":\"samplehost\",\"domainName\":\"Workgroup\",\"dpt\":53,\"dst\":[\"81.2.69.142\"],\"dstGroup\":\"Default\",\"end\":\"2021-09-30T09:40:04-08:00\",\"endpointGUID\":\"1234-1234-1234\",\"endpointHostName\":\"abc-docker\",\"endpointIp\":[\"81.2.69.142\"],\"endpointMacAddress\":\"00-00-5E-00-53-23\",\"engType\":\"Virus Scan Engine (OS 2003, x64)\",\"engVer\":\"12.500.1004\",\"eventId\":\"100117\",\"eventName\":\"INTEGRITY_MONITORING_EVENT\",\"eventSubName\":\"Attack Discovery\",\"eventTime\":1602724592000,\"eventTimeDT\":\"2021-06-10T01:38:38+00:00\",\"fileHash\":\"3395856ce81f2b7382dee72602f798b642f14140\",\"fileName\":[\"Unconfirmed 145081.crdownload\"],\"fileOperation\":\"Deleted\",\"filePath\":\"/etc/systemd/system\",\"filePathName\":\"/etc/systemd/system/snap-xxxx-1246.xxxx\",\"fileSize\":\"0\",\"firstAct\":\"Clean\",\"firstActResult\":\"Unable to clean file\",\"fullPath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 145081.crdownload\",\"hostName\":\"samplehost\",\"httpReferer\":\"http://www.example.com/\",\"interestedHost\":\"abc-docker\",\"interestedIp\":[\"81.2.69.192\"],\"interestedMacAddress\":\"00-00-5E-00-53-23\",\"mDevice\":[\"81.2.69.192\"],\"mDeviceGUID\":\"C5B09EDD-C725-907F-29D9-B8C30D18C48F\",\"malName\":\"Eicar_test_1\",\"malType\":\"Virus/Malware\",\"mitreMapping\":[\"T1090 (TA0005)\"],\"mitreVersion\":\"v6\",\"mpname\":\"Cloud One - Workload Security\",\"mpver\":\"Deep Security/20.0.222\",\"objectCmd\":[\"C:\\\\\\\\Program Files (x86)\\\\\\\\Microsoft\\\\\\\\Edge\\\\\\\\Application\\\\\\\\msedge.exe --profile-directory=Default\"],\"objectFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"objectFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"objectFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"objectFileName\":\"Unconfirmed 142899.crdownload:SmartScreen\",\"objectFilePath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 142899.crdownload:SmartScreen\",\"objectName\":\"CloudEndpointService.exe\",\"objectPid\":7660,\"objectSigner\":[\"OS\"],\"parentCmd\":\"C:\\\\\\\\os\\\\\\\\system32\\\\\\\\svchost.exe -k DcomLaunch -p\",\"parentFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"parentFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"parentFilePath\":\"C:\\\\\\\\os\\\\\\\\System32\\\\\\\\svchost.exe\",\"peerHost\":\"samplehost\",\"peerIp\":[\"81.2.69.192\"],\"pname\":\"Apex One\",\"processCmd\":\"-ServerName:App.AppX9yct9q388jvt4h7y0gn06smzkxcsnt8m.mca\",\"processFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"processFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"processFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"processFilePath\":\"C:\\\\\\\\Program Files (x86)\\\\\\\\os\\\\\\\\Application\\\\\\\\msedge.exe\",\"processName\":\"string\",\"processPid\":0,\"processSigner\":\"OS Publisher\",\"productCode\":\"sao\",\"pver\":\"20.0.0.877\",\"request\":\"https://example.com\",\"requestClientApplication\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1\",\"rt\":\"2020-10-15T01:16:32.000Z\",\"rt_utc\":\"2020-10-15T01:16:32.000Z\",\"searchDL\":\"DDL\",\"spt\":58871,\"src\":\"81.2.69.192\",\"srcGroup\":\"Default\",\"tacticId\":[\"TA0005\"],\"tags\":[\"XSAE.F2140\",\"XSAE.F3066\"],\"threatName\":\"Malicious_identified_CnC_querying_on_UDP_detected\",\"uuid\":\"1234-1234-1234\"}",
         "severity": 50,
@@ -550,7 +550,6 @@ An example event for `detection` looks as following:
     },
     "process": {
         "command_line": "-ServerName:App.AppX9yct9q388jvt4h7y0gn06smzkxcsnt8m.mca",
-        "entity_id": "0",
         "name": "string",
         "pid": 0
     },
@@ -973,15 +972,15 @@ An example event for `endpoint_activity` looks as following:
 {
     "@timestamp": "2023-11-13T10:15:43.210Z",
     "agent": {
-        "ephemeral_id": "996040a5-6750-4ef6-bb96-310e4efa8967",
-        "id": "17058850-de87-4551-9e49-f029dcf7b371",
-        "name": "elastic-agent-35380",
+        "ephemeral_id": "9be3ff27-a10e-43c0-975c-868b29d0de85",
+        "id": "18242c5a-013a-40a2-ba41-1da166d71364",
+        "name": "elastic-agent-80748",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.endpoint_activity",
-        "namespace": "50576",
+        "namespace": "51107",
         "type": "logs"
     },
     "destination": {
@@ -992,7 +991,7 @@ An example event for `endpoint_activity` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "17058850-de87-4551-9e49-f029dcf7b371",
+        "id": "18242c5a-013a-40a2-ba41-1da166d71364",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1001,7 +1000,7 @@ An example event for `endpoint_activity` looks as following:
         "code": "4624",
         "dataset": "trend_micro_vision_one.endpoint_activity",
         "id": "29",
-        "ingested": "2026-03-07T13:25:19Z",
+        "ingested": "2026-03-10T12:46:42Z",
         "kind": "event",
         "original": "{\"dpt\":442,\"dst\":\"81.2.69.142\",\"endpointGuid\":\"72436165-b5a5-471a-9389-0bdc3647bc33\",\"endpointHostName\":\"workstation-pc01\",\"endpointIp\":[\"1.128.0.0\"],\"eventId\":\"29\",\"eventSubId\":2,\"eventTime\":1699876543210,\"eventTimeDT\":\"2023-11-13T10:15:43.210000+00:00\",\"hostName\":\"workstation-pc01\",\"logonUser\":[\"john.doe@example.com\"],\"objectCmd\":\"C:\\\\Windows\\\\System32\\\\cmd.exe /c whoami\",\"objectFileHashSha1\":\"A1B2C3D4E5F6789012345678901234567890ABCD\",\"objectFilePath\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"objectHostName\":\"api.example.com\",\"objectIntegrityLevel\":8192,\"objectIp\":\"81.2.69.144\",\"objectIps\":[\"81.2.69.144\",\"175.16.199.0\"],\"objectPort\":8080,\"objectRegistryData\":\"C:\\\\Program Files\\\\MyApp\\\\startup.exe\",\"objectRegistryKeyHandle\":\"hklm\\\\software\\\\microsoft\\\\windows\\\\currentversion\\\\run\",\"objectRegistryValue\":\"MyAppStartup\",\"objectSigner\":[\"Microsoft Windows\"],\"objectSignerValid\":[true],\"objectSubTrueType\":7002,\"objectTrueType\":7,\"objectUser\":\"DOMAIN\\\\john.doe\",\"os\":\"Windows 10\",\"parentCmd\":\"C:\\\\Windows\\\\explorer.exe\",\"parentFileHashSha1\":\"B2C3D4E5F67890123456789012345678901ABCDE\",\"parentFilePath\":\"C:\\\\Windows\\\\explorer.exe\",\"processCmd\":\"C:\\\\Windows\\\\System32\\\\cmd.exe /c whoami\",\"processFileHashSha1\":\"C3D4E5F678901234567890123456789012ABCDEF\",\"processFilePath\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"request\":\"https://api.example.com/v1/auth\",\"searchDL\":\"EDR\",\"spt\":49152,\"src\":\"1.128.0.0\",\"srcFileHashSha1\":\"D4E5F6789012345678901234567890123ABCDEFG\",\"srcFilePath\":\"C:\\\\Users\\\\john.doe\\\\Downloads\\\\installer.exe\",\"tags\":[\"MITRE.T1059.001\",\"XSAE.F1001\"],\"uuid\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"winEventId\":4624}"
     },
@@ -1253,9 +1252,9 @@ An example event for `network_activity` looks as following:
 {
     "@timestamp": "2023-11-13T11:55:43.000Z",
     "agent": {
-        "ephemeral_id": "d3d73a91-d15a-4aa4-a1d8-05458718dfc9",
-        "id": "a89ac91a-f176-480d-ab34-ff984e657d02",
-        "name": "elastic-agent-21478",
+        "ephemeral_id": "57b709db-68d8-485f-bc05-5b02b885e9f9",
+        "id": "e6b4267b-c59e-4e0a-ac1f-baff577029b2",
+        "name": "elastic-agent-90024",
         "type": "filebeat",
         "version": "8.19.4"
     },
@@ -1264,7 +1263,7 @@ An example event for `network_activity` looks as following:
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.network_activity",
-        "namespace": "90063",
+        "namespace": "39548",
         "type": "logs"
     },
     "destination": {
@@ -1275,7 +1274,7 @@ An example event for `network_activity` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "a89ac91a-f176-480d-ab34-ff984e657d02",
+        "id": "e6b4267b-c59e-4e0a-ac1f-baff577029b2",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1283,7 +1282,7 @@ An example event for `network_activity` looks as following:
         "agent_id_status": "verified",
         "dataset": "trend_micro_vision_one.network_activity",
         "duration": 45000000,
-        "ingested": "2026-03-07T13:26:09Z",
+        "ingested": "2026-03-10T12:47:33Z",
         "kind": "event",
         "original": "{\"act\":1,\"application\":\"Microsoft 365\",\"clientIp\":\"175.16.199.0\",\"companyName\":\"Acme Corporation\",\"customerId\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"detectionType\":10,\"deviceGUID\":\"c3d4e5f6-7890-1234-cdef-345678901234\",\"dpt\":443,\"dst\":\"81.2.69.142\",\"duration\":45,\"endpointGuid\":\"72436165-b5a5-471a-9389-0bdc3647bc33\",\"endpointHostName\":\"workstation-pc01\",\"eventName\":\"SWG_ACTIVITY_LOG\",\"eventSubName\":\"SharePoint file download\",\"eventTime\":1699876543,\"fileHash\":\"a1b2c3d4e5f6789012345678901234567890abcd\",\"fileHashSha256\":\"ba9edecdd09de1307714564c24409bd25508e22fe11c768053a08f173f263e93\",\"fileName\":\"quarterly_report.xlsx\",\"fileSize\":245678,\"fileType\":\"Microsoft Excel\",\"malName\":\"\",\"mimeType\":\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\"objectId\":\"e5f67890-1234-5678-ef01-567890123456\",\"osName\":\"Windows 10\",\"pname\":\"2200\",\"policyUuid\":\"f6789012-3456-7890-f012-678901234567\",\"principalName\":\"john.doe@example.com\",\"profile\":\"standard\",\"pver\":\"2.1\",\"request\":\"https://portal.example.com/dashboard\",\"requestBase\":\"portal.example.com\",\"requestMethod\":\"GET\",\"requestMimeType\":\"application/json\",\"rt\":1699876545,\"ruleName\":\"Corporate_Access_Policy\",\"ruleType\":\"access\",\"ruleUuid\":\"d4e5f678-9012-3456-def0-456789012345\",\"score\":95,\"sender\":\"Corporate Gateway\",\"serverProtocol\":\"HTTP/2\",\"serverTls\":\"TLS 1.3\",\"spt\":49152,\"src\":\"1.128.0.0\",\"start\":1699876500,\"suid\":\"John Doe\",\"tenantGuid\":\"b2c3d4e5-f678-9012-bcde-f23456789012\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36\",\"userDepartment\":\"Finance\",\"userDomain\":\"example.com\"}",
         "start": 1699876500
@@ -1533,22 +1532,22 @@ An example event for `telemetry` looks as following:
 {
     "@timestamp": "2025-03-03T23:53:20.111Z",
     "agent": {
-        "ephemeral_id": "35d41314-f0e7-4225-8e71-afb19209be54",
-        "id": "621a311d-0501-4090-9086-6430a066294e",
-        "name": "elastic-agent-41785",
+        "ephemeral_id": "28401fb1-486f-4bd4-acac-d93960046f52",
+        "id": "a9b1c4df-66e7-4a24-a28b-e21ce7071168",
+        "name": "elastic-agent-20464",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.telemetry",
-        "namespace": "66000",
+        "namespace": "83974",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "621a311d-0501-4090-9086-6430a066294e",
+        "id": "a9b1c4df-66e7-4a24-a28b-e21ce7071168",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1557,7 +1556,7 @@ An example event for `telemetry` looks as following:
         "code": "2",
         "dataset": "trend_micro_vision_one.telemetry",
         "id": "b3d95071-ccad-44c3-9c99-f08be03bc786",
-        "ingested": "2026-03-07T13:26:58Z",
+        "ingested": "2026-03-10T12:48:23Z",
         "kind": "event",
         "original": "{\"eventTime\":\"1741046000111\",\"authId\":\"999\",\"deviceType\":0,\"endpointGuid\":\"af2c07d7-9f44-4e6f-bf1b-a884745eb4bd\",\"endpointHostName\":\"tvo-5901-3\",\"endpointIp\":[\"fe80::57b7:a740:883f:9b14\",\"10.2.0.6\"],\"endpointMacAddress\":[\"60:45:bd:a7:0d:17\"],\"eventHashId\":\"-4294745173759834457\",\"eventId\":2,\"eventSourceType\":1,\"eventSubId\":109,\"firstSeen\":\"1741046568230\",\"groupId\":\"f37ba03c-5b7e-42b1-ab5b-39e63c9ed2b4\",\"integrityLevel\":16384,\"lastSeen\":\"1741046568230\",\"logReceivedTime\":\"1741046864669\",\"nativeDeviceCharacteristics\":131072,\"nativeDeviceType\":7,\"nativeStorageDeviceBusType\":10,\"objectCurrentFileSize\":\"334168\",\"objectFileCreation\":\"1735285868903\",\"objectFileModifiedTime\":\"1735285868903\",\"objectFilePath\":\"C:\\\\Windows\\\\Prefetch\\\\AgAppLaunch.db\",\"objectFileSize\":\"334168\",\"objectFileSizeModified\":false,\"objectFirstSeen\":\"1741046568230\",\"objectHashId\":\"4074796453632858305\",\"objectLastSeen\":\"1741046568230\",\"objectSubTrueType\":0,\"osDescription\":\"Windows 10 Pro (64 bit) build 19045\",\"osName\":\"Windows\",\"osType\":\"0x00000030\",\"osVer\":\"10.0.19045\",\"plang\":1,\"pname\":\"Endpoint Sensor\",\"pplat\":5889,\"processCmd\":\"C:\\\\Windows\\\\system32\\\\svchost.exe -k LocalSystemNetworkRestricted -p -s SysMain\",\"processFileCreation\":\"1733468133525\",\"processFileHashId\":\"-821808160829839906\",\"processFileHashMd5\":\"7469cc568ad6821fd9d925542730a7d8\",\"processFileHashSha1\":\"e4e3f6bbad17b41a42687b3d75ade4a10b0870ec\",\"processFileHashSha256\":\"6fc3bf1fdfd76860be782554f8d25bd32f108db934d70f4253f1e5f23522e503\",\"processFileModifiedTime\":\"1733468133525\",\"processFilePath\":\"C:\\\\Windows\\\\System32\\\\svchost.exe\",\"processFileSize\":\"57528\",\"processHashId\":\"-7291293652695135564\",\"processLaunchTime\":\"1739418294389\",\"processName\":\"C:\\\\Windows\\\\System32\\\\svchost.exe\",\"processPid\":1708,\"processSigner\":[\"Microsoft Windows Publisher\"],\"processSignerFlagsAdhoc\":[false],\"processSignerFlagsLibValid\":[false],\"processSignerFlagsRuntime\":[false],\"processSignerValid\":[true],\"processTrueType\":7,\"processUser\":\"SYSTEM\",\"processUserDomain\":\"NT AUTHORITY\",\"productCode\":\"xes\",\"pver\":\"1.2.0.5960\",\"sessionId\":0,\"timezone\":\"UTC+00:00\",\"uuid\":\"b3d95071-ccad-44c3-9c99-f08be03bc786\"}"
     },
