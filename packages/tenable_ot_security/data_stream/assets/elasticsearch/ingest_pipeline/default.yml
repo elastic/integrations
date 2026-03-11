@@ -128,11 +128,6 @@ processors:
       value: tenable_ot_security.assets
 
   - set:
-      field: "@timestamp"
-      copy_from: tenable_ot_security.assets.first_seen
-      ignore_empty_value: true
-
-  - set:
       field: event.id
       copy_from: tenable_ot_security.assets.id
       ignore_empty_value: true
@@ -143,7 +138,7 @@ processors:
       processor:
         append:
           field: related.hosts
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
           allow_duplicates: false
 
   - foreach:
@@ -152,7 +147,7 @@ processors:
       processor:
         append:
           field: related.hosts
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
           allow_duplicates: false
 
   #################### Override host.ip ####################
@@ -172,7 +167,7 @@ processors:
       processor:
         append:
           field: host.ip
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
           allow_duplicates: false
 
   - geoip:

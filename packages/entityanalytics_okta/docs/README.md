@@ -29,7 +29,7 @@ The minimum **kibana.version** required is **8.9.0**.
 
 ### Collect data from Okta
 
-1. Get the required URL namespace, which should be preceded by an organization's subdomain (tenant) or configured custom domain.
+1. Get the required domain namespace, which should be preceded by an organization's subdomain (tenant) or configured custom domain.
 2. Create an Okta API Token for Authentication. Follow this [guide](https://developer.okta.com/docs/guides/create-an-api-token/main/).
 
 ### Enable the integration in Elastic
@@ -37,7 +37,7 @@ The minimum **kibana.version** required is **8.9.0**.
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Okta Entity Analytics**.
 3. Select the **Okta Entity Analytics** integration and add it.
-4. While adding the integration, add the URL and API Token that you got earlier.
+4. While adding the integration, add the domain and API Token that you got earlier. Domain should be without https:// for example: dev-123456.okta.com.
 5. Save the integration.
 
 ## Usage
@@ -341,6 +341,7 @@ This is the `User` dataset.
 | entityanalytics_okta.user.profile.division | Name of user's division. | keyword |
 | entityanalytics_okta.user.profile.email | Primary email address of user. | keyword |
 | entityanalytics_okta.user.profile.employee_number | Organization or company assigned unique identifier for the user. | keyword |
+| entityanalytics_okta.user.profile.external_id | External identifier of the user, often an AD objectGUID when provisioned from Active Directory. | keyword |
 | entityanalytics_okta.user.profile.first_name | Given name of the user (givenName). | keyword |
 | entityanalytics_okta.user.profile.honorific.prefix | Honorific prefix(es) of the user, or title in most Western languages. | keyword |
 | entityanalytics_okta.user.profile.honorific.suffix | Honorific suffix(es) of the user. | keyword |
