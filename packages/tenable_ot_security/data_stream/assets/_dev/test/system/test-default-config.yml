@@ -1,3 +1,10 @@
+# The assets stream now uses time-based incremental fetching with a
+# filter on lastUpdate/firstSeen. initial_interval must be large enough
+# that the mock server's hardcoded timestamps (2024-2025) fall within
+# the fetch window when the test runs; 87600h (~10 years) ensures this.
+# The mock returns 9 assets across 3 pages of 3 (limit: 3), sorted by
+# lastUpdate ascending, with each page's request matched by the
+# lastUpdate value of the previous page's final asset.
 input: cel
 service: assets
 vars:
@@ -6,6 +13,7 @@ vars:
 data_stream:
   vars:
     interval: 10m
+    initial_interval: 87600h
     limit: 3
     preserve_original_event: true
 assert:
