@@ -1,0 +1,40 @@
+{
+  "id": "etcd_otel-proposals-pending",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[etcd OTel] Pending proposals backlog",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "etcd",
+      "consensus"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-etcd.otel-default*\n// Gauge: proposals waiting to be committed; backlog indicates leader overload or slow disk\n| WHERE etcd_server_proposals_pending IS NOT NULL\n  AND etcd_server_proposals_pending > 10\n// Adjust threshold (10) based on expected write throughput\n| STATS pending = MAX(etcd_server_proposals_pending)\n    BY resource.attributes.service.instance.id\n| SORT pending DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
