@@ -1,37 +1,10 @@
 rules:
-  # OAuth2 token endpoint
-  - path: /oauth2/v1/token
-    methods: ["POST"]
-    request_headers:
-      Content-Type:
-        - "application/x-www-form-urlencoded"
-    query_params:
-      grant_type: "client_credentials"
-      scope: "okta.logs.read"
-      client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-      client_assertion: "{client_assertion:.*}"
-    responses:
-      - status_code: 200
-        body: |
-          {{ minify_json `
-          {
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
-            "scope": "okta.users.read"
-          }
-          `}}
   # OIN token endpoint
   - path: /oauth2/v1/token
     methods: ["POST"]
     request_headers:
       Content-Type:
         - "application/x-www-form-urlencoded"
-    Authorization:
-      - "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0"
-    query_params:
-      grant_type: "client_credentials"
-      scope: "okta.logs.read"
     responses:
       - status_code: 200
         body: |

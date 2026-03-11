@@ -1,5 +1,6 @@
 provider: okta
 {{#if enable_request_tracer}}
+tracer.enabled: true
 tracer.filename: "../../logs/okta/http-request-trace-*.ndjson"
 tracer.maxbackups: 5
 {{/if}}
@@ -10,8 +11,13 @@ sync_interval: {{sync_interval}}
 update_interval: {{update_interval}}
 okta_domain: {{okta_domain}}
 {{#if client_id}}
+oauth2.enabled: true
 oauth2.client.id: {{client_id}}
+{{#if okta_token_url}}
+oauth2.token_url: {{okta_token_url}}
+{{else}}
 oauth2.token_url: {{okta_domain}}/oauth2/v1/token
+{{/if}}
 {{#if client_secret}}
 oauth2.client.secret: {{client_secret}}
 {{/if}}
