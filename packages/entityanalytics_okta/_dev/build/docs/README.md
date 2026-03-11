@@ -44,7 +44,7 @@ The minimum **kibana.version** required is **9.2.6** or **9.3.1**.
 ### API Token
 In the administration dashboard for your Okta account, navigate to Security>API and in the Tokens tab click the "Create token" button to create a new token.
 
-Copy the token value and retain this to configure the provider. Note that the token will not be presented again, so it must be copied now.
+Copy the token value and retain this to configure the provider. The token is only shown once, copy it before closing this page.
 
 You should paste this token into the `Okta API Token` configuration option to start collecting entity analytics logs.
 
@@ -62,7 +62,7 @@ You should paste this token into the `Okta API Token` configuration option to st
 4. Generate your own `Private/Public key` pair in the `JWK` format and save it in one of the available formats.
 
 ### Okta Integration Network (OIN)
-The Okta Integration Network provides a simple integration authentication based on OAuth2, but using an API key.
+The Okta Integration Network provides OAuth2-based authentication.
 In this type of authentication, we only require an API Key for authenticating the client.
 1. Your Okta domain URL. [ Example: https://dev-123456.okta.com ]
 2. Your Okta service app Client ID.
