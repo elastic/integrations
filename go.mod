@@ -8,9 +8,9 @@ require (
 	github.com/cli/go-gh/v2 v2.13.0
 	github.com/elastic/elastic-package v0.120.0
 	github.com/elastic/go-licenser v0.4.2
-	github.com/elastic/go-ucfg v0.9.0
+	github.com/elastic/go-ucfg v0.9.1
 	github.com/elastic/package-registry v1.36.0
-	github.com/magefile/mage v1.15.0
+	github.com/magefile/mage v1.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/mod v0.33.0
