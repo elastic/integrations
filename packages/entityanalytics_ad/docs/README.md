@@ -195,7 +195,7 @@ This is the `User` dataset.
 | entityanalytics_ad.user.unconstrained_delegation | True if the account is trusted for unconstrained delegation. | boolean |
 | entityanalytics_ad.user.use_des_key_only | True if the account is configured to only use DES encryption. | boolean |
 | entityanalytics_ad.user.user_account_control |  | keyword |
-| entityanalytics_ad.user.user_principal_name | The user's login name in UPN format (e.g., user@domain.com). | keyword |
+| entityanalytics_ad.user.user_principal_name | The user's login name in UPN format (for example, user@domain.com). | keyword |
 | entityanalytics_ad.user.usn_changed |  | keyword |
 | entityanalytics_ad.user.usn_created |  | keyword |
 | entityanalytics_ad.user.when_changed |  | date |
