@@ -40,7 +40,7 @@ processors:
   - json:
       field: event.original
       tag: json_event_original
-      target_field: json
+      target_field: axonius.storage
   - fingerprint:
       fields:
         - event.original
@@ -51,35 +51,40 @@ processors:
       tag: set_event_kind
       field: event.kind
       value: event
-  - rename:
-      field: json.asset_type
-      target_field: axonius.storage.asset_type
-      tag: rename_asset_type
-      ignore_missing: true
   - convert:
-      field: json.adapter_list_length
+      field: axonius.storage.adapter_list_length
       tag: convert_adapter_list_length_to_long
-      target_field: axonius.storage.adapter_list_length
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.adapters
-      tag: rename_adapters
-      target_field: axonius.storage.adapters
-      ignore_missing: true
+  - script:
+      tag: script_rename_event_data_fields
+      lang: painless
+      description: Renames all event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting root-level fields.
+      source: |-
+        if (ctx.axonius?.storage?.event?.data instanceof Map) {
+          Map eventData = ctx.axonius.storage.event.data;
+          for (String key : new ArrayList(eventData.keySet())) {
+            if (ctx.axonius.storage.containsKey(key)) {
+              ctx.axonius.storage['data_' + key] = eventData[key];
+            } else {
+              ctx.axonius.storage[key] = eventData[key];
+            }
+          }
+          ctx.axonius.storage.event.remove('data');
+        }
   - date:
-      field: json.event.accurate_for_datetime
+      field: axonius.storage.event.accurate_for_datetime
       tag: date_event_accurate_for_datetime
       target_field: axonius.storage.event.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.accurate_for_datetime != null && ctx.json.event.accurate_for_datetime != ''
+      if: ctx.axonius?.storage?.event?.accurate_for_datetime != null && ctx.axonius.storage.event.accurate_for_datetime != ''
       on_failure:
         - append:
             field: error.message
@@ -89,48 +94,28 @@ processors:
       tag: set_@timestamp_from_storage_event_accurate_for_datetime
       copy_from: axonius.storage.event.accurate_for_datetime
       ignore_empty_value: true
-  - rename:
-      field: json.event.adapter_categories
-      tag: rename_event_adapter_categories
-      target_field: axonius.storage.event.adapter_categories
-      ignore_missing: true
-  - rename:
-      field: json.event.client_used
-      tag: rename_event_client_used
-      target_field: axonius.storage.event.client_used
-      ignore_missing: true
   - date:
-      field: json.event.data.accurate_for_datetime
+      field: axonius.storage.accurate_for_datetime
       tag: date_event_data_accurate_for_datetime
-      target_field: axonius.storage.event.data.accurate_for_datetime
+      target_field: axonius.storage.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.accurate_for_datetime != null && ctx.json.event.data.accurate_for_datetime != ''
+      if: ctx.axonius?.storage?.accurate_for_datetime != null && ctx.axonius.storage.accurate_for_datetime != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.application_and_account_name
-      tag: rename_event_data_application_and_account_name
-      target_field: axonius.storage.event.data.application_and_account_name
-      ignore_missing: true
-  - rename:
-      field: json.event.data.asset_type
-      tag: rename_event_data_asset_type
-      target_field: axonius.storage.event.data.asset_type
-      ignore_missing: true
   - date:
-      field: json.event.data.create_time
+      field: axonius.storage.create_time
       tag: date_event_data_create_time
-      target_field: axonius.storage.event.data.create_time
+      target_field: axonius.storage.create_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.create_time != null && ctx.json.event.data.create_time != ''
+      if: ctx.axonius?.storage?.create_time != null && ctx.axonius.storage.create_time != ''
       on_failure:
         - append:
             field: error.message
@@ -138,18 +123,18 @@ processors:
   - set:
       field: event.created
       tag: set_event_created_from_storage_event_data_create_time
-      copy_from: axonius.storage.event.data.create_time
+      copy_from: axonius.storage.create_time
       if: ctx.axonius?.storage?.asset_type != null && ctx.axonius.storage.asset_type == 'disks'
       ignore_empty_value: true
   - date:
-      field: json.event.data.creation_date
+      field: axonius.storage.creation_date
       tag: date_event_data_creation_date
-      target_field: axonius.storage.event.data.creation_date
+      target_field: axonius.storage.creation_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.creation_date != null && ctx.json.event.data.creation_date != ''
+      if: ctx.axonius?.storage?.creation_date != null && ctx.axonius.storage.creation_date != ''
       on_failure:
         - append:
             field: error.message
@@ -157,84 +142,56 @@ processors:
   - set:
       field: event.created
       tag: set_event_created_from_storage_event_data_creation_date
-      copy_from: axonius.storage.event.data.creation_date
+      copy_from: axonius.storage.creation_date
       if: ctx.axonius?.storage?.asset_type != null && ctx.axonius.storage.asset_type == 'object_storages'
       ignore_empty_value: true
   - date:
-      field: json.event.data.fetch_time
+      field: axonius.storage.fetch_time
       tag: date_event_data_fetch_time
-      target_field: axonius.storage.event.data.fetch_time
+      target_field: axonius.storage.fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.fetch_time != null && ctx.json.event.data.fetch_time != ''
+      if: ctx.axonius?.storage?.fetch_time != null && ctx.axonius.storage.fetch_time != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: json.event.data.first_fetch_time
+      field: axonius.storage.first_fetch_time
       tag: date_event_data_first_fetch_time
-      target_field: axonius.storage.event.data.first_fetch_time
+      target_field: axonius.storage.first_fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.first_fetch_time != null && ctx.json.event.data.first_fetch_time != ''
+      if: ctx.axonius?.storage?.first_fetch_time != null && ctx.axonius.storage.first_fetch_time != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.event.data.from_last_fetch
+      field: axonius.storage.from_last_fetch
       tag: convert_event_data_from_last_fetch_to_boolean
-      target_field: axonius.storage.event.data.from_last_fetch
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.id
-      tag: rename_event_data_id
-      target_field: axonius.storage.event.data.id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.id_raw
-      tag: rename_event_data_id_raw
-      target_field: axonius.storage.event.data.id_raw
-      ignore_missing: true
   - convert:
-      field: json.event.data.is_fetched_from_adapter
+      field: axonius.storage.is_fetched_from_adapter
       tag: convert_event_data_is_fetched_from_adapter_to_boolean
-      target_field: axonius.storage.event.data.is_fetched_from_adapter
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.last_fetch_connection_id
-      tag: rename_event_data_last_fetch_connection_id
-      target_field: axonius.storage.event.data.last_fetch_connection_id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.last_fetch_connection_label
-      tag: rename_event_data_last_fetch_connection_label
-      target_field: axonius.storage.event.data.last_fetch_connection_label
-      ignore_missing: true
-  - rename:
-      field: json.event.data.name
-      tag: rename_event_data_name
-      target_field: axonius.storage.event.data.name
-      ignore_missing: true
   - convert:
-      field: json.event.data.not_fetched_count
+      field: axonius.storage.not_fetched_count
       tag: convert_event_data_not_fetched_count_to_long
-      target_field: axonius.storage.event.data.not_fetched_count
       type: long
       ignore_missing: true
       on_failure:
@@ -242,82 +199,22 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.event.data.size
+      field: axonius.storage.size
       tag: convert_event_data_size_to_double
-      target_field: axonius.storage.event.data.size
       type: double
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.source_application
-      tag: rename_event_data_source_application
-      target_field: axonius.storage.event.data.source_application
-      ignore_missing: true
-  - rename:
-      field: json.event.data.tenant_number
-      tag: rename_event_data_tenant_number
-      target_field: axonius.storage.event.data.tenant_number
-      ignore_missing: true
-  - rename:
-      field: json.event.data.type
-      tag: rename_event_data_type
-      target_field: axonius.storage.event.data.type
-      ignore_missing: true
-  - rename:
-      field: json.event.data.urls
-      tag: rename_event_data_urls
-      target_field: axonius.storage.event.data.urls
-      ignore_missing: true
-  - rename:
-      field: json.event.initial_plugin_unique_name
-      tag: rename_event_initial_plugin_unique_name
-      target_field: axonius.storage.event.initial_plugin_unique_name
-      ignore_missing: true
-  - rename:
-      field: json.event.plugin_name
-      tag: rename_event_plugin_name
-      target_field: axonius.storage.event.plugin_name
-      ignore_missing: true
-  - rename:
-      field: json.event.plugin_type
-      tag: rename_event_plugin_type
-      target_field: axonius.storage.event.plugin_type
-      ignore_missing: true
-  - rename:
-      field: json.event.plugin_unique_name
-      tag: rename_event_plugin_unique_name
-      target_field: axonius.storage.event.plugin_unique_name
-      ignore_missing: true
-  - rename:
-      field: json.event.quick_id
-      tag: rename_event_quick_id
-      target_field: axonius.storage.event.quick_id
-      ignore_missing: true
-  - rename:
-      field: json.event.type
-      tag: rename_event_type
-      target_field: axonius.storage.event.type
-      ignore_missing: true
-  - rename:
-      field: json.internal_axon_id
-      tag: rename_internal_axon_id
-      target_field: axonius.storage.internal_axon_id
-      ignore_missing: true
   - remove:
       field:
         - axonius.storage.event.accurate_for_datetime
-        - axonius.storage.event.data.create_time
-        - axonius.storage.event.data.creation_date
+        - axonius.storage.create_time
+        - axonius.storage.creation_date
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
-  - remove:
-      field: json
-      tag: remove_json
-      ignore_missing: true
   - script:
       tag: script_to_drop_null_values
       lang: painless
