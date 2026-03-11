@@ -26,11 +26,17 @@ This integration collects log messages of the following type:
     - vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
     - vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
 
+- `Alert Findings`: Collect details of all alert findings and incident assets including:
+    - alert_findings (endpoint: `/api/v2/alert_findings`)
+
+- `Incidents`: Collect details of all incident assets including:
+    - incidents (endpoint: `/api/v2/incidents`)
+
 ### Supported use cases
 
-Integrating the Axonius Adapter, User, Gateway, and Exposure data streams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, gateway configuration, and vulnerability exposure across the environment. Together, these datastreams help analysts understand how data enters the platform, how it maps to user access and roles, how gateways function within the network, and where critical security risks are present.
+Integrating the Axonius Adapter, User, Gateway, Exposure, and Alert/Incident data streams with Elastic SIEM provides centralized, end-to-end visibility across data ingestion, identity posture, network configuration, vulnerability exposure, and active security events. Together, these data streams help analysts understand how data enters the platform, how it maps to users and access, how gateways operate within the network, where risks exist, and how alerts evolve into incidents.
 
-The dashboards surface key insights into integration and gateway status, connection behavior, routing context, and vulnerability severity, making it easier to identify failing integrations, misconfigurations, or high-risk exposures. User-focused views highlight role distribution and essential identity attributes, while exposure data enables teams to assess risk levels and prioritize remediation efforts. By correlating these insights, security teams can reduce blind spots, detect anomalies more effectively, and streamline investigations with accurate, end-to-end operational and security context.
+The dashboards surface insights into integration health, connection behavior, user roles, routing context, vulnerability severity, and alert and incident trends, making it easier to detect misconfigurations, high-risk exposures, and suspicious activity. By correlating operational, identity, exposure, and incident data in one place, security teams can reduce blind spots, prioritize remediation, and streamline investigations with complete, actionable context across the environment.
 
 ## What do I need to use this integration?
 
@@ -101,6 +107,18 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 3. In the search bar, type **Axonius**.
 4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for each data stream, to provide a view of the most recent, active Axonius data. Use the relevant destination alias from the table below to access the latest data, whether for use in dashboards, rules, or elsewhere.
+Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
+
+| Source Data stream                 | Destination Index Pattern                        | Destination Alias                       |
+|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
+| `logs-axonius.adapter-*`           | `logs-axonius_latest.dest_adapter-*`             | `logs-axonius_latest.adapter`           |
+| `logs-axonius.alert_finding-*`     | `logs-axonius_latest.dest_alert_finding-*`       | `logs-axonius_latest.alert_finding`     |
+| `logs-axonius.exposure-*`          | `logs-axonius_latest.dest_exposure-*`            | `logs-axonius_latest.exposure`          |
+| `logs-axonius.gateway-*`           | `logs-axonius_latest.dest_gateway-*`             | `logs-axonius_latest.gateway`           |
+| `logs-axonius.incident-*`          | `logs-axonius_latest.dest_incident-*`            | `logs-axonius_latest.incident`          |
+| `logs-axonius.user-*`              | `logs-axonius_latest.dest_user-*`                | `logs-axonius_latest.user`              |
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -151,9 +169,25 @@ The `exposure` data stream provides exposure logs from axonius.
 
 {{event "exposure"}}
 
-### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
-{{ inputDocs }}
+### Alert Finding
+
+The `alert_finding` data stream provides alert findings asset logs from axonius.
+
+#### alert_finding fields
+
+{{ fields "alert_finding" }}
+
+{{event "alert_finding"}}
+
+### Incident
+
+The `incident` data stream provides incident asset logs from axonius.
+
+#### incident fields
+
+{{ fields "incident" }}
+
+{{event "incident"}}
 
 ### API usage
 
@@ -166,7 +200,11 @@ These APIs are used with this integration:
     * vulnerability_instances (endpoint: `/api/v2/vulnerability_instances`)
     * vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
     * vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
+* Alert Findings:
+    * alert_findings (endpoint: `/api/v2/alert_findings`)
+* Incidents:
+    * incidents (endpoint: `/api/v2/incidents`)
 
 ### ILM Policy
 
-To facilitate adapter, user, gateway and assets data including exposures, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*` and `.ds-logs-axonius.exposure-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy` and `logs-axonius.exposure-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, alert findings and incidents, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*` and `.ds-logs-axonius.incident-*`  respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy` and `logs-axonius.alert_and_incident-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
