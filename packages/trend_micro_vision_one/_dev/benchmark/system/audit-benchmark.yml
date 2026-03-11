@@ -1,0 +1,23 @@
+---
+description: Benchmark 10000 audit events ingested
+input: httpjson
+vars:
+  hostname: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+data_stream:
+  name: audit
+  vars:
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: trend_micro_vision_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./audit-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./audit-benchmark/config.yml
+    fields:
+      path: ./audit-benchmark/fields.yml

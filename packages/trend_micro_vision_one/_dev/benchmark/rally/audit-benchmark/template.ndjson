@@ -1,0 +1,42 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $loggedDateTime := generate "loggedDateTime" | date "2006-01-02T15:04:05Z" }}
+{{- $loggedUser := generate "loggedUser" }}
+{{- $loggedRole := generate "loggedRole" }}
+{{- $accessType := generate "accessType" }}
+{{- $category := generate "category" }}
+{{- $activity := generate "activity" }}
+{{- $result := generate "result" }}
+{{- $detailKey := generate "detailKey" }}
+{{- $detailValue := generate "detailValue" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "trend_micro_vision_one.audit",
+        "namespace": "93724",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "message": "{\"loggedDateTime\":\"{{ $loggedDateTime }}\",\"loggedUser\":\"{{ $loggedUser }}\",\"loggedRole\":\"{{ $loggedRole }}\",\"accessType\":\"{{ $accessType }}\",\"category\":\"{{ $category }}\",\"activity\":\"{{ $activity }}\",\"result\":\"{{ $result }}\",\"details\":{\"{{ $detailKey }}\":\"{{ $detailValue }}\"}}",
+    "event": {
+        "dataset": "trend_micro_vision_one.audit"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "trend_micro_vision_one-audit"
+    ]
+}

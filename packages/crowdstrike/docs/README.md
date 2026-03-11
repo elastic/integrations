@@ -833,6 +833,11 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.location_longitude_as_int |  | long |
 | crowdstrike.alert.logon_domain |  | keyword |
 | crowdstrike.alert.md5 |  | keyword |
+| crowdstrike.alert.mitre_attack.pattern_id |  | keyword |
+| crowdstrike.alert.mitre_attack.tactic |  | keyword |
+| crowdstrike.alert.mitre_attack.tactic_id |  | keyword |
+| crowdstrike.alert.mitre_attack.technique |  | keyword |
+| crowdstrike.alert.mitre_attack.technique_id |  | keyword |
 | crowdstrike.alert.model_anomaly_indicators |  | keyword |
 | crowdstrike.alert.name |  | keyword |
 | crowdstrike.alert.network_accesses.access_timestamp |  | date |
@@ -1215,6 +1220,11 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
 | crowdstrike.event.MatchedClassification.ID |  | keyword |
 | crowdstrike.event.MatchedClassification.Name |  | keyword |
+| crowdstrike.event.MitreAttack.PatternID |  | keyword |
+| crowdstrike.event.MitreAttack.Tactic |  | keyword |
+| crowdstrike.event.MitreAttack.TacticID |  | keyword |
+| crowdstrike.event.MitreAttack.Technique |  | keyword |
+| crowdstrike.event.MitreAttack.TechniqueID |  | keyword |
 | crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
 | crowdstrike.event.MobileAppsDetails.AndroidAppLabel |  | keyword |
 | crowdstrike.event.MobileAppsDetails.AndroidAppVersionName |  | keyword |
