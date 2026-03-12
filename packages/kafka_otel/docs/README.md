@@ -18,7 +18,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 ### Prerequisites
 
-The `kafkametricsreceiver` scrapes Kafka cluster metadata over the native Kafka protocol. Ensure your OpenTelemetry Collector can reach at least one Kafka broker. No service-side configuration is required; Kafka exposes the required metadata by default.
+The [`kafkametricsreceiver`](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/kafkametricsreceiver/documentation.md) scrapes Kafka cluster metadata over the native Kafka protocol. Ensure your OpenTelemetry Collector can reach at least one Kafka broker. No service-side configuration is required; Kafka exposes the required metadata by default.
 
 ### Configuration
 

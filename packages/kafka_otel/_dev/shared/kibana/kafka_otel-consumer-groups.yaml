@@ -4,9 +4,18 @@ dashboards:
     description: >-
       Granular consumer group analysis: lag by group, topic, and partition; member counts;
       offset progression. Drill-down for lag troubleshooting.
+    time_range:
+      from: now-15m
     filters:
       - field: data_stream.dataset
         equals: kafkametricsreceiver.otel
+    controls:
+      - type: options
+        label: Consumer Group
+        data_view: metrics-*
+        field: attributes.group
+        match_technique: prefix
+        width: medium
     settings:
       margins: true
       titles: true
@@ -39,187 +48,176 @@ dashboards:
             ## [Kafka OTel] Consumer Groups
 
             Consumer lag and offset drill-down:
-
             - Lag sum per group and topic
             - Lag by partition (hot partitions)
             - Member count per group
             - Offset position vs current partition offset
 
-      - title: Under-Replicated Partitions
+      - title: Total Lag (Selected Group)
         hide_title: true
-        size: {w: 12, h: 4}
+        size: {w: 8, h: 4}
         position: {x: 16, y: 2}
         esql:
           type: metric
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | EVAL under = replicas - in_sync
-            | WHERE under > 0
-            | STATS count = COUNT(*)
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL
+            | STATS total_lag = SUM(kafka.consumer_group.lag_sum)
           primary:
-            field: count
-            label: Under-Replicated
-            format:
-              type: number
-              decimals: 0
-
-      - title: Fully Replicated Partitions
-        hide_title: true
-        size: {w: 12, h: 4}
-        position: {x: 28, y: 2}
-        esql:
-          type: metric
-          query: |
-            TS metrics-kafkametricsreceiver.otel-*
-            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | WHERE replicas == in_sync
-            | STATS count = COUNT(*)
-          primary:
-            field: count
-            label: Fully Replicated
+            field: total_lag
+            label: Total Lag
             format:
               type: number
               decimals: 2
               compact: true
 
-      - title: Replication Factor Distribution
+      - title: Groups with Lag
         hide_title: true
-        size: {w: 12, h: 4}
-        position: {x: 16, y: 6}
+        size: {w: 8, h: 4}
+        position: {x: 24, y: 2}
         esql:
           type: metric
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL
-            | STATS unique_rf = COUNT_DISTINCT(kafka.partition.replicas)
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL
+            | STATS lag_sum = SUM(kafka.consumer_group.lag_sum) BY attributes.group
+            | WHERE lag_sum > 0
+            | STATS count = COUNT(*)
           primary:
-            field: unique_rf
-            label: Distinct Replication Factor
+            field: count
+            label: Groups with Lag
             format:
               type: number
               decimals: 0
 
-      - title: Replicas vs In-Sync Over Time
+      - title: Empty Groups
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.members IS NOT NULL
+            | STATS members = MAX(kafka.consumer_group.members) BY attributes.group
+            | WHERE members == 0
+            | STATS count = COUNT(*)
+          primary:
+            field: count
+            label: Empty Groups
+            format:
+              type: number
+              decimals: 0
+
+      - title: Lag Sum Over Time by Group
         size: {w: 48, h: 12}
         position: {x: 0, y: 14}
         esql:
-          type: line
-          query: |
-            TS metrics-kafkametricsreceiver.otel-*
-            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS total_replicas = SUM(kafka.partition.replicas), total_in_sync = SUM(kafka.partition.replicas_in_sync) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-            | SORT time_bucket ASC
-          dimension:
-            field: time_bucket
-            data_type: date
-          metrics:
-            - field: total_replicas
-              label: Total Replicas
-              format:
-                type: number
-                decimals: 0
-            - field: total_in_sync
-              label: In-Sync Replicas
-              format:
-                type: number
-                decimals: 0
-          legend:
-            visible: show
-            position: right
-
-      - title: Under-Replicated Partitions Over Time
-        size: {w: 24, h: 10}
-        position: {x: 0, y: 26}
-        esql:
           type: area
-          mode: unstacked
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-            | EVAL under = replicas - in_sync
-            | WHERE under > 0
-            | STATS count = COUNT(*) BY time_bucket
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL AND attributes.group IS NOT NULL
+            | STATS lag = SUM(kafka.consumer_group.lag_sum) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.group
             | SORT time_bucket ASC
           dimension:
             field: time_bucket
             data_type: date
           metrics:
-            - field: count
-              label: Under-Replicated
+            - field: lag
+              label: Lag
               format:
                 type: number
-                decimals: 0
+                decimals: 2
+                compact: true
+          breakdown:
+            field: attributes.group
           legend:
+            visible: true
             position: right
 
-      - title: Under-Replicated by Topic
-        size: {w: 24, h: 10}
-        position: {x: 24, y: 26}
+      - title: Lag by Group and Topic (Top 20)
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 26}
         esql:
           type: bar
           mode: unstacked
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | EVAL under = replicas - in_sync
-            | WHERE under > 0
-            | STATS count = COUNT(*) BY attributes.topic
-            | SORT count DESC
-            | LIMIT 15
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL AND attributes.group IS NOT NULL AND attributes.topic IS NOT NULL
+            | STATS lag_sum = SUM(kafka.consumer_group.lag_sum) BY attributes.group, attributes.topic
+            | EVAL group_topic = CONCAT(attributes.group, " / ", attributes.topic)
+            | STATS lag_sum = SUM(lag_sum) BY group_topic
+            | SORT lag_sum DESC
+            | LIMIT 20
           dimension:
-            field: attributes.topic
+            field: group_topic
           metrics:
-            - field: count
-              label: Under-Replicated
+            - field: lag_sum
+              label: Lag
               format:
                 type: number
-                decimals: 0
+                decimals: 2
+                compact: true
           legend:
             position: right
 
-      - title: Under-Replicated Partitions (Detail)
+      - title: Consumer Group Members Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 26}
+        esql:
+          type: line
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.members IS NOT NULL AND attributes.group IS NOT NULL
+            | STATS members = MAX(LAST_OVER_TIME(kafka.consumer_group.members)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.group
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: members
+              label: Members
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.group
+          legend:
+            visible: true
+            position: right
+
+      - title: Lag by Partition (Top 20 Partitions)
         size: {w: 48, h: 16}
-        position: {x: 0, y: 36}
+        position: {x: 0, y: 38}
         esql:
           type: datatable
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), replicas_in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | EVAL under = replicas - replicas_in_sync
-            | WHERE under > 0
-            | SORT under DESC
-            | LIMIT 100
+            | WHERE kafka.consumer_group.lag IS NOT NULL AND attributes.group IS NOT NULL AND attributes.topic IS NOT NULL AND attributes.partition IS NOT NULL
+            | STATS lag = MAX(kafka.consumer_group.lag) BY attributes.group, attributes.topic, attributes.partition
+            | SORT lag DESC
+            | LIMIT 50
           dimensions:
+            - field: attributes.group
+              label: Group
             - field: attributes.topic
               label: Topic
             - field: attributes.partition
               label: Partition
           metrics:
-            - field: replicas
-              label: Replicas
+            - field: lag
+              label: Lag
               format:
                 type: number
-                decimals: 0
-            - field: replicas_in_sync
-              label: In Sync
-              format:
-                type: number
-                decimals: 0
-            - field: under
-              label: Under-Replicated
-              format:
-                type: number
-                decimals: 0
+                decimals: 2
+                compact: true
+          paging:
+            enabled: true
+            page_size: 15
