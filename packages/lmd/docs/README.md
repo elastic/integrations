@@ -141,7 +141,7 @@ Detects potential lateral movement activity by identifying malicious file transf
 | lmd_high_mean_rdp_session_duration_ea                    | Detects unusually high mean of RDP session duration.                                            | Windows               |
 | lmd_high_var_rdp_session_duration_ea                     | Detects unusually high variance in RDP session duration.                                        | Windows               |
 | lmd_high_sum_rdp_number_of_processes_ea                  | Detects unusually high number of processes started in a single RDP session.                     | Windows               |
-| lmd_unusual_time_weekday_rdp_session_start_ea            | Detects an RDP session started at an usual time or weekday.                                     | Windows               |
+| lmd_unusual_time_weekday_rdp_session_start_ea            | Detects an RDP session started at an unusual time or weekday.                                     | Windows               |
 | lmd_high_rdp_distinct_count_source_ip_for_destination_ea | Detects a high count of source IPs making an RDP connection with a single destination IP.       | Windows               |
 | lmd_high_rdp_distinct_count_destination_ip_for_source_ea | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               |
 | lmd_high_mean_rdp_process_args_ea                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               |
