@@ -192,8 +192,8 @@ For more information on architectures that can be used for scaling this integrat
 | input.type | Input type | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.offset | Log offset | long |
-| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | constant_keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | constant_keyword |
 
 
 #### **DEPRECATED:** Threatstream
@@ -231,8 +231,8 @@ For more information on architectures that can be used for scaling this integrat
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | constant_keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | constant_keyword |
 
 
 ### Example Event
