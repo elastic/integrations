@@ -7,6 +7,7 @@ request.transforms:
 - set:
     target: header.Authorization
     value: 'Token {{apikey}}'
+# App-ID header is required by the Proofpoint API to identify the integration client
 - set:
     target: header.App-ID
     value: '1080999989'
@@ -33,8 +34,17 @@ chain:
     - set:
         target: header.Authorization
         value: 'Token {{apikey}}'
+    # App-ID header is required by the Proofpoint API to identify the integration client
     - set:
         target: header.App-ID
         value: '1080999989'
     response.split:
       target: body.emails
+      ignore_empty_value: true
+    response.request_body_on_pagination: true
+    response.pagination:
+    - set:
+        target: body.offset
+        value: '[[if gt (toInt .last_response.body.num_found_items) (add (toInt .last_request.body.offset) (toInt .last_request.body.limit))]][[add (toInt .last_request.body.offset) (toInt .last_request.body.limit)]][[end]]'
+        fail_on_template_error: true
+        do_not_log_failure: true
