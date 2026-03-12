@@ -3,15 +3,18 @@
   fields:
     - name: fragment_path
       type: keyword
+      dimension: true
       description: Service file location
     - name: unit
       type: keyword
+      dimension: true
       description: Service unit name
 - name: system.service
   type: group
   fields:
     - name: name
       type: keyword
+      dimension: true
       description: The name of the service
     - name: load_state
       type: keyword
@@ -33,12 +36,18 @@
       fields:
         - name: cpu.usage.ns
           type: long
+          unit: nanos
+          metric_type: counter
           description: CPU usage in nanoseconds
         - name: memory.usage.bytes
           type: long
+          format: bytes
+          unit: byte
+          metric_type: gauge
           description: memory usage in bytes
         - name: tasks.count
           type: long
+          metric_type: gauge
           description: number of tasks associated with the service
         - name: network
           type: group
@@ -46,14 +55,20 @@
             - name: in.bytes
               type: long
               format: bytes
+              unit: byte
+              metric_type: counter
               description: bytes in
             - name: in.packets
               type: long
-              format: bytes
+              metric_type: counter
               description: packets in
             - name: out.packets
               type: long
+              metric_type: counter
               description: packets out
             - name: out.bytes
               type: long
+              format: bytes
+              unit: byte
+              metric_type: counter
               description: bytes out
