@@ -8,7 +8,7 @@ The [Elastic Distribution of OpenTelemetry Android (EDOT Android)](https://www.e
 
 ### Compatibility
 
-This package has been tested with EDOT Android and OpenTelemetry semantic conventions. The dashboards query data from `logs-generic.otel*` and `traces-generic.otel*` index patterns, and filter on `os.name: "Android"`.
+This package has been tested with EDOT Android 1.5.0, EDOT Collector 9.2.0, and OpenTelemetry semantic conventions. The dashboards query data from `logs-generic.otel*` and `traces-generic.otel*` index patterns, and filter on `os.name: "Android"`.
 
 ## What do I need to use this package?
 
