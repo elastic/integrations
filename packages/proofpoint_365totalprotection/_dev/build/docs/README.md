@@ -20,8 +20,6 @@ Key capabilities
 
 This integration is compatible with:
 - Proofpoint 365 Total Protection
-- Elastic Stack 8.0.0 and later
-- Elastic Agent 8.0.0 and later
 
 ### How it works
 

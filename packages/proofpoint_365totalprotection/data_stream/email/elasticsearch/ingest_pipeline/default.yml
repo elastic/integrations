@@ -1,16 +1,20 @@
 ---
 processors:
     - set:
+            tag: set_ecs_version
             field: ecs.version
             value: "8.11.0"
     - set:
+            tag: set_input_type
             field: input.type
             value: "httpjson"
     - json:
+            tag: parse_json_message
             field: message
             target_field: parsed_email
             if: ctx.message != null
     - script:
+            tag: process_parsed_data
             lang: painless
             source: |
                 if (ctx.containsKey('parsed_email')) {
@@ -72,13 +76,16 @@ processors:
                     }
                 }
     - drop:
+            tag: drop_without_msg_id
             if: ctx.proofpoint?.email?.msg_id == null
     - script:
+            tag: set_document_id
             lang: painless
             if: ctx.proofpoint?.email?.msg_id != null
             source: |
                 ctx._id = ctx.proofpoint.email.msg_id
     - date:
+            tag: parse_timestamp
             field: proofpoint.email.date
             target_field: '@timestamp'
             formats:
@@ -87,6 +94,7 @@ processors:
             ignore_failure: true
 
     - script:
+            tag: extract_classification_fields
             lang: painless
             if: ctx.proofpoint?.email?.classification instanceof Map
             source: |
@@ -97,6 +105,7 @@ processors:
             ignore_failure: true
 
     - script:
+            tag: extract_status_fields
             lang: painless
             if: ctx.proofpoint?.email?.status instanceof Map
             source: |
@@ -107,20 +116,25 @@ processors:
             ignore_failure: true
 
     - script:
+            tag: convert_direction
             lang: painless
             if: ctx.proofpoint?.email?.direction != null
             source: |
                 def dir = ctx.proofpoint.email.direction;
+                // Convert direction to string
+                ctx.proofpoint.email.direction = String.valueOf(dir);
+                // Set direction text
                 if (dir == 1) {
-                    ctx.proofpoint.email.direction_text = 'Inbound';
+                    ctx.proofpoint.email.direction_text = 'inbound';
                 } else if (dir == 2) {
-                    ctx.proofpoint.email.direction_text = 'Outbound';
+                    ctx.proofpoint.email.direction_text = 'outbound';
                 } else {
-                    ctx.proofpoint.email.direction_text = 'Unknown';
+                    ctx.proofpoint.email.direction_text = 'unknown';
                 }
             ignore_failure: true
 
     - script:
+            tag: extract_incoming_encryption
             lang: painless
             if: ctx.proofpoint?.email?.crypt_type_in instanceof Map
             source: |
@@ -130,6 +144,7 @@ processors:
             ignore_failure: true
 
     - script:
+            tag: extract_outgoing_encryption
             lang: painless
             if: ctx.proofpoint?.email?.crypt_type_out instanceof Map
             source: |
@@ -139,6 +154,7 @@ processors:
             ignore_failure: true
 
     - script:
+            tag: map_comm_partner_deprecated
             lang: painless
             if: ctx.proofpoint?.email?.comm_partner != null
             source: |
@@ -151,115 +167,178 @@ processors:
             ignore_failure: true
 
     - script:
+            tag: map_email_addresses
             lang: painless
             if: ctx.proofpoint?.email?.owner != null
             source: |
                 def direction = ctx.proofpoint.email.containsKey('direction') ? ctx.proofpoint.email.direction : null;
-                if (direction != null && direction == 1) {
+                if (direction != null && direction == "1") {
+                    // Inbound: owner is recipient, comm_partner is sender
                     ctx.proofpoint.email.to = ctx.proofpoint.email.owner;
-                } else if (direction != null && direction == 2) {
+                    if (ctx.proofpoint.email.containsKey('comm_partner') && ctx.proofpoint.email.comm_partner != null) {
+                        ctx.proofpoint.email.from = ctx.proofpoint.email.comm_partner;
+                    }
+                } else if (direction != null && direction == "2") {
+                    // Outbound: owner is sender, comm_partner is recipient
                     ctx.proofpoint.email.from = ctx.proofpoint.email.owner;
+                    if (ctx.proofpoint.email.containsKey('comm_partner') && ctx.proofpoint.email.comm_partner != null) {
+                        ctx.proofpoint.email.to = ctx.proofpoint.email.comm_partner;
+                    }
                 }
             ignore_failure: true
 
-    - set:
+    - append:
+        tag: append_email_from_address
         field: email.from.address
-        copy_from: proofpoint.email.from
-        ignore_empty_value: true
-    - set:
+        value: "{{{proofpoint.email.from}}}"
+        if: ctx.proofpoint?.email?.from != null
+        allow_duplicates: false
+    - append:
+        tag: append_email_to_address
         field: email.to.address
-        copy_from: proofpoint.email.to
-        ignore_empty_value: true
+        value: "{{{proofpoint.email.to}}}"
+        if: ctx.proofpoint?.email?.to != null
+        allow_duplicates: false
     - set:
+        tag: set_email_subject
         field: email.subject
         copy_from: proofpoint.email.subject
         ignore_empty_value: true
     - set:
+        tag: set_email_message_id
         field: email.message_id
         copy_from: proofpoint.email.message_id
         ignore_empty_value: true
     - set:
+        tag: set_email_direction
         field: email.direction
         copy_from: proofpoint.email.direction_text
         ignore_empty_value: true
     - set:
+        tag: set_source_ip
         field: source.ip
         copy_from: proofpoint.email.source_ip
         ignore_empty_value: true
     - set:
+        tag: set_destination_ip
         field: destination.ip
         copy_from: proofpoint.email.destination_ip
         ignore_empty_value: true
     - convert:
+        tag: convert_source_ip_proofpoint
         field: proofpoint.email.source_ip
         type: ip
         ignore_missing: true
-        ignore_failure: true
+        on_failure:
+          - remove:
+              tag: remove_invalid_source_ip_proofpoint
+              field: proofpoint.email.source_ip
     - convert:
+        tag: convert_destination_ip_proofpoint
         field: proofpoint.email.destination_ip
         type: ip
         ignore_missing: true
-        ignore_failure: true
+        on_failure:
+          - remove:
+              tag: remove_invalid_destination_ip_proofpoint
+              field: proofpoint.email.destination_ip
     - convert:
+        tag: convert_source_ip_ecs
         field: source.ip
         type: ip
         ignore_missing: true
-        ignore_failure: true
+        on_failure:
+          - remove:
+              tag: remove_invalid_source_ip_ecs
+              field: source.ip
     - convert:
+        tag: convert_destination_ip_ecs
         field: destination.ip
         type: ip
         ignore_missing: true
-        ignore_failure: true
+        on_failure:
+          - remove:
+              tag: remove_invalid_destination_ip_ecs
+              field: destination.ip
     - set:
+        tag: set_event_kind
         field: event.kind
         value: event
     - set:
+        tag: set_event_category
         field: event.category
         value: ["email"]
     - set:
+        tag: set_event_type
         field: event.type
         value: ["info"]
     - append:
+        tag: append_related_ip_source
         field: related.ip
         value: "{{{proofpoint.email.source_ip}}}"
         if: ctx.proofpoint?.email?.source_ip != null
         allow_duplicates: false
     - append:
+        tag: append_related_ip_destination
         field: related.ip
         value: "{{{proofpoint.email.destination_ip}}}"
         if: ctx.proofpoint?.email?.destination_ip != null
         allow_duplicates: false
     - append:
+        tag: append_related_user_from
         field: related.user
         value: "{{{proofpoint.email.from}}}"
         if: ctx.proofpoint?.email?.from != null
         allow_duplicates: false
     - append:
+        tag: append_related_user_to
         field: related.user
         value: "{{{proofpoint.email.to}}}"
         if: ctx.proofpoint?.email?.to != null
         allow_duplicates: false
     - append:
+        tag: append_related_user_comm_partner
         field: related.user
         value: "{{{proofpoint.email.comm_partner}}}"
         if: ctx.proofpoint?.email?.comm_partner != null
         allow_duplicates: false
     - append:
+        tag: append_related_user_owner
         field: related.user
         value: "{{{proofpoint.email.owner}}}"
         if: ctx.proofpoint?.email?.owner != null
         allow_duplicates: false
     - remove:
+        tag: remove_null_smtp_dialog
+        field: proofpoint.email.smtp_dialog
+        ignore_missing: true
+        if: ctx.proofpoint?.email?.smtp_dialog == null
+    - remove:
+        tag: remove_null_smtp_status
+        field: proofpoint.email.smtp_status
+        ignore_missing: true
+        if: ctx.proofpoint?.email?.smtp_status == null
+    - remove:
+        tag: remove_null_smtp_status_code
+        field: proofpoint.email.smtp_status_code
+        ignore_missing: true
+        if: ctx.proofpoint?.email?.smtp_status_code == null
+    - remove:
+        tag: remove_message_field
         field: message
         ignore_missing: true
     - remove:
+        tag: remove_event_original
         field: event.original
+        if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
         ignore_missing: true
 on_failure:
   - set:
+      tag: set_pipeline_error_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_pipeline_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -267,6 +346,7 @@ on_failure:
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: preserve_original_event_tag
       field: tags
       value: preserve_original_event
       allow_duplicates: false
