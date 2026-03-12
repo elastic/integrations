@@ -1,0 +1,42 @@
+title: ANY.RUN TI Feeds
+type: logs
+ilm_policy: logs-ti_anyrun.ioc-default_policy
+streams:
+  - input: cel
+    enabled: true
+    title: ANY.RUN TI Feeds
+    template_path: cel.yml.hbs
+    description: Collect indicators from the ANY.RUN TI Feeds
+    vars:
+      - name: initial_interval
+        type: text
+        title: Feed fetch depth
+        multi: false
+        required: true
+        show_user: true
+        default: "1440h"
+        description: How far back to look for indicators on first request. Supported units for this parameter are h/m/s (e.g., 1440h for ~60 days).
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: "2h"
+        description: Interval between requests to the ANY.RUN TI Feeds API. Supported units for this parameter are h/m/s (e.g,. 2h).
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: Enforces all indicators to expire after this duration. Using only days, hours, or minutes (e.g., 90d).
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.

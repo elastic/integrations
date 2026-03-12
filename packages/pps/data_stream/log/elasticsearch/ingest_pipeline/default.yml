@@ -15,8 +15,9 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}@%{DATA:user.domain}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
-        - '^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.domain}\s%{DATA}:%{IP:client.ip}%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
+        - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}@%{DATA:user.domain}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
+        - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
+        - '^(?:\d+ )?<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.domain}\s%{DATA}:%{IP:client.ip}%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{DATA:event.reason}\s-\s%{GREEDYDATA:message}'
         - '^%{GREEDYDATA:message}$'
   - grok:
       field: message
@@ -24,14 +25,14 @@ processors:
       ignore_missing: true
       patterns:
       - backing\sup\sdatabase\sto\s<%{DATA:pps.entry.path}>
-      - '[created|updated]\sentry\s<%{DATA:pps.entry.path}>'
+      - '(?:created|updated)\sentry\s<%{DATA:pps.entry.path}>'
       - fetched\sthe\spassword\sfor\s<%{DATA:pps.entry.path}>$
       - fetched\sthe\spassword\sfor\s<%{DATA:pps.entry.path}>\s-\s%{DATA:pps.entry.reason}$
       - on\sentry\s<%{DATA:pps.entry.path}>\sfor\suser
       - moved\sentry\s<%{DATA:pps.entry.path}>\sto\s<%{DATA:pps.entry.target.path}>
       - created\sfolder\s<%{DATA:pps.entry.path}>$
-      - comment\srequirement\s<.*>\s[from|to]\s<%{DATA:pps.entry.path}>$
-      - notification\s.*>\s[from|to]\s<%{DATA:pps.entry.path}>$
+      - comment\srequirement\s<.*>\s(?:from|to)\s<%{DATA:pps.entry.path}>$
+      - notification\s.*>\s(?:from|to)\s<%{DATA:pps.entry.path}>$
       - updated\sentry\s<%{DATA:pps.entry.path}>\schanging\sthe\sname\sfrom\s<%{DATA:pps.entry.name}>\sto\s<%{DATA:pps.entry.target.name}>
   - grok:
       field: message
@@ -63,7 +64,7 @@ processors:
       field: event.created
       target_field: "event.created"
       formats:
-        - "MMM dd HH:mm:ss"
+        - "MMM [dd][ d] HH:mm:ss"
       timezone: "{{{event.timezone}}}"
       if: ctx.event?.timezone != null && ctx.event?.created != null
       on_failure:
@@ -77,7 +78,7 @@ processors:
       field: event.created
       target_field: "event.created"
       formats:
-        - "MMM dd HH:mm:ss"
+        - "MMM [dd][ d] HH:mm:ss"
       if: ctx.event?.timezone == null && ctx.event?.created != null
       on_failure:
         - remove:
