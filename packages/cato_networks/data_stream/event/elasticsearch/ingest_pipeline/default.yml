@@ -1,0 +1,1072 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.event_id
+        - json.time
+      tag: fingerprint_event_id_time
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - rename:
+      field: json.account_id
+      tag: rename_account_id
+      target_field: cato_networks.event.account_id
+      ignore_missing: true
+  - rename:
+      field: json.account_name
+      tag: rename_account_name
+      target_field: cato_networks.event.account_name
+      ignore_missing: true
+  - rename:
+      field: json.action
+      tag: rename_action
+      target_field: cato_networks.event.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_event_action
+      copy_from: cato_networks.event.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - rename:
+      field: json.ad_name
+      tag: rename_ad_name
+      target_field: cato_networks.event.ad_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_event_ad_name_into_related_user
+      value: '{{{cato_networks.event.ad_name}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.ad_name != null
+  - rename:
+      field: json.api_name
+      tag: rename_api_name
+      target_field: cato_networks.event.api_name
+      ignore_missing: true
+  - rename:
+      field: json.api_type
+      tag: rename_api_type
+      target_field: cato_networks.event.api_type
+      ignore_missing: true
+  - rename:
+      field: json.app_stack
+      tag: rename_app_stack
+      target_field: cato_networks.event.app_stack
+      ignore_missing: true
+  - rename:
+      field: json.application_id
+      tag: rename_application_id
+      target_field: cato_networks.event.application_id
+      ignore_missing: true
+  - rename:
+      field: json.application_name
+      tag: rename_application_name
+      target_field: cato_networks.event.application_name
+      ignore_missing: true
+  - set:
+      field: service.name
+      tag: set_service_name_from_event_application_name
+      copy_from: cato_networks.event.application_name
+      ignore_empty_value: true
+  - convert:
+      field: json.application_risk
+      tag: convert_application_risk_to_long
+      target_field: cato_networks.event.application_risk
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.application_type
+      tag: rename_application_type
+      target_field: cato_networks.event.application_type
+      ignore_missing: true
+  - rename:
+      field: json.authentication_type
+      tag: rename_authentication_type
+      target_field: cato_networks.event.authentication_type
+      ignore_missing: true
+  - rename:
+      field: json.categories
+      tag: rename_categories
+      target_field: cato_networks.event.categories
+      ignore_missing: true
+  - rename:
+      field: json.cato_app
+      tag: rename_cato_app
+      target_field: cato_networks.event.cato_app
+      ignore_missing: true
+  - rename:
+      field: json.client_class
+      tag: rename_client_class
+      target_field: cato_networks.event.client_class
+      ignore_missing: true
+  - convert:
+      field: json.client_ip
+      tag: convert_client_ip_to_ip
+      target_field: cato_networks.event.client_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.json?.client_ip != ''
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_event_client_ip
+      copy_from: cato_networks.event.client_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_client_ip_into_related_ip
+      value: '{{{cato_networks.event.client_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.client_ip != null
+  - rename:
+      field: json.client_version
+      tag: rename_client_version
+      target_field: cato_networks.event.client_version
+      ignore_missing: true
+  - rename:
+      field: json.configured_host_name
+      tag: rename_configured_host_name
+      target_field: cato_networks.event.configured_host_name
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_event_configured_host_name
+      copy_from: cato_networks.event.configured_host_name
+      ignore_empty_value: true
+  - lowercase:
+      field: host.name
+      tag: lowercase_host_name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_event_configured_host_name_into_related_hosts
+      value: '{{{cato_networks.event.configured_host_name}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.configured_host_name != null
+  - rename:
+      field: json.congestion_algorithm
+      tag: rename_congestion_algorithm
+      target_field: cato_networks.event.congestion_algorithm
+      ignore_missing: true
+  - rename:
+      field: json.connection_origin
+      tag: rename_connection_origin
+      target_field: cato_networks.event.connection_origin
+      ignore_missing: true
+  - rename:
+      field: json.custom_category_id
+      tag: rename_custom_category_id
+      target_field: cato_networks.event.custom_category_id
+      ignore_missing: true
+  - rename:
+      field: json.custom_category_name
+      tag: rename_custom_category_name
+      target_field: cato_networks.event.custom_category_name
+      ignore_missing: true
+  - rename:
+      field: json.dest_country
+      tag: rename_dest_country
+      target_field: cato_networks.event.dest_country
+      ignore_missing: true
+  - set:
+      field: destination.geo.country_name
+      tag: set_destination_geo_country_name_from_event_dest_country
+      copy_from: cato_networks.event.dest_country
+      ignore_empty_value: true
+  - rename:
+      field: json.dest_country_code
+      tag: rename_dest_country_code
+      target_field: cato_networks.event.dest_country_code
+      ignore_missing: true
+  - set:
+      field: destination.geo.country_iso_code
+      tag: set_destination_geo_country_iso_code_from_event_dest_country_code
+      copy_from: cato_networks.event.dest_country_code
+      ignore_empty_value: true
+  - convert:
+      field: json.dest_ip
+      tag: convert_dest_ip_to_ip
+      target_field: cato_networks.event.dest_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.json?.dest_ip != ''
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_event_dest_ip
+      copy_from: cato_networks.event.dest_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_dest_ip_into_related_ip
+      value: '{{{cato_networks.event.dest_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.dest_ip != null
+  - convert:
+      field: json.dest_port
+      tag: convert_dest_port_to_long
+      target_field: cato_networks.event.dest_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_event_dest_port
+      copy_from: cato_networks.event.dest_port
+      ignore_empty_value: true
+  - rename:
+      field: json.device_name
+      tag: rename_device_name
+      target_field: cato_networks.event.device_name
+      ignore_missing: true
+  - rename:
+      field: json.device_categories
+      tag: rename_device_categories
+      target_field: cato_networks.event.device_categories
+      ignore_missing: true
+  - rename:
+      field: json.device_id
+      tag: rename_device_id
+      target_field: cato_networks.event.device_id
+      ignore_missing: true
+  - rename:
+      field: json.device_os_type
+      tag: rename_device_os_type
+      target_field: cato_networks.event.device_os_type
+      ignore_missing: true
+  - rename:
+      field: json.device_posture_profile
+      tag: rename_device_posture_profile
+      target_field: cato_networks.event.device_posture_profile
+      ignore_missing: true
+  - rename:
+      field: json.device_type
+      tag: rename_device_type
+      target_field: cato_networks.event.device_type
+      ignore_missing: true
+  - rename:
+      field: json.dns_protection_category
+      tag: rename_dns_protection_category
+      target_field: cato_networks.event.dns_protection_category
+      ignore_missing: true
+  - rename:
+      field: json.dns_query
+      tag: rename_dns_query
+      target_field: cato_networks.event.dns_query
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name_from_event_dns_query
+      copy_from: cato_networks.event.dns_query
+      ignore_empty_value: true
+  - rename:
+      field: json.dns_record_type
+      tag: rename_dns_record_type
+      target_field: cato_networks.event.dns_record_type
+      ignore_missing: true
+  - set:
+      field: dns.question.type
+      tag: set_dns_question_type_from_event_dns_record_type
+      copy_from: cato_networks.event.dns_record_type
+      ignore_empty_value: true
+  - rename:
+      field: json.domain_name
+      tag: rename_domain_name
+      target_field: cato_networks.event.domain_name
+      ignore_missing: true
+  - set:
+      field: url.domain
+      tag: set_url_domain_from_event_domain_name
+      copy_from: cato_networks.event.domain_name
+      ignore_empty_value: true
+  - rename:
+      field: json.egress_pop_name
+      tag: rename_egress_pop_name
+      target_field: cato_networks.event.egress_pop_name
+      ignore_missing: true
+  - convert:
+      field: json.event_count
+      tag: convert_event_count_to_long
+      target_field: cato_networks.event.event_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event_id
+      tag: rename_event_id
+      target_field: cato_networks.event.event_id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_event_event_id
+      copy_from: cato_networks.event.event_id
+      ignore_empty_value: true
+  - rename:
+      field: json.event_message
+      tag: rename_event_message
+      target_field: cato_networks.event.event_message
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_event_event_message
+      copy_from: cato_networks.event.event_message
+      ignore_empty_value: true
+  - rename:
+      field: json.event_sub_type
+      tag: rename_event_sub_type
+      target_field: cato_networks.event.event_sub_type
+      ignore_missing: true
+  - rename:
+      field: json.event_type
+      tag: rename_event_type
+      target_field: cato_networks.event.event_type
+      ignore_missing: true
+  - rename:
+      field: json.full_path_url
+      tag: rename_full_path_url
+      target_field: cato_networks.event.full_path_url
+      ignore_missing: true
+  - set:
+      field: url.full
+      tag: set_url_full_from_event_full_path_url
+      copy_from: cato_networks.event.full_path_url
+      ignore_empty_value: true
+  - rename:
+      field: json.flow_id
+      tag: rename_flow_id
+      target_field: cato_networks.event.flow_id
+      ignore_missing: true
+  - convert:
+      field: json.host_ip
+      tag: convert_host_ip_to_ip
+      if: ctx.json?.host_ip != ''
+      target_field: cato_networks.event.host_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_cato_networks_event_host_ip_into_host_ip
+      value: '{{{cato_networks.event.host_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.host_ip != null
+  - append:
+      field: related.ip
+      tag: append_event_host_ip_into_related_ip
+      value: '{{{cato_networks.event.host_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.host_ip != null
+  - rename:
+      field: json.host_mac
+      tag: rename_host_mac
+      target_field: cato_networks.event.host_mac
+      ignore_missing: true
+  - append:
+      field: host.mac
+      tag: append_cato_networks_event_host_mac_into_host_mac
+      value: '{{{cato_networks.event.host_mac}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.host_mac != null
+  - gsub:
+      field: host.mac
+      tag: gsub_host_mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      tag: uppercase_host_mac
+      ignore_missing: true
+  - rename:
+      field: json.http_request_method
+      tag: rename_http_request_method
+      target_field: cato_networks.event.http_request_method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_event_http_request_method
+      copy_from: cato_networks.event.http_request_method
+      ignore_empty_value: true
+  - convert:
+      field: json.http_response_code
+      tag: convert_http_response_code_to_long
+      target_field: cato_networks.event.http_response_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_event_http_response_code
+      copy_from: cato_networks.event.http_response_code
+      ignore_empty_value: true
+  - rename:
+      field: json.internalId
+      tag: rename_internalId
+      target_field: cato_networks.event.internal_id
+      ignore_missing: true
+  - rename:
+      field: json.internal_id
+      tag: rename_internal_id
+      target_field: cato_networks.event.internal_id
+      ignore_missing: true
+      if: ctx.cato_networks.event.internal_id == null
+  - rename:
+      field: json.ip_protocol
+      tag: rename_ip_protocol
+      target_field: cato_networks.event.ip_protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_event_ip_protocol
+      copy_from: cato_networks.event.ip_protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - convert:
+      field: json.is_sanctioned_app
+      tag: convert_is_sanctioned_app_to_boolean
+      target_field: cato_networks.event.is_sanctioned_app
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.is_sinkhole
+      tag: convert_is_sinkhole_to_boolean
+      target_field: cato_networks.event.is_sinkhole
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ISP_name
+      tag: rename_ISP_name
+      target_field: cato_networks.event.isp_name
+      ignore_missing: true
+  - rename:
+      field: json.key_name
+      tag: rename_key_name
+      target_field: cato_networks.event.key_name
+      ignore_missing: true
+  - rename:
+      field: json.login_type
+      tag: rename_login_type
+      target_field: cato_networks.event.login_type
+      ignore_missing: true
+  - rename:
+      field: json.mitre_attack_subtechniques
+      tag: rename_mitre_attack_subtechniques
+      target_field: cato_networks.event.mitre_attack_subtechniques
+      ignore_missing: true
+  - append:
+      field: threat.technique.subtechnique.name
+      tag: append_cato_networks_event_mitre_attack_subtechniques_into_threat_technique_subtechnique_name
+      value: '{{{cato_networks.event.mitre_attack_subtechniques}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.mitre_attack_subtechniques != null
+  - rename:
+      field: json.mitre_attack_tactics
+      tag: rename_mitre_attack_tactics
+      target_field: cato_networks.event.mitre_attack_tactics
+      ignore_missing: true
+  - append:
+      field: threat.tactic.name
+      tag: append_cato_networks_event_mitre_attack_tactics_into_threat_tactic_name
+      value: '{{{cato_networks.event.mitre_attack_tactics}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.mitre_attack_tactics != null
+  - rename:
+      field: json.mitre_attack_techniques
+      tag: rename_mitre_attack_techniques
+      target_field: cato_networks.event.mitre_attack_techniques
+      ignore_missing: true
+  - append:
+      field: threat.technique.name
+      tag: append_cato_networks_event_mitre_attack_techniques_into_threat_technique_name
+      value: '{{{cato_networks.event.mitre_attack_techniques}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.mitre_attack_techniques != null
+  - rename:
+      field: json.network_rule
+      tag: rename_network_rule
+      target_field: cato_networks.event.network_rule
+      ignore_missing: true
+  - rename:
+      field: json.os_type
+      tag: rename_os_type
+      target_field: cato_networks.event.os_type
+      ignore_missing: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.cato_networks?.event?.os_type != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        String os_type = ctx.cato_networks.event.os_type.toLowerCase();
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        for (String os: params.os_type) {
+          if (os_type.contains(os)) {
+            ctx.host.os.put('type', os);
+            return;
+          }
+        }
+        if (os_type.contains('centos') || os_type.contains('ubuntu')) {
+          ctx.host.os.put('type', 'linux');
+        }
+  - rename:
+      field: json.os_version
+      tag: rename_os_version
+      target_field: cato_networks.event.os_version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_event_os_version
+      copy_from: cato_networks.event.os_version
+      ignore_empty_value: true
+  - rename:
+      field: json.pop_name
+      tag: rename_pop_name
+      target_field: cato_networks.event.pop_name
+      ignore_missing: true
+  - rename:
+      field: json.prompt_action
+      tag: rename_prompt_action
+      target_field: cato_networks.event.prompt_action
+      ignore_missing: true
+  - convert:
+      field: json.public_ip
+      tag: convert_public_ip_to_ip
+      if: ctx.json?.public_ip != ''
+      target_field: cato_networks.event.public_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_event_public_ip_into_related_ip
+      value: '{{{cato_networks.event.public_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.public_ip != null
+  - convert:
+      field: json.qos_priority
+      tag: convert_qos_priority_to_long
+      target_field: cato_networks.event.qos_priority
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.request_size
+      tag: convert_request_size_to_long
+      target_field: cato_networks.event.request_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.response_size
+      tag: convert_response_size_to_long
+      target_field: cato_networks.event.response_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.risk_level
+      tag: rename_risk_level
+      target_field: cato_networks.event.risk_level
+      ignore_missing: true
+  - set:
+      field: host.risk.static_level
+      tag: set_host_risk_static_level_from_event_risk_level
+      copy_from: cato_networks.event.risk_level
+      ignore_empty_value: true
+  - rename:
+      field: json.rule_id
+      tag: rename_rule_id
+      target_field: cato_networks.event.rule_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_event_rule_id
+      copy_from: cato_networks.event.rule_id
+      ignore_empty_value: true
+  - rename:
+      field: json.rule_name
+      tag: rename_rule_name
+      target_field: cato_networks.event.rule_name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_event_rule_name
+      copy_from: cato_networks.event.rule_name
+      ignore_empty_value: true
+  - convert:
+      field: json.server_ip
+      tag: convert_server_ip_to_ip
+      target_field: cato_networks.event.server_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.json?.server_ip != ''
+  - set:
+      field: server.ip
+      tag: set_server_ip_from_event_server_ip
+      copy_from: cato_networks.event.server_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_server_ip_into_related_ip
+      value: '{{{cato_networks.event.server_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.server_ip != null
+  - rename:
+      field: json.signature_id
+      tag: rename_signature_id
+      target_field: cato_networks.event.signature_id
+      ignore_missing: true
+  - rename:
+      field: json.socket_version
+      tag: rename_socket_version
+      target_field: cato_networks.event.socket_version
+      ignore_missing: true
+  - rename:
+      field: json.src_country
+      tag: rename_src_country
+      target_field: cato_networks.event.src_country
+      ignore_missing: true
+  - set:
+      field: source.geo.country_name
+      tag: set_source_geo_country_name_from_event_src_country
+      copy_from: cato_networks.event.src_country
+      ignore_empty_value: true
+  - rename:
+      field: json.src_country_code
+      tag: rename_src_country_code
+      target_field: cato_networks.event.src_country_code
+      ignore_missing: true
+  - set:
+      field: source.geo.country_iso_code
+      tag: set_source_geo_country_iso_code_from_event_src_country_code
+      copy_from: cato_networks.event.src_country_code
+      ignore_empty_value: true
+  - convert:
+      field: json.src_ip
+      tag: convert_src_ip_to_ip
+      target_field: cato_networks.event.src_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.json?.src_ip != ''
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_event_src_ip
+      copy_from: cato_networks.event.src_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_src_ip_into_related_ip
+      value: '{{{cato_networks.event.src_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.src_ip != null
+  - rename:
+      field: json.src_is_site_or_vpn
+      tag: rename_src_is_site_or_vpn
+      target_field: cato_networks.event.src_is_site_or_vpn
+      ignore_missing: true
+  - convert:
+      field: json.src_isp_ip
+      tag: convert_src_isp_ip_to_ip
+      target_field: cato_networks.event.src_isp_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.json?.src_isp_ip != ''
+  - append:
+      field: related.ip
+      tag: append_event_src_isp_ip_into_related_ip
+      value: '{{{cato_networks.event.src_isp_ip}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.src_isp_ip != null
+  - convert:
+      field: json.src_port
+      tag: convert_src_port_to_long
+      target_field: cato_networks.event.src_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_event_src_port
+      copy_from: cato_networks.event.src_port
+      ignore_empty_value: true
+  - rename:
+      field: json.src_site_id
+      tag: rename_src_site_id
+      target_field: cato_networks.event.src_site_id
+      ignore_missing: true
+  - rename:
+      field: json.src_site_name
+      tag: rename_src_site_name
+      target_field: cato_networks.event.src_site_name
+      ignore_missing: true
+  - convert:
+      field: json.static_host
+      tag: convert_static_host_to_boolean
+      target_field: cato_networks.event.static_host
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.subnet_name
+      tag: rename_subnet_name
+      target_field: cato_networks.event.subnet_name
+      ignore_missing: true
+  - convert:
+      field: json.tcp_acceleration
+      tag: convert_tcp_acceleration_to_boolean
+      target_field: cato_networks.event.tcp_acceleration
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.threat_name
+      tag: rename_threat_name
+      target_field: cato_networks.event.threat_name
+      ignore_missing: true
+  - rename:
+      field: json.threat_reference
+      tag: rename_threat_reference
+      target_field: cato_networks.event.threat_reference
+      ignore_missing: true
+  - rename:
+      field: json.threat_type
+      tag: rename_threat_type
+      target_field: cato_networks.event.threat_type
+      ignore_missing: true
+  - date:
+      field: json.time
+      tag: date_time
+      target_field: cato_networks.event.time
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.json?.time != null && ctx.json.time != ''
+  - date:
+      field: json.time_str
+      tag: date_time_str
+      target_field: cato_networks.event.time_str
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.json?.time_str != null && ctx.json.time_str != ''
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_time_str
+      copy_from: cato_networks.event.time_str
+      ignore_empty_value: true
+  - convert:
+      field: json.tls_inspection
+      tag: convert_tls_inspection_to_boolean
+      target_field: cato_networks.event.tls_inspection
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.traffic_direction
+      tag: rename_traffic_direction
+      target_field: cato_networks.event.traffic_direction
+      ignore_missing: true
+  - convert:
+      field: json.transaction_size
+      tag: convert_transaction_size_to_long
+      target_field: cato_networks.event.transaction_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.url
+      tag: rename_url
+      target_field: cato_networks.event.url
+      ignore_missing: true
+  - rename:
+      field: json.user_agent
+      tag: rename_user_agent
+      target_field: cato_networks.event.user_agent
+      ignore_missing: true
+  - user_agent:
+      field: cato_networks.event.user_agent
+      tag: user_agent_parse_user_agent
+      ignore_missing: true
+      target_field: user_agent
+  - rename:
+      field: json.user_reference_id
+      tag: rename_user_reference_id
+      target_field: cato_networks.event.user_reference_id
+      ignore_missing: true
+  - rename:
+      field: json.user_id
+      tag: rename_user_id
+      target_field: cato_networks.event.user_id
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_event_user_id
+      copy_from: cato_networks.event.user_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_id_into_related_user
+      value: '{{{cato_networks.event.user_id}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.user_id != null
+  - rename:
+      field: json.user_name
+      tag: rename_user_name
+      target_field: cato_networks.event.user_name
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_event_user_name
+      copy_from: cato_networks.event.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_name_into_related_user
+      value: '{{{cato_networks.event.user_name}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.user_name != null
+  - rename:
+      field: json.visible_device_id
+      tag: rename_visible_device_id
+      target_field: cato_networks.event.visible_device_id
+      ignore_missing: true
+  - rename:
+      field: json.vpn_user_email
+      tag: rename_vpn_user_email
+      target_field: cato_networks.event.vpn_user_email
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_event_vpn_user_email
+      copy_from: cato_networks.event.vpn_user_email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_vpn_user_email_into_related_user
+      value: '{{{cato_networks.event.vpn_user_email}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.vpn_user_email != null
+  - remove:
+      field:
+        - cato_networks.event.action
+        - cato_networks.event.application_name
+        - cato_networks.event.client_ip
+        - cato_networks.event.configured_host_name
+        - cato_networks.event.dest_country
+        - cato_networks.event.dest_country_code
+        - cato_networks.event.dest_ip
+        - cato_networks.event.dest_port
+        - cato_networks.event.dns_query
+        - cato_networks.event.dns_record_type
+        - cato_networks.event.domain_name
+        - cato_networks.event.event_id
+        - cato_networks.event.event_message
+        - cato_networks.event.full_path_url
+        - cato_networks.event.host_ip
+        - cato_networks.event.host_mac
+        - cato_networks.event.http_request_method
+        - cato_networks.event.http_response_code
+        - cato_networks.event.ip_protocol
+        - cato_networks.event.mitre_attack_subtechniques
+        - cato_networks.event.mitre_attack_tactics
+        - cato_networks.event.mitre_attack_techniques
+        - cato_networks.event.os_version
+        - cato_networks.event.risk_level
+        - cato_networks.event.rule_id
+        - cato_networks.event.rule_name
+        - cato_networks.event.server_ip
+        - cato_networks.event.src_country
+        - cato_networks.event.src_country_code
+        - cato_networks.event.src_ip
+        - cato_networks.event.src_port
+        - cato_networks.event.time_str
+        - cato_networks.event.user_agent
+        - cato_networks.event.user_id
+        - cato_networks.event.user_name
+        - cato_networks.event.vpn_user_email
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
