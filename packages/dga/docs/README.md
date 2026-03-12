@@ -107,11 +107,11 @@ To customize the datafeed query and other settings such as model memory limit, f
 
 ## v3.0.0 and beyond
 
-v3.0.0 of the package introduces Entity Analytics support for Elastic Stack version 9.4, adding new fields for proper entity resolution.
+v3.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
 
-- Previously installed versions of ML jobs and rules will continue to run, giving you time to transition to the new Entity Analytics assets.
-- On installation of this version, new ML jobs and rules that utilize Entity Analytics will be available.
-- We recommend installing the new ML jobs first and check they are properly installed, gathering data and generating anomalies before updating to the latest version of the detection rules provided in 9.4.
+- The new ML jobs include an `_ea` suffix in their names, as outlined below. New detection rules are also included.
+- Previously installed ML jobs and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
+- We recommend installing the new ML jobs first and verifying that they are properly set up, collecting data, and generating anomalies before upgrading to the latest detection rules included in 9.4.
 
 The new Entity Analytics ML job IDs are:
 - `dga_high_sum_probability_ea`
