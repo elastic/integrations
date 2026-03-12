@@ -1,0 +1,223 @@
+timestamp(now).as(fetch_ts,
+    [408, 429, 500, 502, 503, 504, 401].as(retryable,
+      (state.access_token == "").as(no_token,
+        (int(state.expires_at) > 0).as(has_expiry,
+          (has_expiry ?
+            fetch_ts >= (timestamp("1970-01-01T00:00:00Z") +
+              duration(string(int(state.expires_at) - 300000) + "ms"))
+            : true
+          ).as(is_expired_or_unknown,
+            (no_token || is_expired_or_unknown).as(need_auth,
+              need_auth ?
+                post(
+                  "https://userauth.dataminr.com/auth/2/token",
+                  "application/x-www-form-urlencoded",
+                  {
+                    "grant_type": ["api_key"],
+                    "client_id": [state.client_id],
+                    "client_secret": [state.client_secret]
+                  }.format_query()
+                ).as(auth_resp,
+                  auth_resp.StatusCode == 200 ?
+                    (size(auth_resp.Body) > 0 ? bytes(auth_resp.Body).decode_json() : {}).as(token_data,
+                      has(token_data.dmaToken) && token_data.dmaToken != "" ?
+                        {
+                          "updated_state": state.with({
+                            "access_token": string(token_data.dmaToken),
+                            "expires_at": has(token_data.expire) ? int(token_data.expire) : 0
+                          }),
+                          "auth_event": {
+                            "message": {
+                              "log_type": "auth",
+                              "status": "success",
+                              "client_id": state.client_id,
+                              "expires_at": has(token_data.expire) ? int(token_data.expire) : 0,
+                              "http_status_code": auth_resp.StatusCode,
+                              "fetch_timestamp": fetch_ts
+                            }.encode_json()
+                          },
+                          "should_fetch": true,
+                          "auth_failed": false
+                        }
+                      :
+                        {
+                          "updated_state": state,
+                          "auth_event": {
+                            "message": {
+                              "log_type": "auth",
+                              "status": "failed",
+                              "client_id": state.client_id,
+                              "error_message": "No valid token received",
+                              "http_status_code": auth_resp.StatusCode,
+                              "fetch_timestamp": fetch_ts,
+                              "response_body": string(auth_resp.Body)
+                            }.encode_json()
+                          },
+                          "should_fetch": false,
+                          "auth_failed": true
+                        }
+                    )
+                  :
+                  (size(auth_resp.Body) > 0 ? bytes(auth_resp.Body).decode_json() : {}).as(error_body,
+                    retryable.exists(code, code == auth_resp.StatusCode).as(is_retryable,
+                      (has(error_body.errors) && size(error_body.errors) > 0 ? 
+                        string(error_body.errors[0].message) : 
+                        "Authentication failed with HTTP " + string(auth_resp.StatusCode)
+                      ).as(error_msg,
+                        is_retryable ?
+                          {
+                            "updated_state": state,
+                            "auth_event": {
+                              "message": {
+                                "log_type": "auth",
+                                "status": "retry",
+                                "client_id": state.client_id,
+                                "error_message": error_msg,
+                                "error_code": has(error_body.errors) && size(error_body.errors) > 0 ? int(error_body.errors[0].code) : 0,
+                                "http_status_code": auth_resp.StatusCode,
+                                "fetch_timestamp": fetch_ts
+                              }.encode_json()
+                            },
+                            "should_fetch": false,
+                            "auth_failed": false,
+                            "want_more": true
+                          }
+                        :
+                          {
+                            "updated_state": state,
+                            "auth_event": {
+                              "message": {
+                                "log_type": "auth",
+                                "status": "failed",
+                                "client_id": state.client_id,
+                                "error_message": error_msg,
+                                "error_code": has(error_body.errors) && size(error_body.errors) > 0 ? int(error_body.errors[0].code) : 0,
+                                "http_status_code": auth_resp.StatusCode,
+                                "fetch_timestamp": fetch_ts,
+                                "response_body": string(auth_resp.Body)
+                              }.encode_json()
+                            },
+                            "should_fetch": false,
+                            "auth_failed": true,
+                            "want_more": false
+                          }
+                      )
+                    )
+                  )
+                )
+              :
+                {
+                  "updated_state": state,
+                  "auth_event": {},
+                  "should_fetch": true,
+                  "auth_failed": false
+                }
+            ).as(prep,
+              prep.should_fetch ?
+                (prep.updated_state.next_cursor != "" ?
+                  prep.updated_state.base_url + prep.updated_state.next_cursor :
+                  prep.updated_state.url + "?" + {"pageSize": [string(prep.updated_state.page_size)]}.format_query()
+                ).as(request_url,
+                  get_request(request_url).with({
+                    "Header": {
+                      "Authorization": ["Bearer " + prep.updated_state.access_token],
+                      "Accept": ["application/json"],
+                      "x-application-name": ["elastic-siem-" + state.version]
+                    }
+                  }).do_request().as(api_resp,
+                    api_resp.StatusCode == 200 ?
+                      (size(api_resp.Body) > 0 ? bytes(api_resp.Body).decode_json() : {}).as(response_body,
+                        prep.updated_state.with({
+                          "events": (has(prep.auth_event.message) ? [prep.auth_event] : []) +
+                            (has(response_body.alerts) && size(response_body.alerts) > 0 ?
+                              response_body.alerts.map(alert, {
+                                "message": alert.with({
+                                  "cursor_used": prep.updated_state.next_cursor != "" ? prep.updated_state.next_cursor : "initial",
+                                  "fetched_alerts": size(response_body.alerts),
+                                  "fetch_timestamp": fetch_ts
+                                }).encode_json()
+                              }) : []
+                            ) + [{
+                              "message": {
+                                "log_type": "alert-fetch",
+                                "status": "success",
+                                "api_endpoint": request_url,
+                                "input_alert_fetch_count": prep.updated_state.page_size,
+                                "next_cursor": has(response_body.nextPage) && response_body.nextPage != "" ? string(response_body.nextPage) : "",
+                                "count_of_alerts": has(response_body.alerts) ? size(response_body.alerts) : 0,
+                                "http_status_code": api_resp.StatusCode,
+                                "cursor_used": prep.updated_state.next_cursor != "" ? prep.updated_state.next_cursor : "initial",
+                                "fetched_alerts": has(response_body.alerts) ? size(response_body.alerts) : 0,
+                                "fetch_timestamp": fetch_ts
+                              }.encode_json()
+                            }],
+                          "next_cursor": has(response_body.nextPage) && response_body.nextPage != "" ? string(response_body.nextPage) : "",
+                          "access_token": prep.updated_state.access_token,
+                          "expires_at": prep.updated_state.expires_at,
+                          "last_fetch_timestamp": int(fetch_ts.getDate()),
+                          "want_more": false
+                        })
+                      )
+                    :
+                    (size(api_resp.Body) > 0 ? bytes(api_resp.Body).decode_json() : {}).as(error_body,
+                      retryable.exists(code, code == api_resp.StatusCode).as(is_retryable,
+                        (has(error_body.error) ? 
+                          string(error_body.error) : 
+                          "API request failed with HTTP " + string(api_resp.StatusCode)
+                        ).as(error_msg,
+                          is_retryable ?
+                            prep.updated_state.with({
+                              "events": (has(prep.auth_event.message) ? [prep.auth_event] : []) + [{
+                                "message": {
+                                  "log_type": "alert-fetch",
+                                  "status": "retry",
+                                  "api_endpoint": request_url,
+                                  "input_alert_fetch_count": prep.updated_state.page_size,
+                                  "error_message": error_msg,
+                                  "http_status_code": api_resp.StatusCode,
+                                  "cursor_used": prep.updated_state.next_cursor != "" ? prep.updated_state.next_cursor : "initial",
+                                  "fetched_alerts": 0,
+                                  "fetch_timestamp": fetch_ts
+                                }.encode_json()
+                              }],
+                              "access_token": prep.updated_state.access_token,
+                              "expires_at": prep.updated_state.expires_at,
+                              "want_more": true
+                            })
+                          :
+                            prep.updated_state.with({
+                              "events": (has(prep.auth_event.message) ? [prep.auth_event] : []) + [{
+                                "message": {
+                                  "log_type": "alert-fetch",
+                                  "status": "failed",
+                                  "api_endpoint": request_url,
+                                  "input_alert_fetch_count": prep.updated_state.page_size,
+                                  "error_message": error_msg,
+                                  "http_status_code": api_resp.StatusCode,
+                                  "cursor_used": prep.updated_state.next_cursor != "" ? prep.updated_state.next_cursor : "initial",
+                                  "fetched_alerts": 0,
+                                  "fetch_timestamp": fetch_ts,
+                                  "response_body": string(api_resp.Body)
+                                }.encode_json()
+                              }],
+                              "access_token": prep.updated_state.access_token,
+                              "expires_at": prep.updated_state.expires_at,
+                              "next_cursor": api_resp.StatusCode == 400 || api_resp.StatusCode == 404 ? "" : prep.updated_state.next_cursor,
+                              "want_more": false
+                            })
+                        )
+                      )
+                    )
+                  )
+                )
+              :
+                prep.updated_state.with({
+                  "events": [prep.auth_event],
+                  "want_more": has(prep.want_more) ? prep.want_more : false
+                })
+            )
+          )
+        )
+      )
+    )
+  )
