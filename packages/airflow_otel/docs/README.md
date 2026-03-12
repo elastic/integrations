@@ -89,18 +89,17 @@ Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-col
 
 | Alert | Trigger | Severity |
 |-------|---------|----------|
-| **[Airflow OTel] Scheduler heartbeat missing** | No scheduler heartbeats received in the evaluation window. | Critical |
-| **[Airflow OTel] Executor slots exhausted** | Executor open slots are zero on at least one host. | Critical |
-| **[Airflow OTel] Scheduler heartbeat failure** | SchedulerJob heartbeat failure count is non-zero. | High |
-| **[Airflow OTel] Task instance failures** | One or more task instance failures observed. | High |
+| **[Airflow OTel] Scheduler heartbeats critically low** | No scheduler heartbeats received in the evaluation window. | Critical |
+| **[Airflow OTel] Executor open slots exhausted** | Executor open slots are zero on at least one host. | Critical |
+| **[Airflow OTel] Scheduler job heartbeat failures** | SchedulerJob heartbeat failure count is non-zero. | High |
+| **[Airflow OTel] Task failures above threshold** | One or more task instance failures observed. | High |
 | **[Airflow OTel] Tasks killed externally** | Tasks killed by external processes (OOM, eviction). | High |
-| **[Airflow OTel] DAG import errors** | DAG import errors are non-zero. | High |
-| **[Airflow OTel] DAG file refresh error** | DAG file refresh errors occurred. | High |
+| **[Airflow OTel] DAG import errors present** | DAG import errors are non-zero. | High |
 | **[Airflow OTel] DAG processor timeouts** | DAG processor timeouts detected. | High |
-| **[Airflow OTel] Schedule delay high** | DAG run schedule delay exceeds 5 minutes. | Medium |
-| **[Airflow OTel] Scheduler loop slow** | Scheduler loop duration exceeds 60 seconds. | Medium |
-| **[Airflow OTel] Scheduler tasks starving** | Starving tasks (blocked by pool limits) exceed threshold. | Medium |
-| **[Airflow OTel] DAG processing queue large** | DAG file processing queue size exceeds 50. | Medium |
+| **[Airflow OTel] DAG run schedule delay high** | DAG run schedule delay exceeds 5 minutes. | Medium |
+| **[Airflow OTel] Scheduler loop duration excessive** | Scheduler loop duration exceeds 60 seconds. | Medium |
+| **[Airflow OTel] Tasks starving due to pool limits** | Starving tasks (blocked by pool limits) exceed threshold. | Medium |
+| **[Airflow OTel] DAG file processing queue large** | DAG file processing queue size exceeds 50. | Medium |
 
 ## SLO templates
 
@@ -108,6 +107,4 @@ Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-col
 |-----|--------|--------|-------------|
 | **[Airflow OTel] Task success rate 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of task instances that complete successfully vs failures. |
 | **[Airflow OTel] DAG import errors zero 99.5% rolling 30 days** | 99.5% | 30-day rolling | DAG files parse without import errors. |
-| **[Airflow OTel] Executor open slots 99.5% rolling 30 days** | 99.5% | 30-day rolling | Executor has at least one open slot available. |
 | **[Airflow OTel] Scheduler loop duration 99.5% rolling 30 days** | 99.5% | 30-day rolling | Scheduler loop completes within acceptable duration. |
-| **[Airflow OTel] Starving tasks zero 99.5% rolling 30 days** | 99.5% | 30-day rolling | No tasks blocked by pool slot limits. |
