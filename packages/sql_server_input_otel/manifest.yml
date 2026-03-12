@@ -1,0 +1,176 @@
+format_version: 3.6.0
+name: sql_server_input_otel
+title: "SQL Server OpenTelemetry Input Package"
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: "Collect SQL Server metrics and logs using OpenTelemetry Collector"
+type: input
+categories:
+  - datastore
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/sql_server_otellogo.svg
+    title: SQL Server logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: sqlserverreceiver
+    type: metrics
+    title: SQL Server Metrics and Logs (OpenTelemetry)
+    description: Collect SQL Server metrics and logs using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    dynamic_signal_types: true
+    vars:
+      # Connection settings
+      - name: server
+        type: text
+        required: false
+        title: Server
+        description: >-
+          IP Address or hostname of SQL Server instance to connect to.
+          All connection settings (server, port, username, password) must be provided together for a direct connection.
+          Cannot be used together with datasource.
+        show_user: true
+      - name: port
+        type: integer
+        required: false
+        title: Port
+        description: >-
+          Port of the SQL Server instance to connect to.
+          All connection settings (server, port, username, password) must be provided together for a direct connection.
+          Cannot be used together with datasource.
+        show_user: true
+      - name: username
+        type: text
+        required: false
+        title: Username
+        description: The username used to connect to the SQL Server instance.
+        show_user: true
+      - name: password
+        type: password
+        required: false
+        title: Password
+        description: The password used to connect to the SQL Server instance.
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        show_user: true
+      - name: datasource
+        type: text
+        required: false
+        title: Data Source (Connection String)
+        description: >-
+          ADO connection string for direct connection to SQL Server.
+          Use as an alternative to the individual server, port, username, and password settings.
+          Cannot be used together with server, port, username, or password.
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        show_user: false
+      # Instance settings
+      - name: instance_name
+        type: text
+        required: false
+        title: Instance Name
+        description: The instance name identifies the specific SQL Server instance being monitored. If unspecified, metrics will be scraped from all instances.
+        show_user: false
+      - name: computer_name
+        type: text
+        required: false
+        title: Computer Name
+        description: The computer name identifies the SQL Server name or IP address of the computer being monitored. Required when instance_name is specified on Windows.
+        show_user: false
+      # Collection settings
+      - name: collection_interval
+        type: duration
+        required: false
+        title: Collection Interval
+        description: Time between each collection (e.g., 10s, 1m).
+        default: 10s
+        show_user: false
+      - name: initial_delay
+        type: duration
+        required: false
+        title: Initial Delay
+        description: Defines how long this receiver waits before starting.
+        default: 1s
+        show_user: false
+      # Log events (require direct connection; both disabled by default per receiver docs)
+      - name: enable_query_sample_events
+        type: bool
+        required: false
+        title: Enable Query Sample Events
+        description: Capture currently executing queries as log events (db.server.query_sample).
+        default: false
+        show_user: false
+      - name: enable_top_query_events
+        type: bool
+        required: false
+        title: Enable Top Query Events
+        description: Capture the most expensive queries as log events (db.server.top_query).
+        default: false
+        show_user: false
+      # Query sample collection settings (only applicable if enable_query_sample_events is true)
+      - name: query_sample_max_rows_per_query
+        type: integer
+        required: false
+        title: Query Sample Max Rows Per Query
+        description: Maximum number of rows to collect per scrape for query samples.
+        default: 100
+        show_user: false
+      # Top query collection settings (only applicable if enable_top_query_events is true)
+      - name: top_query_lookback_time
+        type: duration
+        required: false
+        title: Top Query Lookback Time
+        description: The time window to query for top queries (e.g., 60s, 2m).
+        default: 60s
+        show_user: false
+      - name: top_query_max_query_sample_count
+        type: integer
+        required: false
+        title: Top Query Max Sample Count
+        description: Maximum number of records to fetch in a single run.
+        default: 1000
+        show_user: false
+      - name: top_query_count
+        type: integer
+        required: false
+        title: Top Query Count
+        description: Maximum number of active queries to report in a single run.
+        default: 250
+        show_user: false
+      - name: top_query_collection_interval
+        type: duration
+        required: false
+        title: Top Query Collection Interval
+        description: The interval at which top queries should be emitted.
+        default: 60s
+        show_user: false
+      # Resource attributes settings
+      - name: resource_attributes
+        type: yaml
+        title: Resource Attributes
+        description: >-
+          Enable or disable resource attributes on collected data.
+          Available attributes: sqlserver.computer.name, sqlserver.instance.name, server.address, server.port, service.instance.id, host.name, sqlserver.database.name.
+        required: false
+        show_user: false
+      # Metrics settings
+      - name: metrics
+        type: yaml
+        title: Metrics
+        description: Enable or disable specific metrics
+        required: false
+        show_user: false
+owner:
+  github: elastic/ecosystem
+  type: elastic

@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when an Elastic Defend endpoint alert is generated on a host and is not followed by any subsequent endpoint telemetry (process, network, registry, library, or DNS events) within a short time window. This behavior may indicate endpoint security evasion, agent tampering, sensor disablement, service termination, system crash, or malicious interference with telemetry collection following detection.",
+        "false_positives": [
+            "Misconfiguration, system reboot, network issues or expected uninstall of the Elastic Defend agent."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Elastic Defend Alert Followed by Telemetry Loss",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Elastic Defend Alert Followed by Telemetry Loss\n\nThis rule identifies situations where an Elastic Defend alert is generated on a host and is not followed by\nany normal endpoint activity events within a short time window. This may indicate agent tampering, sensor\ndisablement, host shutdown, system crash, or defense evasion behavior.\n\n### Possible investigation steps\n\n- Review the original `endpoint.alert` event and identify the detection that triggered the alert.\n- Check the host\u2019s online status, uptime, and reboot history.\n- Verify the health and status of the Elastic Defend agent and related services.\n- Look for evidence of agent tampering, service stops, or security control modifications.\n- Correlate with activity immediately preceding the alert for signs of exploitation or evasion.\n- Determine if similar alert \u2192 silence patterns are occurring on other hosts.\n\n### False positive analysis\n\n- Legitimate system reboots or shutdowns\n- Network connectivity loss\n- Elastic Agent upgrades or restarts\n- Endpoint service crashes\n- Maintenance or IT operations\n\n### Response and remediation\n\n- Validate host and agent availability.\n- Reconnect or re-enroll the agent if telemetry is missing.\n- Isolate the host if malicious activity is suspected.\n- Investigate for security control tampering.\n- Perform broader environment hunting for similar patterns.\n",
+        "query": "sequence by host.id with maxspan=5m\n [any where event.dataset == \"endpoint.alerts\"]\n ![any where event.category in (\"process\", \"library\", \"registry\", \"network\", \"dns\")]\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1562/001/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "fc552f49-8f1c-409b-90f8-6f5b9869b6c4",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: Elastic Defend",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "fc552f49-8f1c-409b-90f8-6f5b9869b6c4_1",
+    "type": "security-rule"
+}
