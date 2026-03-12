@@ -18,7 +18,7 @@ The Host Traffic Anomalies package includes a dashboard that offers a high-level
 
 ## v2.0.0 and beyond
 
-v3.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
+v2.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
 
 - The new ML jobs include an `_ea` suffix in their names, as outlined below. These jobs are available through the `Security: Host` module in Kibana. To install them, go to **Machine Learning** -> **Anomaly Detection** -> **Jobs** -> **Create anomaly detection job** -> select your data view -> select **Security: Host** -> **Create jobs**.
 - Previously installed `Security: Host` ML jobs will continue to run, allowing time to transition to the new Entity Analytics jobs.
