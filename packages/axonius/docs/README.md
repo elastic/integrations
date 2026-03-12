@@ -1125,27 +1125,27 @@ An example event for `storage` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-12-09T00:02:06.000Z",
+    "@timestamp": "2025-12-09T00:02:07.000Z",
     "agent": {
-        "ephemeral_id": "6e0744d3-3b7a-4240-86a6-45c43e145b69",
-        "id": "eb4a0199-7b33-4f00-8df6-71bbbdb8392e",
-        "name": "elastic-agent-95137",
+        "ephemeral_id": "ba04ddcf-e21a-4a1c-90a9-29d23b9d5d75",
+        "id": "7b0f536f-933f-4941-897b-2432cf39c90b",
+        "name": "elastic-agent-61612",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "axonius": {
         "storage": {
-            "accurate_for_datetime": "2025-12-09T00:02:06.000Z",
+            "accurate_for_datetime": "2025-12-09T00:02:07.000Z",
             "adapter_list_length": 1,
             "adapters": [
                 "aws_adapter"
             ],
             "application_and_account_name": "aws/aws-demo",
-            "asset_type": "disks",
-            "create_time": "2024-12-13T02:59:39.000Z",
-            "data_asset_type": "EBS Volume",
+            "asset_type": "object_storages",
+            "creation_date": "2024-12-25T22:16:51.000Z",
+            "data_asset_type": "AWS S3",
             "event": {
-                "accurate_for_datetime": "2025-12-09T00:02:06.000Z",
+                "accurate_for_datetime": "2025-12-09T00:02:07.000Z",
                 "adapter_categories": [
                     "Cloud Infra"
                 ],
@@ -1154,47 +1154,57 @@ An example event for `storage` looks as following:
                 "plugin_name": "aws_adapter",
                 "plugin_type": "Adapter",
                 "plugin_unique_name": "aws_adapter_0",
-                "quick_id": "aws_adapter_0!140649f1bb9614f2254f",
+                "quick_id": "aws_adapter_0!cda46c83bf39105ee904",
                 "type": "entitydata"
             },
             "fetch_time": "2025-12-09T00:02:06.000Z",
-            "first_fetch_time": "2025-04-14T13:27:02.000Z",
+            "first_fetch_time": "2025-04-14T13:27:03.000Z",
             "from_last_fetch": true,
-            "id": "140649f1bb9614f2254f",
-            "id_raw": "47c9b542-36de-4415-ad96-5840a082f9dd",
-            "internal_axon_id": "7e8e5d4db0c7aa12d3b15c556b4513eb",
+            "id": "cda46c83bf39105ee904",
+            "id_raw": "20d8a9b6-7ca0-4545-b6bd-7158eb8c4a42",
+            "internal_axon_id": "056df4f2bde18a1547d5fae22098d64d",
             "is_fetched_from_adapter": true,
             "last_fetch_connection_id": "67fd09ab731ccb57309230fc",
             "last_fetch_connection_label": "aws-demo",
+            "name": "dacFdDeed650092F-core-dev",
             "not_fetched_count": 0,
-            "size": 40,
             "source_application": "AWS",
             "tenant_number": [
-                "1"
+                "3"
             ],
-            "transform_unique_id": "Y55e0DbHhziiAfhMWXWz91rs+40=",
-            "type": "Disk"
+            "transform_unique_id": "F4v8WC8HAVaWiuI1JMnuCrtPcl8=",
+            "type": "ObjectStorage",
+            "urls": [
+                "https://dacFdDeed650092F-core-dev.s3.amazonaws.com"
+            ]
         }
     },
     "data_stream": {
         "dataset": "axonius.storage",
-        "namespace": "45686",
+        "namespace": "80424",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "eb4a0199-7b33-4f00-8df6-71bbbdb8392e",
+        "id": "7b0f536f-933f-4941-897b-2432cf39c90b",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-12-13T02:59:39.000Z",
+        "category": [
+            "file",
+            "host"
+        ],
+        "created": "2024-12-25T22:16:51.000Z",
         "dataset": "axonius.storage",
-        "ingested": "2026-03-11T10:09:40Z",
-        "kind": "event"
+        "ingested": "2026-03-12T09:39:21Z",
+        "kind": "event",
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "cel"
