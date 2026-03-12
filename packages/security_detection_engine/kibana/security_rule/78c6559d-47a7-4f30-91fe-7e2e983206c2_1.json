@@ -1,0 +1,126 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the creation or modification of several sensitive workloads, such as DaemonSets, Deployments, or CronJobs, by an unusual user agent, source IP and username, which may indicate privilege escalation or unauthorized access within the cluster.",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Unusual Kubernetes Sensitive Workload Modification",
+        "new_terms_fields": [
+            "user_agent.original",
+            "source.ip",
+            "kubernetes.audit.user.username"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Kubernetes Sensitive Workload Modification\n\nThis rule detects allowed create or patch activity against sensitive Kubernetes workloads (DaemonSets, Deployments, CronJobs) coming from an unusual combination of client, network origin, and user identity, which can signal stolen credentials, privilege escalation, or unauthorized control of cluster execution. Attackers commonly patch an existing Deployment to inject a new container or init container that runs with elevated privileges and pulls a remote payload, then rely on the workload controller to redeploy it across the environment.\n\n### Possible investigation steps\n\n- Retrieve the full audit event for the change and compare it to the most recent prior modification of the same workload to identify what was altered (e.g., image, command/args, env/secret refs, volumes, serviceAccount, securityContext, hostPath/hostNetwork, privileged settings).  \n- Attribute the action to a real identity by tracing the Kubernetes user to its backing cloud/IAM identity or kubeconfig/cert and validate whether the access path (SSO, token, service account, CI/CD runner) and source network location are expected for that operator.  \n- Determine blast radius by listing other recent creates/patches by the same identity and from the same origin across namespaces, and check for follow-on actions such as creating RBAC bindings, secrets, or additional controllers.  \n- Inspect the affected workload\u2019s rollout status and pod specs to confirm whether new pods were created, then review container images, pull registries, and runtime behavior for indicators of compromise (unexpected network egress, crypto-mining, credential access, or exec activity).  \n- Validate the change against an approved deployment workflow by correlating with GitOps/CI commit history and change tickets, and if unapproved, contain by scaling down/rolling back the workload and revoking the credential or token used.\n\n### False positive analysis\n\n- A legitimate on-call engineer performs an emergency `kubectl` create/patch to a Deployment/CronJob/DaemonSet from a new workstation, VPN egress IP, or updated kubectl version, producing an unusual user_agent/source IP/username combination despite being authorized.  \n- A routine automation path changes (e.g., CI runner or service account rotated/migrated to a new node pool or network segment) and continues applying standard workload updates, causing the same create/patch activity to appear anomalous due to the new origin and client identity.\n\n### Response and remediation\n\n- Immediately pause impact by scaling the modified Deployment/CronJob to zero or deleting the new DaemonSet and stopping any active rollout while preserving the altered manifest for evidence.  \n- Roll back the workload to the last known-good version from GitOps/CI or prior ReplicaSet/Job template, then redeploy only after verifying container images, init containers, commands, serviceAccount, and privileged/host settings match the approved baseline.  \n- Revoke and rotate the credential used for the change (user token/cert or service account token), invalidate related kubeconfigs, and review/remove any newly created RBAC bindings, secrets, or service accounts tied to the same actor.  \n- Quarantine affected nodes and pods for analysis by cordoning/draining nodes that ran the new pods and collecting pod logs, container filesystem snapshots, and network egress details to identify payloads and persistence.  \n- Escalate to the incident response/on-call security team immediately if the change introduced privileged containers, hostPath mounts, hostNetwork, new external images/registries, or any unexpected DaemonSet creation across multiple nodes.  \n- Harden by enforcing admission controls to restrict privileged settings and sensitive namespaces, requiring changes via approved automation identities, and tightening RBAC so only designated deployment controllers can create/patch DaemonSets, Deployments, and CronJobs.\n",
+        "query": "event.dataset:\"kubernetes.audit_logs\" and user_agent.original:* and\nkubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\" and\nkubernetes.audit.objectRef.resource:(\"daemonsets\" or \"deployments\" or \"cronjobs\") and\nkubernetes.audit.verb:(\"create\" or \"patch\") and\nnot kubernetes.audit.user.groups:\"system:masters\"\n",
+        "references": [
+            "https://heilancoos.github.io/research/2025/12/16/kubernetes.html#overly-permissive-role-based-access-control",
+            "https://flare.io/learn/resources/blog/teampcp-cloud-native-ransomware"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.groups",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "78c6559d-47a7-4f30-91fe-7e2e983206c2",
+        "severity": "low",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "78c6559d-47a7-4f30-91fe-7e2e983206c2_1",
+    "type": "security-rule"
+}
