@@ -4,11 +4,11 @@ Apache CouchDB is an open-source NoSQL document database that exposes a RESTful 
 
 ## Compatibility
 
-The Apache CouchDB OpenTelemetry assets have been tested with the OpenTelemetry CouchDB receiver (contrib distribution).
+The CouchDB OpenTelemetry assets have been tested with:
 
-CouchDB versions tested against:
+OpenTelemetry CouchDB receiver v0.145.0
 
-- Apache CouchDB 2.3, 3.1 and later
+- CouchDB 3.5.1
 
 ## Requirements
 
