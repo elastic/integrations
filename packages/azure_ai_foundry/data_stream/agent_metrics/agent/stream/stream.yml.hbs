@@ -1,0 +1,330 @@
+metricsets: ["monitor"]
+period: {{period}}
+{{#if client_id}}
+client_id: {{client_id}}
+{{/if}}
+{{#if client_secret}}
+client_secret: {{client_secret}}
+{{/if}}
+{{#if tenant_id}}
+tenant_id: {{tenant_id}}
+{{/if}}
+{{#if subscription_id}}
+subscription_id: {{subscription_id}}
+{{/if}}
+{{#if refresh_list_interval}}
+refresh_list_interval: {{refresh_list_interval}}
+{{/if}}
+{{#if resource_manager_endpoint}}
+resource_manager_endpoint: {{resource_manager_endpoint}}
+{{/if}}
+resources:
+{{#if resource_groups}}
+    {{#each resource_groups}}
+        - resource_group: "{{this}}"
+          resource_type: "Microsoft.CognitiveServices/accounts/projects"
+          metrics:
+          - name:
+              - AgentEvents
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+          - name:
+              - AgentInputTokens
+              - AgentOutputTokens
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: TokenType
+              value: '*'
+          - name:
+              - AgentMessages
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+            - name: ThreadId
+              value: '*'
+          - name:
+              - AgentResponses
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ResponseStatus
+              value: '*'
+          - name:
+              - AgentRuns
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: RunStatus
+              value: '*'
+            - name: StatusCode
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ThreadId
+              value: '*'
+          - name:
+              - AgentThreads
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+          - name:
+              - AgentToolCalls
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ToolName
+              value: '*'
+          - name:
+              - AgentUsageIndexedFiles
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ErrorCode
+              value: '*'
+            - name: Status
+              value: '*'
+            - name: VectorStoreId
+              value: '*'
+    {{/each}}
+{{/if}}
+{{#if resource_ids}}
+    {{#each resource_ids}}
+        - resource_id: "{{this}}"
+          metrics:
+          - name:
+              - AgentEvents
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+          - name:
+              - AgentInputTokens
+              - AgentOutputTokens
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: TokenType
+              value: '*'
+          - name:
+              - AgentMessages
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+            - name: ThreadId
+              value: '*'
+          - name:
+              - AgentResponses
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ResponseStatus
+              value: '*'
+          - name:
+              - AgentRuns
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: RunStatus
+              value: '*'
+            - name: StatusCode
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ThreadId
+              value: '*'
+          - name:
+              - AgentThreads
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+          - name:
+              - AgentToolCalls
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ToolName
+              value: '*'
+          - name:
+              - AgentUsageIndexedFiles
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ErrorCode
+              value: '*'
+            - name: Status
+              value: '*'
+            - name: VectorStoreId
+              value: '*'
+    {{/each}}
+{{/if}}
+
+{{!
+    When no resource group and resource ID are specified by the user, collect
+    metrics for all the resource groups in the subscription for the
+    Microsoft.CognitiveServices/accounts resources.
+}}
+
+{{#unless resource_ids }}
+    {{#unless resource_groups }}
+        - resource_query: "resourceType eq 'Microsoft.CognitiveServices/accounts/projects'"
+          metrics:
+          - name:
+              - AgentEvents
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+          - name:
+              - AgentInputTokens
+              - AgentOutputTokens
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: TokenType
+              value: '*'
+          - name:
+              - AgentMessages
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+            - name: ThreadId
+              value: '*'
+          - name:
+              - AgentResponses
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ResponseStatus
+              value: '*'
+          - name:
+              - AgentRuns
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: RunStatus
+              value: '*'
+            - name: StatusCode
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ThreadId
+              value: '*'
+          - name:
+              - AgentThreads
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: EventType
+              value: '*'
+          - name:
+              - AgentToolCalls
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: AgentId
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ToolName
+              value: '*'
+          - name:
+              - AgentUsageIndexedFiles
+            namespace: "Microsoft.CognitiveServices/accounts/projects"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ErrorCode
+              value: '*'
+            - name: Status
+              value: '*'
+            - name: VectorStoreId
+              value: '*'
+    {{/unless}}
+{{/unless}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
