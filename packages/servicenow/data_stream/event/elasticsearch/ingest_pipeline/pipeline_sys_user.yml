@@ -172,26 +172,50 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.last_login?.display_value != null && ctx.servicenow.event.last_login.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.last_login.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.last_login.display_value
+      tag: date_last_login_display_value
+      target_field: servicenow.event.last_login.display_value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.last_login?.display_value != null && ctx.servicenow.event.last_login.display_value != ''
+      if: ctx.servicenow?.event?.last_login?.display_value != null && ctx.servicenow.event.last_login.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.last_login.display_value
@@ -206,25 +230,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.last_login?.value != null && ctx.servicenow.event.last_login.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.last_login.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.last_login.value
+      tag: date_last_login_value
+      target_field: servicenow.event.last_login.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.last_login?.value != null && ctx.servicenow.event.last_login.value != ''
+      if: ctx.servicenow?.event?.last_login?.value != null && ctx.servicenow.event.last_login.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.last_login.value
@@ -240,26 +288,51 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.last_login_time?.display_value != null && ctx.servicenow.event.last_login_time.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.last_login_time.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.last_login_time.display_value
+      tag: date_last_login_time_display_value
+      target_field: servicenow.event.last_login_time.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.last_login_time?.display_value != null && ctx.servicenow.event.last_login_time.display_value != ''
+      if: ctx.servicenow?.event?.last_login_time?.display_value != null && ctx.servicenow.event.last_login_time.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.last_login_time.display_value
@@ -274,25 +347,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.last_login_time?.value != null && ctx.servicenow.event.last_login_time.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.last_login_time.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.last_login_time.value
+      tag: date_last_login_time_value
+      target_field: servicenow.event.last_login_time.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.last_login_time?.value != null && ctx.servicenow.event.last_login_time.value != ''
+      if: ctx.servicenow?.event?.last_login_time?.value != null && ctx.servicenow.event.last_login_time.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.last_login_time.value
@@ -433,7 +530,8 @@ processors:
       if: ctx.servicenow?.event?.user_name?.display_value != null
   - append:
       field: related.user
-      tag: append_servicenow_event_default_assignee_display_value_into_related_user
+      tag: 
+        append_servicenow_event_default_assignee_display_value_into_related_user
       value: '{{{servicenow.event.default_assignee.display_value}}}'
       allow_duplicates: false
       if: ctx.servicenow?.event?.default_assignee?.display_value != null
@@ -460,8 +558,10 @@ on_failure:
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag
+        }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message
+        }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

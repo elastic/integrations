@@ -22,26 +22,51 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.confirmed_at?.display_value != null && ctx.servicenow.event.confirmed_at.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.confirmed_at.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.confirmed_at.display_value
+      tag: date_confirmed_at_display_value
+      target_field: servicenow.event.confirmed_at.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.confirmed_at?.display_value != null && ctx.servicenow.event.confirmed_at.display_value != ''
+      if: ctx.servicenow?.event?.confirmed_at?.display_value != null && ctx.servicenow.event.confirmed_at.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.confirmed_at.display_value
@@ -56,25 +81,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.confirmed_at?.value != null && ctx.servicenow.event.confirmed_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.confirmed_at.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.confirmed_at.value
+      tag: date_confirmed_at_value
+      target_field: servicenow.event.confirmed_at.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.confirmed_at?.value != null && ctx.servicenow.event.confirmed_at.value != ''
+      if: ctx.servicenow?.event?.confirmed_at?.value != null && ctx.servicenow.event.confirmed_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.confirmed_at.value
@@ -174,26 +223,51 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.fix_at?.display_value != null && ctx.servicenow.event.fix_at.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.fix_at.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.fix_at.display_value
+      tag: date_fix_at_display_value
+      target_field: servicenow.event.fix_at.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.fix_at?.display_value != null && ctx.servicenow.event.fix_at.display_value != ''
+      if: ctx.servicenow?.event?.fix_at?.display_value != null && ctx.servicenow.event.fix_at.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.fix_at.display_value
@@ -208,25 +282,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.fix_at?.value != null && ctx.servicenow.event.fix_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.fix_at.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.fix_at.value
+      tag: date_fix_at_value
+      target_field: servicenow.event.fix_at.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.fix_at?.value != null && ctx.servicenow.event.fix_at.value != ''
+      if: ctx.servicenow?.event?.fix_at?.value != null && ctx.servicenow.event.fix_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.fix_at.value
@@ -242,26 +340,51 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.reopened_at?.display_value != null && ctx.servicenow.event.reopened_at.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.reopened_at.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.reopened_at.display_value
+      tag: date_reopened_at_display_value
+      target_field: servicenow.event.reopened_at.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.reopened_at?.display_value != null && ctx.servicenow.event.reopened_at.display_value != ''
+      if: ctx.servicenow?.event?.reopened_at?.display_value != null && ctx.servicenow.event.reopened_at.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.reopened_at.display_value
@@ -276,25 +399,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.reopened_at?.value != null && ctx.servicenow.event.reopened_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.reopened_at.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.reopened_at.value
+      tag: date_reopened_at_value
+      target_field: servicenow.event.reopened_at.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.reopened_at?.value != null && ctx.servicenow.event.reopened_at.value != ''
+      if: ctx.servicenow?.event?.reopened_at?.value != null && ctx.servicenow.event.reopened_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.reopened_at.value
@@ -322,26 +469,51 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.fix_communicated_at?.display_value != null && ctx.servicenow.event.fix_communicated_at.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.fix_communicated_at.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.fix_communicated_at.display_value
+      tag: date_fix_communicated_at_display_value
+      target_field: servicenow.event.fix_communicated_at.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.fix_communicated_at?.display_value != null && ctx.servicenow.event.fix_communicated_at.display_value != ''
+      if: ctx.servicenow?.event?.fix_communicated_at?.display_value != null && ctx.servicenow.event.fix_communicated_at.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.fix_communicated_at.display_value
@@ -356,25 +528,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.fix_communicated_at?.value != null && ctx.servicenow.event.fix_communicated_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.fix_communicated_at.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.fix_communicated_at.value
+      tag: date_fix_communicated_at_value
+      target_field: servicenow.event.fix_communicated_at.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.fix_communicated_at?.value != null && ctx.servicenow.event.fix_communicated_at.value != ''
+      if: ctx.servicenow?.event?.fix_communicated_at?.value != null && ctx.servicenow.event.fix_communicated_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.fix_communicated_at.value
@@ -390,26 +586,55 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.workaround_communicated_at?.display_value != 
+        null && ctx.servicenow.event.workaround_communicated_at.display_value !=
+        '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.workaround_communicated_at.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.workaround_communicated_at.display_value
+      tag: date_workaround_communicated_at_display_value
+      target_field: servicenow.event.workaround_communicated_at.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.workaround_communicated_at?.display_value != null && ctx.servicenow.event.workaround_communicated_at.display_value != ''
+      if: ctx.servicenow?.event?.workaround_communicated_at?.display_value != 
+        null && ctx.servicenow.event.workaround_communicated_at.display_value !=
+        '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.workaround_communicated_at.display_value
@@ -424,25 +649,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.workaround_communicated_at?.value != null && ctx.servicenow.event.workaround_communicated_at.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.workaround_communicated_at.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.workaround_communicated_at.value
+      tag: date_workaround_communicated_at_value
+      target_field: servicenow.event.workaround_communicated_at.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.workaround_communicated_at?.value != null && ctx.servicenow.event.workaround_communicated_at.value != ''
+      if: ctx.servicenow?.event?.workaround_communicated_at?.value != null && ctx.servicenow.event.workaround_communicated_at.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.workaround_communicated_at.value
@@ -460,8 +709,10 @@ on_failure:
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag
+        }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message
+        }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
