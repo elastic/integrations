@@ -1,0 +1,36 @@
+{
+  "id": "activemq_otel-high-jvm-heap-utilization",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[ActiveMQ OTel] High JVM heap utilization",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "activemq",
+      "jvm"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-activemq.otel-*\n// JVM heap metrics are broker-level (no destination dimension)\n| WHERE activemq.jvm.memory.heap.used IS NOT NULL AND activemq.jvm.memory.heap.max IS NOT NULL AND activemq.jvm.memory.heap.max > 0\n| STATS heap_used = MAX(LAST_OVER_TIME(activemq.jvm.memory.heap.used)), heap_max = MAX(LAST_OVER_TIME(activemq.jvm.memory.heap.max)) BY activemq.broker.name, host.name\n| EVAL heap_util = heap_used / heap_max\n// Alert when heap utilization exceeds 85%; adjust threshold for your environment\n| WHERE heap_util > 0.85\n| SORT heap_util DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "activemq.broker.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
