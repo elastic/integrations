@@ -73,13 +73,27 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "@timestamp": "2026-02-03T11:45:23.125Z",
+    "agent": {
+        "ephemeral_id": "e6713a3c-f7db-4012-8e92-5c8960315000",
+        "id": "4a53e83d-7ea0-45aa-a662-f6d5e65edcc1",
+        "name": "elastic-agent-76901",
+        "type": "metricbeat",
+        "version": "9.3.0"
+    },
+    "data_stream": {
+        "dataset": "redis.info",
+        "namespace": "18585",
+        "type": "metrics"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "redis.info",
-        "duration": 374411,
+        "duration": 1723943,
+        "ingested": "2026-02-03T11:45:26Z",
         "module": "redis"
     },
     "metricset": {
@@ -89,43 +103,84 @@ An example event for `info` looks as following:
     "redis": {
         "info": {
             "clients": {
-                "biggest_input_buf": 0,
                 "blocked": 0,
-                "connected": 5,
-                "longest_output_list": 0,
+                "connected": 1,
                 "max_input_buffer": 0,
                 "max_output_buffer": 0
             },
             "cluster": {
                 "enabled": false
             },
+            "commandstats": {
+                "config|get": {
+                    "calls": 2,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 3,
+                    "usec_per_call": 1.5
+                },
+                "info": {
+                    "calls": 7,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 34,
+                    "usec_per_call": 4.86
+                },
+                "ping": {
+                    "calls": 1,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 2,
+                    "usec_per_call": 2
+                },
+                "set": {
+                    "calls": 3,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 14,
+                    "usec_per_call": 4.67
+                }
+            },
             "cpu": {
                 "used": {
-                    "sys": 1.66,
+                    "sys": 0.012,
                     "sys_children": 0,
-                    "user": 0.39,
-                    "user_children": 0.01
+                    "user": 0.023,
+                    "user_children": 0.004
                 }
             },
             "memory": {
-                "active_defrag": {},
-                "allocator": "jemalloc-4.0.3",
+                "active_defrag": {
+                    "is_running": false
+                },
+                "allocator": "jemalloc-5.3.0",
                 "allocator_stats": {
-                    "fragmentation": {},
-                    "rss": {}
+                    "active": 14680064,
+                    "allocated": 5613888,
+                    "fragmentation": {
+                        "bytes": 5818304,
+                        "ratio": 2.64
+                    },
+                    "resident": 16056320,
+                    "rss": {
+                        "bytes": 1376256,
+                        "ratio": 1.09
+                    }
                 },
                 "fragmentation": {
-                    "ratio": 2.71
+                    "bytes": 20554008,
+                    "ratio": 20.16
                 },
                 "max": {
                     "policy": "noeviction",
                     "value": 0
                 },
                 "used": {
-                    "lua": 37888,
-                    "peak": 945016,
-                    "rss": 2453504,
-                    "value": 904992
+                    "dataset": 22656,
+                    "lua": 32768,
+                    "peak": 1092536,
+                    "rss": 21626880,
+                    "value": 1092536
                 }
             },
             "persistence": {
@@ -133,12 +188,11 @@ An example event for `info` looks as following:
                     "bgrewrite": {
                         "last_status": "ok"
                     },
-                    "buffer": {},
-                    "copy_on_write": {},
+                    "copy_on_write": {
+                        "last_size": 0
+                    },
                     "enabled": false,
-                    "fsync": {},
                     "rewrite": {
-                        "buffer": {},
                         "current_time": {
                             "sec": -1
                         },
@@ -148,7 +202,6 @@ An example event for `info` looks as following:
                         },
                         "scheduled": false
                     },
-                    "size": {},
                     "write": {
                         "last_status": "ok"
                     }
@@ -165,10 +218,12 @@ An example event for `info` looks as following:
                             "sec": -1
                         }
                     },
-                    "copy_on_write": {},
+                    "copy_on_write": {
+                        "last_size": 0
+                    },
                     "last_save": {
-                        "changes_since": 35,
-                        "time": 1548663522
+                        "changes_since": 3,
+                        "time": 1770119112
                     }
                 }
             },
@@ -182,64 +237,68 @@ An example event for `info` looks as following:
                 "connected_slaves": 0,
                 "master": {
                     "offset": 0,
-                    "sync": {}
+                    "second_offset": -1
                 },
-                "master_offset": 0,
-                "role": "master",
-                "slave": {}
+                "role": "master"
             },
             "server": {
                 "arch_bits": "64",
-                "build_id": "b9a4cd86ce8027d3",
+                "build_id": "b492540641d75a88",
                 "config_file": "",
-                "gcc_version": "6.4.0",
-                "git_dirty": "0",
+                "gcc_version": "14.2.0",
+                "git_dirty": "1",
                 "git_sha1": "00000000",
                 "hz": 10,
-                "lru_clock": 5159690,
+                "lru_clock": 8511443,
                 "mode": "standalone",
                 "multiplexing_api": "epoll",
-                "run_id": "0f681cb959aa47413ec40ff383715c923f9cbefd",
+                "run_id": "ee88be441848ccfe025e53771ded922d6e965d00",
                 "tcp_port": 6379,
-                "uptime": 707
+                "uptime": 11
             },
             "slowlog": {
                 "count": 0
             },
             "stats": {
-                "active_defrag": {},
-                "commands_processed": 265,
+                "active_defrag": {
+                    "hits": 0,
+                    "key_hits": 0,
+                    "key_misses": 0,
+                    "misses": 0
+                },
+                "commands_processed": 13,
                 "connections": {
-                    "received": 848,
+                    "received": 16,
                     "rejected": 0
                 },
                 "instantaneous": {
-                    "input_kbps": 0.18,
-                    "ops_per_sec": 6,
-                    "output_kbps": 1.39
+                    "input_kbps": 0,
+                    "ops_per_sec": 0,
+                    "output_kbps": 0
                 },
                 "keys": {
                     "evicted": 0,
                     "expired": 0
                 },
                 "keyspace": {
-                    "hits": 15,
+                    "hits": 0,
                     "misses": 0
                 },
                 "latest_fork_usec": 0,
                 "migrate_cached_sockets": 0,
                 "net": {
                     "input": {
-                        "bytes": 7300
+                        "bytes": 209
                     },
                     "output": {
-                        "bytes": 219632
+                        "bytes": 85
                     }
                 },
                 "pubsub": {
                     "channels": 0,
                     "patterns": 0
                 },
+                "slave_expires_tracked_keys": 0,
                 "sync": {
                     "full": 0,
                     "partial": {
@@ -251,8 +310,9 @@ An example event for `info` looks as following:
         }
     },
     "service": {
-        "address": "localhost:6379",
-        "type": "redis"
+        "address": "redis://svc-redis:6379",
+        "type": "redis",
+        "version": "8.2.3"
     }
 }
 ```
@@ -292,6 +352,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.clients.max_input_buffer | Biggest input buffer among current client connections (on redis 5.0). | long | gauge |
 | redis.info.clients.max_output_buffer | Longest output list among current client connections. | long | gauge |
 | redis.info.cluster.enabled | Indicates that the Redis cluster is enabled. | boolean |  |
+| redis.info.commandstats.\*.calls | The number of calls that reached command execution (not rejected). | long |  |
+| redis.info.commandstats.\*.failed_calls | The number of failed calls (on redis 6.2-rc2). | long |  |
+| redis.info.commandstats.\*.rejected_calls | The number of rejected calls (on redis 6.2-rc2). | long |  |
+| redis.info.commandstats.\*.usec | The total CPU time consumed by these commands. | long |  |
+| redis.info.commandstats.\*.usec_per_call | The average CPU consumed per command execution. | float |  |
 | redis.info.cpu.used.sys | System CPU consumed by the Redis server. | scaled_float | gauge |
 | redis.info.cpu.used.sys_children | User CPU consumed by the Redis server. | scaled_float | gauge |
 | redis.info.cpu.used.user | System CPU consumed by the background processes. | scaled_float | gauge |
@@ -309,11 +374,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.memory.fragmentation.ratio | Ratio between used_memory_rss and used_memory | float | gauge |
 | redis.info.memory.max.policy | Eviction policy to use when memory limit is reached. | keyword |  |
 | redis.info.memory.max.value | Memory limit. | long | gauge |
+| redis.info.memory.total_system | Total amount in bytes of memory available to Redis. | long |  |
 | redis.info.memory.used.dataset | The size in bytes of the dataset | long | gauge |
-| redis.info.memory.used.lua | Used memory by the Lua engine. | long | gauge |
+| redis.info.memory.used.functions | Memory overhead from Functions (part of used_memory). Added in Redis 7.0. | long |  |
+| redis.info.memory.used.lua | Used memory by the Lua engine. Deprecated in Redis 7.0; use vm.eval instead. | long | gauge |
 | redis.info.memory.used.peak | Peak memory consumed by Redis. | long | gauge |
 | redis.info.memory.used.rss | Number of bytes that Redis allocated as seen by the operating system (a.k.a resident set size). | long | gauge |
+| redis.info.memory.used.scripts | Combined memory overhead from EVAL scripts and Functions (part of used_memory). Added in Redis 7.0. | long |  |
+| redis.info.memory.used.scripts_eval | Memory overhead from EVAL scripts (part of used_memory). Added in Redis 7.0. | long |  |
 | redis.info.memory.used.value | Total number of bytes allocated by Redis. | long | gauge |
+| redis.info.memory.vm.eval | Number of bytes used by the script VM engines for EVAL framework. This is the replacement for used_memory_lua. | long |  |
+| redis.info.memory.vm.functions | Number of bytes used by the script VM engines for Functions framework. | long |  |
+| redis.info.memory.vm.total | Total VM memory (vm.eval + vm.functions). | long |  |
 | redis.info.persistence.aof.bgrewrite.last_status | Status of the last AOF rewrite operatio | keyword |  |
 | redis.info.persistence.aof.buffer.size | Size of the AOF buffer | long | gauge |
 | redis.info.persistence.aof.copy_on_write.last_size | The size in bytes of copy-on-write allocations during the last RBD save operation | long | gauge |
@@ -363,6 +435,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.server.lru_clock |  | long |  |
 | redis.info.server.mode |  | keyword |  |
 | redis.info.server.multiplexing_api |  | keyword |  |
+| redis.info.server.number_of_cached_scripts | Number of EVAL scripts cached by the server. Added in Redis 7.0. | long |  |
+| redis.info.server.number_of_functions | Number of Functions loaded. Added in Redis 7.0. | long |  |
+| redis.info.server.number_of_libraries | Number of Function libraries loaded. Added in Redis 7.0. | long |  |
 | redis.info.server.run_id |  | keyword |  |
 | redis.info.server.tcp_port |  | long |  |
 | redis.info.server.uptime |  | long | gauge |
@@ -391,6 +466,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long | gauge |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long | gauge |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long | gauge |
+| redis.info.stats.tracking.total_items | Number of items (sum of clients per tracked key). | long |  |
+| redis.info.stats.tracking.total_keys | Number of keys being tracked by the server. | long |  |
+| redis.info.stats.tracking.total_prefixes | Number of tracked prefixes in the server's prefix table (broadcast mode only). | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
@@ -411,13 +489,15 @@ An example event for `key` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "@timestamp": "2025-12-31T13:20:46.958Z",
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "redis.key",
-        "duration": 374411,
+        "duration": 9857625,
+        "ingested": "2025-12-31T13:20:48Z",
         "module": "redis"
     },
     "metricset": {
@@ -427,16 +507,19 @@ An example event for `key` looks as following:
     "redis": {
         "key": {
             "expire": {
-                "ttl": 360
+                "ttl": -1
             },
-            "id": "0:foo",
-            "length": 3,
-            "name": "foo",
+            "id": "0:test",
+            "length": 1,
+            "name": "test",
             "type": "string"
+        },
+        "keyspace": {
+            "id": "db0"
         }
     },
     "service": {
-        "address": "localhost:6379",
+        "address": "redis://127.0.0.1:6379",
         "type": "redis"
     }
 }
@@ -473,6 +556,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long | gauge |
 | redis.key.name | Key name. | keyword |  |
 | redis.key.type | Key type as shown by `TYPE` command. | keyword |  |
+| redis.keyspace.id | Keyspace identifier. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
@@ -543,4 +627,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.keyspace.expires |  | long |  |
 | redis.keyspace.id | Keyspace identifier. | keyword |  |
 | redis.keyspace.keys | Number of keys in the keyspace. | long |  |
+| redis.keyspace.subexpiry | Number of sub-keys with an expiry set (0 when not reported). | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
