@@ -1,0 +1,252 @@
+---
+# data_stream/alerts/fields/fields.yml
+
+# Geo location fields (not ECS-reusable at top level)
+- name: geo
+  type: group
+  description: Estimated event location
+  fields:
+    - name: location
+      type: geo_point
+      description: Geo-point location (lat/lon)
+    - name: name
+      type: keyword
+      description: Location name
+
+- name: dataminr_pulse
+  type: group
+  fields:
+    - name: cursor_used
+      type: keyword
+      description: Pagination cursor used to fetch this alert
+    - name: alert_type
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Alert priority level (Alert, Urgent, Flash)
+    - name: categories
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Topic name
+    - name: companies
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Company name
+    - name: sectors
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Sector name
+    - name: source
+      type: group
+      fields:
+        - name: href
+          type: keyword
+          description: URL to public post
+        - name: channels
+          type: keyword
+          description: Source channels
+        - name: media
+          type: group
+          description: Media attachments
+          fields:
+            - name: href
+              type: keyword
+              description: Media attachment URL
+    - name: intel_agents
+      type: group
+      description: AI-generated critical context
+      fields:
+        - name: summary
+          type: keyword
+          description: Intel Agent summary
+    - name: is_main
+      type: keyword
+      description: Indicates if this is the master document for this alert_id (yes/no)
+    - name: live_brief
+      type: group
+      fields:
+        - name: summary
+          type: keyword
+          description: Live Brief summary
+        - name: version
+          type: keyword
+          description: Live Brief version
+        - name: timestamp
+          type: date
+          description: Live Brief timestamp
+    - name: watchlists_matched_by_type
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Watchlist name
+    - name: log
+      type: group
+      description: Operational log fields for auth and alert-fetch events
+      fields:
+        - name: log_type
+          type: keyword
+          description: Type of log entry (auth or alert-fetch)
+        - name: status
+          type: keyword
+          description: Status of operation (success or failed)
+        - name: http_status_code
+          type: long
+          description: HTTP response status code
+        - name: error_message
+          type: text
+          description: Error message for failed operations
+        - name: client_id
+          type: keyword
+          description: Client ID used for authentication
+        - name: retry_number
+          type: long
+          description: Retry attempt number (0 for no retries)
+        - name: expires_at
+          type: date
+          description: Token expiration timestamp in milliseconds
+        - name: api_endpoint
+          type: keyword
+          description: Full API endpoint URL used for alert fetching
+        - name: input_alert_fetch_count
+          type: long
+          description: Number of alerts requested (page size)
+        - name: next_cursor
+          type: keyword
+          description: Next cursor received from API for pagination
+        - name: count_of_alerts
+          type: long
+          description: Number of alerts returned in the response
+        - name: fetched_alerts
+          type: long
+          description: Number of alerts fetched in the batch
+        - name: fetch_timestamp
+          type: date
+          description: Timestamp when the API call was made
+        - name: response_body
+          type: text
+          description: Raw response body for failed requests
+        - name: error_code
+          type: long
+          description: Error code from API error response
+
+    - name: discovered_entity
+      type: group
+      description: Discovered entity from the alert (when alerts are expanded by entities)
+      fields:
+        - name: type
+          type: keyword
+          description: Entity type (e.g., ipAddress, vulnerability, threatActor)
+        - name: value
+          type: keyword
+          description: Entity identifier value
+
+        # IP Address entity fields
+        - name: ip
+          type: ip
+          description: IP address (for ipAddress type entities)
+        - name: ports
+          type: long
+          description: Associated ports
+        - name: geo_ip_mapping
+          type: group
+          description: Geographic IP mapping information
+          fields:
+            - name: city
+              type: keyword
+              description: City location
+            - name: country
+              type: keyword
+              description: Country code
+            - name: region
+              type: keyword
+              description: Region code
+        - name: cyber_asset_lifecycle
+          type: group
+          description: Cyber Asset Lifecycle information
+          fields:
+            - name: status
+              type: keyword
+              description: Status (e.g., Unassigned)
+            - name: impact_factors
+              type: keyword
+              description: Impact factors
+            - name: classifiers
+              type: keyword
+              description: Classifiers
+
+        # Threat actor entity fields
+        - name: aliases
+          type: keyword
+          description: Threat actor aliases
+
+        # Vulnerability entity fields
+        - name: cve
+          type: keyword
+          description: CVE identifier for the vulnerability
+        - name: summary
+          type: text
+          description: Detailed summary of the vulnerability
+        - name: known_exploited_date
+          type: date
+          description: Date when vulnerability was known to be exploited
+
+        # Malware entity fields
+        - name: affected_operating_systems
+          type: keyword
+          description: Affected operating systems for malware entities
+
+        # Threat actor additional fields
+        - name: country_of_origin
+          type: keyword
+          description: Countries of origin for threat actor entities
+
+    - name: entity_type
+      type: keyword
+      description: Entity type from the alert (e.g., vulnerability, threatActor, url-ipAddress)
+
+    - name: ip
+      type: ip
+      description: Extracted IP addresses from discovered entities
+
+    - name: url
+      type: keyword
+      description: Extracted URLs from discovered entities (refanged)
+
+    - name: malware
+      type: keyword
+      description: Extracted malware names from discovered entities
+
+    - name: platforms
+      type: keyword
+      description: Affected operating systems/platforms from malware entities
+
+    - name: threatactor
+      type: group
+      description: All threat actors discovered in the alert (custom field for correlation)
+      fields:
+        - name: name
+          type: keyword
+          description: Threat actor name
+        - name: alias
+          type: keyword
+          description: Threat actor aliases
+        - name: country_of_origin
+          type: keyword
+          description: Threat actor countries of origin
+
+    - name: vulnerability
+      type: group
+      description: All vulnerabilities discovered in the alert (custom field for correlation)
+      fields:
+        - name: name
+          type: keyword
+          description: Vulnerability identifiers (CVE IDs)
+

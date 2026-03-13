@@ -1,0 +1,51 @@
+# Use the existing managed stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+! stderr .
+
+# Install the data stream's pipeline.
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+stdout '^installed pipelines in '${DATA_STREAM}' with nonce'
+
+# Simulate a basic alert event and verify ECS mappings.
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data-alert.json
+! stderr .
+stdout '"@timestamp": "2026-01-15T10:00:00.000Z"'
+stdout '"message": "Test vulnerability alert"'
+stdout '"severity": 90'
+stdout '"kind": "alert"'
+stdout '"id": "test-alert-001"'
+
+# Simulate an entity event and verify discovered_entity mapping.
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data-entity.json
+! stderr .
+stdout '"discovered_entity"'
+stdout '"cve": "CVE-2026-9999"'
+stdout '"value": "CVE-2026-9999"'
+stdout '"is_main": "yes"'
+
+# Simulate an event with geo coordinates and verify lat/lon mapping.
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data-geo.json
+! stderr .
+stdout '"lat": 40.7128'
+stdout '"lon": -74.006'
+stdout '"name": "New York, NY, USA"'
+
+# Simulate an event without geo coordinates and verify no geo fields.
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data-no-geo.json
+! stderr .
+! stdout '"geo"'
+
+# Uninstall pipelines.
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+stdout '^uninstalled pipelines in '${DATA_STREAM}
+
+-- data-alert.json --
+{"message": "{\"headline\":\"Test vulnerability alert\",\"alertId\":\"test-alert-001\",\"alertType\":{\"name\":\"Flash\"},\"alertTimestamp\":\"2026-01-15T10:00:00.000Z\",\"publicPost\":{\"timestamp\":\"2026-01-15T09:59:00.000Z\",\"channels\":[\"chatter\"],\"href\":\"https://r.dataminr.com/test1\"},\"alertTopics\":[{\"id\":\"100\",\"name\":\"Vulnerability Disclosure\"}],\"listsMatched\":[{\"id\":\"1\",\"name\":\"Cyber\",\"topicIds\":[\"100\"],\"subType\":\"DIGITAL_RISK\"}],\"dataminrAlertUrl\":\"https://app.dataminr.com/#alertDetail/5/test-alert-001\"}"}
+-- data-entity.json --
+{"message": "{\"headline\":\"Entity event with discovered entity\",\"alertId\":\"test-entity-001\",\"alertType\":{\"name\":\"Flash\"},\"alertTimestamp\":\"2026-01-15T10:00:00.000Z\",\"publicPost\":{\"timestamp\":\"2026-01-15T09:59:00.000Z\",\"channels\":[\"chatter\"],\"href\":\"https://r.dataminr.com/test2\"},\"alertTopics\":[{\"id\":\"100\",\"name\":\"Vulnerability Disclosure\"}],\"listsMatched\":[{\"id\":\"1\",\"name\":\"Cyber\",\"topicIds\":[\"100\"],\"subType\":\"DIGITAL_RISK\"}],\"dataminrAlertUrl\":\"https://app.dataminr.com/#alertDetail/5/test-entity-001\",\"discovered_entity\":{\"type\":\"vulnerability\",\"name\":\"CVE-2026-9999\",\"cve\":\"CVE-2026-9999\",\"cvss\":8.5,\"summary\":\"Test vulnerability\"},\"discoveredentity_type\":\"vulnerability\",\"discoveredentity_value\":\"CVE-2026-9999\",\"entityType\":\"vulnerability\",\"is_main\":\"yes\",\"intelAgents\":[{\"summary\":\"Test summary\",\"timestamp\":\"2026-01-15T10:00:30.000Z\",\"version\":\"1.0\",\"discoveredEntities\":[{\"type\":\"vulnerability\",\"name\":\"CVE-2026-9999\",\"cve\":\"CVE-2026-9999\",\"cvss\":8.5,\"summary\":\"Test vulnerability\"}]}]}"}
+-- data-geo.json --
+{"message": "{\"headline\":\"Geo test alert\",\"alertId\":\"test-geo-001\",\"alertType\":{\"name\":\"Flash\"},\"alertTimestamp\":\"2026-01-15T10:00:00.000Z\",\"publicPost\":{\"timestamp\":\"2026-01-15T09:59:00.000Z\",\"channels\":[\"chatter\"],\"href\":\"https://r.dataminr.com/geo1\"},\"alertTopics\":[{\"id\":\"100\",\"name\":\"Test\"}],\"listsMatched\":[{\"id\":\"1\",\"name\":\"Cyber\",\"topicIds\":[\"100\"],\"subType\":\"DIGITAL_RISK\"}],\"dataminrAlertUrl\":\"https://app.dataminr.com/#alertDetail/5/test-geo-001\",\"estimatedEventLocation\":{\"name\":\"New York, NY, USA\",\"coordinates\":[40.7128,-74.006],\"probabilityRadius\":0.5}}"}
+-- data-no-geo.json --
+{"message": "{\"headline\":\"No geo alert\",\"alertId\":\"test-nogeo-001\",\"alertType\":{\"name\":\"Flash\"},\"alertTimestamp\":\"2026-01-15T10:00:00.000Z\",\"publicPost\":{\"timestamp\":\"2026-01-15T09:59:00.000Z\",\"channels\":[\"chatter\"],\"href\":\"https://r.dataminr.com/nogeo1\"},\"alertTopics\":[{\"id\":\"100\",\"name\":\"Test\"}],\"listsMatched\":[{\"id\":\"1\",\"name\":\"Cyber\",\"topicIds\":[\"100\"],\"subType\":\"DIGITAL_RISK\"}],\"dataminrAlertUrl\":\"https://app.dataminr.com/#alertDetail/5/test-nogeo-001\"}"}
