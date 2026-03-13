@@ -45,6 +45,19 @@ receivers:
     password: <RABBITMQ_PASSWORD>
     collection_interval: 10s
     metrics:
+      # Queue-level metrics — required for dashboards, alerts, and SLOs
+      rabbitmq.message.current:
+        enabled: true
+      rabbitmq.message.published:
+        enabled: true
+      rabbitmq.message.acknowledged:
+        enabled: true
+      rabbitmq.message.delivered:
+        enabled: true
+      rabbitmq.message.dropped:
+        enabled: true
+      rabbitmq.consumer.count:
+        enabled: true
       # Node-level metrics disabled by default — required for dashboards and alerts
       rabbitmq.node.mem_used:
         enabled: true
@@ -87,7 +100,7 @@ service:
       exporters: [elasticsearch/otel]
 ```
 
-> **Note**: The Overview and Nodes dashboards and the memory/disk alarm alert rules require node-level metrics (e.g. `rabbitmq.node.mem_alarm`, `rabbitmq.node.disk_free_alarm`). If your receiver version has these disabled by default, enable them in the receiver configuration per the upstream documentation.
+> **Note**: The dashboards, alert rules, and SLO templates require queue-level metrics (`rabbitmq.message.current`, `rabbitmq.message.published`, `rabbitmq.message.acknowledged`, `rabbitmq.message.delivered`, `rabbitmq.message.dropped`, `rabbitmq.consumer.count`) to be enabled. The Overview and Nodes dashboards and the memory/disk alarm alert rules additionally require node-level metrics (e.g. `rabbitmq.node.mem_alarm`, `rabbitmq.node.disk_free_alarm`). If your receiver version has these disabled by default, enable them in the receiver configuration per the upstream documentation.
 
 > **Note**: If your RabbitMQ cluster has multiple nodes, configure the receiver endpoint to reach the Management API for each node you want to monitor, or use a load balancer that aggregates node data.
 
