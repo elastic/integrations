@@ -1,0 +1,43 @@
+{
+    "id": "vsphere_otel-host-disk-latency-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[vSphere OTel] Host disk latency high",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vsphere",
+            "vcenter",
+            "storage"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-vcenterreceiver.otel-*\n// Host disk latency max (ms): healthy <15ms; unhealthy >30ms\n// Uses max latency per object; use vcenter.host.disk.latency.avg if available for finer granularity\n// Adjust threshold to suit storage tier\n| WHERE vcenter.host.disk.latency.max IS NOT NULL AND vcenter.host.disk.latency.max > 15\n| STATS latency_ms = MAX(vcenter.host.disk.latency.max) BY vcenter.datacenter.name, vcenter.cluster.name, vcenter.host.name, attributes.object\n| SORT latency_ms DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vcenter.host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
