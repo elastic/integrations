@@ -1,0 +1,43 @@
+{
+    "id": "vsphere_otel-host-power-state-unhealthy",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[vSphere OTel] Host power state unhealthy",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vsphere",
+            "vcenter",
+            "availability"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-vcenterreceiver.otel-*\n// Datacenter host count by power_state: off or standby indicates problems\n// May indicate hardware failure or unplanned maintenance\n// Excludes \"on\" and \"unknown\"; adjust if unknown should be included\n| WHERE vcenter.datacenter.host.count IS NOT NULL\n  AND attributes.power_state IN (\"off\", \"standby\")\n  AND vcenter.datacenter.host.count > 0\n| STATS host_count = MAX(vcenter.datacenter.host.count) BY vcenter.datacenter.name, attributes.power_state\n| SORT host_count DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vcenter.datacenter.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
