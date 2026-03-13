@@ -4,9 +4,19 @@ This integration periodically fetches logs and metrics from [PostgreSQL](https:/
 
 ## Compatibility
 
-The `log` integration was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
+### Logs
 
-The `activity`, `bgwriter`, `database` and `statement` integrations were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
+- **Plain text logs**: tested with PostgreSQL **9.5** (Ubuntu), **9.6** (Debian), and **10.11 / 11.4 / 12.2** (Arch Linux 9.3).
+- **CSV logs**: tested with PostgreSQL **11** and **13**.
+
+### Metrics
+
+- **activity / bgwriter / database / statement**: tested with PostgreSQL **9.5.3** and expected to work with **PostgreSQL >= 9**.
+- **checkpointer**: introduced in PostgreSQL **17** and requires **PostgreSQL >= 17**.
+
+### PostgreSQL 17+ note (bgwriter vs checkpointer)
+
+Starting with PostgreSQL **17**, some **checkpoint-related** fields that were previously available via `pg_stat_bgwriter` (and reported in the `bgwriter` dataset) were moved into the `checkpointer` dataset.
 
 ## Logs
 
@@ -105,6 +115,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The PostgreSQL `bgwriter` dataset collects data from PostgreSQL by running a `SELECT * FROM pg_stat_bgwriter;` SQL query.
 
+Note (PostgreSQL 17+): checkpoint-related fields are no longer surfaced in `pg_stat_bgwriter`. Starting with PostgreSQL 17, these checkpoint metrics are exposed separately and are collected by the `checkpointer` dataset in this integration.
+
 {{event "bgwriter"}}
 
 **ECS Field Reference**
@@ -112,6 +124,18 @@ The PostgreSQL `bgwriter` dataset collects data from PostgreSQL by running a `SE
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "bgwriter"}}
+
+### checkpointer
+
+The PostgreSQL `checkpointer` dataset collects checkpoint metrics introduced in PostgreSQL 17 to keep checkpoint-related fields supported going forward.
+
+{{event "checkpointer"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "checkpointer"}}
 
 ### database
 
