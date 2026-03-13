@@ -172,6 +172,7 @@ This is the `User` dataset.
 | entityanalytics_ad.user.locked | True if the account is locked out. | boolean |
 | entityanalytics_ad.user.logon_count |  | keyword |
 | entityanalytics_ad.user.logon_script_enabled | True if a logon script is configured for the account. | boolean |
+| entityanalytics_ad.user.mail | The user's email address from Active Directory. | keyword |
 | entityanalytics_ad.user.member_of |  | keyword |
 | entityanalytics_ad.user.msDS-\* |  | keyword |
 | entityanalytics_ad.user.name |  | keyword |
@@ -194,6 +195,7 @@ This is the `User` dataset.
 | entityanalytics_ad.user.unconstrained_delegation | True if the account is trusted for unconstrained delegation. | boolean |
 | entityanalytics_ad.user.use_des_key_only | True if the account is configured to only use DES encryption. | boolean |
 | entityanalytics_ad.user.user_account_control |  | keyword |
+| entityanalytics_ad.user.user_principal_name | The user's login name in UPN format (for example, user@domain.com). | keyword |
 | entityanalytics_ad.user.usn_changed |  | keyword |
 | entityanalytics_ad.user.usn_created |  | keyword |
 | entityanalytics_ad.user.when_changed |  | date |
