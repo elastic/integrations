@@ -6,9 +6,12 @@ This content pack provides dashboards, alert rules, and SLO templates for monito
 
 ## Compatibility
 
-The etcd OpenTelemetry assets have been tested with the OpenTelemetry Collector Prometheus receiver scraping etcd's native metrics endpoint.
+The etcd OpenTelemetry assets have been tested with:
 
-etcd versions tested against:
+- OpenTelemetry Collector Prometheus receiver with EDOT Collector v9.2.1
+- OpenTelemetry Collector Prometheus receiver with OpenTelemetry Collector Contrib
+
+etcd tested against:
 
 - etcd 3.5.x
 
