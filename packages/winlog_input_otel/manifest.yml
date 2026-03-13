@@ -1,0 +1,47 @@
+format_version: 3.5.0
+name: winlog_otel_input
+title: "Windows Event Log OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Windows Event Log OpenTelemetry Input Package"
+type: input
+categories:
+  - custom
+  - os_system
+  - security
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_windows.svg
+    title: Windows Event Log logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: windowseventlogreceiver
+    type: logs
+    title: Windows Event Log OpenTelemetry Input
+    description: Collect Windows event logs using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: channel
+        type: text
+        required: true
+        title: Channel Name
+        description: Name of Windows event log channel (e.g. Application, Security, System, or Microsoft-Windows-PowerShell/Operational). To collect multiple channels, add multiple integrations.
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: Dataset to write data to. Changing the dataset will send the data to a different index.
+        default: winlog.winlog
+        required: false
+        show_user: true
+owner:
+  github: elastic/ecosystem
+  type: elastic
