@@ -1004,11 +1004,21 @@ processors:
       field: source.ip
       copy_from: trend_micro_vision_one.telemetry.src
       if: ctx.trend_micro_vision_one?.telemetry?.src != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
   - set:
       tag: set_destination_ip
       field: destination.ip
       copy_from: trend_micro_vision_one.telemetry.dst
       if: ctx.trend_micro_vision_one?.telemetry?.dst != null
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      ignore_missing: true
 
   # tags
   - foreach:

@@ -680,6 +680,11 @@ processors:
       tag: set_@timestamp_from_updated_date
       copy_from: trend_micro_vision_one.alert.updated_date
       ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_model
+      copy_from: trend_micro_vision_one.alert.model
+      ignore_empty_value: true
 
   # event.*
   - set:
@@ -785,6 +790,11 @@ processors:
                   tag: append_threat_technique_id
                   value: '{{{_ingest._value}}}'
                   allow_duplicates: false
+  - set:
+      field: threat.framework
+      tag: set_threat_framework
+      value: MITRE ATT&CK
+      if: ctx.threat?.technique?.id != null
 
   # related.*
   - foreach:

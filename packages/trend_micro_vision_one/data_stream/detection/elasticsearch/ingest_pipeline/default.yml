@@ -756,6 +756,20 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      field: trend_micro_vision_one.detection.endpoint.ip
+      tag: convert_endpoint_ip_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_detection_endpoint_ip_b8088d26
+            field: trend_micro_vision_one.detection.endpoint.ip
+            ignore_missing: true
+        - append:
+            tag: append_error_message_b8088d26
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: trend_micro_vision_one.detection.destination.ip
       tag: convert_destination_ip_to_ip
       type: ip
@@ -1001,6 +1015,20 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      field: trend_micro_vision_one.detection.severity_level
+      tag: convert_severity_level_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_detection_severity_level
+            field: trend_micro_vision_one.detection.severity_level
+            ignore_missing: true
+        - append:
+            tag: append_error_message_4868bdc5
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: trend_micro_vision_one.detection.rt_hour
       tag: convert_rt_hour_to_long
       type: long
@@ -1182,6 +1210,11 @@ processors:
       tag: set_@timestamp_from_event_time
       copy_from: trend_micro_vision_one.detection.event_time
       ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_rule_name
+      copy_from: trend_micro_vision_one.detection.rule_name
+      ignore_empty_value: true
 
   # event.*
   - set:
@@ -1209,11 +1242,6 @@ processors:
       field: event.id
       tag: set_event_id_from_event_id
       copy_from: trend_micro_vision_one.detection.event_id
-      ignore_empty_value: true
-  - set:
-      field: event.severity
-      tag: set_event_severity_from_severity_level
-      copy_from: trend_micro_vision_one.detection.severity_level
       ignore_empty_value: true
 
   # destination.*
@@ -1451,6 +1479,11 @@ processors:
           tag: append_threat_tactic_id_into_threat_tactic_id
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - set:
+      field: threat.framework
+      tag: set_threat_framework
+      value: MITRE ATT&CK
+      if: ctx.threat?.tactic?.id != null
 
   # user.*
   - set:
@@ -1738,7 +1771,6 @@ processors:
         - trend_micro_vision_one.detection.endpoint.mac
         - trend_micro_vision_one.detection.endpoint.hostname
         - trend_micro_vision_one.detection.http_referer
-        - trend_micro_vision_one.detection.severity_level
         - trend_micro_vision_one.detection.device.direction
         - trend_micro_vision_one.detection.protocol
         - trend_micro_vision_one.detection.device.host

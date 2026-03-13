@@ -287,6 +287,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a996b448
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -418,6 +419,20 @@ processors:
             ignore_missing: true
         - append:
             tag: append_error_message_d38d7220
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.endpoint_activity.destination.address
+      tag: convert_destination_address_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_destination_address_0e2862e8
+            field: trend_micro_vision_one.endpoint_activity.destination.address
+            ignore_missing: true
+        - append:
+            tag: append_error_message_0e2862e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1061,6 +1076,16 @@ processors:
       copy_from: trend_micro_vision_one.endpoint_activity.destination.address
       ignore_empty_value: true
   - set:
+      field: destination.ip
+      tag: set_destination_ip_from_destination_address
+      copy_from: trend_micro_vision_one.endpoint_activity.destination.address
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      ignore_missing: true
+  - set:
       field: destination.port
       tag: set_destination_port_from_destination_port
       copy_from: trend_micro_vision_one.endpoint_activity.destination.port
@@ -1099,6 +1124,11 @@ processors:
       tag: set_source_ip_from_source_ip
       copy_from: trend_micro_vision_one.endpoint_activity.source.ip
       ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
   - set:
       field: source.port
       tag: set_source_port_from_source_port

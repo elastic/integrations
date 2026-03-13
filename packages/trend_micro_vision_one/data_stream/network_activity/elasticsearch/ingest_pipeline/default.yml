@@ -319,6 +319,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_ed828fc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -565,6 +566,11 @@ processors:
       tag: set_client_ip_from_client_ip
       copy_from: trend_micro_vision_one.network_activity.client.ip
       ignore_empty_value: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      tag: geoip_client_ip
+      ignore_missing: true
 
   # source.*
   - set:
@@ -572,6 +578,11 @@ processors:
       tag: set_source_ip_from_source_ip
       copy_from: trend_micro_vision_one.network_activity.source.ip
       ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
   - set:
       field: source.port
       tag: set_source_port_from_source_port
@@ -584,6 +595,11 @@ processors:
       tag: set_destination_ip_from_destination_ip
       copy_from: trend_micro_vision_one.network_activity.destination.ip
       ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      ignore_missing: true
   - set:
       field: destination.port
       tag: set_destination_port_from_destination_port
