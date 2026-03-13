@@ -1,0 +1,71 @@
+{
+  "attributes": {
+    "name": "[Apache OTEL] Average request latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the average request latency of Apache HTTP Server via OTel metrics, ensuring that 99.5% of 1-minute time intervals show average per-request processing time below 200 milliseconds over a rolling period of 30 days to maintain responsive web serving for clients.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"apachereceiver.otel\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "apache.request.time",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "apache.request.time",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "apache.requests",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "apache.requests",
+              "filter": ""
+            }
+          ],
+          "equation": "(A-B)/(C-D)",
+          "comparator": "LT",
+          "threshold": 200
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "apache",
+      "otel"
+    ],
+    "groupBy": [
+      "apache.server.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-b536d9d2-90f0-4177-a92e-adbe6e12427d"
+        }
+      ]
+    }
+  },
+  "id": "apache_otel-avg-request-latency-99.5-rolling30days",
+  "type": "slo_template"
+}
