@@ -1,0 +1,201 @@
+---
+description: Pipeline for Proxmox VE node metrics
+processors:
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  # CEL input sets event.module and event.dataset — override for TSDB constant_keyword
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: proxmox
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: proxmox.node
+
+  # Set cluster name from CEL-injected field (available on all events)
+  - set:
+      tag: set_cluster_name
+      if: ctx.proxmox_cluster_name != null && ctx.proxmox_cluster_name != ''
+      field: proxmox.cluster.name
+      value: "{{proxmox_cluster_name}}"
+  - remove:
+      tag: remove_proxmox_cluster_name
+      field: proxmox_cluster_name
+      ignore_missing: true
+
+  # Parse JSON message from CEL input
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.json
+
+  # CPU and load
+  - convert:
+      tag: convert_cpu
+      if: ctx._temp?.json?.cpu != null
+      field: _temp.json.cpu
+      target_field: proxmox.node.cpu
+      type: double
+      ignore_failure: true
+  - convert:
+      tag: convert_wait
+      if: ctx._temp?.json?.wait != null
+      field: _temp.json.wait
+      target_field: proxmox.node.wait
+      type: double
+      ignore_failure: true
+  - script:
+      tag: script_parse_loadavg
+      lang: painless
+      if: ctx._temp?.json?.loadavg != null
+      source: |
+        def la = ctx._temp.json.loadavg;
+        if (ctx.proxmox == null) ctx.proxmox = new HashMap();
+        if (ctx.proxmox.node == null) ctx.proxmox.node = new HashMap();
+        if (ctx.proxmox.node.loadavg == null) ctx.proxmox.node.loadavg = new HashMap();
+        if (la instanceof List && la.size() >= 3) {
+          ctx.proxmox.node.loadavg.put('1m', Double.parseDouble(la.get(0).toString()));
+          ctx.proxmox.node.loadavg.put('5m', Double.parseDouble(la.get(1).toString()));
+          ctx.proxmox.node.loadavg.put('15m', Double.parseDouble(la.get(2).toString()));
+        }
+
+  # Memory
+  - convert:
+      tag: convert_memory_total
+      if: ctx._temp?.json?.memory?.total != null
+      field: _temp.json.memory.total
+      target_field: proxmox.node.memory.total
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_memory_used
+      if: ctx._temp?.json?.memory?.used != null
+      field: _temp.json.memory.used
+      target_field: proxmox.node.memory.used
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_memory_free
+      if: ctx._temp?.json?.memory?.free != null
+      field: _temp.json.memory.free
+      target_field: proxmox.node.memory.free
+      type: long
+      ignore_failure: true
+
+  # Swap
+  - convert:
+      tag: convert_swap_total
+      if: ctx._temp?.json?.swap?.total != null
+      field: _temp.json.swap.total
+      target_field: proxmox.node.swap.total
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_swap_used
+      if: ctx._temp?.json?.swap?.used != null
+      field: _temp.json.swap.used
+      target_field: proxmox.node.swap.used
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_swap_free
+      if: ctx._temp?.json?.swap?.free != null
+      field: _temp.json.swap.free
+      target_field: proxmox.node.swap.free
+      type: long
+      ignore_failure: true
+
+  # Root filesystem
+  - convert:
+      tag: convert_rootfs_total
+      if: ctx._temp?.json?.rootfs?.total != null
+      field: _temp.json.rootfs.total
+      target_field: proxmox.node.rootfs.total
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_rootfs_used
+      if: ctx._temp?.json?.rootfs?.used != null
+      field: _temp.json.rootfs.used
+      target_field: proxmox.node.rootfs.used
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_rootfs_avail
+      if: ctx._temp?.json?.rootfs?.avail != null
+      field: _temp.json.rootfs.avail
+      target_field: proxmox.node.rootfs.avail
+      type: long
+      ignore_failure: true
+
+  # Uptime and versions
+  - convert:
+      tag: convert_uptime
+      if: ctx._temp?.json?.uptime != null
+      field: _temp.json.uptime
+      target_field: proxmox.node.uptime
+      type: long
+      ignore_failure: true
+  - set:
+      tag: set_pveversion
+      if: ctx._temp?.json?.pveversion != null
+      field: proxmox.node.pveversion
+      value: "{{_temp.json.pveversion}}"
+  - set:
+      tag: set_kversion
+      if: ctx._temp?.json?.kversion != null
+      field: proxmox.node.kversion
+      value: "{{_temp.json.kversion}}"
+
+  # CPU info
+  - set:
+      tag: set_cpuinfo_model
+      if: ctx._temp?.json?.cpuinfo?.model != null
+      field: proxmox.node.cpuinfo.model
+      value: "{{_temp.json.cpuinfo.model}}"
+  - convert:
+      tag: convert_cpuinfo_cores
+      if: ctx._temp?.json?.cpuinfo?.cores != null
+      field: _temp.json.cpuinfo.cores
+      target_field: proxmox.node.cpuinfo.cores
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_cpuinfo_sockets
+      if: ctx._temp?.json?.cpuinfo?.sockets != null
+      field: _temp.json.cpuinfo.sockets
+      target_field: proxmox.node.cpuinfo.sockets
+      type: long
+      ignore_failure: true
+
+  # Compute available memory (total - used)
+  - script:
+      tag: script_compute_memory_available
+      lang: painless
+      if: ctx.proxmox?.node?.memory?.total != null && ctx.proxmox?.node?.memory?.used != null
+      source: |
+        ctx.proxmox.node.memory.available = ctx.proxmox.node.memory.total - ctx.proxmox.node.memory.used;
+
+  # Clean up
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"
