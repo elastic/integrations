@@ -1,0 +1,246 @@
+---
+description: Pipeline for processing Bitdefender IP reputation threat indicators
+processors:
+  # ------------------------------------------------------------------
+  # Drop revoked indicators (future-proof)
+  # ------------------------------------------------------------------
+  - drop:
+      if: ctx.revoked == true
+
+  # ------------------------------------------------------------------
+  # Core event metadata (REQUIRED for TI integrations)
+  # ------------------------------------------------------------------
+  - set:
+      field: event.kind
+      value: enrichment
+
+  - set:
+      field: event.category
+      value: [threat]
+
+  - set:
+      field: event.type
+      value: [indicator]
+
+  - set:
+      field: threat.feed.vendor
+      value: Bitdefender
+
+  - set:
+      field: threat.feed.name
+      value: ip-feed
+
+  - set:
+      field: threat.indicator.provider
+      value: Bitdefender
+
+  # ------------------------------------------------------------------
+  # Timestamps
+  # ------------------------------------------------------------------
+  - date:
+      field: timestamp
+      target_field: '@timestamp'
+      formats: [UNIX, ISO8601]
+      if: ctx.timestamp != null
+
+  - date:
+      field: first_seen
+      target_field: threat.indicator.first_seen
+      formats: [UNIX, ISO8601]
+      if: ctx.first_seen != null
+      ignore_failure: true
+
+  - date:
+      field: timestamp
+      target_field: threat.indicator.last_seen
+      formats: [UNIX, ISO8601]
+      if: ctx.timestamp != null
+
+  # ------------------------------------------------------------------
+  # Indicator core fields
+  # ------------------------------------------------------------------
+  - rename:
+      field: ip
+      target_field: threat.indicator.ip
+      ignore_missing: true
+
+  - rename:
+      field: severity
+      target_field: threat.indicator.severity
+      ignore_missing: true
+
+  - rename:
+      field: confidence
+      target_field: bitdefender.confidence_score
+      ignore_missing: true
+
+  - script:
+      if: ctx.bitdefender?.confidence_score != null
+      lang: painless
+      source: |
+        def raw = ctx.bitdefender.confidence_score;
+        double score;
+        if (raw instanceof Number) {
+          score = ((Number) raw).doubleValue();
+        } else {
+          try {
+            score = Double.parseDouble(raw.toString());
+          } catch (Exception e) {
+            if (ctx.threat == null) ctx.threat = new HashMap();
+            if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+            ctx.threat.indicator.confidence = raw.toString();
+            return;
+          }
+        }
+
+        if (ctx.threat == null) ctx.threat = new HashMap();
+        if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+        ctx.threat.indicator.confidence = score >= 67 ? "high" : (score >= 34 ? "medium" : "low");
+
+  - rename:
+      field: TTL
+      target_field: threat.indicator.ttl
+      ignore_missing: true
+
+  # Indicator type
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains('.')
+
+  - set:
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(':')
+
+  # ------------------------------------------------------------------
+  # ASN
+  # ------------------------------------------------------------------
+  - rename:
+      field: asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+
+  - rename:
+      field: as_owner
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
+
+  # ------------------------------------------------------------------
+  # Geo
+  # ------------------------------------------------------------------
+  - script:
+      if: ctx.geo_latitude != null && ctx.geo_longitude != null
+      lang: painless
+      source: |
+        ctx.threat = ctx.threat != null ? ctx.threat : [:];
+        ctx.threat.indicator = ctx.threat.indicator != null ? ctx.threat.indicator : [:];
+        ctx.threat.indicator.geo = ctx.threat.indicator.geo != null ? ctx.threat.indicator.geo : [:];
+        ctx.threat.indicator.geo.location = [
+          'lat': ctx.geo_latitude,
+          'lon': ctx.geo_longitude
+        ];
+
+  - rename:
+      field: ip_country
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+
+  # ------------------------------------------------------------------
+  # Correlation helpers
+  # ------------------------------------------------------------------
+  - set:
+      field: related.ip
+      copy_from: threat.indicator.ip
+      ignore_empty_value: true
+
+  - script:
+      if: ctx.threat?.indicator != null
+      lang: painless
+      source: |
+        def parts = new ArrayList();
+        if (ctx.threat?.indicator?.as?.organization?.name != null) {
+          parts.add("asn_org=" + ctx.threat.indicator.as.organization.name);
+        }
+        if (ctx.threat?.indicator?.geo?.country_iso_code != null) {
+          parts.add("country=" + ctx.threat.indicator.geo.country_iso_code);
+        }
+        if (ctx.tags != null) {
+          parts.add("tags=" + ctx.tags.toString());
+        }
+        if (ctx.flags != null) {
+          parts.add("flags=" + ctx.flags.toString());
+        }
+        if (ctx.cidr != null) {
+          parts.add("cidr=" + ctx.cidr);
+        }
+        if (!parts.isEmpty()) {
+          ctx.threat.indicator.description = String.join("; ", parts);
+        }
+
+        if (ctx.threat?.indicator?.ip != null) {
+          ctx.threat.indicator.reference = "bitdefender-ti:ip:" + ctx.threat.indicator.ip;
+        }
+
+  # ------------------------------------------------------------------
+  # Stable indicator identity and expiration (TTL)
+  # ------------------------------------------------------------------
+  - fingerprint:
+      fields:
+        - threat.feed.name
+        - threat.indicator.type
+        - threat.indicator.ip
+      target_field: threat.indicator.id
+
+  - set:
+      field: _id
+      copy_from: threat.indicator.id
+      ignore_empty_value: true
+
+  - script:
+      if: ctx.threat?.indicator?.ttl != null
+      lang: painless
+      source: |
+        def ttl = ctx.threat.indicator.ttl;
+        if (!(ttl instanceof Number)) {
+          return;
+        }
+        long ttlMillis = ((Number) ttl).longValue() * 1000L;
+        ZonedDateTime base = null;
+        if (ctx.threat?.indicator?.first_seen != null) {
+          base = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
+        } else if (ctx['@timestamp'] != null) {
+          base = ZonedDateTime.parse(ctx['@timestamp']);
+        }
+        if (base != null) {
+          ctx.threat.indicator.valid_until = base.plus(ttlMillis, java.time.temporal.ChronoUnit.MILLIS).toString();
+        }
+
+  # ------------------------------------------------------------------
+  # Cleanup
+  # ------------------------------------------------------------------
+  - remove:
+      field:
+        - geo_latitude
+        - geo_longitude
+      ignore_missing: true
+
+  # ------------------------------------------------------------------
+  # Dataset metadata
+  # ------------------------------------------------------------------
+  - set:
+      field: event.dataset
+      value: bitdefender_ti.ip_reputation
+
+  - set:
+      field: event.module
+      value: bitdefender_ti
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+  - append:
+      field: error.message
+      value: "Processor failure: {{{_ingest.on_failure_message}}}"
