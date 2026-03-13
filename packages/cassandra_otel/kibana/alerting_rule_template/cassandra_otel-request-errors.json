@@ -1,0 +1,39 @@
+{
+    "id": "cassandra_otel-request-errors",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Cassandra OTel] Request errors (Timeout, Unavailable, Failure)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "cassandra"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-cassandra.otel-default\n// Counter metric: use INCREASE for absolute error count in window\n| WHERE cassandra.client.request.error.count IS NOT NULL\n| STATS error_count = SUM(INCREASE(cassandra.client.request.error.count)) BY server.address, attributes.operation, attributes.status\n| WHERE error_count > 0\n| SORT error_count DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "server.address",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
