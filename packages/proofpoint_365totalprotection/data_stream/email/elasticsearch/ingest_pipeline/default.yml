@@ -73,6 +73,12 @@ processors:
     - drop:
             tag: drop_without_msg_id
             if: ctx.proofpoint?.email?.msg_id == null
+    # Set document ID to msg_id for deduplication.
+    # This is safe because: 
+    # 1. The integration fetches emails with a time overlap (last X minutes + buffer) to avoid missing messages
+    # 2. This causes the same emails to appear in multiple API responses
+    # 3. Emails are immutable - a msg_id always represents the exact same email data
+    # 4. Using _id ensures automatic deduplication in Elasticsearch when the same email is ingested multiple times
     - set:
             tag: set_document_id
             field: _id
