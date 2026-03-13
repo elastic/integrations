@@ -1,0 +1,39 @@
+host: "{{listen_address}}:{{listen_port}}"
+
+{{#if udp_options}}
+{{udp_options}}
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+processors:
+{{#unless tz_offset}}
+- add_locale: ~
+{{/unless}}
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
+- syslog:
+    field: message
+{{#if tz_offset}}
+    timezone: {{tz_offset}}
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}
