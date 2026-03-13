@@ -1,0 +1,233 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  url: {{url}}
+redact:
+  fields:
+    - api_password
+program: |
+  // Authenticate with Pi-hole API
+  post_request(
+    state.url.trim_right("/") + "/api/auth",
+    "application/json",
+    {
+      "password": "{{api_password}}"
+    }.encode_json()
+  ).do_request().as(auth_resp,
+    auth_resp.StatusCode != 200 ?
+      {
+        "events": [{
+          "error": {
+            "message": "Authentication failed: HTTP " + string(auth_resp.StatusCode)
+          }
+        }],
+        "want_more": false
+      }
+    :
+      auth_resp.Body.decode_json().as(auth_body,
+        !has(auth_body.session) || !has(auth_body.session.sid) ?
+          {
+            "events": [{
+              "error": {
+                "message": "Authentication response missing session ID"
+              }
+            }],
+            "want_more": false
+          }
+        :
+          // Get summary statistics using session ID
+          request(
+            "GET",
+            state.url.trim_right("/") + "/api/stats/summary"
+          ).with({
+            "Header": {
+              "X-FTL-SID": [auth_body.session.sid]
+            }
+          }).do_request().as(summary_resp,
+            // Process summary response first
+            summary_resp.StatusCode != 200 ?
+              // Summary request failed, still try to logout before returning error
+              request("DELETE", state.url.trim_right("/") + "/api/auth").with({
+                "Header": {"X-FTL-SID": [auth_body.session.sid]}
+              }).do_request().as(logout_resp, {
+                "events": [{
+                  "error": {
+                    "message": "Failed to fetch summary: HTTP " + string(summary_resp.StatusCode)
+                  }
+                }],
+                "want_more": false
+              })
+            :
+              // Summary request succeeded, process response
+              summary_resp.Body.decode_json().as(summary_body,
+                // Logout after successful collection
+                request("DELETE", state.url.trim_right("/") + "/api/auth").with({
+                  "Header": {"X-FTL-SID": [auth_body.session.sid]}
+                }).do_request().as(logout_resp,
+                  // Force logout completion by checking status
+                  logout_resp.StatusCode != 204 ?
+                  {
+                    "events": [{
+                      "_logout_failed": "HTTP " + string(logout_resp.StatusCode),
+                      "dns_queries_today": has(summary_body.queries) && has(summary_body.queries.total) ? int(summary_body.queries.total) : 0,
+                      "ads_blocked_today": has(summary_body.queries) && has(summary_body.queries.blocked) ? int(summary_body.queries.blocked) : 0,
+                      "ads_percentage_today": has(summary_body.queries) && has(summary_body.queries.percent_blocked) ? double(summary_body.queries.percent_blocked) : 0.0,
+                      "domains_being_blocked": has(summary_body.gravity) && has(summary_body.gravity.domains_being_blocked) ? int(summary_body.gravity.domains_being_blocked) : 0,
+                      "queries_forwarded": has(summary_body.queries) && has(summary_body.queries.forwarded) ? int(summary_body.queries.forwarded) : 0,
+                      "queries_cached": has(summary_body.queries) && has(summary_body.queries.cached) ? int(summary_body.queries.cached) : 0,
+                      "clients_ever_seen": has(summary_body.clients) && has(summary_body.clients.total) ? int(summary_body.clients.total) : 0,
+                      "unique_clients": has(summary_body.clients) && has(summary_body.clients.active) ? int(summary_body.clients.active) : 0,
+                      "unique_domains": has(summary_body.queries) && has(summary_body.queries.unique_domains) ? int(summary_body.queries.unique_domains) : 0,
+                      "query_frequency": has(summary_body.queries) && has(summary_body.queries.frequency) ? double(summary_body.queries.frequency) : 0.0,
+                      "gravity_last_update": has(summary_body.gravity) && has(summary_body.gravity.last_update) ? int(summary_body.gravity.last_update) : 0,
+                      "status": "enabled",
+                      "query_types_a": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.A) ? int(summary_body.queries.types.A) : 0,
+                      "query_types_aaaa": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.AAAA) ? int(summary_body.queries.types.AAAA) : 0,
+                      "query_types_any": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.ANY) ? int(summary_body.queries.types.ANY) : 0,
+                      "query_types_srv": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.SRV) ? int(summary_body.queries.types.SRV) : 0,
+                      "query_types_soa": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.SOA) ? int(summary_body.queries.types.SOA) : 0,
+                      "query_types_ptr": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.PTR) ? int(summary_body.queries.types.PTR) : 0,
+                      "query_types_txt": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.TXT) ? int(summary_body.queries.types.TXT) : 0,
+                      "query_types_naptr": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.NAPTR) ? int(summary_body.queries.types.NAPTR) : 0,
+                      "query_types_mx": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.MX) ? int(summary_body.queries.types.MX) : 0,
+                      "query_types_ds": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.DS) ? int(summary_body.queries.types.DS) : 0,
+                      "query_types_rrsig": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.RRSIG) ? int(summary_body.queries.types.RRSIG) : 0,
+                      "query_types_dnskey": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.DNSKEY) ? int(summary_body.queries.types.DNSKEY) : 0,
+                      "query_types_ns": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.NS) ? int(summary_body.queries.types.NS) : 0,
+                      "query_types_svcb": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.SVCB) ? int(summary_body.queries.types.SVCB) : 0,
+                      "query_types_https": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.HTTPS) ? int(summary_body.queries.types.HTTPS) : 0,
+                      "query_types_other": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.OTHER) ? int(summary_body.queries.types.OTHER) : 0,
+                      "query_status_unknown": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.UNKNOWN) ? int(summary_body.queries.status.UNKNOWN) : 0,
+                      "query_status_gravity": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.GRAVITY) ? int(summary_body.queries.status.GRAVITY) : 0,
+                      "query_status_forwarded": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.FORWARDED) ? int(summary_body.queries.status.FORWARDED) : 0,
+                      "query_status_cache": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.CACHE) ? int(summary_body.queries.status.CACHE) : 0,
+                      "query_status_regex": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.REGEX) ? int(summary_body.queries.status.REGEX) : 0,
+                      "query_status_denylist": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.DENYLIST) ? int(summary_body.queries.status.DENYLIST) : 0,
+                      "query_status_external_blocked_ip": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_IP) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_IP) : 0,
+                      "query_status_external_blocked_null": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_NULL) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_NULL) : 0,
+                      "query_status_external_blocked_nxra": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_NXRA) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_NXRA) : 0,
+                      "query_status_gravity_cname": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.GRAVITY_CNAME) ? int(summary_body.queries.status.GRAVITY_CNAME) : 0,
+                      "query_status_regex_cname": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.REGEX_CNAME) ? int(summary_body.queries.status.REGEX_CNAME) : 0,
+                      "query_status_denylist_cname": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.DENYLIST_CNAME) ? int(summary_body.queries.status.DENYLIST_CNAME) : 0,
+                      "query_status_retried": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.RETRIED) ? int(summary_body.queries.status.RETRIED) : 0,
+                      "query_status_retried_dnssec": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.RETRIED_DNSSEC) ? int(summary_body.queries.status.RETRIED_DNSSEC) : 0,
+                      "query_status_in_progress": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.IN_PROGRESS) ? int(summary_body.queries.status.IN_PROGRESS) : 0,
+                      "query_status_dbbusy": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.DBBUSY) ? int(summary_body.queries.status.DBBUSY) : 0,
+                      "query_status_special_domain": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.SPECIAL_DOMAIN) ? int(summary_body.queries.status.SPECIAL_DOMAIN) : 0,
+                      "query_status_cache_stale": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.CACHE_STALE) ? int(summary_body.queries.status.CACHE_STALE) : 0,
+                      "query_status_external_blocked_ede15": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_EDE15) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_EDE15) : 0,
+                      "query_replies_unknown": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.UNKNOWN) ? int(summary_body.queries.replies.UNKNOWN) : 0,
+                      "query_replies_nodata": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NODATA) ? int(summary_body.queries.replies.NODATA) : 0,
+                      "query_replies_nxdomain": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NXDOMAIN) ? int(summary_body.queries.replies.NXDOMAIN) : 0,
+                      "query_replies_cname": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.CNAME) ? int(summary_body.queries.replies.CNAME) : 0,
+                      "query_replies_ip": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.IP) ? int(summary_body.queries.replies.IP) : 0,
+                      "query_replies_domain": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.DOMAIN) ? int(summary_body.queries.replies.DOMAIN) : 0,
+                      "query_replies_rrname": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.RRNAME) ? int(summary_body.queries.replies.RRNAME) : 0,
+                      "query_replies_servfail": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.SERVFAIL) ? int(summary_body.queries.replies.SERVFAIL) : 0,
+                      "query_replies_refused": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.REFUSED) ? int(summary_body.queries.replies.REFUSED) : 0,
+                      "query_replies_notimp": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NOTIMP) ? int(summary_body.queries.replies.NOTIMP) : 0,
+                      "query_replies_other": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.OTHER) ? int(summary_body.queries.replies.OTHER) : 0,
+                      "query_replies_dnssec": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.DNSSEC) ? int(summary_body.queries.replies.DNSSEC) : 0,
+                      "query_replies_none": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NONE) ? int(summary_body.queries.replies.NONE) : 0,
+                      "query_replies_blob": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.BLOB) ? int(summary_body.queries.replies.BLOB) : 0
+                    }],
+                    "want_more": false
+                  }
+                  : {
+                    "events": [{
+                      "dns_queries_today": has(summary_body.queries) && has(summary_body.queries.total) ? int(summary_body.queries.total) : 0,
+                      "ads_blocked_today": has(summary_body.queries) && has(summary_body.queries.blocked) ? int(summary_body.queries.blocked) : 0,
+                      "ads_percentage_today": has(summary_body.queries) && has(summary_body.queries.percent_blocked) ? double(summary_body.queries.percent_blocked) : 0.0,
+                      "domains_being_blocked": has(summary_body.gravity) && has(summary_body.gravity.domains_being_blocked) ? int(summary_body.gravity.domains_being_blocked) : 0,
+                      "queries_forwarded": has(summary_body.queries) && has(summary_body.queries.forwarded) ? int(summary_body.queries.forwarded) : 0,
+                      "queries_cached": has(summary_body.queries) && has(summary_body.queries.cached) ? int(summary_body.queries.cached) : 0,
+                      "clients_ever_seen": has(summary_body.clients) && has(summary_body.clients.total) ? int(summary_body.clients.total) : 0,
+                      "unique_clients": has(summary_body.clients) && has(summary_body.clients.active) ? int(summary_body.clients.active) : 0,
+                      "unique_domains": has(summary_body.queries) && has(summary_body.queries.unique_domains) ? int(summary_body.queries.unique_domains) : 0,
+                      "query_frequency": has(summary_body.queries) && has(summary_body.queries.frequency) ? double(summary_body.queries.frequency) : 0.0,
+                      "gravity_last_update": has(summary_body.gravity) && has(summary_body.gravity.last_update) ? int(summary_body.gravity.last_update) : 0,
+                      "status": "enabled",
+                      "query_types_a": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.A) ? int(summary_body.queries.types.A) : 0,
+                      "query_types_aaaa": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.AAAA) ? int(summary_body.queries.types.AAAA) : 0,
+                      "query_types_any": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.ANY) ? int(summary_body.queries.types.ANY) : 0,
+                      "query_types_srv": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.SRV) ? int(summary_body.queries.types.SRV) : 0,
+                      "query_types_soa": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.SOA) ? int(summary_body.queries.types.SOA) : 0,
+                      "query_types_ptr": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.PTR) ? int(summary_body.queries.types.PTR) : 0,
+                      "query_types_txt": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.TXT) ? int(summary_body.queries.types.TXT) : 0,
+                      "query_types_naptr": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.NAPTR) ? int(summary_body.queries.types.NAPTR) : 0,
+                      "query_types_mx": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.MX) ? int(summary_body.queries.types.MX) : 0,
+                      "query_types_ds": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.DS) ? int(summary_body.queries.types.DS) : 0,
+                      "query_types_rrsig": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.RRSIG) ? int(summary_body.queries.types.RRSIG) : 0,
+                      "query_types_dnskey": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.DNSKEY) ? int(summary_body.queries.types.DNSKEY) : 0,
+                      "query_types_ns": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.NS) ? int(summary_body.queries.types.NS) : 0,
+                      "query_types_svcb": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.SVCB) ? int(summary_body.queries.types.SVCB) : 0,
+                      "query_types_https": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.HTTPS) ? int(summary_body.queries.types.HTTPS) : 0,
+                      "query_types_other": has(summary_body.queries) && has(summary_body.queries.types) && has(summary_body.queries.types.OTHER) ? int(summary_body.queries.types.OTHER) : 0,
+                      "query_status_unknown": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.UNKNOWN) ? int(summary_body.queries.status.UNKNOWN) : 0,
+                      "query_status_gravity": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.GRAVITY) ? int(summary_body.queries.status.GRAVITY) : 0,
+                      "query_status_forwarded": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.FORWARDED) ? int(summary_body.queries.status.FORWARDED) : 0,
+                      "query_status_cache": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.CACHE) ? int(summary_body.queries.status.CACHE) : 0,
+                      "query_status_regex": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.REGEX) ? int(summary_body.queries.status.REGEX) : 0,
+                      "query_status_denylist": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.DENYLIST) ? int(summary_body.queries.status.DENYLIST) : 0,
+                      "query_status_external_blocked_ip": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_IP) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_IP) : 0,
+                      "query_status_external_blocked_null": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_NULL) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_NULL) : 0,
+                      "query_status_external_blocked_nxra": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_NXRA) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_NXRA) : 0,
+                      "query_status_gravity_cname": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.GRAVITY_CNAME) ? int(summary_body.queries.status.GRAVITY_CNAME) : 0,
+                      "query_status_regex_cname": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.REGEX_CNAME) ? int(summary_body.queries.status.REGEX_CNAME) : 0,
+                      "query_status_denylist_cname": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.DENYLIST_CNAME) ? int(summary_body.queries.status.DENYLIST_CNAME) : 0,
+                      "query_status_retried": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.RETRIED) ? int(summary_body.queries.status.RETRIED) : 0,
+                      "query_status_retried_dnssec": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.RETRIED_DNSSEC) ? int(summary_body.queries.status.RETRIED_DNSSEC) : 0,
+                      "query_status_in_progress": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.IN_PROGRESS) ? int(summary_body.queries.status.IN_PROGRESS) : 0,
+                      "query_status_dbbusy": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.DBBUSY) ? int(summary_body.queries.status.DBBUSY) : 0,
+                      "query_status_special_domain": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.SPECIAL_DOMAIN) ? int(summary_body.queries.status.SPECIAL_DOMAIN) : 0,
+                      "query_status_cache_stale": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.CACHE_STALE) ? int(summary_body.queries.status.CACHE_STALE) : 0,
+                      "query_status_external_blocked_ede15": has(summary_body.queries) && has(summary_body.queries.status) && has(summary_body.queries.status.EXTERNAL_BLOCKED_EDE15) ? int(summary_body.queries.status.EXTERNAL_BLOCKED_EDE15) : 0,
+                      "query_replies_unknown": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.UNKNOWN) ? int(summary_body.queries.replies.UNKNOWN) : 0,
+                      "query_replies_nodata": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NODATA) ? int(summary_body.queries.replies.NODATA) : 0,
+                      "query_replies_nxdomain": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NXDOMAIN) ? int(summary_body.queries.replies.NXDOMAIN) : 0,
+                      "query_replies_cname": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.CNAME) ? int(summary_body.queries.replies.CNAME) : 0,
+                      "query_replies_ip": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.IP) ? int(summary_body.queries.replies.IP) : 0,
+                      "query_replies_domain": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.DOMAIN) ? int(summary_body.queries.replies.DOMAIN) : 0,
+                      "query_replies_rrname": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.RRNAME) ? int(summary_body.queries.replies.RRNAME) : 0,
+                      "query_replies_servfail": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.SERVFAIL) ? int(summary_body.queries.replies.SERVFAIL) : 0,
+                      "query_replies_refused": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.REFUSED) ? int(summary_body.queries.replies.REFUSED) : 0,
+                      "query_replies_notimp": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NOTIMP) ? int(summary_body.queries.replies.NOTIMP) : 0,
+                      "query_replies_other": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.OTHER) ? int(summary_body.queries.replies.OTHER) : 0,
+                      "query_replies_dnssec": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.DNSSEC) ? int(summary_body.queries.replies.DNSSEC) : 0,
+                      "query_replies_none": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.NONE) ? int(summary_body.queries.replies.NONE) : 0,
+                      "query_replies_blob": has(summary_body.queries) && has(summary_body.queries.replies) && has(summary_body.queries.replies.BLOB) ? int(summary_body.queries.replies.BLOB) : 0
+                    }],
+                    "want_more": false
+                  }
+                )
+              )
+            )
+          )
+      )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if tags}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

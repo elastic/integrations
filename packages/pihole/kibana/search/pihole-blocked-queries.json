@@ -1,0 +1,36 @@
+{
+    "id": "pihole-blocked-queries",
+    "type": "search",
+    "attributes": {
+        "title": "[Pi-hole] Blocked Queries",
+        "description": "DNS queries blocked by Pi-hole (gravity, regex, or denylist)",
+        "hits": 0,
+        "columns": [
+            "@timestamp",
+            "dns.question.name",
+            "dns.question.type",
+            "source.ip",
+            "source.domain",
+            "pihole.query.status"
+        ],
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"query\":{\"query\":\"pihole.query.status: (GRAVITY OR REGEX OR DENYLIST OR GRAVITY_CNAME OR REGEX_CNAME OR DENYLIST_CNAME)\",\"language\":\"kuery\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern",
+            "id": "logs-pihole.dns_queries-*"
+        }
+    ],
+    "migrationVersion": {
+        "search": "9.1.0"
+    }
+}

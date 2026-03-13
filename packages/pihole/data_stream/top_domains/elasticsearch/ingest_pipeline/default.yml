@@ -1,0 +1,70 @@
+---
+description: Pipeline for processing Pi-hole top domains statistics
+processors:
+  # Set event fields
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: ["network"]
+  - set:
+      field: event.type
+      value: ["info"]
+  - set:
+      field: event.module
+      value: pihole
+  - set:
+      field: event.dataset
+      value: pihole.top_domains
+
+  # Set observer fields
+  - set:
+      field: observer.vendor
+      value: Pi-hole
+  - set:
+      field: observer.product
+      value: Pi-hole
+  - set:
+      field: observer.type
+      value: dns
+
+  # Map domain name to ECS dns.question.name
+  - rename:
+      field: domain_name
+      target_field: dns.question.name
+      ignore_missing: true
+
+  # Map query count to pihole namespace
+  - rename:
+      field: query_count
+      target_field: pihole.top_domains.query_count
+      ignore_missing: true
+
+  # Map total queries to pihole namespace
+  - rename:
+      field: total_queries
+      target_field: pihole.top_domains.total_queries
+      ignore_missing: true
+
+  # Map blocked queries to pihole namespace
+  - rename:
+      field: blocked_queries
+      target_field: pihole.top_domains.blocked_queries
+      ignore_missing: true
+
+  # Map query action to pihole namespace
+  - rename:
+      field: query_action
+      target_field: pihole.top_domains.query_action
+      ignore_missing: true
+
+  # Remove any error fields if present (from successful requests)
+  - remove:
+      field: error
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
