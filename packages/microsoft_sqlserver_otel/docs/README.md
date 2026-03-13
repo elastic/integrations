@@ -1,6 +1,6 @@
 # Microsoft SQL Server OpenTelemetry Assets
 
-Microsoft SQL Server is a relational database management system used for OLTP, data warehousing, and mixed workloads. These assets provide dashboards, alert rules, and SLO templates for monitoring SQL Server via the OpenTelemetry `sqlserverreceiver`, covering memory, concurrency, I/O, TempDB, and query performance.
+Microsoft SQL Server is a relational database management system used for OLTP, data warehousing, and mixed workloads. These assets provide dashboards, alert rules, and SLO templates for monitoring SQL Server using the OpenTelemetry `sqlserverreceiver`, covering memory, concurrency, I/O, TempDB, and query performance.
 
 ## Compatibility
 
@@ -29,7 +29,7 @@ On Windows, you can alternatively use Windows Performance Counters; run the coll
 
 Configure the OpenTelemetry Collector or Elastic Distribution of OpenTelemetry (EDOT) Collector with the SQL Server receiver and the Elasticsearch exporter. Use the following placeholders in the YAML:
 
-- `<SQL_SERVER_HOST>` — Hostname or IP address of the SQL Server instance (e.g. `sqlserver.example.com`)
+- `<SQL_SERVER_HOST>` — Hostname or IP address of the SQL Server instance (for example `sqlserver.example.com`)
 - `<SQL_SERVER_PORT>` — Port of the SQL Server instance (default `1433`)
 - `<SQL_SERVER_USER>` — Username for SQL Server authentication
 - `<SQL_SERVER_PASSWORD>` — Password; use `${env:SQL_SERVER_PASSWORD}` to read from an environment variable
