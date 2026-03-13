@@ -1,0 +1,40 @@
+{
+  "id": "redis_otel-high-eviction-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Redis OTel] High eviction rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redis"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-redisreceiver.otel-*\n| WHERE redis.keys.evicted IS NOT NULL\n// Counter: use INCREASE to get evictions over the time window\n| STATS evicted = SUM(INCREASE(redis.keys.evicted))\n  BY server.address, server.port\n// Alert when evictions exceed threshold (adjust based on workload)\n// Sudden spikes indicate memory pressure; sustained evictions may be normal for cache workloads\n| WHERE evicted > 100\n| SORT evicted DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
