@@ -1,0 +1,36 @@
+{
+  "id": "envoyproxy_otel-warming-clusters-stuck",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Envoy OTel] Warming clusters stuck",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "envoy",
+      "cluster-manager"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.cluster_manager.warming_clusters IS NOT NULL\n// Warming clusters should drop to 0 after config load; sustained > 0 indicates config issues\n| STATS max_warming = MAX(envoy.cluster_manager.warming_clusters)\n| WHERE max_warming > 0"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}
