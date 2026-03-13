@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-high-temp-io",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] High temp I/O volume",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Temp I/O (bytes written to temp files) indicates memory-constrained workloads\n| WHERE postgresql.temp.io IS NOT NULL\n| EVAL temp_io_val = TO_DOUBLE(postgresql.temp.io)\n| WHERE temp_io_val > 0\n| STATS temp_io_bytes = SUM(temp_io_val) BY service.instance.id, postgresql.database.name\n// Threshold: 100 MB in window; adjust for your scrape interval and expected load\n| WHERE temp_io_bytes > 104857600"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

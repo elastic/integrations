@@ -1,0 +1,32 @@
+{
+  "attributes": {
+    "name": "[PostgreSQL OTel] Transaction rollback ratio 99.5% rolling 30 days",
+    "description": "This SLO tracks PostgreSQL transaction rollback ratio (rollbacks / (commits + rollbacks)) via OTel metrics, ensuring that 99.5% of 1-minute time intervals show rollback ratio below 1% over a rolling period of 30 days to maintain transaction reliability and data integrity.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"postgresqlreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "postgresql.rollbacks"},
+            {"name": "B", "aggregation": "min", "field": "postgresql.rollbacks"},
+            {"name": "C", "aggregation": "max", "field": "postgresql.commits"},
+            {"name": "D", "aggregation": "min", "field": "postgresql.commits"}
+          ],
+          "equation": "(A-B)/((A-B)+(C-D))",
+          "comparator": "LT",
+          "threshold": 0.01
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {"duration": "30d", "type": "rolling"},
+    "objective": {"target": 0.995, "timesliceTarget": 0.95, "timesliceWindow": "1m"},
+    "tags": ["postgresql", "otel"],
+    "groupBy": ["resource.attributes.postgresql.database.name"]
+  },
+  "id": "postgresql_otel-rollback-ratio-99.5-Rolling30Days",
+  "type": "slo_template"
+}
