@@ -1,0 +1,36 @@
+{
+  "id": "envoyproxy_otel-high-memory-pressure",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Envoy OTel] High memory pressure",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "envoy",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL\n    AND envoy.server.memory_heap_size IS NOT NULL\n    AND envoy.server.memory_heap_size > 0\n// Ratio of allocated to heap — sustained high values indicate pressure or leak\n| EVAL mem_ratio = envoy.server.memory_allocated / envoy.server.memory_heap_size\n| STATS max_ratio = MAX(mem_ratio)\n// Adjust threshold (0.9 = 90%) based on your memory headroom expectations\n| WHERE max_ratio > 0.9"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}
