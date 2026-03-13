@@ -1,0 +1,416 @@
+# CockroachDB OTel - Replication & Ranges dashboard
+# Converted from compiled Kibana JSON to kb-dashboard YAML format.
+
+dashboards:
+  - id: cockroachdb_otel-replication
+    name: '[CockroachDB OTel] Replication & Ranges'
+    description: >-
+      Range distribution, replication health, and rebalancing activity. Monitor ranges per store,
+      unavailable/under-replicated ranges, lease transfers, and rebalancing.
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: resource.attributes.service.name
+        equals: cockroachdb
+
+    controls:
+      - type: options
+        label: Node
+        data_view: metrics-*
+        field: attributes.node_id
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: whole, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: cockroachdb_otel-overview
+            - label: Storage
+              dashboard: cockroachdb_otel-storage
+            - label: SQL & Transactions
+              dashboard: cockroachdb_otel-sql-transactions
+            - label: Replication & Ranges
+              dashboard: cockroachdb_otel-replication
+
+      # ─── Dashboard Overview ───────────────────────────────────────────
+      - hide_title: true
+        size: {w: third, h: 12}
+        markdown:
+          content: |
+            ## [CockroachDB OTel] Replication & Ranges
+
+            This dashboard monitors replication and range distribution:
+            - Live nodes and liveness heartbeats
+            - Ranges and replicas per store
+            - Unavailable and under-replicated ranges
+            - Lease transfers and rebalancing activity
+            - Range splits and merges
+
+      # ─── KPI Row 1 ────────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE liveness_livenodes IS NOT NULL
+            - STATS live = MAX(LAST_OVER_TIME(liveness_livenodes))
+          primary:
+            field: live
+            label: Live Nodes
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges IS NOT NULL
+            - STATS total = SUM(LAST_OVER_TIME(ranges))
+          primary:
+            field: total
+            label: Ranges
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges_unavailable IS NOT NULL
+            - STATS unavailable = SUM(LAST_OVER_TIME(ranges_unavailable))
+          primary:
+            field: unavailable
+            label: Unavailable
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges_underreplicated IS NOT NULL
+            - STATS under = SUM(LAST_OVER_TIME(ranges_underreplicated))
+          primary:
+            field: under
+            label: Under-Replicated
+            format:
+              type: number
+              decimals: 0
+
+      # ─── KPI Row 2 ────────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE leases_transfers_success IS NOT NULL
+            - STATS rate = SUM(RATE(leases_transfers_success))
+          primary:
+            field: rate
+            label: Transfers/sec
+            format:
+              type: number
+              decimals: 2
+              suffix: "/sec"
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE leases_transfers_error IS NOT NULL
+            - STATS err_rate = SUM(RATE(leases_transfers_error))
+          primary:
+            field: err_rate
+            label: Errors/sec
+            format:
+              type: number
+              decimals: 2
+              suffix: "/sec"
+
+      # ─── Section: Replication Status ──────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Replication Status'
+
+      - title: Unavailable Ranges by Store
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges_unavailable IS NOT NULL
+            - STATS unavailable = MAX(LAST_OVER_TIME(ranges_unavailable)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node_store = CONCAT(TO_STRING(attributes.node_id), "-", TO_STRING(attributes.store))
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: unavailable
+              label: Unavailable
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: node_store
+          legend:
+            visible: show
+            position: right
+
+      - title: Under-Replicated Ranges by Store
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges_underreplicated IS NOT NULL
+            - STATS underreplicated = MAX(LAST_OVER_TIME(ranges_underreplicated)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node_store = CONCAT(TO_STRING(attributes.node_id), "-", TO_STRING(attributes.store))
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: underreplicated
+              label: Under-Replicated
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: node_store
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Range Distribution ───────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Range Distribution'
+
+      - title: Ranges and Leaseholders by Store
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges IS NOT NULL OR replicas_leaseholders IS NOT NULL
+            - STATS ranges_count = AVG(LAST_OVER_TIME(ranges)), leaseholders = AVG(LAST_OVER_TIME(replicas_leaseholders)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node_store = CONCAT(TO_STRING(attributes.node_id), "-", TO_STRING(attributes.store))
+            - EVAL ranges_count = COALESCE(ranges_count, 0)
+            - EVAL leaseholders = COALESCE(leaseholders, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: ranges_count
+              label: Ranges
+              format:
+                type: number
+                decimals: 0
+            - field: leaseholders
+              label: Leaseholders
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: node_store
+          legend:
+            visible: show
+            position: right
+
+      - title: Replicas by Store
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE replicas IS NOT NULL
+            - STATS replicas_count = MAX(LAST_OVER_TIME(replicas)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node_store = CONCAT(TO_STRING(attributes.node_id), "-", TO_STRING(attributes.store))
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: replicas_count
+              label: Replicas
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: node_store
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Rebalancing ──────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Rebalancing'
+
+      - title: Lease Transfers and Range Rebalances
+        size: {w: whole, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - FORK ( WHERE rebalancing_lease_transfers IS NOT NULL | STATS rate = SUM(RATE(rebalancing_lease_transfers)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "Lease Transfers" ) ( WHERE rebalancing_range_rebalances IS NOT NULL | STATS rate = SUM(RATE(rebalancing_range_rebalances)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "Range Rebalances" )
+            - STATS rate = SUM(rate) BY time_bucket, op
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Rate
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"
+          breakdown:
+            field: op
+          legend:
+            visible: show
+            position: right
+
+      - title: Liveness Heartbeats
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE liveness_heartbeatfailures IS NOT NULL OR liveness_heartbeatsuccesses IS NOT NULL
+            - STATS failures = SUM(RATE(liveness_heartbeatfailures)), successes = SUM(RATE(liveness_heartbeatsuccesses)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL failures = COALESCE(failures, 0)
+            - EVAL successes = COALESCE(successes, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failures
+              label: Failures/sec
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"
+            - field: successes
+              label: Successes/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/sec"
+          legend:
+            visible: show
+            position: right
+
+      - title: Range Splits and Merges
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - FORK ( WHERE range_splits IS NOT NULL | STATS rate = SUM(RATE(range_splits)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "Splits" ) ( WHERE range_merges IS NOT NULL | STATS rate = SUM(RATE(range_merges)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "Merges" )
+            - STATS rate = SUM(rate) BY time_bucket, op
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Rate
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"
+          breakdown:
+            field: op
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Detail ──────────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Detail'
+
+      - title: Store Summary
+        size: {w: whole, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges IS NOT NULL
+            - STATS ranges_count = MAX(ranges), replicas_count = MAX(replicas), leaseholders = MAX(replicas_leaseholders), unavailable = MAX(COALESCE(ranges_unavailable, 0)), underreplicated = MAX(COALESCE(ranges_underreplicated, 0)) BY node_id = attributes.node_id, store = attributes.store, host = resource.attributes.host.name
+            - SORT ranges_count DESC
+            - LIMIT 50
+          dimensions:
+            - field: node_id
+              label: Node ID
+            - field: store
+              label: Store
+            - field: host
+              label: Host
+          metrics:
+            - field: ranges_count
+              label: Ranges
+              format:
+                type: number
+                decimals: 0
+            - field: replicas_count
+              label: Replicas
+              format:
+                type: number
+                decimals: 0
+            - field: leaseholders
+              label: Leaseholders
+              format:
+                type: number
+                decimals: 0
+            - field: unavailable
+              label: Unavailable
+              format:
+                type: number
+                decimals: 0
+            - field: underreplicated
+              label: Under-Replicated
+              format:
+                type: number
+                decimals: 0

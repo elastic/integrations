@@ -1,0 +1,367 @@
+# CockroachDB OTel Storage dashboard
+# Converted from compiled Kibana JSON to kb-dashboard YAML format
+
+dashboards:
+  - id: cockroachdb_otel-storage
+    name: '[CockroachDB OTel] Storage'
+    description: >-
+      Storage capacity, LSM tree health, and disk I/O metrics. Monitor capacity usage,
+      admission IO overload, L0 sublevels, read amplification, and write stalls.
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: resource.attributes.service.name
+        equals: cockroachdb
+
+    controls:
+      - type: options
+        label: Node
+        data_view: metrics-*
+        field: attributes.node_id
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - size: {w: whole, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: cockroachdb_otel-overview
+            - label: Storage
+              dashboard: cockroachdb_otel-storage
+            - label: SQL & Transactions
+              dashboard: cockroachdb_otel-sql-transactions
+            - label: Replication & Ranges
+              dashboard: cockroachdb_otel-replication
+
+      # ─── Overview section header ─────────────────────────────────────
+      - hide_title: true
+        size: {w: third, h: 12}
+        markdown:
+          content: |
+            ## [CockroachDB OTel] Storage
+
+            This dashboard monitors storage and LSM health:
+            - Capacity used, available, and utilization
+            - IO admission overload (>1.0 = overloaded)
+            - L0 sublevels and file count (compaction health)
+            - Read amplification (should be single digits)
+            - Write stalls and disk I/O queue depth
+
+      # ─── KPI metrics row 1 ───────────────────────────────────────────
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE capacity IS NOT NULL AND capacity_used IS NOT NULL
+            - STATS used = AVG(LAST_OVER_TIME(capacity_used)), total = AVG(LAST_OVER_TIME(capacity))
+            - EVAL pct = CASE(total > 0, used / total * 100, 0)
+          primary:
+            field: pct
+            label: Used %
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE admission_io_overload IS NOT NULL
+            - STATS avg_io = AVG(AVG_OVER_TIME(admission_io_overload))
+          primary:
+            field: avg_io
+            label: IO Overload
+            format:
+              type: number
+              decimals: 2
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE storage_l0_sublevels IS NOT NULL
+            - STATS max_l0 = MAX(MAX_OVER_TIME(storage_l0_sublevels))
+          primary:
+            field: max_l0
+            label: L0 Sublevels
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE rocksdb_read_amplification IS NOT NULL
+            - STATS avg_amp = AVG(AVG_OVER_TIME(rocksdb_read_amplification))
+          primary:
+            field: avg_amp
+            label: Read Amp
+            format:
+              type: number
+              decimals: 1
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE storage_write_stalls IS NOT NULL
+            - STATS stalls = MAX(LAST_OVER_TIME(storage_write_stalls))
+          primary:
+            field: stalls
+            label: Write Stalls
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sys_host_disk_iopsinprogress IS NOT NULL
+            - STATS iops = AVG(AVG_OVER_TIME(sys_host_disk_iopsinprogress))
+          primary:
+            field: iops
+            label: IO in Progress
+            format:
+              type: number
+              decimals: 1
+
+      # ─── Section: Capacity ────────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Capacity'
+
+      - title: Capacity Utilization by Store
+        size: {w: half, h: 10}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE capacity IS NOT NULL AND capacity_used IS NOT NULL
+            - STATS used = AVG(LAST_OVER_TIME(capacity_used)), total = AVG(LAST_OVER_TIME(capacity)) BY store = attributes.store, node_id = attributes.node_id
+            - EVAL pct = CASE(total > 0, used / total * 100, 0), node_store = CONCAT(TO_STRING(node_id), "-", TO_STRING(store))
+          primary:
+            field: pct
+            label: Used %
+            format:
+              type: percent
+              decimals: 2
+          breakdown:
+            field: node_store
+
+      - title: Capacity Used by Store
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE capacity_used IS NOT NULL
+            - STATS used = AVG(LAST_OVER_TIME(capacity_used)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node_store = CONCAT(TO_STRING(attributes.node_id), "-", TO_STRING(attributes.store))
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: used
+              label: Bytes Used
+              format:
+                type: bytes
+                decimals: 2
+          breakdown:
+            field: node_store
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: LSM Health ──────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## LSM Health'
+
+      - title: IO Admission Overload
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE admission_io_overload IS NOT NULL
+            - STATS overload = AVG(AVG_OVER_TIME(admission_io_overload)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node_store = CONCAT(TO_STRING(attributes.node_id), "-", TO_STRING(attributes.store))
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: overload
+              label: IO Overload
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: node_store
+          legend:
+            visible: show
+            position: right
+
+      - title: L0 Sublevels and File Count
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE storage_l0_sublevels IS NOT NULL OR storage_l0_num_files IS NOT NULL
+            - STATS l0_sublevels = AVG(AVG_OVER_TIME(storage_l0_sublevels)), l0_files = AVG(AVG_OVER_TIME(storage_l0_num_files)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL l0_sublevels = COALESCE(l0_sublevels, 0)
+            - EVAL l0_files = COALESCE(l0_files, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: l0_sublevels
+              label: L0 Sublevels
+              format:
+                type: number
+                decimals: 0
+            - field: l0_files
+              label: L0 Files
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: Read Amplification
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE rocksdb_read_amplification IS NOT NULL
+            - STATS amp = AVG(AVG_OVER_TIME(rocksdb_read_amplification)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: amp
+              label: Read Amplification
+              format:
+                type: number
+                decimals: 1
+          legend:
+            visible: show
+            position: right
+
+      - title: Write Stalls
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE storage_write_stalls IS NOT NULL
+            - STATS stalls = MAX(LAST_OVER_TIME(storage_write_stalls)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node_store = CONCAT(TO_STRING(attributes.node_id), "-", TO_STRING(attributes.store))
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: stalls
+              label: Write Stalls
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: node_store
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Block Cache ─────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Block Cache'
+
+      - title: Block Cache Hit Rate
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE rocksdb_block_cache_hits IS NOT NULL AND rocksdb_block_cache_misses IS NOT NULL
+            - STATS hits = SUM(INCREASE(rocksdb_block_cache_hits)), misses = SUM(INCREASE(rocksdb_block_cache_misses)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL hit_rate = CASE(hits + misses > 0, hits / (hits + misses) * 100, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: hit_rate
+              label: Hit Rate %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      - title: Block Cache Usage
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE rocksdb_block_cache_usage IS NOT NULL
+            - STATS usage = AVG(LAST_OVER_TIME(rocksdb_block_cache_usage)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: usage
+              label: Cache Usage
+              format:
+                type: bytes
+                decimals: 2
+          legend:
+            visible: show
+            position: right
