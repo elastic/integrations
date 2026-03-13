@@ -313,7 +313,7 @@ There is currently a known [bug](https://github.com/elastic/elastic-package/issu
 
 ## Documentation [documentation]
 
-Create a `docs/README.md` following the [Documentation guidelines](./documentation-guidelines.md). For OTel Input Packages, include:
+Create a `_dev/build/docs/README.md` template following the [Documentation guidelines](./documentation-guidelines.md). The template is rendered to `docs/README.md` when you run `elastic-package build`. For OTel Input Packages, include:
 
 1. **Overview** - What the package does and which OTel receiver it uses
 2. **How it works** - Data flow explanation
@@ -362,7 +362,7 @@ Before submitting your OTel Input Package:
 - [ ] Policy tests exist and pass (`_dev/test/policy/`)
 - [ ] System tests exist and pass (`_dev/test/system/`)
 - [ ] `sample_event.json` is generated from system tests (use `elastic-package test system --generate`)
-- [ ] `docs/README.md` documents the package
+- [ ] `_dev/build/docs/README.md` template exists; `docs/README.md` is rendered by `elastic-package build`
 - [ ] `changelog.yml` has an entry for the initial version
 - [ ] Package icon exists in `img/`
 - [ ] `CODEOWNERS` file includes your team for the package path
@@ -376,6 +376,7 @@ Reference these existing packages as examples, or search for packages containing
 |---------|------------|------------------|
 | [statsd_input_otel](https://github.com/elastic/integrations/tree/main/packages/statsd_input_otel) | Basic | Minimal configuration, good starting point |
 | [prometheus_input_otel](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel) | Medium | TLS config, authentication, multi-value fields |
+| [kafka_input_otel](https://github.com/elastic/integrations/tree/main/packages/kafka_input_otel) | Medium | Kafka receiver; system tests use telemetrygen + OTel Collector to produce OTLP into Kafka |
 | [hostmetrics_input_otel](https://github.com/elastic/integrations/tree/main/packages/hostmetrics_input_otel) | Complex | Conditional scrapers, YAML configuration |
 
 ## Additional Resources [resources]
