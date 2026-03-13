@@ -1,0 +1,40 @@
+{
+  "id": "etcd_otel-no-leader",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[etcd OTel] No leader",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "etcd",
+      "availability"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-etcd.otel-default*\n// Member has no leader: network partition, quorum lost, or all members down\n| WHERE etcd_server_has_leader IS NOT NULL\n  AND etcd_server_has_leader == 0\n// Group by instance for per-member alerting\n| STATS count = COUNT(*) BY resource.attributes.service.instance.id\n| SORT count DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
