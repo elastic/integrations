@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-critical-deployment-high-cpu-alert",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Critical Deployment High CPU Alert",
+        "tags": [
+            "Kubernetes",
+            "Deployment",
+            "CPU"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "10m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 20,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when a specific deployment's average CPU usage exceeds 60%.\n//\n// What triggers this alert:\n// AVG(cpu usage limit pct) * 100 > 60% for the specified deployment.\n//\n// Placeholders to replace:\n// - Replace \"proxy\" with your deployment name, or use LIKE for patterns:\n//   `kubernetes.deployment.name` LIKE \"api*\"\n//\n// What it means:\n// Pods consistently using over 60% of CPU limits \u2014 performance strain.\n//\n// Action needed:\n// Increase CPU limits, scale deployment replicas, investigate bottlenecks.\n//\n// Adjust threshold (e.g., 80 for higher tolerance).\nTS metrics-kubernetes.pod-*\n| WHERE `kubernetes.deployment.name` == \"proxy\"\n| STATS avg_cpu_pct = AVG(`kubernetes.pod.cpu.usage.limit.pct`)\n  BY `orchestrator.cluster.name`\n| WHERE avg_cpu_pct IS NOT NULL\n| EVAL avg_cpu_pct_100 = ROUND(avg_cpu_pct * 100, 2)\n| WHERE avg_cpu_pct_100 > 60"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
