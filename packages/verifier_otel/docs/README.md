@@ -10,9 +10,9 @@ This integration is designed for Cloud Connectors to proactively check that all 
 
 | Provider | Status | Description |
 |----------|--------|-------------|
-| AWS | Active | CloudTrail, GuardDuty, Security Hub, S3, EC2, VPC Flow Logs, WAF, Route53, ELB, CloudFront |
-| Azure | Active | Activity Logs, Audit Logs, Blob Storage |
-| GCP | Active | Audit Logs, Cloud Storage, Pub/Sub |
+| AWS | Active | CloudTrail, GuardDuty, Security Hub, S3, EC2, VPC Flow Logs, WAF, Route53, ELB, CloudFront, CSPM, Asset Inventory |
+| Azure | Active | Activity Logs, Audit Logs, Blob Storage, CSPM, Asset Inventory |
+| GCP | Active | Audit Logs, Cloud Storage, Pub/Sub, CSPM, Asset Inventory |
 | Okta | Planned | System Logs, User Events |
 
 ## Configuration
@@ -51,7 +51,6 @@ Credential fields use a flat, normalized naming convention to stay consistent wi
 |-------|----------|-------------|
 | `credentials_tenant_id` | Yes | Azure AD tenant ID |
 | `credentials_client_id` | Yes | Azure application (client) ID |
-| `credentials_subscription_id` | No | Azure subscription ID to scope verification to |
 
 #### GCP Credentials
 
@@ -99,6 +98,8 @@ Each `policy_template` is scoped per integration following the least-privilege p
 | `route53` | logs:FilterLogEvents, DescribeLogGroups, route53:ListHostedZones |
 | `elb` | s3:GetObject, ListBucket, elasticloadbalancing:DescribeLoadBalancers |
 | `cloudfront` | s3:GetObject, ListBucket, cloudfront:ListDistributions |
+| `cspm` | SecurityAudit managed policy attachment (policy_attachment_check) |
+| `asset_inventory` | SecurityAudit managed policy attachment (policy_attachment_check) |
 
 ### Azure Integrations (`package_name: azure`)
 
@@ -107,6 +108,8 @@ Each `policy_template` is scoped per integration following the least-privilege p
 | `activitylogs` | Microsoft.Insights/eventtypes/values/Read |
 | `auditlogs` | Microsoft.Insights/eventtypes/values/Read |
 | `blob_storage` | Microsoft.Storage/storageAccounts/blobServices/containers/read |
+| `cspm` | Reader built-in role assignment (policy_attachment_check) |
+| `asset_inventory` | Reader built-in role assignment (policy_attachment_check) |
 
 ### GCP Integrations (`package_name: gcp`)
 
@@ -115,6 +118,8 @@ Each `policy_template` is scoped per integration following the least-privilege p
 | `audit` | logging.logEntries.list |
 | `storage` | storage.objects.get, storage.objects.list |
 | `pubsub` | pubsub.subscriptions.consume |
+| `cspm` | roles/cloudasset.viewer, roles/browser IAM bindings (policy_attachment_check) |
+| `asset_inventory` | roles/cloudasset.viewer, roles/browser IAM bindings (policy_attachment_check) |
 
 ### Okta Integrations (`package_name: okta`) — Planned
 
@@ -157,7 +162,6 @@ The integration emits OTEL logs with the following structure:
 | `provider.type` | Provider type (`aws`, `azure`, `gcp`, `okta`) |
 | `provider.account` | Provider account identifier |
 | `provider.region` | Provider region |
-| `provider.subscription_id` | Azure subscription ID (when applicable) |
 | `provider.project_id` | GCP project ID (when applicable) |
 | `account_type` | `single_account` or `organization` |
 | `permission.action` | Permission being checked (for example, `cloudtrail:LookupEvents`) |
@@ -166,7 +170,7 @@ The integration emits OTEL logs with the following structure:
 | `permission.required` | Whether this permission is required |
 | `permission.error_code` | Error code from provider (if denied/error) |
 | `permission.error_message` | Error message from provider (if denied/error) |
-| `verification.method` | Method used: `api_call` or `dry_run` |
+| `verification.method` | Method used: `api_call`, `dry_run`, or `policy_attachment_check` |
 | `verification.endpoint` | The API endpoint used for verification |
 | `verification.duration_ms` | Time taken for verification in milliseconds |
 | `verification.verified_at` | ISO 8601 timestamp of when this individual permission check was performed |
@@ -211,7 +215,6 @@ account_type: "single_account"
 
 credentials_tenant_id: "00000000-0000-0000-0000-000000000000"
 credentials_client_id: "11111111-1111-1111-1111-111111111111"
-credentials_subscription_id: "22222222-2222-2222-2222-222222222222"
 
 policy_id: "policy-azure-monitoring"
 policy_name: "Azure Activity Monitoring"
