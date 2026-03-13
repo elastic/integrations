@@ -5,6 +5,13 @@ dashboards:
     filters:
       - field: data_stream.dataset
         equals: kafkametricsreceiver.otel
+    controls:
+      - type: options
+        label: Topic
+        data_view: metrics-*
+        field: attributes.topic
+        match_technique: prefix
+        width: medium
     settings:
       margins: true
       titles: true
@@ -33,178 +40,149 @@ dashboards:
       # Markdown intro
       - title: "[Kafka OTel] Topics & Partitions"
         hide_title: true
-        size: {w: 16, h: 12}
+        size: {w: 16, h: 8}
         position: {x: 0, y: 2}
         markdown:
           content: |
-            [Kafka OTel] Topics & Partitions
+            ## [Kafka OTel] Topics & Partitions
 
             Topic and partition metrics:
-
             - Partition count per topic
             - Current and oldest offsets
             - Retained message volume (current − oldest)
             - Replication factor and in-sync replicas
 
-      # Under-Replicated Partitions (metric)
-      - title: Under-Replicated Partitions
-        size: {w: 12, h: 4}
+      # Total Partitions (metric)
+      - title: Total Partitions
+        hide_title: true
+        size: {w: 8, h: 8}
         position: {x: 16, y: 2}
         esql:
           type: metric
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | EVAL under = replicas - in_sync
-            | WHERE under > 0
-            | STATS count = COUNT(*)
+            | WHERE kafka.topic.partitions IS NOT NULL
+            | STATS partitions_per_topic = MAX(kafka.topic.partitions) BY attributes.topic
+            | STATS total_partitions = SUM(partitions_per_topic)
           primary:
-            field: count
-            label: Under-Replicated
-            format:
-              type: number
-              decimals: 0
-
-      # Fully Replicated Partitions (metric)
-      - title: Fully Replicated Partitions
-        size: {w: 12, h: 4}
-        position: {x: 28, y: 2}
-        esql:
-          type: metric
-          query: |
-            TS metrics-kafkametricsreceiver.otel-*
-            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | WHERE replicas == in_sync
-            | STATS count = COUNT(*)
-          primary:
-            field: count
-            label: Fully Replicated
+            field: total_partitions
+            label: Partitions
             format:
               type: number
               compact: true
               decimals: 2
 
-      # Replication Factor Distribution (metric)
-      - title: Replication Factor Distribution
-        size: {w: 12, h: 4}
-        position: {x: 16, y: 6}
+      # Topics (metric)
+      - title: Topics
+        hide_title: true
+        size: {w: 7, h: 8}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.topic.partitions IS NOT NULL
+            | STATS count = COUNT_DISTINCT(attributes.topic)
+          primary:
+            field: count
+            label: Topics
+            format:
+              type: number
+              decimals: 0
+
+      # Current Offset (Sum) (metric)
+      - title: Current Offset (Sum)
+        hide_title: true
+        size: {w: 7, h: 8}
+        position: {x: 31, y: 2}
         esql:
           type: metric
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL
-            | STATS unique_rf = COUNT_DISTINCT(kafka.partition.replicas)
+            | WHERE kafka.partition.current_offset IS NOT NULL
+            | STATS offset = MAX(kafka.partition.current_offset) BY attributes.topic, attributes.partition
+            | STATS total = SUM(offset)
           primary:
-            field: unique_rf
-            label: Distinct Replication Factor
+            field: total
+            label: Current Offset Sum
             format:
               type: number
-              decimals: 0
+              compact: true
+              decimals: 2
 
-      # Replicas vs In-Sync Over Time (line)
-      - title: Replicas vs In-Sync Over Time
-        size: {w: 48, h: 12}
-        position: {x: 0, y: 14}
+      # Current Offset Over Time by Topic (line)
+      - title: Current Offset Over Time by Topic (Top 5)
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 10}
         esql:
           type: line
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS total_replicas = SUM(kafka.partition.replicas), total_in_sync = SUM(kafka.partition.replicas_in_sync) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | WHERE kafka.partition.current_offset IS NOT NULL AND attributes.topic IS NOT NULL
+            | STATS offset = MAX(kafka.partition.current_offset)
+                BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | STATS current_offset = SUM(offset) BY time_bucket, attributes.topic
             | SORT time_bucket ASC
           dimension:
             field: time_bucket
             data_type: date
           metrics:
-            - field: total_replicas
-              label: Total Replicas
+            - field: current_offset
+              label: Current Offset
               format:
                 type: number
-                decimals: 0
-            - field: total_in_sync
-              label: In-Sync Replicas
-              format:
-                type: number
-                decimals: 0
+                compact: true
+                decimals: 2
+          breakdown:
+            field: attributes.topic
           legend:
+            visible: true
             position: right
 
-      # Under-Replicated Partitions Over Time (area unstacked)
-      - title: Under-Replicated Partitions Over Time
+      # Partitions by Topic (bar)
+      - title: Partitions by Topic
         size: {w: 24, h: 10}
-        position: {x: 0, y: 26}
-        esql:
-          type: area
-          mode: unstacked
-          query: |
-            TS metrics-kafkametricsreceiver.otel-*
-            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-            | EVAL under = replicas - in_sync
-            | WHERE under > 0
-            | STATS count = COUNT(*) BY time_bucket
-            | SORT time_bucket ASC
-          dimension:
-            field: time_bucket
-            data_type: date
-          metrics:
-            - field: count
-              label: Under-Replicated
-              format:
-                type: number
-                decimals: 0
-          legend:
-            position: right
-
-      # Under-Replicated by Topic (bar unstacked)
-      - title: Under-Replicated by Topic
-        size: {w: 24, h: 10}
-        position: {x: 24, y: 26}
+        position: {x: 24, y: 10}
         esql:
           type: bar
           mode: unstacked
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | EVAL under = replicas - in_sync
-            | WHERE under > 0
-            | STATS count = COUNT(*) BY attributes.topic
-            | SORT count DESC
+            | WHERE kafka.topic.partitions IS NOT NULL
+            | STATS partitions = MAX(kafka.topic.partitions) BY attributes.topic
+            | SORT partitions DESC
             | LIMIT 15
           dimension:
             field: attributes.topic
           metrics:
-            - field: count
-              label: Under-Replicated
+            - field: partitions
+              label: Partitions
               format:
                 type: number
                 decimals: 0
           legend:
             position: right
 
-      # Under-Replicated Partitions (Detail) - datatable
-      - title: Under-Replicated Partitions (Detail)
+      # Partition offset details (datatable)
+      - title: Partition Offset Details
         size: {w: 48, h: 16}
-        position: {x: 0, y: 36}
+        position: {x: 0, y: 20}
         esql:
           type: datatable
           query: |
             TS metrics-kafkametricsreceiver.otel-*
             | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
-            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
-            | STATS replicas = MAX(kafka.partition.replicas), replicas_in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
-            | EVAL under = replicas - replicas_in_sync
-            | WHERE under > 0
-            | SORT under DESC
+            | WHERE kafka.partition.current_offset IS NOT NULL AND kafka.partition.oldest_offset IS NOT NULL
+            | STATS current_offset = MAX(kafka.partition.current_offset),
+                    oldest_offset = MAX(kafka.partition.oldest_offset)
+                BY attributes.topic, attributes.partition
+            | EVAL retained = current_offset - oldest_offset
+            | SORT attributes.topic ASC, attributes.partition ASC
             | LIMIT 100
           dimensions:
             - field: attributes.topic
@@ -212,18 +190,18 @@ dashboards:
             - field: attributes.partition
               label: Partition
           metrics:
-            - field: replicas
-              label: Replicas
+            - field: current_offset
+              label: Current Offset
               format:
                 type: number
                 decimals: 0
-            - field: replicas_in_sync
-              label: In Sync
+            - field: oldest_offset
+              label: Oldest Offset
               format:
                 type: number
                 decimals: 0
-            - field: under
-              label: Under-Replicated
+            - field: retained
+              label: Retained
               format:
                 type: number
                 decimals: 0
