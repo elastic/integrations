@@ -16,14 +16,14 @@ If you are running version 8.18+, the Defend integration only collects a [subset
 
 ## Installation
 
-1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
+1. **Upgrading**: If upgrading from a version below v3.0.0, see the section v3.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Lateral Movement Detection**. Configure the integration name and agent policy. Click **Save and Continue**. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
-1. **Check the health of the transform**: The transform is scheduled to run every hour. This transform creates the index `ml-rdp-lmd`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-lmd.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`.
-1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file transfer events (`logs-*`), and the other index (`ml-rdp-lmd`) collects RDP session information from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
+1. **Check the health of the transform**: The transform is scheduled to run every hour. This transform creates the index `ml-rdp-lmd_ea`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-lmd.pivot_transform_ea-default-<FLEET-TRANSFORM-VERSION>`.
+1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file transfer events (`logs-*`), and the other index (`ml-rdp-lmd_ea`) collects RDP session information from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
     1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
-    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml-rdp-lmd`, and copy the same in the **Name** field.
+    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml-rdp-lmd_ea`, and copy the same in the **Name** field.
     1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
-    1. Use the new data view (`logs-*, ml-rdp-lmd`) to create anomaly detection jobs for this package.
+    1. Use the new data view (`logs-*, ml-rdp-lmd_ea`) to create anomaly detection jobs for this package.
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Supplied configurations**.
     1. Select **Lateral Movement Detection** and click **Run data recognizer**.
     1. Next to the data view name you created in the previous step, click the link to "create jobs."
@@ -34,7 +34,7 @@ If you are running version 8.18+, the Defend integration only collects a [subset
     1. You have **read** access to `.ml-anomalies-shared` index or are assigned the `machine_learning_user` role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
     1. After enabling the jobs, go to **Management > Stack Management > Kibana > Data Views**.  Click on **Create data view** with the following settings:
         - Name: `.ml-anomalies-shared`
-        - Index pattern : `.ml-anomalies-shared`
+        - Index pattern : `.ml-anomalies-shared*`
         - Select **Show Advanced settings** enable **Allow hidden and system indices**
         - Custom data view ID: `.ml-anomalies-shared`
     
@@ -55,7 +55,7 @@ After the anomaly detectors and the data views for the dashboard are configured,
 To customize filters in the Lateral Movement Detection transform, follow the below steps. You can use these instructions to update basic settings or to update filters for fields such as `process.name`, `@timestamp`, and others.
 1. To update settings such as retention policy, frequency, or destination configuration, stop the transform, click **Edit** from the **Actions** bar, make the required changes, and start the transform again.
 ![Lateral Movement Detection transform](../img/lmd_transform_update.png)
-1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-lmd.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
+1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-lmd.pivot_transform_ea-default-<FLEET-TRANSFORM-VERSION>`**.
 1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
 ![Lateral Movement Detection transform](../img/lmd_transform_1.png)
 1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
@@ -134,17 +134,17 @@ Detects potential lateral movement activity by identifying malicious file transf
 
 | Job                                                   | Description                                                                                     | Supported Platform    |
 |-------------------------------------------------------|-------------------------------------------------------------------------------------------------| --------------------- |
-| lmd_high_count_remote_file_transfer                   | Detects unusually high file transfers to a remote host in the network.                          | Linux, macOS, Windows |
-| lmd_high_file_size_remote_file_transfer               | Detects unusually high size of files shared with a remote host in the network.                  | Linux, macOS, Windows |
-| lmd_rare_file_extension_remote_transfer               | Detects rare file extensions shared with a remote host in the network.                          | macOS, Windows        |
-| lmd_rare_file_path_remote_transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             | macOS, Windows        |
-| lmd_high_mean_rdp_session_duration                    | Detects unusually high mean of RDP session duration.                                            | Windows               |
-| lmd_high_var_rdp_session_duration                     | Detects unusually high variance in RDP session duration.                                        | Windows               |
-| lmd_high_sum_rdp_number_of_processes                  | Detects unusually high number of processes started in a single RDP session.                     | Windows               |
-| lmd_unusual_time_weekday_rdp_session_start            | Detects an RDP session started at an usual time or weekday.                                     | Windows               |
-| lmd_high_rdp_distinct_count_source_ip_for_destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       | Windows               |
-| lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               |
-| lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               |
+| lmd_high_count_remote_file_transfer_ea                   | Detects unusually high file transfers to a remote host in the network.                          | Linux, macOS, Windows |
+| lmd_high_file_size_remote_file_transfer_ea               | Detects unusually high size of files shared with a remote host in the network.                  | Linux, macOS, Windows |
+| lmd_rare_file_extension_remote_transfer_ea               | Detects rare file extensions shared with a remote host in the network.                          | macOS, Windows        |
+| lmd_rare_file_path_remote_transfer_ea                    | Detects unusual folders and directories on which a file is transferred (by a host).             | macOS, Windows        |
+| lmd_high_mean_rdp_session_duration_ea                    | Detects unusually high mean of RDP session duration.                                            | Windows               |
+| lmd_high_var_rdp_session_duration_ea                     | Detects unusually high variance in RDP session duration.                                        | Windows               |
+| lmd_high_sum_rdp_number_of_processes_ea                  | Detects unusually high number of processes started in a single RDP session.                     | Windows               |
+| lmd_unusual_time_weekday_rdp_session_start_ea            | Detects an RDP session started at an unusual time or weekday.                                     | Windows               |
+| lmd_high_rdp_distinct_count_source_ip_for_destination_ea | Detects a high count of source IPs making an RDP connection with a single destination IP.       | Windows               |
+| lmd_high_rdp_distinct_count_destination_ip_for_source_ea | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               |
+| lmd_high_mean_rdp_process_args_ea                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               |
 
 ## Customize ML jobs for Lateral Movement Detection
 
@@ -162,6 +162,32 @@ To customize the datafeed query and other settings such as model memory limit, f
 1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
 ![Lateral Movement Detection jobs](../img/lmd_ml_job_6.png)
 1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
+## v3.0.0 and beyond
+
+v3.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
+
+- The new ML jobs include an `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
+- Previously installed ML jobs, transforms, and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
+- We recommend installing the new ML jobs and transforms first and verifying that they are properly set up, collecting data, and generating anomalies before upgrading to the latest detection rules included in 9.4.
+- The new Entity Analytics transforms write to separate destination indices postfixed with `_ea`. Create a new data view for the Entity Analytics anomaly detection jobs using the new destination indices/aliases listed below. Do not mix old and new transform destination indices in the same data view.
+- New dashboards are available in this version with the suffix "(Entity Analytics)" in the title. If you are still running jobs or transforms from before this version, the original dashboards without the suffix remain available.
+
+The new Entity Analytics ML job IDs are:
+- `lmd_high_count_remote_file_transfer_ea`
+- `lmd_high_file_size_remote_file_transfer_ea`
+- `lmd_rare_file_extension_remote_transfer_ea`
+- `lmd_rare_file_path_remote_transfer_ea`
+- `lmd_high_mean_rdp_session_duration_ea`
+- `lmd_high_var_rdp_session_duration_ea`
+- `lmd_high_sum_rdp_number_of_processes_ea`
+- `lmd_unusual_time_weekday_rdp_session_start_ea`
+- `lmd_high_rdp_distinct_count_source_ip_for_destination_ea`
+- `lmd_high_rdp_distinct_count_destination_ip_for_source_ea`
+- `lmd_high_mean_rdp_process_args_ea`
+
+The new Entity Analytics transforms are:
+- `lmd.pivot_transform_ea` → destination index: `ml-rdp-lmd_ea`
 
 ## v2.0.0 and beyond
 
