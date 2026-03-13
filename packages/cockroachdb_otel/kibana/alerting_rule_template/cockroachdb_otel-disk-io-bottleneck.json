@@ -1,0 +1,40 @@
+{
+  "id": "cockroachdb_otel-disk-io-bottleneck",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Disk I/O operations queued high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_host_disk_iopsinprogress IS NOT NULL\n  AND sys_host_disk_iopsinprogress > 10\n// Persistent double digits indicate I/O bottleneck\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS iops_queued = MAX(sys_host_disk_iopsinprogress) BY attributes.node_id, host.name\n| SORT iops_queued DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.node_id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

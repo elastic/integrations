@@ -1,0 +1,40 @@
+{
+  "id": "cockroachdb_otel-lsm-read-amplification",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] LSM read amplification high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND rocksdb_read_amplification IS NOT NULL\n  AND rocksdb_read_amplification > 50\n// > 50 for sustained period indicates unhealthy LSM\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS amplification = MAX(rocksdb_read_amplification) BY attributes.node_id, host.name\n| SORT amplification DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.node_id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

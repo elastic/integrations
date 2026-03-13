@@ -1,0 +1,355 @@
+# CockroachDB OTel Overview dashboard
+# Converted from compiled Kibana JSON to kb-dashboard YAML format
+
+dashboards:
+  - id: cockroachdb_otel-overview
+    name: '[CockroachDB OTel] Overview'
+    description: >-
+      Cluster health, availability, and golden signals for CockroachDB. Covers live nodes,
+      replication status, SQL throughput, errors, CPU, and storage.
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: resource.attributes.service.name
+        equals: cockroachdb
+
+    controls:
+      - type: options
+        label: Node
+        data_view: metrics-*
+        field: attributes.node_id
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - size: {w: whole, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: cockroachdb_otel-overview
+            - label: Storage
+              dashboard: cockroachdb_otel-storage
+            - label: SQL & Transactions
+              dashboard: cockroachdb_otel-sql-transactions
+            - label: Replication & Ranges
+              dashboard: cockroachdb_otel-replication
+
+      # ─── Overview section header ───────────────────────────────────────
+      - hide_title: true
+        size: {w: third, h: 12}
+        markdown:
+          content: |
+            ## [CockroachDB OTel] Overview
+
+            This dashboard provides cluster health and golden signals:
+            - Live nodes and replication status (unavailable/under-replicated ranges)
+            - SQL throughput and connection counts
+            - Error rates (failures, aborts, contention)
+            - CPU and memory utilization
+            - Storage capacity and LSM health indicators
+
+      # ─── KPI metrics row 1 ─────────────────────────────────────────────
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE liveness_livenodes IS NOT NULL
+            - STATS live_nodes = MAX(LAST_OVER_TIME(liveness_livenodes))
+          primary:
+            field: live_nodes
+            label: Live Nodes
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges_unavailable IS NOT NULL
+            - STATS unavailable = MAX(LAST_OVER_TIME(ranges_unavailable))
+          primary:
+            field: unavailable
+            label: Unavailable Ranges
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges_underreplicated IS NOT NULL
+            - STATS underreplicated = MAX(LAST_OVER_TIME(ranges_underreplicated))
+          primary:
+            field: underreplicated
+            label: Under-Replicated Ranges
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_conns IS NOT NULL
+            - STATS conns = SUM(LAST_OVER_TIME(sql_conns))
+          primary:
+            field: conns
+            label: SQL Connections
+            format:
+              type: number
+              decimals: 0
+
+      # ─── KPI metrics row 2 ─────────────────────────────────────────────
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_failure_count IS NOT NULL
+            - STATS fail_rate = SUM(RATE(sql_failure_count))
+          primary:
+            field: fail_rate
+            label: SQL Failures (rate)
+            format:
+              type: number
+              decimals: 2
+              suffix: "/sec"
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sys_cpu_combined_percent_normalized IS NOT NULL
+            - STATS avg_cpu = AVG(AVG_OVER_TIME(sys_cpu_combined_percent_normalized))
+          primary:
+            field: avg_cpu
+            label: CPU Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE admission_io_overload IS NOT NULL
+            - STATS avg_io = AVG(AVG_OVER_TIME(admission_io_overload))
+          primary:
+            field: avg_io
+            label: IO Overload
+            format:
+              type: number
+              decimals: 2
+
+      - hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE storage_write_stalls IS NOT NULL
+            - STATS stalls = MAX(LAST_OVER_TIME(storage_write_stalls))
+          primary:
+            field: stalls
+            label: Write Stalls
+            format:
+              type: number
+              decimals: 0
+
+      # ─── Section: SQL Throughput ────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## SQL Throughput'
+
+      - title: Statement Rate by Type
+        size: {w: whole, h: 12}
+        esql:
+          type: area
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - FORK ( WHERE sql_select_count IS NOT NULL | STATS rate = SUM(RATE(sql_select_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "SELECT" ) ( WHERE sql_insert_count IS NOT NULL | STATS rate = SUM(RATE(sql_insert_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "INSERT" ) ( WHERE sql_update_count IS NOT NULL | STATS rate = SUM(RATE(sql_update_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "UPDATE" ) ( WHERE sql_delete_count IS NOT NULL | STATS rate = SUM(RATE(sql_delete_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "DELETE" )
+            - STATS rate = SUM(rate) BY time_bucket, stmt_type
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Statements/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/sec"
+          breakdown:
+            field: stmt_type
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Errors & Resources ───────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Errors & Resources'
+
+      - title: SQL Error Rate
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_failure_count IS NOT NULL
+            - STATS fail_rate = SUM(RATE(sql_failure_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: fail_rate
+              label: Failures/sec
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"
+          legend:
+            visible: show
+            position: right
+
+      - title: CPU Utilization by Node
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sys_cpu_combined_percent_normalized IS NOT NULL
+            - STATS cpu = AVG(AVG_OVER_TIME(sys_cpu_combined_percent_normalized)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.node_id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: cpu
+              label: CPU %
+              format:
+                type: percent
+                decimals: 1
+          breakdown:
+            field: attributes.node_id
+          legend:
+            visible: show
+            position: right
+
+      - title: SQL Connections by Node
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_conns IS NOT NULL
+            - STATS conns = MAX(LAST_OVER_TIME(sql_conns)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.node_id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: conns
+              label: Connections
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.node_id
+          legend:
+            visible: show
+            position: right
+
+      - title: RPC Round-Trip Latency
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE rpc_connection_avg_round_trip_latency IS NOT NULL
+            - STATS latency_ns = AVG(LAST_OVER_TIME(rpc_connection_avg_round_trip_latency)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL latency_ms = latency_ns / 1000000
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: latency_ms
+              label: Latency (ms)
+              format:
+                type: number
+                decimals: 2
+                suffix: " ms"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Detail ───────────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Detail'
+
+      - title: Stores by Unavailable and Under-Replicated Ranges
+        size: {w: whole, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE ranges_unavailable IS NOT NULL OR ranges_underreplicated IS NOT NULL
+            - STATS unavailable = MAX(COALESCE(ranges_unavailable, 0)), underreplicated = MAX(COALESCE(ranges_underreplicated, 0)), ranges = MAX(COALESCE(ranges, 0)) BY node_id = attributes.node_id, store = attributes.store, host = resource.attributes.host.name
+            - SORT unavailable DESC, underreplicated DESC
+            - LIMIT 50
+          dimensions:
+            - field: node_id
+              label: Node ID
+            - field: store
+              label: Store
+            - field: host
+              label: Host
+          metrics:
+            - field: ranges
+              label: Ranges
+            - field: unavailable
+              label: Unavailable
+            - field: underreplicated
+              label: Under-Replicated

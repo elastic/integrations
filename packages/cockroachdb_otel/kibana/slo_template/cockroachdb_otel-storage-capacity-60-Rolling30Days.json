@@ -1,0 +1,56 @@
+{
+  "attributes": {
+    "name": "[CockroachDB OTel] Storage capacity utilization under 60% rolling 30 days",
+    "description": "This SLO tracks storage capacity utilization of CockroachDB stores via OTel metrics, ensuring that 99.5% of 1-minute time intervals show capacity_used/capacity below 60% over a rolling period of 30 days. It uses store-level capacity and capacity_used gauges to compute cluster-wide utilization, preventing storage exhaustion and write stalls.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"cockroachdb.otel\" AND service.name: \"cockroachdb\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "capacity_used",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "capacity",
+              "filter": ""
+            }
+          ],
+          "equation": "A/B",
+          "comparator": "LT",
+          "threshold": 0.6
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "cockroachdb",
+      "otel"
+    ],
+    "groupBy": "resource.attributes.host.name"
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "cockroachdb_otel-overview" },
+      { "id": "cockroachdb_otel-storage" }
+    ]
+  },
+  "id": "cockroachdb_otel-storage-capacity-60-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,50 @@
+{
+  "attributes": {
+    "name": "[CockroachDB OTel] Admission IO overload under 1.0 99.5% rolling 30 days",
+    "description": "This SLO tracks the IO admission control overload indicator of CockroachDB stores via OTel metrics, ensuring that 99.5% of 1-minute time intervals show admission_io_overload below 1.0 over a rolling period of 30 days. Values above 1.0 indicate storage overload and compaction falling behind; this SLO helps maintain a healthy LSM tree and responsive writes.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"cockroachdb.otel\" AND service.name: \"cockroachdb\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "admission_io_overload",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "cockroachdb",
+      "otel"
+    ],
+    "groupBy": "resource.attributes.host.name"
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "cockroachdb_otel-overview" },
+      { "id": "cockroachdb_otel-storage" }
+    ]
+  },
+  "id": "cockroachdb_otel-admission-io-overload-99.5-Rolling30Days",
+  "type": "slo_template"
+}
