@@ -1,0 +1,157 @@
+# Flashpoint Integration for Elastic
+
+## Overview
+
+[Flashpoint](https://flashpoint.io/) is a comprehensive threat intelligence platform that delivers actionable insights from dark web, deep web, and technical sources. It combines human-curated intelligence with automated collection to help organizations identify emerging threats, monitor adversary activity, and assess cyber risk with enriched context.
+
+The Flashpoint integration for Elastic collects alerts, indicators and vulnerabilities from the **Flashpoint Ignite API** and visualizes them in Kibana.
+
+### Compatibility
+
+The Flashpoint integration is compatible with Ignite API version **1.2**.
+
+### How it works
+
+This integration periodically queries the Flashpoint Ignite API to retrieve logs.
+
+## What data does this integration collect?
+
+This integration collects log messages of the following type:
+
+- `Alert`: Collects `alert` logs from the Flashpoint Ignite API (endpoint: `/alert-management/v1/notifications`),
+- `Indicator`: Collects `indicator` logs from the Flashpoint Ignite API (endpoint: `/technical-intelligence/v2/indicators`),
+- `Vulnerabilities`: Collects `vulnerability` logs from the Flashpoint Ignite API (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`),
+
+**Note**: This integration uses Elastic transforms to deduplicate **incident** data and maintain the latest view of each incident for analysis and reporting.
+
+### Supported use cases
+
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence **Alerts**, **Indicators**, and **Vulnerabilities**, enabling efficient monitoring, investigation, and risk assessment within Kibana dashboards.
+
+For **Alerts**, the dashboard presents key metrics such as `Total Alerts` and `Alert Trends Over Time`, helping analysts quickly detect activity spikes and monitor evolving threat patterns.
+
+For **Indicators**, the dashboard highlights `Total Indicators` and `Indicators by Type`, providing insight into indicator volume and classification for effective threat analysis.
+
+For **Vulnerabilities**, the dashboard presents `Total Vulnerabilities` and key breakdowns by `Severity` and `Status`, helping security teams assess exposure levels and prioritize remediation efforts.
+
+Interactive filtering controls allow analysts to drill down across alerts, indicators, and vulnerabilities, supporting streamlined investigation and prioritization workflows within a unified threat intelligence view.
+
+## What do I need to use this integration?
+
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
+### From Flashpoint
+
+To collect data through the Flashpoint Ignite API, you need to provide an **API Token**. Authentication is handled using the **API Token**, which serves as the required credential.
+
+#### Retrieve an API Token:
+
+1. Log in to the **Flashpoint** Instance.
+2. Click on your profile icon in the top-right corner and select **Manage API Tokens**.
+3. Click **Generate Token**.
+4. Enter a name for the API token and click **Generate Token**.
+5. Copy and securely store the generated API token for use in the integration configuration.
+
+## How do I deploy this integration?
+
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+### Agentless-based installation
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+
+### configure
+
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **Flashpoint**.
+3. Select the **Flashpoint** integration from the search results.
+4. Select **Add Flashpoint** to add the integration.
+5. Enable and configure only the collection methods which you will use.
+
+    * To **Collect logs from Flashpoint API**, you'll need to:
+
+        - Configure **API Token**.
+        - Adjust the integration configuration parameters if required, including the **Initial Interval**, **Interval**, **Page Size** etc. to enable data collection.
+
+6. Select **Save and continue** to save the integration.
+
+## Troubleshooting
+
+1. If vulnerability data collection is slow or fails with `context deadline exceeded`, reduce the `Page Size` and increase the `HTTP Client Timeout`.
+
+### Validation
+
+#### Dashboard populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **Flashpoint**, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **ti_flashpoint**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### ECS field reference
+
+#### Alert
+
+{{fields "alert"}}
+
+### Example event
+
+#### Alert
+
+{{event "alert"}}
+
+#### Indicator
+
+{{fields "indicator"}}
+
+### Example event
+
+#### Indicator
+
+{{event "indicator"}}
+
+
+#### Vulnerability
+
+{{fields "vulnerability"}}
+
+### Example event
+
+#### Vulnerability
+
+{{event "vulnerability"}}
+
+
+### Inputs used
+
+These input is used in the integration:
+
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+### API usage
+
+This integration dataset uses the following API:
+
+* List Alerts (endpoint: `/alert-management/v1/notifications`)|
+* List Indicators (endpoint: `/technical-intelligence/v2/indicators`)
+* List Vulberabilities (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`)
