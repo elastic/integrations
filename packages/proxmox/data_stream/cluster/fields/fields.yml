@@ -1,0 +1,154 @@
+- name: proxmox
+  type: group
+  fields:
+    - name: cluster
+      type: group
+      fields:
+        # --- Fields from /api2/json/cluster/resources ---
+        - name: resource
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              dimension: true
+              description: Resource type (node, qemu, lxc, storage).
+            - name: id
+              type: keyword
+              dimension: true
+              description: Unique resource identifier (for example, qemu/100).
+            - name: name
+              type: keyword
+              description: Resource name.
+            - name: node
+              type: keyword
+              dimension: true
+              description: Node hosting this resource.
+            - name: vmid
+              type: long
+              metric_type: gauge
+              description: VM or container ID.
+            - name: status
+              type: keyword
+              description: Resource status (running, stopped, online, offline).
+            - name: cpu
+              type: double
+              metric_type: gauge
+              description: CPU usage ratio (0.0 to N).
+            - name: maxcpu
+              type: long
+              metric_type: gauge
+              description: Number of allocated CPUs.
+            - name: mem
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: Memory usage in bytes.
+            - name: maxmem
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: Maximum memory in bytes.
+            - name: disk
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: Disk usage in bytes.
+            - name: maxdisk
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: Maximum disk size in bytes.
+            - name: netin
+              type: long
+              metric_type: counter
+              unit: byte
+              description: Network bytes received.
+            - name: netout
+              type: long
+              metric_type: counter
+              unit: byte
+              description: Network bytes sent.
+            - name: diskread
+              type: long
+              metric_type: counter
+              unit: byte
+              description: Disk bytes read.
+            - name: diskwrite
+              type: long
+              metric_type: counter
+              unit: byte
+              description: Disk bytes written.
+            - name: uptime
+              type: long
+              metric_type: gauge
+              unit: s
+              description: Uptime in seconds.
+            - name: hastate
+              type: keyword
+              description: HA manager state.
+            - name: tags
+              type: keyword
+              description: Resource tags.
+            - name: pool
+              type: keyword
+              description: Resource pool membership.
+            - name: template
+              type: boolean
+              description: Whether this resource is a template.
+            - name: cgroup_mode
+              type: long
+              metric_type: gauge
+              description: Cgroup mode (node only).
+            - name: plugintype
+              type: keyword
+              description: Storage plugin type (dir, zfspool, lvmthin).
+            - name: content
+              type: keyword
+              description: Storage content types.
+            - name: shared
+              type: boolean
+              description: Whether storage is shared.
+        # --- Fields from /api2/json/cluster/status ---
+        - name: quorate
+          type: boolean
+          description: Whether the cluster has quorum.
+        - name: nodes
+          type: long
+          metric_type: gauge
+          description: Number of nodes in the cluster.
+        - name: name
+          type: keyword
+          description: Cluster name.
+        - name: node
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Node name from cluster status.
+            - name: online
+              type: boolean
+              description: Whether the node is online.
+            - name: local
+              type: boolean
+              description: Whether this is the local node.
+    # --- Fields from /api2/json/cluster/ha/resources ---
+    - name: ha
+      type: group
+      fields:
+        - name: sid
+          type: keyword
+          description: HA service identifier (for example, vm:100).
+        - name: state
+          type: keyword
+          description: HA resource state (started, stopped, error, migrated).
+        - name: group
+          type: keyword
+          description: HA group name.
+        - name: max_restart
+          type: long
+          metric_type: gauge
+          description: Maximum restart attempts.
+        - name: max_relocate
+          type: long
+          metric_type: gauge
+          description: Maximum relocate attempts.

@@ -1,0 +1,157 @@
+---
+description: Pipeline for Proxmox VE Corosync cluster logs
+processors:
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  # Preserve original event
+  - rename:
+      tag: rename_message_to_original
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_failure: true
+  - remove:
+      tag: remove_duplicate_message
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  # Extract Corosync subsystem from messages like [QUORUM] ..., [TOTEM] ..., [KNET] ..., [MAIN] ...
+  - grok:
+      tag: grok_corosync_subsystem
+      field: event.original
+      patterns:
+        - '\[%{WORD:proxmox.corosync.subsystem}\s*\]\s*%{GREEDYDATA:_temp.corosync_msg}'
+      ignore_failure: true
+
+  # Detect membership changes: Members[3]: 1 2 3
+  - grok:
+      tag: grok_membership_count
+      if: ctx.event?.original != null && ctx.event.original.contains('Members[')
+      field: event.original
+      patterns:
+        - 'Members\[%{INT:_temp.member_count}\]'
+      ignore_failure: true
+  - convert:
+      tag: convert_member_count
+      if: ctx._temp?.member_count != null
+      field: _temp.member_count
+      target_field: proxmox.corosync.members
+      type: long
+      ignore_failure: true
+  - set:
+      tag: set_action_membership_change
+      if: ctx._temp?.member_count != null
+      field: event.action
+      value: membership_change
+
+  # Detect quorum gained
+  - set:
+      tag: set_action_quorum_gained
+      if: ctx.event?.original != null && ctx.event.original.toLowerCase().contains('quorum gained')
+      field: event.action
+      value: quorum_gained
+
+  # Detect quorum lost
+  - set:
+      tag: set_action_quorum_lost
+      if: ctx.event?.original != null && ctx.event.original.toLowerCase().contains('lost quorum')
+      field: event.action
+      value: quorum_lost
+
+  # Detect link down
+  - set:
+      tag: set_action_link_down
+      if: ctx.event?.original != null && ctx.event.original.toLowerCase().contains('link') && ctx.event.original.toLowerCase().contains('down')
+      field: event.action
+      value: link_down
+
+  # Detect link up
+  - set:
+      tag: set_action_link_up
+      if: ctx.event?.original != null && ctx.event.original.toLowerCase().contains('link') && ctx.event.original.toLowerCase().contains('up')
+      field: event.action
+      value: link_up
+
+  # Set event.outcome based on action
+  - set:
+      tag: set_outcome_success
+      if: ctx.event?.action == 'quorum_gained' || ctx.event?.action == 'link_up'
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_outcome_failure
+      if: ctx.event?.action == 'quorum_lost' || ctx.event?.action == 'link_down'
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_outcome_unknown
+      if: ctx.event?.action == 'membership_change'
+      field: event.outcome
+      value: unknown
+
+  # Set event categories
+  - append:
+      tag: set_event_category_configuration
+      field: event.category
+      value:
+        - configuration
+      allow_duplicates: false
+  - append:
+      tag: set_event_type_info
+      field: event.type
+      value:
+        - info
+      allow_duplicates: false
+
+  # Set observer
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Proxmox
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Proxmox VE
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: virtualization
+
+  # Restore message from corosync_msg if available
+  - set:
+      tag: set_message_from_corosync_msg
+      if: ctx._temp?.corosync_msg != null
+      field: message
+      value: "{{_temp.corosync_msg}}"
+  - set:
+      tag: set_message_from_original
+      if: ctx._temp?.corosync_msg == null && ctx.event?.original != null
+      field: message
+      value: "{{event.original}}"
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"
