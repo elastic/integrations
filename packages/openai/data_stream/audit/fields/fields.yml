@@ -1,0 +1,85 @@
+- name: openai
+  type: group
+  fields:
+    - name: audit
+      type: group
+      fields:
+        - name: actor
+          type: group
+          fields:
+            - name: api_key
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The tracking id of the API key.
+                - name: servie_account
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The service account that performed the audit logged action.
+                - name: type
+                  type: keyword
+                  description: The type of API key. Can be either user or service_account.
+                - name: user
+                  type: group
+                  fields:
+                    - name: email
+                      type: keyword
+                      description: The user who performed the audit logged action.
+                    - name: id
+                      type: keyword
+                      description: The user who performed the audit logged action.
+            - name: session
+              type: group
+              fields:
+                - name: ip_address
+                  type: ip
+                  description: The IP address from which the action was performed.
+                - name: ip_address_details
+                  type: group
+                  fields:
+                    - name: asn
+                      type: long
+                    - name: city
+                      type: keyword
+                    - name: country
+                      type: keyword
+                    - name: latitude
+                      type: double
+                    - name: longitude
+                      type: double
+                    - name: region
+                      type: keyword
+                    - name: region_code
+                      type: keyword
+                - name: ja3
+                  type: keyword
+                - name: ja4
+                  type: keyword
+                - name: user
+                  type: group
+                  fields:
+                    - name: email
+                      type: keyword
+                      description: The session in which the audit logged action was performed. The user who performed the audit logged action. The user email.
+                    - name: id
+                      type: keyword
+                      description: The session in which the audit logged action was performed. The user who performed the audit logged action. The user id.
+                - name: user_agent
+                  type: keyword
+            - name: type
+              type: keyword
+              description: The type of actor. Is either session or api_key.
+        - name: effective_at
+          type: date
+          description: The Unix timestamp (in seconds) of the event.
+        - name: id
+          type: keyword
+          description: The ID of this log.
+        - name: object
+          type: keyword
+        - name: type
+          type: keyword
+          description: The event type.

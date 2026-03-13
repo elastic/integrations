@@ -1,17 +1,22 @@
 # OpenAI
 
-The OpenAI integration allows you to monitor OpenAI API usage metrics. OpenAI is an AI research and deployment company that offers [API platform](https://openai.com/api) for their industry-leading foundation models.
+The OpenAI integration allows you to monitor OpenAI API usage metrics and collect organization audit logs. OpenAI is an AI research and deployment company that offers [API platform](https://openai.com/api) for their industry-leading foundation models.
 
-With the OpenAI integration, you can track API usage metrics across their models, as well as for vector store and code interpreter. You will use Kibana to visualize your data, create alerts if usage limits are approaching, and view metrics when you troubleshoot issues. For example, you can track token usage and API calls per model.
+With the OpenAI integration, you can track API usage metrics across their models, as well as for vector store and code interpreter. You can also collect audit logs from the OpenAI platform to monitor user actions, API key lifecycle events, and organization configuration changes. You will use Kibana to visualize your data, create alerts if usage limits are approaching, view metrics when you troubleshoot issues, and analyze audit events for security and compliance. For example, you can track token usage and API calls per model, as well as login attempts, API key creation/deletion, and role assignments.
 
 ## Data collection
 
-The OpenAI integration leverages the [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) to collect detailed usage metrics. The Usage API delivers comprehensive insights into your API activity, helping you understand and optimize your organization's OpenAI API usage.
+The OpenAI integration leverages two OpenAI APIs for data collection:
+
+- **Usage API**: The [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) delivers comprehensive insights into your API activity, helping you understand and optimize your organization's OpenAI API usage.
+
+- **Audit Logs API**: The [OpenAI Audit Logs API](https://platform.openai.com/docs/api-reference/audit-logs) collects organization audit logs, providing visibility into user actions, API key lifecycle events, login attempts, role assignments, and other platform activity for security oversight and compliance.
 
 ## Data streams
 
 The OpenAI integration collects the following data streams:
 
+- `audit`: Collects organization audit logs.
 - `audio_speeches`: Collects audio speeches usage metrics.
 - `audio_transcriptions`: Collects audio transcriptions usage metrics.
 - `code_interpreter_sessions`: Collects code interpreter sessions usage metrics.
@@ -27,7 +32,7 @@ The OpenAI integration collects the following data streams:
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 
-You need an OpenAI account with a valid [Admin key](https://platform.openai.com/settings/organization/admin-keys) for programmatic access to [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage).
+You need an OpenAI account with a valid [Admin key](https://platform.openai.com/settings/organization/admin-keys) for programmatic access to the [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) and [OpenAI Audit Logs API](https://platform.openai.com/docs/api-reference/audit-logs). To fetch audit logs, you must enable audit logging on the OpenAI platform in your organization settings under Data controls > Data retention. Audit logs also require Organization Owner permissions.
 
 ## Setup
 
@@ -39,7 +44,7 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval" and "Bucket width".
+Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval" and "Bucket width" for usage metrics, and "Initial interval" and "Interval" for audit logs.
 
 ### Initial interval
 
@@ -105,6 +110,173 @@ The integration starts at 10:00 AM, collects data from 10:00 AM the previous day
 
 Refer to this [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
+### Audit logs
+
+The `audit` data stream captures organization audit logs from the OpenAI platform.
+
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2026-02-09T05:50:27.000Z",
+    "agent": {
+        "ephemeral_id": "b8cf01ec-b781-447e-92b2-8f5718e052bc",
+        "id": "cc76ec1f-6316-44fc-9253-3b5e79ade96b",
+        "name": "elastic-agent-41375",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "openai.audit",
+        "namespace": "57945",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "cc76ec1f-6316-44fc-9253-3b5e79ade96b",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "login-succeeded",
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "openai.audit",
+        "id": "audit_log-iakaJWnLdMLe89Ml5xayb4RJ",
+        "ingested": "2026-03-05T12:28:52Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"session\":{\"ip_address\":\"163.116.213.142\",\"ip_address_details\":{\"asn\":\"55256\",\"city\":\"Mumbai\",\"country\":\"IN\",\"latitude\":\"19.07283\",\"longitude\":\"72.88261\",\"region\":\"Maharashtra\",\"region_code\":\"MH\"},\"ja3\":\"353a03072e841d5004dfaa78561ccc70\",\"ja4\":\"t13d691100_8b2139ff7677_f0e8fcc46740\",\"user\":{\"email\":\"muskan.agarwal@crestdata.ai\",\"id\":\"user-nuEwi8Vsrrddq53RTzEQ9p3c\"},\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"},\"type\":\"session\"},\"effective_at\":1770616227,\"id\":\"audit_log-iakaJWnLdMLe89Ml5xayb4RJ\",\"object\":\"organization.audit_log\",\"type\":\"login.succeeded\"}",
+        "type": [
+            "change"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "OpenAI",
+        "vendor": "OpenAI"
+    },
+    "openai": {
+        "audit": {
+            "actor": {
+                "session": {
+                    "ip_address": "163.116.213.142",
+                    "ip_address_details": {
+                        "asn": 55256,
+                        "city": "Mumbai",
+                        "country": "IN",
+                        "latitude": 19.07283,
+                        "longitude": 72.88261,
+                        "region": "Maharashtra",
+                        "region_code": "MH"
+                    },
+                    "ja3": "353a03072e841d5004dfaa78561ccc70",
+                    "ja4": "t13d691100_8b2139ff7677_f0e8fcc46740",
+                    "user": {
+                        "email": "muskan.agarwal@crestdata.ai",
+                        "id": "user-nuEwi8Vsrrddq53RTzEQ9p3c"
+                    },
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+                },
+                "type": "session"
+            },
+            "effective_at": "2026-02-09T05:50:27.000Z",
+            "id": "audit_log-iakaJWnLdMLe89Ml5xayb4RJ",
+            "object": "organization.audit_log",
+            "type": "login.succeeded"
+        }
+    },
+    "related": {
+        "ip": [
+            "163.116.213.142"
+        ],
+        "user": [
+            "muskan.agarwal@crestdata.ai",
+            "user-nuEwi8Vsrrddq53RTzEQ9p3c"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 55256
+        },
+        "geo": {
+            "city_name": "Mumbai",
+            "country_iso_code": "IN",
+            "location": {
+                "lat": 19.07283,
+                "lon": 72.88261
+            },
+            "region_iso_code": "MH",
+            "region_name": "Maharashtra"
+        },
+        "ip": "163.116.213.142"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "openai-audit"
+    ],
+    "tls": {
+        "client": {
+            "ja3": "353a03072e841d5004dfaa78561ccc70"
+        }
+    },
+    "user": {
+        "domain": "crestdata.ai",
+        "email": "muskan.agarwal@crestdata.ai",
+        "id": "user-nuEwi8Vsrrddq53RTzEQ9p3c"
+    },
+    "user_agent": {
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| openai.audit.actor.api_key.id | The tracking id of the API key. | keyword |
+| openai.audit.actor.api_key.servie_account.id | The service account that performed the audit logged action. | keyword |
+| openai.audit.actor.api_key.type | The type of API key. Can be either user or service_account. | keyword |
+| openai.audit.actor.api_key.user.email | The user who performed the audit logged action. | keyword |
+| openai.audit.actor.api_key.user.id | The user who performed the audit logged action. | keyword |
+| openai.audit.actor.session.ip_address | The IP address from which the action was performed. | ip |
+| openai.audit.actor.session.ip_address_details.asn |  | long |
+| openai.audit.actor.session.ip_address_details.city |  | keyword |
+| openai.audit.actor.session.ip_address_details.country |  | keyword |
+| openai.audit.actor.session.ip_address_details.latitude |  | double |
+| openai.audit.actor.session.ip_address_details.longitude |  | double |
+| openai.audit.actor.session.ip_address_details.region |  | keyword |
+| openai.audit.actor.session.ip_address_details.region_code |  | keyword |
+| openai.audit.actor.session.ja3 |  | keyword |
+| openai.audit.actor.session.ja4 |  | keyword |
+| openai.audit.actor.session.user.email | The session in which the audit logged action was performed. The user who performed the audit logged action. The user email. | keyword |
+| openai.audit.actor.session.user.id | The session in which the audit logged action was performed. The user who performed the audit logged action. The user id. | keyword |
+| openai.audit.actor.session.user_agent |  | keyword |
+| openai.audit.actor.type | The type of actor. Is either session or api_key. | keyword |
+| openai.audit.effective_at | The Unix timestamp (in seconds) of the event. | date |
+| openai.audit.id | The ID of this log. | keyword |
+| openai.audit.object |  | keyword |
+| openai.audit.type | The event type. | keyword |
+
+
 ### Audio speeches
 
 The `audio_speeches` data stream captures audio speeches usage metrics.
@@ -130,7 +302,7 @@ An example event for `audio_speeches` looks as following:
     },
     "@timestamp": "2024-09-05T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -195,7 +367,7 @@ An example event for `audio_transcriptions` looks as following:
     },
     "@timestamp": "2024-11-04T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -256,7 +428,7 @@ An example event for `code_interpreter_sessions` looks as following:
     },
     "@timestamp": "2024-09-04T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -322,7 +494,7 @@ An example event for `completions` looks as following:
     },
     "@timestamp": "2025-01-27T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -392,7 +564,7 @@ An example event for `embeddings` looks as following:
     },
     "@timestamp": "2024-09-04T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -459,7 +631,7 @@ An example event for `images` looks as following:
     },
     "@timestamp": "2024-09-04T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -526,7 +698,7 @@ An example event for `moderations` looks as following:
     },
     "@timestamp": "2024-09-04T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -587,7 +759,7 @@ An example event for `vector_stores` looks as following:
     },
     "@timestamp": "2024-09-04T00:00:00.000Z",
     "ecs": {
-        "version": "8.16.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "namespace": "default",
