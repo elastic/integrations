@@ -22,6 +22,7 @@ The Elastic Agent process needs read access to these log files:
 | `/var/log/pki/pki-tomcat/ca/signedAudit/ca_audit` | pkiuser:pkiuser | Only on CA replicas |
 | `/var/log/httpd/error_log` | root:root | |
 
+
 Add the `elastic-agent` user to the `dirsrv` and `pkiuser` groups, or use ACLs:
 
 ```bash
