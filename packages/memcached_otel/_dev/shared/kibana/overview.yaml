@@ -1,0 +1,328 @@
+---
+# Memcached OpenTelemetry Overview Dashboard (ES|QL Version)
+# Comprehensive Memcached metrics dashboard using OpenTelemetry memcached receiver
+# Uses ES|QL with TS command for time-series optimization
+#
+# Metrics reference: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/memcachedreceiver
+dashboards:
+  - id: memcached_otel-overview
+    name: '[Metrics Memcached] Overview'
+    description: Memcached monitoring dashboard for OpenTelemetry memcachedreceiver using ES|QL
+    controls:
+      - type: options
+        label: Host Name
+        data_view: metrics-*
+        field: resource.attributes.host.name
+    filters:
+      - field: data_stream.dataset
+        equals: memcachedreceiver.otel
+    panels:
+      # Overview Metrics Row (y=0, h=5)
+      - title: Current Items
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.current_items IS NOT NULL
+            | STATS items = MAX(LAST_OVER_TIME(memcached.current_items))
+          primary:
+            field: items
+            label: Items in Cache
+            format:
+              type: number
+              decimals: 0
+      - title: Storage Used
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.bytes IS NOT NULL
+            | STATS bytes = MAX(LAST_OVER_TIME(memcached.bytes))
+          primary:
+            field: bytes
+            label: Bytes Used
+            format:
+              type: bytes
+      - title: Current Connections
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.connections.current IS NOT NULL
+            | STATS connections = MAX(LAST_OVER_TIME(memcached.connections.current))
+          primary:
+            field: connections
+            label: Active Connections
+            format:
+              type: number
+              decimals: 0
+      - title: Threads
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.threads IS NOT NULL
+            | STATS threads = MAX(LAST_OVER_TIME(memcached.threads))
+          primary:
+            field: threads
+            label: Threads
+            format:
+              type: number
+              decimals: 0
+      - title: Average Hit Ratio
+        size: {w: 16, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.operation_hit_ratio IS NOT NULL
+            | STATS hit_ratio = AVG(AVG_OVER_TIME(memcached.operation_hit_ratio))
+          primary:
+            field: hit_ratio
+            label: Hit Ratio
+            format:
+              type: percent
+
+      # Performance Section (y=5)
+      - title: Hit Ratio Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.operation_hit_ratio IS NOT NULL
+            | STATS hit_ratio = AVG(AVG_OVER_TIME(memcached.operation_hit_ratio)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), operation = attributes.operation
+            | SORT time_bucket ASC
+          legend:
+            visible: show
+            position: right
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: hit_ratio
+              label: Hit Ratio
+              format:
+                type: percent
+          breakdown:
+            field: operation
+      - title: Operations Rate
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.operations IS NOT NULL
+            | STATS ops_rate = SUM(RATE(memcached.operations)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), type = attributes.type
+            | SORT time_bucket ASC
+          legend:
+            visible: show
+            position: right
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: ops_rate
+              label: Operations/sec
+          breakdown:
+            field: type
+
+      # Commands Section (y=15)
+      - title: Commands Executed
+        size: {w: 24, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.commands IS NOT NULL
+            | STATS cmd_rate = SUM(RATE(memcached.commands)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), command = attributes.command
+            | SORT time_bucket ASC
+          legend:
+            visible: show
+            position: right
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: cmd_rate
+              label: Commands/sec
+          breakdown:
+            field: command
+      - title: CPU Usage
+        size: {w: 24, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.cpu.usage IS NOT NULL
+            | STATS cpu_rate = SUM(RATE(memcached.cpu.usage)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), state = attributes.state
+            | SORT time_bucket ASC
+          legend:
+            visible: show
+            position: right
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: cpu_rate
+              label: CPU Time (sec/sec)
+          breakdown:
+            field: state
+
+      # Capacity Section (y=25)
+      - title: Items Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.current_items IS NOT NULL
+            | STATS items = AVG(AVG_OVER_TIME(memcached.current_items)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: items
+              label: Current Items
+              format:
+                type: number
+      - title: Storage Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.bytes IS NOT NULL
+            | STATS bytes = AVG(AVG_OVER_TIME(memcached.bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: bytes
+              label: Bytes Used
+              format:
+                type: bytes
+
+      # Health Section (y=35)
+      - title: Evictions Rate
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.evictions IS NOT NULL
+            | STATS evictions_rate = SUM(RATE(memcached.evictions)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: evictions_rate
+              label: Evictions/sec
+      - title: Current Connections Over Time
+        size: {w: 12, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.connections.current IS NOT NULL
+            | STATS connections = AVG(AVG_OVER_TIME(memcached.connections.current)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: connections
+              label: Current Connections
+              format:
+                type: number
+      - title: New Connections Rate
+        size: {w: 12, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.connections.total IS NOT NULL
+            | STATS conn_rate = SUM(RATE(memcached.connections.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: conn_rate
+              label: New Connections/sec
+
+      # Network Section (y=45)
+      - title: Network Traffic - Received
+        size: {w: 24, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.network IS NOT NULL
+            | WHERE attributes.direction == "received"
+            | STATS bytes_rate = SUM(RATE(memcached.network)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: bytes_rate
+              label: Received Bytes/sec
+              format:
+                type: bytes
+      - title: Network Traffic - Sent
+        size: {w: 24, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            TS metrics-*
+            | WHERE data_stream.dataset == "memcachedreceiver.otel"
+            | WHERE memcached.network IS NOT NULL
+            | WHERE attributes.direction == "sent"
+            | STATS bytes_rate = SUM(RATE(memcached.network)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: bytes_rate
+              label: Sent Bytes/sec
+              format:
+                type: bytes
