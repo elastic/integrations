@@ -1,0 +1,125 @@
+---
+description: Pipeline for FreeIPA 389 Directory Server error log events.
+processors:
+  # Static metadata
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: freeipa
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: freeipa.directory_errors
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - database
+
+  # Parse 389ds error log line
+  # Format: [DD/Mon/YYYY:HH:mm:ss.nnnnnnnnn +ZZZZ] - SEVERITY - SUBSYSTEM - MESSAGE
+  - grok:
+      tag: grok_dirsrv_line
+      field: message
+      patterns:
+        - "\\[%{DATA:_temp.timestamp} %{DATA:_temp.tz}\\] - %{WORD:_temp.severity} - %{NOTSPACE:freeipa.directory_error.subsystem} - %{GREEDYDATA:_temp.log_message}"
+
+  # Trim nanosecond precision to microseconds (Java supports 6 digits max)
+  - gsub:
+      tag: gsub_timestamp_precision
+      field: _temp.timestamp
+      pattern: "(\\.\\d{6})\\d{3}"
+      replacement: "$1"
+  # Parse timestamp
+  - date:
+      tag: date_parse
+      field: _temp.timestamp
+      target_field: "@timestamp"
+      formats:
+        - "dd/MMM/yyyy:HH:mm:ss.SSSSSS"
+      timezone: "{{ _temp.tz }}"
+
+  # Set log.level (lowercase)
+  - lowercase:
+      tag: lowercase_severity
+      field: _temp.severity
+      target_field: log.level
+
+  # Set event.type based on severity
+  - set:
+      tag: set_event_type_error
+      if: "ctx.log.level == 'err' || ctx.log.level == 'crit' || ctx.log.level == 'alert' || ctx.log.level == 'emerg'"
+      field: event.type
+      value:
+        - error
+  - set:
+      tag: set_event_type_info
+      if: "ctx.event?.type == null"
+      field: event.type
+      value:
+        - info
+
+  # Promote event.kind to alert for critical errors
+  - set:
+      tag: set_kind_alert
+      if: "ctx.log.level == 'crit' || ctx.log.level == 'alert' || ctx.log.level == 'emerg'"
+      field: event.kind
+      value: alert
+
+  # Set the log message content
+  - set:
+      tag: set_log_message
+      if: ctx._temp?.log_message != null
+      field: freeipa.directory_error.message
+      copy_from: _temp.log_message
+
+  # Set event.action
+  - set:
+      tag: set_event_action
+      field: event.action
+      value: directory_error
+
+  # Optional: extract replication agreement info
+  - grok:
+      tag: grok_replication
+      field: _temp.log_message
+      if: ctx._temp?.log_message != null
+      ignore_failure: true
+      patterns:
+        - "agmt=\"%{DATA:freeipa.directory_error.agreement}\" \\(%{HOSTNAME:freeipa.directory_error.remote_host}:%{INT}\\).*LDAP error %{INT:freeipa.directory_error.ldap_error_code:int}"
+        - "agmt=\"%{DATA:freeipa.directory_error.agreement}\" \\(%{HOSTNAME:freeipa.directory_error.remote_host}:%{INT}\\)"
+
+  # Related fields
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{freeipa.directory_error.remote_host}}"
+      if: ctx.freeipa?.directory_error?.remote_host != null
+      allow_duplicates: false
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message: {{ _ingest.on_failure_message }}"

@@ -1,0 +1,252 @@
+---
+description: Pipeline for FreeIPA IPA API audit events.
+processors:
+  # Static metadata
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: freeipa
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: freeipa.ipa_api
+
+  # Parse the httpd error_log IPA line
+  - grok:
+      tag: grok_ipa_api
+      field: message
+      patterns:
+        # Command with version suffix and etime: command/1(params): RESULT etime=N
+        - "\\[%{DATA:_temp.httpd_ts}\\] \\[wsgi:error\\] \\[pid %{POSINT:process.pid:int}:tid %{POSINT:process.thread.id:int}\\] \\[remote %{IP:source.ip}:%{POSINT:source.port:int}\\] ipa: %{WORD:_temp.log_level}: \\[%{DATA:freeipa.api.server_class}\\] %{DATA:_temp.principal}: %{DATA:freeipa.api.command}/%{DATA:freeipa.api.version}\\(%{DATA:freeipa.api.parameters}\\): %{NOTSPACE:freeipa.api.result} etime=%{NUMBER:_temp.etime:long}"
+        # Command with version suffix, no etime: command/1(params): RESULT
+        - "\\[%{DATA:_temp.httpd_ts}\\] \\[wsgi:error\\] \\[pid %{POSINT:process.pid:int}:tid %{POSINT:process.thread.id:int}\\] \\[remote %{IP:source.ip}:%{POSINT:source.port:int}\\] ipa: %{WORD:_temp.log_level}: \\[%{DATA:freeipa.api.server_class}\\] %{DATA:_temp.principal}: %{DATA:freeipa.api.command}/%{DATA:freeipa.api.version}\\(%{DATA:freeipa.api.parameters}\\): %{NOTSPACE:freeipa.api.result}"
+        # Command without version suffix: command(params): RESULT (e.g. schema, ping)
+        - "\\[%{DATA:_temp.httpd_ts}\\] \\[wsgi:error\\] \\[pid %{POSINT:process.pid:int}:tid %{POSINT:process.thread.id:int}\\] \\[remote %{IP:source.ip}:%{POSINT:source.port:int}\\] ipa: %{WORD:_temp.log_level}: \\[%{DATA:freeipa.api.server_class}\\] %{DATA:_temp.principal}: %{DATA:freeipa.api.command}\\(%{DATA:freeipa.api.parameters}\\): %{NOTSPACE:freeipa.api.result}"
+
+  # Parse httpd timestamp
+  - date:
+      tag: date_parse
+      field: _temp.httpd_ts
+      target_field: "@timestamp"
+      formats:
+        - "EEE MMM dd HH:mm:ss.SSSSSS yyyy"
+        - "EEE MMM  d HH:mm:ss.SSSSSS yyyy"
+
+  # Extract user.name and user.domain from principal (admin@REALM)
+  - grok:
+      tag: grok_principal
+      field: _temp.principal
+      ignore_failure: true
+      patterns:
+        - "%{DATA:user.name}@%{GREEDYDATA:user.domain}"
+  - set:
+      tag: set_user_id
+      if: ctx._temp?.principal != null
+      field: user.id
+      copy_from: _temp.principal
+
+  # Set event.action to the command name
+  - set:
+      tag: set_event_action
+      if: ctx.freeipa?.api?.command != null
+      field: event.action
+      copy_from: freeipa.api.command
+
+  # Set event.outcome from result
+  # SUCCESS and SchemaUpToDate are successful outcomes; known IPA error classes are failures
+  - set:
+      tag: set_outcome_success
+      if: ctx.freeipa?.api?.result == 'SUCCESS' || ctx.freeipa?.api?.result == 'SchemaUpToDate'
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_outcome_failure
+      if: >-
+        ctx.freeipa?.api?.result != null &&
+        ctx.freeipa?.api?.result != 'SUCCESS' &&
+        ctx.freeipa?.api?.result != 'SchemaUpToDate'
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_event_reason
+      if: >-
+        ctx.freeipa?.api?.result != null &&
+        ctx.freeipa?.api?.result != 'SUCCESS' &&
+        ctx.freeipa?.api?.result != 'SchemaUpToDate'
+      field: event.reason
+      copy_from: freeipa.api.result
+
+  # Convert etime (microseconds) to event.duration (ECS nanoseconds)
+  - script:
+      tag: script_event_duration
+      if: ctx._temp?.etime != null
+      lang: painless
+      source: |
+        ctx.event.put('duration', ctx._temp.etime * 1000L);
+
+  # Extract target entity from first positional parameter: command('target', ...)
+  - grok:
+      tag: grok_target_entity
+      field: freeipa.api.parameters
+      if: ctx.freeipa?.api?.parameters != null
+      ignore_failure: true
+      patterns:
+        - "^'%{DATA:_temp.target_entity}'"
+
+  # Set group.name for group commands
+  - set:
+      tag: set_group_name
+      if: >-
+        ctx._temp?.target_entity != null && (
+        ctx.freeipa?.api?.command == 'group_add' ||
+        ctx.freeipa?.api?.command == 'group_del' ||
+        ctx.freeipa?.api?.command == 'group_mod' ||
+        ctx.freeipa?.api?.command == 'group_add_member' ||
+        ctx.freeipa?.api?.command == 'group_remove_member' ||
+        ctx.freeipa?.api?.command == 'group_show' ||
+        ctx.freeipa?.api?.command == 'group_find')
+      field: group.name
+      copy_from: _temp.target_entity
+
+  # Set user.target.name for user-targeting commands
+  - set:
+      tag: set_user_target
+      if: >-
+        ctx._temp?.target_entity != null && (
+        ctx.freeipa?.api?.command == 'user_add' ||
+        ctx.freeipa?.api?.command == 'user_del' ||
+        ctx.freeipa?.api?.command == 'user_mod' ||
+        ctx.freeipa?.api?.command == 'user_show' ||
+        ctx.freeipa?.api?.command == 'user_find' ||
+        ctx.freeipa?.api?.command == 'user_disable' ||
+        ctx.freeipa?.api?.command == 'user_enable' ||
+        ctx.freeipa?.api?.command == 'user_unlock')
+      field: user.target.name
+      copy_from: _temp.target_entity
+
+  # Set host.name for host-targeting commands
+  - set:
+      tag: set_target_host
+      if: >-
+        ctx._temp?.target_entity != null && (
+        ctx.freeipa?.api?.command == 'host_add' ||
+        ctx.freeipa?.api?.command == 'host_del' ||
+        ctx.freeipa?.api?.command == 'host_mod' ||
+        ctx.freeipa?.api?.command == 'host_show')
+      field: host.name
+      copy_from: _temp.target_entity
+
+  # Derive event.category and event.type from command
+  - script:
+      tag: script_event_category
+      lang: painless
+      source: |
+        def cmd = ctx.event?.action;
+        if (cmd == null) return;
+        def category = ['iam'];
+        def type = ['info'];
+        if (cmd.endsWith('_add') || cmd.equals('cert_request')) {
+          type = ['creation'];
+        } else if (cmd.endsWith('_del')) {
+          type = ['deletion'];
+        } else if (cmd.endsWith('_mod') || cmd.equals('group_add_member') || cmd.equals('group_remove_member')) {
+          type = ['change'];
+        } else if (cmd.endsWith('_find') || cmd.endsWith('_show')) {
+          type = ['info'];
+        }
+        if (cmd.startsWith('hbacrule_') || cmd.startsWith('sudorule_')) {
+          category = ['iam', 'configuration'];
+        }
+        ctx.event.put('category', category);
+        ctx.event.put('type', type);
+
+  # Promote event.kind to alert for permission failures
+  - set:
+      tag: set_kind_alert
+      if: ctx.freeipa?.api?.result == 'InsufficientAccess'
+      field: event.kind
+      value: alert
+
+  # Related fields
+  - append:
+      tag: append_related_user
+      field: related.user
+      value: "{{user.name}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_id
+      field: related.user
+      value: "{{user.id}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_target_user
+      field: related.user
+      value: "{{user.target.name}}"
+      if: ctx.user?.target?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{host.name}}"
+      if: ctx.host?.name != null
+      allow_duplicates: false
+
+  # GeoIP enrichment
+  - geoip:
+      tag: geoip_source
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      tag: geoip_source_asn
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_asn
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_as_org
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message: {{ _ingest.on_failure_message }}"
