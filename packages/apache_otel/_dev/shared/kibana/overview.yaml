@@ -1,0 +1,258 @@
+---
+dashboards:
+  - id: apache_otel-b536d9d2-90f0-4177-a92e-adbe6e12427d
+    name: '[Metrics Apache OTel] Overview'
+    description: Overview of Apache server status
+    filters:
+      - field: data_stream.dataset
+        equals: apachereceiver.otel
+    controls:
+      - type: options
+        label: Hostname
+        data_view: metrics-*
+        field: host.hostname
+    panels:
+      # KPI Metrics Row
+      - title: Server Uptime
+        hide_title: true
+        size: {w: 16, h: 7}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel"
+            - STATS uptime = MAX(metrics.apache.uptime)
+          primary:
+            field: uptime
+            label: Server Uptime (seconds)
+            format:
+              type: number
+              decimals: 0
+      - title: Total Requests Processed
+        hide_title: true
+        size: {w: 16, h: 7}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel"
+            - STATS total_requests = MAX(metrics.apache.requests)
+          primary:
+            field: total_requests
+            label: Total Requests Processed
+            format:
+              type: number
+              decimals: 0
+      - title: Total Egress
+        hide_title: true
+        size: {w: 16, h: 7}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel"
+            - STATS total_traffic = MAX(metrics.apache.traffic)
+          primary:
+            field: total_traffic
+            label: Total Egress
+            format:
+              type: bytes
+
+      # Worker Charts Row
+      - title: Apache Worker Pool (Idle vs Busy)
+        size: {w: 24, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel" AND metrics.apache.workers IS NOT NULL
+            - STATS busy = AVG(CASE(attributes.state == "busy", metrics.apache.workers, NULL)),
+                    idle = AVG(CASE(attributes.state == "idle", metrics.apache.workers, NULL))
+              BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: busy
+              label: Busy workers
+              format:
+                type: number
+                decimals: 1
+            - field: idle
+              label: Idle workers
+              format:
+                type: number
+                decimals: 1
+          color:
+            palette: kibana_palette
+            assignments:
+              - value: Busy workers
+                color: '#00a69b'
+              - value: Idle workers
+                color: '#57c17b'
+          appearance:
+            y_left_axis:
+              title: Workers
+      - title: Apache Worker States (Scoreboard)
+        size: {w: 24, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel" AND metrics.apache.scoreboard IS NOT NULL
+            - STATS scoreboard = AVG(metrics.apache.scoreboard)
+              BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), attributes.state
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: scoreboard
+              label: Workers
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.state
+          appearance:
+            y_left_axis:
+              title: Workers
+          legend:
+            visible: show
+            position: right
+            size: extra_large
+
+      # CPU Time Spent and CPU Load Row
+      - title: CPU Time Spent - by CPU Mode
+        size: {w: 24, h: 15}
+        esql:
+          type: area
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel" AND metrics.apache.cpu.time IS NOT NULL
+            - STATS cpu_time = MIN(metrics.apache.cpu.time)
+              BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),
+                 `attributes.level`, `attributes.mode`
+            - EVAL label = CONCAT(`attributes.level`, " ", `attributes.mode`)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: cpu_time
+              label: CPU Time
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: label
+          appearance:
+            y_left_axis:
+              title: Time(s)
+          legend:
+            visible: show
+            position: right
+            size: extra_large
+      - title: CPU Load
+        size: {w: 24, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel" AND metrics.apache.cpu.load IS NOT NULL
+            - STATS cpu_load = AVG(metrics.apache.cpu.load)
+              BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: cpu_load
+              label: CPU Usage (%)
+              format:
+                type: number
+                decimals: 2
+          appearance:
+            y_left_axis:
+              title: Load(%)
+          legend:
+            visible: hide
+
+      # Server Load and Connections Row
+      - title: Average server load
+        size: {w: 24, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel"
+              AND (`metrics.apache.load.1` IS NOT NULL
+                OR `metrics.apache.load.5` IS NOT NULL
+                OR `metrics.apache.load.15` IS NOT NULL)
+            - STATS load_1m = AVG(`metrics.apache.load.1`),
+                    load_5m = AVG(`metrics.apache.load.5`),
+                    load_15m = AVG(`metrics.apache.load.15`)
+              BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: load_1m
+              label: Load per 1 min
+              format:
+                type: number
+                decimals: 1
+            - field: load_5m
+              label: Load per 5 min
+              format:
+                type: number
+                decimals: 1
+            - field: load_15m
+              label: Load per 15 min
+              format:
+                type: number
+                decimals: 1
+          appearance:
+            y_left_axis:
+              title: Load(%)
+          legend:
+            visible: show
+            position: right
+            size: extra_large
+      - title: Active Apache Connections
+        size: {w: 24, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "apachereceiver.otel" AND metrics.apache.current_connections IS NOT NULL
+            - STATS connections = MAX(metrics.apache.current_connections)
+              BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: connections
+              label: Total
+              format:
+                type: number
+                decimals: 0
+          color:
+            palette: kibana_palette
+            assignments:
+              - value: Total
+                color: '#00a69b'
+          appearance:
+            y_left_axis:
+              title: Connections
+          legend:
+            visible: hide
