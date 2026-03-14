@@ -1,0 +1,120 @@
+format_version: "3.3.0"
+name: juniper_junos_metrics
+title: Juniper JunOS Metrics
+version: "0.1.0"
+description: Collect metrics from Juniper JunOS devices via REST API.
+type: integration
+categories:
+  - network
+  - monitoring
+conditions:
+  kibana:
+    version: "^8.16.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/logo.svg
+    title: Juniper JunOS Metrics
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/overview-dashboard.png
+    title: Overview Dashboard
+    size: 1440x3589
+    type: image/png
+  - src: /img/route-engine-dashboard.png
+    title: Route Engine Dashboard
+    size: 1440x1825
+    type: image/png
+  - src: /img/interfaces-dashboard.png
+    title: Interfaces Dashboard
+    size: 1440x5841
+    type: image/png
+policy_templates:
+  - name: juniper_junos
+    title: Juniper JunOS
+    description: Collect metrics from Juniper JunOS devices via REST API
+    inputs:
+      - type: cel
+        title: JunOS REST API
+        description: Poll JunOS REST API for device metrics and events
+        vars:
+          - name: host
+            type: text
+            title: Device Host
+            description: "JunOS device hostname or IP address (for example, 192.168.1.1 or core-rtr-01.example.com)."
+            required: true
+            show_user: true
+            default: "192.168.1.1"
+          - name: port
+            type: integer
+            title: Port
+            description: "REST API port on the JunOS device."
+            required: true
+            show_user: true
+            default: 3443
+          - name: use_https
+            type: bool
+            title: Use HTTPS
+            description: Connect using HTTPS instead of HTTP.
+            required: false
+            show_user: true
+            default: true
+          - name: username
+            type: text
+            title: Username
+            description: JunOS REST API username.
+            required: true
+            show_user: true
+            default: root
+          - name: password
+            type: password
+            title: Password
+            description: JunOS REST API password.
+            required: true
+            show_user: true
+            secret: true
+          - name: device_name
+            type: text
+            title: Device Name
+            description: "Friendly device label for dashboards (for example, core-rtr-01). Defaults to the API hostname, then the host IP."
+            required: false
+            show_user: true
+          - name: ssl_verification_mode
+            type: select
+            title: SSL Verification Mode
+            description: "Controls server certificate verification."
+            required: false
+            show_user: false
+            default: none
+            options:
+              - value: none
+                text: "None (skip verification)"
+              - value: certificate
+                text: "Certificate (verify CA only)"
+              - value: full
+                text: "Full (verify CA and hostname)"
+          - name: observer_type
+            type: text
+            title: Observer Type
+            description: "Device type label used for filtering in dashboards (for example, router, switch, or firewall). Stored in the observer.type ECS field."
+            required: false
+            show_user: false
+            default: router
+          - name: period
+            type: text
+            title: Collection Interval
+            description: "How often to poll the device for metrics."
+            required: true
+            show_user: false
+            default: 60s
+          - name: timeout
+            type: text
+            title: Request Timeout
+            description: "Timeout for individual API requests to the device."
+            required: false
+            show_user: false
+            default: 30s
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: community

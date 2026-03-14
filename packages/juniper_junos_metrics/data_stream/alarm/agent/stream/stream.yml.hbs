@@ -1,0 +1,66 @@
+resource.url: {{#if use_https}}https{{else}}http{{/if}}://{{host}}:{{port}}/rpc/get-system-alarm-information@format=json
+resource:
+  ssl:
+    verification_mode: {{ssl_verification_mode}}
+resource.timeout: {{timeout}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+state:
+  initial:
+    base_url: {{#if use_https}}https{{else}}http{{/if}}://{{host}}:{{port}}/rpc
+redact:
+  fields:
+    - resource.url
+    - state.base_url
+program: |
+  ({{#if device_name}}
+    "{{device_name}}"
+  {{else}}
+    has(state.cursor) && has(state.cursor.device_hostname) && state.cursor.device_hostname != "" ?
+      state.cursor.device_hostname
+    :
+      try(get(state.base_url + "/get-system-information@format=json")).as(si_resp,
+        !is_error(si_resp) && si_resp.StatusCode == 200 ?
+          bytes(si_resp.Body).decode_json().as(si_body,
+            "system-information" in si_body && size(si_body["system-information"]) > 0
+            && "host-name" in si_body["system-information"][0]
+            && size(si_body["system-information"][0]["host-name"]) > 0
+            ? string(si_body["system-information"][0]["host-name"][0]["data"])
+            : "{{host}}"
+          )
+        : "{{host}}"
+      )
+  {{/if}}
+  ).as(device_name,
+    get(state.url).as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(raw_body,
+          // Unwrap multi-routing-engine-results wrapper if present
+          ("multi-routing-engine-results" in raw_body
+            && size(raw_body["multi-routing-engine-results"]) > 0
+            && "multi-routing-engine-item" in raw_body["multi-routing-engine-results"][0]
+            && size(raw_body["multi-routing-engine-results"][0]["multi-routing-engine-item"]) > 0
+            ? raw_body["multi-routing-engine-results"][0]["multi-routing-engine-item"][0]
+            : raw_body
+          ).as(body,
+          "alarm-information" in body && size(body["alarm-information"]) > 0
+          && "alarm-detail" in body["alarm-information"][0] ?
+            {"events": body["alarm-information"][0]["alarm-detail"].map(alarm, {
+              "message": alarm.encode_json(),
+              "observer.name": device_name,
+              "observer.type": "{{observer_type}}",
+            }), "cursor": {"device_hostname": device_name}}
+          :
+            {"events": [], "cursor": {"device_hostname": device_name}}
+        ))
+      :
+        {"events": [], "cursor": {"device_hostname": device_name}}
+    )
+  )
+interval: {{period}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}

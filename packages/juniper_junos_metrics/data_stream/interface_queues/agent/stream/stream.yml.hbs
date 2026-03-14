@@ -1,0 +1,82 @@
+resource.url: {{#if use_https}}https{{else}}http{{/if}}://{{host}}:{{port}}/rpc/@format=json
+resource:
+  ssl:
+    verification_mode: {{ssl_verification_mode}}
+resource.timeout: {{timeout}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+state:
+  initial:
+    base_url: {{#if use_https}}https{{else}}http{{/if}}://{{host}}:{{port}}/rpc
+redact:
+  fields:
+    - resource.url
+    - state.base_url
+program: |
+  ({{#if device_name}}
+    "{{device_name}}"
+  {{else}}
+    has(state.cursor) && has(state.cursor.device_hostname) && state.cursor.device_hostname != "" ?
+      state.cursor.device_hostname
+    :
+      try(get(state.base_url + "/get-system-information@format=json")).as(si_resp,
+        !is_error(si_resp) && si_resp.StatusCode == 200 ?
+          bytes(si_resp.Body).decode_json().as(si_body,
+            "system-information" in si_body && size(si_body["system-information"]) > 0
+            && "host-name" in si_body["system-information"][0]
+            && size(si_body["system-information"][0]["host-name"]) > 0
+            ? string(si_body["system-information"][0]["host-name"][0]["data"])
+            : "{{host}}"
+          )
+        : "{{host}}"
+      )
+  {{/if}}
+  ).as(device_name,
+    post(state.url, "application/xml", '<get-interface-information><extensive/></get-interface-information>').as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(raw_body,
+          // Unwrap multi-routing-engine-results wrapper if present
+          ("multi-routing-engine-results" in raw_body
+            && size(raw_body["multi-routing-engine-results"]) > 0
+            && "multi-routing-engine-item" in raw_body["multi-routing-engine-results"][0]
+            && size(raw_body["multi-routing-engine-results"][0]["multi-routing-engine-item"]) > 0
+            ? raw_body["multi-routing-engine-results"][0]["multi-routing-engine-item"][0]
+            : raw_body
+          ).as(body,
+            "interface-information" in body && size(body["interface-information"]) > 0
+            && "physical-interface" in body["interface-information"][0] ?
+              {"events": body["interface-information"][0]["physical-interface"].map(iface,
+                "queue-counters" in iface && size(iface["queue-counters"]) > 0
+                && "queue" in iface["queue-counters"][0] ?
+                  iface["queue-counters"][0]["queue"].map(q, {
+                    "message": {
+                      "forwarding_class": "forwarding-class-name" in q && size(q["forwarding-class-name"]) > 0 ? string(q["forwarding-class-name"][0]["data"]) : "",
+                      "queued_packets": "queue-counters-queued-packets" in q && size(q["queue-counters-queued-packets"]) > 0 ? string(q["queue-counters-queued-packets"][0]["data"]) : "0",
+                      "transmitted_packets": "queue-counters-trans-packets" in q && size(q["queue-counters-trans-packets"]) > 0 ? string(q["queue-counters-trans-packets"][0]["data"]) : "0",
+                      "dropped_packets": "queue-counters-total-drop-packets" in q && size(q["queue-counters-total-drop-packets"]) > 0 ? string(q["queue-counters-total-drop-packets"][0]["data"]) : "0",
+                      "queues_supported": "interface-cos-short-summary" in iface["queue-counters"][0] && size(iface["queue-counters"][0]["interface-cos-short-summary"]) > 0 && "intf-cos-num-queues-supported" in iface["queue-counters"][0]["interface-cos-short-summary"][0] && size(iface["queue-counters"][0]["interface-cos-short-summary"][0]["intf-cos-num-queues-supported"]) > 0 ? string(iface["queue-counters"][0]["interface-cos-short-summary"][0]["intf-cos-num-queues-supported"][0]["data"]) : "0",
+                      "queues_in_use": "interface-cos-short-summary" in iface["queue-counters"][0] && size(iface["queue-counters"][0]["interface-cos-short-summary"]) > 0 && "intf-cos-num-queues-in-use" in iface["queue-counters"][0]["interface-cos-short-summary"][0] && size(iface["queue-counters"][0]["interface-cos-short-summary"][0]["intf-cos-num-queues-in-use"]) > 0 ? string(iface["queue-counters"][0]["interface-cos-short-summary"][0]["intf-cos-num-queues-in-use"][0]["data"]) : "0",
+                    }.encode_json(),
+                    "observer.name": device_name,
+                    "observer.type": "{{observer_type}}",
+                    "juniper.junos.interface_queues.interface_name": "name" in iface && size(iface["name"]) > 0 ? string(iface["name"][0]["data"]) : "unknown",
+                    "juniper.junos.interface_queues.queue_number": "queue-number" in q && size(q["queue-number"]) > 0 ? int(q["queue-number"][0]["data"]) : 0,
+                  })
+                :
+                  []
+              ).flatten(), "cursor": {"device_hostname": device_name}}
+            :
+              {"events": [], "cursor": {"device_hostname": device_name}}
+          )
+        )
+      :
+        {"events": [], "cursor": {"device_hostname": device_name}}
+    )
+  )
+interval: {{period}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}

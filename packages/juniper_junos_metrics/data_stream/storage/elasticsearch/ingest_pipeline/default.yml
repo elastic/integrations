@@ -1,0 +1,148 @@
+---
+description: Pipeline for JunOS storage metrics.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.storage
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Flatten JunOS JSON: unwrap [{"data": "value"}] pattern into simple key-value pairs
+  - script:
+      tag: script_flatten_junos_json
+      lang: painless
+      description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields.
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) { return; }
+        def flat = new HashMap();
+        for (def entry : raw.entrySet()) {
+          def key = entry.getKey();
+          def val = entry.getValue();
+          if (val instanceof List && val.size() > 0 && val.get(0) instanceof Map) {
+            def first = val.get(0);
+            if (first.containsKey('data')) {
+              flat.put(key, first.get('data'));
+            }
+            if (first.containsKey('attributes')) {
+              flat.put(key + '_attrs', first.get('attributes'));
+            }
+          }
+        }
+        ctx._temp.fs = flat;
+
+  # Filesystem identity fields
+  - set:
+      tag: set_filesystem_name
+      if: ctx._temp?.fs?.get('filesystem-name') != null
+      field: juniper.junos.storage.filesystem_name
+      value: "{{_temp.fs.filesystem-name}}"
+  - set:
+      tag: set_mounted_on
+      if: ctx._temp?.fs?.get('mounted-on') != null
+      field: juniper.junos.storage.mounted_on
+      value: "{{_temp.fs.mounted-on}}"
+
+  # Convert blocks to bytes (blocks are 1K blocks, multiply by 1024)
+  - script:
+      tag: script_convert_blocks_to_bytes
+      lang: painless
+      description: Convert 1K-block values to bytes and parse used-percent.
+      source: |
+        def fs = ctx._temp?.fs;
+        if (fs == null) { return; }
+        if (ctx.juniper == null) ctx.juniper = new HashMap();
+        if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+        if (ctx.juniper.junos.storage == null) ctx.juniper.junos.storage = new HashMap();
+
+        // total-blocks
+        def tb = fs.get('total-blocks');
+        if (tb != null) {
+          try {
+            ctx.juniper.junos.storage.total_bytes = Long.parseLong(tb.toString().trim()) * 1024L;
+          } catch (Exception e) {}
+        }
+
+        // used-blocks
+        def ub = fs.get('used-blocks');
+        if (ub != null) {
+          try {
+            ctx.juniper.junos.storage.used_bytes = Long.parseLong(ub.toString().trim()) * 1024L;
+          } catch (Exception e) {}
+        }
+
+        // available-blocks
+        def ab = fs.get('available-blocks');
+        if (ab != null) {
+          try {
+            ctx.juniper.junos.storage.available_bytes = Long.parseLong(ab.toString().trim()) * 1024L;
+          } catch (Exception e) {}
+        }
+
+        // used-percent — JunOS returns values like " 10" with leading spaces
+        def up = fs.get('used-percent');
+        if (up != null) {
+          try {
+            ctx.juniper.junos.storage.used_percent = Float.parseFloat(up.toString().trim());
+          } catch (Exception e) {}
+        }
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

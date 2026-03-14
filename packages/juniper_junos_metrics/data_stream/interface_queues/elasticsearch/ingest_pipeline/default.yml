@@ -1,0 +1,100 @@
+---
+description: Pipeline for JunOS interface queue counters.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.interface_queues
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Extract queue counter fields
+  - script:
+      tag: script_extract_queue_counters
+      lang: painless
+      description: Extract queue counter fields from JunOS JSON structure.
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) { return; }
+        def q = new HashMap();
+        if (raw.containsKey('forwarding_class') && raw.get('forwarding_class') != null) {
+          q.put('forwarding_class', raw.get('forwarding_class'));
+        }
+        if (raw.containsKey('queued_packets') && raw.get('queued_packets') != null) {
+          q.put('queued_packets', Long.parseLong(raw.get('queued_packets').toString()));
+        }
+        if (raw.containsKey('transmitted_packets') && raw.get('transmitted_packets') != null) {
+          q.put('transmitted_packets', Long.parseLong(raw.get('transmitted_packets').toString()));
+        }
+        if (raw.containsKey('dropped_packets') && raw.get('dropped_packets') != null) {
+          q.put('dropped_packets', Long.parseLong(raw.get('dropped_packets').toString()));
+        }
+        if (raw.containsKey('queues_supported') && raw.get('queues_supported') != null) {
+          q.put('queues_supported', Integer.parseInt(raw.get('queues_supported').toString()));
+        }
+        if (raw.containsKey('queues_in_use') && raw.get('queues_in_use') != null) {
+          q.put('queues_in_use', Integer.parseInt(raw.get('queues_in_use').toString()));
+        }
+        if (ctx.juniper == null) { ctx.juniper = new HashMap(); }
+        if (ctx.juniper.junos == null) { ctx.juniper.junos = new HashMap(); }
+        if (ctx.juniper.junos.interface_queues == null) { ctx.juniper.junos.interface_queues = new HashMap(); }
+        ctx.juniper.junos.interface_queues.putAll(q);
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

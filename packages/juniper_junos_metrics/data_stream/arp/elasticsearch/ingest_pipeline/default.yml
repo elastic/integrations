@@ -1,0 +1,103 @@
+---
+description: Pipeline for JunOS ARP table entries.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.arp
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Extract ARP fields from the JunOS JSON
+  - script:
+      tag: script_extract_arp
+      lang: painless
+      description: Extract ARP entry fields from JunOS JSON structure.
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) { return; }
+        def arp = new HashMap();
+        if (raw.containsKey('mac-address') && raw.get('mac-address') instanceof List && raw.get('mac-address').size() > 0) {
+          arp.put('mac_address', raw.get('mac-address').get(0).get('data'));
+        }
+        if (raw.containsKey('hostname') && raw.get('hostname') instanceof List && raw.get('hostname').size() > 0) {
+          arp.put('hostname', raw.get('hostname').get(0).get('data'));
+        }
+        if (raw.containsKey('arp-table-entry-flags') && raw.get('arp-table-entry-flags') instanceof List && raw.get('arp-table-entry-flags').size() > 0) {
+          def flagEntry = raw.get('arp-table-entry-flags').get(0);
+          if (flagEntry instanceof Map) {
+            if (flagEntry.containsKey('data')) {
+              arp.put('entry_flags', flagEntry.get('data').toString());
+            } else {
+              for (def key : flagEntry.keySet()) {
+                if (key != 'attributes') {
+                  arp.put('entry_flags', key);
+                  break;
+                }
+              }
+            }
+          }
+        }
+        if (ctx.juniper == null) { ctx.juniper = new HashMap(); }
+        if (ctx.juniper.junos == null) { ctx.juniper.junos = new HashMap(); }
+        if (ctx.juniper.junos.arp == null) { ctx.juniper.junos.arp = new HashMap(); }
+        ctx.juniper.junos.arp.putAll(arp);
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

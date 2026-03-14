@@ -1,0 +1,150 @@
+---
+description: Pipeline for JunOS routing table metrics.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.routing_table
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Flatten JunOS JSON for router-id: unwrap [{"data": "value"}] pattern
+  - script:
+      tag: script_flatten_router_id
+      lang: painless
+      description: Unwrap the JunOS [{"data":"value"}] pattern for router-id.
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) { return; }
+        def flat = new HashMap();
+        def routerId = raw.get('router-id');
+        if (routerId instanceof List && routerId.size() > 0 && routerId.get(0) instanceof Map) {
+          def first = routerId.get(0);
+          if (first.containsKey('data')) {
+            flat.put('router-id', first.get('data'));
+          }
+        }
+        def rt = raw.get('route-table');
+        if (rt instanceof Map) {
+          for (def entry : rt.entrySet()) {
+            def key = entry.getKey();
+            def val = entry.getValue();
+            if (val instanceof List && val.size() > 0 && val.get(0) instanceof Map) {
+              def first = val.get(0);
+              if (first.containsKey('data')) {
+                flat.put(key, first.get('data'));
+              }
+            }
+          }
+        }
+        ctx._temp.rt = flat;
+
+  # Router ID
+  - set:
+      tag: set_router_id
+      if: ctx._temp?.rt?.get('router-id') != null
+      field: juniper.junos.routing_table.router_id
+      value: "{{_temp.rt.router-id}}"
+
+  # Table name
+  - set:
+      tag: set_table_name
+      if: ctx._temp?.rt?.get('table-name') != null
+      field: juniper.junos.routing_table.table_name
+      value: "{{_temp.rt.table-name}}"
+
+  # Numeric route count fields
+  - convert:
+      tag: convert_destination_count
+      if: ctx._temp?.rt?.get('destination-count') != null
+      field: _temp.rt.destination-count
+      target_field: juniper.junos.routing_table.destination_count
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_total_route_count
+      if: ctx._temp?.rt?.get('total-route-count') != null
+      field: _temp.rt.total-route-count
+      target_field: juniper.junos.routing_table.total_route_count
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_active_route_count
+      if: ctx._temp?.rt?.get('active-route-count') != null
+      field: _temp.rt.active-route-count
+      target_field: juniper.junos.routing_table.active_route_count
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_holddown_route_count
+      if: ctx._temp?.rt?.get('holddown-route-count') != null
+      field: _temp.rt.holddown-route-count
+      target_field: juniper.junos.routing_table.holddown_route_count
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_hidden_route_count
+      if: ctx._temp?.rt?.get('hidden-route-count') != null
+      field: _temp.rt.hidden-route-count
+      target_field: juniper.junos.routing_table.hidden_route_count
+      type: long
+      ignore_failure: true
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"
