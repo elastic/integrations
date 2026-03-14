@@ -41,7 +41,12 @@ processors:
       tag: grok_message
       field: event.original
       patterns:
-        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NOTSLASH:_tmp.code}/%{NOTSPACE:_tmp.status:long} %{NUMBER:_tmp.destination_bytes:long} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.content_type}$'
+        # Extensive format with SNI field (OpenSSL builds — SNI is quoted)
+        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" "%{DATA:_tmp.sni}" %{NOTSPACE:_tmp.server_time} %{GREEDYDATA:_tmp.note}$'
+        # Extensive format without SNI field
+        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" %{NOTSPACE:_tmp.server_time} %{GREEDYDATA:_tmp.note}$'
+        # Native format
+        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NUMBER:_tmp.destination_bytes:long} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.content_type}$'
       pattern_definitions:
         NOTSLASH: '[^/]+'
         NOTBRACKET: '[^\[\]]+'
@@ -91,10 +96,56 @@ processors:
       ignore_failure: true
       ignore_missing: true
 
+  # Source port (extensive format only)
+  - rename:
+      tag: move_source_port
+      field: _tmp.source_port
+      target_field: source.port
+      ignore_missing: true
+
+  # Destination bytes — native format uses _tmp.destination_bytes (already long), extensive uses _tmp.reply_size (string)
   - rename:
       tag: move_destination_bytes
       field: _tmp.destination_bytes
       target_field: destination.bytes
+      ignore_missing: true
+  - convert:
+      tag: convert_reply_size
+      field: _tmp.reply_size
+      target_field: destination.bytes
+      type: long
+      ignore_missing: true
+
+  # Source bytes / request size (extensive format only)
+  - convert:
+      tag: convert_request_size
+      field: _tmp.request_size
+      target_field: source.bytes
+      type: long
+      ignore_missing: true
+
+  # Reply header size (extensive format only)
+  - convert:
+      tag: convert_reply_header_size
+      field: _tmp.reply_header_size
+      target_field: squid.reply_header_size
+      type: long
+      ignore_missing: true
+
+  # Request header size (extensive format only)
+  - convert:
+      tag: convert_request_header_size
+      field: _tmp.request_header_size
+      target_field: squid.request_header_size
+      type: long
+      ignore_missing: true
+
+  # Reply body size (extensive format only)
+  - convert:
+      tag: convert_reply_body_size
+      field: _tmp.reply_body_size
+      target_field: http.response.body.bytes
+      type: long
       ignore_missing: true
 
   - rename:
@@ -102,6 +153,14 @@ processors:
       field: _tmp.method
       target_field: http.request.method
       ignore_missing: true
+
+  # HTTP version (extensive format only) — Squid %rv outputs just "1.1", not "HTTP/1.1"
+  - rename:
+      tag: move_http_version
+      field: _tmp.http_version
+      target_field: http.version
+      ignore_missing: true
+
   - uri_parts:
       tag: uri_parts
       field: _tmp.url
@@ -148,6 +207,84 @@ processors:
       tag: move_content_type
       field: _tmp.content_type
       target_field: squid.content_type
+      ignore_missing: true
+
+  # Destination port (extensive format only)
+  - convert:
+      tag: convert_destination_port
+      field: _tmp.destination_port
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+
+  # Error code (extensive format only)
+  - rename:
+      tag: move_err_code
+      field: _tmp.err_code
+      target_field: error.code
+      ignore_missing: true
+
+  # Error detail (extensive format only)
+  - rename:
+      tag: move_err_detail
+      field: _tmp.err_detail
+      target_field: squid.error_detail
+      ignore_missing: true
+
+  # Referer (extensive format only)
+  - rename:
+      tag: move_referer
+      field: _tmp.referer
+      target_field: http.request.referrer
+      ignore_missing: true
+
+  # User-Agent (extensive format only)
+  - user_agent:
+      tag: parse_user_agent
+      field: _tmp.user_agent
+      ignore_missing: true
+      ignore_failure: true
+
+  # X-Forwarded-For (extensive format only)
+  - rename:
+      tag: move_xff
+      field: _tmp.xff
+      target_field: network.forwarded_ip
+      ignore_missing: true
+  - convert:
+      tag: convert_xff_ip
+      field: network.forwarded_ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+
+  # TLS SNI (extensive format only)
+  - rename:
+      tag: move_sni
+      field: _tmp.sni
+      target_field: tls.client.server_name
+      ignore_missing: true
+
+  # Server-side time (extensive format only)
+  - convert:
+      tag: convert_server_time
+      field: _tmp.server_time
+      target_field: squid.server_time
+      type: long
+      ignore_missing: true
+
+  # Squid annotations/notes (extensive format only)
+  - rename:
+      tag: move_note
+      field: _tmp.note
+      target_field: squid.note
+      ignore_missing: true
+
+  # Host header (extensive format only) — add to related.hosts
+  - rename:
+      tag: move_host_header
+      field: _tmp.host_header
+      target_field: squid.host_header
       ignore_missing: true
 
   - rename:
@@ -231,6 +368,18 @@ processors:
       allow_duplicates: false
       if: ctx.url?.domain != null
   - append:
+      tag: append_related_host_header
+      field: related.hosts
+      value: '{{{squid.host_header}}}'
+      allow_duplicates: false
+      if: ctx.squid?.host_header != null
+  - append:
+      tag: append_related_sni
+      field: related.hosts
+      value: '{{{tls.client.server_name}}}'
+      allow_duplicates: false
+      if: ctx.tls?.client?.server_name != null
+  - append:
       tag: append_related_source_ip
       field: related.ip
       value: '{{{source.ip}}}'
@@ -242,6 +391,12 @@ processors:
       value: '{{{destination.ip}}}'
       allow_duplicates: false
       if: ctx.destination?.ip != null
+  - append:
+      tag: append_related_xff_ip
+      field: related.ip
+      value: '{{{network.forwarded_ip}}}'
+      allow_duplicates: false
+      if: ctx.network?.forwarded_ip != null
 
   - remove:
       tag: remove_fields
