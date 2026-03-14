@@ -1,0 +1,180 @@
+---
+dashboards:
+  - id: redis-overview
+    name: '[Metrics Redis] Overview'
+    description: Overview of Redis server metrics
+    filters:
+      - field: data_stream.dataset
+        equals: redis.info
+    panels:
+      # Navigation
+      - size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: redis-overview
+            - label: Keys
+              dashboard: redis-keys
+            - label: Logs
+              dashboard: redis-logs
+
+      # KPI Metric - Connected clients
+      - title: Clients
+        size: {w: 12, h: 14}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.info"
+            - STATS connected_clients = MAX(redis.info.clients.connected)
+          primary:
+            field: connected_clients
+            label: Connected clients
+            format:
+              type: number
+              decimals: 0
+
+      # Bar chart - Connected clients over time
+      - title: Connected clients
+        size: {w: 20, h: 14}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.info"
+            - STATS connected = MAX(redis.info.clients.connected), blocked = MAX(redis.info.clients.blocked) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: connected
+              label: Connected
+              format:
+                type: number
+                decimals: 0
+            - field: blocked
+              label: Blocked
+              format:
+                type: number
+                decimals: 0
+          appearance:
+            y_left_axis:
+              title: Count
+
+      # Area chart - Keyspaces over time
+      - title: Keyspaces
+        size: {w: 16, h: 14}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.keyspace" AND redis.keyspace.id IS NOT NULL
+            - STATS avg_keys = AVG(redis.keyspace.keys) BY redis.keyspace.id, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: avg_keys
+              label: Number of keys
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: redis.keyspace.id
+          appearance:
+            y_left_axis:
+              title: Count
+
+      # Data table - Hosts
+      - title: Hosts
+        size: {w: 48, h: 8}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.info"
+            - STATS uptime = MAX(redis.info.server.uptime), pid = MAX(process.pid), memory = MAX(redis.info.memory.used.peak), cpu_user = MAX(redis.info.cpu.used.user), cpu_sys = MAX(redis.info.cpu.used.sys) BY service.address
+            - SORT uptime DESC
+            - LIMIT 10
+
+      # Pie chart - Server Versions
+      - title: Server Versions
+        size: {w: 16, h: 8}
+        esql:
+          type: pie
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.info" AND service.version IS NOT NULL
+            - STATS hosts = COUNT_DISTINCT(service.address) BY service.version
+            - SORT hosts DESC
+            - LIMIT 5
+          dimensions:
+            - field: service.version
+              label: Version
+          metrics:
+            - field: hosts
+              label: Hosts
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+          titles_and_text:
+            slice_values: percent
+
+      # Pie chart - Server mode
+      - title: Server mode
+        size: {w: 16, h: 8}
+        esql:
+          type: pie
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.info" AND redis.info.server.mode IS NOT NULL
+            - STATS hosts = COUNT_DISTINCT(service.address) BY redis.info.server.mode
+            - SORT hosts DESC
+            - LIMIT 5
+          dimensions:
+            - field: redis.info.server.mode
+              label: Mode
+          metrics:
+            - field: hosts
+              label: Hosts
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+          titles_and_text:
+            slice_values: percent
+
+      # Pie chart - Multiplexing API
+      - title: Multiplexing API
+        size: {w: 16, h: 8}
+        esql:
+          type: pie
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.info" AND redis.info.server.multiplexing_api IS NOT NULL
+            - STATS hosts = COUNT_DISTINCT(service.address) BY redis.info.server.multiplexing_api
+            - SORT hosts DESC
+            - LIMIT 5
+          dimensions:
+            - field: redis.info.server.multiplexing_api
+              label: Multiplexing API
+          metrics:
+            - field: hosts
+              label: Hosts
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+          titles_and_text:
+            slice_values: percent

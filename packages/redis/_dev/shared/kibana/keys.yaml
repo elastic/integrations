@@ -1,0 +1,141 @@
+---
+dashboards:
+  - id: redis-keys
+    name: '[Metrics Redis] Keys'
+    description: Redis keys metrics
+    filters:
+      - field: data_stream.dataset
+        equals: redis.key
+    controls:
+      - type: options
+        label: Keyspace
+        data_view: metrics-*
+        field: redis.keyspace.id
+    panels:
+      # Navigation
+      - size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: redis-overview
+            - label: Keys
+              dashboard: redis-keys
+            - label: Logs
+              dashboard: redis-logs
+
+      # Line chart - Keys by type over time
+      - title: Keys by type
+        size: {w: 12, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.key" AND redis.key.type IS NOT NULL
+            - STATS key_count = COUNT_DISTINCT(redis.key.id) BY redis.key.type, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: key_count
+              label: Number of keys
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: redis.key.type
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Number of keys
+
+      # Line chart - Lists length over time
+      - title: Lists length
+        size: {w: 36, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.key" AND redis.key.type == "list"
+            - STATS max_length = MAX(redis.key.length) BY redis.keyspace.id, redis.key.name, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+            - LIMIT 1000
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: max_length
+              label: Number of elements
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: redis.key.name
+          legend:
+            visible: show
+            position: right
+          appearance:
+            y_left_axis:
+              title: Number of elements
+
+      # Line chart - Average size of string keys
+      - title: Average size of string keys
+        size: {w: 24, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.key" AND redis.key.type == "string"
+            - STATS avg_size = AVG(redis.key.length) BY redis.keyspace.id, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: avg_size
+              label: Average key size
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: redis.keyspace.id
+          legend:
+            visible: show
+            position: right
+          appearance:
+            y_left_axis:
+              title: Average key size
+
+      # Line chart - Average keys TTL
+      - title: Average keys TTL
+        size: {w: 24, h: 15}
+        esql:
+          type: line
+          query:
+            - FROM metrics-*
+            - WHERE data_stream.dataset == "redis.key" AND redis.key.expire.ttl >= 0
+            - STATS avg_ttl = AVG(redis.key.expire.ttl) BY redis.keyspace.id, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: avg_ttl
+              label: Average TTL
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: redis.keyspace.id
+          legend:
+            visible: show
+            position: right
+          appearance:
+            y_left_axis:
+              title: Average TTL

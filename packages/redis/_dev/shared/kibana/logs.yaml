@@ -1,0 +1,125 @@
+---
+dashboards:
+  - id: redis-logs
+    name: '[Logs Redis] Overview'
+    description: Overview dashboard for the Redis logs and slow logs
+    filters:
+      - field: data_stream.dataset
+        equals: redis.log
+    panels:
+      # Navigation
+      - size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: redis-overview
+            - label: Keys
+              dashboard: redis-keys
+            - label: Logs
+              dashboard: redis-logs
+
+      # Data table - Slow logs
+      - title: Slow logs
+        size: {w: 24, h: 16}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "redis.slowlog"
+            - SORT @timestamp DESC
+            - LIMIT 100
+
+      # Bar chart - Top slowest commands
+      - title: Top slowest commands
+        size: {w: 24, h: 16}
+        esql:
+          type: bar
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "redis.slowlog" AND redis.slowlog.cmd IS NOT NULL
+            - STATS max_duration = MAX(redis.slowlog.duration.us) BY redis.slowlog.cmd
+            - SORT max_duration DESC
+            - LIMIT 5
+          dimension:
+            field: redis.slowlog.cmd
+            label: Command
+          metrics:
+            - field: max_duration
+              label: Duration (us)
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Duration (us)
+
+      # Pie chart - Log levels and roles breakdown
+      - title: Log levels and roles breakdown
+        size: {w: 14, h: 14}
+        esql:
+          type: pie
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "redis.log"
+            - STATS event_count = COUNT() BY redis.log.role, log.level
+            - SORT event_count DESC
+            - LIMIT 20
+          dimensions:
+            - field: redis.log.role
+              label: Role
+            - field: log.level
+              label: Log Level
+          metrics:
+            - field: event_count
+              label: Count
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+          titles_and_text:
+            slice_values: percent
+
+      # Bar chart - Logs over time
+      - title: Logs over time
+        size: {w: 34, h: 14}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "redis.log"
+            - STATS event_count = COUNT() BY log.level, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: event_count
+              label: Count
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: log.level
+          legend:
+            visible: show
+            position: right
+          appearance:
+            y_left_axis:
+              title: Count
+
+      # Data table - Logs
+      - title: Logs
+        size: {w: 48, h: 16}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "redis.log"
+            - SORT @timestamp DESC
+            - LIMIT 100
