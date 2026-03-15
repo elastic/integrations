@@ -319,6 +319,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. | keyword |
 | event.category | Event category. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | The kind of event. | keyword |

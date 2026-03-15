@@ -70,6 +70,13 @@ processors:
         - '%{DATA:user.name}@%{GREEDYDATA:proxmox.auth.realm}'
       ignore_failure: true
 
+  # Set event.action from HTTP method
+  - lowercase:
+      tag: set_event_action
+      field: http.request.method
+      target_field: event.action
+      ignore_failure: true
+
   # Set event categories
   - append:
       tag: set_event_category_web

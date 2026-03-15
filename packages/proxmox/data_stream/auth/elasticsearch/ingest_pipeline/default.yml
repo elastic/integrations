@@ -82,7 +82,15 @@ processors:
         - authentication
       allow_duplicates: false
   - append:
+      tag: set_event_type_start
+      if: ctx.event?.outcome == 'success'
+      field: event.type
+      value:
+        - start
+      allow_duplicates: false
+  - append:
       tag: set_event_type_info
+      if: ctx.event?.outcome != 'success'
       field: event.type
       value:
         - info

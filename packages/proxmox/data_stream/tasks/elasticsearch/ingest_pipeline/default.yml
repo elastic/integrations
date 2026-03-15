@@ -107,10 +107,10 @@ processors:
         - process
       allow_duplicates: false
   - append:
-      tag: set_event_type_info
+      tag: set_event_type_end
       field: event.type
       value:
-        - info
+        - end
       allow_duplicates: false
 
   # Enrich related fields
@@ -134,6 +134,13 @@ processors:
       tag: set_observer_type
       field: observer.type
       value: virtualization
+
+  # Remove empty vmid
+  - remove:
+      tag: remove_empty_vmid
+      if: ctx.proxmox?.task?.vmid != null && ctx.proxmox.task.vmid == ''
+      field: proxmox.task.vmid
+      ignore_missing: true
 
   # Set message
   - set:
