@@ -1,0 +1,315 @@
+---
+description: Pipeline for FreeIPA KDC authentication events.
+processors:
+  # Static metadata
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: freeipa
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: freeipa.kdc
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - authentication
+
+  # Parse syslog prefix and KDC message
+  - grok:
+      tag: grok_kdc_line
+      field: message
+      patterns:
+        # Ticket request lines (AS_REQ or TGS_REQ) — status can have spaces (e.g., "CLIENT KEY EXPIRED")
+        - "%{SYSLOGTIMESTAMP:_temp.syslog_ts} %{HOSTNAME:observer.hostname} krb5kdc\\[%{POSINT:process.pid:int}\\]\\(%{WORD:log.level}\\): %{WORD:freeipa.kdc.request_type} \\(%{INT} etypes \\{%{DATA:_temp.etypes_offered}\\}\\) %{IP:source.ip}: %{DATA:_temp.status}:%{GREEDYDATA:_temp.rest}"
+        # Non-ticket lines (closing down fd, etc.)
+        - "%{SYSLOGTIMESTAMP:_temp.syslog_ts} %{HOSTNAME:observer.hostname} krb5kdc\\[%{POSINT:process.pid:int}\\]\\(%{WORD:log.level}\\): %{GREEDYDATA:_temp.info_message}"
+
+  # Skip non-ticket events (closing down fd, preauth verify failure, etc.)
+  - drop:
+      tag: drop_non_ticket
+      if: ctx._temp?.info_message != null && ctx.freeipa?.kdc?.request_type == null
+
+  # Trim whitespace from status (multi-word statuses like "CLIENT KEY EXPIRED")
+  - trim:
+      tag: trim_status
+      field: _temp.status
+      if: ctx._temp?.status != null
+
+  # Parse the rest of the ticket request line
+  - grok:
+      tag: grok_kdc_issue
+      field: _temp.rest
+      if: ctx._temp?.status == 'ISSUE'
+      ignore_failure: true
+      patterns:
+        - " authtime %{NUMBER:_temp.authtime:long}, etypes \\{rep=%{DATA:_temp.rep_etype}(?:, tkt=%{DATA:_temp.tkt_etype})?(?:, ses=%{DATA:_temp.ses_etype})?\\},? ?(?:CONSTRAINED-DELEGATION s4u-client=%{DATA:_temp.s4u_client}, )?%{DATA:_temp.client_principal} for %{GREEDYDATA:_temp.service_principal}"
+
+  - grok:
+      tag: grok_kdc_failure
+      field: _temp.rest
+      if: ctx._temp?.status != null && ctx._temp?.status != 'ISSUE'
+      ignore_failure: true
+      patterns:
+        # Failure with authtime (TGS failures) — allow extra whitespace after comma
+        - " authtime %{NUMBER:_temp.authtime:long},%{SPACE}%{DATA:_temp.client_principal} for %{DATA:_temp.service_principal}, %{GREEDYDATA:event.reason}"
+        # Failure without authtime (AS_REQ failures)
+        - " %{DATA:_temp.client_principal} for %{DATA:_temp.service_principal}, %{GREEDYDATA:event.reason}"
+
+  # Parse timestamp — syslog format doesn't include year; the date processor
+  # defaults to the current year. This matches how Cisco ASA, system.syslog,
+  # and other Elastic integrations handle yearless syslog timestamps.
+  # Limitation: logs from Dec 31 ingested on Jan 1 will get the wrong year.
+  - date:
+      tag: date_parse
+      field: _temp.syslog_ts
+      target_field: "@timestamp"
+      formats:
+        - "MMM  d HH:mm:ss"
+        - "MMM dd HH:mm:ss"
+        - "MMM d HH:mm:ss"
+
+  # Extract client principal parts (user@REALM)
+  - grok:
+      tag: grok_client_principal
+      field: _temp.client_principal
+      if: ctx._temp?.client_principal != null
+      ignore_failure: true
+      patterns:
+        - "%{DATA:user.name}@%{GREEDYDATA:user.domain}"
+  - set:
+      tag: set_user_id
+      if: ctx._temp?.client_principal != null
+      field: user.id
+      copy_from: _temp.client_principal
+
+  # Set freeipa.kdc fields
+  - set:
+      tag: set_client_principal
+      if: ctx._temp?.client_principal != null
+      field: freeipa.kdc.client_principal
+      copy_from: _temp.client_principal
+  - set:
+      tag: set_service_principal
+      if: ctx._temp?.service_principal != null
+      field: freeipa.kdc.service_principal
+      copy_from: _temp.service_principal
+  # Set for all non-ISSUE statuses, including NEEDED_PREAUTH. NEEDED_PREAUTH is a normal
+  # pre-authentication negotiation step (event.outcome=success) but we store it here so
+  # analysts can filter on any KDC status code without special-casing the field.
+  - set:
+      tag: set_error_code
+      if: ctx._temp?.status != null && ctx._temp?.status != 'ISSUE'
+      field: freeipa.kdc.error_code
+      copy_from: _temp.status
+  - set:
+      tag: set_realm
+      if: ctx.user?.domain != null
+      field: freeipa.kdc.realm
+      copy_from: user.domain
+
+  # Extract reply encryption type (just the name, not the number)
+  - grok:
+      tag: grok_rep_etype
+      field: _temp.rep_etype
+      if: ctx._temp?.rep_etype != null
+      ignore_failure: true
+      patterns:
+        - "%{DATA:freeipa.kdc.encryption_type}\\(%{INT}\\)"
+        - "%{GREEDYDATA:freeipa.kdc.encryption_type}"
+
+  # Parse authtime to date
+  - date:
+      tag: date_authtime
+      if: ctx._temp?.authtime != null
+      field: _temp.authtime
+      target_field: freeipa.kdc.authtime
+      formats:
+        - UNIX
+
+  # Set event.outcome
+  - set:
+      tag: set_outcome_success
+      if: ctx._temp?.status == 'ISSUE'
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_outcome_failure
+      if: ctx._temp?.status != null && ctx._temp?.status != 'ISSUE' && ctx._temp?.status != 'NEEDED_PREAUTH'
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_outcome_preauth
+      if: ctx._temp?.status == 'NEEDED_PREAUTH'
+      field: event.outcome
+      value: success
+
+  # Set event.action
+  - script:
+      tag: script_event_action
+      lang: painless
+      source: |
+        def reqType = ctx.freeipa?.kdc?.request_type;
+        def status = ctx._temp?.status;
+        if (reqType == null || status == null) return;
+        if (reqType.equals("AS_REQ")) {
+          if (status.equals("ISSUE")) {
+            ctx.event.put("action", "kdc_tgt_grant");
+            ctx.event.put("type", ["start"]);
+          } else if (status.equals("NEEDED_PREAUTH")) {
+            ctx.event.put("action", "kdc_preauth_required");
+            ctx.event.put("type", ["info"]);
+          } else {
+            ctx.event.put("action", "kdc_tgt_failure");
+            ctx.event.put("type", ["start"]);
+          }
+        } else if (reqType.equals("TGS_REQ")) {
+          if (status.equals("ISSUE")) {
+            ctx.event.put("action", "kdc_tgs_grant");
+            ctx.event.put("type", ["info"]);
+          } else {
+            ctx.event.put("action", "kdc_tgs_failure");
+            ctx.event.put("type", ["info"]);
+          }
+        }
+
+  # Constrained delegation — split into source.user (acting service) and user.target (impersonated)
+  - set:
+      tag: set_s4u_client
+      if: ctx._temp?.s4u_client != null
+      field: freeipa.kdc.s4u_client
+      copy_from: _temp.s4u_client
+  - grok:
+      tag: grok_s4u_principal
+      if: ctx._temp?.s4u_client != null
+      field: _temp.s4u_client
+      ignore_failure: true
+      patterns:
+        - "%{DATA:user.target.name}@%{GREEDYDATA:user.target.domain}"
+  - set:
+      tag: set_s4u_target_id
+      if: ctx._temp?.s4u_client != null
+      field: user.target.id
+      copy_from: _temp.s4u_client
+  - rename:
+      tag: rename_source_user_name
+      if: ctx._temp?.s4u_client != null && ctx.user?.name != null
+      field: user.name
+      target_field: source.user.name
+  - rename:
+      tag: rename_source_user_domain
+      if: ctx._temp?.s4u_client != null && ctx.user?.domain != null
+      field: user.domain
+      target_field: source.user.domain
+  - rename:
+      tag: rename_source_user_id
+      if: ctx._temp?.s4u_client != null && ctx.user?.id != null
+      field: user.id
+      target_field: source.user.id
+
+  # Promote event.kind to alert for security-significant failures
+  - set:
+      tag: set_kind_alert
+      if: >-
+        ctx.freeipa?.kdc?.error_code == 'LOCKED_OUT' ||
+        ctx.freeipa?.kdc?.error_code == 'PREAUTH_FAILED' ||
+        ctx.freeipa?.kdc?.error_code == 'CLIENT_NOT_FOUND'
+      field: event.kind
+      value: alert
+
+  # Related fields
+  - append:
+      tag: append_related_user
+      field: related.user
+      value: "{{user.name}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_id
+      field: related.user
+      value: "{{user.id}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_source_user
+      field: related.user
+      value: "{{source.user.name}}"
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_source_user_id
+      field: related.user
+      value: "{{source.user.id}}"
+      if: ctx.source?.user?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_target_user
+      field: related.user
+      value: "{{user.target.name}}"
+      if: ctx.user?.target?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_target_user_id
+      field: related.user
+      value: "{{user.target.id}}"
+      if: ctx.user?.target?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  # GeoIP enrichment
+  - geoip:
+      tag: geoip_source
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      tag: geoip_source_asn
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_asn
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_as_org
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message: {{ _ingest.on_failure_message }}"

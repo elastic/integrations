@@ -1,0 +1,353 @@
+---
+description: Pipeline for FreeIPA 389DS directory server access log events.
+processors:
+  # Static metadata
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: freeipa
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: freeipa.directory_access
+
+  # Parse timestamp and connection/operation prefix
+  - grok:
+      tag: grok_access_line
+      field: message
+      patterns:
+        # Connection open (plain or SSL)
+        - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} fd=%{INT} slot=%{INT} (?:%{WORD:_temp.conn_type} )?connection from %{IP:source.ip} to %{IP:_temp.dest_ip}"
+        # Disconnect (with op=) — matches both "fd=N closed" and "fd=N Disconnect"
+        - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} op=%{INT:freeipa.directory.operation_id:long} fd=%{INT} (?:closed|Disconnect) - %{GREEDYDATA:_temp.close_reason}"
+        # Disconnect (without op=, fd-closed lines)
+        - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} fd=%{INT} (?:closed|Disconnect)%{GREEDYDATA:_temp.close_reason}"
+        # Operation lines (BIND, SRCH, MOD, ADD, DEL, CMP, RESULT, etc.)
+        - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} op=%{INT:freeipa.directory.operation_id:long} %{WORD:freeipa.directory.operation}%{SPACE}%{GREEDYDATA:_temp.op_detail}"
+
+  # Parse the 389DS timestamp: DD/Mon/YYYY:HH:mm:ss.nnnnnnnnn +ZZZZ
+  # Trim sub-second precision to microseconds (Java can handle 6 digits, not 9)
+  - gsub:
+      tag: gsub_timestamp_precision
+      field: _temp.raw_timestamp
+      pattern: "(\\.\\d{6})\\d{3}"
+      replacement: "$1"
+  - date:
+      tag: date_parse
+      field: _temp.raw_timestamp
+      target_field: "@timestamp"
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss.SSSSSS Z
+
+  # Detect SSL on connection open
+  - set:
+      tag: set_ssl_true
+      if: ctx._temp?.conn_type == 'SSL'
+      field: freeipa.directory.ssl
+      value: true
+  - set:
+      tag: set_ssl_false
+      if: ctx._temp?.conn_type != null && ctx._temp?.conn_type != 'SSL'
+      field: freeipa.directory.ssl
+      value: false
+
+  # Mark connection events
+  - set:
+      tag: set_op_connection
+      if: ctx._temp?.dest_ip != null && ctx.freeipa?.directory?.operation == null
+      field: freeipa.directory.operation
+      value: CONNECTION
+
+  # Mark disconnect events
+  - set:
+      tag: set_op_disconnect
+      if: ctx._temp?.close_reason != null && ctx.freeipa?.directory?.operation == null
+      field: freeipa.directory.operation
+      value: DISCONNECT
+
+  # Parse BIND details: dn="..." method=128|sasl version=3 [mech=GSSAPI]
+  - grok:
+      tag: grok_bind
+      if: ctx.freeipa?.directory?.operation == 'BIND'
+      field: _temp.op_detail
+      ignore_failure: true
+      patterns:
+        - "dn=\"%{DATA:freeipa.directory.bind_dn}\" method=%{WORD:_temp.bind_method} version=%{INT}(?: mech=%{WORD:_temp.sasl_mech})?"
+  - set:
+      tag: set_bind_method_simple
+      if: ctx._temp?.bind_method == '128'
+      field: freeipa.directory.bind_method
+      value: SIMPLE
+  - set:
+      tag: set_bind_method_sasl
+      if: ctx._temp?.bind_method == 'sasl'
+      field: freeipa.directory.bind_method
+      value: "SASL/{{_temp.sasl_mech}}"
+
+  # Extract user.name from bind DN (uid=XXX,...)
+  - grok:
+      tag: grok_bind_user
+      if: ctx.freeipa?.directory?.bind_dn != null && ctx.freeipa.directory.bind_dn != ''
+      field: freeipa.directory.bind_dn
+      ignore_failure: true
+      patterns:
+        - "uid=%{DATA:user.name},"
+        - "%{GREEDYDATA:user.name}"
+  - set:
+      tag: set_user_id_bind
+      if: ctx.freeipa?.directory?.bind_dn != null && ctx.freeipa.directory.bind_dn != ''
+      field: user.id
+      copy_from: freeipa.directory.bind_dn
+
+  # Parse SRCH details: base="..." scope=N filter="..." [attrs="..."]
+  - grok:
+      tag: grok_srch
+      if: ctx.freeipa?.directory?.operation == 'SRCH'
+      field: _temp.op_detail
+      ignore_failure: true
+      patterns:
+        - "base=\"%{DATA:freeipa.directory.base_dn}\" scope=%{INT:_temp.scope_num} filter=\"%{DATA:freeipa.directory.filter}\"%{GREEDYDATA}"
+  - script:
+      tag: script_scope
+      if: ctx._temp?.scope_num != null
+      lang: painless
+      source: |
+        def s = ctx._temp.scope_num.toString();
+        if (s.equals("0")) ctx.freeipa.directory.put("scope", "base");
+        else if (s.equals("1")) ctx.freeipa.directory.put("scope", "one");
+        else if (s.equals("2")) ctx.freeipa.directory.put("scope", "sub");
+        else ctx.freeipa.directory.put("scope", s);
+
+  # Parse EXT (extended operation) details
+  - grok:
+      tag: grok_ext
+      if: ctx.freeipa?.directory?.operation == 'EXT'
+      field: _temp.op_detail
+      ignore_failure: true
+      patterns:
+        - "oid=\"%{DATA:freeipa.directory.ext_oid}\" name=\"%{DATA:freeipa.directory.ext_name}\""
+        - "oid=\"%{DATA:freeipa.directory.ext_oid}\""
+
+  # Parse MODRDN details
+  - grok:
+      tag: grok_modrdn
+      if: ctx.freeipa?.directory?.operation == 'MODRDN'
+      field: _temp.op_detail
+      ignore_failure: true
+      patterns:
+        - "dn=\"%{DATA:freeipa.directory.target_dn}\" newSuperior=\"%{DATA:freeipa.directory.new_superior}\" newrdn=\"%{DATA:freeipa.directory.new_rdn}\""
+        - "dn=\"%{DATA:freeipa.directory.target_dn}\"%{GREEDYDATA}"
+
+  # Parse ABANDON details: targetop=N msgid=N
+  - grok:
+      tag: grok_abandon
+      if: ctx.freeipa?.directory?.operation == 'ABANDON'
+      field: _temp.op_detail
+      ignore_failure: true
+      patterns:
+        - "targetop=%{INT:freeipa.directory.target_op:long}%{GREEDYDATA}"
+
+  # Parse MOD/ADD/DEL/CMP target DN
+  - grok:
+      tag: grok_mod_dn
+      if: "ctx.freeipa?.directory?.operation != null && (ctx.freeipa.directory.operation == 'MOD' || ctx.freeipa.directory.operation == 'ADD' || ctx.freeipa.directory.operation == 'DEL' || ctx.freeipa.directory.operation == 'CMP')"
+      field: _temp.op_detail
+      ignore_failure: true
+      patterns:
+        - "dn=\"%{DATA:freeipa.directory.target_dn}\"%{GREEDYDATA}"
+
+  # Parse RESULT details
+  - grok:
+      tag: grok_result
+      if: ctx.freeipa?.directory?.operation == 'RESULT'
+      field: _temp.op_detail
+      ignore_failure: true
+      patterns:
+        - "err=%{INT:freeipa.directory.result_code:int} tag=%{INT:freeipa.directory.tag_number:long} nentries=%{INT:freeipa.directory.entries_returned:long}%{GREEDYDATA:_temp.result_rest}"
+  - grok:
+      tag: grok_result_etime
+      if: ctx._temp?.result_rest != null
+      field: _temp.result_rest
+      ignore_failure: true
+      patterns:
+        - "%{SPACE}(?:wtime=%{NUMBER}%{SPACE})?(?:optime=%{NUMBER}%{SPACE})?etime=%{NUMBER:freeipa.directory.elapsed_time:float}%{GREEDYDATA:_temp.result_notes}"
+  - grok:
+      tag: grok_result_notes
+      if: ctx._temp?.result_notes != null
+      field: _temp.result_notes
+      ignore_failure: true
+      patterns:
+        - "notes=%{WORD:freeipa.directory.notes}%{GREEDYDATA:_temp.notes_rest}"
+
+  # Convert etime (seconds) to nanoseconds for event.duration
+  - script:
+      tag: script_event_duration
+      if: ctx.freeipa?.directory?.elapsed_time != null
+      lang: painless
+      source: |
+        ctx.event.put("duration", (long)(ctx.freeipa.directory.elapsed_time * 1e9));
+
+  # Detect unindexed searches from notes
+  - set:
+      tag: set_unindexed_true
+      if: ctx.freeipa?.directory?.notes != null && (ctx.freeipa.directory.notes == 'U' || ctx.freeipa.directory.notes == 'A')
+      field: freeipa.directory.unindexed
+      value: true
+  - set:
+      tag: set_unindexed_false
+      if: ctx.freeipa?.directory?.notes != null && ctx.freeipa.directory.notes != 'U' && ctx.freeipa.directory.notes != 'A'
+      field: freeipa.directory.unindexed
+      value: false
+
+  # Set event.outcome from RESULT err code
+  - set:
+      tag: set_outcome_success
+      if: ctx.freeipa?.directory?.operation == 'RESULT' && ctx.freeipa?.directory?.result_code != null && ctx.freeipa.directory.result_code == 0
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_outcome_failure
+      if: ctx.freeipa?.directory?.operation == 'RESULT' && ctx.freeipa?.directory?.result_code != null && ctx.freeipa.directory.result_code != 0
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_event_reason
+      if: ctx.freeipa?.directory?.operation == 'RESULT' && ctx.freeipa?.directory?.result_code != null && ctx.freeipa.directory.result_code != 0
+      field: event.reason
+      value: "LDAP error code {{freeipa.directory.result_code}}"
+
+  # Set event.category and event.type
+  - script:
+      tag: script_event_fields
+      lang: painless
+      source: |
+        def op = ctx.freeipa?.directory?.operation;
+        if (op == null) return;
+        if (op.equals("BIND")) {
+          ctx.event.put("category", ["authentication"]);
+          ctx.event.put("type", ["start"]);
+          ctx.event.put("action", "ldap_bind");
+        } else if (op.equals("SRCH")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["access"]);
+          ctx.event.put("action", "ldap_search");
+        } else if (op.equals("MOD")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["change"]);
+          ctx.event.put("action", "ldap_modify");
+        } else if (op.equals("ADD")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["creation"]);
+          ctx.event.put("action", "ldap_add");
+        } else if (op.equals("DEL")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["deletion"]);
+          ctx.event.put("action", "ldap_delete");
+        } else if (op.equals("MODRDN")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["change"]);
+          ctx.event.put("action", "ldap_modrdn");
+        } else if (op.equals("CMP")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["access"]);
+          ctx.event.put("action", "ldap_compare");
+        } else if (op.equals("EXT")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["access"]);
+          ctx.event.put("action", "ldap_extended");
+        } else if (op.equals("ABANDON")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["info"]);
+          ctx.event.put("action", "ldap_abandon");
+        } else if (op.equals("RESULT")) {
+          ctx.event.put("category", ["database"]);
+          ctx.event.put("type", ["info"]);
+          ctx.event.put("action", "ldap_result");
+        } else if (op.equals("CONNECTION")) {
+          ctx.event.put("category", ["network"]);
+          ctx.event.put("type", ["connection", "start"]);
+          ctx.event.put("action", "ldap_connect");
+        } else if (op.equals("DISCONNECT")) {
+          ctx.event.put("category", ["network"]);
+          ctx.event.put("type", ["connection", "end"]);
+          ctx.event.put("action", "ldap_disconnect");
+        }
+
+  # Related fields
+  - append:
+      tag: append_related_user
+      field: related.user
+      value: "{{user.name}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_id
+      field: related.user
+      value: "{{user.id}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  # GeoIP enrichment
+  - geoip:
+      tag: geoip_source
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      tag: geoip_source_asn
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_asn
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_as_org
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  # Set observer hostname
+  - set:
+      tag: set_observer_hostname
+      field: observer.hostname
+      copy_from: host.hostname
+      ignore_failure: true
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message: {{ _ingest.on_failure_message }}"

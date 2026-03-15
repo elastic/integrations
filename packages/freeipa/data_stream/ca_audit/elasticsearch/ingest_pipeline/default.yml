@@ -1,0 +1,352 @@
+---
+description: Pipeline for FreeIPA Dogtag CA signed audit events.
+processors:
+  # Static metadata
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: freeipa
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: freeipa.ca_audit
+
+  # Parse thread prefix, timestamp, and bracket section
+  - grok:
+      tag: grok_ca_audit_line
+      field: message
+      patterns:
+        - "^%{DATA:freeipa.ca.thread} - \\[%{DATA:_temp.raw_ts}\\] \\[%{INT:_temp.level1}\\] \\[%{INT:_temp.level2}\\] \\[%{GREEDYDATA:_temp.kv_section}\\]%{GREEDYDATA:_temp.description}"
+
+  # Parse timestamp
+  - date:
+      tag: date_parse
+      field: _temp.raw_ts
+      target_field: "@timestamp"
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss zzz
+
+  # Extract key-value pairs from bracketed section using script
+  - script:
+      tag: script_parse_kv
+      lang: painless
+      source: |
+        def section = ctx._temp?.kv_section;
+        if (section == null) return;
+        def kv = new HashMap();
+        // section looks like: AuditEvent=VALUE][Key=Value][Key2=Value2
+        // (the outer brackets were consumed by grok)
+        def parts = /\]\[/.split(section);
+        for (def part : parts) {
+          int eq = part.indexOf('=');
+          if (eq > 0) {
+            def key = part.substring(0, eq);
+            def val = part.substring(eq + 1);
+            kv.put(key, val);
+          }
+        }
+        ctx._temp.put('kv', kv);
+
+  # Map parsed fields
+  - set:
+      tag: set_event_type
+      if: ctx._temp?.kv?.AuditEvent != null
+      field: freeipa.ca.event_type
+      copy_from: _temp.kv.AuditEvent
+  - set:
+      tag: set_subject_id
+      if: ctx._temp?.kv?.SubjectID != null
+      field: user.id
+      copy_from: _temp.kv.SubjectID
+  - set:
+      tag: set_user_name
+      if: ctx._temp?.kv?.SubjectID != null
+      field: user.name
+      copy_from: _temp.kv.SubjectID
+  - set:
+      tag: set_client_host
+      if: ctx._temp?.kv?.ClientHost != null
+      field: source.ip
+      copy_from: _temp.kv.ClientHost
+  - set:
+      tag: set_client_ip
+      if: ctx._temp?.kv?.ClientIP != null && ctx.source?.ip == null
+      field: source.ip
+      copy_from: _temp.kv.ClientIP
+  - set:
+      tag: set_server_host
+      if: ctx._temp?.kv?.ServerHost != null
+      field: freeipa.ca.server_host
+      copy_from: _temp.kv.ServerHost
+  - set:
+      tag: set_server_ip
+      if: ctx._temp?.kv?.ServerIP != null && ctx.freeipa?.ca?.server_host == null
+      field: freeipa.ca.server_host
+      copy_from: _temp.kv.ServerIP
+  - convert:
+      tag: convert_server_port
+      if: ctx._temp?.kv?.ServerPort != null
+      field: _temp.kv.ServerPort
+      target_field: freeipa.ca.server_port
+      type: integer
+  - set:
+      tag: set_info
+      if: ctx._temp?.kv?.Info != null
+      field: freeipa.ca.info
+      copy_from: _temp.kv.Info
+  - set:
+      tag: set_cert_serial
+      if: ctx._temp?.kv?.CertSerialNum != null
+      field: freeipa.ca.serial_number
+      copy_from: _temp.kv.CertSerialNum
+  - set:
+      tag: set_issuer_dn
+      if: ctx._temp?.kv?.IssuerDN != null
+      field: freeipa.ca.issuer_dn
+      copy_from: _temp.kv.IssuerDN
+  - set:
+      tag: set_request_id
+      if: ctx._temp?.kv?.ReqID != null
+      field: freeipa.ca.request_id
+      copy_from: _temp.kv.ReqID
+  - set:
+      tag: set_profile
+      if: ctx._temp?.kv?.ProfileID != null
+      field: freeipa.ca.profile
+      copy_from: _temp.kv.ProfileID
+  - set:
+      tag: set_request_type
+      if: ctx._temp?.kv?.RequestType != null
+      field: freeipa.ca.request_type
+      copy_from: _temp.kv.RequestType
+  - set:
+      tag: set_subject_dn
+      if: ctx._temp?.kv?.SubjectDN != null
+      field: freeipa.ca.subject_dn
+      copy_from: _temp.kv.SubjectDN
+  - set:
+      tag: set_revocation_reason
+      if: ctx._temp?.kv?.RevocationReason != null
+      field: freeipa.ca.revocation_reason
+      copy_from: _temp.kv.RevocationReason
+  - set:
+      tag: set_auth_manager
+      if: ctx._temp?.kv?.AuthMgr != null
+      field: freeipa.ca.auth_manager
+      copy_from: _temp.kv.AuthMgr
+  - set:
+      tag: set_acl_resource
+      if: ctx._temp?.kv?.aclResource != null
+      field: freeipa.ca.acl_resource
+      copy_from: _temp.kv.aclResource
+  - set:
+      tag: set_acl_op
+      if: ctx._temp?.kv?.Op != null
+      field: freeipa.ca.acl_op
+      copy_from: _temp.kv.Op
+  - set:
+      tag: set_role
+      if: ctx._temp?.kv?.Role != null
+      field: freeipa.ca.role
+      copy_from: _temp.kv.Role
+  - set:
+      tag: set_cert_subject
+      if: ctx._temp?.kv?.CertSubject != null
+      field: freeipa.ca.subject_dn
+      copy_from: _temp.kv.CertSubject
+  - set:
+      tag: set_scope
+      if: ctx._temp?.kv?.Scope != null
+      field: freeipa.ca.scope
+      copy_from: _temp.kv.Scope
+  - set:
+      tag: set_revoke_reason_num
+      if: ctx._temp?.kv?.RevokeReasonNum != null && ctx.freeipa?.ca?.revocation_reason == null
+      field: freeipa.ca.revocation_reason
+      copy_from: _temp.kv.RevokeReasonNum
+  - set:
+      tag: set_approval
+      if: ctx._temp?.kv?.Approval != null
+      field: freeipa.ca.approval
+      copy_from: _temp.kv.Approval
+
+  # Map Outcome to event.outcome
+  - script:
+      tag: script_event_outcome
+      lang: painless
+      source: |
+        def outcome = ctx._temp?.kv?.Outcome;
+        if (outcome == null) return;
+        if (outcome.equalsIgnoreCase("Success")) {
+          ctx.event.put("outcome", "success");
+        } else if (outcome.equalsIgnoreCase("Failure")) {
+          ctx.event.put("outcome", "failure");
+        } else {
+          ctx.event.put("outcome", "unknown");
+        }
+
+  # Map AuditEvent to event.action, event.category, event.type
+  - script:
+      tag: script_event_action
+      lang: painless
+      source: |
+        def eventType = ctx.freeipa?.ca?.event_type;
+        if (eventType == null) return;
+        def action = "";
+        def category = new ArrayList();
+        def type = new ArrayList();
+        if (eventType.equals("PROFILE_CERT_REQUEST")) {
+          action = "certificate_request";
+          category.add("iam");
+          type.add("info");
+        } else if (eventType.equals("CERT_REQUEST_PROCESSED")) {
+          action = "certificate_issue";
+          category.add("iam");
+          type.add("creation");
+        } else if (eventType.equals("CERT_STATUS_CHANGE_REQUEST")) {
+          action = "certificate_status_change_request";
+          category.add("iam");
+          type.add("info");
+        } else if (eventType.equals("CERT_STATUS_CHANGE_REQUEST_PROCESSED")) {
+          action = "certificate_revoke";
+          category.add("iam");
+          type.add("change");
+        } else if (eventType.equals("AUTH") || eventType.equals("AUTHZ")) {
+          action = "ca_auth";
+          category.add("authentication");
+          type.add("info");
+        } else if (eventType.equals("ACCESS_SESSION_ESTABLISH") || eventType.equals("CLIENT_ACCESS_SESSION_ESTABLISH")) {
+          action = "ca_session_establish";
+          category.add("session");
+          type.add("start");
+        } else if (eventType.equals("ACCESS_SESSION_TERMINATED") || eventType.equals("CLIENT_ACCESS_SESSION_TERMINATED")) {
+          action = "ca_session_terminate";
+          category.add("session");
+          type.add("end");
+        } else if (eventType.equals("FULL_CRL_GENERATION") || eventType.equals("DELTA_CRL_GENERATION")) {
+          action = "crl_generation";
+          category.add("iam");
+          type.add("info");
+        } else if (eventType.equals("AUDIT_LOG_SIGNING")) {
+          action = "audit_log_signing";
+          category.add("iam");
+          type.add("info");
+        } else if (eventType.equals("SELFTESTS_EXECUTION")) {
+          action = "selftests_execution";
+          category.add("process");
+          type.add("info");
+        } else if (eventType.equals("ROLE_ASSUME")) {
+          action = "ca_role_assume";
+          category.add("iam");
+          type.add("info");
+        } else if (eventType.equals("CONFIG_CERT_PROFILE")) {
+          action = "cert_profile_config";
+          category.add("configuration");
+          type.add("change");
+        } else if (eventType.equals("CERT_PROFILE_APPROVAL")) {
+          action = "cert_profile_approval";
+          category.add("iam");
+          type.add("info");
+        } else if (eventType.equals("CERT_SIGNING_INFO") || eventType.equals("CRL_SIGNING_INFO") || eventType.equals("OCSP_SIGNING_INFO")) {
+          action = "signing_info";
+          category.add("iam");
+          type.add("info");
+        } else {
+          action = eventType.toLowerCase();
+          category.add("iam");
+          type.add("info");
+        }
+        ctx.event.put("action", action);
+        ctx.event.put("category", category);
+        ctx.event.put("type", type);
+
+  # Related fields
+  - append:
+      tag: append_related_user
+      field: related.user
+      value: "{{user.name}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_id
+      field: related.user
+      value: "{{user.id}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_server
+      field: related.ip
+      value: "{{freeipa.ca.server_host}}"
+      if: "ctx.freeipa?.ca?.server_host != null && ctx.freeipa.ca.server_host ==~ /^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$/"
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_server
+      field: related.hosts
+      value: "{{freeipa.ca.server_host}}"
+      if: "ctx.freeipa?.ca?.server_host != null && !(ctx.freeipa.ca.server_host ==~ /^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$/)"
+      allow_duplicates: false
+
+  # GeoIP enrichment
+  - geoip:
+      tag: geoip_source
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      tag: geoip_source_asn
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_asn
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_as_org
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  # Set observer hostname
+  - set:
+      tag: set_observer_hostname
+      field: observer.hostname
+      copy_from: host.hostname
+      ignore_failure: true
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message: {{ _ingest.on_failure_message }}"
