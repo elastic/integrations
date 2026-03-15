@@ -1,0 +1,59 @@
+resource.url: {{#if use_https}}https{{else}}http{{/if}}://{{host}}:{{port}}/rpc/get-system-information@format=json
+resource:
+  ssl:
+    verification_mode: {{ssl_verification_mode}}
+resource.timeout: {{timeout}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+redact:
+  fields:
+    - resource.url
+program: |
+  get(state.url).as(si_resp,
+    si_resp.StatusCode == 200 ?
+      bytes(si_resp.Body).decode_json().as(si_raw,
+        // Unwrap multi-routing-engine-results wrapper (dual-RE systems)
+        (
+          "multi-routing-engine-results" in si_raw
+          && size(si_raw["multi-routing-engine-results"]) > 0
+          && "multi-routing-engine-item" in si_raw["multi-routing-engine-results"][0]
+          && size(si_raw["multi-routing-engine-results"][0]["multi-routing-engine-item"]) > 0
+          ? si_raw["multi-routing-engine-results"][0]["multi-routing-engine-item"][0]
+          : si_raw
+        ).as(si_body,
+        "system-information" in si_body && size(si_body["system-information"]) > 0 ?
+          si_body["system-information"][0].as(si,
+            (
+              "host-name" in si && size(si["host-name"]) > 0
+              ? string(si["host-name"][0]["data"])
+              : "{{host}}"
+            ).as(api_hostname,
+              ({{#if device_name}}
+                "{{device_name}}"
+              {{else}}
+                api_hostname
+              {{/if}}
+              ).as(device_name,
+                {"events": [{
+                  "message": si.encode_json(),
+                  "_observer_name": device_name,
+                  "_observer_type": "{{observer_type}}",
+                  "juniper.junos.system_info.hostname": api_hostname,
+                }]}
+              )
+            )
+          )
+        :
+          {"events": []}
+        )
+      )
+    :
+      {"events": []}
+  )
+interval: {{period}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}

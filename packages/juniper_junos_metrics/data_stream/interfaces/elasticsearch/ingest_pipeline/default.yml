@@ -1,0 +1,361 @@
+---
+description: Pipeline for JunOS interface metrics.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.interfaces
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - rename:
+      tag: rename_observer_name
+      field: _observer_name
+      target_field: observer.name
+      ignore_missing: true
+  - rename:
+      tag: rename_observer_type
+      field: _observer_type
+      target_field: observer.type
+      ignore_missing: true
+  - set:
+      tag: set_observer_type_default
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Flatten JunOS JSON: unwrap [{"data": "value"}] pattern into simple key-value pairs.
+  # Also handles nested objects like traffic-statistics and error lists.
+  - script:
+      tag: script_flatten_junos_json
+      lang: painless
+      description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields.
+      source: |
+        def unwrap(Map src) {
+          def flat = new HashMap();
+          for (def entry : src.entrySet()) {
+            def key = entry.getKey();
+            def val = entry.getValue();
+            if (val instanceof List && val.size() > 0) {
+              def first = val.get(0);
+              if (first instanceof Map) {
+                if (first.containsKey('data')) {
+                  def d = first.get('data');
+                  if (d instanceof List && d.size() > 0 && d.get(0) == null) {
+                    continue;
+                  }
+                  flat.put(key, d);
+                } else {
+                  flat.put(key, unwrap(first));
+                }
+                if (first.containsKey('attributes')) {
+                  flat.put(key + '_attrs', first.get('attributes'));
+                }
+              }
+            }
+          }
+          return flat;
+        }
+        ctx._temp.iface = unwrap(ctx._temp.raw);
+
+  # Interface identity fields
+  - set:
+      tag: set_name
+      if: ctx._temp?.iface?.name != null
+      field: juniper.junos.interfaces.name
+      value: "{{_temp.iface.name}}"
+  - set:
+      tag: set_admin_status
+      if: ctx._temp?.iface?.get('admin-status') != null
+      field: juniper.junos.interfaces.admin_status
+      value: "{{_temp.iface.admin-status}}"
+  - set:
+      tag: set_oper_status
+      if: ctx._temp?.iface?.get('oper-status') != null
+      field: juniper.junos.interfaces.oper_status
+      value: "{{_temp.iface.oper-status}}"
+  - set:
+      tag: set_description
+      if: ctx._temp?.iface?.description != null
+      field: juniper.junos.interfaces.description
+      value: "{{_temp.iface.description}}"
+  - set:
+      tag: set_speed
+      if: ctx._temp?.iface?.speed != null
+      field: juniper.junos.interfaces.speed
+      value: "{{_temp.iface.speed}}"
+  - set:
+      tag: set_mac_address
+      if: ctx._temp?.iface?.get('current-physical-address') != null
+      field: juniper.junos.interfaces.mac_address
+      value: "{{_temp.iface.current-physical-address}}"
+  - set:
+      tag: set_if_type
+      if: ctx._temp?.iface?.get('if-type') != null
+      field: juniper.junos.interfaces.type
+      value: "{{_temp.iface.if-type}}"
+  - set:
+      tag: set_link_type
+      if: ctx._temp?.iface?.get('link-type') != null
+      field: juniper.junos.interfaces.link_type
+      value: "{{_temp.iface.link-type}}"
+
+  # MTU
+  - convert:
+      tag: convert_mtu
+      if: ctx._temp?.iface?.mtu != null
+      field: _temp.iface.mtu
+      target_field: juniper.junos.interfaces.mtu
+      type: long
+      ignore_failure: true
+
+  # SNMP index
+  - convert:
+      tag: convert_snmp_index
+      if: ctx._temp?.iface?.get('snmp-index') != null
+      field: _temp.iface.snmp-index
+      target_field: juniper.junos.interfaces.snmp_index
+      type: long
+      ignore_failure: true
+
+  # Traffic statistics — nested under traffic-statistics after flattening
+  - script:
+      tag: script_extract_traffic_stats
+      lang: painless
+      source: |
+        def ts = ctx._temp?.iface?.get('traffic-statistics');
+        if (ts == null || !(ts instanceof Map)) return;
+        if (ctx.juniper == null) ctx.juniper = new HashMap();
+        if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+        if (ctx.juniper.junos.interfaces == null) ctx.juniper.junos.interfaces = new HashMap();
+        def traffic = new HashMap();
+        def input = new HashMap();
+        def output = new HashMap();
+
+        if (ts.containsKey('input-bytes')) { try { input.put('bytes', Long.parseLong(ts.get('input-bytes').toString().trim())); } catch(Exception e) {} }
+        if (ts.containsKey('input-packets')) { try { input.put('packets', Long.parseLong(ts.get('input-packets').toString().trim())); } catch(Exception e) {} }
+        if (ts.containsKey('input-bps')) { try { long v = Long.parseLong(ts.get('input-bps').toString().trim()); input.put('bps', v); input.put('mbps', v / 1000000.0); } catch(Exception e) {} }
+        if (ts.containsKey('input-pps')) { try { input.put('pps', Long.parseLong(ts.get('input-pps').toString().trim())); } catch(Exception e) {} }
+        if (ts.containsKey('output-bytes')) { try { output.put('bytes', Long.parseLong(ts.get('output-bytes').toString().trim())); } catch(Exception e) {} }
+        if (ts.containsKey('output-packets')) { try { output.put('packets', Long.parseLong(ts.get('output-packets').toString().trim())); } catch(Exception e) {} }
+        if (ts.containsKey('output-bps')) { try { long v = Long.parseLong(ts.get('output-bps').toString().trim()); output.put('bps', v); output.put('mbps', v / 1000000.0); } catch(Exception e) {} }
+        if (ts.containsKey('output-pps')) { try { output.put('pps', Long.parseLong(ts.get('output-pps').toString().trim())); } catch(Exception e) {} }
+
+        if (!input.isEmpty()) traffic.put('input', input);
+        if (!output.isEmpty()) traffic.put('output', output);
+        if (!traffic.isEmpty()) ctx.juniper.junos.interfaces.traffic = traffic;
+
+  # Error statistics
+  - script:
+      tag: script_extract_error_stats
+      lang: painless
+      source: |
+        def iface = ctx._temp?.iface;
+        if (iface == null) return;
+        def iel = iface.get('input-error-list');
+        def oel = iface.get('output-error-list');
+        if (iel == null && oel == null) return;
+
+        if (ctx.juniper == null) ctx.juniper = new HashMap();
+        if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+        if (ctx.juniper.junos.interfaces == null) ctx.juniper.junos.interfaces = new HashMap();
+        def errors = new HashMap();
+
+        if (iel instanceof Map) {
+          if (iel.containsKey('input-errors')) { try { errors.put('input', Long.parseLong(iel.get('input-errors').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-drops')) { try { errors.put('input_drops', Long.parseLong(iel.get('input-drops').toString().trim())); } catch(Exception e) {} }
+        }
+        if (oel instanceof Map) {
+          if (oel.containsKey('output-errors')) { try { errors.put('output', Long.parseLong(oel.get('output-errors').toString().trim())); } catch(Exception e) {} }
+          if (oel.containsKey('output-drops')) { try { errors.put('output_drops', Long.parseLong(oel.get('output-drops').toString().trim())); } catch(Exception e) {} }
+        }
+        if (!errors.isEmpty()) ctx.juniper.junos.interfaces.errors = errors;
+
+  # Interface flap time — extract seconds since last flap from junos:seconds attribute
+  - script:
+      tag: script_parse_interface_flapped
+      lang: painless
+      source: |
+        def attrs = ctx._temp?.iface?.get('interface-flapped_attrs');
+        if (attrs != null && attrs.containsKey('junos:seconds')) {
+          try {
+            if (ctx.juniper == null) ctx.juniper = new HashMap();
+            if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+            if (ctx.juniper.junos.interfaces == null) ctx.juniper.junos.interfaces = new HashMap();
+            ctx.juniper.junos.interfaces.put('flap_seconds', Long.parseLong(attrs.get('junos:seconds').toString()));
+          } catch (Exception e) {}
+        }
+        def flapped = ctx._temp?.iface?.get('interface-flapped');
+        if (flapped != null) {
+          if (ctx.juniper == null) ctx.juniper = new HashMap();
+          if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+          if (ctx.juniper.junos.interfaces == null) ctx.juniper.junos.interfaces = new HashMap();
+          ctx.juniper.junos.interfaces.put('last_flapped', flapped.toString());
+        }
+
+  # Interface generation number
+  - convert:
+      tag: convert_generation
+      if: ctx._temp?.iface?.generation != null
+      field: _temp.iface.generation
+      target_field: juniper.junos.interfaces.generation
+      type: long
+      ignore_failure: true
+
+  # Metadata fields from top-level flatten
+  - set:
+      tag: set_media_type
+      if: ctx._temp?.iface?.get('if-media-type') != null
+      field: juniper.junos.interfaces.media_type
+      value: "{{_temp.iface.if-media-type}}"
+  - set:
+      tag: set_auto_negotiation
+      if: ctx._temp?.iface?.get('if-auto-negotiation') != null
+      field: juniper.junos.interfaces.auto_negotiation
+      value: "{{_temp.iface.if-auto-negotiation}}"
+  - set:
+      tag: set_flow_control
+      if: ctx._temp?.iface?.get('if-flow-control') != null
+      field: juniper.junos.interfaces.flow_control
+      value: "{{_temp.iface.if-flow-control}}"
+  - set:
+      tag: set_source_filtering
+      if: ctx._temp?.iface?.get('source-filtering') != null
+      field: juniper.junos.interfaces.source_filtering
+      value: "{{_temp.iface.source-filtering}}"
+
+  # Extended error counters from input-error-list, output-error-list
+  # and MAC/PCS statistics from ethernet-mac-statistics, ethernet-pcs-statistics.
+  # The top-level unwrap already recursed into these nested objects, so their
+  # sub-fields are available as Maps under ctx._temp.iface.
+  - script:
+      tag: script_extract_extended_stats
+      lang: painless
+      source: |
+        def iface = ctx._temp?.iface;
+        if (iface == null) return;
+
+        def iel = iface.get('input-error-list');
+        def oel = iface.get('output-error-list');
+        def mac = iface.get('ethernet-mac-statistics');
+        def pcs = iface.get('ethernet-pcs-statistics');
+
+        if (iel == null && oel == null && mac == null && pcs == null) return;
+
+        if (ctx.juniper == null) ctx.juniper = new HashMap();
+        if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+        if (ctx.juniper.junos.interfaces == null) ctx.juniper.junos.interfaces = new HashMap();
+
+        // Ensure errors map exists (may have been created by script_extract_error_stats)
+        if (ctx.juniper.junos.interfaces.errors == null) ctx.juniper.junos.interfaces.errors = new HashMap();
+        def errors = ctx.juniper.junos.interfaces.errors;
+
+        if (iel instanceof Map) {
+          if (iel.containsKey('input-discards')) { try { errors.put('input_discards', Long.parseLong(iel.get('input-discards').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('framing-errors')) { try { errors.put('framing_errors', Long.parseLong(iel.get('framing-errors').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-runts')) { try { errors.put('input_runts', Long.parseLong(iel.get('input-runts').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-giants')) { try { errors.put('input_giants', Long.parseLong(iel.get('input-giants').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-l3-incompletes')) { try { errors.put('input_l3_incompletes', Long.parseLong(iel.get('input-l3-incompletes').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-l2-channel-errors')) { try { errors.put('input_l2_channel_errors', Long.parseLong(iel.get('input-l2-channel-errors').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-l2-mismatch-timeouts')) { try { errors.put('input_l2_mismatch_timeouts', Long.parseLong(iel.get('input-l2-mismatch-timeouts').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-fifo-errors')) { try { errors.put('input_fifo_errors', Long.parseLong(iel.get('input-fifo-errors').toString().trim())); } catch(Exception e) {} }
+          if (iel.containsKey('input-resource-errors')) { try { errors.put('input_resource_errors', Long.parseLong(iel.get('input-resource-errors').toString().trim())); } catch(Exception e) {} }
+        }
+
+        if (oel instanceof Map) {
+          if (oel.containsKey('carrier-transitions')) { try { errors.put('carrier_transitions', Long.parseLong(oel.get('carrier-transitions').toString().trim())); } catch(Exception e) {} }
+          if (oel.containsKey('output-collisions')) { try { errors.put('output_collisions', Long.parseLong(oel.get('output-collisions').toString().trim())); } catch(Exception e) {} }
+          if (oel.containsKey('aged-packets')) { try { errors.put('aged_packets', Long.parseLong(oel.get('aged-packets').toString().trim())); } catch(Exception e) {} }
+          if (oel.containsKey('mtu-errors')) { try { errors.put('mtu_errors', Long.parseLong(oel.get('mtu-errors').toString().trim())); } catch(Exception e) {} }
+          if (oel.containsKey('hs-link-crc-errors')) { try { errors.put('hs_link_crc_errors', Long.parseLong(oel.get('hs-link-crc-errors').toString().trim())); } catch(Exception e) {} }
+          if (oel.containsKey('output-fifo-errors')) { try { errors.put('output_fifo_errors', Long.parseLong(oel.get('output-fifo-errors').toString().trim())); } catch(Exception e) {} }
+          if (oel.containsKey('output-resource-errors')) { try { errors.put('output_resource_errors', Long.parseLong(oel.get('output-resource-errors').toString().trim())); } catch(Exception e) {} }
+        }
+
+        if (mac instanceof Map) {
+          def macStats = new HashMap();
+          def macIn = new HashMap();
+          def macOut = new HashMap();
+          if (mac.containsKey('input-unicasts')) { try { macIn.put('unicasts', Long.parseLong(mac.get('input-unicasts').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-broadcasts')) { try { macIn.put('broadcasts', Long.parseLong(mac.get('input-broadcasts').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-multicasts')) { try { macIn.put('multicasts', Long.parseLong(mac.get('input-multicasts').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-crc-errors')) { try { macIn.put('crc_errors', Long.parseLong(mac.get('input-crc-errors').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-fifo-errors')) { try { macIn.put('fifo_errors', Long.parseLong(mac.get('input-fifo-errors').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-mac-control-frames')) { try { macIn.put('mac_control_frames', Long.parseLong(mac.get('input-mac-control-frames').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-mac-pause-frames')) { try { macIn.put('mac_pause_frames', Long.parseLong(mac.get('input-mac-pause-frames').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-oversized-frames')) { try { macIn.put('oversized_frames', Long.parseLong(mac.get('input-oversized-frames').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-jabber-frames')) { try { macIn.put('jabber_frames', Long.parseLong(mac.get('input-jabber-frames').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-fragment-frames')) { try { macIn.put('fragment_frames', Long.parseLong(mac.get('input-fragment-frames').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-vlan-tagged-frames')) { try { macIn.put('vlan_tagged_frames', Long.parseLong(mac.get('input-vlan-tagged-frames').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('input-code-violations')) { try { macIn.put('code_violations', Long.parseLong(mac.get('input-code-violations').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('output-unicasts')) { try { macOut.put('unicasts', Long.parseLong(mac.get('output-unicasts').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('output-broadcasts')) { try { macOut.put('broadcasts', Long.parseLong(mac.get('output-broadcasts').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('output-multicasts')) { try { macOut.put('multicasts', Long.parseLong(mac.get('output-multicasts').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('output-crc-errors')) { try { macOut.put('crc_errors', Long.parseLong(mac.get('output-crc-errors').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('output-fifo-errors')) { try { macOut.put('fifo_errors', Long.parseLong(mac.get('output-fifo-errors').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('output-mac-control-frames')) { try { macOut.put('mac_control_frames', Long.parseLong(mac.get('output-mac-control-frames').toString().trim())); } catch(Exception e) {} }
+          if (mac.containsKey('output-mac-pause-frames')) { try { macOut.put('mac_pause_frames', Long.parseLong(mac.get('output-mac-pause-frames').toString().trim())); } catch(Exception e) {} }
+          if (!macIn.isEmpty()) macStats.put('input', macIn);
+          if (!macOut.isEmpty()) macStats.put('output', macOut);
+          if (!macStats.isEmpty()) ctx.juniper.junos.interfaces.mac_statistics = macStats;
+        }
+
+        if (pcs instanceof Map) {
+          def pcsStats = new HashMap();
+          if (pcs.containsKey('bit-error-seconds')) { try { pcsStats.put('bit_error_seconds', Long.parseLong(pcs.get('bit-error-seconds').toString().trim())); } catch(Exception e) {} }
+          if (pcs.containsKey('errored-blocks-seconds')) { try { pcsStats.put('errored_blocks_seconds', Long.parseLong(pcs.get('errored-blocks-seconds').toString().trim())); } catch(Exception e) {} }
+          if (!pcsStats.isEmpty()) ctx.juniper.junos.interfaces.pcs = pcsStats;
+        }
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

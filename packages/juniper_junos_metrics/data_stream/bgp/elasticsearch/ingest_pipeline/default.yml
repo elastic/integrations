@@ -1,0 +1,256 @@
+---
+description: Pipeline for JunOS BGP metrics.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.bgp
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - rename:
+      tag: rename_observer_name
+      field: _observer_name
+      target_field: observer.name
+      ignore_missing: true
+  - rename:
+      tag: rename_observer_type
+      field: _observer_type
+      target_field: observer.type
+      ignore_missing: true
+  - set:
+      tag: set_observer_type_default
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Flatten JunOS JSON: unwrap [{"data": "value"}] pattern, with nested peer object
+  - script:
+      tag: script_flatten_junos_json
+      lang: painless
+      description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields, including nested peer object.
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) { return; }
+        def flat = new HashMap();
+        for (def entry : raw.entrySet()) {
+          def key = entry.getKey();
+          def val = entry.getValue();
+          if (key == 'peer') {
+            if (val instanceof Map) {
+              def peerFlat = new HashMap();
+              for (def pe : val.entrySet()) {
+                def pv = pe.getValue();
+                if (pv instanceof List && pv.size() > 0 && pv.get(0) instanceof Map) {
+                  def first = pv.get(0);
+                  if (first.containsKey('data')) {
+                    peerFlat.put(pe.getKey(), first.get('data'));
+                  }
+                  if (first.containsKey('attributes')) {
+                    peerFlat.put(pe.getKey() + '_attrs', first.get('attributes'));
+                  }
+                }
+              }
+              flat.put('peer', peerFlat);
+            }
+          } else if (val instanceof List && val.size() > 0 && val.get(0) instanceof Map) {
+            def first = val.get(0);
+            if (first.containsKey('data')) {
+              flat.put(key, first.get('data'));
+            }
+            if (first.containsKey('attributes')) {
+              flat.put(key + '_attrs', first.get('attributes'));
+            }
+          }
+        }
+        ctx._temp.bgp = flat;
+
+  # Global BGP stats
+  - convert:
+      tag: convert_group_count
+      if: ctx._temp?.bgp?.get('group-count') != null
+      field: _temp.bgp.group-count
+      target_field: juniper.junos.bgp.group_count
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_peer_count
+      if: ctx._temp?.bgp?.get('peer-count') != null
+      field: _temp.bgp.peer-count
+      target_field: juniper.junos.bgp.peer_count
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_down_peer_count
+      if: ctx._temp?.bgp?.get('down-peer-count') != null
+      field: _temp.bgp.down-peer-count
+      target_field: juniper.junos.bgp.down_peer_count
+      type: long
+      ignore_failure: true
+
+  # Peer identity fields
+  - set:
+      tag: set_peer_address
+      if: ctx._temp?.bgp?.peer?.get('peer-address') != null
+      field: juniper.junos.bgp.peer.address
+      value: "{{_temp.bgp.peer.peer-address}}"
+  - set:
+      tag: set_peer_state
+      if: ctx._temp?.bgp?.peer?.get('peer-state') != null
+      field: juniper.junos.bgp.peer.state
+      value: "{{_temp.bgp.peer.peer-state}}"
+  - set:
+      tag: set_peer_description
+      if: ctx._temp?.bgp?.peer?.get('description') != null
+      field: juniper.junos.bgp.peer.description
+      value: "{{_temp.bgp.peer.description}}"
+
+  # Peer numeric fields
+  - convert:
+      tag: convert_peer_as
+      if: ctx._temp?.bgp?.peer?.get('peer-as') != null
+      field: _temp.bgp.peer.peer-as
+      target_field: juniper.junos.bgp.peer.as
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_input_messages
+      if: ctx._temp?.bgp?.peer?.get('input-messages') != null
+      field: _temp.bgp.peer.input-messages
+      target_field: juniper.junos.bgp.peer.input_messages
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_output_messages
+      if: ctx._temp?.bgp?.peer?.get('output-messages') != null
+      field: _temp.bgp.peer.output-messages
+      target_field: juniper.junos.bgp.peer.output_messages
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_flap_count
+      if: ctx._temp?.bgp?.peer?.get('flap-count') != null
+      field: _temp.bgp.peer.flap-count
+      target_field: juniper.junos.bgp.peer.flap_count
+      type: long
+      ignore_failure: true
+
+  # Elapsed time — use junos:seconds attribute from elapsed-time
+  - script:
+      tag: script_parse_elapsed_time
+      lang: painless
+      source: |
+        def attrs = ctx._temp?.bgp?.peer?.get('elapsed-time_attrs');
+        if (attrs != null && attrs.containsKey('junos:seconds')) {
+          try {
+            if (ctx.juniper == null) ctx.juniper = new HashMap();
+            if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+            if (ctx.juniper.junos.bgp == null) ctx.juniper.junos.bgp = new HashMap();
+            if (ctx.juniper.junos.bgp.peer == null) ctx.juniper.junos.bgp.peer = new HashMap();
+            ctx.juniper.junos.bgp.peer.elapsed_time = Long.parseLong(attrs.get('junos:seconds').toString());
+          } catch (Exception e) {}
+        }
+
+  # Per-peer BGP RIB prefix counts (sum across all address families)
+  - script:
+      tag: script_extract_bgp_rib
+      lang: painless
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) return;
+        def peer = raw.get('peer');
+        if (peer == null || !(peer instanceof Map)) return;
+        def ribs = peer.get('bgp-rib');
+        if (ribs == null || !(ribs instanceof List)) return;
+
+        long activeTotal = 0;
+        long receivedTotal = 0;
+        long acceptedTotal = 0;
+        long suppressedTotal = 0;
+        for (def rib : ribs) {
+          if (!(rib instanceof Map)) continue;
+          def active = rib.get('active-prefix-count');
+          if (active instanceof List && active.size() > 0 && active.get(0) instanceof Map) {
+            try { activeTotal += Long.parseLong(active.get(0).get('data').toString()); } catch (Exception e) {}
+          }
+          def received = rib.get('received-prefix-count');
+          if (received instanceof List && received.size() > 0 && received.get(0) instanceof Map) {
+            try { receivedTotal += Long.parseLong(received.get(0).get('data').toString()); } catch (Exception e) {}
+          }
+          def accepted = rib.get('accepted-prefix-count');
+          if (accepted instanceof List && accepted.size() > 0 && accepted.get(0) instanceof Map) {
+            try { acceptedTotal += Long.parseLong(accepted.get(0).get('data').toString()); } catch (Exception e) {}
+          }
+          def suppressed = rib.get('suppressed-prefix-count');
+          if (suppressed instanceof List && suppressed.size() > 0 && suppressed.get(0) instanceof Map) {
+            try { suppressedTotal += Long.parseLong(suppressed.get(0).get('data').toString()); } catch (Exception e) {}
+          }
+        }
+
+        if (ctx.juniper == null) ctx.juniper = new HashMap();
+        if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+        if (ctx.juniper.junos.bgp == null) ctx.juniper.junos.bgp = new HashMap();
+        if (ctx.juniper.junos.bgp.peer == null) ctx.juniper.junos.bgp.peer = new HashMap();
+        ctx.juniper.junos.bgp.peer.put('active_prefix_count', activeTotal);
+        ctx.juniper.junos.bgp.peer.put('received_prefix_count', receivedTotal);
+        ctx.juniper.junos.bgp.peer.put('accepted_prefix_count', acceptedTotal);
+        ctx.juniper.junos.bgp.peer.put('suppressed_prefix_count', suppressedTotal);
+
+        // route-queue-count
+        def rqc = peer.get('route-queue-count');
+        if (rqc instanceof List && rqc.size() > 0 && rqc.get(0) instanceof Map) {
+          try { ctx.juniper.junos.bgp.peer.put('route_queue_count', Long.parseLong(rqc.get(0).get('data').toString())); } catch (Exception e) {}
+        }
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

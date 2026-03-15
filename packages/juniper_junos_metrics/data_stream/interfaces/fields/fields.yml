@@ -1,0 +1,277 @@
+- name: juniper.junos.interfaces
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      dimension: true
+      description: Interface name (for example ge-0/0/0, ae0, lo0). Used as a TSDB dimension.
+    - name: description
+      type: keyword
+      description: Operator-configured description string for the interface.
+    - name: admin_status
+      type: keyword
+      description: Administrative status of the interface (up or down), reflecting the configured state.
+    - name: oper_status
+      type: keyword
+      description: Operational status of the interface (up or down), reflecting the actual link state.
+    - name: mtu
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Maximum transmission unit size configured on the interface, in bytes.
+    - name: speed
+      type: keyword
+      description: Negotiated or configured interface speed (for example 1000mbps, 10Gbps, Auto).
+    - name: mac_address
+      type: keyword
+      description: Hardware MAC address assigned to the interface.
+    - name: type
+      type: keyword
+      description: Interface media type (for example Ethernet, SONET, Loopback).
+    - name: link_type
+      type: keyword
+      description: Physical link mode (for example Full-Duplex, Half-Duplex).
+    - name: snmp_index
+      type: long
+      description: SNMP ifIndex value assigned to this interface for SNMP polling.
+    - name: traffic
+      type: group
+      fields:
+        - name: input.bytes
+          type: long
+          metric_type: counter
+          unit: byte
+          description: Cumulative number of bytes received on the interface.
+        - name: input.packets
+          type: long
+          metric_type: counter
+          description: Cumulative number of packets received on the interface.
+        - name: input.bps
+          type: long
+          metric_type: gauge
+          description: Current inbound traffic rate in bits per second.
+        - name: input.mbps
+          type: double
+          metric_type: gauge
+          description: Current inbound traffic rate in megabits per second.
+        - name: input.pps
+          type: long
+          metric_type: gauge
+          description: Current inbound traffic rate in packets per second.
+        - name: output.bytes
+          type: long
+          metric_type: counter
+          unit: byte
+          description: Cumulative number of bytes transmitted on the interface.
+        - name: output.packets
+          type: long
+          metric_type: counter
+          description: Cumulative number of packets transmitted on the interface.
+        - name: output.bps
+          type: long
+          metric_type: gauge
+          description: Current outbound traffic rate in bits per second.
+        - name: output.mbps
+          type: double
+          metric_type: gauge
+          description: Current outbound traffic rate in megabits per second.
+        - name: output.pps
+          type: long
+          metric_type: gauge
+          description: Current outbound traffic rate in packets per second.
+    - name: last_flapped
+      type: keyword
+      description: Human-readable timestamp of last interface flap.
+    - name: flap_seconds
+      type: long
+      metric_type: gauge
+      unit: s
+      description: Seconds elapsed after the most recent interface flap (from junos:seconds attribute).
+    - name: generation
+      type: long
+      description: Interface configuration generation number.
+    - name: media_type
+      type: keyword
+      description: Physical media type of the interface (for example Fiber, Copper).
+    - name: auto_negotiation
+      type: keyword
+      description: Auto-negotiation state of the interface (enabled or turned off).
+    - name: flow_control
+      type: keyword
+      description: Flow control state of the interface (enabled or turned off).
+    - name: source_filtering
+      type: keyword
+      description: Source address filtering state of the interface (enabled or turned off).
+    - name: errors
+      type: group
+      fields:
+        - name: input
+          type: long
+          metric_type: counter
+          description: Cumulative number of inbound packets that contained errors (for example CRC, framing).
+        - name: output
+          type: long
+          metric_type: counter
+          description: Cumulative number of outbound packets that failed to transmit due to errors.
+        - name: input_drops
+          type: long
+          metric_type: counter
+          description: Cumulative number of inbound packets dropped due to resource constraints or policy.
+        - name: output_drops
+          type: long
+          metric_type: counter
+          description: Cumulative number of outbound packets dropped due to queue overflow or policy.
+        - name: input_discards
+          type: long
+          metric_type: counter
+          description: Cumulative number of inbound packets discarded due to resource exhaustion.
+        - name: framing_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of frames received with alignment or synchronization errors.
+        - name: input_runts
+          type: long
+          metric_type: counter
+          description: Cumulative number of undersized frames received (smaller than minimum frame size).
+        - name: input_giants
+          type: long
+          metric_type: counter
+          description: Cumulative number of oversized frames received (larger than maximum frame size).
+        - name: input_l3_incompletes
+          type: long
+          metric_type: counter
+          description: Cumulative number of packets with incomplete Layer 3 headers.
+        - name: input_l2_channel_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of Layer 2 channel mismatch errors.
+        - name: input_l2_mismatch_timeouts
+          type: long
+          metric_type: counter
+          description: Cumulative number of Layer 2 mismatch timeout errors.
+        - name: input_fifo_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of input FIFO overrun errors.
+        - name: input_resource_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of input resource exhaustion errors.
+        - name: carrier_transitions
+          type: long
+          metric_type: counter
+          description: Number of times the carrier signal changed state (link up/down transitions).
+        - name: output_collisions
+          type: long
+          metric_type: counter
+          description: Cumulative number of Ethernet collisions on the interface.
+        - name: aged_packets
+          type: long
+          metric_type: counter
+          description: Cumulative number of packets dropped because they aged out in the output queue.
+        - name: mtu_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of packets dropped due to MTU violations.
+        - name: hs_link_crc_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of high-speed link CRC errors on the fabric side.
+        - name: output_fifo_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of output FIFO overrun errors.
+        - name: output_resource_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of output resource exhaustion errors.
+    - name: mac_statistics
+      type: group
+      fields:
+        - name: input.unicasts
+          type: long
+          metric_type: counter
+          description: Cumulative number of unicast packets received at the MAC layer.
+        - name: input.broadcasts
+          type: long
+          metric_type: counter
+          description: Cumulative number of broadcast packets received at the MAC layer.
+        - name: input.multicasts
+          type: long
+          metric_type: counter
+          description: Cumulative number of multicast packets received at the MAC layer.
+        - name: input.crc_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of CRC errors detected at the MAC layer on received frames.
+        - name: input.fifo_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of MAC-layer input FIFO errors.
+        - name: input.mac_control_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of IEEE 802.3 MAC control frames received.
+        - name: input.mac_pause_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of flow control pause frames received.
+        - name: input.oversized_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of frames received larger than the configured MTU.
+        - name: input.jabber_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of malformed oversized frames received.
+        - name: input.fragment_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of undersized fragment frames received.
+        - name: input.vlan_tagged_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of 802.1Q VLAN-tagged frames received.
+        - name: input.code_violations
+          type: long
+          metric_type: counter
+          description: Cumulative number of encoding violations detected at the PHY layer.
+        - name: output.unicasts
+          type: long
+          metric_type: counter
+          description: Cumulative number of unicast packets transmitted at the MAC layer.
+        - name: output.broadcasts
+          type: long
+          metric_type: counter
+          description: Cumulative number of broadcast packets transmitted at the MAC layer.
+        - name: output.multicasts
+          type: long
+          metric_type: counter
+          description: Cumulative number of multicast packets transmitted at the MAC layer.
+        - name: output.crc_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of CRC errors on transmitted frames.
+        - name: output.fifo_errors
+          type: long
+          metric_type: counter
+          description: Cumulative number of MAC-layer output FIFO errors.
+        - name: output.mac_control_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of IEEE 802.3 MAC control frames transmitted.
+        - name: output.mac_pause_frames
+          type: long
+          metric_type: counter
+          description: Cumulative number of flow control pause frames transmitted.
+    - name: pcs
+      type: group
+      fields:
+        - name: bit_error_seconds
+          type: long
+          metric_type: counter
+          description: Number of seconds with at least one PCS bit error detected.
+        - name: errored_blocks_seconds
+          type: long
+          metric_type: counter
+          description: Number of seconds with PCS errored blocks detected.
