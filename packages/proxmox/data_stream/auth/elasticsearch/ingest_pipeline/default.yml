@@ -1,0 +1,156 @@
+---
+description: Pipeline for Proxmox VE pvedaemon authentication events
+processors:
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  # Preserve original event
+  - rename:
+      tag: rename_message_to_original
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_failure: true
+  - remove:
+      tag: remove_duplicate_message
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  # Parse Proxmox auth messages from journald
+  # Success: successful auth for user 'root@pam'
+  # Failure: authentication failure; rhost=::ffff:172.30.1.50 user=admin@pve msg=invalid credentials
+  - grok:
+      tag: grok_auth_success
+      field: event.original
+      patterns:
+        - "successful auth for user '%{DATA:_temp.user_realm}'"
+      ignore_failure: true
+  - grok:
+      tag: grok_auth_failure
+      if: ctx._temp?.user_realm == null
+      field: event.original
+      patterns:
+        - 'authentication failure; rhost=%{DATA:_temp.rhost} user=%{DATA:_temp.user_realm} msg=%{GREEDYDATA:event.reason}'
+      ignore_failure: true
+
+  # Strip ::ffff: prefix from IPv6-mapped IPv4 addresses
+  - script:
+      tag: script_strip_ipv6_prefix
+      lang: painless
+      if: ctx._temp?.rhost != null
+      source: |
+        if (ctx.source == null) ctx.source = new HashMap();
+        def rhost = ctx._temp.rhost;
+        if (rhost.startsWith('::ffff:')) {
+          ctx.source.ip = rhost.substring(7);
+        } else {
+          ctx.source.ip = rhost;
+        }
+
+  # Parse user@realm format
+  - dissect:
+      tag: dissect_user_realm
+      if: ctx._temp?.user_realm != null
+      field: _temp.user_realm
+      pattern: "%{user.name}@%{proxmox.auth.realm}"
+      ignore_failure: true
+
+  # Set event outcome based on which pattern matched
+  - set:
+      tag: set_outcome_success
+      if: ctx.event?.original != null && ctx.event.original.contains('successful auth')
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_outcome_failure
+      if: ctx.event?.original != null && ctx.event.original.contains('authentication failure')
+      field: event.outcome
+      value: failure
+
+  # Set event categories
+  - append:
+      tag: set_event_category_authentication
+      field: event.category
+      value:
+        - authentication
+      allow_duplicates: false
+  - append:
+      tag: set_event_type_start
+      if: ctx.event?.outcome == 'success'
+      field: event.type
+      value:
+        - start
+      allow_duplicates: false
+  - append:
+      tag: set_event_type_info
+      if: ctx.event?.outcome != 'success'
+      field: event.type
+      value:
+        - info
+      allow_duplicates: false
+
+  # Enrich related fields
+  - append:
+      tag: append_related_ip
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user
+      if: ctx.user?.name != null
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+
+  # Set observer
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Proxmox
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Proxmox VE
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: virtualization
+
+  # Set message from parsed data
+  - set:
+      tag: set_message_success
+      if: ctx.event?.outcome == 'success' && ctx.user?.name != null
+      field: message
+      value: "Successful authentication for user {{user.name}}@{{proxmox.auth.realm}}"
+  - set:
+      tag: set_message_failure
+      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null
+      field: message
+      value: "Failed authentication for user {{user.name}}@{{proxmox.auth.realm}} from {{source.ip}}"
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

@@ -1,0 +1,164 @@
+---
+description: Pipeline for Proxmox VE pveproxy access logs
+processors:
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  # Preserve original event
+  - rename:
+      tag: rename_message_to_original
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_failure: true
+  - remove:
+      tag: remove_duplicate_message
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  # Parse Proxmox access log format:
+  # ::ffff:172.30.1.101 - csi@pve!csi-token [22/02/2026:10:05:20 +0000] "GET /api2/json/nodes/lab/storage/hdd_kubernetes/status HTTP/1.1" 200 147
+  # ::ffff:127.0.0.1 - - [22/02/2026:11:55:03 +0000] "GET /api2/json/cluster/ha/resources HTTP/1.1" 401 -
+  - grok:
+      tag: grok_access_log
+      field: event.original
+      patterns:
+        - '(?:::ffff:)?%{IP:source.ip} - %{DATA:_temp.user_string} \[%{DATA:_temp.timestamp}\] "%{WORD:http.request.method} %{URIPATHPARAM:url.path} HTTP/%{NUMBER:http.version}" %{INT:_temp.status_code} %{NOTSPACE:_temp.body_bytes}'
+      ignore_failure: true
+
+  # Parse timestamp
+  - date:
+      tag: date_parse_timestamp
+      if: ctx._temp?.timestamp != null
+      field: _temp.timestamp
+      target_field: "@timestamp"
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss Z
+        - dd/MM/yyyy:HH:mm:ss Z
+      ignore_failure: true
+
+  # Convert numeric fields
+  - convert:
+      tag: convert_status_code
+      if: ctx._temp?.status_code != null
+      field: _temp.status_code
+      target_field: http.response.status_code
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_body_bytes
+      if: ctx._temp?.body_bytes != null && ctx._temp.body_bytes != '-'
+      field: _temp.body_bytes
+      target_field: http.response.body.bytes
+      type: long
+      ignore_failure: true
+
+  # Parse user@realm or user@realm!token-id
+  - grok:
+      tag: grok_parse_user
+      if: ctx._temp?.user_string != null && ctx._temp.user_string != '-'
+      field: _temp.user_string
+      patterns:
+        - '%{DATA:user.name}@%{DATA:proxmox.auth.realm}!%{GREEDYDATA:proxmox.auth.token_id}'
+        - '%{DATA:user.name}@%{GREEDYDATA:proxmox.auth.realm}'
+      ignore_failure: true
+
+  # Set event.action from HTTP method
+  - lowercase:
+      tag: set_event_action
+      field: http.request.method
+      target_field: event.action
+      ignore_failure: true
+
+  # Set event categories
+  - append:
+      tag: set_event_category_web
+      field: event.category
+      value:
+        - web
+      allow_duplicates: false
+  - append:
+      tag: set_event_type_access
+      field: event.type
+      value:
+        - access
+      allow_duplicates: false
+
+  # Set event.outcome based on HTTP status code
+  - script:
+      tag: script_set_event_outcome
+      lang: painless
+      if: ctx.http?.response?.status_code != null
+      source: |
+        def sc = ctx.http.response.status_code;
+        ctx.event.outcome = (sc >= 200 && sc < 400) ? 'success' : 'failure';
+
+  # Detect auth events (path contains /access/ticket)
+  - script:
+      tag: script_detect_auth_event
+      lang: painless
+      if: ctx.url?.path != null && ctx.url.path.contains('/access/ticket')
+      source: |
+        ctx.event.category = ['authentication'];
+        ctx.event.type = ['info'];
+
+  # Enrich related fields
+  - append:
+      tag: append_related_ip
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user
+      if: ctx.user?.name != null
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+
+  # Set observer
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Proxmox
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Proxmox VE
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: virtualization
+
+  # Set message from parsed data
+  - set:
+      tag: set_message
+      if: ctx.http?.request?.method != null
+      field: message
+      value: "{{http.request.method}} {{url.path}} {{http.response.status_code}}"
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

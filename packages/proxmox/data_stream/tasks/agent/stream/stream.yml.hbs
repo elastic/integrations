@@ -1,0 +1,34 @@
+paths:
+{{#each paths}}
+  - {{this}}
+{{/each}}
+exclude_files: [".gz$"]
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
+{{/if}}
+{{#if cluster_name}}
+processors:
+  - add_fields:
+      target: proxmox.cluster
+      fields:
+        name: '{{cluster_name}}'
+{{#if processors}}
+{{processors}}
+{{/if}}
+{{else}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{/if}}

@@ -1,0 +1,221 @@
+---
+description: Pipeline for Proxmox VE firewall logs
+processors:
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  # Preserve original event
+  - rename:
+      tag: rename_message_to_original
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_failure: true
+  - remove:
+      tag: remove_duplicate_message
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  # Parse Proxmox firewall log format:
+  # 0 7 PVEFW-HOST-OUT 01/Jul/2020:00:42:13 +0200 DROP: OUT=vmbr1 SRC=192.168.1.2 DST=192.168.1.56 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=42440 DF PROTO=TCP SPT=23658 DPT=443 SEQ=2516196194 ACK=0 WINDOW=64140 SYN
+  - dissect:
+      tag: dissect_firewall_header
+      field: event.original
+      pattern: '%{_temp.log_vmid} %{_temp.log_id} %{proxmox.firewall.chain} %{_temp.timestamp} %{_temp.tz} %{_temp.action_and_kv}'
+      ignore_failure: true
+
+  # Extract action (DROP/REJECT/ACCEPT) from before the colon
+  - grok:
+      tag: grok_extract_action
+      if: ctx._temp?.action_and_kv != null
+      field: _temp.action_and_kv
+      patterns:
+        - '%{WORD:_temp.action}: %{GREEDYDATA:_temp.kv_string}'
+      ignore_failure: true
+
+  # Parse timestamp
+  - date:
+      tag: date_parse_timestamp
+      if: ctx._temp?.timestamp != null && ctx._temp?.tz != null
+      field: _temp.timestamp
+      target_field: "@timestamp"
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss
+      timezone: "{{_temp.tz}}"
+      ignore_failure: true
+
+  # Strip bare flags (DF, SYN, FIN, RST, etc.) that have no = value
+  # These cause the KV processor to stop parsing
+  - script:
+      tag: script_strip_bare_flags
+      lang: painless
+      if: ctx._temp?.kv_string != null
+      source: |
+        def parts = ctx._temp.kv_string.splitOnToken(' ');
+        def filtered = new ArrayList();
+        for (def part : parts) {
+          if (part.contains('=')) {
+            filtered.add(part);
+          }
+        }
+        ctx._temp.kv_string = String.join(' ', filtered);
+
+  # Parse key-value pairs from the firewall log
+  - kv:
+      tag: kv_parse_firewall_fields
+      if: ctx._temp?.kv_string != null
+      field: _temp.kv_string
+      field_split: ' '
+      value_split: '='
+      target_field: _temp.kv
+      ignore_failure: true
+
+  # Map firewall fields to ECS
+  - set:
+      tag: set_source_ip
+      if: ctx._temp?.kv?.SRC != null
+      field: source.ip
+      value: '{{{_temp.kv.SRC}}}'
+  - set:
+      tag: set_destination_ip
+      if: ctx._temp?.kv?.DST != null
+      field: destination.ip
+      value: '{{{_temp.kv.DST}}}'
+  - convert:
+      tag: convert_source_port
+      if: ctx._temp?.kv?.SPT != null
+      field: _temp.kv.SPT
+      target_field: source.port
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_destination_port
+      if: ctx._temp?.kv?.DPT != null
+      field: _temp.kv.DPT
+      target_field: destination.port
+      type: long
+      ignore_failure: true
+  - lowercase:
+      tag: lowercase_protocol
+      if: ctx._temp?.kv?.PROTO != null
+      field: _temp.kv.PROTO
+      target_field: network.transport
+      ignore_failure: true
+  - convert:
+      tag: convert_network_bytes
+      if: ctx._temp?.kv?.LEN != null
+      field: _temp.kv.LEN
+      target_field: network.bytes
+      type: long
+      ignore_failure: true
+
+  # Set event.action to lowercase action
+  - lowercase:
+      tag: lowercase_action
+      if: ctx._temp?.action != null
+      field: _temp.action
+      target_field: event.action
+      ignore_failure: true
+
+  # Set event categories
+  - append:
+      tag: set_event_category_network
+      field: event.category
+      value:
+        - network
+      allow_duplicates: false
+
+  # Set event.type based on action
+  - script:
+      tag: script_set_event_type
+      lang: painless
+      if: ctx.event?.action != null
+      source: |
+        def action = ctx.event.action;
+        if (action == 'drop' || action == 'reject') {
+          ctx.event.type = ['connection', 'denied'];
+        } else if (action == 'accept') {
+          ctx.event.type = ['connection', 'allowed'];
+        }
+
+  # Set event.outcome based on action
+  - set:
+      tag: set_outcome_failure
+      if: ctx.event?.action == 'drop' || ctx.event?.action == 'reject'
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_outcome_success
+      if: ctx.event?.action == 'accept'
+      field: event.outcome
+      value: success
+
+  # Set observer fields
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Proxmox
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Proxmox VE
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: firewall
+
+  # Append to related.ip
+  - append:
+      tag: append_related_ip_source
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_destination
+      if: ctx.destination?.ip != null
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+
+  # Derive VMID from chain name if it contains one (e.g., PVEFW-100-IN)
+  - grok:
+      tag: grok_extract_vmid_from_chain
+      if: ctx.proxmox?.firewall?.chain != null
+      field: proxmox.firewall.chain
+      patterns:
+        - 'PVEFW-%{INT:proxmox.firewall.vmid}-%{WORD}'
+      ignore_failure: true
+
+  # Set message from parsed data
+  - set:
+      tag: set_message
+      if: ctx.event?.action != null && ctx.source?.ip != null && ctx.destination?.ip != null
+      field: message
+      value: "{{event.action}} {{source.ip}}:{{source.port}} -> {{destination.ip}}:{{destination.port}} {{network.transport}}"
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"
