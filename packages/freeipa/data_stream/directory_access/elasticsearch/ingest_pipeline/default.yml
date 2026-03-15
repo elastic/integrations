@@ -22,8 +22,10 @@ processors:
       patterns:
         # Connection open (plain or SSL)
         - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} fd=%{INT} slot=%{INT} (?:%{WORD:_temp.conn_type} )?connection from %{IP:source.ip} to %{IP:_temp.dest_ip}"
-        # Disconnect
-        - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} op=%{INT:freeipa.directory.operation_id:long} fd=%{INT} closed - %{GREEDYDATA:_temp.close_reason}"
+        # Disconnect (with op=) — matches both "fd=N closed" and "fd=N Disconnect"
+        - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} op=%{INT:freeipa.directory.operation_id:long} fd=%{INT} (?:closed|Disconnect) - %{GREEDYDATA:_temp.close_reason}"
+        # Disconnect (without op=, fd-closed lines)
+        - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} fd=%{INT} (?:closed|Disconnect)%{GREEDYDATA:_temp.close_reason}"
         # Operation lines (BIND, SRCH, MOD, ADD, DEL, CMP, RESULT, etc.)
         - "\\[%{DATA:_temp.raw_timestamp}\\] conn=%{INT:freeipa.directory.connection_id:long} op=%{INT:freeipa.directory.operation_id:long} %{WORD:freeipa.directory.operation}%{SPACE}%{GREEDYDATA:_temp.op_detail}"
 
@@ -319,6 +321,13 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+
+  # Set observer hostname
+  - set:
+      tag: set_observer_hostname
+      field: observer.hostname
+      copy_from: host.hostname
+      ignore_failure: true
 
   # Clean up
   - remove:

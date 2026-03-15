@@ -77,6 +77,17 @@ processors:
       field: freeipa.directory_error.message
       copy_from: _temp.log_message
 
+  # Set event.reason for error-level entries (truncated to 200 chars)
+  - script:
+      tag: script_event_reason
+      if: ctx.log?.level == 'err'
+      lang: painless
+      source: |
+        def msg = ctx.freeipa?.directory_error?.message;
+        if (msg != null) {
+          ctx.event.put('reason', msg.length() > 200 ? msg.substring(0, 200) : msg);
+        }
+
   # Set event.action
   - set:
       tag: set_event_action
@@ -100,6 +111,13 @@ processors:
       value: "{{freeipa.directory_error.remote_host}}"
       if: ctx.freeipa?.directory_error?.remote_host != null
       allow_duplicates: false
+
+  # Set observer hostname
+  - set:
+      tag: set_observer_hostname
+      field: observer.hostname
+      copy_from: host.hostname
+      ignore_failure: true
 
   # Clean up
   - remove:
