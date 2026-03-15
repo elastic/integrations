@@ -1,0 +1,169 @@
+---
+description: Pipeline for Proxmox VE task index
+processors:
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  # Preserve original event
+  - rename:
+      tag: rename_message_to_original
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_failure: true
+  - remove:
+      tag: remove_duplicate_message
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  # Parse Proxmox task index format:
+  # UPID:pve1:000AE992:00A21BA7:618C1D55:vzdump:100:root@pam: 618C1E3B OK
+  - dissect:
+      tag: dissect_task_index
+      field: event.original
+      pattern: "UPID:%{_temp.node}:%{_temp.pid}:%{_temp.pstart}:%{_temp.starttime_hex}:%{_temp.task_type}:%{_temp.vmid}:%{_temp.user_realm}: %{_temp.endtime_hex} %{_temp.status}"
+      ignore_failure: true
+
+  # Set task fields
+  - set:
+      tag: set_task_node
+      if: ctx._temp?.node != null
+      field: proxmox.task.node
+      value: "{{_temp.node}}"
+  - set:
+      tag: set_task_type
+      if: ctx._temp?.task_type != null
+      field: proxmox.task.type
+      value: "{{_temp.task_type}}"
+  - set:
+      tag: set_task_vmid
+      if: ctx._temp?.vmid != null
+      field: proxmox.task.vmid
+      value: "{{_temp.vmid}}"
+
+  # Construct UPID
+  - set:
+      tag: set_task_upid
+      if: ctx._temp?.node != null && ctx._temp?.pid != null && ctx._temp?.pstart != null && ctx._temp?.starttime_hex != null && ctx._temp?.task_type != null && ctx._temp?.vmid != null && ctx._temp?.user_realm != null
+      field: proxmox.task.upid
+      value: "UPID:{{_temp.node}}:{{_temp.pid}}:{{_temp.pstart}}:{{_temp.starttime_hex}}:{{_temp.task_type}}:{{_temp.vmid}}:{{_temp.user_realm}}:"
+
+  # Parse user@realm
+  - grok:
+      tag: grok_parse_user
+      if: ctx._temp?.user_realm != null
+      field: _temp.user_realm
+      patterns:
+        - '%{DATA:user.name}@%{GREEDYDATA:_temp.realm}'
+      ignore_failure: true
+
+  # Convert hex timestamps to epoch seconds and calculate duration
+  - script:
+      tag: script_parse_timestamps
+      lang: painless
+      if: ctx._temp?.starttime_hex != null && ctx._temp?.endtime_hex != null
+      source: |
+        try {
+          long starttime = Long.parseLong(ctx._temp.starttime_hex, 16);
+          long endtime = Long.parseLong(ctx._temp.endtime_hex, 16);
+          ctx['@timestamp'] = ZonedDateTime.ofInstant(Instant.ofEpochSecond(endtime), ZoneId.of('UTC'));
+          ctx.event.duration = (endtime - starttime) * 1000000000L;
+          ctx.proxmox.task.put('duration_seconds', endtime - starttime);
+        } catch (Exception e) {
+          // ignore parsing errors
+        }
+
+  # Set event action from task type
+  - set:
+      tag: set_event_action
+      if: ctx._temp?.task_type != null
+      field: event.action
+      value: "{{_temp.task_type}}"
+
+  # Set event outcome based on status
+  - set:
+      tag: set_event_outcome_success
+      if: ctx._temp?.status != null && ctx._temp.status == 'OK'
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_event_outcome_failure
+      if: ctx._temp?.status != null && ctx._temp.status != 'OK'
+      field: event.outcome
+      value: failure
+
+  # Set event categories
+  - append:
+      tag: set_event_category_process
+      field: event.category
+      value:
+        - process
+      allow_duplicates: false
+  - append:
+      tag: set_event_type_end
+      field: event.type
+      value:
+        - end
+      allow_duplicates: false
+
+  # Enrich related fields
+  - append:
+      tag: append_related_user
+      if: ctx.user?.name != null
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+
+  # Set observer
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Proxmox
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Proxmox VE
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: virtualization
+
+  # Remove empty vmid
+  - remove:
+      tag: remove_empty_vmid
+      if: ctx.proxmox?.task?.vmid != null && ctx.proxmox.task.vmid == ''
+      field: proxmox.task.vmid
+      ignore_missing: true
+
+  # Set message
+  - set:
+      tag: set_message
+      if: ctx._temp?.task_type != null && ctx._temp?.vmid != null && ctx._temp?.status != null
+      field: message
+      value: "Task {{_temp.task_type}} on VM {{_temp.vmid}} completed with status {{_temp.status}}"
+
+  # Clean up
+  - remove:
+      tag: remove_temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

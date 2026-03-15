@@ -1,0 +1,281 @@
+---
+description: Pipeline for Proxmox VE cluster metrics
+processors:
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  # CEL input sets event.module and event.dataset — override for TSDB constant_keyword
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: proxmox
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: proxmox.cluster
+
+  # Set cluster name from CEL-injected field (available on all events)
+  - set:
+      tag: set_cluster_name
+      if: ctx.proxmox_cluster_name != null && ctx.proxmox_cluster_name != ''
+      field: proxmox.cluster.name
+      value: "{{proxmox_cluster_name}}"
+  - remove:
+      tag: remove_proxmox_cluster_name
+      field: proxmox_cluster_name
+      ignore_missing: true
+
+  # Parse JSON message from CEL input
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.json
+
+  # --- Route: cluster/resources items (have "id" field) ---
+  - set:
+      tag: set_resource_type
+      if: ctx._temp?.json?.id != null
+      field: proxmox.cluster.resource.type
+      value: "{{_temp.json.type}}"
+  - set:
+      tag: set_resource_id
+      if: ctx._temp?.json?.id != null
+      field: proxmox.cluster.resource.id
+      value: "{{_temp.json.id}}"
+  - set:
+      tag: set_resource_name
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.name != null
+      field: proxmox.cluster.resource.name
+      value: "{{_temp.json.name}}"
+  - set:
+      tag: set_resource_node
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.node != null
+      field: proxmox.cluster.resource.node
+      value: "{{_temp.json.node}}"
+  # For node-type resources, Proxmox uses "node" not "name" — normalise to "name"
+  - set:
+      tag: set_resource_name_from_node
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.type == 'node' && ctx._temp?.json?.node != null && ctx._temp?.json?.name == null
+      field: proxmox.cluster.resource.name
+      value: "{{_temp.json.node}}"
+  - convert:
+      tag: convert_resource_vmid
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.vmid != null
+      field: _temp.json.vmid
+      target_field: proxmox.cluster.resource.vmid
+      type: long
+      ignore_failure: true
+  - set:
+      tag: set_resource_status
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.status != null
+      field: proxmox.cluster.resource.status
+      value: "{{_temp.json.status}}"
+  - convert:
+      tag: convert_resource_cpu
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.cpu != null
+      field: _temp.json.cpu
+      target_field: proxmox.cluster.resource.cpu
+      type: double
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_maxcpu
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.maxcpu != null
+      field: _temp.json.maxcpu
+      target_field: proxmox.cluster.resource.maxcpu
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_mem
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.mem != null
+      field: _temp.json.mem
+      target_field: proxmox.cluster.resource.mem
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_maxmem
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.maxmem != null
+      field: _temp.json.maxmem
+      target_field: proxmox.cluster.resource.maxmem
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_disk
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.disk != null
+      field: _temp.json.disk
+      target_field: proxmox.cluster.resource.disk
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_maxdisk
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.maxdisk != null
+      field: _temp.json.maxdisk
+      target_field: proxmox.cluster.resource.maxdisk
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_netin
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.netin != null
+      field: _temp.json.netin
+      target_field: proxmox.cluster.resource.netin
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_netout
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.netout != null
+      field: _temp.json.netout
+      target_field: proxmox.cluster.resource.netout
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_diskread
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.diskread != null
+      field: _temp.json.diskread
+      target_field: proxmox.cluster.resource.diskread
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_diskwrite
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.diskwrite != null
+      field: _temp.json.diskwrite
+      target_field: proxmox.cluster.resource.diskwrite
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_uptime
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.uptime != null
+      field: _temp.json.uptime
+      target_field: proxmox.cluster.resource.uptime
+      type: long
+      ignore_failure: true
+  - set:
+      tag: set_resource_hastate
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.hastate != null
+      field: proxmox.cluster.resource.hastate
+      value: "{{_temp.json.hastate}}"
+  - set:
+      tag: set_resource_tags
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.tags != null
+      field: proxmox.cluster.resource.tags
+      value: "{{_temp.json.tags}}"
+  - set:
+      tag: set_resource_pool
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.pool != null
+      field: proxmox.cluster.resource.pool
+      value: "{{_temp.json.pool}}"
+  - script:
+      tag: script_convert_resource_template
+      lang: painless
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.containsKey('template')
+      source: |
+        ctx.proxmox.cluster.resource.template = ctx._temp.json.template != 0;
+  # cgroup-mode has a hyphen in the JSON key — rename first
+  - rename:
+      tag: rename_cgroup_mode_key
+      if: ctx._temp?.json?.id != null
+      field: _temp.json.cgroup-mode
+      target_field: _temp.json.cgroup_mode
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      tag: convert_resource_cgroup_mode
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.cgroup_mode != null
+      field: _temp.json.cgroup_mode
+      target_field: proxmox.cluster.resource.cgroup_mode
+      type: long
+      ignore_failure: true
+  - set:
+      tag: set_resource_plugintype
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.plugintype != null
+      field: proxmox.cluster.resource.plugintype
+      value: "{{_temp.json.plugintype}}"
+  - set:
+      tag: set_resource_content
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.content != null
+      field: proxmox.cluster.resource.content
+      value: "{{_temp.json.content}}"
+  - script:
+      tag: script_convert_resource_shared
+      lang: painless
+      if: ctx._temp?.json?.id != null && ctx._temp?.json?.containsKey('shared')
+      source: |
+        ctx.proxmox.cluster.resource.shared = ctx._temp.json.shared != 0;
+
+  # --- Route: cluster/status items (type == "cluster") ---
+  - script:
+      tag: script_cluster_status
+      lang: painless
+      if: ctx._temp?.json?.id == null && ctx._temp?.json?.sid == null && ctx._temp?.json?.type == 'cluster'
+      source: |
+        if (ctx.proxmox == null) ctx.proxmox = new HashMap();
+        if (ctx.proxmox.cluster == null) ctx.proxmox.cluster = new HashMap();
+        def j = ctx._temp.json;
+        if (j.containsKey('quorate')) ctx.proxmox.cluster.quorate = j.quorate == 1;
+        if (j.containsKey('nodes')) ctx.proxmox.cluster.nodes = j.nodes;
+        if (j.containsKey('name')) ctx.proxmox.cluster.name = j.name;
+
+  # --- Route: cluster/status items (type == "node") ---
+  - script:
+      tag: script_cluster_node_status
+      lang: painless
+      if: ctx._temp?.json?.id == null && ctx._temp?.json?.sid == null && ctx._temp?.json?.type == 'node'
+      source: |
+        if (ctx.proxmox == null) ctx.proxmox = new HashMap();
+        if (ctx.proxmox.cluster == null) ctx.proxmox.cluster = new HashMap();
+        if (ctx.proxmox.cluster.node == null) ctx.proxmox.cluster.node = new HashMap();
+        def j = ctx._temp.json;
+        if (j.containsKey('name')) ctx.proxmox.cluster.node.name = j.name;
+        if (j.containsKey('online')) ctx.proxmox.cluster.node.online = j.online == 1;
+        if (j.containsKey('local')) ctx.proxmox.cluster.node['local'] = j.local == 1;
+
+  # --- Route: cluster/ha/resources items (have "sid" field) ---
+  - set:
+      tag: set_ha_sid
+      if: ctx._temp?.json?.sid != null
+      field: proxmox.ha.sid
+      value: "{{_temp.json.sid}}"
+  - set:
+      tag: set_ha_state
+      if: ctx._temp?.json?.sid != null && ctx._temp?.json?.state != null
+      field: proxmox.ha.state
+      value: "{{_temp.json.state}}"
+  - set:
+      tag: set_ha_group
+      if: ctx._temp?.json?.sid != null && ctx._temp?.json?.group != null
+      field: proxmox.ha.group
+      value: "{{_temp.json.group}}"
+  - convert:
+      tag: convert_ha_max_restart
+      if: ctx._temp?.json?.sid != null && ctx._temp?.json?.max_restart != null
+      field: _temp.json.max_restart
+      target_field: proxmox.ha.max_restart
+      type: long
+      ignore_failure: true
+  - convert:
+      tag: convert_ha_max_relocate
+      if: ctx._temp?.json?.sid != null && ctx._temp?.json?.max_relocate != null
+      field: _temp.json.max_relocate
+      target_field: proxmox.ha.max_relocate
+      type: long
+      ignore_failure: true
+
+  # Clean up temporary fields and raw message
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

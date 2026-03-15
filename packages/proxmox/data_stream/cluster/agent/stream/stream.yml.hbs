@@ -1,0 +1,65 @@
+interval: {{metrics_interval}}
+resource.url: '{{proxmox_url}}'
+resource.ssl:
+  verification_mode: '{{#if ssl_verification}}full{{else}}none{{/if}}'
+{{#if ssl.certificate_authorities}}
+  certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+state:
+  api_token_id: '{{api_token_id}}'
+  api_token_secret: '{{api_token_secret}}'
+redact:
+  fields:
+    - api_token_secret
+program: |
+  (
+    {"Authorization": ["PVEAPIToken=" + state.api_token_id + "=" + state.api_token_secret]}.as(auth,
+      request("GET", state.url.trim_right("/") + "/api2/json/cluster/resources").with({
+        "Header": auth
+      }).do_request().as(r1,
+        request("GET", state.url.trim_right("/") + "/api2/json/cluster/status").with({
+          "Header": auth
+        }).do_request().as(r2,
+          request("GET", state.url.trim_right("/") + "/api2/json/cluster/ha/resources").with({
+            "Header": auth
+          }).do_request().as(r3,
+            // Extract cluster name from status response for injection into all events
+            (r2.StatusCode == 200 ? bytes(r2.Body).decode_json().data : []).filter(e, e.type == "cluster").as(cc,
+              (cc.size() > 0 ? cc[0].name : "").as(cluster_name,
+                {
+                  "events":
+                    (r1.StatusCode == 200 ?
+                      bytes(r1.Body).decode_json().data.map(e, {"message": e.encode_json(), "proxmox_cluster_name": cluster_name})
+                    : [])
+                    +
+                    (r2.StatusCode == 200 ?
+                      bytes(r2.Body).decode_json().data.map(e, {"message": e.encode_json(), "proxmox_cluster_name": cluster_name})
+                    : [])
+                    +
+                    (r3.StatusCode == 200 ?
+                      bytes(r3.Body).decode_json().data.map(e, {"message": e.encode_json(), "proxmox_cluster_name": cluster_name})
+                    : []),
+                  "url": state.url,
+                  "api_token_id": state.api_token_id,
+                  "api_token_secret": state.api_token_secret,
+                }
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

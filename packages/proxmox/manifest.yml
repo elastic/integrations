@@ -1,0 +1,105 @@
+format_version: "3.3.0"
+name: proxmox
+title: Proxmox VE
+version: 0.1.0
+description: Collect metrics and logs from Proxmox VE hosts with Elastic Agent.
+type: integration
+categories:
+  - observability
+  - infrastructure
+conditions:
+  kibana:
+    version: "^8.16.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/logo.svg
+    title: Proxmox VE
+    size: 800x800
+    type: image/svg+xml
+screenshots:
+  - src: /img/proxmox-overview.png
+    title: Cluster Overview Dashboard
+    size: 1440x1641
+    type: image/png
+  - src: /img/proxmox-node.png
+    title: Node Dashboard
+    size: 1440x1641
+    type: image/png
+  - src: /img/proxmox-vms.png
+    title: Virtual Machines & Containers Dashboard
+    size: 1440x3265
+    type: image/png
+  - src: /img/proxmox-security.png
+    title: Security Dashboard
+    size: 1440x2229
+    type: image/png
+  - src: /img/proxmox-firewall.png
+    title: Firewall Dashboard
+    size: 1440x1809
+    type: image/png
+  - src: /img/proxmox-tasks.png
+    title: Tasks Dashboard
+    size: 1440x1809
+    type: image/png
+policy_templates:
+  - name: proxmox
+    title: Proxmox VE
+    description: Collect metrics and logs from Proxmox VE hosts
+    vars:
+      - name: cluster_name
+        type: text
+        title: Cluster Name
+        description: >-
+          Proxmox cluster name. Auto-discovered for metric data streams via the API.
+          Set this to tag log data streams (access, auth, firewall, tasks, cluster_logs)
+          with the cluster name for cross-stream filtering.
+        required: false
+        show_user: true
+    inputs:
+      - type: cel
+        title: Collect Proxmox metrics
+        description: Poll Proxmox REST API for cluster and node metrics
+        vars:
+          - name: proxmox_url
+            type: text
+            title: Proxmox URL
+            description: Base URL of the Proxmox API (for example, https://192.168.1.1:8006)
+            required: true
+            show_user: true
+          - name: api_token_id
+            type: text
+            title: API Token ID
+            description: Proxmox API token in USER@REALM!TOKENID format (for example, monitor@pve!elastic)
+            required: true
+            show_user: true
+            secret: false
+          - name: api_token_secret
+            type: password
+            title: API Token Secret
+            description: UUID secret for the API token
+            required: true
+            show_user: true
+            secret: true
+          - name: ssl_verification
+            type: bool
+            title: Verify SSL
+            description: Verify Proxmox server certificate. Disable for self-signed certificates.
+            default: false
+            show_user: true
+          - name: ssl.certificate_authorities
+            type: text
+            title: Custom CA Certificate
+            description: A list of root certificates for server verification. If empty, the host CA set is used.
+            multi: true
+            required: false
+            show_user: true
+      - type: logfile
+        title: Collect Proxmox logs (file)
+        description: Collect access logs, firewall logs, and task logs from files
+      - type: journald
+        title: Collect Proxmox logs (journald)
+        description: Collect auth and cluster events from systemd journal
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: community
