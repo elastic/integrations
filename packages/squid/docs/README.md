@@ -305,8 +305,14 @@ The `log` data stream provides events from Squid Proxy of the following types: a
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | squid.content_type | The content type as seen in the HTTP reply header. | keyword |
+| squid.error_detail | Squid error detail or sub-error code. | keyword |
+| squid.host_header | The Host header value from the client request. | keyword |
+| squid.note | Squid annotations and notes attached to the transaction. | keyword |
 | squid.peer_status | A code explaining how the request was handled, by forwarding it to a peer or going straight to the source. | keyword |
+| squid.reply_header_size | Size of the HTTP reply headers in bytes. | long |
+| squid.request_header_size | Size of the HTTP request headers in bytes. | long |
 | squid.result_code | The outcome of the request. | keyword |
+| squid.server_time | Total server-side time in milliseconds (DNS + connect + server response). | long |
 | squid.status_code | The status of the result. | long |
 
 
@@ -316,7 +322,7 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2006-09-08T04:21:52.049Z",
+    "@timestamp": "2026-03-13T15:48:42.391Z",
     "agent": {
         "ephemeral_id": "703e0801-aef8-4d26-aa48-12c7673f6df0",
         "id": "29b8ade0-b4ef-4ce2-ab55-0acc99bbb914",
@@ -330,21 +336,10 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "175.16.199.115",
-        "bytes": 19763,
-        "geo": {
-            "city_name": "Changchun",
-            "continent_name": "Asia",
-            "country_iso_code": "CN",
-            "country_name": "China",
-            "location": {
-                "lat": 43.88,
-                "lon": 125.3228
-            },
-            "region_iso_code": "CN-22",
-            "region_name": "Jilin Sheng"
-        },
-        "ip": "175.16.199.115"
+        "address": "203.0.113.10",
+        "bytes": 904,
+        "ip": "203.0.113.10",
+        "port": 80
     },
     "ecs": {
         "version": "8.17.0"
@@ -360,10 +355,10 @@ An example event for `log` looks as following:
             "web"
         ],
         "dataset": "squid.log",
-        "duration": 5006000000,
-        "ingested": "2024-09-03T18:27:38Z",
+        "duration": 104000000,
+        "ingested": "2026-03-13T15:48:42Z",
         "kind": "event",
-        "original": "1157689312.049   5006 10.105.21.199 TCP_MISS/200 19763 CONNECT login.yahoo.com:443 badeyek DIRECT/175.16.199.115 -",
+        "original": "1773416922.391    104 10.105.21.199 58938 TCP_MISS/200 904 123 364 123 528 GET http://example.com/ 1.1 badeyek HIER_DIRECT/203.0.113.10 80 text/html - - \"-\" \"curl/8.14.1\" \"example.com\" \"-\" 53 -",
         "outcome": "success",
         "type": [
             "access"
@@ -371,8 +366,14 @@ An example event for `log` looks as following:
     },
     "http": {
         "request": {
-            "method": "CONNECT"
-        }
+            "method": "GET"
+        },
+        "response": {
+            "body": {
+                "bytes": 528
+            }
+        },
+        "version": "1.1"
     },
     "input": {
         "type": "filestream"
@@ -381,7 +382,7 @@ An example event for `log` looks as following:
         "file": {
             "device_id": "35",
             "inode": "442644",
-            "path": "/tmp/service_logs/squid-log-access.log"
+            "path": "/tmp/service_logs/squid-log-access-extensive.log"
         },
         "offset": 0
     },
@@ -391,9 +392,12 @@ An example event for `log` looks as following:
         "vendor": "Squid"
     },
     "related": {
+        "hosts": [
+            "example.com"
+        ],
         "ip": [
             "10.105.21.199",
-            "175.16.199.115"
+            "203.0.113.10"
         ],
         "user": [
             "badeyek"
@@ -401,14 +405,21 @@ An example event for `log` looks as following:
     },
     "source": {
         "address": "10.105.21.199",
+        "bytes": 123,
         "ip": "10.105.21.199",
+        "port": 58938,
         "user": {
             "name": "badeyek"
         }
     },
     "squid": {
-        "peer_status": "DIRECT",
+        "content_type": "text/html",
+        "host_header": "example.com",
+        "peer_status": "HIER_DIRECT",
+        "reply_header_size": 364,
+        "request_header_size": 123,
         "result_code": "TCP_MISS",
+        "server_time": 53,
         "status_code": 200
     },
     "tags": [
@@ -417,7 +428,20 @@ An example event for `log` looks as following:
         "forwarded"
     ],
     "url": {
-        "original": "login.yahoo.com:443"
+        "domain": "example.com",
+        "original": "http://example.com/",
+        "path": "/",
+        "registered_domain": "example.com",
+        "scheme": "http",
+        "top_level_domain": "com"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "curl",
+        "original": "curl/8.14.1",
+        "version": "8.14.1"
     }
 }
 ```
