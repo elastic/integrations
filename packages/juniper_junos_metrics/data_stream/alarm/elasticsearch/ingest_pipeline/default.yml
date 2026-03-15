@@ -1,0 +1,159 @@
+---
+description: Pipeline for JunOS alarm events.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.alarm
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - rename:
+      tag: rename_observer_name
+      field: _observer_name
+      target_field: observer.name
+      ignore_missing: true
+  - rename:
+      tag: rename_observer_type
+      field: _observer_type
+      target_field: observer.type
+      ignore_missing: true
+  - set:
+      tag: set_observer_type_default
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Flatten JunOS JSON: unwrap [{"data": "value"}] pattern into simple key-value pairs
+  - script:
+      tag: script_flatten_junos_json
+      lang: painless
+      description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields.
+      source: |
+        if (ctx._temp == null) { ctx._temp = new HashMap(); }
+        def raw = ctx._temp.raw;
+        if (raw == null || !(raw instanceof Map)) {
+          ctx._temp.alarm = new HashMap();
+          return;
+        }
+        def flat = new HashMap();
+        for (def entry : raw.entrySet()) {
+          def key = entry.getKey();
+          def val = entry.getValue();
+          if (val instanceof List && val.size() > 0 && val.get(0) instanceof Map) {
+            def first = val.get(0);
+            if (first.containsKey('data')) {
+              flat.put(key, first.get('data'));
+            }
+            if (first.containsKey('attributes')) {
+              flat.put(key + '_attrs', first.get('attributes'));
+            }
+          }
+        }
+        ctx._temp.alarm = flat;
+
+  # Alarm time — use junos:seconds attribute to build ISO date
+  - script:
+      tag: script_parse_alarm_time
+      lang: painless
+      source: |
+        def alarm = ctx._temp?.alarm;
+        if (alarm == null) { return; }
+        def attrs = alarm.get('alarm-time_attrs');
+        if (attrs != null && attrs instanceof Map && attrs.containsKey('junos:seconds')) {
+          try {
+            long secs = Long.parseLong(attrs.get('junos:seconds').toString());
+            if (ctx.juniper == null) ctx.juniper = new HashMap();
+            if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+            if (ctx.juniper.junos.alarm == null) ctx.juniper.junos.alarm = new HashMap();
+            ctx.juniper.junos.alarm.time = Instant.ofEpochSecond(secs).toString();
+          } catch (Exception e) {}
+        }
+
+  # Set @timestamp from alarm time if available
+  - set:
+      tag: set_timestamp_from_alarm_time
+      if: ctx.juniper?.junos?.alarm?.time != null
+      field: "@timestamp"
+      value: "{{juniper.junos.alarm.time}}"
+
+  # Alarm class
+  - set:
+      tag: set_alarm_class
+      if: ctx._temp?.alarm?.get('alarm-class') != null
+      field: juniper.junos.alarm.class
+      value: "{{_temp.alarm.alarm-class}}"
+
+  # Alarm type
+  - set:
+      tag: set_alarm_type
+      if: ctx._temp?.alarm?.get('alarm-type') != null
+      field: juniper.junos.alarm.type
+      value: "{{_temp.alarm.alarm-type}}"
+
+  # Alarm description
+  - set:
+      tag: set_alarm_description
+      if: ctx._temp?.alarm?.get('alarm-description') != null
+      field: juniper.junos.alarm.description
+      value: "{{_temp.alarm.alarm-description}}"
+
+  # Alarm short description
+  - set:
+      tag: set_alarm_short_description
+      if: ctx._temp?.alarm?.get('alarm-short-description') != null
+      field: juniper.junos.alarm.short_description
+      value: "{{_temp.alarm.alarm-short-description}}"
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

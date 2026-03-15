@@ -1,0 +1,36 @@
+- name: juniper.junos.ospf
+  type: group
+  fields:
+    - name: instance_name
+      type: keyword
+      dimension: true
+      description: Name of the OSPF routing instance. Used as a TSDB dimension.
+    - name: router_id
+      type: keyword
+      dimension: true
+      description: OSPF router ID in dotted-decimal notation. Used as a TSDB dimension.
+    - name: area
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: OSPF area identifier in dotted-decimal notation (for example 0.0.0.0 for backbone). Used as a TSDB dimension.
+        - name: stub_type
+          type: keyword
+          description: Area stub configuration type (for example Not Stub, Stub, NSSA).
+        - name: authentication_type
+          type: keyword
+          description: Authentication method configured for the area (for example None, MD5, plain text).
+        - name: abr_count
+          type: long
+          metric_type: gauge
+          description: Number of Area Border Routers (ABRs) detected in this OSPF area.
+        - name: asbr_count
+          type: long
+          metric_type: gauge
+          description: Number of Autonomous System Boundary Routers (ASBRs) detected in this OSPF area.
+        - name: neighbor_up_count
+          type: long
+          metric_type: gauge
+          description: Number of OSPF neighbors in Full adjacency state within this area.

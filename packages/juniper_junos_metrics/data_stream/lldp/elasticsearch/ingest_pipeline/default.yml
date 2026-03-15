@@ -1,0 +1,107 @@
+---
+description: Pipeline for JunOS LLDP neighbor entries.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.lldp
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - rename:
+      tag: rename_observer_name
+      field: _observer_name
+      target_field: observer.name
+      ignore_missing: true
+  - rename:
+      tag: rename_observer_type
+      field: _observer_type
+      target_field: observer.type
+      ignore_missing: true
+  - set:
+      tag: set_observer_type_default
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Extract LLDP fields from the JunOS JSON
+  - script:
+      tag: script_extract_lldp
+      lang: painless
+      description: Extract LLDP neighbor fields from JunOS JSON structure.
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) { return; }
+        def lldp = new HashMap();
+        if (raw.containsKey('lldp-remote-port-id') && raw.get('lldp-remote-port-id') instanceof List && raw.get('lldp-remote-port-id').size() > 0) {
+          lldp.put('remote', new HashMap());
+          lldp.get('remote').put('port_id', raw.get('lldp-remote-port-id').get(0).get('data'));
+        }
+        if (raw.containsKey('lldp-remote-port-description') && raw.get('lldp-remote-port-description') instanceof List && raw.get('lldp-remote-port-description').size() > 0) {
+          if (!lldp.containsKey('remote')) { lldp.put('remote', new HashMap()); }
+          lldp.get('remote').put('port_description', raw.get('lldp-remote-port-description').get(0).get('data'));
+        }
+        if (raw.containsKey('lldp-remote-system-name') && raw.get('lldp-remote-system-name') instanceof List && raw.get('lldp-remote-system-name').size() > 0) {
+          if (!lldp.containsKey('remote')) { lldp.put('remote', new HashMap()); }
+          lldp.get('remote').put('system_name', raw.get('lldp-remote-system-name').get(0).get('data'));
+        }
+        if (raw.containsKey('lldp-local-parent-interface-name') && raw.get('lldp-local-parent-interface-name') instanceof List && raw.get('lldp-local-parent-interface-name').size() > 0) {
+          lldp.put('local_parent_interface', raw.get('lldp-local-parent-interface-name').get(0).get('data'));
+        }
+        if (ctx.juniper == null) { ctx.juniper = new HashMap(); }
+        if (ctx.juniper.junos == null) { ctx.juniper.junos = new HashMap(); }
+        if (ctx.juniper.junos.lldp == null) { ctx.juniper.junos.lldp = new HashMap(); }
+        ctx.juniper.junos.lldp.putAll(lldp);
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

@@ -1,0 +1,128 @@
+---
+description: Pipeline for JunOS system information.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.system_info
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - rename:
+      tag: rename_observer_name
+      field: _observer_name
+      target_field: observer.name
+      ignore_missing: true
+  - rename:
+      tag: rename_observer_type
+      field: _observer_type
+      target_field: observer.type
+      ignore_missing: true
+  - set:
+      tag: set_observer_type_default
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Flatten JunOS JSON: unwrap [{"data": "value"}] pattern into simple key-value pairs
+  - script:
+      tag: script_flatten_junos_json
+      lang: painless
+      description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields.
+      source: |
+        def raw = ctx._temp?.raw;
+        if (raw == null) { return; }
+        def flat = new HashMap();
+        for (def entry : raw.entrySet()) {
+          def key = entry.getKey();
+          def val = entry.getValue();
+          if (val instanceof List && val.size() > 0 && val.get(0) instanceof Map) {
+            def first = val.get(0);
+            if (first.containsKey('data')) {
+              flat.put(key, first.get('data'));
+            }
+          }
+        }
+        ctx._temp.si = flat;
+
+  # Extract system identity fields from flattened map
+  - script:
+      tag: script_extract_identity
+      lang: painless
+      description: Map flattened JunOS fields to integration fields.
+      source: |
+        def si = ctx._temp?.si;
+        if (si == null) { return; }
+        def info = new HashMap();
+        if (si.containsKey('host-name')) { info.put('hostname', si.get('host-name')); }
+        if (si.containsKey('hardware-model')) { info.put('hardware_model', si.get('hardware-model')); }
+        if (si.containsKey('os-name')) { info.put('os_name', si.get('os-name')); }
+        if (si.containsKey('os-version')) { info.put('os_version', si.get('os-version')); }
+        if (si.containsKey('serial-number')) { info.put('serial_number', si.get('serial-number')); }
+        if (ctx.juniper == null) { ctx.juniper = new HashMap(); }
+        if (ctx.juniper.junos == null) { ctx.juniper.junos = new HashMap(); }
+        ctx.juniper.junos.system_info = info;
+        if (si.containsKey('host-name')) {
+          if (ctx.host == null) { ctx.host = new HashMap(); }
+          ctx.host.name = si.get('host-name');
+        }
+
+  # Set availability indicator after identity extraction (must be after the script
+  # that creates system_info, otherwise it gets overwritten)
+  - set:
+      tag: set_up
+      field: juniper.junos.system_info.up
+      value: 1
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  # Remove event.original unless preserve tag is set
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"

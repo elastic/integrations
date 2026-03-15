@@ -1,0 +1,146 @@
+---
+description: Pipeline for JunOS system metrics.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: juniper_junos_metrics
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: juniper_junos_metrics.system
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Juniper
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: JunOS
+  - rename:
+      tag: rename_observer_name
+      field: _observer_name
+      target_field: observer.name
+      ignore_missing: true
+  - rename:
+      tag: rename_observer_type
+      field: _observer_type
+      target_field: observer.type
+      ignore_missing: true
+  - set:
+      tag: set_observer_type_default
+      field: observer.type
+      value: router
+      override: false
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+
+  # Parse JSON from message (skip debug events)
+  - json:
+      tag: json_parse_message
+      field: message
+      target_field: _temp.raw
+      if: ctx.message != null
+
+  # Extract user session fields
+  - script:
+      tag: script_extract_user
+      lang: painless
+      description: Extract user session fields from JunOS JSON.
+      source: |
+        def unwrap(def val) {
+          if (val instanceof List && val.size() > 0) {
+            def first = val.get(0);
+            if (first instanceof Map && first.containsKey('data')) {
+              return first.get('data');
+            }
+          }
+          return null;
+        }
+        def raw = ctx._temp?.raw;
+        if (raw == null) return;
+        def sys = new HashMap();
+        def user = new HashMap();
+
+        def u = unwrap(raw.get('user'));
+        if (u != null) user.put('name', u);
+
+        def tty = unwrap(raw.get('tty'));
+        if (tty != null) user.put('tty', tty);
+
+        def from = unwrap(raw.get('from'));
+        if (from != null) user.put('from', from);
+
+        def cmd = unwrap(raw.get('command'));
+        if (cmd != null) user.put('command', cmd);
+
+        // Login time from junos:seconds attribute
+        def lt = raw.get('login-time');
+        if (lt instanceof List && lt.size() > 0) {
+          def ltm = lt.get(0);
+          if (ltm instanceof Map && ltm.containsKey('attributes')) {
+            def attrs = ltm.get('attributes');
+            if (attrs instanceof Map && attrs.containsKey('junos:seconds')) {
+              try {
+                long secs = Long.parseLong(attrs.get('junos:seconds').toString());
+                user.put('login_time', Instant.ofEpochSecond(secs).toString());
+              } catch(Exception e) {}
+            }
+          }
+        }
+
+        // Idle time from junos:seconds attribute
+        def it = raw.get('idle-time');
+        if (it instanceof List && it.size() > 0) {
+          def itm = it.get(0);
+          if (itm instanceof Map && itm.containsKey('attributes')) {
+            def attrs = itm.get('attributes');
+            if (attrs instanceof Map && attrs.containsKey('junos:seconds')) {
+              try {
+                long secs = Long.parseLong(attrs.get('junos:seconds').toString());
+                user.put('idle_time', secs);
+              } catch(Exception e) {}
+            }
+          }
+        }
+
+        if (!user.isEmpty()) sys.put('user', user);
+        if (!sys.isEmpty()) {
+          if (ctx.juniper == null) ctx.juniper = new HashMap();
+          if (ctx.juniper.junos == null) ctx.juniper.junos = new HashMap();
+          ctx.juniper.junos.system = sys;
+        }
+
+  # Clean up temporary fields
+  - remove:
+      tag: remove_temp_and_message
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+
+  - remove:
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      field: event.original
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"
