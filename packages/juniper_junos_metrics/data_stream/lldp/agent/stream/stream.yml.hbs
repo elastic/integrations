@@ -47,8 +47,8 @@ program: |
           "lldp-neighbor-information" in body["lldp-neighbors-information"][0] ?
             body["lldp-neighbors-information"][0]["lldp-neighbor-information"].map(n, {
               "message": n.encode_json(),
-              "observer.name": device_name,
-              "observer.type": "{{observer_type}}",
+              "_observer_name": device_name,
+              "_observer_type": "{{observer_type}}",
               "juniper.junos.lldp.local_port": "lldp-local-port-id" in n && size(n["lldp-local-port-id"]) > 0 ? string(n["lldp-local-port-id"][0]["data"]) : "unknown",
               "juniper.junos.lldp.remote.chassis_id": "lldp-remote-chassis-id" in n && size(n["lldp-remote-chassis-id"]) > 0 ? string(n["lldp-remote-chassis-id"][0]["data"]) : "unknown",
               "juniper.junos.lldp.neighbor_count": size(body["lldp-neighbors-information"][0]["lldp-neighbor-information"]),

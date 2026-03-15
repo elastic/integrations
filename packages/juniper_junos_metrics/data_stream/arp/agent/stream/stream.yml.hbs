@@ -47,8 +47,8 @@ program: |
           "arp-table-entry" in body["arp-table-information"][0] ?
             body["arp-table-information"][0]["arp-table-entry"].map(e, {
               "message": e.encode_json(),
-              "observer.name": device_name,
-              "observer.type": "{{observer_type}}",
+              "_observer_name": device_name,
+              "_observer_type": "{{observer_type}}",
               "juniper.junos.arp.ip_address": "ip-address" in e && size(e["ip-address"]) > 0 ? string(e["ip-address"][0]["data"]) : "0.0.0.0",
               "juniper.junos.arp.interface": "interface-name" in e && size(e["interface-name"]) > 0 ? string(e["interface-name"][0]["data"]) : "unknown",
               "juniper.junos.arp.entry_count": "arp-entry-count" in body["arp-table-information"][0] && size(body["arp-table-information"][0]["arp-entry-count"]) > 0 ? int(body["arp-table-information"][0]["arp-entry-count"][0]["data"]) : 0,

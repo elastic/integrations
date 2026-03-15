@@ -51,13 +51,13 @@ program: |
                   ("user-table" in uptime && size(uptime["user-table"]) > 0 && "user-entry" in uptime["user-table"][0]) ?
                     uptime["user-table"][0]["user-entry"].map(u, {
                       "message": u.encode_json(),
-                      "observer.name": device_name,
-                      "observer.type": "{{observer_type}}",
+                      "_observer_name": device_name,
+                      "_observer_type": "{{observer_type}}",
                       "juniper.junos.system.user.name": "user" in u && size(u["user"]) > 0 ? string(u["user"][0]["data"]) : "unknown",
                       "juniper.junos.system.active_user_count": "active-user-count" in uptime && size(uptime["active-user-count"]) > 0 ? int(uptime["active-user-count"][0]["data"]) : 0,
                     })
                   :
-                    [{"message": "{}", "observer.name": device_name, "observer.type": "{{observer_type}}", "juniper.junos.system.user.name": "none", "juniper.junos.system.active_user_count": 0}],
+                    [{"message": "{}", "_observer_name": device_name, "_observer_type": "{{observer_type}}", "juniper.junos.system.user.name": "none", "juniper.junos.system.active_user_count": 0}],
                 "cursor": {"device_hostname": device_name}
               }
             )

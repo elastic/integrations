@@ -48,8 +48,8 @@ program: |
               "route-table" in info ?
                 {"events": info["route-table"].map(rt, {
                   "message": {"router-id": "router-id" in info ? info["router-id"] : [], "route-table": rt}.encode_json(),
-                  "observer.name": device_name,
-                  "observer.type": "{{observer_type}}",
+                  "_observer_name": device_name,
+                  "_observer_type": "{{observer_type}}",
                   "juniper.junos.routing_table.router_id": "router-id" in info && size(info["router-id"]) > 0 ? string(info["router-id"][0]["data"]) : "unknown",
                   "juniper.junos.routing_table.table_name": "table-name" in rt && size(rt["table-name"]) > 0 ? string(rt["table-name"][0]["data"]) : "unknown",
                 }), "cursor": {"device_hostname": device_name}}

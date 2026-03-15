@@ -47,8 +47,8 @@ program: |
           && "filesystem" in body["system-storage-information"][0] ?
             {"events": body["system-storage-information"][0]["filesystem"].map(fs, {
               "message": fs.encode_json(),
-              "observer.name": device_name,
-              "observer.type": "{{observer_type}}",
+              "_observer_name": device_name,
+              "_observer_type": "{{observer_type}}",
               "juniper.junos.storage.filesystem_name": "filesystem-name" in fs && size(fs["filesystem-name"]) > 0 ? string(fs["filesystem-name"][0]["data"]) : "unknown",
               "juniper.junos.storage.mounted_on": "mounted-on" in fs && size(fs["mounted-on"]) > 0 ? string(fs["mounted-on"][0]["data"]) : "unknown",
             }), "cursor": {"device_hostname": device_name}}
