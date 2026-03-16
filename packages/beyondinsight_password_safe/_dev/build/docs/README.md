@@ -70,19 +70,6 @@ This integration enables several security and compliance use cases:
 - Detect anomalous session behaviors or access patterns
 - Monitor managed system and account configurations for unauthorized changes
 
-## Setup
-
-1. In the top search bar in Kibana, search for **Integrations**.
-2. In the search bar, type **BeyondInsight and Password Safe**.
-3. Select the **BeyondInsight and Password Safe** integration from the search results.
-4. Click **Add BeyondInsight and Password Safe**.
-5. Enable and configure the collection method:
-
-    * To **Collect events from the BeyondInsight and Password Safe API**, you'll need to:
-
-        - Configure **Base URL**, **Username**, and **API Key**. Configure **User Password** (required only if the user password is required on the application API registration).
-6. Select **Save and continue** to save the integration.
-
 ### Validation
 
 #### Dashboards populated
@@ -102,6 +89,17 @@ from BeyondTrust's REST APIs and ships the data to Elastic, where the events wil
 then be processed via the integration's ingest pipelines.
 
 ## How do I deploy this integration?
+
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **BeyondInsight and Password Safe**.
+3. Select the **BeyondInsight and Password Safe** integration from the search results.
+4. Click **Add BeyondInsight and Password Safe**.
+5. Enable and configure the collection method:
+
+    * To **Collect events from the BeyondInsight and Password Safe API**, you'll need to:
+
+        - Configure **Base URL**, **Username**, and **API Key**. Configure **User Password** (required only if the user password is required on the application API registration).
+6. Select **Save and continue** to save the integration.
 
 ### Configure API Registration
 
