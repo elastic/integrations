@@ -1,0 +1,98 @@
+---
+description: Pipeline for processing Ticura threat intelligence feed
+processors:
+
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+
+  - rename:
+      field: message
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+
+  - remove:
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+      ignore_failure: true
+
+  - set:
+      field: _id
+      copy_from: ticura.uuid
+
+  - set:
+      field: ticura.feed_ingest_timestamp
+      value: "{{{_ingest.timestamp}}}"
+
+  - script:
+      lang: painless
+      source: |
+        if (ctx.merged == null || !(ctx.merged instanceof Map)) {
+            ctx.merged = [:];
+        }
+
+        List mergedCountries = [];
+        if (ctx.ticura?.countries != null) {
+            if (ctx.ticura.countries instanceof List) {
+                mergedCountries.addAll(ctx.ticura.countries);
+            } else {
+                mergedCountries.add(ctx.ticura.countries);
+            }
+        }
+        if (ctx.additionalInfo?.countries != null) {
+            if (ctx.additionalInfo.countries instanceof List) {
+                mergedCountries.addAll(ctx.additionalInfo.countries);
+            } else {
+                mergedCountries.add(ctx.additionalInfo.countries);
+            }
+        }
+        ctx.merged.countries = new ArrayList(new HashSet(mergedCountries));
+
+        List mergedIndustries = [];
+        if (ctx.ticura?.industries != null) {
+            if (ctx.ticura.industries instanceof List) {
+                mergedIndustries.addAll(ctx.ticura.industries);
+            } else {
+                mergedIndustries.add(ctx.ticura.industries);
+            }
+        }
+        if (ctx.additionalInfo?.industries != null) {
+            if (ctx.additionalInfo.industries instanceof List) {
+                mergedIndustries.addAll(ctx.additionalInfo.industries);
+            } else {
+                mergedIndustries.add(ctx.additionalInfo.industries);
+            }
+        }
+        ctx.merged.industries = new ArrayList(new HashSet(mergedIndustries));
+
+        List mergedActors = [];
+        if (ctx.ticura?.actors != null) {
+            if (ctx.ticura.actors instanceof List) {
+                mergedActors.addAll(ctx.ticura.actors);
+            } else {
+                mergedActors.add(ctx.ticura.actors);
+            }
+        }
+        if (ctx.additionalInfo?.actors != null) {
+            if (ctx.additionalInfo.actors instanceof List) {
+                mergedActors.addAll(ctx.additionalInfo.actors);
+            } else {
+                mergedActors.add(ctx.additionalInfo.actors);
+            }
+        }
+        ctx.merged.actors = new ArrayList(new HashSet(mergedActors));
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

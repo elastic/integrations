@@ -1,0 +1,47 @@
+config_version: "2"
+interval: {{ interval }}
+
+codec: json_lines
+
+{{#if url}}
+request.url: {{url}}
+{{/if}}
+request.method: GET
+request.timeout: 5m
+request.keep_alive:
+  disable: false
+request.transforms:
+{{#if api_token}}
+  - set:
+      target: header.x-api-key
+      value: {{ api_token }}
+{{/if}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+
+response.decode_as: application/x-ndjson
+response.timeout: 5m
+max_bytes: 1024000000   # 1024 MB
+
+processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+      add_error_key: true
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+
+{{#if filters}}
+{{filters}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
