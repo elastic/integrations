@@ -89,7 +89,7 @@ To set up **UDP** or **TCP** syslog collection, follow these steps:
 4.  Direct the device to the IP address of the Elastic Agent. Replace `<ELASTIC_AGENT_IP>` (replace with your actual value) with your Agent's IP and use the default port `9002`:
     ```bash
     logging <ELASTIC_AGENT_IP>
-    logging trap <ELASTIC_AGENT_IP> transport udp port 9002
+    logging host <ELASTIC_AGENT_IP> transport udp port 9002
     ```
     *Note: Change `udp` to `tcp` and update the port if you've customized the Kibana input settings.*
 
