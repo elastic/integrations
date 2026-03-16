@@ -189,6 +189,8 @@ All rules use ES|QL queries, run every 1 minute, and group by `host.name`. Thres
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 This package includes two SLO templates:
 
 | SLO | Target | Window | Description |
