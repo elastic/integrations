@@ -13,63 +13,87 @@ processors:
             field: message
             target_field: parsed_email
             if: ctx.message != null
+    - rename:
+            tag: rename_parsed_email_to_proofpoint
+            field: parsed_email
+            target_field: proofpoint.email
+            ignore_missing: true
+    - remove:
+            tag: remove_message_after_parse
+            field: message
+            ignore_missing: true
     - script:
-            tag: process_parsed_data
+            tag: convert_size_object_to_string
             lang: painless
+            if: ctx.proofpoint?.email?.size instanceof Map
             source: |
-                if (ctx.containsKey('parsed_email')) {
-                    ctx.proofpoint = ['email': ctx.parsed_email];
-                    ctx.remove('parsed_email');
-                    ctx.remove('message');
-                    
-                    // Convert size object to string
-                    if (ctx.proofpoint.email.containsKey('size') && ctx.proofpoint.email.size instanceof Map) {
-                        ctx.proofpoint.email.size = ctx.proofpoint.email.size.value + ' ' + ctx.proofpoint.email.size.unit;
-                    }
-                    // Convert attachments array of objects to ECS format
-                    if (ctx.proofpoint.email.containsKey('attachments') && ctx.proofpoint.email.attachments instanceof List && ctx.proofpoint.email.attachments.size() > 0) {
-                        def attachmentNames = [];
-                        def attachmentExtensions = [];
-                        def ecsAttachments = [];
-                        for (att in ctx.proofpoint.email.attachments) {
-                            if (att instanceof Map && att.containsKey('name')) {
-                                def filename = att.name;
-                                attachmentNames.add(filename);
-                                
-                                // Extract file extension
-                                def lastDot = filename.lastIndexOf('.');
-                                def ext = null;
-                                if (lastDot > 0 && lastDot < filename.length() - 1) {
-                                    ext = filename.substring(lastDot + 1).toLowerCase();
-                                    if (!attachmentExtensions.contains(ext)) {
-                                        attachmentExtensions.add(ext);
-                                    }
-                                }
-                                
-                                // Create ECS attachment object
-                                def ecsAtt = ['file': ['name': filename]];
-                                if (ext != null) {
-                                    ecsAtt.file.extension = ext;
-                                }
-                                if (att.containsKey('size')) {
-                                    ecsAtt.file.size = att.size;
-                                }
-                                ecsAttachments.add(ecsAtt);
+                ctx.proofpoint.email.size = ctx.proofpoint.email.size.value + ' ' + ctx.proofpoint.email.size.unit;
+            on_failure:
+                - append:
+                    tag: append_size_conversion_error
+                    field: error.message
+                    value: "Failed to convert size object to string"
+    - script:
+            tag: process_attachments_to_ecs
+            lang: painless
+            if: ctx.proofpoint?.email?.attachments instanceof List && ctx.proofpoint.email.attachments.size() > 0
+            source: |
+                def attachmentNames = [];
+                def attachmentExtensions = [];
+                def ecsAttachments = [];
+                for (att in ctx.proofpoint.email.attachments) {
+                    if (att instanceof Map && att.containsKey('name')) {
+                        def filename = att.name;
+                        attachmentNames.add(filename);
+                        
+                        // Extract file extension
+                        def lastDot = filename.lastIndexOf('.');
+                        def ext = null;
+                        if (lastDot > 0 && lastDot < filename.length() - 1) {
+                            ext = filename.substring(lastDot + 1).toLowerCase();
+                            if (!attachmentExtensions.contains(ext)) {
+                                attachmentExtensions.add(ext);
                             }
                         }
-                        ctx.proofpoint.email.attachmentsList = attachmentNames;
-                        ctx.proofpoint.email.attachmentsExtensions = attachmentExtensions;
-                        ctx.proofpoint.email.attachments = attachmentNames.size() > 0 ? 'yes' : 'no';
-                        if (!ctx.containsKey('email')) {
-                            ctx.email = [:];
+                        
+                        // Create ECS attachment object
+                        def ecsAtt = ['file': ['name': filename]];
+                        if (ext != null) {
+                            ecsAtt.file.extension = ext;
                         }
-                        ctx.email.attachments = ecsAttachments;
-                    } else if (!ctx.proofpoint.email.containsKey('attachments') || ctx.proofpoint.email.attachments == null || (ctx.proofpoint.email.attachments instanceof List && ctx.proofpoint.email.attachments.size() == 0)) {
-                        ctx.proofpoint.email.attachments = 'no';
-                        ctx.proofpoint.email.attachmentsList = [];
-                        ctx.proofpoint.email.attachmentsExtensions = [];
+                        if (att.containsKey('size')) {
+                            ecsAtt.file.size = att.size;
+                        }
+                        ecsAttachments.add(ecsAtt);
                     }
                 }
+                ctx.proofpoint.email.attachmentsList = attachmentNames;
+                ctx.proofpoint.email.attachmentsExtensions = attachmentExtensions;
+                ctx.proofpoint.email.attachments = attachmentNames.size() > 0 ? 'yes' : 'no';
+                if (!ctx.containsKey('email')) {
+                    ctx.email = [:];
+                }
+                ctx.email.attachments = ecsAttachments;
+            on_failure:
+                - append:
+                    tag: append_attachments_processing_error
+                    field: error.message
+                    value: "Failed to process attachments to ECS format"
+    - set:
+            tag: set_no_attachments
+            field: proofpoint.email.attachments
+            value: "no"
+            if: ctx.proofpoint?.email?.attachmentsList == null
+    - set:
+            tag: set_empty_attachments_list
+            field: proofpoint.email.attachmentsList
+            value: []
+            if: ctx.proofpoint?.email?.attachmentsList == null
+    - set:
+            tag: set_empty_attachments_extensions
+            field: proofpoint.email.attachmentsExtensions
+            value: []
+            if: ctx.proofpoint?.email?.attachmentsExtensions == null
     - drop:
             tag: drop_without_msg_id
             if: ctx.proofpoint?.email?.msg_id == null
