@@ -4,7 +4,7 @@ Memcached is a high-performance, distributed, in-memory key-value cache used to 
 
 ## Compatibility
 
-The Memcached OpenTelemetry assets have been tested with the OpenTelemetry Memcached receiver from the collector-contrib distribution.
+The Memcached OpenTelemetry assets have been tested with [OpenTelemetry Memcached receiver v0.146.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.146.0/receiver/memcachedreceiver/README.md) and Memcached 1.6.
 
 ## Requirements
 
@@ -68,6 +68,8 @@ Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-col
 | **[Memcached OTel] Low get operation hit ratio** | Get operation hit ratio falls below 80% for an instance. | High |
 
 ## SLO templates
+
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
 
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
