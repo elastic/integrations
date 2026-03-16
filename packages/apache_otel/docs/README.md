@@ -113,6 +113,8 @@ of the OpenTelemetry Apache receiver for details on available metrics.
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[Apache OTel] Average request latency** | 99% | 30-day rolling | Ensures 99% of 1-minute timeslices show average per-request latency below 200 ms. |
