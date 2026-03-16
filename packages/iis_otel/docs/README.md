@@ -104,6 +104,8 @@ Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-col
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[IIS OTel] Zero request rejections 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of 1-minute intervals with zero request rejections; non-zero rejections indicate the server failed to serve clients. |
