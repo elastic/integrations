@@ -44,6 +44,14 @@ processors:
   - rename:
       field: isNew
       target_field: ti_strider.indicator.is_new
+  - script:
+      lang: painless
+      tag: script-is_new-to-boolean
+      description: Convert is_new from 0/1 to boolean false/true.
+      source: |
+        if (ctx.ti_strider?.indicator?.is_new != null) {
+          ctx.ti_strider.indicator.is_new = (ctx.ti_strider.indicator.is_new == 1);
+        }
       
   - rename:
       field: changes
