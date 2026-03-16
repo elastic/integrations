@@ -77,6 +77,8 @@ Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-col
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[CouchDB OTel] Average request latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Tracks that average request latency stays below 200 ms for 99.5% of 1-minute intervals. |
