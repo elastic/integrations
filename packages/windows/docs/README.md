@@ -14,7 +14,7 @@ If you're collecting Windows event logs, note that there are three related integ
 
 - **[System integration](https://www.elastic.co/docs/reference/integrations/system)**: Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
 - **Windows integration** (this integration): Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
-- **[Custom Windows Event Logs integration](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel without specialized pipelines.
+- **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel without specialized pipelines.
   
 ## Data streams
 
