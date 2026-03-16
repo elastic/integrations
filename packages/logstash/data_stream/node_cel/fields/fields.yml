@@ -3,6 +3,7 @@
   fields:
     - name: elasticsearch.cluster.id
       type: keyword
+      dimension: true
     - name: node
       type: group
       fields:
@@ -28,11 +29,11 @@
                   fields:
                     - name: count
                       type: long
-                      metric_type: counter
+                      metric_type: gauge
                       description: current number of threads
                     - name: peak_count
                       type: long
-                      metric_type: counter
+                      metric_type: gauge
                       description: peak number of threads
                 - name: uptime_in_millis
                   type: long
@@ -45,7 +46,7 @@
                       metric_type: gauge
                     - name: heap_max_in_bytes
                       type: long
-                      metric_type: counter
+                      metric_type: gauge
                     - name: heap_used_percent
                       type: long
                       metric_type: gauge
@@ -108,17 +109,22 @@
               fields:
                 - name: uuid
                   type: keyword
+                  dimension: true
                 - name: version
                   type: keyword
+                  dimension: true
                 - name: ephemeral_id
                   type: keyword
                   dimension: true
                 - name: host
                   type: keyword
+                  dimension: true
                 - name: http_address
                   type: keyword
+                  dimension: true
                 - name: name
                   type: keyword
+                  dimension: true
                 - name: snapshot
                   type: boolean
                 - name: status
@@ -230,41 +236,54 @@
                   metric_type: gauge
             - name: queue.events_count
               type: long
-              metric_type: counter
+              metric_type: gauge
             - name: pipelines.id
               type: keyword
+              dimension: true
             - name: pipelines.hash
               type: keyword
+              dimension: true
             - name: pipelines.ephemeral_id
               type: keyword
+              dimension: true
             - name: pipelines.reloads
               type: group
               fields:
                 - name: failures
                   type: long
+                  metric_type: counter
                 - name: successes
                   type: long
+                  metric_type: counter
             - name: pipelines.queue
               type: group
               fields:
                 - name: events_count
                   type: long
+                  metric_type: gauge
                 - name: type
                   type: keyword
                 - name: queue_size_in_bytes
                   type: long
+                  metric_type: gauge
                 - name: max_queue_size_in_bytes
                   type: long
+                  metric_type: gauge
             - name: pipelines.events
               type: group
               fields:
                 - name: in
                   type: long
+                  metric_type: counter
                 - name: out
                   type: long
+                  metric_type: counter
                 - name: filtered
                   type: long
+                  metric_type: counter
                 - name: duration_in_millis
                   type: long
+                  metric_type: counter
                 - name: queue_push_duration_in_millis
                   type: long
+                  metric_type: counter
