@@ -1,0 +1,945 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"topic-filter\":{\"grow\":true,\"order\":0,\"type\":\"optionsListControl\",\"width\":\"medium\",\"explicitInput\":{\"id\":\"topic-filter\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"attributes.topic\",\"title\":\"Topic\",\"searchTechnique\":\"prefix\",\"singleSelect\":false,\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}},\"group-filter\":{\"grow\":true,\"order\":1,\"type\":\"optionsListControl\",\"width\":\"medium\",\"explicitInput\":{\"id\":\"group-filter\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"attributes.group\",\"title\":\"Consumer Group\",\"searchTechnique\":\"prefix\",\"singleSelect\":false,\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}}}",
+            "showApplySelections": false
+        },
+        "description": "Overview of Kafka cluster health metrics from OpenTelemetry kafkametricsreceiver",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "kafkametricsreceiver.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "kafkametricsreceiver.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-brokers",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "brokers": {
+                                            "columnOrder": [
+                                                "broker-count"
+                                            ],
+                                            "columns": {
+                                                "broker-count": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Brokers",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.brokers"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "brokers",
+                                "layerType": "data",
+                                "metricAccessor": "broker-count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "",
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "panel-brokers",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "panel-brokers",
+                "title": "Broker Count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-topics",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "topics": {
+                                            "columnOrder": [
+                                                "topic-count"
+                                            ],
+                                            "columns": {
+                                                "topic-count": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Topics",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "attributes.topic"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "topics",
+                                "layerType": "data",
+                                "metricAccessor": "topic-count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "",
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "panel-topics",
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "panel-topics",
+                "title": "Topic Count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-consumer-groups",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "consumer-groups": {
+                                            "columnOrder": [
+                                                "group-count"
+                                            ],
+                                            "columns": {
+                                                "group-count": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Consumer Groups",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "attributes.group"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "consumer-groups",
+                                "layerType": "data",
+                                "metricAccessor": "group-count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "",
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "panel-consumer-groups",
+                    "w": 12,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "panel-consumer-groups",
+                "title": "Consumer Groups",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-total-partitions",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "total-partitions": {
+                                            "columnOrder": [
+                                                "partition-count"
+                                            ],
+                                            "columns": {
+                                                "partition-count": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Partitions",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.topic.partitions"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "total-partitions",
+                                "layerType": "data",
+                                "metricAccessor": "partition-count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "",
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "panel-total-partitions",
+                    "w": 12,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "panel-total-partitions",
+                "title": "Total Partitions",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-consumer-lag",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "consumer-lag": {
+                                            "columnOrder": [
+                                                "timestamp",
+                                                "group-bucket",
+                                                "lag-sum"
+                                            ],
+                                            "columns": {
+                                                "timestamp": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "group-bucket": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of attributes.group",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "lag-sum",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "attributes.group"
+                                                },
+                                                "lag-sum": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Consumer Lag Sum",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.consumer_group.lag_sum"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "lag-sum"
+                                        ],
+                                        "layerId": "consumer-lag",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "group-bucket",
+                                        "xAccessor": "timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Consumer Group Lag",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Lag"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-consumer-lag",
+                    "w": 24,
+                    "x": 0,
+                    "y": 7
+                },
+                "panelIndex": "panel-consumer-lag",
+                "title": "Consumer Group Lag Over Time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-partition-offsets",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "partition-offsets": {
+                                            "columnOrder": [
+                                                "timestamp",
+                                                "topic-bucket",
+                                                "current-offset"
+                                            ],
+                                            "columns": {
+                                                "timestamp": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "topic-bucket": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of attributes.topic",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "current-offset",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "attributes.topic"
+                                                },
+                                                "current-offset": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Current Offset",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.partition.current_offset"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "current-offset"
+                                        ],
+                                        "layerId": "partition-offsets",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "topic-bucket",
+                                        "xAccessor": "timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Partition Offsets",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Offset"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-partition-offsets",
+                    "w": 24,
+                    "x": 24,
+                    "y": 7
+                },
+                "panelIndex": "panel-partition-offsets",
+                "title": "Partition Offsets Over Time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-topic-partitions-table",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "topic-partitions-table": {
+                                            "columnOrder": [
+                                                "topic-name",
+                                                "partitions",
+                                                "replicas",
+                                                "in-sync-replicas"
+                                            ],
+                                            "columns": {
+                                                "topic-name": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Topic",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "partitions",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "attributes.topic"
+                                                },
+                                                "partitions": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Partitions",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.topic.partitions"
+                                                },
+                                                "replicas": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Replicas",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.partition.replicas"
+                                                },
+                                                "in-sync-replicas": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "In-Sync Replicas",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.partition.replicas_in_sync"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "topic-name"
+                                    },
+                                    {
+                                        "columnId": "partitions"
+                                    },
+                                    {
+                                        "columnId": "replicas"
+                                    },
+                                    {
+                                        "columnId": "in-sync-replicas"
+                                    }
+                                ],
+                                "layerId": "topic-partitions-table",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-topic-partitions-table",
+                    "w": 24,
+                    "x": 0,
+                    "y": 22
+                },
+                "panelIndex": "panel-topic-partitions-table",
+                "title": "Topic Partitions and Replicas",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-consumer-group-table",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "consumer-group-table": {
+                                            "columnOrder": [
+                                                "group-name",
+                                                "members",
+                                                "lag-sum",
+                                                "offset-sum"
+                                            ],
+                                            "columns": {
+                                                "group-name": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Consumer Group",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "lag-sum",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "attributes.group"
+                                                },
+                                                "members": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Members",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.consumer_group.members"
+                                                },
+                                                "lag-sum": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Lag",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.consumer_group.lag_sum"
+                                                },
+                                                "offset-sum": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Offset",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.kafka.consumer_group.offset_sum"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "group-name"
+                                    },
+                                    {
+                                        "columnId": "members"
+                                    },
+                                    {
+                                        "columnId": "lag-sum"
+                                    },
+                                    {
+                                        "columnId": "offset-sum"
+                                    }
+                                ],
+                                "layerId": "consumer-group-table",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-consumer-group-table",
+                    "w": 24,
+                    "x": 24,
+                    "y": 22
+                },
+                "panelIndex": "panel-consumer-group-table",
+                "title": "Consumer Group Details",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Kafka Metrics OTel] Overview",
+        "version": 3
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-03-14T16:30:00.000Z",
+    "id": "kafkametricsreceiver_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "managed": false,
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-brokers:indexpattern-datasource-layer-brokers",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-topics:indexpattern-datasource-layer-topics",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-consumer-groups:indexpattern-datasource-layer-consumer-groups",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-total-partitions:indexpattern-datasource-layer-total-partitions",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-consumer-lag:indexpattern-datasource-layer-consumer-lag",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-partition-offsets:indexpattern-datasource-layer-partition-offsets",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-topic-partitions-table:indexpattern-datasource-layer-topic-partitions-table",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "panel-consumer-group-table:indexpattern-datasource-layer-consumer-group-table",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0"
+}
