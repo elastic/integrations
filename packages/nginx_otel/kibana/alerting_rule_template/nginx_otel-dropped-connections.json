@@ -1,0 +1,37 @@
+{
+    "id": "nginx_otel-dropped-connections",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Nginx OTel] Dropped connections detected",
+        "tags": [
+            "Nginx OTel"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "FROM metrics-nginxreceiver.otel-*\n// Filter to connection counter documents (exclude gauge docs with state attribute)\n| WHERE state IS NULL\n// Cast counters to long for aggregation support\n| EVAL accepted = TO_LONG(nginx.connections_accepted), handled = TO_LONG(nginx.connections_handled)\n// Compute delta over the time window per host\n| STATS max_accepted = MAX(accepted), min_accepted = MIN(accepted), max_handled = MAX(handled), min_handled = MIN(handled) BY host.name\n// Calculate new connections accepted vs handled in this window\n| EVAL delta_accepted = max_accepted - min_accepted, delta_handled = max_handled - min_handled\n| EVAL dropped = delta_accepted - delta_handled\n// Alert when any connections were dropped\n| WHERE dropped > 0\n| SORT dropped DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
