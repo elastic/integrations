@@ -6,7 +6,7 @@ This content pack provides dashboards, alert rules, and SLO templates that use m
 
 ## Compatibility
 
-The IIS OpenTelemetry assets have been tested with OpenTelemetry IIS receiver v0.96.0.
+The IIS OpenTelemetry assets have been tested with OpenTelemetry IIS receiver v0.146.1.
 
 IIS tested against:
 
