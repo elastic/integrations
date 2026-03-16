@@ -1,0 +1,40 @@
+{
+    "id": "memcached_otel-low-command-throughput",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Memcached OTel] Low command throughput",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "memcached"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.commands IS NOT NULL\n// Total command rate across all types (get, set, flush, touch)\n| STATS cmd_rate = SUM(RATE(memcached.commands))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when throughput drops below 1 cmd/sec — indicates cache is idle or unreachable\n| WHERE cmd_rate < 1.0\n| SORT cmd_rate ASC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

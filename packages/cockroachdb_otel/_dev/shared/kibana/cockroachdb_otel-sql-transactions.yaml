@@ -1,0 +1,346 @@
+# CockroachDB OTel - SQL & Transactions dashboard
+# Converted from compiled Kibana JSON to kb-dashboard YAML format.
+
+dashboards:
+  - id: cockroachdb_otel-sql-transactions
+    name: '[CockroachDB OTel] SQL & Transactions'
+    description: >-
+      SQL statement rates, transaction throughput, errors, and contention.
+      Monitor SELECT/INSERT/UPDATE/DELETE rates, connection counts, failures,
+      aborts, and deadlocks.
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: resource.attributes.service.name
+        equals: cockroachdb
+
+    controls:
+      - type: options
+        label: Node
+        data_view: metrics-*
+        field: attributes.node_id
+
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: whole, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: cockroachdb_otel-overview
+            - label: Storage
+              dashboard: cockroachdb_otel-storage
+            - label: SQL & Transactions
+              dashboard: cockroachdb_otel-sql-transactions
+            - label: Replication & Ranges
+              dashboard: cockroachdb_otel-replication
+
+      # ─── Dashboard Overview ────────────────────────────────────────────
+      - hide_title: true
+        size: {w: third, h: 12}
+        markdown:
+          content: |
+            ## [CockroachDB OTel] SQL & Transactions
+
+            This dashboard monitors SQL workload health:
+            - Statement rates by type (SELECT, INSERT, UPDATE, DELETE)
+            - Transaction throughput (BEGIN, COMMIT, ABORT)
+            - Connection counts and failures
+            - Error rates and contention
+            - Transaction restarts and deadlocks
+
+      # ─── KPI Metrics ───────────────────────────────────────────────────
+      - title: SQL Statements/sec
+        hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - STATS s = SUM(RATE(sql_select_count)), i = SUM(RATE(sql_insert_count)), u = SUM(RATE(sql_update_count)), d = SUM(RATE(sql_delete_count))
+            - EVAL total = COALESCE(s, 0) + COALESCE(i, 0) + COALESCE(u, 0) + COALESCE(d, 0)
+          primary:
+            field: total
+            label: Stmts/sec
+            format:
+              type: number
+              decimals: 1
+              suffix: "/sec"
+
+      - title: SQL Failures/sec
+        hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_failure_count IS NOT NULL
+            - STATS fail_rate = SUM(RATE(sql_failure_count))
+          primary:
+            field: fail_rate
+            label: Failures/sec
+            format:
+              type: number
+              decimals: 2
+              suffix: "/sec"
+
+      - title: Txn Aborts/sec
+        hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_txn_abort_count IS NOT NULL
+            - STATS abort_rate = SUM(RATE(sql_txn_abort_count))
+          primary:
+            field: abort_rate
+            label: Aborts/sec
+            format:
+              type: number
+              decimals: 2
+              suffix: "/sec"
+
+      - title: Active Connections
+        hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_conns IS NOT NULL
+            - STATS conns = SUM(LAST_OVER_TIME(sql_conns))
+          primary:
+            field: conns
+            label: Connections
+            format:
+              type: number
+              decimals: 0
+
+      - title: Contended Queries/sec
+        hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_distsql_contended_queries_count IS NOT NULL
+            - STATS contended = SUM(RATE(sql_distsql_contended_queries_count))
+          primary:
+            field: contended
+            label: Contended/sec
+            format:
+              type: number
+              decimals: 2
+              suffix: "/sec"
+
+      - title: Deadlocks (total)
+        hide_title: true
+        size: {w: sixth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE txnwaitqueue_deadlocks_total IS NOT NULL
+            - STATS deadlocks = MAX(LAST_OVER_TIME(txnwaitqueue_deadlocks_total))
+          primary:
+            field: deadlocks
+            label: Deadlocks
+            format:
+              type: number
+              decimals: 0
+
+      # ─── Section: Statement Rates ──────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Statement Rates'
+
+      - title: Statement Rate by Type
+        size: {w: whole, h: 12}
+        esql:
+          type: area
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - FORK ( WHERE sql_select_count IS NOT NULL | STATS rate = SUM(RATE(sql_select_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "SELECT" ) ( WHERE sql_insert_count IS NOT NULL | STATS rate = SUM(RATE(sql_insert_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "INSERT" ) ( WHERE sql_update_count IS NOT NULL | STATS rate = SUM(RATE(sql_update_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "UPDATE" ) ( WHERE sql_delete_count IS NOT NULL | STATS rate = SUM(RATE(sql_delete_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL stmt_type = "DELETE" )
+            - STATS rate = SUM(rate) BY time_bucket, stmt_type
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Statements/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/sec"
+          breakdown:
+            field: stmt_type
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Transactions ─────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Transactions'
+
+      - title: Transaction Throughput
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - FORK ( WHERE sql_txn_begin_count IS NOT NULL | STATS rate = SUM(RATE(sql_txn_begin_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL txn_op = "BEGIN" ) ( WHERE sql_txn_commit_count IS NOT NULL | STATS rate = SUM(RATE(sql_txn_commit_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL txn_op = "COMMIT" ) ( WHERE sql_txn_abort_count IS NOT NULL | STATS rate = SUM(RATE(sql_txn_abort_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL txn_op = "ABORT" )
+            - STATS rate = SUM(rate) BY time_bucket, txn_op
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Txns/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/sec"
+          breakdown:
+            field: txn_op
+          legend:
+            visible: show
+            position: right
+
+      - title: SQL Connections by Node
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_conns IS NOT NULL
+            - STATS conns = MAX(LAST_OVER_TIME(sql_conns)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.node_id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: conns
+              label: Connections
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.node_id
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Errors ───────────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Errors'
+
+      - title: SQL Failures and Connection Failures
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - FORK ( WHERE sql_failure_count IS NOT NULL | STATS rate = SUM(RATE(sql_failure_count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL error_type = "SQL Failures" ) ( WHERE sql_conn_failures IS NOT NULL | STATS rate = SUM(RATE(sql_conn_failures)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL error_type = "Conn Failures" )
+            - STATS rate = SUM(rate) BY time_bucket, error_type
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Rate
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"
+          breakdown:
+            field: error_type
+          legend:
+            visible: show
+            position: right
+
+      - title: Transaction Restarts by Reason
+        size: {w: half, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - FORK ( WHERE txn_restarts_serializable IS NOT NULL | STATS rate = SUM(RATE(txn_restarts_serializable)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL reason = "Serializable" ) ( WHERE txn_restarts_readwithinuncertainty IS NOT NULL | STATS rate = SUM(RATE(txn_restarts_readwithinuncertainty)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL reason = "ReadWithinUncertainty" )
+            - STATS rate = SUM(rate) BY time_bucket, reason
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Restarts/sec
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"
+          breakdown:
+            field: reason
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Detail ───────────────────────────────────────────────
+      - hide_title: true
+        size: {w: whole, h: 3}
+        markdown:
+          content: '## Detail'
+
+      - title: SQL Metrics by Node
+        size: {w: whole, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-cockroachdb.otel-*
+            - WHERE resource.attributes.service.name == "cockroachdb"
+            - WHERE sql_conns IS NOT NULL OR sql_statements_active IS NOT NULL
+            - STATS conns = MAX(sql_conns), active_stmts = MAX(sql_statements_active), open_txns = MAX(sql_txns_open), mem_bytes = MAX(sql_mem_root_current) BY node_id = attributes.node_id, host = resource.attributes.host.name
+            - SORT node_id ASC
+            - LIMIT 50
+          dimensions:
+            - field: node_id
+              label: Node ID
+            - field: host
+              label: Host
+          metrics:
+            - field: conns
+              label: Connections
+            - field: active_stmts
+              label: Active Statements
+            - field: open_txns
+              label: Open Txns
+            - field: mem_bytes
+              label: SQL Memory
+              format:
+                type: bytes
+                decimals: 2
