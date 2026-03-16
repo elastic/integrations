@@ -1,6 +1,9 @@
 # SAP Privileges
 
-The SAP Privileges integration collects and parses privilege-related events from [SAP Privileges](https://github.com/SAP/macOS-enterprise-privileges) for macOS. SAP Privileges is a free macOS application designed for modern enterprise environments that gives users temporary administrator privileges when needed without granting permanent admin rights.
+The SAP Privileges integration collects and parses privilege-related events
+from [SAP Privileges](https://github.com/SAP/macOS-enterprise-privileges) for macOS.
+SAP Privileges is a free macOS application designed for modern enterprise environments that gives users temporary
+administrator privileges when needed without granting permanent admin rights.
 
 ## Data streams
 
@@ -12,23 +15,26 @@ This module has been tested against SAP Privileges Version 2.x and should work w
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+Elastic Agent must be installed.
+For more details, check the Elastic
+Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
 ### Configure SAP Privileges to send logs
 
-To configure SAP Privileges to send logs to your Elastic stack:
+To configure SAP Privileges to send logs to your Elastic stack. Product specific manual can be
+found [here](https://github.com/SAP/macOS-enterprise-privileges/wiki/Managing-Privileges#SyslogOptions):
 
 1. **Create a configuration profile** with the `RemoteLogging` key:
-   - Set `ServerType` to `syslog` or `webhook`
-   - Set `ServerAddress` to the hostname or IP address of your syslog server or webhook URL
-   - For syslog, configure the `SyslogOptions` dictionary with:
-     - `ServerPort` (default: 514 or 6514 if TLS is enabled)
-     - `UseTLS` (boolean, default: false)
-     - `LogFacility` (default: 4 - security)
-     - `LogSeverity` (default: 6 - informational)
-     - `MaximumMessageSize` (default: 480 bytes)
+    - Set `ServerType` to `syslog`
+    - Set `ServerAddress` to the hostname or IP address of your syslog server
+    - For syslog, configure the `SyslogOptions` dictionary with:
+        - `ServerPort` (Integration default: 5040 TCP)
+        - Optional `UseTLS` (boolean, default: false)
+        - `LogFacility` (default: 4 - security)
+        - `LogSeverity` (default: 6 - informational)
+        - `MaximumMessageSize` (default: 480 bytes)
 
 2. **Example configuration profile** (for syslog with TLS):
    ```xml
@@ -62,8 +68,8 @@ To configure SAP Privileges to send logs to your Elastic stack:
 2. In the search top bar, type **SAP Privileges**
 3. Select the **SAP Privileges** integration and add it
 4. Add all the required integration configuration parameters:
-   - Set the correct host and port to match your SAP Privileges configuration
-   - Choose TCP or UDP based on your SAP Privileges setup
+    - Set the correct host and port to match your SAP Privileges configuration
+    - Choose TCP or UDP based on your SAP Privileges setup
 5. Save the integration
 
 ## Log samples

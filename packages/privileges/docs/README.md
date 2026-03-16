@@ -1,6 +1,9 @@
 # SAP Privileges
 
-The SAP Privileges integration collects and parses privilege-related events from [SAP Privileges](https://github.com/SAP/macOS-enterprise-privileges) for macOS. SAP Privileges is a free macOS application designed for modern enterprise environments that gives users temporary administrator privileges when needed without granting permanent admin rights.
+The SAP Privileges integration collects and parses privilege-related events
+from [SAP Privileges](https://github.com/SAP/macOS-enterprise-privileges) for macOS.
+SAP Privileges is a free macOS application designed for modern enterprise environments that gives users temporary
+administrator privileges when needed without granting permanent admin rights.
 
 ## Data streams
 
@@ -12,23 +15,26 @@ This module has been tested against SAP Privileges Version 2.x and should work w
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+Elastic Agent must be installed.
+For more details, check the Elastic
+Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
 ### Configure SAP Privileges to send logs
 
-To configure SAP Privileges to send logs to your Elastic stack:
+To configure SAP Privileges to send logs to your Elastic stack. Product specific manual can be
+found [here](https://github.com/SAP/macOS-enterprise-privileges/wiki/Managing-Privileges#SyslogOptions):
 
 1. **Create a configuration profile** with the `RemoteLogging` key:
-   - Set `ServerType` to `syslog` or `webhook`
-   - Set `ServerAddress` to the hostname or IP address of your syslog server or webhook URL
-   - For syslog, configure the `SyslogOptions` dictionary with:
-     - `ServerPort` (default: 514 or 6514 if TLS is enabled)
-     - `UseTLS` (boolean, default: false)
-     - `LogFacility` (default: 4 - security)
-     - `LogSeverity` (default: 6 - informational)
-     - `MaximumMessageSize` (default: 480 bytes)
+    - Set `ServerType` to `syslog`
+    - Set `ServerAddress` to the hostname or IP address of your syslog server
+    - For syslog, configure the `SyslogOptions` dictionary with:
+        - `ServerPort` (Integration default: 5040 TCP)
+        - Optional `UseTLS` (boolean, default: false)
+        - `LogFacility` (default: 4 - security)
+        - `LogSeverity` (default: 6 - informational)
+        - `MaximumMessageSize` (default: 480 bytes)
 
 2. **Example configuration profile** (for syslog with TLS):
    ```xml
@@ -62,8 +68,8 @@ To configure SAP Privileges to send logs to your Elastic stack:
 2. In the search top bar, type **SAP Privileges**
 3. Select the **SAP Privileges** integration and add it
 4. Add all the required integration configuration parameters:
-   - Set the correct host and port to match your SAP Privileges configuration
-   - Choose TCP or UDP based on your SAP Privileges setup
+    - Set the correct host and port to match your SAP Privileges configuration
+    - Choose TCP or UDP based on your SAP Privileges setup
 5. Save the integration
 
 ## Log samples
@@ -85,62 +91,65 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-23T09:49:10.000+05:00",
+    "@timestamp": "2026-02-24T14:16:11.133Z",
     "agent": {
-        "ephemeral_id": "e3830e56-f9b7-4278-b2cc-6c0041b3204b",
-        "id": "92657501-44cd-4942-ab49-19404cc15d88",
-        "name": "elastic-agent-47754",
+        "ephemeral_id": "71010c1b-8398-47a6-a133-8d896c0aab6c",
+        "id": "c59756bd-3f41-4081-83b4-c2526d257c92",
+        "name": "elastic-agent-96945",
         "type": "filebeat",
-        "version": "8.13.0"
-    },
-    "client": {
-        "ip": "192.168.1.100"
+        "version": "9.0.0"
     },
     "data_stream": {
-        "dataset": "sap_privileges.log",
-        "namespace": "63231",
+        "dataset": "privileges.log",
+        "namespace": "23085",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "92657501-44cd-4942-ab49-19404cc15d88",
+        "id": "c59756bd-3f41-4081-83b4-c2526d257c92",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.0.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-01-23T09:49:10.000+05:00",
-        "dataset": "sap_privileges.log",
-        "ingested": "2025-05-30T11:05:38Z",
+        "created": "2026-02-24T14:16:11.133Z",
+        "dataset": "privileges.log",
+        "ingested": "2026-03-16T10:37:38Z",
         "kind": "event",
-        "original": "<134>2025-01-23T09:49:10.000+05:00 SRV-MAC-001 Privileges: User john.doe granted admin privileges for 1 hour",
-        "outcome": "success",
+        "original": "<135>1 2026-02-24T14:16:11.133Z device001 Privileges 857 PRIV_S - ﻿SAPCorp: User jdoe now has standard user privileges (requested by user)",
         "timezone": "+0500"
     },
     "host": {
-        "hostname": "SRV-MAC-001"
+        "hostname": "device001"
     },
     "input": {
         "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.255.3:58871"
+            "address": "172.21.0.3:55341"
         },
         "syslog": {
-            "priority": 134
+            "priority": 135,
+            "version": "1"
         }
     },
-    "message": "User john.doe granted admin privileges for 1 hour",
+    "message": "User jdoe now has standard user privileges (requested by user)",
+    "privilege": {
+        "type": "PRIV_S"
+    },
+    "process": {
+        "pid": 857
+    },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "sap_privileges-log"
     ],
     "user": {
-        "name": "john.doe"
+        "name": "jdoe"
     }
 }
 ```
