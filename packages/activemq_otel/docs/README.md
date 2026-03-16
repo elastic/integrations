@@ -74,6 +74,11 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 200
+  resource:
+    attributes:
+      - key: data_stream.dataset
+        value: activemq
+        action: upsert  
 
 exporters:
   elasticsearch/otel:
@@ -86,7 +91,7 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [batch, resource]
       exporters: [elasticsearch/otel]
 ```
 
