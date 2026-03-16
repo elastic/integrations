@@ -1,6 +1,7 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
@@ -14,10 +15,12 @@ processors:
         - change
       tag: append_info_change_type
   - set:
+      tag: set_event_outcome_312fe321
       field: event.outcome
       value: success
       if: ctx.crowdstrike?.event?.Disposition == "Passed"
   - set:
+      tag: set_event_outcome_6c6787f5
       field: event.outcome
       value: failure
       if: ctx.crowdstrike?.event?.Disposition == "Failed"
@@ -52,7 +55,7 @@ processors:
       ignore_missing: true
       if: ctx.cloud?.region == null
       tag: rename_cloud_region
-#CSPMS uses Platform, CSPMIOA uses Provider
+  #CSPMS uses Platform, CSPMIOA uses Provider
   - rename:
       field: crowdstrike.event.CloudProvider
       target_field: cloud.provider
