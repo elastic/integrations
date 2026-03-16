@@ -22,7 +22,7 @@ The CouchDB receiver scrapes metrics from the `/_node/{node-name}/_stats/couchdb
 
 ### Configuration
 
-Configure the OpenTelemetry Collector (or Elastic Datadog OpenTelemetry Collector) to receive CouchDB metrics and export them to Elasticsearch. Use the following placeholders in the configuration:
+Configure the OpenTelemetry Collector (or Elastic Distribution of OpenTelemetry Collector) to receive CouchDB metrics and export them to Elasticsearch. Use the following placeholders in the configuration:
 
 - `<COUCHDB_ENDPOINT>` — CouchDB base URL (for example, `http://localhost:5984`).
 - `<COUCHDB_USERNAME>` — CouchDB username for authentication.
