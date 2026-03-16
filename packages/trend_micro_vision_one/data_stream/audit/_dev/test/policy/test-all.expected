@@ -1,0 +1,104 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: trend_micro_vision_one
+      name: test-all-trend_micro_vision_one
+      streams:
+        - config_version: 2
+          cursor:
+            last_update_at:
+                value: '[[.last_response.url.params.Get "endDateTime"]]'
+          data_stream:
+            dataset: trend_micro_vision_one.audit
+          interval: 5m
+          processors:
+            - add_fields:
+                fields:
+                    test: policy-test
+                target: ""
+          publisher_pipeline.disable_host: true
+          request.method: GET
+          request.proxy_url: https://user:pass@proxy.example.com:8080
+          request.ssl:
+            certificate_authorities:
+                - |
+                  -----BEGIN CERTIFICATE-----
+                  MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+                  ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+                  MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+                  BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+                  fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+                  94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+                  /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+                  PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+                  CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+                  BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+                  8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+                  874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+                  3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+                  H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+                  8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+                  yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+                  sxSmbIUfc2SGJGCJD4I=
+                  -----END CERTIFICATE-----
+          request.timeout: 30s
+          request.transforms:
+            - set:
+                target: header.Authorization
+                value: Bearer ${SECRET_0}
+            - set:
+                target: url.params.top
+                value: "500"
+            - set:
+                default: '[[formatDate (now (parseDuration "-24h"))]]'
+                target: url.params.startDateTime
+                value: '[[formatDate ((parseDate .cursor.last_update_at).Add (parseDuration "-5s"))]]'
+            - set:
+                target: url.params.endDateTime
+                value: '[[formatDate (now)]]'
+            - set:
+                target: url.params.orderBy
+                value: loggedDateTime asc
+            - set:
+                target: url.params.labels
+                value: all
+          request.url: https://example.visionone.trendmicro.com/v3.0/audit/logs
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/httpjson/http-request-trace-*.ndjson
+            maxbackups: 5
+          response.pagination:
+            - set:
+                do_not_log_failure: true
+                fail_on_template_error: true
+                target: url.value
+                value: '[[if index .last_response.body "nextLink"]][[replaceAll " " "%20" .last_response.body.nextLink]][[end]]'
+          response.split:
+            ignore_empty_value: true
+            target: body.items
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+            - trend_micro_vision_one-audit
+            - test-policy
+      type: httpjson
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-trend_micro_vision_one.audit-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

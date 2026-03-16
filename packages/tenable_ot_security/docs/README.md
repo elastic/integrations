@@ -35,7 +35,7 @@ An example event for `assets` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-25T17:05:14.23377Z",
+    "@timestamp": "2025-04-01T09:45:48Z",
     "agent": {
         "ephemeral_id": "e4143ea9-6edb-47f5-b711-43dda27896e9",
         "id": "49934b6e-d1c4-4a6d-9745-e82197ba288f",

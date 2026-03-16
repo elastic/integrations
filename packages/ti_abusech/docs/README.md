@@ -199,11 +199,27 @@ For more information on architectures that can be used for scaling this integrat
 | abusech.malwarebazaar.code_sign.valid_to | Time at which the certificate is no longer considered valid. | keyword |
 | abusech.malwarebazaar.deleted_at | The indicator expiration timestamp. | date |
 | abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon. | keyword |
+| abusech.malwarebazaar.file_name | Name of the malware sample file. | keyword |
+| abusech.malwarebazaar.file_size | Size of the file in bytes. | long |
+| abusech.malwarebazaar.file_type | Type of the file. | keyword |
+| abusech.malwarebazaar.file_type_mime | MIME type of the file. | keyword |
+| abusech.malwarebazaar.gimphash | GIMP hash of the sample. | keyword |
+| abusech.malwarebazaar.imphash | Import hash of the PE file. | keyword |
+| abusech.malwarebazaar.intelligence.clamav | ClamAV detection name for the sample. | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
 | abusech.malwarebazaar.intelligence.mail.Generic | Malware seen in generic spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.uploads | Number of uploads from MalwareBazaar. | long |
 | abusech.malwarebazaar.ioc_expiration_duration | The configured expiration duration. | keyword |
+| abusech.malwarebazaar.md5_hash | MD5 hash of the sample. | keyword |
+| abusech.malwarebazaar.reporter | Reporter who submitted the sample. | keyword |
+| abusech.malwarebazaar.sha1_hash | SHA-1 hash of the sample. | keyword |
+| abusech.malwarebazaar.sha256_hash | SHA-256 hash of the sample. | keyword |
+| abusech.malwarebazaar.signature | Malware signature name. | keyword |
+| abusech.malwarebazaar.ssdeep | SSDEEP hash of the sample. | keyword |
+| abusech.malwarebazaar.telfhash | TLSH hash of the sample. | keyword |
+| abusech.malwarebazaar.tlsh | TLSH hash of the sample. | keyword |
+| abusech.malwarebazaar.trid_percent | TRID file type identification confidence percentage. | float |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
