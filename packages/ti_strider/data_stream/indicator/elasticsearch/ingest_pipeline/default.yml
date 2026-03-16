@@ -72,7 +72,7 @@ processors:
       description: Set expires_at to now when indicator is archived (ti_strider.indicator.archive == 1), otherwise 90 days from ingestion.
       source: |
         ZonedDateTime now = ZonedDateTime.parse(ctx['@timestamp']);
-        if (ctx.ti_strider != null && ctx.ti_strider.indicator != null && ctx.ti_strider.indicator.archive != null && ctx.ti_strider.indicator.archive == 1) {
+        if (ctx.ti_strider?.indicator?.archive == 1) {
           ctx.ti_strider.indicator.expires_at = now;
         } else {
           ctx.ti_strider.indicator.expires_at = now.plusDays(90);
