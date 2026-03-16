@@ -54,6 +54,12 @@ receivers:
   iis:
     collection_interval: 30s
 
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+
 exporters:
   elasticsearch/otel:
     endpoints: [ '<ES_ENDPOINT>' ]
@@ -65,10 +71,13 @@ service:
   pipelines:
     metrics:
       receivers: [ iis ]
+      processors: [ resourcedetection/system ]
       exporters: [ elasticsearch/otel ]
 ```
 
 > **Note**: Run the collector on the same Windows host as IIS so it can read local performance counters. The receiver has no remote collection capability.
+
+The `resourcedetection/system` processor is required to populate host information (`resource.attributes.host.name`) used by the dashboards. Without it, host-level fields will be empty.
 
 ## Reference
 

@@ -170,12 +170,25 @@ dashboards:
         position: {x: 0, y: 17}
         esql:
           type: datatable
-          query: |
-            FROM metrics-iisreceiver.otel-*
-            | WHERE data_stream.dataset == "iisreceiver.otel" AND (`iis.application_pool.state` IS NOT NULL OR `iis.application_pool.uptime` IS NOT NULL)
-            | STATS state = MAX(`iis.application_pool.state`), uptime = MAX(`iis.application_pool.uptime`) BY pool = iis.application_pool, host = resource.attributes.host.name
-            | EVAL state_label = CASE( state == 1, "Uninitialized", state == 2, "Initialized", state == 3, "Running", state == 4, "Disabling", state == 5, "Disabled", state == 6, "Shutdown Pending", state == 7, "Delete Pending", "Unknown" )
-            | SORT pool ASC
+          query:
+            - FROM metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND (`iis.application_pool.state` IS NOT NULL OR `iis.application_pool.uptime` IS NOT NULL)
+            - STATS state = MAX(`iis.application_pool.state`), uptime = MAX(`iis.application_pool.uptime`) BY pool = iis.application_pool, host = resource.attributes.host.name
+            - EVAL state_label = CASE( state == 1, "Uninitialized", state == 2, "Initialized", state == 3, "Running", state == 4, "Disabling", state == 5, "Disabled", state == 6, "Shutdown Pending", state == 7, "Delete Pending", "Unknown" )
+            - SORT pool ASC
+          dimensions:
+            - field: pool
+              label: Application Pool
+            - field: host
+              label: Host
+            - field: state_label
+              label: State
+          metrics:
+            - field: uptime
+              label: Uptime (ms)
+              format:
+                type: number
+                decimals: 0
 
       # Pool Uptime Over Time Chart
       - title: Pool Uptime Over Time
@@ -188,8 +201,13 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.application_pool.uptime` IS NOT NULL AND iis.application_pool IS NOT NULL
             | STATS uptime = MAX(`iis.application_pool.uptime`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), pool = iis.application_pool
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: uptime
+          breakdown:
+            field: pool
 
       # Request Rate & Queue Metrics Section Header
       - markdown:
@@ -209,8 +227,13 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL
             | STATS req_rate = SUM(RATE(`iis.request.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.request
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: req_rate
+          breakdown:
+            field: attributes.request
 
       # Queue Depth and Rejections Over Time
       - title: Queue Depth and Rejections Over Time
@@ -223,6 +246,9 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel"
             | STATS queue_depth = SUM(COALESCE(`iis.request.queue.count`, 0)), rej_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: queue_depth
             - field: rej_rate
@@ -238,8 +264,13 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.count` IS NOT NULL
             | STATS queue_depth = SUM(`iis.request.queue.count`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: queue_depth
+          legend:
+            position: bottom
 
       # Rejections Over Time
       - title: Rejections Over Time
@@ -252,8 +283,13 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.rejected` IS NOT NULL
             | STATS rej_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: rej_rate
+          legend:
+            position: bottom
 
       # Queue Age Over Time
       - title: Queue Age Over Time
@@ -266,6 +302,9 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.age.max` IS NOT NULL
             | STATS max_age = MAX(`iis.request.queue.age.max`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: max_age
 
@@ -304,8 +343,13 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.network.io` IS NOT NULL
             | STATS throughput = SUM(RATE(`iis.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.direction
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: throughput
+          breakdown:
+            field: attributes.direction
 
       # Connection Attempts Rate
       - title: Connection Attempts Rate
@@ -318,8 +362,13 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.connection.attempt.count` IS NOT NULL
             | STATS conn_rate = SUM(RATE(`iis.connection.attempt.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: conn_rate
+          legend:
+            position: bottom
 
       # Active Connections Over Time
       - title: Active Connections and Connection Attempts Over Time
@@ -333,6 +382,9 @@ dashboards:
             | EVAL conn = COALESCE(`iis.connection.active`, 0)
             | STATS connections = SUM(conn) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: connections
 
@@ -347,6 +399,9 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.thread.active` IS NOT NULL
             | STATS threads = SUM(`iis.thread.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: threads
 
@@ -361,6 +416,9 @@ dashboards:
             | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.network.blocked` IS NOT NULL
             | STATS blocked = SUM(RATE(`iis.network.blocked`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
             | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
           metrics:
             - field: blocked
 
@@ -377,12 +435,21 @@ dashboards:
         position: {x: 0, y: 90}
         esql:
           type: datatable
-          query: |
-            TS metrics-iisreceiver.otel-*
-            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL
-            | STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site
-            | SORT req_rate DESC
-            | LIMIT 20
+          query:
+            - TS metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL
+            - STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site
+            - SORT req_rate DESC
+            - LIMIT 20
+          dimensions:
+            - field: iis.site
+              label: Site
+          metrics:
+            - field: req_rate
+              label: Requests/sec
+              format:
+                type: number
+                decimals: 1
 
       # Application Pools State Summary Table
       - title: Application Pools — State Summary
@@ -390,9 +457,25 @@ dashboards:
         position: {x: 24, y: 90}
         esql:
           type: datatable
-          query: |
-            FROM metrics-iisreceiver.otel-*
-            | WHERE data_stream.dataset == "iisreceiver.otel" AND iis.application_pool IS NOT NULL
-            | STATS state = MAX(`iis.application_pool.state`), queue = MAX(`iis.request.queue.count`), uptime = MAX(`iis.application_pool.uptime`) BY pool = iis.application_pool
-            | EVAL state_label = CASE( state == 1, "Uninitialized", state == 2, "Initialized", state == 3, "Running", state == 4, "Disabling", state == 5, "Disabled", state == 6, "Shutdown Pending", state == 7, "Delete Pending", "Unknown" )
-            | SORT pool ASC
+          query:
+            - FROM metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND iis.application_pool IS NOT NULL
+            - STATS state = MAX(`iis.application_pool.state`), queue = MAX(`iis.request.queue.count`), uptime = MAX(`iis.application_pool.uptime`) BY pool = iis.application_pool
+            - EVAL state_label = CASE( state == 1, "Uninitialized", state == 2, "Initialized", state == 3, "Running", state == 4, "Disabling", state == 5, "Disabled", state == 6, "Shutdown Pending", state == 7, "Delete Pending", "Unknown" )
+            - SORT pool ASC
+          dimensions:
+            - field: pool
+              label: Application Pool
+            - field: state_label
+              label: State
+          metrics:
+            - field: queue
+              label: Queue Depth
+              format:
+                type: number
+                decimals: 0
+            - field: uptime
+              label: Uptime (ms)
+              format:
+                type: number
+                decimals: 0
