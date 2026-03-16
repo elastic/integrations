@@ -1426,7 +1426,7 @@
                                                     "inMetricDimension": true,
                                                     "label": "Hit Rate",
                                                     "meta": {
-                                                        "esType": "long",
+                                                        "esType": "double",
                                                         "type": "number"
                                                     },
                                                     "params": {
@@ -1444,11 +1444,11 @@
                                                 },
                                                 {
                                                     "columnId": "85780d9c-bb78-ad19-77b8-600c2978922a",
-                                                    "fieldName": "100"
+                                                    "fieldName": "1"
                                                 },
                                                 {
                                                     "columnId": "8954ac61-fa4f-d40b-a9ea-d6272a142338",
-                                                    "fieldName": "90"
+                                                    "fieldName": "0.9"
                                                 }
                                             ],
                                             "columns": [
@@ -1459,7 +1459,7 @@
                                                     "inMetricDimension": true,
                                                     "label": "Hit Rate",
                                                     "meta": {
-                                                        "esType": "long",
+                                                        "esType": "double",
                                                         "type": "number"
                                                     },
                                                     "params": {
@@ -1473,7 +1473,7 @@
                                                 }
                                             ],
                                             "query": {
-                                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.keyspace.hits IS NOT NULL OR redis.keyspace.misses IS NOT NULL\n| STATS hits = SUM(LAST_OVER_TIME(redis.keyspace.hits)), misses = SUM(LAST_OVER_TIME(redis.keyspace.misses))\n| EVAL hit_rate_pct = CASE(hits + misses \u003e 0, 100.0 * hits / (hits + misses), 0.0)"
+                                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.keyspace.hits IS NOT NULL OR redis.keyspace.misses IS NOT NULL\n| STATS hits = SUM(LAST_OVER_TIME(redis.keyspace.hits)), misses = SUM(LAST_OVER_TIME(redis.keyspace.misses))\n| EVAL hit_rate_pct = CASE(hits + misses \u003e 0, TO_DOUBLE(hits) / TO_DOUBLE(hits + misses), 0.0)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1483,7 +1483,7 @@
                             "filters": [],
                             "internalReferences": [],
                             "query": {
-                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.keyspace.hits IS NOT NULL OR redis.keyspace.misses IS NOT NULL\n| STATS hits = SUM(LAST_OVER_TIME(redis.keyspace.hits)), misses = SUM(LAST_OVER_TIME(redis.keyspace.misses))\n| EVAL hit_rate_pct = CASE(hits + misses \u003e 0, 100.0 * hits / (hits + misses), 0.0)"
+                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.keyspace.hits IS NOT NULL OR redis.keyspace.misses IS NOT NULL\n| STATS hits = SUM(LAST_OVER_TIME(redis.keyspace.hits)), misses = SUM(LAST_OVER_TIME(redis.keyspace.misses))\n| EVAL hit_rate_pct = CASE(hits + misses \u003e 0, TO_DOUBLE(hits) / TO_DOUBLE(hits + misses), 0.0)"
                             },
                             "visualization": {
                                 "labelMajorMode": "auto",
@@ -1506,7 +1506,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.keyspace.hits IS NOT NULL OR redis.keyspace.misses IS NOT NULL\n| STATS hits = SUM(LAST_OVER_TIME(redis.keyspace.hits)), misses = SUM(LAST_OVER_TIME(redis.keyspace.misses))\n| EVAL hit_rate_pct = CASE(hits + misses \u003e 0, 100.0 * hits / (hits + misses), 0.0)"
+                        "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.keyspace.hits IS NOT NULL OR redis.keyspace.misses IS NOT NULL\n| STATS hits = SUM(LAST_OVER_TIME(redis.keyspace.hits)), misses = SUM(LAST_OVER_TIME(redis.keyspace.misses))\n| EVAL hit_rate_pct = CASE(hits + misses \u003e 0, TO_DOUBLE(hits) / TO_DOUBLE(hits + misses), 0.0)"
                     },
                     "syncColors": false,
                     "syncCursor": true,

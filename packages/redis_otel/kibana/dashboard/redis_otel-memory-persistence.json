@@ -1269,7 +1269,7 @@
                                                     "inMetricDimension": true,
                                                     "label": "Memory %",
                                                     "meta": {
-                                                        "esType": "long",
+                                                        "esType": "double",
                                                         "type": "number"
                                                     },
                                                     "params": {
@@ -1287,11 +1287,11 @@
                                                 },
                                                 {
                                                     "columnId": "85780d9c-bb78-ad19-77b8-600c2978922a",
-                                                    "fieldName": "100"
+                                                    "fieldName": "1"
                                                 },
                                                 {
                                                     "columnId": "af3ab288-dc66-0892-44dd-31a988e09057",
-                                                    "fieldName": "85"
+                                                    "fieldName": "0.85"
                                                 }
                                             ],
                                             "columns": [
@@ -1302,7 +1302,7 @@
                                                     "inMetricDimension": true,
                                                     "label": "Memory %",
                                                     "meta": {
-                                                        "esType": "long",
+                                                        "esType": "double",
                                                         "type": "number"
                                                     },
                                                     "params": {
@@ -1316,7 +1316,7 @@
                                                 }
                                             ],
                                             "query": {
-                                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.memory.used IS NOT NULL AND redis.maxmemory IS NOT NULL AND redis.maxmemory \u003e 0\n| STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory))\n| EVAL util_pct = 100.0 * mem_used / maxmem"
+                                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.memory.used IS NOT NULL AND redis.maxmemory IS NOT NULL AND redis.maxmemory \u003e 0\n| STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory))\n| EVAL util_pct = TO_DOUBLE(mem_used) / TO_DOUBLE(maxmem)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1326,7 +1326,7 @@
                             "filters": [],
                             "internalReferences": [],
                             "query": {
-                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.memory.used IS NOT NULL AND redis.maxmemory IS NOT NULL AND redis.maxmemory \u003e 0\n| STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory))\n| EVAL util_pct = 100.0 * mem_used / maxmem"
+                                "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.memory.used IS NOT NULL AND redis.maxmemory IS NOT NULL AND redis.maxmemory \u003e 0\n| STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory))\n| EVAL util_pct = TO_DOUBLE(mem_used) / TO_DOUBLE(maxmem)"
                             },
                             "visualization": {
                                 "labelMajorMode": "auto",
@@ -1349,7 +1349,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.memory.used IS NOT NULL AND redis.maxmemory IS NOT NULL AND redis.maxmemory \u003e 0\n| STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory))\n| EVAL util_pct = 100.0 * mem_used / maxmem"
+                        "esql": "TS metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n| WHERE redis.memory.used IS NOT NULL AND redis.maxmemory IS NOT NULL AND redis.maxmemory \u003e 0\n| STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory))\n| EVAL util_pct = TO_DOUBLE(mem_used) / TO_DOUBLE(maxmem)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
