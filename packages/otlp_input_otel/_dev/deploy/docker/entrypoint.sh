@@ -7,15 +7,18 @@ while [ "$ready" -eq 0 ]; do sleep 0.5; done
 telemetrygen metrics \
   --otlp-insecure \
   --otlp-endpoint elastic-agent:4317 \
-  --metrics 10 \
+  --duration 5s \
+  --rate=10 \
   --otlp-attributes='service.name="telemetrygen"' \
 && telemetrygen logs \
   --otlp-insecure \
   --otlp-endpoint elastic-agent:4317 \
-  --logs 10 \
+  --duration 5s \
+  --rate=10 \
   --otlp-attributes='service.name="telemetrygen"' \
 && exec telemetrygen traces \
   --otlp-insecure \
   --otlp-endpoint elastic-agent:4317 \
-  --traces 10 \
+  --duration 5s \
+  --rate=10 \
   --otlp-attributes='service.name="telemetrygen"'
