@@ -1,6 +1,7 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
@@ -12,13 +13,16 @@ processors:
       value: info
       tag: append_info_type
   - set:
+      tag: set_event_action_9543b2bf
       field: event.action
       value: ipd-detection
   - set:
+      tag: set_event_outcome_60052845
       field: event.outcome
       value: success
       if: ctx.crowdstrike?.event?.AttemptOutcome == true
   - set:
+      tag: set_event_outcome_dd25ba45
       field: event.outcome
       value: failure
       if: ctx.crowdstrike?.event?.AttemptOutcome == false
@@ -40,12 +44,12 @@ processors:
       ignore_missing: true
   - rename:
       field: crowdstrike.event.SourceAccountDomain
-      target_field: user.domain  
+      target_field: user.domain
       ignore_missing: true
       tag: rename_source_account_domain
   - rename:
       field: crowdstrike.event.SourceAccountName
-      target_field: user.name 
+      target_field: user.name
       ignore_missing: true
       tag: rename_source_account_name
   - rename:
@@ -87,7 +91,7 @@ processors:
       value: "{{{crowdstrike.event.TacticId}}}"
       tag: append_tactic_id
       if: ctx.crowdstrike?.event?.TacticId != null
-  - set: 
+  - set:
       field: rule.description
       copy_from: message
       tag: set_rule_description
@@ -104,11 +108,12 @@ processors:
       tag: rename_detect_id
   - rename:
       field: crowdstrike.event.FalconHostLink
-      target_field: event.reference    
+      target_field: event.reference
       ignore_missing: true
       tag: rename_falcon_host_link
   - remove:
-      field: 
+      tag: remove_9545c61d
+      field:
         - event.created
       ignore_missing: true
       if: ctx.crowdstrike?.event?.ContextTimeStamp != null
