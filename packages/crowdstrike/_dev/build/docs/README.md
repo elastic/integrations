@@ -310,6 +310,26 @@ The integration sets `event.severity` according to the mapping in the table abov
 | 60 - 79                | high          |
 | 80 - 100               | critical      |
 
+### Query-time host metadata enrichment (LOOKUP JOIN)
+
+When the integration is installed, a transform maintains the latest host metadata (aidmaster) per host in a lookup index. You can enrich FDR event data with this metadata at query time using [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
+
+**Lookup index:** `logs-crowdstrike_lookup.dest_aidmaster-1` (alias: `logs-crowdstrike_lookup.aidmaster`). The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from aidmaster are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
+
+**Example ES|QL query:**
+
+```esql
+FROM logs-crowdstrike.fdr-*
+| WHERE aws.s3.object.key LIKE "*fdrv2/data*"
+| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id
+| KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname
+| LIMIT 20
+```
+
+From Elasticsearch 8.19 onward, you can use the alias as the lookup target: `LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id`.
+
+**Using enriched fields:** Enrichment from the lookup is under the `crowdstrike.info.host.*` namespace (e.g. `crowdstrike.info.host.hostname` for hostname, `crowdstrike.info.host.cid` for customer ID). Use these fields in dashboards and detection rules when building on query-time enrichment.
+
 ## Logs
 
 ### Alert
