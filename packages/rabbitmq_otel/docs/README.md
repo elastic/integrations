@@ -4,7 +4,7 @@ RabbitMQ is an open-source message broker implementing the Advanced Message Queu
 
 ## Compatibility
 
-The RabbitMQ OpenTelemetry assets have been tested with the OpenTelemetry RabbitMQ receiver from the collector-contrib repository.
+The RabbitMQ OpenTelemetry assets have been tested with [OpenTelemetry RabbitMQ receiver v0.146.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.146.0/receiver/rabbitmqreceiver/README.md). The node-level metrics used by the dashboards and alerts require collector-contrib v0.131.0 or later.
 
 RabbitMQ tested against:
 
