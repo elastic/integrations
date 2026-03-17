@@ -1,6 +1,6 @@
 # Cassandra OpenTelemetry Assets
 
-Apache Cassandra is a distributed, wide-column NoSQL database designed for high availability and linear scalability across commodity hardware. The Cassandra OpenTelemetry assets provide dashboards, alert rules, and SLO templates for metrics collected via the OpenTelemetry JMX receiver with `target_system: cassandra`, covering latency, traffic, errors, compaction, and storage across your cluster.
+Apache Cassandra is a distributed, wide-column NoSQL database designed for high availability and linear scalability across commodity hardware. The Cassandra OpenTelemetry assets provide dashboards, alert rules, and SLO templates for metrics collected using the OpenTelemetry JMX receiver with `target_system: cassandra`, covering latency, traffic, errors, compaction, and storage across your cluster.
 
 ## Compatibility
 
@@ -22,7 +22,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ### Prerequisites
 
-Cassandra exposes metrics via JMX on port 7199 by default. Ensure JMX remote access is enabled and reachable from where you run the collector. If you use the standalone [JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper), run it with `OTEL_JMX_TARGET_SYSTEM=cassandra` and configure it to export via OTLP to your collector endpoint.
+Cassandra exposes metrics using JMX on port 7199 by default. Ensure JMX remote access is enabled and reachable from where you run the collector. If you use the standalone [JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper), run it with `OTEL_JMX_TARGET_SYSTEM=cassandra` and configure it to export using OTLP to your collector endpoint.
 
 ### Configuration
 
