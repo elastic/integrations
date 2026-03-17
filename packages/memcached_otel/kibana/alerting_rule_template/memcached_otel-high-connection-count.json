@@ -1,0 +1,40 @@
+{
+    "id": "memcached_otel-high-connection-count",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Memcached OTel] High connection count",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "memcached"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.connections.current IS NOT NULL\n// Current connections (gauge) — use max over window for peak detection\n| STATS max_connections = MAX(LAST_OVER_TIME(memcached.connections.current))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when connections exceed 800 — adjust for your -c limit\n| WHERE max_connections > 800\n| SORT max_connections DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
