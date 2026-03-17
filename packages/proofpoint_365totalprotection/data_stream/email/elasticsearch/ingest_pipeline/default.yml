@@ -3,7 +3,7 @@ processors:
     - set:
             tag: set_ecs_version
             field: ecs.version
-            value: "8.11.0"
+            value: "9.3.0"
     - json:
             tag: parse_json_message
             field: message
@@ -247,6 +247,16 @@ processors:
         field: destination.ip
         copy_from: proofpoint.email.destination_ip
         ignore_empty_value: true
+    - geoip:
+        tag: geoip_source_ip
+        field: source.ip
+        target_field: source.geo
+        ignore_missing: true
+    - geoip:
+        tag: geoip_destination_ip
+        field: destination.ip
+        target_field: destination.geo
+        ignore_missing: true
     - set:
         tag: set_event_kind
         field: event.kind
