@@ -1,0 +1,223 @@
+dashboards:
+  - name: "[Kafka OTel] Consumer Groups"
+    id: kafka_otel-consumer-groups
+    description: >-
+      Granular consumer group analysis: lag by group, topic, and partition; member counts;
+      offset progression. Drill-down for lag troubleshooting.
+    time_range:
+      from: now-15m
+    filters:
+      - field: data_stream.dataset
+        equals: kafkametricsreceiver.otel
+    controls:
+      - type: options
+        label: Consumer Group
+        data_view: metrics-*
+        field: attributes.group
+        match_technique: prefix
+        width: medium
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    panels:
+      - title: Navigation
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: kafka_otel-overview
+            - label: Consumer Groups
+              dashboard: kafka_otel-consumer-groups
+            - label: Topics & Partitions
+              dashboard: kafka_otel-topics-partitions
+            - label: Replication Health
+              dashboard: kafka_otel-replication
+
+      - title: "[Kafka OTel] Consumer Groups"
+        hide_title: true
+        size: {w: 16, h: 8}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [Kafka OTel] Consumer Groups
+
+            Consumer lag and offset drill-down:
+            - Lag sum per group and topic
+            - Lag by partition (hot partitions)
+            - Member count per group
+            - Offset position vs current partition offset
+
+      - title: Total Lag (Selected Group)
+        hide_title: true
+        size: {w: 6, h: 8}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL
+            | STATS total_lag = SUM(kafka.consumer_group.lag_sum)
+          primary:
+            field: total_lag
+            label: Total Lag
+            format:
+              type: number
+              decimals: 2
+              compact: true
+
+      - title: Groups with Lag
+        hide_title: true
+        size: {w: 6, h: 8}
+        position: {x: 22, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL
+            | STATS lag_sum = SUM(kafka.consumer_group.lag_sum) BY attributes.group
+            | WHERE lag_sum > 0
+            | STATS count = COUNT(*)
+          primary:
+            field: count
+            label: Groups with Lag
+            format:
+              type: number
+              decimals: 0
+
+      - title: Empty Groups
+        hide_title: true
+        size: {w: 6, h: 8}
+        position: {x: 28, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.members IS NOT NULL
+            | STATS members = MAX(kafka.consumer_group.members) BY attributes.group
+            | WHERE members == 0
+            | STATS count = COUNT(*)
+          primary:
+            field: count
+            label: Empty Groups
+            format:
+              type: number
+              decimals: 0
+
+      - title: Lag Sum Over Time by Group
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 10}
+        esql:
+          type: area
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL AND attributes.group IS NOT NULL
+            | STATS lag = SUM(kafka.consumer_group.lag_sum) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.group
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: lag
+              label: Lag
+              format:
+                type: number
+                decimals: 2
+                compact: true
+          breakdown:
+            field: attributes.group
+          legend:
+            visible: true
+            position: right
+
+      - title: Lag by Group and Topic (Top 20)
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 22}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.lag_sum IS NOT NULL AND attributes.group IS NOT NULL AND attributes.topic IS NOT NULL
+            | STATS lag_sum = SUM(kafka.consumer_group.lag_sum) BY attributes.group, attributes.topic
+            | EVAL group_topic = CONCAT(attributes.group, " / ", attributes.topic)
+            | STATS lag_sum = SUM(lag_sum) BY group_topic
+            | SORT lag_sum DESC
+            | LIMIT 20
+          dimension:
+            field: group_topic
+          metrics:
+            - field: lag_sum
+              label: Lag
+              format:
+                type: number
+                decimals: 2
+                compact: true
+          legend:
+            position: right
+
+      - title: Consumer Group Members Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 22}
+        esql:
+          type: line
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.members IS NOT NULL AND attributes.group IS NOT NULL
+            | STATS members = MAX(LAST_OVER_TIME(kafka.consumer_group.members)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.group
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: members
+              label: Members
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.group
+          legend:
+            visible: true
+            position: right
+
+      - title: Lag by Partition (Top 20 Partitions)
+        size: {w: 48, h: 16}
+        position: {x: 0, y: 34}
+        esql:
+          type: datatable
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.consumer_group.lag IS NOT NULL AND attributes.group IS NOT NULL AND attributes.topic IS NOT NULL AND attributes.partition IS NOT NULL
+            | STATS lag = MAX(kafka.consumer_group.lag) BY attributes.group, attributes.topic, attributes.partition
+            | SORT lag DESC
+            | LIMIT 50
+          dimensions:
+            - field: attributes.group
+              label: Group
+            - field: attributes.topic
+              label: Topic
+            - field: attributes.partition
+              label: Partition
+          metrics:
+            - field: lag
+              label: Lag
+              format:
+                type: number
+                decimals: 2
+                compact: true
+          paging:
+            enabled: true
+            page_size: 15
