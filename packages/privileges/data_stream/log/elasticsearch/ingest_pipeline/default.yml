@@ -22,8 +22,8 @@ processors:
       ignore_failure: true
       ignore_missing: true
       patterns:
-      - 'User\s%{USERNAME:user.name}%{DATA}(reason:)\s"%{DATA:privilege.reason}"'
-      - 'User\s%{USERNAME:user.name}'
+        - 'User\s%{USERNAME:user.name}%{DATA}(reason:)\s"%{DATA:privilege.reason}"'
+        - 'User\s%{USERNAME:user.name}'
   - rename:
       field: _conf.tz_offset
       target_field: event.timezone
@@ -32,7 +32,7 @@ processors:
       ignore_failure: true
   - date:
       field: event.created
-      target_field: event.created
+      target_field: "event.created"
       formats:
         - ISO8601
       timezone: "{{{event.timezone}}}"
@@ -46,7 +46,7 @@ processors:
             value: "{{{_ingest.on_failure_message}}}"
   - date:
       field: event.created
-      target_field: event.created
+      target_field: "event.created"
       formats:
         - ISO8601
       if: ctx.event?.timezone == null && ctx.event?.created != null
@@ -57,12 +57,10 @@ processors:
         - append:
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
-  # Since logstash sets the @timestamp if not present, `override: true` is required to overwrite the value with event timestamp.
   - set:
       field: "@timestamp"
       value: "{{{event.created}}}"
-      if: ctx.event?.created != null
-      override: true
+      if: "ctx.event?.created != null"
   - remove:
       field:
         - _conf
