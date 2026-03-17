@@ -1,116 +1,129 @@
-# Haproxy metrics from OpenTelemetry Collector 
+# HAProxy OpenTelemetry Assets
 
-The HAProxy OpenTelemetry integration collects performance and availability metrics from [HAProxy](https://www.haproxy.org/) load balancers.
+HAProxy is a high-performance TCP/HTTP load balancer and reverse proxy that distributes traffic across backend servers. This content pack provides dashboards, alert rules, and SLO templates for monitoring HAProxy via the OpenTelemetry HAProxy receiver, covering traffic, latency, errors, saturation, and backend availability.
 
-HAProxy exposes operational statistics through its stats socket or HTTP stats endpoint. The OpenTelemetry Collector retrieves these metrics and forwards them to Elastic, where you can visualize them in Kibana, create dashboards, and configure alerts.
+## Compatibility
 
-With this integration, you can monitor frontend and backend sessions, traffic distribution, connection rates, errors, and overall service health within the Elastic Observability platform.
+The HAProxy OpenTelemetry assets have been tested with the OpenTelemetry HAProxy receiver (opentelemetry-collector-contrib).
 
+HAProxy tested against:
+
+- HAProxy 3.x
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-1. Compatibility and supported versions: This integration is compatible with systems running the upstream OpenTelemetry Collector and HAProxy. This integration has been tested with OTEL Collector version v0.144.0 and HAProxy version 3.3.
-
-2. Permissions required: The collector requires access to HAProxy metrics, which are exposed via either the stats socket or the HTTP stats endpoint. Ensure that the OTEL Collector can read from the socket or query the HTTP endpoint. For example, if using the stats socket, the user running the collector must have read permissions on the socket file.
-
-3. HAProxy configuration: HTTP stats endpoint: If using the HTTP stats page, configure HAProxy to allow access from the collector host. For example:
-
-listen stats
-    bind *:8404
-    mode http
-    stats enable
-    stats uri /metrics
-    stats refresh 10s
-    stats auth admin:password
-
-4. Finding the HAProxy config: On most Linux systems, HAProxy’s configuration file is typically located at /etc/haproxy/haproxy.cfg. Check that the stats section or stats socket is enabled and accessible.
-
 ## Setup
 
-1. Install OpenTelemetry Collector: You need an OTel Collector to scrape HAProxy metrics and send them to Elasticsearch. Download the collector and verify the installation.
+### Prerequisites
 
-2. Configure OpenTelemetry Collector: You need a collector config YAML to:
-
-- Scrape HAProxy metrics
-
-- Convert to OTLP format
-
-- Export to Elasticsearch
-
-Example: otel-collector-config.yaml:
+Enable the HAProxy stats interface so the collector can poll metrics. Add a `listen` or `frontend` block to your HAProxy configuration:
 
 ```
+listen stats
+    bind *:8404
+    stats enable
+    stats uri /stats
+    stats refresh 10s
+    # Optional: stats auth <user>:<password>
+```
+
+For Unix socket access instead of HTTP:
+
+```
+listen stats
+    bind *:8404
+    stats enable
+    stats socket /var/run/haproxy.sock mode 660 level admin
+```
+
+Verify the stats endpoint. For HTTP: `curl -s "http://localhost:8404/stats;csv"`. For socket: `echo "show stat" | socat stdio /var/run/haproxy.sock`.
+
+### Configuration
+
+Configure the OpenTelemetry Collector or Elastic Observability Distribution (EDOT) Collector to receive HAProxy metrics and export them to Elasticsearch. The following example wires the `haproxy` receiver to the `elasticsearch/otel` exporter.
+
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `<HAPROXY_ENDPOINT>` | HAProxy stats endpoint: HTTP URL or Unix socket path | `http://localhost:8404/stats` or `file:///var/run/haproxy.sock` |
+| `<ES_ENDPOINT>` | Elasticsearch endpoint | `https://my-deployment.es.us-central1.gcp.cloud.es.io:443` |
+| `<ES_API_KEY>` | Elasticsearch API key (or use `es_username` / `es_password`) | `${env:ES_API_KEY}` |
+
+```yaml
 receivers:
   haproxy:
-    endpoint: http://localhost:8404/stats
-    collection_interval: 10s
+    endpoint: <HAPROXY_ENDPOINT>
+    collection_interval: 1m
     metrics:
-      haproxy.sessions.total:
-        enabled: true
-      haproxy.connections.total:
-        enabled: true
-      haproxy.downtime:
-        enabled: true
-      haproxy.connections.average_time:
-        enabled: true
       haproxy.active:
-        enabled: true
-      haproxy.backup:
-        enabled: true
-      haproxy.clients.canceled:
-        enabled: true
-      haproxy.compression.bypass:
-        enabled: true
-      haproxy.compression.count:
-        enabled: true
-      haproxy.compression.input:
-        enabled: true
-      haproxy.compression.output:
-        enabled: true
-      haproxy.failed_checks:
-        enabled: true
-      haproxy.requests.average_time:
-        enabled: true
-      haproxy.responses.average_time:
-        enabled: true
+        enabled: true  # disabled by default — required for Backend availability SLO and alerts
       haproxy.sessions.limit:
-        enabled: true
-      haproxy.weight:
-        enabled: true
+        enabled: true  # disabled by default — required for Session saturation alert
+      haproxy.connections.average_time:
+        enabled: true  # disabled by default — required for High connection time alert
+      haproxy.requests.average_time:
+        enabled: true  # disabled by default — required for High queue time alert
+      haproxy.responses.average_time:
+        enabled: true  # disabled by default — required for Response time SLO and High response time alert
+      haproxy.failed_checks:
+        enabled: true  # disabled by default — required for Health check failures alert
 
 exporters:
-  debug:
-    verbosity: normal
   elasticsearch/otel:
-    endpoint: https://localhost:9200
-    user: <userid>
-    password: <password>
+    endpoints: [<ES_ENDPOINT>]
+    api_key: <ES_API_KEY>
     mapping:
       mode: otel
-    metrics_dynamic_index:
-      enabled: true
-
-
 
 service:
   pipelines:
     metrics:
       receivers: [haproxy]
-      processors: [batch]
-
+      exporters: [elasticsearch/otel]
 ```
 
+> **Note**: If your stats endpoint uses HTTP basic auth, set `username` and `password` (or `password_file`) under the `haproxy` receiver config.
 
+> **Note**: Enable [Optional Haproxy metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/haproxyreceiver/documentation.md#optional-metrics) in the config file. HAProxy exposes default metrics automatically, but optional metrics in the OpenTelemetry HAProxy receiver are disabled by default. To send them to Elasticsearch, explicitly enable them in the OTel Collector HAProxy receiver configuration (as shown above).
 
-3. Run OpenTelemetry Collector: Use this above example configuration to run the collector.
+## Reference
 
-4. Enable [Optional Haproxy metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/haproxyreceiver/documentation.md#optional-metrics) in config file: HAProxy exposes a set of default metrics automatically. The OpenTelemetry HAProxy receiver has a list of optional metrics that are not enabled by default. If you want these optional metrics to appear in Elasticsearch, you must explicitly enable them in the OTel Collector HAProxy receiver configuration like in the example above.
+### Metrics
 
+Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/haproxyreceiver/metadata.yaml) of the OpenTelemetry HAProxy receiver for details on available metrics.
 
-## Metrics reference
+## Dashboards
 
-### Haproxy metrics
+| Dashboard | Description |
+|-----------|-------------|
+| **[HAProxy OTel] Overview** | Top-level health across all proxies: error rates, traffic volume, latency summary, session saturation, server availability. |
+| **[HAProxy OTel] Frontend** | Per-frontend request rates, connection rates, session utilization, bytes throughput, request errors, denied requests, and status code distribution. |
+| **[HAProxy OTel] Backend** | Per-backend aggregate latency, error breakdown, session saturation, server selection distribution, retries, and redispatches. |
+| **[HAProxy OTel] Server** | Per-server health, latency, error rates, failed health checks, downtime, sessions, and throughput. Compare across servers within a backend. |
 
-Refer to [the documentation of the OpenTelemetry's Haproxy receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/haproxyreceiver/documentation.md).
+## Alert rules
+
+| Alert | Trigger | Severity |
+|-------|---------|----------|
+| **[HAProxy OTel] Backend has no active servers** | Backend has zero active servers in the evaluation window | Critical |
+| **[HAProxy OTel] Connection errors spike** | Connection errors to backend servers exceed threshold in 5-minute window | High |
+| **[HAProxy OTel] Request errors spike** | Frontend request errors (malformed, timed out) exceed threshold in 5-minute window | High |
+| **[HAProxy OTel] Response errors spike** | Response errors (server aborts, delivery failures) exceed threshold in 5-minute window | High |
+| **[HAProxy OTel] Session saturation approaching limit** | Session utilization exceeds 80% of configured limit | High |
+| **[HAProxy OTel] High backend connection time** | Backend connection time exceeds 100 ms | Medium |
+| **[HAProxy OTel] High backend response time** | Backend response time exceeds 500 ms | Medium |
+| **[HAProxy OTel] High backend queue time** | Backend queue time exceeds 10 ms (indicates capacity pressure) | Medium |
+| **[HAProxy OTel] Server health check failures** | One or more servers report failed health checks | Medium |
+| **[HAProxy OTel] Requests queued at backend** | Requests are queued waiting for an available server | Medium |
+| **[HAProxy OTel] Connection retries or redispatches spike** | Retries or redispatches exceed threshold (backend instability signal) | Medium |
+
+## SLO templates
+
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
+| SLO | Target | Window | Description |
+|-----|--------|--------|-------------|
+| **[HAProxy OTel] Backend availability 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of 1-minute timeslices where each backend has at least one active server. |
+| **[HAProxy OTel] Response time latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of 1-minute timeslices where average backend response time is below 500 ms. |
+| **[HAProxy OTel] Request success rate 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of 1-minute timeslices where non-5xx requests meet the target ratio. |
