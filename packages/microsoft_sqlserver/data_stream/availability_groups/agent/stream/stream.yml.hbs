@@ -1,0 +1,30 @@
+metricsets: ["query"]
+hosts: 
+  - sqlserver://{{username}}:{{password}}@{{hosts}}
+period: {{period}}
+raw_data.enabled: true
+merge_results: false
+driver: "mssql"
+sql_queries:
+  # Availability groups metrics
+  - query: "SELECT
+    @@servername AS server_name,
+    ag.name,
+    CONVERT(NVARCHAR(36), ag.group_id) AS group_id,
+    ags.primary_replica,
+    ags.synchronization_health,
+    ags.synchronization_health_desc,
+    ags.primary_recovery_health,
+    ags.secondary_recovery_health
+FROM sys.dm_hadr_availability_group_states ags
+JOIN sys.availability_groups ag 
+    ON ags.group_id = ag.group_id;"
+    response_format: table
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+tags:
+{{#if preserve_sql_queries}}
+- preserve_sql_queries
+{{/if}}
