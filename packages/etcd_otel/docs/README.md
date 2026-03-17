@@ -103,6 +103,8 @@ Refer to the [Prometheus receiver metadata](https://github.com/open-telemetry/op
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[etcd OTel] Apply latency (non-slow) rate 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of Raft applies that complete within the expected duration; 99.5% of 1-minute intervals must meet the threshold. |
