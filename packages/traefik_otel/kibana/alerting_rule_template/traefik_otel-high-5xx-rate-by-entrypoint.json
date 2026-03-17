@@ -1,0 +1,39 @@
+{
+    "id": "traefik_otel-high-5xx-rate-by-entrypoint",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Traefik OTel] High 5xx error rate by entrypoint",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "traefik"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-traefik.otel-*\n// Limit to entrypoint-level request counters (counter requires TS + INCREASE)\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n// Aggregate total and 5xx requests per entrypoint over the time window\n| STATS\n    total = SUM(traefik_entrypoint_requests_total),\n    errors_5xx = SUM(traefik_entrypoint_requests_total) WHERE attributes.code LIKE \"5*\"\n  BY attributes.entrypoint\n// Minimum sample size; adjust based on expected traffic per entrypoint\n| WHERE total > 100\n| EVAL error_rate_pct = ROUND(errors_5xx / total * 100.0, 2)\n// Alert threshold: tune for sensitivity\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.entrypoint",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
