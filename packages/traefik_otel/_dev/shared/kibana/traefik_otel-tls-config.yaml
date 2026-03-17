@@ -83,7 +83,11 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
-            - STATS tls_rate = SUM(traefik_entrypoint_requests_tls_total)
+            - STATS total = SUM(traefik_entrypoint_requests_tls_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL tls_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP tls_rate
           primary:
             field: tls_rate
             label: TLS Req/sec
@@ -137,9 +141,13 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
-            - STATS tls_rate = SUM(traefik_entrypoint_requests_tls_total)
+            - STATS total = SUM(traefik_entrypoint_requests_tls_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
                 attributes.tls_version
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL tls_rate = total / bucket_secs
+            - KEEP time_bucket, attributes.tls_version, tls_rate
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
@@ -171,7 +179,7 @@ dashboards:
             - LIMIT 10
           metrics:
             - field: tls_requests
-          dimensions:
+          breakdowns:
             - field: attributes.tls_version
               label: TLS Version
           appearance:
@@ -191,7 +199,7 @@ dashboards:
             - STATS days_remaining = AVG(days_remaining) BY attributes.cn, attributes.serial
             - SORT days_remaining ASC
             - LIMIT 50
-          dimensions:
+          breakdowns:
             - field: attributes.cn
               label: Common Name
             - field: attributes.serial
@@ -212,8 +220,12 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_config_reloads_total IS NOT NULL
-            - STATS reload_rate = SUM(traefik_config_reloads_total)
+            - STATS total = SUM(traefik_config_reloads_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL reload_rate = total / bucket_secs
+            - KEEP time_bucket, reload_rate
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
@@ -240,7 +252,7 @@ dashboards:
             - LIMIT 10
           metrics:
             - field: tls_requests
-          dimensions:
+          breakdowns:
             - field: attributes.tls_cipher
               label: TLS Cipher
           appearance:

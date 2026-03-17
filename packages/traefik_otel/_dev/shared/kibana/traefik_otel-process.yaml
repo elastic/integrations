@@ -64,7 +64,11 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE process_cpu_seconds_total IS NOT NULL
-            - STATS cpu_rate = SUM(process_cpu_seconds_total)
+            - STATS total = SUM(process_cpu_seconds_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL cpu_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP cpu_rate
           primary:
             field: cpu_rate
             label: CPU sec/sec
@@ -134,19 +138,20 @@ dashboards:
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE go_memstats_heap_sys_bytes IS NOT NULL
             - STATS heap_sys = MAX(LAST_OVER_TIME(go_memstats_heap_sys_bytes))
-            - EVAL heap_sys_mb = heap_sys / 1048576
+            - EVAL heap_sys_mb = heap_sys / 1048576, gauge_min = 0, gauge_max = 1000
           metric:
             field: heap_sys_mb
             label: Heap Sys (MB)
             format:
               type: number
               decimals: 1
-          minimum: 0
-          maximum: 1000
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
           appearance:
             shape: arc
             ticks_position: auto
-            color_mode: palette
 
       # ─── CPU Over Time ─────────────────────────────────────────────────
       - title: CPU Consumption Rate Over Time
@@ -157,8 +162,12 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE process_cpu_seconds_total IS NOT NULL
-            - STATS cpu_rate = SUM(process_cpu_seconds_total)
+            - STATS total = SUM(process_cpu_seconds_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL cpu_rate = total / bucket_secs
+            - KEEP time_bucket, cpu_rate
             - SORT time_bucket ASC
           dimension:
             field: time_bucket

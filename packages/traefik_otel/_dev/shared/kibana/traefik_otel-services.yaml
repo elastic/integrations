@@ -67,7 +67,11 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_service_requests_total IS NOT NULL
-            - STATS request_rate = SUM(traefik_service_requests_total)
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL request_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP request_rate
           primary:
             field: request_rate
             label: Req/sec
@@ -123,7 +127,11 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_service_responses_bytes_total IS NOT NULL
-            - STATS bytes_rate = SUM(traefik_service_responses_bytes_total)
+            - STATS total = SUM(traefik_service_responses_bytes_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL bytes_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP bytes_rate
           primary:
             field: bytes_rate
             label: Bytes/sec
@@ -140,9 +148,13 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_service_requests_total IS NOT NULL
-            - STATS request_rate = SUM(traefik_service_requests_total)
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
                 attributes.service
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL request_rate = total / bucket_secs
+            - KEEP time_bucket, attributes.service, request_rate
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
@@ -170,9 +182,13 @@ dashboards:
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_service_requests_total IS NOT NULL
             - WHERE attributes.code LIKE "5*"
-            - STATS errors = SUM(traefik_service_requests_total)
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
                 attributes.service
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL errors = total / bucket_secs
+            - KEEP time_bucket, attributes.service, errors
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
@@ -199,9 +215,13 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_service_requests_total IS NOT NULL
-            - STATS requests = SUM(traefik_service_requests_total)
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
                 attributes.code
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL requests = total / bucket_secs
+            - KEEP time_bucket, attributes.code, requests
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
@@ -241,7 +261,7 @@ dashboards:
             - EVAL error_rate = CASE(total_requests > 0, errors_5xx / total_requests, 0.0)
             - SORT total_requests DESC
             - LIMIT 20
-          dimensions:
+          breakdowns:
             - field: attributes.service
               label: Service
           metrics:
@@ -274,7 +294,7 @@ dashboards:
             - WHERE error_rate > 0
             - SORT error_rate DESC
             - LIMIT 20
-          dimensions:
+          breakdowns:
             - field: attributes.service
               label: Service
           metrics:

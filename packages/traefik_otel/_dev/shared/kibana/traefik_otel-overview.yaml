@@ -68,7 +68,11 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_total IS NOT NULL
-            - STATS request_rate = SUM(traefik_entrypoint_requests_total)
+            - STATS total = SUM(traefik_entrypoint_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL request_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP request_rate
           primary:
             field: request_rate
             label: Req/sec
@@ -124,7 +128,11 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL
-            - STATS bytes_rate = SUM(traefik_entrypoint_responses_bytes_total)
+            - STATS total = SUM(traefik_entrypoint_responses_bytes_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL bytes_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP bytes_rate
           primary:
             field: bytes_rate
             label: Bytes/sec
@@ -142,9 +150,13 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_total IS NOT NULL
-            - STATS request_rate = SUM(traefik_entrypoint_requests_total)
+            - STATS total = SUM(traefik_entrypoint_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
                 attributes.entrypoint
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL request_rate = total / bucket_secs
+            - KEEP time_bucket, attributes.entrypoint, request_rate
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
@@ -171,16 +183,20 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_total IS NOT NULL
-            - STATS requests = SUM(traefik_entrypoint_requests_total)
+            - STATS total = SUM(traefik_entrypoint_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
                 attributes.code
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL requests = total / bucket_secs
+            - KEEP time_bucket, attributes.code, requests
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
             data_type: date
           metrics:
             - field: requests
-              label: Requests/sec
+              label: Req/sec
               format:
                 type: number
                 decimals: 1
@@ -242,7 +258,7 @@ dashboards:
             - LIMIT 10
           metrics:
             - field: total_requests
-          dimensions:
+          breakdowns:
             - field: attributes.code
               label: Status Code
           appearance:
@@ -257,8 +273,12 @@ dashboards:
             - FROM metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL
-            - STATS bytes_rate = SUM(traefik_entrypoint_responses_bytes_total)
+            - STATS total = SUM(traefik_entrypoint_responses_bytes_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL bytes_rate = total / bucket_secs
+            - KEEP time_bucket, bytes_rate
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
@@ -285,7 +305,7 @@ dashboards:
               BY attributes.entrypoint
             - SORT total_requests DESC
             - LIMIT 20
-          dimensions:
+          breakdowns:
             - field: attributes.entrypoint
               label: Entrypoint
           metrics:
