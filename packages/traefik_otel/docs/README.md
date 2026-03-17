@@ -125,6 +125,8 @@ of the OpenTelemetry Prometheus receiver for details on the receiver. Traefik ex
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[Traefik OTel] Service latency under 200 ms 99.5% rolling 30 days** | 99.5% | 30‑day rolling | 99.5% of service-level requests complete within 200 ms. |
