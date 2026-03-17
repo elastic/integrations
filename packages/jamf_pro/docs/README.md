@@ -132,6 +132,8 @@ An example event for `inventory` looks as following:
         "kind": "asset"
     },
     "host": {
+        "id": "5982CE36-4526-580B-B4B9-ECC6782535BB",
+        "name": "acme-C07DM3AZQ6NV",
         "address": [
             "10.122.26.87"
         ],
