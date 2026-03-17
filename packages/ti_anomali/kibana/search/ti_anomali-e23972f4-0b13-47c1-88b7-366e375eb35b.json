@@ -1,9 +1,10 @@
 {
     "attributes": {
         "columns": [
-            "threat.indicator.url.full",
             "anomali.threatstream.severity",
-            "anomali.threatstream.itype"
+            "anomali.threatstream.itype",
+            "anomali.threatstream.maltype",
+            "anomali.threatstream.state"
         ],
         "description": "",
         "grid": {},
@@ -23,13 +24,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
-                                "ti_anomali.intelligence",
-                                "ti_anomali.threatstream"
+                                "ti_anomali.threatstream",
+                                "ti_anomali.intelligence"
                             ],
                             "type": "phrases",
                             "value": [
-                                "ti_anomali.intelligence",
-                                "ti_anomali.threatstream"
+                                "ti_anomali.threatstream",
+                                "ti_anomali.intelligence"
                             ]
                         },
                         "query": {
@@ -38,12 +39,12 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.intelligence"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.intelligence"
                                         }
                                     }
                                 ]
@@ -62,13 +63,13 @@
                             "key": "threat.indicator.type",
                             "negate": false,
                             "params": {
-                                "query": "url"
+                                "query": "file"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "threat.indicator.type": "url"
+                                "threat.indicator.type": "file"
                             }
                         }
                     },
@@ -109,11 +110,11 @@
             ]
         ],
         "timeRestore": false,
-        "title": "[Anomali ThreatStream] URL Essential Detail"
+        "title": "[Anomali ThreatStream] File Essential Details"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-02-26T05:19:31.069Z",
-    "id": "ti_anomali-2f503c8f-2a44-46f6-8cf4-47de74cb490b",
+    "created_at": "2026-03-13T08:43:26.540Z",
+    "id": "ti_anomali-e23972f4-0b13-47c1-88b7-366e375eb35b",
     "references": [
         {
             "id": "logs-*",
@@ -134,6 +135,11 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "ti_anomali-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
     "type": "search",

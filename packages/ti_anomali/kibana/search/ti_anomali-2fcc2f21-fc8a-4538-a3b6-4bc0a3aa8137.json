@@ -1,10 +1,11 @@
 {
     "attributes": {
         "columns": [
+            "threat.indicator.type",
             "anomali.threatstream.severity",
-            "anomali.threatstream.itype",
-            "anomali.threatstream.maltype",
-            "anomali.threatstream.state"
+            "threat.indicator.ip",
+            "threat.indicator.confidence",
+            "anomali.threatstream.detail2"
         ],
         "description": "",
         "grid": {},
@@ -20,17 +21,18 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
-                                "ti_anomali.threatstream",
-                                "ti_anomali.intelligence"
+                                "ti_anomali.intelligence",
+                                "ti_anomali.threatstream"
                             ],
                             "type": "phrases",
                             "value": [
-                                "ti_anomali.threatstream",
-                                "ti_anomali.intelligence"
+                                "ti_anomali.intelligence",
+                                "ti_anomali.threatstream"
                             ]
                         },
                         "query": {
@@ -39,12 +41,12 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.intelligence"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.intelligence"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     }
                                 ]
@@ -58,18 +60,18 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "threat.indicator.type",
+                            "field": "event.kind",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "threat.indicator.type",
+                            "key": "event.kind",
                             "negate": false,
                             "params": {
-                                "query": "file"
+                                "query": "enrichment"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "threat.indicator.type": "file"
+                                "event.kind": "enrichment"
                             }
                         }
                     },
@@ -110,11 +112,11 @@
             ]
         ],
         "timeRestore": false,
-        "title": "[Anomali  ThreatStream] File Essential Details"
+        "title": "[Anomali ThreatStream] Essential Details"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-02-26T05:19:31.069Z",
-    "id": "ti_anomali-0a88c9d6-5c13-41de-846c-1bcf4ed1009a",
+    "created_at": "2026-03-13T08:43:26.540Z",
+    "id": "ti_anomali-2fcc2f21-fc8a-4538-a3b6-4bc0a3aa8137",
     "references": [
         {
             "id": "logs-*",
@@ -135,6 +137,11 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "ti_anomali-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
     "type": "search",

@@ -255,7 +255,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "This dashboard is a health overview related to the Anomali ThreatStream integration.\n\nThe dashboard is made to provide general statistics and show the health of the ingestion of indicators from Anomali ThreatStream.  \n\nIt shows how many parts has been enabled (Limo and ThreatStream), the ingestion rates and provides a few filters for drilling down to specific indicator types retrieved from Anomali ThreatStream.\n\n[Integrations Page](/app/integrations/detail/ti_anomali/overview)\n",
+                            "markdown": "This dashboard is a health overview related to the Anomali ThreatStream integration.\n\nThe dashboard is made to provide general statistics and show the health of the ingestion of indicators from Anomali ThreatStream.  \n\nIt shows how many parts has been enabled, the ingestion rates and provides a few filters for drilling down to specific indicator types retrieved from Anomali ThreatStream.\n\n[Integrations Page](/app/integrations/detail/ti_anomali/overview)\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1133,16 +1133,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
-                                    "name": "logs*",
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs*",
+                                    "title": "logs-*",
                                     "type": "esql"
                                 }
                             },
@@ -1150,13 +1150,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "timeField": "@timestamp",
-                                            "title": "logs*"
+                                            "title": "logs-*"
                                         }
                                     ],
                                     "layers": {
-                                        "7d805cd3-0aa7-4994-9690-cd52bc1befc4": {
+                                        "c8b54f93-5a11-4fff-b4ce-1a0472034749": {
                                             "columns": [
                                                 {
                                                     "columnId": "Indicators Expiring in Next 7 Days",
@@ -1170,9 +1170,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "from logs*\r\n| where event.dataset == \"ti_anomali.threatstream\" or event.dataset == \"ti_anomali.intelligence\"\r\n| limit 10000\r\n| eval days_until_expiry = date_diff(\"day\", now(), anomali.threatstream.expiration_ts)\r\n| where days_until_expiry \u003c= 7 and days_until_expiry \u003e= 0\r\n| stats count = count(anomali.threatstream.expiration_ts)\r\n| rename count as `Indicators Expiring in Next 7 Days`\r\n| keep `Indicators Expiring in Next 7 Days`"
+                                                "esql": "from logs-*\r\n| limit 10000\r\n| eval days_until_expiry = date_diff(\"day\", now(), anomali.threatstream.expiration_ts)\r\n| where days_until_expiry \u003c= 7 and days_until_expiry \u003e= 0\r\n| stats count = count(anomali.threatstream.expiration_ts)\r\n| rename count as `Indicators Expiring in Next 7 Days`\r\n| keep `Indicators Expiring in Next 7 Days`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1182,11 +1182,11 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "from logs*\r\n| where event.dataset == \"ti_anomali.threatstream\" or event.dataset == \"ti_anomali.intelligence\"\r\n| limit 10000\r\n| eval days_until_expiry = date_diff(\"day\", now(), anomali.threatstream.expiration_ts)\r\n| where days_until_expiry \u003c= 7 and days_until_expiry \u003e= 0\r\n| stats count = count(anomali.threatstream.expiration_ts)\r\n| rename count as `Indicators Expiring in Next 7 Days`\r\n| keep `Indicators Expiring in Next 7 Days`"
+                                "esql": "from logs-*\r\n| limit 10000\r\n| eval days_until_expiry = date_diff(\"day\", now(), anomali.threatstream.expiration_ts)\r\n| where days_until_expiry \u003c= 7 and days_until_expiry \u003e= 0\r\n| stats count = count(anomali.threatstream.expiration_ts)\r\n| rename count as `Indicators Expiring in Next 7 Days`\r\n| keep `Indicators Expiring in Next 7 Days`"
                             },
                             "visualization": {
                                 "color": "#6092C0",
-                                "layerId": "7d805cd3-0aa7-4994-9690-cd52bc1befc4",
+                                "layerId": "c8b54f93-5a11-4fff-b4ce-1a0472034749",
                                 "layerType": "data",
                                 "metricAccessor": "Indicators Expiring in Next 7 Days"
                             }
@@ -1202,7 +1202,7 @@
                     "filters": [],
                     "hidePanelTitles": true,
                     "query": {
-                        "esql": "from logs*\r\n| where event.dataset == \"ti_anomali.threatstream\" or event.dataset == \"ti_anomali.intelligence\"\r\n| limit 10000\r\n| eval days_until_expiry = date_diff(\"day\", now(), anomali.threatstream.expiration_ts)\r\n| where days_until_expiry \u003c= 7 and days_until_expiry \u003e= 0\r\n| stats count = count(anomali.threatstream.expiration_ts)\r\n| rename count as `Indicators Expiring in Next 7 Days`\r\n| keep `Indicators Expiring in Next 7 Days`"
+                        "esql": "from logs-*\r\n| limit 10000\r\n| eval days_until_expiry = date_diff(\"day\", now(), anomali.threatstream.expiration_ts)\r\n| where days_until_expiry \u003c= 7 and days_until_expiry \u003e= 0\r\n| stats count = count(anomali.threatstream.expiration_ts)\r\n| rename count as `Indicators Expiring in Next 7 Days`\r\n| keep `Indicators Expiring in Next 7 Days`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1225,16 +1225,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
-                                    "name": "logs*",
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs*",
+                                    "title": "logs-*",
                                     "type": "esql"
                                 }
                             },
@@ -1242,13 +1242,13 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "timeField": "@timestamp",
-                                            "title": "logs*"
+                                            "title": "logs-*"
                                         }
                                     ],
                                     "layers": {
-                                        "7b842a85-8432-4604-89f1-ab312c21648c": {
+                                        "448a7c08-35ab-4a3e-956c-7f6dc045247b": {
                                             "columns": [
                                                 {
                                                     "columnId": "Indicators Created in Last 7 Days",
@@ -1262,9 +1262,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "from logs*\r\n| where data_stream.dataset == \"ti_anomali.threatstream\" or data_stream.dataset == \"ti_anomali.intelligence\"\r\n| limit 10000\r\n| eval days_since_created = date_diff(\"day\", anomali.threatstream.added_at, now())\r\n| where days_since_created \u003e= 0 and days_since_created \u003c= 1000\r\n| stats count = count()\r\n| RENAME count AS `Indicators Created in Last 7 Days` \r\n| keep `Indicators Created in Last 7 Days`"
+                                                "esql": "from logs-*\r\n| limit 10000\r\n| eval days_since_created = date_diff(\"day\", anomali.threatstream.added_at, now())\r\n| where days_since_created \u003e= 0 and days_since_created \u003c= 7\r\n| stats count = count()\r\n| RENAME count AS `Indicators Created in Last 7 Days` \r\n| keep `Indicators Created in Last 7 Days`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1274,11 +1274,11 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "from logs*\r\n| where data_stream.dataset == \"ti_anomali.threatstream\" or data_stream.dataset == \"ti_anomali.intelligence\"\r\n| limit 10000\r\n| eval days_since_created = date_diff(\"day\", anomali.threatstream.added_at, now())\r\n| where days_since_created \u003e= 0 and days_since_created \u003c= 1000\r\n| stats count = count()\r\n| RENAME count AS `Indicators Created in Last 7 Days` \r\n| keep `Indicators Created in Last 7 Days`"
+                                "esql": "from logs-*\r\n| limit 10000\r\n| eval days_since_created = date_diff(\"day\", anomali.threatstream.added_at, now())\r\n| where days_since_created \u003e= 0 and days_since_created \u003c= 7\r\n| stats count = count()\r\n| RENAME count AS `Indicators Created in Last 7 Days` \r\n| keep `Indicators Created in Last 7 Days`"
                             },
                             "visualization": {
                                 "color": "#6092C0",
-                                "layerId": "7b842a85-8432-4604-89f1-ab312c21648c",
+                                "layerId": "448a7c08-35ab-4a3e-956c-7f6dc045247b",
                                 "layerType": "data",
                                 "metricAccessor": "Indicators Created in Last 7 Days"
                             }
@@ -1294,7 +1294,7 @@
                     "filters": [],
                     "hidePanelTitles": true,
                     "query": {
-                        "esql": "from logs*\r\n| where data_stream.dataset == \"ti_anomali.threatstream\" or data_stream.dataset == \"ti_anomali.intelligence\"\r\n| limit 10000\r\n| eval days_since_created = date_diff(\"day\", anomali.threatstream.added_at, now())\r\n| where days_since_created \u003e= 0 and days_since_created \u003c= 1000\r\n| stats count = count()\r\n| RENAME count AS `Indicators Created in Last 7 Days` \r\n| keep `Indicators Created in Last 7 Days`"
+                        "esql": "from logs-*\r\n| limit 10000\r\n| eval days_since_created = date_diff(\"day\", anomali.threatstream.added_at, now())\r\n| where days_since_created \u003e= 0 and days_since_created \u003c= 7\r\n| stats count = count()\r\n| RENAME count AS `Indicators Created in Last 7 Days` \r\n| keep `Indicators Created in Last 7 Days`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1308,7 +1308,7 @@
                     "y": 8
                 },
                 "panelIndex": "a1383c61-e43c-470e-99f2-3182c6ca282c",
-                "title": "Indicator Expiring in Next 7 Days (copy)",
+                "title": "Indicator Created in Last 7 Days",
                 "type": "lens"
             },
             {
@@ -1444,14 +1444,14 @@
                     }
                 },
                 "gridData": {
-                    "h": 14,
-                    "i": "acdf1398-64c7-4a3b-8384-d02d81587b25",
+                    "h": 15,
+                    "i": "0e67dc90-67f5-4784-a2c8-6f7aa6587dd1",
                     "w": 48,
                     "x": 0,
                     "y": 67
                 },
-                "panelIndex": "acdf1398-64c7-4a3b-8384-d02d81587b25",
-                "panelRefName": "panel_acdf1398-64c7-4a3b-8384-d02d81587b25",
+                "panelIndex": "0e67dc90-67f5-4784-a2c8-6f7aa6587dd1",
+                "panelRefName": "panel_0e67dc90-67f5-4784-a2c8-6f7aa6587dd1",
                 "title": "Essential Details",
                 "type": "search"
             }
@@ -1461,7 +1461,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-02-26T05:20:14.894Z",
+    "created_at": "2026-03-13T08:43:44.239Z",
     "id": "ti_anomali-96fe1e60-4261-11ec-b7be-d3026acdf1cf",
     "references": [
         {
@@ -1480,9 +1480,14 @@
             "type": "index-pattern"
         },
         {
-            "id": "ti_anomali-e2aa21ef-d0a4-4ed3-afa5-56b41e5fa066",
-            "name": "acdf1398-64c7-4a3b-8384-d02d81587b25:panel_acdf1398-64c7-4a3b-8384-d02d81587b25",
+            "id": "ti_anomali-2fcc2f21-fc8a-4538-a3b6-4bc0a3aa8137",
+            "name": "0e67dc90-67f5-4784-a2c8-6f7aa6587dd1:panel_0e67dc90-67f5-4784-a2c8-6f7aa6587dd1",
             "type": "search"
+        },
+        {
+            "id": "ti_anomali-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         },
         {
             "id": "ti_anomali-96fe1e60-4261-11ec-b7be-d3026acdf1cf",
