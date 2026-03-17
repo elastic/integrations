@@ -1,101 +1,107 @@
-{{- generatedHeader }}
-{{/*
-This template can be used as a starting point for writing documentation for your new integration. For each section, fill in the details
-described in the comments.
+# InfluxDB OpenTelemetry Assets
 
-Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
-*/}}
-# this is title Integration for Elastic
+InfluxDB is an open-source time series database built for high-write-throughput workloads such as infrastructure monitoring, application metrics, IoT sensor data, and real-time analytics. These assets provide dashboards, alert rules, and SLO templates for monitoring InfluxDB instances via OpenTelemetry metrics, covering the HTTP API, storage engine, query controller, task scheduler, and Go runtime.
 
-## Overview
-{{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
-The this is title integration for Elastic enables collection of ...
-This integration facilitates ...
+## Compatibility
 
-### Compatibility
-{{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
-This integration is compatible with ...
+The InfluxDB OpenTelemetry assets have been tested with metrics scraped from InfluxDB instances exposing Prometheus-format metrics at `/metrics`.
 
-### How it works
-{{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or recieving data from a network or file.*/}}
+InfluxDB versions tested against:
 
-## What data does this integration collect?
-{{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available */}}
-The this is title integration collects log messages of the following types:
-* ...
+- InfluxDB 2.x
 
-### Supported use cases
-{{/* Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. */}}
+## Requirements
 
-## What do I need to use this integration?
-{{/* List any vendor-specific prerequisites needed before starting to install the integration. */}}
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-## How do I deploy this integration?
+## Setup
 
-### Agent-based deployment
+### Prerequisites
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+InfluxDB 2.x exposes Prometheus-format metrics at `/metrics` by default. Ensure the metrics endpoint is reachable from your OpenTelemetry Collector (or Elastic Agent with the Prometheus input). No additional service-side configuration is required.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Configuration
 
-{{/* If agentless is available for this integration, we'll want to include that here as well.
-### Agentless deployment
+Configure your OpenTelemetry Collector or Elastic Agent to scrape InfluxDB metrics and export them to Elasticsearch with `mapping.mode: otel`. The following example uses the Prometheus receiver to scrape InfluxDB's `/metrics` endpoint:
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `<INFLUXDB_HOST>` | Hostname or IP of the InfluxDB instance | `localhost` |
+| `<INFLUXDB_METRICS_PORT>` | Port where InfluxDB exposes metrics (default 8086 for HTTP) | `8086` |
+| `<ES_ENDPOINT>` | Elasticsearch endpoint for the `elasticsearch` exporter | `https://your-deployment.es.us-central1.gcp.cloud.es.io:443` |
+| `<ES_API_KEY>` | API key or credentials for Elasticsearch | `${env:ES_API_KEY}` |
 
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html) 
-*/}}
+```yaml
+receivers:
+  prometheus/influxdb:
+    config:
+      scrape_configs:
+        - job_name: influxdb
+          metrics_path: /metrics
+          static_configs:
+            - targets: ["<INFLUXDB_HOST>:<INFLUXDB_METRICS_PORT>"]
+processors:
 
-### Onboard / configure
-{{/* List the steps that will need to be followed in order to completely set up a working integration.
-For integrations that support multiple input types, be sure to add steps for all inputs.
-*/}}
+  cumulativetodelta: 
 
-### Validation
-{{/* How can the user test whether the integration is working? Including example commands or test files if applicable */}}
+  resource:
+    attributes:
+      - key: data_stream.dataset
+        value: influxdb
+        action: upsert
 
-## Troubleshooting
+exporters:
+  elasticsearch/otel:
+    endpoints: ["<ES_ENDPOINT>"]
+    api_key: "<ES_API_KEY>"
+    mapping:
+      mode: otel
 
-For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
-{{/*
-Add any vendor specific troubleshooting here.
+service:
+  pipelines:
+    metrics/influxdb:
+      receivers: [prometheus/influxdb]
+      processors: [resource, cumulativetodelta]
+      exporters: [elasticsearch/otel]
+```
 
-Are there common issues or “gotchas” for deploying this integration? If so, how can they be resolved?
-If applicable, links to the third-party software’s troubleshooting documentation.
-*/}}
-
-## Scaling
-
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
-{{/* Add any vendor specific scaling information here */}}
+> **Note**: Ensure the scrape target matches the InfluxDB instance(s) you want to monitor. For multiple instances, add additional targets or use service discovery.
 
 ## Reference
-{{/* Repeat for each data stream of the current type
-### {Data stream name}
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}.
+### Metrics
 
-For each data_stream_name, include an optional summary of the datastream, the exported fields reference table and the sample event.
+Refer to the [InfluxDB internals metrics documentation](https://docs.influxdata.com/influxdb/v2.7/reference/internals/metrics/) for details on the metrics exposed at `/metrics`. The Prometheus receiver scrapes these metrics and the Elasticsearch exporter maps them to the `metrics-influxdb.otel-*` index pattern used by the dashboards, alert rules, and SLO templates.
 
-The fields template function will be replaced by a generated list of all fields from the `fields/` directory of the data stream when building the integration.
+## Dashboards
 
-#### {data stream name} fields
+| Dashboard | Description |
+|-----------|-------------|
+| **[InfluxDB OTel] Overview** | High-level overview of InfluxDB health: instance capacity, HTTP traffic, query controller load, storage health, and Go runtime. |
+| **[InfluxDB OTel] HTTP & Storage** | HTTP API traffic, write/query throughput, storage health (WAL, cache, compaction), and writer metrics. |
+| **[InfluxDB OTel] Query & Tasks** | Query controller load, memory budget, stage durations, task scheduler execution, and task executor saturation. |
 
-To include a generated list of fields from the `fields/` directory, uncomment and use:
-{{ fields "data_stream_name" }}
+## Alert rules
 
-The event template function will be replace by a sample event, taken from `sample_event.json`, when building this integration.
+| Alert | Trigger | Severity |
+|-------|---------|----------|
+| **[InfluxDB OTel] Scrape target down** | Scrape target unreachable (up=0) for the evaluation window | Critical |
+| **[InfluxDB OTel] WAL write errors** | WAL write error counter increased during the evaluation window | Critical |
+| **[InfluxDB OTel] Shard write errors** | Shard write error counter increased during the evaluation window | Critical |
+| **[InfluxDB OTel] Cache write errors** | Cache write error counter increased during the evaluation window | Critical |
+| **[InfluxDB OTel] Dropped writes** | Shard or cache dropped writes increased during the evaluation window | Critical |
+| **[InfluxDB OTel] Storage writer timeouts** | Storage writer timeout counter increased during the evaluation window | High |
+| **[InfluxDB OTel] HTTP API high error rate** | HTTP API non-2XX error rate exceeds 5% over the evaluation window | High |
+| **[InfluxDB OTel] Query controller saturated** | Query queueing high (>=5) or query controller memory budget exhausted (<10MB) | High |
+| **[InfluxDB OTel] Task execution failures** | Task execution failure counter increased during the evaluation window | Medium |
+| **[InfluxDB OTel] Compaction queue backlog** | Compaction queue depth exceeds 10 | Medium |
+| **[InfluxDB OTel] Go goroutine leak suspected** | Goroutine count exceeds 10000 | Warning |
 
-To include a sample event from `sample_event.json`, uncomment and use:
-{{ event "data_stream_name" }}
+## SLO templates
 
-*/}}
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
 
-### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
-{{ inputDocs }}
-
-### API usage
-{{/* For integrations that use APIs to collect data, document all the APIs that are used, and link to relevent information */}}
-These APIs are used with this integration:
-* ...
+| SLO | Target | Window | Description |
+|-----|--------|--------|-------------|
+| **[InfluxDB OTel] HTTP API request latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of HTTP API requests completing within 200 ms. |
+| **[InfluxDB OTel] Query controller execution latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Proportion of Flux query executions completing within 5 seconds. |
