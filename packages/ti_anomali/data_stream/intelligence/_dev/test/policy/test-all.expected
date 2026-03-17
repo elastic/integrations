@@ -1,0 +1,88 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_anomali
+      name: test-all-ti_anomali
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_anomali.intelligence
+          fields:
+            _conf:
+                ioc_duration_before_deletion: 90d
+          fields_under_root: true
+          interval: 5m
+          processors:
+            - add_fields:
+                fields:
+                    id: "574734885120952459"
+                    name: myproject
+                target: project
+            - add_tags:
+                tags:
+                    - web
+                    - production
+                target: environment
+          program: "state.with(\n\trequest(\n\t\t\"GET\",\n\t\tstate.url.trim_right(\"/\") + \"/api/v2/intelligence/?\" + {\n\t\t\t\"order_by\": [\"update_id\"],\n\t\t\t\"modified_ts__lt\": [(now - duration(state.delay)).format(time_layout.RFC3339)],\n\t\t\t?\"modified_ts__gt\": state.?cursor.last_update_id.orValue(null) == null ? optional.of([(now - duration(state.initial_interval)).format(time_layout.RFC3339)]) : optional.none(),\n\t\t\t\"limit\": [string(state.page_size)],\n\t\t\t?\"update_id__gt\": state.?cursor.last_update_id.optMap(id, [string(int(id))]),\n\t\t\t?\"remote_api\": state.remote_api_true ? optional.of([\"true\"]) : optional.none(), // never set remote_api=false, only true or absent\n\t\t\t?\"q\": state.?query.orValue(\"\") != \"\" ? optional.of([state.query]) : optional.none(),\n\t\t}.format_query()\n\t).with(\n\t\t{\n\t\t\t\"Header\": {\n\t\t\t\t\"Authorization\": [\"apikey \" + state.username + \":\" + state.api_key],\n\t\t\t},\n\t\t}\n\t).do_request().as(resp,\n\t\t(resp.StatusCode == 200) ?\n\t\t\tbytes(resp.Body).decode_json().as(body,\n\t\t\t\t{\n\t\t\t\t\t\"events\": body.objects.map(obj,\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"json\": obj,\n\t\t\t\t\t\t\t?\"event\": state.?preserve_original_event.orValue(false) ?\n\t\t\t\t\t\t\t\toptional.of({\"original\": obj.encode_json()})\n\t\t\t\t\t\t\t:\n\t\t\t\t\t\t\t\toptional.none(),\n\t\t\t\t\t\t}\n\t\t\t\t\t),\n\t\t\t\t\t\"want_more\": body.meta.next != null,\n\t\t\t\t\t\"cursor\": (has(state.cursor) ? state.cursor : {}).with(\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t?\"last_update_id\": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),\n\t\t\t\t\t\t}\n\t\t\t\t\t),\n\t\t\t\t}\n\t\t\t)\n\t\t:\n\t\t\t{\n\t\t\t\t\"events\": {\n\t\t\t\t\t\"error\": {\n\t\t\t\t\t\t\"code\": string(resp.StatusCode),\n\t\t\t\t\t\t\"id\": string(resp.Status),\n\t\t\t\t\t\t\"message\": \"GET:\" + \n\t\t\t\t\t\t(\n\t\t\t\t\t\t\t(size(resp.Body) != 0) ?\n\t\t\t\t\t\t\t\tstring(resp.Body)\n\t\t\t\t\t\t\t:\n\t\t\t\t\t\t\t\tstring(resp.Status) + \" (\" + string(resp.StatusCode) + \")\"\n\t\t\t\t\t\t),\n\t\t\t\t\t},\n\t\t\t\t},\n\t\t\t\t\"want_more\": false,\n\t\t\t}\n\t)\n)"
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+          resource.proxy_url: http://proxy.tld
+          resource.ssl:
+            - |
+              -----BEGIN CERTIFICATE-----
+              MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              sxSmbIUfc2SGJGCJD4I=
+              -----END CERTIFICATE-----
+          resource.timeout: 30s
+          resource.url: https://api.threatstream.com
+          state:
+            api_key: ${SECRET_0}
+            delay: 1m
+            initial_interval: 2160h
+            page_size: 1000
+            preserve_original_event: true
+            query: test_query
+            remote_api_true: false
+            username: test_username
+            want_more: false
+          tags:
+            - preserve_original_event
+            - forwarded
+            - anomali-intelligence
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_anomali.intelligence-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

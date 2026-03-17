@@ -1805,9 +1805,23 @@ processors:
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.legacy_link != null
   - rename:
+      field: json.size
+      tag: rename_size
+      target_field: threat_connect.indicator.size
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.size
+      tag: set_threat_indicator_file_size_from_indicator_size
+      copy_from: threat_connect.indicator.size
+      ignore_empty_value: true
+  - rename:
       field: json.md5
       tag: rename_md5
       target_field: threat_connect.indicator.md5
+      ignore_missing: true
+  - lowercase:
+      field: threat_connect.indicator.md5
+      tag: lowercase_md5
       ignore_missing: true
   - set:
       field: threat.indicator.file.hash.md5
@@ -1939,6 +1953,10 @@ processors:
       tag: rename_sha1
       target_field: threat_connect.indicator.sha1
       ignore_missing: true
+  - lowercase:
+      field: threat_connect.indicator.sha1
+      tag: lowercase_sha1
+      ignore_missing: true
   - set:
       field: threat.indicator.file.hash.sha1
       tag: set_threat_indicator_file_hash_sha1_from_indicator_sha1
@@ -1956,6 +1974,10 @@ processors:
       tag: rename_sha256
       target_field: threat_connect.indicator.sha256
       ignore_missing: true
+  - lowercase:
+      field: threat_connect.indicator.sha256
+      tag: lowercase_sha256
+      ignore_missing: true
   - set:
       field: threat.indicator.file.hash.sha256
       tag: set_threat_indicator_file_hash_sha256_from_indicator_sha256
@@ -1969,7 +1991,7 @@ processors:
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.md5 != null
   - convert:
-      field: json.size
+      field: threat_connect.indicator.size
       tag: convert_size_to_string
       target_field: threat_connect.indicator.size
       type: string

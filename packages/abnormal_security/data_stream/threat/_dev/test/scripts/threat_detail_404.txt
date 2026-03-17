@@ -1,0 +1,196 @@
+# Test that a 404 response from the threat detail endpoint does not halt
+# collection of remaining threats. The mock returns 3 threats: the middle
+# one returns 404 and should be skipped. The other two should be collected.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} abnormal-security-404-mock
+
+# Workaround for https://github.com/elastic/elastic-package/issues/3321:
+# add_package passes the package dir as RepositoryRoot instead of the repo
+# root, so the builder can't find licenses/Elastic-2.0.txt. Copy it into
+# the package directory where the builder expects it.
+exec mkdir -p ${PACKAGE_ROOT}/licenses
+exec cp ${PACKAGE_ROOT}/../../licenses/Elastic-2.0.txt ${PACKAGE_ROOT}/licenses/Elastic-2.0.txt
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Expect 3 documents: 2 data events from the successful threats, plus
+# 1 error event from the 404 (indexed after the terminate processor
+# stops further pipeline processing).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify both OK threat IDs are present in the data events.
+exec jq -r '[.hits.hits[]._source.abnormal_security.threat.id // empty] | sort | .[]' got_docs.json
+stdout 'ok-threat-1'
+stdout 'ok-threat-2'
+
+# Verify exactly 1 error event mentioning the 404 threat.
+exec jq '[.hits.hits[]._source | select(.error.code == "404")] | length' got_docs.json
+stdout '^1$'
+exec jq -r '.hits.hits[]._source.error.message // empty' got_docs.json
+stdout '404-threat'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down abnormal-security-404-mock
+
+# Clean up license workaround (https://github.com/elastic/elastic-package/issues/3321).
+exec rm -rf ${PACKAGE_ROOT}/licenses
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://abnormal-security-404-mock:8080
+  access_token: xxxx
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    page_size: 10
+    preserve_original_event: true
+    enable_enrichment: false
+
+-- abnormal-security-404-mock/docker-compose.yml --
+version: '2.3'
+services:
+  abnormal-security-404-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: abnormal-security-404-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- abnormal-security-404-mock/config.yml --
+rules:
+  # Threat listing: returns 3 threats on a single page.
+  - path: /v1/threats
+    methods: ['GET']
+    query_params:
+      filter: "{filter:.*}"
+      pageNumber: 1
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"threats":[{"threatId":"ok-threat-1"},{"threatId":"404-threat"},{"threatId":"ok-threat-2"}],"pageNumber":1}
+
+  # Threat detail: ok-threat-1 returns normally.
+  - path: /v1/threats/ok-threat-1
+    methods: ['GET']
+    query_params:
+      pageNumber: 1
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "threatId": "ok-threat-1",
+            "messages": [
+              {
+                "abxMessageId": -1000000000000000001,
+                "abxMessageIdStr": "-1000000000000000001",
+                "receivedTime": "2024-07-17T23:26:23Z",
+                "threatId": "ok-threat-1",
+                "internetMessageId": "<msg-1@example.com>",
+                "attackType": "Phishing: Credential",
+                "attackStrategy": "Unknown Sender",
+                "attackVector": "Link",
+                "attackedParty": "Employee (Other)",
+                "fromAddress": "john@example.com",
+                "fromName": "john",
+                "recipientAddress": "bob@example.com",
+                "subject": "Test message 1",
+                "senderDomain": "example.com",
+                "senderIpAddress": "81.2.69.142",
+                "autoRemediated": false,
+                "isRead": false,
+                "postRemediated": false
+              }
+            ]
+          }
+          `}}
+
+  # Threat detail: 404-threat returns 404.
+  - path: /v1/threats/404-threat
+    methods: ['GET']
+    query_params:
+      pageNumber: 1
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"detail":"Not Found"}'
+
+  # Threat detail: ok-threat-2 returns normally.
+  - path: /v1/threats/ok-threat-2
+    methods: ['GET']
+    query_params:
+      pageNumber: 1
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "threatId": "ok-threat-2",
+            "messages": [
+              {
+                "abxMessageId": -2000000000000000002,
+                "abxMessageIdStr": "-2000000000000000002",
+                "receivedTime": "2024-07-17T23:27:23Z",
+                "threatId": "ok-threat-2",
+                "internetMessageId": "<msg-2@example.com>",
+                "attackType": "Spam",
+                "attackStrategy": "Unknown Sender",
+                "attackVector": "Link",
+                "attackedParty": "Employee (Other)",
+                "fromAddress": "alice@example.com",
+                "fromName": "alice",
+                "recipientAddress": "bob@example.com",
+                "subject": "Test message 2",
+                "senderDomain": "example.com",
+                "senderIpAddress": "81.2.69.142",
+                "autoRemediated": false,
+                "isRead": false,
+                "postRemediated": false
+              }
+            ]
+          }
+          `}}
