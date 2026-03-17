@@ -58,7 +58,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-3d09828d-490f-48e2-98e7-4aa1bba3cd32",
                                 "type": "index-pattern"
                             }
@@ -67,29 +67,41 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "3d09828d-490f-48e2-98e7-4aa1bba3cd32": {
                                             "columnOrder": [
-                                                "962f60ef-6779-425b-9fe2-f9f7199f48c8",
-                                                "aa28fcdd-5d1d-4c01-aa09-4395731fa5b8",
+                                                "90655a4c-a331-4839-90a9-24b3586edcf9",
+                                                "fbd1dcd2-6dd1-4914-8bd4-4ba33be6389e",
                                                 "5562c0bd-b37e-4db2-920f-547f317b5b9c"
                                             ],
                                             "columns": {
                                                 "5562c0bd-b37e-4db2-920f-547f317b5b9c": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"otelcol_process_uptime\": *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Unique count of service.name",
-                                                    "operationType": "unique_count",
+                                                    "label": "Uptime",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
-                                                    "sourceField": "service.name"
+                                                    "sourceField": "otelcol_process_uptime"
                                                 },
-                                                "962f60ef-6779-425b-9fe2-f9f7199f48c8": {
+                                                "90655a4c-a331-4839-90a9-24b3586edcf9": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of service.name",
+                                                    "label": "Collector Service Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -106,14 +118,15 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 3
+                                                        "size": 10
                                                     },
                                                     "sourceField": "service.name"
                                                 },
-                                                "aa28fcdd-5d1d-4c01-aa09-4395731fa5b8": {
+                                                "fbd1dcd2-6dd1-4914-8bd4-4ba33be6389e": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of service.instance.id",
+                                                    "label": "Instance Id",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -130,27 +143,27 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 3
+                                                        "size": 10
                                                     },
                                                     "sourceField": "service.instance.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -163,64 +176,30 @@
                                 "query": "data_stream.dataset : \"collectortelemetry.otel\" "
                             },
                             "visualization": {
-                                "gridConfig": {
-                                    "isCellLabelVisible": false,
-                                    "isXAxisLabelVisible": true,
-                                    "isXAxisTitleVisible": false,
-                                    "isYAxisLabelVisible": true,
-                                    "isYAxisTitleVisible": false,
-                                    "type": "heatmap_grid"
-                                },
-                                "layerId": "3d09828d-490f-48e2-98e7-4aa1bba3cd32",
-                                "layerType": "data",
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right",
-                                    "type": "heatmap_legend"
-                                },
-                                "palette": {
-                                    "accessor": "5562c0bd-b37e-4db2-920f-547f317b5b9c",
-                                    "name": "positive",
-                                    "params": {
-                                        "continuity": "above",
-                                        "name": "positive",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "reverse": false,
-                                        "stops": [
-                                            {
-                                                "color": "#d6e9e4",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#aed3ca",
-                                                "stop": 20
-                                            },
-                                            {
-                                                "color": "#85bdb1",
-                                                "stop": 40
-                                            },
-                                            {
-                                                "color": "#5aa898",
-                                                "stop": 60
-                                            },
-                                            {
-                                                "color": "#209280",
-                                                "stop": 80
-                                            }
-                                        ]
+                                "columns": [
+                                    {
+                                        "columnId": "5562c0bd-b37e-4db2-920f-547f317b5b9c"
                                     },
-                                    "type": "palette"
-                                },
-                                "shape": "heatmap",
-                                "valueAccessor": "5562c0bd-b37e-4db2-920f-547f317b5b9c",
-                                "xAccessor": "962f60ef-6779-425b-9fe2-f9f7199f48c8",
-                                "yAccessor": "aa28fcdd-5d1d-4c01-aa09-4395731fa5b8"
+                                    {
+                                        "columnId": "fbd1dcd2-6dd1-4914-8bd4-4ba33be6389e",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "90655a4c-a331-4839-90a9-24b3586edcf9",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    }
+                                ],
+                                "layerId": "3d09828d-490f-48e2-98e7-4aa1bba3cd32",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsHeatmap"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -252,7 +231,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-bd3a4c7f-0632-423d-bd10-b738206d9d7d",
                                 "type": "index-pattern"
                             }
@@ -261,7 +240,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "bd3a4c7f-0632-423d-bd10-b738206d9d7d": {
                                             "columnOrder": [
@@ -291,21 +270,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -359,7 +338,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-ba802c30-cb52-4e01-8df2-4ef169e4d5f4",
                                 "type": "index-pattern"
                             }
@@ -368,7 +347,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "ba802c30-cb52-4e01-8df2-4ef169e4d5f4": {
                                             "columnOrder": [
@@ -456,21 +435,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -580,7 +559,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
                                 "type": "index-pattern"
                             }
@@ -589,7 +568,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "45d0f2d9-e109-4e26-b0e1-ad73ba97afce": {
                                             "columnOrder": [
@@ -649,7 +628,7 @@
                                                 "931f105e-690b-4362-bf5a-cc3c1d71dbc8": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of resource.attributes.service.name + 1 other",
+                                                    "label": "Top values of resource.service.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -671,25 +650,25 @@
                                                         ],
                                                         "size": 3
                                                     },
-                                                    "sourceField": "resource.attributes.service.name"
+                                                    "sourceField": "resource.service.name"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -799,7 +778,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
                                 "type": "index-pattern"
                             }
@@ -808,7 +787,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "45d0f2d9-e109-4e26-b0e1-ad73ba97afce": {
                                             "columnOrder": [
@@ -849,7 +828,7 @@
                                                 "931f105e-690b-4362-bf5a-cc3c1d71dbc8": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of resource.attributes.service.name + 1 other",
+                                                    "label": "Top values of resource.service.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -871,25 +850,25 @@
                                                         ],
                                                         "size": 3
                                                     },
-                                                    "sourceField": "resource.attributes.service.name"
+                                                    "sourceField": "resource.service.name"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -999,7 +978,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
                                 "type": "index-pattern"
                             }
@@ -1008,7 +987,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "45d0f2d9-e109-4e26-b0e1-ad73ba97afce": {
                                             "columnOrder": [
@@ -1061,7 +1040,7 @@
                                                 "931f105e-690b-4362-bf5a-cc3c1d71dbc8": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of resource.attributes.service.name + 1 other",
+                                                    "label": "Top values of resource.service.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1083,25 +1062,25 @@
                                                         ],
                                                         "size": 3
                                                     },
-                                                    "sourceField": "resource.attributes.service.name"
+                                                    "sourceField": "resource.service.name"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -1211,7 +1190,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
                                 "type": "index-pattern"
                             }
@@ -1220,7 +1199,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "45d0f2d9-e109-4e26-b0e1-ad73ba97afce": {
                                             "columnOrder": [
@@ -1273,7 +1252,7 @@
                                                 "931f105e-690b-4362-bf5a-cc3c1d71dbc8": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of resource.attributes.service.name + 1 other",
+                                                    "label": "Top values of resource.service.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1295,25 +1274,25 @@
                                                         ],
                                                         "size": 3
                                                     },
-                                                    "sourceField": "resource.attributes.service.name"
+                                                    "sourceField": "resource.service.name"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -1423,7 +1402,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -1432,7 +1411,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -1457,7 +1436,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.receiver",
+                                                    "label": "Top 7 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1476,25 +1455,25 @@
                                                         },
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -1581,7 +1560,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -1590,7 +1569,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -1615,7 +1594,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.receiver",
+                                                    "label": "Top 7 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "accuracyMode": false,
@@ -1635,25 +1614,25 @@
                                                         },
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -1740,7 +1719,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -1749,7 +1728,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -1782,7 +1761,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of attributes.receiver",
+                                                    "label": "Top 3 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1801,7 +1780,7 @@
                                                         },
                                                         "size": 3
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -1817,21 +1796,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -2023,7 +2002,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -2032,7 +2011,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -2044,7 +2023,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"metrics.otelcol_processor_incoming_items\": * and attributes.otel.signal : \"traces\" "
+                                                        "query": "\"metrics.otelcol_processor_incoming_items\": * and otel.signal : \"traces\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Last value of metrics.otelcol_processor_incoming_items",
@@ -2057,7 +2036,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2075,27 +2054,27 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 7
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -2182,7 +2161,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -2191,7 +2170,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -2215,7 +2194,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "attributes.otel.signal : \"traces\" "
+                                                        "query": "otel.signal : \"traces\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Counter rate of metrics.otelcol_processor_outgoing_items per second",
@@ -2228,7 +2207,7 @@
                                                 "c943e77f-b97f-48c6-9a8e-3db1250a50c6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2245,9 +2224,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -2263,21 +2243,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -2388,7 +2368,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -2397,7 +2377,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -2421,7 +2401,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "attributes.otel.signal : \"traces\" "
+                                                        "query": "otel.signal : \"traces\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Counter rate of metrics.otelcol_processor_incoming_items per second",
@@ -2434,7 +2414,7 @@
                                                 "c943e77f-b97f-48c6-9a8e-3db1250a50c6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2451,9 +2431,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -2469,21 +2450,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -2594,7 +2575,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -2603,7 +2584,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -2636,7 +2617,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of attributes.receiver",
+                                                    "label": "Top 3 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2655,7 +2636,7 @@
                                                         },
                                                         "size": 3
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -2671,21 +2652,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -2837,7 +2818,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -2846,7 +2827,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -2858,7 +2839,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"metrics.otelcol_processor_outgoing_items\": * and attributes.otel.signal : \"traces\" "
+                                                        "query": "\"metrics.otelcol_processor_outgoing_items\": * and otel.signal : \"traces\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Last value of metrics.otelcol_processor_outgoing_items",
@@ -2871,7 +2852,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2889,27 +2870,27 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 7
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -2996,7 +2977,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -3005,7 +2986,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -3030,7 +3011,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.exporter",
+                                                    "label": "Top 7 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -3050,25 +3031,25 @@
                                                         "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -3155,7 +3136,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -3164,7 +3145,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -3189,7 +3170,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.exporter",
+                                                    "label": "Top 7 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -3209,25 +3190,25 @@
                                                         "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -3314,7 +3295,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -3323,7 +3304,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -3356,7 +3337,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of attributes.exporter",
+                                                    "label": "Top 3 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -3376,7 +3357,7 @@
                                                         "secondaryFields": [],
                                                         "size": 3
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -3392,21 +3373,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -3517,7 +3498,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -3526,7 +3507,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -3559,7 +3540,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of attributes.exporter",
+                                                    "label": "Top 3 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -3579,7 +3560,7 @@
                                                         "secondaryFields": [],
                                                         "size": 3
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -3595,21 +3576,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -3720,7 +3701,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -3729,7 +3710,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -3754,7 +3735,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.receiver",
+                                                    "label": "Top 7 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -3773,25 +3754,25 @@
                                                         },
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -3878,7 +3859,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -3887,7 +3868,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -3920,7 +3901,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of attributes.receiver",
+                                                    "label": "Top 3 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -3939,7 +3920,7 @@
                                                         },
                                                         "size": 3
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -3955,21 +3936,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -4080,7 +4061,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -4089,7 +4070,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -4122,7 +4103,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of attributes.receiver",
+                                                    "label": "Top 3 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -4141,7 +4122,7 @@
                                                         },
                                                         "size": 3
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -4157,21 +4138,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -4364,7 +4345,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -4373,7 +4354,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -4385,7 +4366,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"metrics.otelcol_processor_incoming_items\": * and attributes.otel.signal : \"metrics\" "
+                                                        "query": "\"metrics.otelcol_processor_incoming_items\": * and otel.signal : \"metrics\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Last value of metrics.otelcol_processor_incoming_items",
@@ -4398,7 +4379,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -4416,27 +4397,27 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 7
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -4523,7 +4504,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -4532,7 +4513,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -4556,7 +4537,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "attributes.otel.signal : \"metrics\"  "
+                                                        "query": "otel.signal : \"metrics\"  "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Counter rate of metrics.otelcol_processor_incoming_items per second",
@@ -4569,7 +4550,7 @@
                                                 "c943e77f-b97f-48c6-9a8e-3db1250a50c6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -4586,9 +4567,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -4604,21 +4586,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -4729,7 +4711,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -4738,7 +4720,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -4762,7 +4744,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "attributes.otel.signal : \"metrics\" "
+                                                        "query": "otel.signal : \"metrics\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Counter rate of metrics.otelcol_processor_outgoing_items per second",
@@ -4775,7 +4757,7 @@
                                                 "c943e77f-b97f-48c6-9a8e-3db1250a50c6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -4792,9 +4774,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -4810,21 +4793,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -4976,7 +4959,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -4985,7 +4968,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -5010,7 +4993,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.exporter",
+                                                    "label": "Top 7 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -5030,25 +5013,25 @@
                                                         "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -5135,7 +5118,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -5144,7 +5127,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -5169,7 +5152,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.exporter",
+                                                    "label": "Top 7 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -5189,25 +5172,25 @@
                                                         "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -5294,7 +5277,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -5303,7 +5286,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -5336,7 +5319,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 6 values of attributes.exporter",
+                                                    "label": "Top 6 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -5356,7 +5339,7 @@
                                                         "secondaryFields": [],
                                                         "size": 6
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -5372,21 +5355,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -5497,7 +5480,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -5506,7 +5489,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -5539,7 +5522,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of attributes.exporter",
+                                                    "label": "Top 10 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -5559,7 +5542,7 @@
                                                         "secondaryFields": [],
                                                         "size": 10
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -5575,21 +5558,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -5700,7 +5683,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -5709,7 +5692,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -5734,7 +5717,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.receiver",
+                                                    "label": "Top 7 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -5753,25 +5736,25 @@
                                                         },
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -5858,7 +5841,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -5867,7 +5850,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -5879,7 +5862,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"metrics.otelcol_processor_outgoing_items\": * and attributes.otel.signal : \"metrics\" "
+                                                        "query": "\"metrics.otelcol_processor_outgoing_items\": * and otel.signal : \"metrics\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Last value of metrics.otelcol_processor_outgoing_items",
@@ -5892,7 +5875,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -5910,27 +5893,27 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 7
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -6058,7 +6041,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -6067,7 +6050,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -6092,7 +6075,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.receiver",
+                                                    "label": "Top 7 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -6109,27 +6092,28 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -6216,7 +6200,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -6225,7 +6209,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -6250,7 +6234,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.receiver",
+                                                    "label": "Top 7 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -6267,27 +6251,28 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -6374,7 +6359,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -6383,7 +6368,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -6416,7 +6401,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of attributes.receiver",
+                                                    "label": "Top 10 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -6433,9 +6418,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -6451,21 +6437,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -6576,7 +6562,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -6585,7 +6571,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -6618,7 +6604,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of attributes.receiver",
+                                                    "label": "Top 3 values of receiver",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -6637,7 +6623,7 @@
                                                         },
                                                         "size": 3
                                                     },
-                                                    "sourceField": "attributes.receiver"
+                                                    "sourceField": "receiver"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -6653,21 +6639,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -6819,7 +6805,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -6828,7 +6814,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -6852,7 +6838,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "attributes.otel.signal : \"logs\"   "
+                                                        "query": "otel.signal : \"logs\"   "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Counter rate of metrics.otelcol_processor_incoming_items per second",
@@ -6865,7 +6851,7 @@
                                                 "c943e77f-b97f-48c6-9a8e-3db1250a50c6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -6882,9 +6868,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -6900,21 +6887,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -7025,7 +7012,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -7034,7 +7021,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -7058,7 +7045,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "attributes.otel.signal : \"logs\"  "
+                                                        "query": "otel.signal : \"logs\"  "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Counter rate of metrics.otelcol_processor_outgoing_items per second",
@@ -7071,7 +7058,7 @@
                                                 "c943e77f-b97f-48c6-9a8e-3db1250a50c6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -7088,9 +7075,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -7106,21 +7094,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -7231,7 +7219,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -7240,7 +7228,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -7252,7 +7240,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"metrics.otelcol_processor_outgoing_items\": * and attributes.otel.signal : \"logs\"  "
+                                                        "query": "\"metrics.otelcol_processor_outgoing_items\": * and otel.signal : \"logs\"  "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Last value of metrics.otelcol_processor_outgoing_items",
@@ -7265,7 +7253,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.processor",
+                                                    "label": "Top 7 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -7285,25 +7273,25 @@
                                                         "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -7390,7 +7378,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "07150b36-0048-425a-a375-aca69bdc641d",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -7399,7 +7387,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -7411,7 +7399,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"metrics.otelcol_processor_incoming_items\": * and attributes.otel.signal : \"logs\"  "
+                                                        "query": "\"metrics.otelcol_processor_incoming_items\": * and otel.signal : \"logs\"  "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Last value of metrics.otelcol_processor_incoming_items",
@@ -7424,7 +7412,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.processor",
+                                                    "label": "Top 10 values of processor",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -7442,27 +7430,27 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 7
+                                                        "size": 10
                                                     },
-                                                    "sourceField": "attributes.processor"
+                                                    "sourceField": "processor"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "07150b36-0048-425a-a375-aca69bdc641d",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -7590,7 +7578,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -7599,7 +7587,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -7624,7 +7612,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.exporter",
+                                                    "label": "Top 7 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -7644,25 +7632,25 @@
                                                         "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -7749,7 +7737,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
                                 "type": "index-pattern"
                             }
@@ -7758,7 +7746,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "6e1eae7e-6ca2-4617-a253-16268d5d266a": {
                                             "columnOrder": [
@@ -7783,7 +7771,7 @@
                                                 "6b6c2e22-5206-46ee-ba2b-1813a1210782": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 7 values of attributes.exporter",
+                                                    "label": "Top 7 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -7803,25 +7791,25 @@
                                                         "secondaryFields": [],
                                                         "size": 7
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -7908,7 +7896,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -7917,7 +7905,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -7950,7 +7938,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 6 values of attributes.exporter",
+                                                    "label": "Top 6 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -7970,7 +7958,7 @@
                                                         "secondaryFields": [],
                                                         "size": 6
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -7986,21 +7974,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -8111,7 +8099,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "metrics-*",
+                                "id": "metrics-collectortelemetry",
                                 "name": "indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
                                 "type": "index-pattern"
                             }
@@ -8120,7 +8108,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {
                                         "60a66cf6-f86c-4835-adbf-4b4adafc4248": {
                                             "columnOrder": [
@@ -8153,7 +8141,7 @@
                                                 "cab13dde-a906-41f3-a754-2cb8616af2bf": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of attributes.exporter",
+                                                    "label": "Top 10 values of exporter",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -8173,7 +8161,7 @@
                                                         "secondaryFields": [],
                                                         "size": 10
                                                     },
-                                                    "sourceField": "attributes.exporter"
+                                                    "sourceField": "exporter"
                                                 },
                                                 "fdfd8fe5-72a7-496a-a99a-c9cda88278bc": {
                                                     "dataType": "date",
@@ -8189,21 +8177,21 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
+                                            "indexPatternId": "metrics-collectortelemetry",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
+                                    "currentIndexPatternId": "metrics-collectortelemetry",
                                     "layers": {}
                                 },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "metrics-*",
+                                            "id": "metrics-collectortelemetry",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-collectortelemetry"
                                         }
                                     ],
                                     "layers": {}
@@ -8312,7 +8300,7 @@
         ],
         "sections": [
             {
-                "collapsed": false,
+                "collapsed": true,
                 "gridData": {
                     "i": "9eda99c3-c268-40ea-8eef-7c54a627dc9c",
                     "y": 24
@@ -8320,7 +8308,7 @@
                 "title": "Traces"
             },
             {
-                "collapsed": false,
+                "collapsed": true,
                 "gridData": {
                     "i": "e89ef809-58a3-48ba-857e-6f08669f20f2",
                     "y": 25
@@ -8346,227 +8334,227 @@
     "id": "otel_collector_internal_telemetry-a51b1cfe-9b95-444b-8c50-69344023387a",
     "references": [
         {
-            "id": "metrics-*",
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
-            "name": "57d051b5-6ca1-43a7-bc1a-01bb5d01ceed:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "8f444e14-f784-490e-988b-f314087a308b:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "34452be5-1fa8-4881-a3b2-62dc8ecaae75:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "13b314b0-8745-42c7-a5fe-32d41214ec9c:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "bfb96e3b-3494-4ae4-a6a6-db7f6bcb1705:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d06102d4-343f-46ed-8610-10db763b8b48:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "fdb12168-bad2-4b9b-a979-c24062b5a6d2:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "44e7a970-65b5-4c3f-bb9c-1327caf7372d:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "a6dfd437-6603-4aa4-be46-7eb8c48579b9:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "92e211d8-b33f-421e-a691-49bb38700e74:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "10a6b2c0-572c-4b37-a943-23daeab5a3c3:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "3d32f1ce-0f4e-4688-8381-7591558217ca:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "71ecfc73-0911-49db-b017-d29a8685ad76:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "179c0c94-5a40-45f8-8501-7575571d8f05:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "0388d782-f04b-4e7c-8821-efef75603502:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "1bd67f4c-5516-4013-a9a2-a9508f2dbc18:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "14989365-5610-46b9-9f1b-6db2e8b42969:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "a4625eee-dc0f-4bb6-8943-0dcae5c4641d:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "6740deec-4564-4748-a444-875acdb0eaa4:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "eb7de47a-426b-4a71-9fa9-767a61c02b22:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ed58f445-62cc-4361-9dfa-6d117caeb4ec:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e3334280-0345-4768-b9da-ad1f7af3c3c2:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d5e1d8ab-f4a3-4296-95c9-6ff45636be0b:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "04f9a9f3-17f5-4350-a013-2943351e7d35:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "fb6e84fe-911d-4977-993b-a7e180f16130:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "26cf0064-8df8-401b-a6f0-f46a1be0b525:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "8128d10c-e1e0-4736-84a1-106294c832ab:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "f773fb3d-336d-4fd6-97dc-f224984328fa:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "9d4af470-d23c-4438-bfa9-8c2ca28d368b:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "64981463-0240-4c4d-b4c4-76860eee1f82:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "a36640c8-ec11-4260-b1a2-347f71a87d46:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "704321d9-d14c-48d3-be54-37a63cdc319a:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "aed2b1dd-e5ef-4675-a5d4-49e3c13fee0d:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "0bcedfee-826f-47fa-8fa5-46ac0ef3362e:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "43062a37-0ac6-40ee-95c5-f01337c84dd0:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "77d1cb31-a7ad-4535-81a6-9d45bf76943b:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
             "name": "0f28f430-7604-4967-a22f-53267e02ee00:indexpattern-datasource-layer-3d09828d-490f-48e2-98e7-4aa1bba3cd32",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "metrics-collectortelemetry",
             "name": "ce0dec7a-577c-47eb-b64e-cc60794239ee:indexpattern-datasource-layer-bd3a4c7f-0632-423d-bd10-b738206d9d7d",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "metrics-collectortelemetry",
             "name": "9ff48307-986d-49d7-a4f1-ba91d3944432:indexpattern-datasource-layer-ba802c30-cb52-4e01-8df2-4ef169e4d5f4",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "metrics-collectortelemetry",
             "name": "8f86438a-5af1-489d-96b7-a50860b8ffdc:indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "metrics-collectortelemetry",
             "name": "11f542b6-6bfd-4419-b6bc-bad360bb1d33:indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "metrics-collectortelemetry",
             "name": "3d9f3d65-c021-4e44-a64b-049a0cc61f20:indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "metrics-collectortelemetry",
             "name": "c43ef6c9-726e-489c-bb3a-0e9101aa4c29:indexpattern-datasource-layer-45d0f2d9-e109-4e26-b0e1-ad73ba97afce",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "metrics-collectortelemetry",
+            "name": "57d051b5-6ca1-43a7-bc1a-01bb5d01ceed:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "8f444e14-f784-490e-988b-f314087a308b:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "34452be5-1fa8-4881-a3b2-62dc8ecaae75:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "13b314b0-8745-42c7-a5fe-32d41214ec9c:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "bfb96e3b-3494-4ae4-a6a6-db7f6bcb1705:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "d06102d4-343f-46ed-8610-10db763b8b48:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "fdb12168-bad2-4b9b-a979-c24062b5a6d2:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "44e7a970-65b5-4c3f-bb9c-1327caf7372d:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "a6dfd437-6603-4aa4-be46-7eb8c48579b9:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "92e211d8-b33f-421e-a691-49bb38700e74:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "10a6b2c0-572c-4b37-a943-23daeab5a3c3:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "3d32f1ce-0f4e-4688-8381-7591558217ca:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "71ecfc73-0911-49db-b017-d29a8685ad76:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "179c0c94-5a40-45f8-8501-7575571d8f05:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "0388d782-f04b-4e7c-8821-efef75603502:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "1bd67f4c-5516-4013-a9a2-a9508f2dbc18:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "14989365-5610-46b9-9f1b-6db2e8b42969:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "a4625eee-dc0f-4bb6-8943-0dcae5c4641d:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "6740deec-4564-4748-a444-875acdb0eaa4:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "eb7de47a-426b-4a71-9fa9-767a61c02b22:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "ed58f445-62cc-4361-9dfa-6d117caeb4ec:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "e3334280-0345-4768-b9da-ad1f7af3c3c2:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "d5e1d8ab-f4a3-4296-95c9-6ff45636be0b:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "04f9a9f3-17f5-4350-a013-2943351e7d35:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "fb6e84fe-911d-4977-993b-a7e180f16130:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "26cf0064-8df8-401b-a6f0-f46a1be0b525:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "8128d10c-e1e0-4736-84a1-106294c832ab:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "f773fb3d-336d-4fd6-97dc-f224984328fa:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "9d4af470-d23c-4438-bfa9-8c2ca28d368b:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "64981463-0240-4c4d-b4c4-76860eee1f82:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "a36640c8-ec11-4260-b1a2-347f71a87d46:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
+            "name": "704321d9-d14c-48d3-be54-37a63cdc319a:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "aed2b1dd-e5ef-4675-a5d4-49e3c13fee0d:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "0bcedfee-826f-47fa-8fa5-46ac0ef3362e:indexpattern-datasource-layer-6e1eae7e-6ca2-4617-a253-16268d5d266a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "43062a37-0ac6-40ee-95c5-f01337c84dd0:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-collectortelemetry",
+            "name": "77d1cb31-a7ad-4535-81a6-9d45bf76943b:indexpattern-datasource-layer-60a66cf6-f86c-4835-adbf-4b4adafc4248",
+            "type": "index-pattern"
+        },
+        {
+            "id": "07150b36-0048-425a-a375-aca69bdc641d",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
