@@ -341,6 +341,7 @@ This is the `User` dataset.
 | entityanalytics_okta.user.profile.division | Name of user's division. | keyword |
 | entityanalytics_okta.user.profile.email | Primary email address of user. | keyword |
 | entityanalytics_okta.user.profile.employee_number | Organization or company assigned unique identifier for the user. | keyword |
+| entityanalytics_okta.user.profile.external_id | External identifier of the user, often an AD objectGUID when provisioned from Active Directory. | keyword |
 | entityanalytics_okta.user.profile.first_name | Given name of the user (givenName). | keyword |
 | entityanalytics_okta.user.profile.honorific.prefix | Honorific prefix(es) of the user, or title in most Western languages. | keyword |
 | entityanalytics_okta.user.profile.honorific.suffix | Honorific suffix(es) of the user. | keyword |
