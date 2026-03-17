@@ -2,7 +2,7 @@
 
 etcd is a distributed, reliable key-value store used as the backing store for service discovery, configuration management, and coordination in distributed systems. It is the primary data store for Kubernetes, where every cluster state change flows through etcd.
 
-This content pack provides dashboards, alert rules, and SLO templates for monitoring etcd via OpenTelemetry. The assets consume metrics from the Prometheus receiver scraping etcd's `/metrics` endpoint and cover Raft consensus health, storage saturation, gRPC traffic, and resource usage.
+This content pack provides dashboards, alert rules, and SLO templates for monitoring etcd using OpenTelemetry. The assets consume metrics from the Prometheus receiver scraping etcd's `/metrics` endpoint and cover Raft consensus health, storage saturation, gRPC traffic, and resource usage.
 
 ## Compatibility
 
@@ -23,7 +23,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 ### Prerequisites
 
-etcd exposes a Prometheus-format metrics endpoint at `/metrics` by default. Ensure the OTel Collector can reach this endpoint on each etcd member. In Kubernetes, the metrics are typically exposed on port 2381 or via a dedicated metrics port. No additional etcd configuration is required.
+etcd exposes a Prometheus-format metrics endpoint at `/metrics` by default. Ensure the OTel Collector can reach this endpoint on each etcd member. In Kubernetes, the metrics are typically exposed on port 2381 or using a dedicated metrics port. No additional etcd configuration is required.
 
 ### Configuration
 
