@@ -4,6 +4,8 @@
     - name: production
       type: group
       fields:
+        - name: action
+          type: keyword
         - name: redis_calls
           type: long
         - name: db_write_count
@@ -42,6 +44,8 @@
           type: float
         - name: db_main_replica_wal_count
           type: long
+        - name: db_main_replica_write_count
+          type: long
         - name: db_primary_wal_count
           type: long
         - name: db_duration_s
@@ -60,6 +64,10 @@
           type: long
         - name: db_ci_replica_cached_count
           type: long
+        - name: db_ci_replica_txn_max_duration_s
+          type: double
+        - name: db_ci_replica_write_count
+          type: long
         - name: format
           type: keyword
         - name: worker_id
@@ -67,6 +75,8 @@
         - name: db_ci_wal_cached_count
           type: long
         - name: db_main_replica_wal_cached_count
+          type: long
+        - name: db_main_write_count
           type: long
         - name: db_main_wal_cached_count
           type: long
@@ -84,6 +94,8 @@
           type: long
         - name: db_ci_txn_count
           type: long
+        - name: db_ci_txn_max_duration_s
+          type: double
         - name: db_primary_cached_count
           type: long
         - name: db_main_replica_txn_duration_s
@@ -92,8 +104,12 @@
           type: float
         - name: db_main_replica_count
           type: long
+        - name: db_main_replica_txn_max_duration_s
+          type: double
         - name: db_replica_duration_s
           type: float
+        - name: db_replica_txn_max_duration_s
+          type: double
         - name: db_replica_wal_cached_count
           type: long
         - name: db_count
@@ -112,7 +128,13 @@
           type: long
         - name: db_primary_txn_count
           type: long
+        - name: db_primary_txn_max_duration_s
+          type: double
+        - name: db_primary_write_count
+          type: long
         - name: controller
+          type: keyword
+        - name: correlation_id
           type: keyword
         - name: redis_feature_flag_duration_s
           type: float
@@ -122,14 +144,32 @@
           type: long
         - name: db_main_txn_duration_s
           type: float
+        - name: db_main_txn_max_duration_s
+          type: double
         - name: db_replica_txn_duration_s
           type: float
+        - name: db_replica_write_count
+          type: long
         - name: db_ci_replica_duration_s
           type: float
         - name: db_ci_wal_count
           type: long
+        - name: db_ci_write_count
+          type: long
+        - name: duration_s
+          type: double
+          description: Total time to retrieve the request.
         - name: time
           type: keyword
+        - name: exception
+          type: group
+          fields:
+            - name: backtrace
+              type: keyword
+            - name: class
+              type: keyword
+            - name: message
+              type: keyword
         - name: db_ci_txn_duration_s
           type: float
         - name: db_main_duration_s
@@ -145,6 +185,8 @@
         - name: redis_db_load_balancing_duration_s
           type: float
         - name: meta.client_id
+          type: keyword
+        - name: meta.organization_id
           type: keyword
         - name: queue_duration_s
           type: float
@@ -193,6 +235,20 @@
                   type: keyword
                 - name: last_name
                   type: keyword
+            - name: user
+              type: group
+              fields:
+                - name: login
+                  type: keyword
+                - name: password
+                  type: keyword
+        - name: path
+          type: keyword
+        - name: path_traversal_check_duration_s
+          type: long
+        - name: pid
+          type: keyword
+          description: The worker’s Linux process ID.
         - name: redis_sessions_duration_s
           type: float
         - name: redis_sessions_write_bytes
@@ -238,6 +294,8 @@
           type: long
         - name: redis_cache_calls
           type: long
+        - name: ua
+          type: keyword
         - name: location
           type: keyword
         - name: meta.search.page
