@@ -1,0 +1,356 @@
+dashboards:
+  - id: oracle_weblogic_otel-jvm-thread-pool
+    name: '[Oracle WebLogic OTel] JVM & Thread Pool'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      Deep dive into JVM heap memory and thread pool performance for Oracle
+      WebLogic Server instances. Monitors heap utilization, thread states,
+      and request processing capacity.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      sync:
+        cursor: true
+    filters:
+      - field: data_stream.dataset
+        equals: oracle_weblogic.otel
+    controls:
+      - type: options
+        label: Server
+        data_view: metrics-*
+        field: attributes.server
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: oracle_weblogic_otel-overview
+            - label: JVM & Thread Pool
+              dashboard: oracle_weblogic_otel-jvm-thread-pool
+            - label: Transactions & Work Managers
+              dashboard: oracle_weblogic_otel-transactions
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Oracle WebLogic OTel] JVM & Thread Pool
+
+            Detailed JVM and thread pool analysis for WebLogic Server:
+            - JVM heap memory usage and utilization trends
+            - Thread pool composition (active, idle, hogging)
+            - Thread pool throughput and pending request queues
+            - Per-server breakdown for capacity planning
+
+      # ─── KPI Row 1 ──────────────────────────────────────────────────
+      - title: Heap Used
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jvm.heap.size IS NOT NULL
+            - STATS heap_size = SUM(LAST_OVER_TIME(weblogic.jvm.heap.size)), heap_free = SUM(LAST_OVER_TIME(weblogic.jvm.heap.free))
+            - EVAL heap_used = heap_size - heap_free
+          primary:
+            field: heap_used
+            label: Heap Used
+            format:
+              type: bytes
+
+      - title: Heap Max
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jvm.heap.max IS NOT NULL
+            - STATS heap_max = SUM(LAST_OVER_TIME(weblogic.jvm.heap.max))
+          primary:
+            field: heap_max
+            label: Heap Max
+            format:
+              type: bytes
+
+      - title: Total Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads IS NOT NULL
+            - STATS total_threads = SUM(LAST_OVER_TIME(weblogic.threadpool.threads))
+          primary:
+            field: total_threads
+            label: Total Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Idle Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads.idle IS NOT NULL
+            - STATS idle = SUM(LAST_OVER_TIME(weblogic.threadpool.threads.idle))
+          primary:
+            field: idle
+            label: Idle Threads
+            format:
+              type: number
+              decimals: 0
+
+      # ─── KPI Row 2 ──────────────────────────────────────────────────
+      - title: Hogging Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads.hogging IS NOT NULL
+            - STATS hogging = SUM(LAST_OVER_TIME(weblogic.threadpool.threads.hogging))
+          primary:
+            field: hogging
+            label: Hogging Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Throughput
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.throughput IS NOT NULL
+            - STATS throughput = SUM(LAST_OVER_TIME(weblogic.threadpool.throughput))
+          primary:
+            field: throughput
+            label: Throughput
+            format:
+              type: number
+              decimals: 1
+              suffix: " req/s"
+
+      - title: Pending Requests
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.requests.pending IS NOT NULL
+            - STATS pending = SUM(LAST_OVER_TIME(weblogic.threadpool.requests.pending))
+          primary:
+            field: pending
+            label: Pending Requests
+            format:
+              type: number
+              compact: true
+
+      - title: Requests Completed
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.requests.completed IS NOT NULL
+            - STATS completed = SUM(INCREASE(weblogic.threadpool.requests.completed))
+          primary:
+            field: completed
+            label: Requests Completed
+            format:
+              type: number
+              compact: true
+
+      # ─── JVM Heap Memory ─────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## JVM Heap Memory'
+
+      - title: Heap Usage by Server
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jvm.heap.size IS NOT NULL
+            - STATS heap_size = MAX(LAST_OVER_TIME(weblogic.jvm.heap.size)), heap_free = MAX(LAST_OVER_TIME(weblogic.jvm.heap.free)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - EVAL heap_used = heap_size - heap_free
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: heap_used
+              label: Heap Used
+              format:
+                type: bytes
+          breakdown:
+            field: attributes.server
+          legend:
+            visible: show
+            position: right
+
+      - title: Heap Utilization by Server
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jvm.heap.size IS NOT NULL
+            - STATS heap_size = MAX(LAST_OVER_TIME(weblogic.jvm.heap.size)), heap_free = MAX(LAST_OVER_TIME(weblogic.jvm.heap.free)), heap_max = MAX(LAST_OVER_TIME(weblogic.jvm.heap.max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - EVAL heap_util_pct = CASE(heap_max > 0, ROUND(TO_DOUBLE(heap_size - heap_free) / TO_DOUBLE(heap_max) * 100, 1), 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: heap_util_pct
+              label: Heap Util %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          breakdown:
+            field: attributes.server
+          appearance:
+            y_left_axis:
+              title: Utilization %
+          legend:
+            visible: show
+            position: right
+
+      # ─── Thread Pool ─────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Thread Pool'
+
+      - title: Thread State Composition
+        description: Stacked view of active, hogging, and idle threads over time (aggregated across all servers).
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads IS NOT NULL
+            - STATS total = SUM(LAST_OVER_TIME(weblogic.threadpool.threads)), idle = SUM(LAST_OVER_TIME(weblogic.threadpool.threads.idle)), hogging = SUM(LAST_OVER_TIME(weblogic.threadpool.threads.hogging)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL active = total - idle - hogging
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: active
+              label: Active
+            - field: hogging
+              label: Hogging
+            - field: idle
+              label: Idle
+          color:
+            assignments:
+              - value: "Active"
+                color: '#54b399'
+              - value: "Hogging"
+                color: '#d6bf57'
+              - value: "Idle"
+                color: '#6092c0'
+          legend:
+            visible: show
+            position: right
+
+      - title: Pending Requests Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.requests.pending IS NOT NULL
+            - STATS pending = MAX(LAST_OVER_TIME(weblogic.threadpool.requests.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: pending
+              label: Pending Requests
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.server
+          legend:
+            visible: show
+            position: right
+
+      - title: Thread Pool Throughput by Server
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.throughput IS NOT NULL
+            - STATS throughput = MAX(LAST_OVER_TIME(weblogic.threadpool.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: throughput
+              label: Throughput (req/s)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.server
+          appearance:
+            y_left_axis:
+              title: Requests/sec
+          legend:
+            visible: show
+            position: right
+
+      # ─── Detail Table ────────────────────────────────────────────────
+      - title: Thread Pool Status by Server
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads IS NOT NULL
+            - STATS total = MAX(LAST_OVER_TIME(weblogic.threadpool.threads)), idle = MAX(LAST_OVER_TIME(weblogic.threadpool.threads.idle)), hogging = MAX(LAST_OVER_TIME(weblogic.threadpool.threads.hogging)) BY attributes.server
+            - EVAL active = total - idle - hogging
+            - EVAL util_pct = CASE(total > 0, ROUND(TO_DOUBLE(total - idle) / TO_DOUBLE(total) * 100, 1), 0)
+            - SORT util_pct DESC
+          breakdowns:
+            - field: attributes.server
+              label: Server
+          metrics:
+            - field: total
+              label: Total Threads
+            - field: active
+              label: Active
+            - field: idle
+              label: Idle
+            - field: hogging
+              label: Hogging
+            - field: util_pct
+              label: Utilization %
