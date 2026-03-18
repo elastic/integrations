@@ -156,8 +156,10 @@ processors:
         Add default decayed_at
       source: >
         def dur = ctx._conf.ioc_expiration_duration;
+        def ts = ctx.misp.attribute.timestamp;
+        long tsMillis = ts instanceof Number ? ts.longValue() : Long.parseLong(ts);
         ZonedDateTime _tmp_decayed_at;
-        ZonedDateTime _tmp_timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.timestamp) * 1000L), ZoneId.of('Z'));
+        ZonedDateTime _tmp_timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(tsMillis * 1000L), ZoneId.of('Z'));
         ZonedDateTime _tmp_max_time = _tmp_timestamp;
         if (ctx.misp.attribute.last_seen != null) {
             ZonedDateTime _tmp_last_seen = ZonedDateTime.parse(ctx.misp.attribute.last_seen);
