@@ -14,7 +14,64 @@ inputs:
                 ioc_duration_before_deletion: 90d
           fields_under_root: true
           interval: 5m
-          program: "state.with(\n  request(\n    \"GET\",\n    state.url.trim_right(\"/\") + \"/api/v2/intelligence/?\" + {\n      \"order_by\": [\"update_id\"],\n      \"modified_ts__lt\": [(now - duration(state.delay)).format(time_layout.RFC3339)],\n      ?\"modified_ts__gt\": state.?cursor.last_update_id.orValue(null) == null ? optional.of([(now - duration(state.initial_interval)).format(time_layout.RFC3339)]) : optional.none(),\n      \"limit\": [string(state.page_size)],\n      ?\"update_id__gt\": state.?cursor.last_update_id.optMap(id, [string(int(id))]),\n      ?\"remote_api\": state.remote_api_true ? optional.of([\"true\"]) : optional.none(), // never set remote_api=false, only true or absent\n      ?\"q\": state.?query.orValue(\"\") != \"\" ? optional.of([state.query]) : optional.none(),\n    }.format_query()\n  ).with(\n    {\n      \"Header\": {\n        \"Authorization\": [\"apikey \" + state.username + \":\" + state.api_key],\n      },\n    }\n  ).do_request().as(resp,\n    (resp.StatusCode == 200) ?\n      resp.Body.decode_json().as(body,\n        {\n          \"events\": body.objects.map(obj,\n            {\n              \"json\": obj,\n              ?\"event\": state.?preserve_original_event.orValue(false) ?\n                optional.of({\"original\": obj.encode_json()})\n              :\n                optional.none(),\n            }\n          ),\n          \"want_more\": body.meta.next != null,\n          \"cursor\": (has(state.cursor) ? state.cursor : {}).with(\n            {\n              ?\"last_update_id\": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),\n            }\n          ),\n        }\n      )\n    :\n      {\n        \"events\": {\n          \"error\": {\n            \"code\": string(resp.StatusCode),\n            \"id\": string(resp.Status),\n            \"message\": \"GET \" + state.url.trim_right(\"/\") + \"/api/v2/intelligence/: \" + \n            (\n              (size(resp.Body) != 0) ?\n                string(resp.Body)\n              :\n                string(resp.Status) + \" (\" + string(resp.StatusCode) + \")\"\n            ),\n          },\n        },\n        \"want_more\": false,\n      }\n  )\n)"
+          program: |-
+            state.with(
+              request(
+                "GET",
+                state.url.trim_right("/") + "/api/v2/intelligence/?" + {
+                  "order_by": ["update_id"],
+                  "modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
+                  ?"modified_ts__gt": (state.?cursor.last_update_id.orValue(null) == null) ? optional.of([(now - duration(state.initial_interval)).format(time_layout.RFC3339)]) : optional.none(),
+                  "limit": [string(state.page_size)],
+                  ?"update_id__gt": state.?cursor.last_update_id.optMap(id, [string(int(id))]),
+                  ?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
+                  ?"q": (state.?query.orValue("") != "") ? optional.of([state.query]) : optional.none(),
+                }.format_query()
+              ).with(
+                {
+                  "Header": {
+                    "Authorization": ["apikey " + state.username + ":" + state.api_key],
+                  },
+                }
+              ).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    {
+                      "events": body.objects.map(obj,
+                        {
+                          "json": obj,
+                          ?"event": state.?preserve_original_event.orValue(false) ?
+                            optional.of({"original": obj.encode_json()})
+                          :
+                            optional.none(),
+                        }
+                      ),
+                      "want_more": body.meta.next != null,
+                      "cursor": (has(state.cursor) ? state.cursor : {}).with(
+                        {
+                          ?"last_update_id": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),
+                        }
+                      ),
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.trim_right("/") + "/api/v2/intelligence/: " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )
+            )
           publisher_pipeline.disable_host: true
           redact:
             fields:
