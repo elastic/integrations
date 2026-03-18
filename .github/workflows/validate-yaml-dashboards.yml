@@ -6,9 +6,10 @@ on:
     branches:
       - main
     paths:
-      - 'packages/**/_dev/shared/kibana/**/*.yaml'
+      - 'packages/**/_dev/shared/**/*.yaml'
       - 'packages/**/kibana/dashboard/*.json'
       - '.github/workflows/validate-yaml-dashboards.yml'
+      - '.github/workflows/validate-yaml-dashboards.requirements.txt'
 
 permissions:
   contents: read
@@ -16,6 +17,8 @@ permissions:
 jobs:
   validate-dashboards:
     runs-on: ubuntu-latest
+    env:
+      KB_DASHBOARD_REQUIREMENTS: .github/workflows/validate-yaml-dashboards.requirements.txt
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -33,7 +36,10 @@ jobs:
           set -e
           
           # Find YAML files changed in the PR diff
-          CHANGED_YAML_FILES=$(git diff --name-only origin/main...HEAD -- 'packages/**/_dev/shared/kibana/**/*.yaml' 2>/dev/null || true)
+          CHANGED_YAML_FILES=$(git diff --name-only origin/main...HEAD -- \
+            'packages/**/_dev/shared/**/*.yaml' \
+            'packages/**/_dev/shared/kibana/**/*.yaml' \
+            2>/dev/null || true)
           
           if [ -z "$CHANGED_YAML_FILES" ]; then
             echo "No YAML dashboard files changed in this PR"
@@ -78,12 +84,12 @@ jobs:
             
             # First, show all linting results (warnings, info, errors)
             echo "Linting results:"
-            uvx --from kb-dashboard-lint@0.2.7 kb-dashboard-lint check \
+            uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check \
                 --input-file "$yaml_file" || true
             echo ""
             
             # Then check specifically for warnings/errors (this will exit non-zero on warnings or errors)
-            if ! uvx --from kb-dashboard-lint@0.2.7 kb-dashboard-lint check \
+            if ! uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check \
                 --input-file "$yaml_file" \
                 --severity-threshold warning > /dev/null 2>&1; then
               echo "❌ ERROR: Linting found warnings or errors in $yaml_file"
@@ -107,6 +113,42 @@ jobs:
             echo "=========================================="
             echo "✅ All dashboard linting PASSED (no warnings or errors)"
             echo "=========================================="
+          fi
+
+      - name: Check YAML schema upgrades
+        id: upgrade-check
+        if: steps.find-changed.outputs.changed_files != ''
+        run: |
+          set +e
+          
+          CHANGED_FILES="${{ steps.find-changed.outputs.changed_files }}"
+          UPGRADE_FAILED=0
+          
+          for yaml_file in $CHANGED_FILES; do
+            echo "=========================================="
+            echo "Checking schema upgrade requirements: $yaml_file"
+            echo "=========================================="
+            
+            if ! uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-cli==0.4.1 kb-dashboard upgrade \
+                --input-file "$yaml_file" \
+                --fail-on-change > /dev/null 2>&1; then
+              echo "❌ ERROR: $yaml_file requires schema upgrade. Run:"
+              echo "  uvx --with-requirements $KB_DASHBOARD_REQUIREMENTS --from kb-dashboard-cli==0.4.1 kb-dashboard upgrade --input-file $yaml_file --write"
+              UPGRADE_FAILED=1
+            else
+              echo "✅ No schema upgrade required for $yaml_file"
+            fi
+            
+            echo ""
+          done
+          
+          set -e
+          
+          if [ $UPGRADE_FAILED -eq 1 ]; then
+            echo "=========================================="
+            echo "❌ YAML schema upgrade check FAILED"
+            echo "=========================================="
+            exit 1
           fi
 
       - name: Validate YAML dashboards match committed JSON
@@ -137,10 +179,10 @@ jobs:
             # (capped at 125). It only checks files produced by the compiler, so
             # non-compiled (pre-existing) JSON dashboards are ignored.
             set +e
-            uvx --from kb-dashboard-cli@0.2.7 kb-dashboard compile \
+            uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-cli==0.4.1 kb-dashboard compile \
                 --input-dir "$input_dir" \
                 --output-dir "$output_dir" \
-                --format json \
+                --format elastic-integrations \
                 --exit-non-zero-on-change
             exit_code=$?
             set -e
@@ -156,7 +198,7 @@ jobs:
               echo ""
               echo "The YAML source and committed JSON are out of sync."
               echo "Please recompile with:"
-              echo "  uvx --from kb-dashboard-cli@0.2.7 kb-dashboard compile --input-dir $input_dir --output-dir $output_dir --format json"
+              echo "  uvx --with-requirements $KB_DASHBOARD_REQUIREMENTS --from kb-dashboard-cli==0.4.1 kb-dashboard compile --input-dir $input_dir --output-dir $output_dir --format elastic-integrations"
               echo ""
               VALIDATION_FAILED=1
             fi
