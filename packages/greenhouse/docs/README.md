@@ -130,6 +130,16 @@ If no events are being collected:
 | greenhouse.audit.request.id | The ID of the request. | keyword |
 | greenhouse.audit.request.type | The name of the action taken in Greenhouse Recruiting, or the request URL if from Harvest API. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 
 
 An example event for `audit` looks as following:
