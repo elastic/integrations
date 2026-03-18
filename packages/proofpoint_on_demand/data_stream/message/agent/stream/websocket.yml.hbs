@@ -1,9 +1,17 @@
 url: {{url}}/v1/stream?cid={{cluster_id}}&type=message
+url_program: |
+  has(state.?cursor.last_timestamp) ?
+    state.url+"&sinceTime="+state.cursor.last_timestamp
+  :
+    state.url
 auth.bearer_token: {{access_token}}
 redact:
   fields: ~
 program: |
   bytes(state.response).decode_json().as(body,{
+    "cursor": {
+      "last_timestamp": body.ts,
+    },
     "events": {
       "message":  body.encode_json(),
     }
