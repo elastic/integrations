@@ -1,0 +1,66 @@
+{
+  "attributes": {
+    "name": "[WebLogic OTel] JTA transaction commit rate 99.5% rolling 30 days",
+    "description": "Tracks the ratio of committed JTA transactions to total JTA transactions on Oracle WebLogic Server. A sustained drop in commit rate indicates transaction failures (rollbacks or abandons) that directly represent failed business operations. Targets 99.5% of 1-minute windows maintaining at least a 95% commit rate over a rolling 30-day period.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"oracle_weblogic.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "weblogic.jta.transactions.committed"
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "weblogic.jta.transactions.committed"
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "weblogic.jta.transactions.total"
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "weblogic.jta.transactions.total"
+            }
+          ],
+          "equation": "(A-B)/(C-D)",
+          "comparator": "GTE",
+          "threshold": 0.95
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "weblogic",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "oracle_weblogic_otel-overview" },
+      { "id": "oracle_weblogic_otel-transactions" }
+    ]
+  },
+  "id": "oracle_weblogic_otel-jta-commit-rate-99.5-Rolling30Days",
+  "type": "slo_template"
+}

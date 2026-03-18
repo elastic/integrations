@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[WebLogic OTel] Thread pool low pending requests 99.5% rolling 30 days",
+    "description": "Tracks the average number of pending requests in the Oracle WebLogic Server self-tuning thread pool. Sustained pending requests indicate the thread pool is saturated and incoming work is queuing, causing latency for all users. Targets 99.5% of 1-minute windows maintaining an average of 1 or fewer pending requests over a rolling 30-day period.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"oracle_weblogic.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "weblogic.threadpool.requests.pending"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LTE",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "weblogic",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "oracle_weblogic_otel-overview" },
+      { "id": "oracle_weblogic_otel-jvm-thread-pool" }
+    ]
+  },
+  "id": "oracle_weblogic_otel-threadpool-low-pending-requests-99.5-Rolling30Days",
+  "type": "slo_template"
+}

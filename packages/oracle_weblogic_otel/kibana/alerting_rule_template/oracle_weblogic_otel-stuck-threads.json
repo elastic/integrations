@@ -1,0 +1,40 @@
+{
+    "id": "oracle_weblogic_otel-stuck-threads",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Oracle WebLogic OTel] Stuck threads detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "oracle_weblogic"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\n| STATS stuck_threads = MAX(LAST_OVER_TIME(weblogic.workmanager.threads.stuck))\n    BY attributes.server, attributes.application, attributes.workmanager\n// Non-zero stuck threads almost always indicate a serious problem:\n// deadlocks, hung database connections, or unresponsive external services\n| WHERE stuck_threads > 0\n| SORT stuck_threads DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.server",
+            "termSize": 10
+        }
+    }
+}

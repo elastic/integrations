@@ -1,0 +1,40 @@
+{
+    "id": "oracle_weblogic_otel-transactions-abandoned",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Oracle WebLogic OTel] JTA transactions abandoned",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "oracle_weblogic"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.abandoned IS NOT NULL\n| STATS abandon_rate = SUM(RATE(weblogic.jta.transactions.abandoned))\n    BY attributes.server\n// Abandoned transactions indicate unresponsive resources (database, external service)\n// Any non-zero rate warrants investigation as this is more severe than rollbacks\n| WHERE abandon_rate > 0\n| SORT abandon_rate DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.server",
+            "termSize": 10
+        }
+    }
+}
