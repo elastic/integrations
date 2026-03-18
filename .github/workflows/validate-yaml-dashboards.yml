@@ -84,12 +84,12 @@ jobs:
             
             # First, show all linting results (warnings, info, errors)
             echo "Linting results:"
-            uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-lint==0.4.0 kb-dashboard-lint check \
+            uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check \
                 --input-file "$yaml_file" || true
             echo ""
             
             # Then check specifically for warnings/errors (this will exit non-zero on warnings or errors)
-            if ! uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-lint==0.4.0 kb-dashboard-lint check \
+            if ! uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check \
                 --input-file "$yaml_file" \
                 --severity-threshold warning > /dev/null 2>&1; then
               echo "❌ ERROR: Linting found warnings or errors in $yaml_file"
@@ -129,11 +129,11 @@ jobs:
             echo "Checking schema upgrade requirements: $yaml_file"
             echo "=========================================="
             
-            if ! uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-cli==0.4.0 kb-dashboard upgrade \
+            if ! uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-cli==0.4.1 kb-dashboard upgrade \
                 --input-file "$yaml_file" \
                 --fail-on-change > /dev/null 2>&1; then
               echo "❌ ERROR: $yaml_file requires schema upgrade. Run:"
-              echo "  uvx --with-requirements $KB_DASHBOARD_REQUIREMENTS --from kb-dashboard-cli==0.4.0 kb-dashboard upgrade --input-file $yaml_file --write"
+              echo "  uvx --with-requirements $KB_DASHBOARD_REQUIREMENTS --from kb-dashboard-cli==0.4.1 kb-dashboard upgrade --input-file $yaml_file --write"
               UPGRADE_FAILED=1
             else
               echo "✅ No schema upgrade required for $yaml_file"
@@ -179,7 +179,7 @@ jobs:
             # (capped at 125). It only checks files produced by the compiler, so
             # non-compiled (pre-existing) JSON dashboards are ignored.
             set +e
-            uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-cli==0.4.0 kb-dashboard compile \
+            uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-cli==0.4.1 kb-dashboard compile \
                 --input-dir "$input_dir" \
                 --output-dir "$output_dir" \
                 --format elastic-integrations \
@@ -198,7 +198,7 @@ jobs:
               echo ""
               echo "The YAML source and committed JSON are out of sync."
               echo "Please recompile with:"
-              echo "  uvx --with-requirements $KB_DASHBOARD_REQUIREMENTS --from kb-dashboard-cli==0.4.0 kb-dashboard compile --input-dir $input_dir --output-dir $output_dir --format elastic-integrations"
+              echo "  uvx --with-requirements $KB_DASHBOARD_REQUIREMENTS --from kb-dashboard-cli==0.4.1 kb-dashboard compile --input-dir $input_dir --output-dir $output_dir --format elastic-integrations"
               echo ""
               VALIDATION_FAILED=1
             fi
