@@ -70,6 +70,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ### Onboard / configure
 
 1. In the top search bar in Kibana, search for **Integrations**.
@@ -117,22 +122,22 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-04-30T00:01:16.000Z",
     "agent": {
-        "ephemeral_id": "b7aea720-4612-436f-8df5-44bf5015c942",
-        "id": "d9e18280-ac4f-4a04-8545-b7b95e96929b",
-        "name": "elastic-agent-50030",
+        "ephemeral_id": "e7fa0bb4-3653-4f58-ab8d-717f2f6a252d",
+        "id": "f9c41a16-2f2e-40a2-8140-c9303a4cb0a9",
+        "name": "elastic-agent-40765",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.alert",
-        "namespace": "70405",
+        "namespace": "71705",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "d9e18280-ac4f-4a04-8545-b7b95e96929b",
+        "id": "f9c41a16-2f2e-40a2-8140-c9303a4cb0a9",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -141,13 +146,13 @@ An example event for `alert` looks as following:
         "category": [
             "email"
         ],
-        "created": "2025-12-22T03:11:33.969Z",
+        "created": "2020-04-30T00:01:15.000Z",
         "dataset": "trend_micro_vision_one.alert",
         "id": "WB-9002-20200427-0002",
-        "ingested": "2025-12-22T03:11:36Z",
+        "ingested": "2026-03-13T09:42:49Z",
         "kind": "alert",
         "original": "{\"alertProvider\":\"SAE\",\"createdDateTime\":\"2020-04-30T00:01:15Z\",\"description\":\"A backdoor was possibly implanted after a user received a possible spear phishing email message.\",\"id\":\"WB-9002-20200427-0002\",\"impactScope\":{\"accountCount\":0,\"desktopCount\":0,\"emailAddressCount\":0,\"entities\":[{\"entityId\":\"5257b401-2fd7-469c-94fa-39a4f11eb925\",\"entityType\":\"host\",\"entityValue\":\"user@email.com\",\"provenance\":[\"Alert\"],\"relatedEntities\":[\"CODERED\\\\\\\\user\"],\"relatedIndicatorIds\":[1]}],\"serverCount\":0},\"indicators\":[{\"field\":\"request url\",\"filterIds\":[\"f862df72-7f5e-4b2b-9f7f-9148e875f908\"],\"id\":1,\"provenance\":[\"Alert\"],\"relatedEntities\":[\"user@example.com\"],\"type\":\"url\",\"value\":\"http://www.example.com/ab001.zip\"}],\"investigationStatus\":\"New\",\"matchedRules\":[{\"id\":\"5f52d1f1-53e7-411a-b74f-745ee81fa30b\",\"matchedFilters\":[{\"id\":\"ccf86fc1-688f-4131-a46f-1d7a6ee2f88e\",\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"matchedEvents\":[{\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"type\":\"TELEMETRY_REGISTRY\",\"uuid\":\"fa9ff47c-e1b8-459e-a3d0-a5b104b854a5\"}],\"mitreTechniqueIds\":[\"T1192\"],\"name\":\"(T1192) Spearphishing Link\"}],\"name\":\"Possible SpearPhishing Email\"}],\"model\":\"Possible APT Attack\",\"schemaVersion\":\"1.0\",\"score\":63,\"severity\":\"critical\",\"updatedDateTime\":\"2023-04-30T00:01:16Z\",\"workbenchLink\":\"https://THE_WORKBENCH_URL\"}",
-        "severity": 63,
+        "severity": 99,
         "type": [
             "info"
         ]
@@ -158,12 +163,21 @@ An example event for `alert` looks as following:
     "log": {
         "level": "critical"
     },
+    "message": "Possible APT Attack",
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "trend_micro_vision_one-alert"
     ],
+    "threat": {
+        "framework": "MITRE ATT&CK",
+        "technique": {
+            "id": [
+                "T1192"
+            ]
+        }
+    },
     "trend_micro_vision_one": {
         "alert": {
             "alert_provider": "SAE",
@@ -239,6 +253,7 @@ An example event for `alert` looks as following:
             "schema_version": "1.0",
             "score": 63,
             "severity": "critical",
+            "updated_date": "2023-04-30T00:01:16.000Z",
             "workbench_link": "https://THE_WORKBENCH_URL"
         }
     },
@@ -253,41 +268,42 @@ An example event for `alert` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | trend_micro_vision_one.alert.alert_provider | Alert provider. | keyword |
 | trend_micro_vision_one.alert.campaign | An object-ref to a campaign object. | keyword |
+| trend_micro_vision_one.alert.case_id | The unique identifier of a case. | keyword |
 | trend_micro_vision_one.alert.created_by | Created by. | keyword |
 | trend_micro_vision_one.alert.created_date | Datetime in ISO 8601 format (yyyy-MM-ddThh:mm:ssZ in UTC) that indicates the created date time of the alert. | date |
 | trend_micro_vision_one.alert.description | Description of the detection model that triggered the alert. | keyword |
+| trend_micro_vision_one.alert.first_investigated_date | The date and time the case status was changed to 'In progress' in ISO 8601 format (yyyy-MM-ddThh:mm:ssZ, UTC). | date |
 | trend_micro_vision_one.alert.id | Workbench ID. | keyword |
 | trend_micro_vision_one.alert.impact_scope.account_count | Count of affected account. | long |
+| trend_micro_vision_one.alert.impact_scope.cloud_identity_count | The number of affected cloud resources (cloud identity). | long |
+| trend_micro_vision_one.alert.impact_scope.cloud_workload_count | The number of affected cloud resources (cloud workload). | long |
+| trend_micro_vision_one.alert.impact_scope.container_count | The number of affected containers. | long |
 | trend_micro_vision_one.alert.impact_scope.desktop_count | Count of affected desktop. | long |
 | trend_micro_vision_one.alert.impact_scope.email_address_count | Count of affected email address. | long |
 | trend_micro_vision_one.alert.impact_scope.entities.id |  | keyword |
+| trend_micro_vision_one.alert.impact_scope.entities.management_scope_group_id | Group ID for management scope. | keyword |
+| trend_micro_vision_one.alert.impact_scope.entities.management_scope_instance_id | The instance ID for asset visibility scope. | keyword |
+| trend_micro_vision_one.alert.impact_scope.entities.management_scope_partition_key | The partition key for asset visibility scope. | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.provenance |  | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.related_entities |  | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.related_indicator_id |  | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.type |  | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.value.account_value | Account or emailAddress. | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.value.guid | GUID. | keyword |
-| trend_micro_vision_one.alert.impact_scope.entities.value.id | Impact scope entity id. | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.value.ips | Set of IPs. | ip |
 | trend_micro_vision_one.alert.impact_scope.entities.value.name | Host name. | keyword |
-| trend_micro_vision_one.alert.impact_scope.entities.value.related_entities | Related entities. | keyword |
-| trend_micro_vision_one.alert.impact_scope.entities.value.related_indicator_id | Related indicator ids. | long |
-| trend_micro_vision_one.alert.impact_scope.entities.value.type | Impact scope entity type. | keyword |
 | trend_micro_vision_one.alert.impact_scope.server_count | Count of affected server. | long |
+| trend_micro_vision_one.alert.incident_id | The incident ID which is the resource ID returned from the insight API. | keyword |
 | trend_micro_vision_one.alert.indicators.field | Detailed description of the indicator. | keyword |
 | trend_micro_vision_one.alert.indicators.fields | Detailed description of the indicator. | keyword |
 | trend_micro_vision_one.alert.indicators.filter_id | Related matched filter ids. | keyword |
@@ -303,6 +319,7 @@ An example event for `alert` looks as following:
 | trend_micro_vision_one.alert.indicators.value_object.ips | Set of IPs. | ip |
 | trend_micro_vision_one.alert.indicators.value_object.name | Host name. | keyword |
 | trend_micro_vision_one.alert.industry | Industry. | keyword |
+| trend_micro_vision_one.alert.investigation_result | The findings of a case or investigation. | keyword |
 | trend_micro_vision_one.alert.investigation_status | Workbench alert status. | keyword |
 | trend_micro_vision_one.alert.matched_indicator_count | Matched indicator pattern count. | long |
 | trend_micro_vision_one.alert.matched_indicators_pattern.id | Pattern ID. | keyword |
@@ -319,12 +336,17 @@ An example event for `alert` looks as following:
 | trend_micro_vision_one.alert.matched_rule.id | The rules are triggered. | keyword |
 | trend_micro_vision_one.alert.matched_rule.name | Matched rule name. | keyword |
 | trend_micro_vision_one.alert.model | Name of the detection model that triggered the alert. | keyword |
+| trend_micro_vision_one.alert.model_id | ID of the detection model that triggered the alert. | keyword |
+| trend_micro_vision_one.alert.model_type | Type of the detection model that triggered the alert. | keyword |
+| trend_micro_vision_one.alert.owner_ids | The owners of the Workbench alert. | keyword |
 | trend_micro_vision_one.alert.region_and_country | region/country. | keyword |
 | trend_micro_vision_one.alert.report_link | A refrerence url which links to the report details analysis. For TrendMico research report, the link would link to trend blog. | keyword |
 | trend_micro_vision_one.alert.schema_version | The version of the JSON schema, not the version of alert trigger content. | keyword |
 | trend_micro_vision_one.alert.score | Overall severity assigned to the alert based on the severity of the matched detection model and the impact scope. | long |
 | trend_micro_vision_one.alert.severity | Workbench alert severity. | keyword |
+| trend_micro_vision_one.alert.status | The status of a case or investigation. | keyword |
 | trend_micro_vision_one.alert.total_indicator_count | Total indicator pattern count. | long |
+| trend_micro_vision_one.alert.updated_date | The date and time the alert was last updated in ISO 8601 format (yyyy-MM-ddThh:mm:ssZ, UTC). | date |
 | trend_micro_vision_one.alert.workbench_link | Workbench URL. | keyword |
 
 
@@ -340,22 +362,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-24T07:29:48.000Z",
     "agent": {
-        "ephemeral_id": "3a61b87e-4159-4a9f-9a7f-723e5c6bbaab",
-        "id": "6d60ddd6-f53b-43c5-b9d8-bac4c8d13b12",
-        "name": "elastic-agent-94461",
+        "ephemeral_id": "523385a1-5bd8-4dbf-a811-fc2b873f62e1",
+        "id": "27fb6f67-7090-4890-8822-de904c0f896e",
+        "name": "elastic-agent-88838",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.audit",
-        "namespace": "88685",
+        "namespace": "82038",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "6d60ddd6-f53b-43c5-b9d8-bac4c8d13b12",
+        "id": "27fb6f67-7090-4890-8822-de904c0f896e",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -364,9 +386,9 @@ An example event for `audit` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2025-12-22T03:12:20.272Z",
+        "created": "2026-03-13T09:43:26.242Z",
         "dataset": "trend_micro_vision_one.audit",
-        "ingested": "2025-12-22T03:12:23Z",
+        "ingested": "2026-03-13T09:43:29Z",
         "kind": "event",
         "original": "{\"accessType\":\"Console\",\"activity\":\"string\",\"category\":\"Logon and Logoff\",\"details\":{\"property1\":\"string\",\"property2\":\"string\"},\"loggedDateTime\":\"2022-02-24T07:29:48Z\",\"loggedRole\":\"Master Administrator\",\"loggedUser\":\"Root Account\",\"result\":\"Unsuccessful\"}",
         "outcome": "failure",
@@ -405,6 +427,7 @@ An example event for `audit` looks as following:
                 "property1": "string",
                 "property2": "string"
             },
+            "logged_date_time": "2022-02-24T07:29:48.000Z",
             "logged_role": "Master Administrator",
             "logged_user": "Root Account",
             "result": "Unsuccessful"
@@ -417,22 +440,20 @@ An example event for `audit` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | trend_micro_vision_one.audit.access_type | Source of the activity. | keyword |
 | trend_micro_vision_one.audit.activity | The activity that was performed. | keyword |
-| trend_micro_vision_one.audit.category | Category. | keyword |
+| trend_micro_vision_one.audit.category | The category that the performed activity belongs to. | keyword |
 | trend_micro_vision_one.audit.details | Object that contains a list of elements to be retrieved from the "details" field. | flattened |
+| trend_micro_vision_one.audit.ingested_date_time | Timestamp that indicates when the audit log was ingested. | date |
+| trend_micro_vision_one.audit.logged_date_time | Timestamp that indicates when an activity occured. | date |
 | trend_micro_vision_one.audit.logged_role | Role of the account. | keyword |
 | trend_micro_vision_one.audit.logged_user | The account that was used to perform the activity. | keyword |
 | trend_micro_vision_one.audit.result | Result. | keyword |
@@ -450,15 +471,15 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2020-10-15T01:16:32.000Z",
     "agent": {
-        "ephemeral_id": "6f78e8f4-45e9-499d-9044-3fd3e004dc49",
-        "id": "669ede77-9c4c-4d9c-bb8d-529c43347791",
-        "name": "elastic-agent-82902",
+        "ephemeral_id": "a09ecd66-623e-486e-95cc-f12693b96c06",
+        "id": "444369db-cefa-482a-a1f7-9c0df276ca22",
+        "name": "elastic-agent-14943",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.detection",
-        "namespace": "40599",
+        "namespace": "23938",
         "type": "logs"
     },
     "destination": {
@@ -469,10 +490,10 @@ An example event for `detection` looks as following:
         "port": 53
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "669ede77-9c4c-4d9c-bb8d-529c43347791",
+        "id": "444369db-cefa-482a-a1f7-9c0df276ca22",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -482,13 +503,12 @@ An example event for `detection` looks as following:
         "category": [
             "intrusion_detection"
         ],
-        "created": "2025-12-22T03:13:02.337Z",
+        "created": "2026-03-13T09:44:05.199Z",
         "dataset": "trend_micro_vision_one.detection",
         "id": "100117",
-        "ingested": "2025-12-22T03:13:05Z",
+        "ingested": "2026-03-13T09:44:08Z",
         "kind": "event",
         "original": "{\"act\":\"Clean\",\"actResult\":\"Quarantined successfully\",\"app\":\"HTTP\",\"appGroup\":\"HTTP\",\"aptRelated\":\"0\",\"behaviorCat\":\"Grey-Detection\",\"blocking\":\"Web reputation\",\"cat\":50,\"cccaDetection\":\"Yes\",\"cccaDetectionSource\":\"GLOBAL_INTELLIGENCE\",\"cccaRiskLevel\":3,\"clientFlag\":\"dst\",\"cnt\":\"1\",\"component\":[\"PATTERN_VSAPI 17.101.92 2021-09-30 04:23:27-07:00\"],\"compressedFileSize\":\"0\",\"detectionType\":\"File\",\"deviceDirection\":\"outbound\",\"deviceGUID\":\"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\",\"deviceMacAddress\":\"00-00-5E-00-53-23\",\"deviceProcessName\":\"/snap/core/10126/usr/lib/snapd/snapd\",\"dhost\":\"samplehost\",\"domainName\":\"Workgroup\",\"dpt\":53,\"dst\":[\"81.2.69.142\"],\"dstGroup\":\"Default\",\"end\":\"2021-09-30T09:40:04-08:00\",\"endpointGUID\":\"1234-1234-1234\",\"endpointHostName\":\"abc-docker\",\"endpointIp\":[\"81.2.69.142\"],\"endpointMacAddress\":\"00-00-5E-00-53-23\",\"engType\":\"Virus Scan Engine (OS 2003, x64)\",\"engVer\":\"12.500.1004\",\"eventId\":\"100117\",\"eventName\":\"INTEGRITY_MONITORING_EVENT\",\"eventSubName\":\"Attack Discovery\",\"eventTime\":1602724592000,\"eventTimeDT\":\"2021-06-10T01:38:38+00:00\",\"fileHash\":\"3395856ce81f2b7382dee72602f798b642f14140\",\"fileName\":[\"Unconfirmed 145081.crdownload\"],\"fileOperation\":\"Deleted\",\"filePath\":\"/etc/systemd/system\",\"filePathName\":\"/etc/systemd/system/snap-xxxx-1246.xxxx\",\"fileSize\":\"0\",\"firstAct\":\"Clean\",\"firstActResult\":\"Unable to clean file\",\"fullPath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 145081.crdownload\",\"hostName\":\"samplehost\",\"httpReferer\":\"http://www.example.com/\",\"interestedHost\":\"abc-docker\",\"interestedIp\":[\"81.2.69.192\"],\"interestedMacAddress\":\"00-00-5E-00-53-23\",\"mDevice\":[\"81.2.69.192\"],\"mDeviceGUID\":\"C5B09EDD-C725-907F-29D9-B8C30D18C48F\",\"malName\":\"Eicar_test_1\",\"malType\":\"Virus/Malware\",\"mitreMapping\":[\"T1090 (TA0005)\"],\"mitreVersion\":\"v6\",\"mpname\":\"Cloud One - Workload Security\",\"mpver\":\"Deep Security/20.0.222\",\"objectCmd\":[\"C:\\\\\\\\Program Files (x86)\\\\\\\\Microsoft\\\\\\\\Edge\\\\\\\\Application\\\\\\\\msedge.exe --profile-directory=Default\"],\"objectFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"objectFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"objectFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"objectFileName\":\"Unconfirmed 142899.crdownload:SmartScreen\",\"objectFilePath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 142899.crdownload:SmartScreen\",\"objectName\":\"CloudEndpointService.exe\",\"objectPid\":7660,\"objectSigner\":[\"OS\"],\"parentCmd\":\"C:\\\\\\\\os\\\\\\\\system32\\\\\\\\svchost.exe -k DcomLaunch -p\",\"parentFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"parentFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"parentFilePath\":\"C:\\\\\\\\os\\\\\\\\System32\\\\\\\\svchost.exe\",\"peerHost\":\"samplehost\",\"peerIp\":[\"81.2.69.192\"],\"pname\":\"Apex One\",\"processCmd\":\"-ServerName:App.AppX9yct9q388jvt4h7y0gn06smzkxcsnt8m.mca\",\"processFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"processFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"processFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"processFilePath\":\"C:\\\\\\\\Program Files (x86)\\\\\\\\os\\\\\\\\Application\\\\\\\\msedge.exe\",\"processName\":\"string\",\"processPid\":0,\"processSigner\":\"OS Publisher\",\"productCode\":\"sao\",\"pver\":\"20.0.0.877\",\"request\":\"https://example.com\",\"requestClientApplication\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1\",\"rt\":\"2020-10-15T01:16:32.000Z\",\"rt_utc\":\"2020-10-15T01:16:32.000Z\",\"searchDL\":\"DDL\",\"spt\":58871,\"src\":\"81.2.69.192\",\"srcGroup\":\"Default\",\"tacticId\":[\"TA0005\"],\"tags\":[\"XSAE.F2140\",\"XSAE.F3066\"],\"threatName\":\"Malicious_identified_CnC_querying_on_UDP_detected\",\"uuid\":\"1234-1234-1234\"}",
-        "severity": 50,
         "type": [
             "info"
         ]
@@ -536,7 +556,6 @@ An example event for `detection` looks as following:
     },
     "process": {
         "command_line": "-ServerName:App.AppX9yct9q388jvt4h7y0gn06smzkxcsnt8m.mca",
-        "entity_id": "0",
         "name": "string",
         "pid": 0
     },
@@ -567,6 +586,7 @@ An example event for `detection` looks as following:
         "trend_micro_vision_one-detection"
     ],
     "threat": {
+        "framework": "MITRE ATT&CK",
         "tactic": {
             "id": [
                 "TA0005"
@@ -621,6 +641,7 @@ An example event for `detection` looks as following:
             "engine_version": "12.500.1004",
             "event_id": "100117",
             "event_name": "INTEGRITY_MONITORING_EVENT",
+            "event_time": "2020-10-15T01:16:32.000Z",
             "event_time_dt": "2021-06-10T01:38:38.000Z",
             "file_hash": "3395856ce81f2b7382dee72602f798b642f14140",
             "file_name": [
@@ -708,6 +729,7 @@ An example event for `detection` looks as following:
             "request": "https://example.com",
             "request_client_application": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1",
             "risk_level": 3,
+            "risk_level_value": "SLF_CCCA_RISKLEVEL_HIGH",
             "rt": "2020-10-15T01:16:32.000Z",
             "rt_utc": "2020-10-15T01:16:32.000Z",
             "search_data_lake": "DDL",
@@ -763,30 +785,43 @@ An example event for `detection` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | trend_micro_vision_one.detection.action | Action by detect product. | keyword |
 | trend_micro_vision_one.detection.action_result | Action result by detect product. | keyword |
 | trend_micro_vision_one.detection.aggregated_count | Aggregated count. | long |
+| trend_micro_vision_one.detection.attachment.attachment_file_hash |  | keyword |
+| trend_micro_vision_one.detection.attachment.attachment_file_name |  | keyword |
+| trend_micro_vision_one.detection.attachment.attachment_file_size |  | long |
+| trend_micro_vision_one.detection.attachment.attachment_file_tlsh |  | keyword |
+| trend_micro_vision_one.detection.attachment_file_hashes |  | keyword |
+| trend_micro_vision_one.detection.attachment_file_hashs |  | keyword |
+| trend_micro_vision_one.detection.attachment_file_name |  | keyword |
+| trend_micro_vision_one.detection.attachment_file_sizes |  | long |
+| trend_micro_vision_one.detection.attachment_file_tlshes |  | keyword |
+| trend_micro_vision_one.detection.attachment_file_tlshs |  | keyword |
 | trend_micro_vision_one.detection.behavior_category | The matched policy category (policy section) in the BM patterns, which will always Grey-Detection here. | keyword |
 | trend_micro_vision_one.detection.block | blocking Reason. | keyword |
 | trend_micro_vision_one.detection.client_flag | 0:Unknown 1:src 2:dst. | keyword |
 | trend_micro_vision_one.detection.client_ip | Client IP. | ip |
 | trend_micro_vision_one.detection.component_version | Product component version. | keyword |
 | trend_micro_vision_one.detection.compressed_file_size | File size after compressed. | long |
+| trend_micro_vision_one.detection.data_type |  | keyword |
+| trend_micro_vision_one.detection.dce_hash1 |  | keyword |
+| trend_micro_vision_one.detection.dce_hash2 |  | keyword |
+| trend_micro_vision_one.detection.description |  | keyword |
 | trend_micro_vision_one.detection.destination.ip | Destination IP address. | ip |
 | trend_micro_vision_one.detection.destination.ip_group | Destination IP address group. | keyword |
+| trend_micro_vision_one.detection.destination.mac |  | keyword |
 | trend_micro_vision_one.detection.destination.port | Destination port. | long |
+| trend_micro_vision_one.detection.destination.user |  | keyword |
+| trend_micro_vision_one.detection.destination.zone |  | keyword |
 | trend_micro_vision_one.detection.detection | Yes (Tag it when it appears and the value is 1). | keyword |
 | trend_micro_vision_one.detection.detection_source | Detection source use by Deep Discovery Inspector. | keyword |
 | trend_micro_vision_one.detection.detection_type | Product detection type. | keyword |
@@ -796,8 +831,12 @@ An example event for `detection` looks as following:
 | trend_micro_vision_one.detection.device.id | Device identity. | keyword |
 | trend_micro_vision_one.detection.device.ip | Devices ip list. | ip |
 | trend_micro_vision_one.detection.device.mac | Mac address. | keyword |
+| trend_micro_vision_one.detection.device.payload_id |  | keyword |
 | trend_micro_vision_one.detection.device.process_name | Process name in device. | keyword |
+| trend_micro_vision_one.detection.device.risk_confidence_level |  | long |
 | trend_micro_vision_one.detection.domain.name | Domain name. | keyword |
+| trend_micro_vision_one.detection.dvc |  | ip |
+| trend_micro_vision_one.detection.dvchost |  | keyword |
 | trend_micro_vision_one.detection.end_time | End time. | date |
 | trend_micro_vision_one.detection.endpoint.guid | endpoint GUID for identity. | keyword |
 | trend_micro_vision_one.detection.endpoint.hostname | Hostname of the endpoint on which the event was generated. | keyword |
@@ -807,6 +846,8 @@ An example event for `detection` looks as following:
 | trend_micro_vision_one.detection.engine_version | Product scan engine version. | keyword |
 | trend_micro_vision_one.detection.event_id | Event ID. | keyword |
 | trend_micro_vision_one.detection.event_name | Predefined event enumerator. | keyword |
+| trend_micro_vision_one.detection.event_source_type |  | keyword |
+| trend_micro_vision_one.detection.event_time | Detect time. | date |
 | trend_micro_vision_one.detection.event_time_dt | Detect time. | date |
 | trend_micro_vision_one.detection.file_hash | Detect file hash value. | keyword |
 | trend_micro_vision_one.detection.file_name | Detect file name. | keyword |
@@ -815,19 +856,33 @@ An example event for `detection` looks as following:
 | trend_micro_vision_one.detection.file_path_name | Full file path. | keyword |
 | trend_micro_vision_one.detection.file_size | Detect file size. | long |
 | trend_micro_vision_one.detection.file_type | Detect file type. | keyword |
+| trend_micro_vision_one.detection.filter_risk_level |  | keyword |
 | trend_micro_vision_one.detection.first_action | First action. | keyword |
 | trend_micro_vision_one.detection.first_action_result | First action result. | keyword |
 | trend_micro_vision_one.detection.full_path | File full path. | keyword |
+| trend_micro_vision_one.detection.group_id |  | keyword |
+| trend_micro_vision_one.detection.group_id_corr_key |  | keyword |
+| trend_micro_vision_one.detection.group_id_corr_values |  | keyword |
+| trend_micro_vision_one.detection.hasdtasres |  | keyword |
 | trend_micro_vision_one.detection.hostname | host name. | keyword |
 | trend_micro_vision_one.detection.http_referer | http referer url. | keyword |
+| trend_micro_vision_one.detection.interested.group |  | keyword |
 | trend_micro_vision_one.detection.interested.host | Highlighted indicator for incident response members. | keyword |
 | trend_micro_vision_one.detection.interested.ip | Highlighted indicator for incident response members. | ip |
 | trend_micro_vision_one.detection.interested.mac | Highlighted indicator for incident response members. | keyword |
+| trend_micro_vision_one.detection.is_hidden |  | keyword |
+| trend_micro_vision_one.detection.log_received_time |  | date |
+| trend_micro_vision_one.detection.mail_msg_direction |  | long |
+| trend_micro_vision_one.detection.mail_msg_subject |  | keyword |
+| trend_micro_vision_one.detection.mailbox |  | keyword |
 | trend_micro_vision_one.detection.malware_name | Malware name. | keyword |
 | trend_micro_vision_one.detection.malware_type | Malware type. | keyword |
+| trend_micro_vision_one.detection.malware_type_group |  | keyword |
 | trend_micro_vision_one.detection.mime_type | Mime type. | keyword |
 | trend_micro_vision_one.detection.mproduct.name | Product name. | keyword |
 | trend_micro_vision_one.detection.mproduct.version | Product Version. | keyword |
+| trend_micro_vision_one.detection.msg_id |  | keyword |
+| trend_micro_vision_one.detection.msg_uuid |  | keyword |
 | trend_micro_vision_one.detection.object.cmd | The command line that a process detected by Attack Discovery uses to execute other processes. | keyword |
 | trend_micro_vision_one.detection.object.file.hash.md5 | File Hash Md5 value. | keyword |
 | trend_micro_vision_one.detection.object.file.hash.sha1 | File Hash Sha1 value. | keyword |
@@ -837,16 +892,21 @@ An example event for `detection` looks as following:
 | trend_micro_vision_one.detection.object.name | Detect object name. | keyword |
 | trend_micro_vision_one.detection.object.pid | Detect object Pid. | long |
 | trend_micro_vision_one.detection.object.signer | Signer. | keyword |
+| trend_micro_vision_one.detection.org_id |  | keyword |
 | trend_micro_vision_one.detection.os.name | Supported values: Linux, Windows, macOS, macOSX. | keyword |
+| trend_micro_vision_one.detection.over_ssl |  | keyword |
+| trend_micro_vision_one.detection.p_comp |  | keyword |
 | trend_micro_vision_one.detection.parent.cmd | The command line that parent process. | keyword |
 | trend_micro_vision_one.detection.parent.file.hash.sha1 | Parent file sha1. | keyword |
 | trend_micro_vision_one.detection.parent.file.hash.sha256 | Parent file sha256. | keyword |
 | trend_micro_vision_one.detection.parent.file.path | Parent file path. | keyword |
+| trend_micro_vision_one.detection.peer.group |  | keyword |
 | trend_micro_vision_one.detection.peer.host | Peer host name. | keyword |
 | trend_micro_vision_one.detection.peer.ip | Peer ip list. | ip |
 | trend_micro_vision_one.detection.policy.logkey | Policy logkey. | keyword |
 | trend_micro_vision_one.detection.policy.name | Policy name. | keyword |
 | trend_micro_vision_one.detection.policy.uuid | Policy uuid. | keyword |
+| trend_micro_vision_one.detection.potential_risk |  | long |
 | trend_micro_vision_one.detection.principal_name | Principal name. | keyword |
 | trend_micro_vision_one.detection.process.cmd | The command line used to launch this process. | keyword |
 | trend_micro_vision_one.detection.process.file.hash.md5 | Process file hash MD5 value. | keyword |
@@ -863,29 +923,48 @@ An example event for `detection` looks as following:
 | trend_micro_vision_one.detection.protocol | Protocol detect by Deep Discovery Inspector. | keyword |
 | trend_micro_vision_one.detection.protocol_group | Protocol group detect by Deep Discovery Inspector. | keyword |
 | trend_micro_vision_one.detection.related_apt | 0:False, 1:True. | boolean |
+| trend_micro_vision_one.detection.remarks |  | keyword |
 | trend_micro_vision_one.detection.request | URL. | keyword |
 | trend_micro_vision_one.detection.request_base | Request base. | keyword |
 | trend_micro_vision_one.detection.request_client_application | Browser user agent. | keyword |
 | trend_micro_vision_one.detection.risk_level | SLF_CCCA_RISKLEVEL_UNKNOWN (0) SLF_CCCA_RISKLEVEL_LOW (1) SLF_CCCA_RISKLEVEL_MEDIUM (2) SLF_CCCA_RISKLEVEL_HIGH (3). | long |
+| trend_micro_vision_one.detection.risk_level_value |  | keyword |
 | trend_micro_vision_one.detection.rt | Detect time. | date |
+| trend_micro_vision_one.detection.rt_date |  | date |
+| trend_micro_vision_one.detection.rt_hour |  | long |
 | trend_micro_vision_one.detection.rt_utc | Detect utc time. | date |
+| trend_micro_vision_one.detection.rt_week_day |  | keyword |
+| trend_micro_vision_one.detection.rule_id |  | keyword |
+| trend_micro_vision_one.detection.rule_name |  | keyword |
+| trend_micro_vision_one.detection.sam_user |  | keyword |
+| trend_micro_vision_one.detection.scan_type |  | keyword |
 | trend_micro_vision_one.detection.search_data_lake | Datalake name. | keyword |
 | trend_micro_vision_one.detection.security_analytics.engine.name | Security Analytics Engine. | keyword |
 | trend_micro_vision_one.detection.security_analytics.engine.version | Security Analytics Engine version. | keyword |
 | trend_micro_vision_one.detection.sender | Sender. | keyword |
+| trend_micro_vision_one.detection.sender_guid |  | keyword |
+| trend_micro_vision_one.detection.sender_ip |  | ip |
+| trend_micro_vision_one.detection.severity |  | long |
 | trend_micro_vision_one.detection.severity_level | severity score. | long |
 | trend_micro_vision_one.detection.source.group | Source IP address group. | keyword |
+| trend_micro_vision_one.detection.source.host |  | keyword |
 | trend_micro_vision_one.detection.source.ip | Source IP address. | ip |
+| trend_micro_vision_one.detection.source.mac |  | keyword |
 | trend_micro_vision_one.detection.source.port | Source port. | long |
+| trend_micro_vision_one.detection.source.user |  | keyword |
+| trend_micro_vision_one.detection.source.zone |  | keyword |
 | trend_micro_vision_one.detection.sub_name | Detect event subscribe name. | keyword |
+| trend_micro_vision_one.detection.sub_rule_name |  | keyword |
 | trend_micro_vision_one.detection.suid | Suid. | keyword |
 | trend_micro_vision_one.detection.tactic_id | Security Agent or product policy. | keyword |
 | trend_micro_vision_one.detection.tags | Detected by Security Analytics Engine filters. | keyword |
 | trend_micro_vision_one.detection.threat_name | Threat name. | keyword |
+| trend_micro_vision_one.detection.threat_type |  | keyword |
 | trend_micro_vision_one.detection.total_count | total count. | long |
 | trend_micro_vision_one.detection.url_cat | URL cat. | keyword |
 | trend_micro_vision_one.detection.user.domain | User domain. | keyword |
 | trend_micro_vision_one.detection.uuid | Log unique id. | keyword |
+| trend_micro_vision_one.detection.v_lanid |  | keyword |
 
 
 ### endpoint activity
@@ -900,35 +979,48 @@ An example event for `endpoint_activity` looks as following:
 {
     "@timestamp": "2023-11-13T10:15:43.210Z",
     "agent": {
-        "ephemeral_id": "e3104ef5-8982-48d9-a9ec-3f6c451df799",
-        "id": "fca8de1b-d200-49c4-9272-7088e4a986bb",
-        "name": "elastic-agent-21907",
+        "ephemeral_id": "67d982ff-ef90-411f-888f-ab4c09cf4702",
+        "id": "a1413348-4e8f-4339-8376-665313f59bcc",
+        "name": "elastic-agent-37315",
         "type": "filebeat",
-        "version": "8.19.7"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.endpoint_activity",
-        "namespace": "48188",
+        "namespace": "89023",
         "type": "logs"
     },
     "destination": {
         "address": "81.2.69.142",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142",
         "port": 442
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "fca8de1b-d200-49c4-9272-7088e4a986bb",
-        "snapshot": true,
-        "version": "8.19.7"
+        "id": "a1413348-4e8f-4339-8376-665313f59bcc",
+        "snapshot": false,
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "code": "4624",
         "dataset": "trend_micro_vision_one.endpoint_activity",
         "id": "29",
-        "ingested": "2025-12-02T12:31:41Z",
+        "ingested": "2026-03-13T09:44:49Z",
         "kind": "event",
         "original": "{\"dpt\":442,\"dst\":\"81.2.69.142\",\"endpointGuid\":\"72436165-b5a5-471a-9389-0bdc3647bc33\",\"endpointHostName\":\"workstation-pc01\",\"endpointIp\":[\"1.128.0.0\"],\"eventId\":\"29\",\"eventSubId\":2,\"eventTime\":1699876543210,\"eventTimeDT\":\"2023-11-13T10:15:43.210000+00:00\",\"hostName\":\"workstation-pc01\",\"logonUser\":[\"john.doe@example.com\"],\"objectCmd\":\"C:\\\\Windows\\\\System32\\\\cmd.exe /c whoami\",\"objectFileHashSha1\":\"A1B2C3D4E5F6789012345678901234567890ABCD\",\"objectFilePath\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"objectHostName\":\"api.example.com\",\"objectIntegrityLevel\":8192,\"objectIp\":\"81.2.69.144\",\"objectIps\":[\"81.2.69.144\",\"175.16.199.0\"],\"objectPort\":8080,\"objectRegistryData\":\"C:\\\\Program Files\\\\MyApp\\\\startup.exe\",\"objectRegistryKeyHandle\":\"hklm\\\\software\\\\microsoft\\\\windows\\\\currentversion\\\\run\",\"objectRegistryValue\":\"MyAppStartup\",\"objectSigner\":[\"Microsoft Windows\"],\"objectSignerValid\":[true],\"objectSubTrueType\":7002,\"objectTrueType\":7,\"objectUser\":\"DOMAIN\\\\john.doe\",\"os\":\"Windows 10\",\"parentCmd\":\"C:\\\\Windows\\\\explorer.exe\",\"parentFileHashSha1\":\"B2C3D4E5F67890123456789012345678901ABCDE\",\"parentFilePath\":\"C:\\\\Windows\\\\explorer.exe\",\"processCmd\":\"C:\\\\Windows\\\\System32\\\\cmd.exe /c whoami\",\"processFileHashSha1\":\"C3D4E5F678901234567890123456789012ABCDEF\",\"processFilePath\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"request\":\"https://api.example.com/v1/auth\",\"searchDL\":\"EDR\",\"spt\":49152,\"src\":\"1.128.0.0\",\"srcFileHashSha1\":\"D4E5F6789012345678901234567890123ABCDEFG\",\"srcFilePath\":\"C:\\\\Users\\\\john.doe\\\\Downloads\\\\installer.exe\",\"tags\":[\"MITRE.T1059.001\",\"XSAE.F1001\"],\"uuid\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"winEventId\":4624}"
     },
@@ -1017,6 +1109,7 @@ An example event for `endpoint_activity` looks as following:
             "event": {
                 "id": "29",
                 "sub_id": 2,
+                "sub_id_value": "XDR_PROCESS_CREATE",
                 "time": "2023-11-13T11:55:43.210Z",
                 "time_dt": "2023-11-13T10:15:43.210Z"
             },
@@ -1032,6 +1125,7 @@ An example event for `endpoint_activity` looks as following:
                 },
                 "host_name": "api.example.com",
                 "integrity_level": 8192,
+                "integrity_level_value": "Medium",
                 "ip": "81.2.69.144",
                 "ips": [
                     "81.2.69.144",
@@ -1050,7 +1144,9 @@ An example event for `endpoint_activity` looks as following:
                     true
                 ],
                 "sub_true_type": 7002,
+                "sub_true_type_value": "WIN32 EXE",
                 "true_type": 7,
+                "true_type_value": "EXE",
                 "user": "DOMAIN\\john.doe"
             },
             "os": "Windows 10",
@@ -1083,7 +1179,8 @@ An example event for `endpoint_activity` looks as following:
                 "XSAE.F1001"
             ],
             "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "win_event_id": 4624
+            "win_event_id": 4624,
+            "win_event_id_value": "An account was successfully logged on"
         }
     },
     "url": {
@@ -1118,7 +1215,9 @@ An example event for `endpoint_activity` looks as following:
 | trend_micro_vision_one.endpoint_activity.endpoint.host_name | Hostname of the endpoint on which the event was generated. | keyword |
 | trend_micro_vision_one.endpoint_activity.endpoint.ip | Endpoint IP address list. | ip |
 | trend_micro_vision_one.endpoint_activity.event.id | Event ID for data field mapping. | keyword |
+| trend_micro_vision_one.endpoint_activity.event.id_value |  | keyword |
 | trend_micro_vision_one.endpoint_activity.event.sub_id | Event sub ID for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.event.sub_id_value |  | keyword |
 | trend_micro_vision_one.endpoint_activity.event.time | Log collect time utc format. | date |
 | trend_micro_vision_one.endpoint_activity.event.time_dt | Log collect time. | date |
 | trend_micro_vision_one.endpoint_activity.host_name | Hostname of the endpoint on which the event was generated. | keyword |
@@ -1128,6 +1227,7 @@ An example event for `endpoint_activity` looks as following:
 | trend_micro_vision_one.endpoint_activity.object.file.path | File path location of target process image or target file. | keyword |
 | trend_micro_vision_one.endpoint_activity.object.host_name | Server name where Internet event was detected. | keyword |
 | trend_micro_vision_one.endpoint_activity.object.integrity_level | Object integrity level for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.object.integrity_level_value |  | keyword |
 | trend_micro_vision_one.endpoint_activity.object.ip | IP address of internet event. | ip |
 | trend_micro_vision_one.endpoint_activity.object.ips | IP address list of internet event. | ip |
 | trend_micro_vision_one.endpoint_activity.object.port | The port number used by internet event. | long |
@@ -1137,7 +1237,9 @@ An example event for `endpoint_activity` looks as following:
 | trend_micro_vision_one.endpoint_activity.object.signer | Certificate signer of object process or file. | keyword |
 | trend_micro_vision_one.endpoint_activity.object.signer_valid | Validity of certificate signer. | boolean |
 | trend_micro_vision_one.endpoint_activity.object.sub_true_type | Object sub true type for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.object.sub_true_type_value |  | keyword |
 | trend_micro_vision_one.endpoint_activity.object.true_type | Object true type for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.object.true_type_value |  | keyword |
 | trend_micro_vision_one.endpoint_activity.object.user | The owner name of target process / The logon user name. | keyword |
 | trend_micro_vision_one.endpoint_activity.os | Operating system. | keyword |
 | trend_micro_vision_one.endpoint_activity.parent.cmd | The command line that parent process. | keyword |
@@ -1155,6 +1257,7 @@ An example event for `endpoint_activity` looks as following:
 | trend_micro_vision_one.endpoint_activity.tags | Detected by Security Analytics Engine filters. | keyword |
 | trend_micro_vision_one.endpoint_activity.uuid | Log unique identity. | keyword |
 | trend_micro_vision_one.endpoint_activity.win_event_id | Windows event ID for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.win_event_id_value |  | keyword |
 
 
 ### network activity
@@ -1169,37 +1272,61 @@ An example event for `network_activity` looks as following:
 {
     "@timestamp": "2023-11-13T11:55:43.000Z",
     "agent": {
-        "ephemeral_id": "76c92ca8-86e3-4b6e-983a-07da450d1d19",
-        "id": "e91d68b9-ae62-485d-85b7-813f8a96d54c",
-        "name": "elastic-agent-66717",
+        "ephemeral_id": "7e7b30fd-d308-46ec-b785-ecc6c9f2a1a3",
+        "id": "da7f7a8b-495e-465e-90bd-2b02cebfd1db",
+        "name": "elastic-agent-59142",
         "type": "filebeat",
-        "version": "8.19.7"
+        "version": "8.19.4"
     },
     "client": {
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
         "ip": "175.16.199.0"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.network_activity",
-        "namespace": "83537",
+        "namespace": "46703",
         "type": "logs"
     },
     "destination": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "81.2.69.142",
         "port": 443
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "e91d68b9-ae62-485d-85b7-813f8a96d54c",
-        "snapshot": true,
-        "version": "8.19.7"
+        "id": "da7f7a8b-495e-465e-90bd-2b02cebfd1db",
+        "snapshot": false,
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "trend_micro_vision_one.network_activity",
-        "duration": 45,
-        "ingested": "2025-12-02T12:45:21Z",
+        "duration": 45000000,
+        "ingested": "2026-03-13T09:45:29Z",
         "kind": "event",
         "original": "{\"act\":1,\"application\":\"Microsoft 365\",\"clientIp\":\"175.16.199.0\",\"companyName\":\"Acme Corporation\",\"customerId\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"detectionType\":10,\"deviceGUID\":\"c3d4e5f6-7890-1234-cdef-345678901234\",\"dpt\":443,\"dst\":\"81.2.69.142\",\"duration\":45,\"endpointGuid\":\"72436165-b5a5-471a-9389-0bdc3647bc33\",\"endpointHostName\":\"workstation-pc01\",\"eventName\":\"SWG_ACTIVITY_LOG\",\"eventSubName\":\"SharePoint file download\",\"eventTime\":1699876543,\"fileHash\":\"a1b2c3d4e5f6789012345678901234567890abcd\",\"fileHashSha256\":\"ba9edecdd09de1307714564c24409bd25508e22fe11c768053a08f173f263e93\",\"fileName\":\"quarterly_report.xlsx\",\"fileSize\":245678,\"fileType\":\"Microsoft Excel\",\"malName\":\"\",\"mimeType\":\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\"objectId\":\"e5f67890-1234-5678-ef01-567890123456\",\"osName\":\"Windows 10\",\"pname\":\"2200\",\"policyUuid\":\"f6789012-3456-7890-f012-678901234567\",\"principalName\":\"john.doe@example.com\",\"profile\":\"standard\",\"pver\":\"2.1\",\"request\":\"https://portal.example.com/dashboard\",\"requestBase\":\"portal.example.com\",\"requestMethod\":\"GET\",\"requestMimeType\":\"application/json\",\"rt\":1699876545,\"ruleName\":\"Corporate_Access_Policy\",\"ruleType\":\"access\",\"ruleUuid\":\"d4e5f678-9012-3456-def0-456789012345\",\"score\":95,\"sender\":\"Corporate Gateway\",\"serverProtocol\":\"HTTP/2\",\"serverTls\":\"TLS 1.3\",\"spt\":49152,\"src\":\"1.128.0.0\",\"start\":1699876500,\"suid\":\"John Doe\",\"tenantGuid\":\"b2c3d4e5-f678-9012-bcde-f23456789012\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36\",\"userDepartment\":\"Finance\",\"userDomain\":\"example.com\"}",
         "start": 1699876500
@@ -1275,6 +1402,7 @@ An example event for `network_activity` looks as following:
     "trend_micro_vision_one": {
         "network_activity": {
             "act": 1,
+            "act_value": "monitor",
             "application": "Microsoft 365",
             "client": {
                 "ip": "175.16.199.0"
@@ -1385,6 +1513,7 @@ An example event for `network_activity` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | trend_micro_vision_one.network_activity.act | Action taken for the violation. | long |
+| trend_micro_vision_one.network_activity.act_value |  | keyword |
 | trend_micro_vision_one.network_activity.application | Name of the requested application. | keyword |
 | trend_micro_vision_one.network_activity.client.ip | Internal IP address of source endpoint. | ip |
 | trend_micro_vision_one.network_activity.company_name | Company name. | keyword |
@@ -1447,22 +1576,22 @@ An example event for `telemetry` looks as following:
 {
     "@timestamp": "2025-03-03T23:53:20.111Z",
     "agent": {
-        "ephemeral_id": "8207ccd8-f283-417b-8cec-ac679b84bd0f",
-        "id": "f7bd2fde-1c25-4f6e-aa1d-4542e3fa1df9",
-        "name": "elastic-agent-21901",
+        "ephemeral_id": "d05571e1-bb1b-4e0d-9abe-c75371892864",
+        "id": "6d745c5b-bff6-4f74-8d75-3f04e141a09a",
+        "name": "elastic-agent-90171",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.telemetry",
-        "namespace": "43910",
+        "namespace": "83605",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "f7bd2fde-1c25-4f6e-aa1d-4542e3fa1df9",
+        "id": "6d745c5b-bff6-4f74-8d75-3f04e141a09a",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1471,7 +1600,7 @@ An example event for `telemetry` looks as following:
         "code": "2",
         "dataset": "trend_micro_vision_one.telemetry",
         "id": "b3d95071-ccad-44c3-9c99-f08be03bc786",
-        "ingested": "2026-02-12T14:34:02Z",
+        "ingested": "2026-03-13T09:46:19Z",
         "kind": "event",
         "original": "{\"eventTime\":\"1741046000111\",\"authId\":\"999\",\"deviceType\":0,\"endpointGuid\":\"af2c07d7-9f44-4e6f-bf1b-a884745eb4bd\",\"endpointHostName\":\"tvo-5901-3\",\"endpointIp\":[\"fe80::57b7:a740:883f:9b14\",\"10.2.0.6\"],\"endpointMacAddress\":[\"60:45:bd:a7:0d:17\"],\"eventHashId\":\"-4294745173759834457\",\"eventId\":2,\"eventSourceType\":1,\"eventSubId\":109,\"firstSeen\":\"1741046568230\",\"groupId\":\"f37ba03c-5b7e-42b1-ab5b-39e63c9ed2b4\",\"integrityLevel\":16384,\"lastSeen\":\"1741046568230\",\"logReceivedTime\":\"1741046864669\",\"nativeDeviceCharacteristics\":131072,\"nativeDeviceType\":7,\"nativeStorageDeviceBusType\":10,\"objectCurrentFileSize\":\"334168\",\"objectFileCreation\":\"1735285868903\",\"objectFileModifiedTime\":\"1735285868903\",\"objectFilePath\":\"C:\\\\Windows\\\\Prefetch\\\\AgAppLaunch.db\",\"objectFileSize\":\"334168\",\"objectFileSizeModified\":false,\"objectFirstSeen\":\"1741046568230\",\"objectHashId\":\"4074796453632858305\",\"objectLastSeen\":\"1741046568230\",\"objectSubTrueType\":0,\"osDescription\":\"Windows 10 Pro (64 bit) build 19045\",\"osName\":\"Windows\",\"osType\":\"0x00000030\",\"osVer\":\"10.0.19045\",\"plang\":1,\"pname\":\"Endpoint Sensor\",\"pplat\":5889,\"processCmd\":\"C:\\\\Windows\\\\system32\\\\svchost.exe -k LocalSystemNetworkRestricted -p -s SysMain\",\"processFileCreation\":\"1733468133525\",\"processFileHashId\":\"-821808160829839906\",\"processFileHashMd5\":\"7469cc568ad6821fd9d925542730a7d8\",\"processFileHashSha1\":\"e4e3f6bbad17b41a42687b3d75ade4a10b0870ec\",\"processFileHashSha256\":\"6fc3bf1fdfd76860be782554f8d25bd32f108db934d70f4253f1e5f23522e503\",\"processFileModifiedTime\":\"1733468133525\",\"processFilePath\":\"C:\\\\Windows\\\\System32\\\\svchost.exe\",\"processFileSize\":\"57528\",\"processHashId\":\"-7291293652695135564\",\"processLaunchTime\":\"1739418294389\",\"processName\":\"C:\\\\Windows\\\\System32\\\\svchost.exe\",\"processPid\":1708,\"processSigner\":[\"Microsoft Windows Publisher\"],\"processSignerFlagsAdhoc\":[false],\"processSignerFlagsLibValid\":[false],\"processSignerFlagsRuntime\":[false],\"processSignerValid\":[true],\"processTrueType\":7,\"processUser\":\"SYSTEM\",\"processUserDomain\":\"NT AUTHORITY\",\"productCode\":\"xes\",\"pver\":\"1.2.0.5960\",\"sessionId\":0,\"timezone\":\"UTC+00:00\",\"uuid\":\"b3d95071-ccad-44c3-9c99-f08be03bc786\"}"
     },
@@ -1643,12 +1772,12 @@ An example event for `telemetry` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | file.user.domain |  | keyword |
 | file.user.group.id |  | keyword |
 | file.user.name |  | keyword |
