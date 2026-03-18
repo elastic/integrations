@@ -4,6 +4,10 @@
 
 The [SentinelOne](https://www.sentinelone.com/) integration collects and parses data from SentinelOne REST APIs. This integration also offers the capability to perform response actions on SentinelOne hosts directly through the Elastic Security interface (introduced with v8.12.0). Additional configuration is required; for detailed guidance, refer to [documentation](https://www.elastic.co/guide/en/security/current/response-actions-config.html).
 
+For a demo, refer to the following video (click to view).
+
+[![SentinelOne integration video](https://play.vidyard.com/gQovyr6REJoU4eotQsnTTB.jpg)](https://videos.elastic.co/watch/gQovyr6REJoU4eotQsnTTB)
+
 ### Compatibility
 
 This module has been tested against `SentinelOne Management Console API version 2.1`.
