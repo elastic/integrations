@@ -1,0 +1,121 @@
+title: Dataminr Pulse Alerts
+type: logs
+streams:
+  - input: cel
+    title: Dataminr Pulse Alerts
+    description: Collect alerts from Dataminr Pulse API with automatic OAuth token refresh
+    template_path: stream.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: API URL
+        description: The base URL for the Dataminr Pulse API
+        default: https://api.dataminr.com/pulse/v1/alerts
+        required: true
+        show_user: true
+      - name: base_url
+        type: text
+        title: Base URL
+        description: The base URL without the endpoint path (e.g., https://api.dataminr.com/pulse)
+        default: https://api.dataminr.com/pulse
+        required: true
+        show_user: false
+      - name: auth_url
+        type: text
+        title: Authentication URL
+        description: The OAuth token endpoint URL
+        default: https://userauth.dataminr.com/auth/2/token
+        required: true
+        secret: false
+        show_user: false
+      - name: token_expiry_buffer_ms
+        type: integer
+        title: Token Expiry Buffer (milliseconds)
+        description: Buffer time in milliseconds before token expiry to trigger refresh (default 300000 = 5 minutes)
+        default: 300000
+        required: true
+        show_user: false
+        secret: false
+      - name: client_id
+        type: text
+        title: Client ID
+        description: Client ID from Dataminr for token generation
+        required: true
+        show_user: true
+        secret: false
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: Client secret from Dataminr for token generation
+        required: true
+        show_user: true
+        secret: true
+      - name: interval
+        type: select
+        title: Interval
+        description: Interval between API requests
+        default: 5m
+        required: true
+        multi: false
+        show_user: true
+        options:
+          - value: 30s
+            text: "30 seconds"
+          - value: 1m
+            text: "1 minute"
+          - value: 3m
+            text: "3 minute"
+          - value: 5m
+            text: "5 minutes"
+          - value: 10m
+            text: "10 minutes"
+          - value: 15m
+            text: "15 minute"  
+      - name: page_size
+        type: select
+        title: Page Size
+        description: Maximum number of alerts to return per request (default 40, max 100)
+        default: "40"
+        required: true
+        multi: false
+        show_user: true
+        options:
+          - value: "10"
+            text: "10"
+          - value: "20"
+            text: "20"
+          - value: "30"
+            text: "30"
+          - value: "40"
+            text: "40"
+          - value: "50"
+            text: "50"
+          - value: "60"
+            text: "60"
+          - value: "70"
+            text: "70"
+          - value: "80"
+            text: "80"
+          - value: "90"
+            text: "90"
+          - value: "100"
+            text: "100"
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        required: false
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        default: false
+        required: false
+        show_user: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false

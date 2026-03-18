@@ -1,0 +1,29 @@
+server.host: "0.0.0.0"
+
+xpack.fleet.outputs:
+  - id: fleet-default-output
+    name: default
+    type: elasticsearch
+    hosts:
+      - http://elasticsearch:9200
+    is_default: true
+    is_default_monitoring: true
+
+xpack.fleet.agents.fleet_server.hosts:
+  - http://fleet-server:8220
+
+xpack.fleet.packages:
+  - name: fleet_server
+    version: latest
+
+xpack.fleet.agentPolicies:
+  - id: fleet-server-policy
+    name: Fleet Server Policy
+    is_default_fleet_server: true
+    package_policies:
+      - name: fleet_server-1
+        package:
+          name: fleet_server
+  - id: default-agent-policy
+    name: Default Agent Policy
+    is_default: true
