@@ -8,6 +8,11 @@
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
 install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
 docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} scanning-mock
+
+# Workaround for https://github.com/elastic/elastic-package/issues/3321.
+exec mkdir -p ${PACKAGE_ROOT}/licenses
+exec cp ${PACKAGE_ROOT}/../../licenses/Elastic-2.0.txt ${PACKAGE_ROOT}/licenses/Elastic-2.0.txt
+
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
@@ -31,6 +36,9 @@ stdout '^Safe$'
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
 docker_down scanning-mock
+
+# Clean up license workaround (https://github.com/elastic/elastic-package/issues/3321).
+exec rm -rf ${PACKAGE_ROOT}/licenses
 
 -- test_config.yaml --
 input: cel
