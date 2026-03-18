@@ -8,6 +8,14 @@ Then visualize that data in Kibana, create alerts to notify you if something goe
 For example, if you wanted to know if a Windows service unexpectedly stops running, you could install the Windows integration to send service metrics to Elastic.
 Then, you could view real-time changes to service status in Kibana's _[Metrics Windows] Services_ dashboard.
 
+## Choosing the right integration for Windows event logs
+
+If you're collecting Windows event logs, note that there are three related integrations:
+
+- **[System integration](https://www.elastic.co/docs/reference/integrations/system)**: Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
+- **Windows integration** (this integration): Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
+- **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel without specialized pipelines.
+  
 ## Data streams
 
 The Windows integration collects two types of data: logs and metrics.
