@@ -1,35 +1,31 @@
-# [ActiveMQ OTel] Overview — At-a-glance broker health
-# Data stream: metrics-activemq.otel-*
-# Controls: Broker name, Host
-
 dashboards:
   - id: activemq_otel-overview
     name: '[ActiveMQ OTel] Overview'
     description: >-
-      At-a-glance landing page for broker health. Connections, memory and store
-      utilization, enqueue/dequeue throughput, and top destinations by message count.
-    time_range:
-      from: "now-1h"
-      to: "now"
+      At-a-glance broker health. Quick answer to "am I healthy?"
+    minimum_kibana_version: "8.14.0"
+
     settings:
       margins: true
-      titles: true
       sync:
         cursor: true
         tooltips: false
         colors: false
+
     filters:
       - field: data_stream.dataset
         equals: activemq.otel
+
     controls:
       - type: options
-        label: Broker name
+        label: Broker
         data_view: metrics-*
         field: resource.attributes.activemq.broker.name
       - type: options
         label: Host
         data_view: metrics-*
         field: resource.attributes.host.name
+
     panels:
       # ─── Navigation ───────────────────────────────────────────────────
       - title: Navigation
@@ -52,38 +48,38 @@ dashboards:
             ## [ActiveMQ OTel] Overview
 
             At-a-glance landing page for broker health:
-            - Connection count and message throughput
-            - Memory and store utilization
-            - Enqueue/dequeue rates
-            - Top destinations by message count
+            - Active connections and broker memory/store utilization
+            - Total messages in broker
+            - Enqueue vs dequeue rate over time
+            - Top destinations by message count (excluding Advisory)
 
-      # ─── KPI Row ─────────────────────────────────────────────────────
+      # ─── KPI Metric Row ──────────────────────────────────────────────
       - title: Active Connections
         hide_title: true
-        size: {w: 8, h: 4}
+        size: {w: eighth, h: 4}
         esql:
           type: metric
           query:
             - FROM metrics-activemq.otel-*
-            - WHERE activemq.broker.connection.current IS NOT NULL OR activemq.connection.count IS NOT NULL
-            - EVAL conn = COALESCE(activemq.broker.connection.current, activemq.connection.count)
-            - STATS connections = MAX(conn)
+            - "WHERE activemq.broker.connection.current IS NOT NULL OR activemq.connection.count IS NOT NULL"
+            - "EVAL conn = COALESCE(activemq.broker.connection.current, activemq.connection.count)"
+            - "STATS connections = MAX(conn)"
           primary:
             field: connections
-            label: Connections
+            label: Active Connections
             format:
               type: number
               decimals: 0
 
       - title: Memory Utilization
         hide_title: true
-        size: {w: 8, h: 4}
+        size: {w: eighth, h: 4}
         esql:
           type: metric
           query:
             - FROM metrics-activemq.otel-*
-            - WHERE activemq.memory.utilization IS NOT NULL
-            - STATS mem_pct = AVG(activemq.memory.utilization) * 100
+            - "WHERE activemq.memory.utilization IS NOT NULL"
+            - "STATS mem_pct = AVG(activemq.memory.utilization) * 100"
           primary:
             field: mem_pct
             label: Memory %
@@ -93,13 +89,13 @@ dashboards:
 
       - title: Store Utilization
         hide_title: true
-        size: {w: 8, h: 4}
+        size: {w: eighth, h: 4}
         esql:
           type: metric
           query:
             - FROM metrics-activemq.otel-*
-            - WHERE activemq.store.utilization IS NOT NULL
-            - STATS store_pct = AVG(activemq.store.utilization) * 100
+            - "WHERE activemq.store.utilization IS NOT NULL"
+            - "STATS store_pct = AVG(activemq.store.utilization) * 100"
           primary:
             field: store_pct
             label: Store %
@@ -109,60 +105,62 @@ dashboards:
 
       - title: Total Messages
         hide_title: true
-        size: {w: 8, h: 4}
+        size: {w: eighth, h: 4}
         esql:
           type: metric
           query:
             - FROM metrics-activemq.otel-*
-            - WHERE activemq.broker.message.current IS NOT NULL
-            - STATS total_msgs = MAX(activemq.broker.message.current)
+            - "WHERE activemq.broker.message.current IS NOT NULL"
+            - "STATS total_msgs = MAX(activemq.broker.message.current)"
           primary:
             field: total_msgs
-            label: Messages
+            label: Total Messages
             format:
               type: number
               compact: true
 
-      # ─── Enqueue vs Dequeue Rate ───────────────────────────────────
+      # ─── Time Series Charts ──────────────────────────────────────────
       - title: Enqueue vs Dequeue Rate
         size: {w: 48, h: 12}
         esql:
           type: line
           query:
             - TS metrics-activemq.otel-*
-            - WHERE activemq.broker.enqueue.count IS NOT NULL OR activemq.broker.dequeue.count IS NOT NULL
-            - STATS enqueue_rate = SUM(RATE(activemq.broker.enqueue.count)),
-              dequeue_rate = SUM(RATE(activemq.broker.dequeue.count))
-              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-            - SORT time_bucket ASC
+            - "WHERE activemq.broker.enqueue.count IS NOT NULL OR activemq.broker.dequeue.count IS NOT NULL"
+            - "STATS enqueue_rate = SUM(RATE(activemq.broker.enqueue.count)), dequeue_rate = SUM(RATE(activemq.broker.dequeue.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
           dimension:
             field: time_bucket
             data_type: date
           metrics:
             - field: enqueue_rate
-              label: Enqueue/s
+              label: Enqueue Rate
               format:
                 type: number
+                decimals: 2
+                suffix: "/sec"
             - field: dequeue_rate
-              label: Dequeue/s
+              label: Dequeue Rate
               format:
                 type: number
+                decimals: 2
+                suffix: "/sec"
+          appearance:
+            y_left_axis:
+              title: "Messages/sec"
           legend:
             visible: show
             position: right
 
-      # ─── Memory & Store Utilization Over Time ──────────────────────
       - title: Memory & Store Utilization Over Time
         size: {w: 48, h: 12}
         esql:
           type: line
           query:
             - TS metrics-activemq.otel-*
-            - WHERE activemq.memory.utilization IS NOT NULL OR activemq.store.utilization IS NOT NULL
-            - STATS mem_pct = AVG(activemq.memory.utilization) * 100,
-              store_pct = AVG(activemq.store.utilization) * 100
-              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-            - SORT time_bucket ASC
+            - "WHERE activemq.memory.utilization IS NOT NULL OR activemq.store.utilization IS NOT NULL"
+            - "STATS mem_pct = AVG(activemq.memory.utilization) * 100, store_pct = AVG(activemq.store.utilization) * 100 BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
           dimension:
             field: time_bucket
             data_type: date
@@ -171,35 +169,35 @@ dashboards:
               label: Memory %
               format:
                 type: percent
+                decimals: 1
             - field: store_pct
               label: Store %
               format:
                 type: percent
+                decimals: 1
+          appearance:
+            y_left_axis:
+              title: "Utilization %"
           legend:
             visible: show
             position: right
 
-      # ─── Top Destinations by Message Count ──────────────────────────
+      # ─── Detail Table ────────────────────────────────────────────────
       - title: Top Destinations by Message Count
         size: {w: 48, h: 12}
         esql:
           type: datatable
           query:
             - FROM metrics-activemq.otel-*
-            - WHERE activemq.message.current IS NOT NULL
-            - EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)
-            - WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")
-            - STATS message_count = MAX(activemq.message.current) BY dest
-            - SORT message_count DESC
-            - LIMIT 20
-          dimensions:
+            - "WHERE activemq.message.current IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS message_count = MAX(activemq.message.current) BY dest"
+            - "SORT message_count DESC"
+            - "LIMIT 20"
+          breakdowns:
             - field: dest
               label: Destination
           metrics:
             - field: message_count
               label: Messages
-              format:
-                type: number
-          paging:
-            enabled: true
-            page_size: 10
