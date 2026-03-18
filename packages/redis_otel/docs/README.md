@@ -83,6 +83,8 @@ Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-col
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[Redis OTel] P99 command latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Tracks p99 command latency below 10 ms over 1-minute intervals. |
