@@ -120,6 +120,11 @@ processors:
       field: user.name
       copy_from: activedirectory.user.sam_account_name
       ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: activedirectory.user.mail
+      ignore_empty_value: true
   - gsub:
       tag: gsub_user_dn
       field: activedirectory.user.distinguished_name
@@ -268,6 +273,18 @@ processors:
       tag: append_object_guid_into_related_user
       allow_duplicates: false
       if: ctx.activedirectory?.user?.object_guid != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.mail}}}"
+      tag: append_mail_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.mail != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.user_principal_name}}}"
+      tag: append_upn_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.user_principal_name != null
 
   - rename:
       field: activedirectory.id

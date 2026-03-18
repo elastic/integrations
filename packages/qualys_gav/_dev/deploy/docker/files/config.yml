@@ -2990,3 +2990,80 @@ rules:
               }
           }
           `}}
+  # Edge-case test: hasMore=1 with an empty asset list on page 2.
+  # First page returns two assets normally.
+  - path: /rest/2.0/search/am/asset
+    methods: ['POST']
+    query_params:
+      lastSeenAssetId: 0
+      pageSize: 5
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          x-ratelimit-limit: ["100"]
+          x-ratelimit-remaining: ["98"]
+          x-ratelimit-window-sec: ["3600"]
+          x-ratelimit-towait-sec: ["0"]
+        body: |
+          {{ minify_json `
+          {
+              "responseMessage": "Valid API Access",
+              "count": 2,
+              "responseCode": "SUCCESS",
+              "lastSeenAssetId": 90000002,
+              "hasMore": 1,
+              "assetListData": {
+                  "asset": [
+                      {
+                          "assetId": 90000001,
+                          "assetUUID": "aaaaaaaa-0001-0001-0001-000000000001",
+                          "lastModifiedDate": "2025-07-11T14:21:10.000Z",
+                          "createdDate": "2025-07-09T14:21:12.000Z",
+                          "assetType": "HOST",
+                          "assetName": "empty-page-test-1"
+                      },
+                      {
+                          "assetId": 90000002,
+                          "assetUUID": "aaaaaaaa-0002-0002-0002-000000000002",
+                          "lastModifiedDate": "2025-07-11T14:21:10.000Z",
+                          "createdDate": "2025-07-09T14:21:12.000Z",
+                          "assetType": "HOST",
+                          "assetName": "empty-page-test-2"
+                      }
+                  ]
+              }
+          }
+          `}}
+  # Second page: API says hasMore=1 but returns an empty asset list.
+  # Without the size() guard, .max() throws "no extremum of empty list".
+  - path: /rest/2.0/search/am/asset
+    methods: ['POST']
+    query_params:
+      lastSeenAssetId: 90000002
+      pageSize: 5
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          x-ratelimit-limit: ["100"]
+          x-ratelimit-remaining: ["98"]
+          x-ratelimit-window-sec: ["3600"]
+          x-ratelimit-towait-sec: ["0"]
+        body: |
+          {{ minify_json `
+          {
+              "responseMessage": "Valid API Access",
+              "count": 0,
+              "responseCode": "SUCCESS",
+              "lastSeenAssetId": 90000002,
+              "hasMore": 1,
+              "assetListData": {
+                  "asset": []
+              }
+          }
+          `}}

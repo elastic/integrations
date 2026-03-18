@@ -56,15 +56,41 @@ inputs:
               )
             ).as(state,
               // Initialize the list of types to consider in this sequence of evaluations.
+              // If content types were changed in the config, remove any that are no
+              // longer configured from the in-progress list.
               state.with(
                 {
                   "todo_types": state.?todo_types.orValue([]).as(existing_todo_types,
-                    (existing_todo_types.size() > 0) ?
-                      existing_todo_types
-                    :
-                      state.base.content_types.split(",").map(t, t.trim_space())
+                    state.base.content_types.split(",").map(t, t.trim_space()).as(configured_types,
+                      existing_todo_types.filter(t, configured_types.exists(c, c == t)).as(filtered,
+                        (filtered.size() > 0) ?
+                          filtered
+                        :
+                          configured_types
+                      )
+                    )
                   ),
                 }
+              )
+            ).as(state,
+              // Filter stale cursor data that references content types no longer in config.
+              // Listing links have the content type embedded in the URL query string, so
+              // links for removed types would produce API errors if not pruned here.
+              state.base.content_types.split(",").map(t, t.trim_space()).as(configured_types,
+                state.with(
+                  {
+                    "cursor": state.?cursor.orValue({}).with(
+                      {
+                        "todo_links": state.?cursor.todo_links.orValue([]).filter(link,
+                          configured_types.exists(ct, link.to_lower().contains("contenttype=" + ct.to_lower()))
+                        ),
+                        "todo_content": state.?cursor.todo_content.orValue([]).filter(item,
+                          configured_types.exists(ct, ct.to_lower() == item.?contentType.orValue("").to_lower())
+                        ),
+                      }
+                    ),
+                  }
+                )
               )
             ).as(state,
 
