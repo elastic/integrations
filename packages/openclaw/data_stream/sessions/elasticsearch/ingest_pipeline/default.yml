@@ -37,22 +37,53 @@ processors:
       target_field: openclaw.cost.usd
       ignore_missing: true
   - script:
-      description: "Extract text from content array"
+      description: "Extract text, thinking, and tool_calls from content array"
       lang: painless
       if: "ctx.openclaw?.message?.content != null"
       source: |
         def content = ctx.openclaw.message.content;
         if (content instanceof List) {
+          def tool_calls = [];
           for (def item : content) {
             if (item.type == 'text' && item.text != null) {
               ctx.openclaw.text = item.text;
             } else if (item.type == 'thinking' && item.thinking != null) {
               ctx.openclaw.thinking = item.thinking;
+            } else if (item.type == 'toolCall') {
+              def tc = new HashMap();
+              if (item.name != null) {
+                tc.put('name', item.name);
+              }
+              if (item.arguments != null) {
+                tc.put('arguments', item.arguments);
+              }
+              tool_calls.add(tc);
             }
+          }
+          if (tool_calls.size() > 0) {
+            ctx.openclaw.tool_calls = tool_calls;
           }
         } else if (content instanceof String) {
           ctx.openclaw.text = content;
         }
+  - gsub:
+      field: openclaw.text
+      pattern: '(?s)Conversation info \(untrusted metadata\):\s*```json.*?```\s*'
+      replacement: ''
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      field: openclaw.text
+      pattern: '(?s)Sender \(untrusted metadata\):\s*```json.*?```\s*'
+      replacement: ''
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      field: openclaw.text
+      pattern: '(?s)Group info \(untrusted metadata\):\s*```json.*?```\s*'
+      replacement: ''
+      ignore_missing: true
+      ignore_failure: true
   - remove:
       field: 
         - message
