@@ -181,6 +181,7 @@ processors:
           levels.put('Error', 'error');
           levels.put('Fault', 'critical');
           String normalized = levels.getOrDefault(mt, mt.toLowerCase());
+          if (ctx.unified_log == null) { ctx.unified_log = new HashMap(); }
           if (ctx.log == null) { ctx.log = new HashMap(); }
           ctx.log.level = normalized;
           ctx.unified_log.message_type = mt;
@@ -292,15 +293,17 @@ processors:
       tag: remove_temp
       ignore_missing: true
   - remove:
-      field:
-        - unified_log.boot_uuid
-        - unified_log.timezone
-      tag: remove_empty_fields
-      if: >-
-        (ctx.unified_log?.boot_uuid != null && ctx.unified_log.boot_uuid.isEmpty())
-        || (ctx.unified_log?.timezone != null && ctx.unified_log.timezone.isEmpty())
+      field: unified_log.boot_uuid
+      tag: remove_empty_boot_uuid
+      if: "ctx.unified_log?.boot_uuid != null && ctx.unified_log.boot_uuid.isEmpty()"
       ignore_missing: true
-      description: Clean up empty string fields.
+      description: Clean up empty boot_uuid field.
+  - remove:
+      field: unified_log.timezone
+      tag: remove_empty_timezone
+      if: "ctx.unified_log?.timezone != null && ctx.unified_log.timezone.isEmpty()"
+      ignore_missing: true
+      description: Clean up empty timezone field.
 on_failure:
   - set:
       field: error.message
