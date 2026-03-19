@@ -18,6 +18,12 @@ processors:
       value: [indicator]
 
   - rename:
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_missing: true
+
+  - rename:
       field: md5
       target_field: ti_strider.indicator.md5
       
@@ -80,7 +86,11 @@ processors:
       
   - remove:
       field: ti_strider.indicator.name_secondary_raw
-      
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      ignore_missing: true
+
 on_failure:
   - set:
       field: event.kind
