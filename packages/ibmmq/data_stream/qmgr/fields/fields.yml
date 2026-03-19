@@ -85,6 +85,24 @@
                   type: long
                   metric_type: counter
                   description: MQSUBRQ count.
+        - name: cpu
+          type: group
+          fields:
+            - name: load
+              type: group
+              fields:
+                - name: fifteen_minute.average.percentage
+                  type: float
+                  metric_type: gauge
+                  description: CPU load - fifteen minute average.
+                - name: five_minute.average.percentage
+                  type: float
+                  metric_type: gauge
+                  description: CPU load - five minute average.
+                - name: one_minute.average.percentage
+                  type: float
+                  metric_type: gauge
+                  description: CPU load - one minute average.
         - name: destructive
           type: group
           fields:
@@ -99,6 +117,24 @@
                   type: long
                   metric_type: counter
                   description: Interval total destructive get - count.
+        - name: errors
+          type: group
+          fields:
+            - name: file_system
+              type: group
+              fields:
+                - name: free_space.percentage
+                  type: float
+                  metric_type: gauge
+                  description: MQ errors file system - free space.
+                - name: in_use.bytes
+                  type: long
+                  metric_type: gauge
+                  description: MQ errors file system - bytes in use.
+        - name: fdc.files
+          type: long
+          metric_type: gauge
+          description: MQ FDC file count.
         - name: log
           type: group
           fields:
@@ -116,6 +152,81 @@
                       type: long
                       metric_type: counter
                       description: Log - physical bytes written.
+            - name: file_system
+              type: group
+              fields:
+                - name: free_space.percentage
+                  type: float
+                  metric_type: gauge
+                  description: Log file system - free space.
+                - name: in_use.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log file system - bytes in use.
+                - name: max.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log file system - bytes max.
+            - name: in_use.bytes
+              type: long
+              metric_type: gauge
+              description: Log - bytes in use.
+            - name: max.bytes
+              type: long
+              metric_type: gauge
+              description: Log - bytes max.
+            - name: occupied
+              type: group
+              fields:
+                - name: extents.waiting_to_be_archived.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log - occupied by extents waiting to be archived.
+                - name: reusable_extents.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log - bytes occupied by reusable extents.
+            - name: primary_space.in_use.percentage
+              type: float
+              metric_type: gauge
+              description: Log - current primary space in use.
+            - name: required_for_media_recovery.bytes
+              type: long
+              metric_type: gauge
+              description: Log - bytes required for media recovery.
+            - name: sequence_number
+              type: group
+              fields:
+                - name: disk
+                  type: long
+                  metric_type: gauge
+                  description: Log - disk written log sequence number.
+                - name: quorum
+                  type: long
+                  metric_type: gauge
+                  description: Log - quorum log sequence number.
+            - name: slowest_write.since_restart.seconds
+              type: float
+              metric_type: gauge
+              description: Log - slowest write since restart.
+            - name: workload
+              type: group
+              fields:
+                - name: primary_space.utilization.percentage
+                  type: float
+                  metric_type: gauge
+                  description: Log - workload primary space utilization.
+            - name: write
+              type: group
+              fields:
+                - name: latency.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Log - write latency.
+                - name: size.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log - write size.
         - name: messages
           type: group
           fields:
@@ -251,6 +362,34 @@
               type: long
               metric_type: counter
               description: Purged queue count.
+        - name: queue_manager
+          type: group
+          fields:
+            - name: file_system
+              type: group
+              fields:
+                - name: free_space.percentage
+                  type: float
+                  metric_type: gauge
+                  description: Queue Manager file system - free space.
+                - name: in_use.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Queue Manager file system - bytes in use.
+        - name: ram
+          type: group
+          fields:
+            - name: free.percentage
+              type: float
+              metric_type: gauge
+              description: RAM free percentage.
+            - name: usage
+              type: group
+              fields:
+                - name: estimate.queue_manager.bytes
+                  type: long
+                  metric_type: gauge
+                  description: RAM total bytes - estimate for queue manager.
         - name: rollback.count
           type: long
           metric_type: counter
@@ -299,6 +438,20 @@
                   type: long
                   metric_type: counter
                   description: Delete non-durable subscription count.
+        - name: system
+          type: group
+          fields:
+            - name: cpu
+              type: group
+              fields:
+                - name: time.estimate.queue_manager.percentage
+                  type: float
+                  metric_type: gauge
+                  description: System CPU time - percentage estimate for queue manager.
+                - name: time.percentage
+                  type: float
+                  metric_type: gauge
+                  description: System CPU time percentage.
         - name: topic
           type: group
           fields:
@@ -328,6 +481,175 @@
               type: long
               metric_type: counter
               description: Interval total topic bytes put.
+        - name: trace
+          type: group
+          fields:
+            - name: file_system
+              type: group
+              fields:
+                - name: free_space.percentage
+                  type: float
+                  metric_type: gauge
+                  description: MQ trace file system - free space.
+                - name: in_use.bytes
+                  type: long
+                  metric_type: gauge
+                  description: MQ trace file system - bytes in use.
+        - name: user
+          type: group
+          fields:
+            - name: cpu
+              type: group
+              fields:
+                - name: time.estimate.queue_manager.percentage
+                  type: float
+                  metric_type: gauge
+                  description: User CPU time - percentage estimate for queue manager.
+                - name: time.percentage
+                  type: float
+                  metric_type: gauge
+                  description: User CPU time percentage.
+        - name: nha
+          type: group
+          fields:
+            - name: recovery
+              type: group
+              fields:
+                - name: average.network_round_trip.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Average network round trip time.
+                - name: backlog.average.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Backlog average bytes.
+                - name: backlog.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Backlog bytes.
+                - name: log.sent.compressed.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Compressed log bytes sent.
+                - name: log.data.average.compression.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Log data average compression time.
+                - name: log.data.average.decompression.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Log data average decompression time.
+                - name: log.decompressed.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log bytes decompressed.
+                - name: log.sent.bytes
+                  type: long
+                  metric_type: counter
+                  description: Log bytes sent.
+                - name: rebase.count
+                  type: long
+                  metric_type: gauge
+                  description: Rebase count.
+                - name: log.sequence_number.recovery
+                  type: long
+                  metric_type: gauge
+                  description: Recovery log sequence number.
+            - name: replication
+              type: group
+              fields:
+                - name: log.sequence_number.acknowledged
+                  type: long
+                  metric_type: gauge
+                  description: Acknowledged log sequence number.
+                - name: average.network_round_trip.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Average network round trip time.
+                - name: backlog.average.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Backlog average bytes.
+                - name: backlog.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Backlog bytes.
+                - name: catch_up.log.sent.compressed.bytes
+                  type: long
+                  metric_type: counter
+                  description: Catch-up compressed log bytes sent.
+                - name: catch_up.log.data.average.compression.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Catch-up log data average compression time.
+                - name: catch_up.log.data.average.decompression.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Catch-up log data average decompression time.
+                - name: catch_up.log.decompressed.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Catch-up log bytes decompressed.
+                - name: catch_up.log.sent.uncompressed.bytes
+                  type: long
+                  metric_type: counter
+                  description: Catch-up uncompressed log bytes sent.
+                - name: catch_up.log.sent.bytes
+                  type: long
+                  metric_type: counter
+                  description: Catch-up log bytes sent.
+                - name: log.file_system.free_space.percentage
+                  type: float
+                  metric_type: gauge
+                  description: Log file system - free space.
+                - name: log.file_system.in_use.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log file system - bytes in use.
+                - name: log.write.average.acknowledgement.latency.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Log write average acknowledgement latency.
+                - name: log.write.average.acknowledgement.size.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Log write average acknowledgement size.
+                - name: mq.fdc.file.count
+                  type: long
+                  metric_type: gauge
+                  description: MQ FDC file count.
+                - name: queue_manager.file_system.free_space.percentage
+                  type: float
+                  metric_type: gauge
+                  description: Queue Manager file system - free space.
+                - name: queue_manager.file_system.in_use.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Queue Manager file system - bytes in use.
+                - name: synchronous.log.sent.compressed.bytes
+                  type: long
+                  metric_type: counter
+                  description: Synchronous compressed log bytes sent.
+                - name: synchronous.log.data.average.compression.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Synchronous log data average compression time.
+                - name: synchronous.log.data.average.decompression.time.seconds
+                  type: float
+                  metric_type: gauge
+                  description: Synchronous log data average decompression time.
+                - name: synchronous.log.decompressed.bytes
+                  type: long
+                  metric_type: gauge
+                  description: Synchronous log bytes decompressed.
+                - name: synchronous.log.sent.bytes
+                  type: long
+                  metric_type: counter
+                  description: Synchronous log bytes sent.
+                - name: synchronous.log.sent.uncompressed.bytes
+                  type: long
+                  metric_type: counter
+                  description: Synchronous uncompressed log bytes sent.
     - name: labels
       type: group
       fields:
