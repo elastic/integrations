@@ -76,6 +76,7 @@ processors:
       lang: painless
       tag: script-default-expired_at
       description: Set expires_at to now when indicator is archived (ti_strider.indicator.archive == 1), otherwise 90 days from ingestion.
+      if: ctx['@timestamp'] != null
       source: |
         ZonedDateTime now = ZonedDateTime.parse(ctx['@timestamp']);
         if (ctx.ti_strider?.indicator?.archive == 1) {
