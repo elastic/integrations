@@ -106,6 +106,8 @@ Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-col
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **JTA transaction commit rate** | 99.5% | 30-day rolling | Tracks the ratio of committed to total JTA transactions, targeting 99.5% of 1-minute windows maintaining at least a 95% commit rate. |
