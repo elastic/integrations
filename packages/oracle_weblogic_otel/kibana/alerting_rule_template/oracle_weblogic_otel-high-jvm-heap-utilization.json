@@ -22,7 +22,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jvm.heap.size IS NOT NULL\n| STATS\n    heap_size = MAX(LAST_OVER_TIME(weblogic.jvm.heap.size)),\n    heap_free = MAX(LAST_OVER_TIME(weblogic.jvm.heap.free)),\n    heap_max = MAX(LAST_OVER_TIME(weblogic.jvm.heap.max))\n  BY attributes.server\n| EVAL heap_used = heap_size - heap_free\n| EVAL heap_util_pct = ROUND(heap_used / heap_max * 100.0, 2)\n// Adjust threshold based on your JVM tuning and GC strategy\n// 90% is a reasonable default; lower for latency-sensitive applications\n| WHERE heap_util_pct > 90.0\n| SORT heap_util_pct DESC"
+                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jvm.heap.size IS NOT NULL\n| STATS\n    heap_size = MAX(LAST_OVER_TIME(weblogic.jvm.heap.size)),\n    heap_free = MAX(LAST_OVER_TIME(weblogic.jvm.heap.free)),\n    heap_max = MAX(LAST_OVER_TIME(weblogic.jvm.heap.max))\n  BY attributes.server\n| EVAL heap_used = heap_size - heap_free\n| WHERE heap_max > 0\n| EVAL heap_util_pct = ROUND(heap_used / heap_max * 100.0, 2)\n// Adjust threshold based on your JVM tuning and GC strategy\n// 90% is a reasonable default; lower for latency-sensitive applications\n| WHERE heap_util_pct > 90.0\n| SORT heap_util_pct DESC"
             },
             "size": 0,
             "threshold": [

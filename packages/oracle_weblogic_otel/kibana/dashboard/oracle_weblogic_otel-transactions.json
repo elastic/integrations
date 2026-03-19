@@ -1,59 +1,2289 @@
 {
-  "attributes": {
-    "title": "[Oracle WebLogic OTel] Transactions & Work Managers",
-    "description": "JTA transaction health and per-application work manager analysis for Oracle WebLogic Server. Tracks transaction commit/rollback/abandon rates and application-level request processing.",
-    "panelsJSON": "[{\"panelIndex\": \"91144e9b-fac7-b44d-0b1d-8339201b83cb\", \"gridData\": {\"x\": 0, \"y\": 0, \"w\": 48, \"h\": 2, \"i\": \"91144e9b-fac7-b44d-0b1d-8339201b83cb\"}, \"type\": \"links\", \"embeddableConfig\": {\"title\": \"Navigation\", \"enhancements\": {}, \"attributes\": {\"layout\": \"horizontal\", \"links\": [{\"id\": \"3af4ba12-6f83-488a-bdc9-0c7216a22d73\", \"order\": 0, \"label\": \"Overview\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard\"}, {\"id\": \"00816645-d7b5-8d12-2771-a432c7c69945\", \"order\": 1, \"label\": \"JVM & Thread Pool\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_00816645-d7b5-8d12-2771-a432c7c69945_dashboard\"}, {\"id\": \"7a09fc62-eb10-269a-1318-b71d3a4d4304\", \"order\": 2, \"label\": \"Transactions & Work Managers\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_7a09fc62-eb10-269a-1318-b71d3a4d4304_dashboard\"}]}}}, {\"panelIndex\": \"0563dba8-e018-01bf-7e3c-91932750954e\", \"gridData\": {\"x\": 0, \"y\": 2, \"w\": 16, \"h\": 12, \"i\": \"0563dba8-e018-01bf-7e3c-91932750954e\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## [Oracle WebLogic OTel] Transactions & Work Managers\\n\\nJTA transaction and work manager analysis for WebLogic Server:\\n- Transaction commit, rollback, and abandon rates\\n- Active in-flight transaction counts\\n- Per-application work manager request throughput\\n- Stuck threads by application and work manager\\n- Work manager pending request queue depths\\n\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"e14c43df-9c45-3240-e15e-1fbccff26b58\", \"gridData\": {\"x\": 16, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"e14c43df-9c45-3240-e15e-1fbccff26b58\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Transaction Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"d3856844-5bd3-1d08-b0ec-8a9db3e89c09\", \"layerType\": \"data\", \"metricAccessor\": \"dc70eee7-ae6c-0860-6f98-35b889cabdcd\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.total IS NOT NULL\\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"d3856844-5bd3-1d08-b0ec-8a9db3e89c09\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.total IS NOT NULL\\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total))\"}, \"columns\": [{\"fieldName\": \"total_rate\", \"columnId\": \"dc70eee7-ae6c-0860-6f98-35b889cabdcd\", \"label\": \"Transaction Rate\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"total_rate\", \"columnId\": \"dc70eee7-ae6c-0860-6f98-35b889cabdcd\", \"label\": \"Transaction Rate\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"5749398a-677a-8ac7-7ee4-65619b001f71\", \"gridData\": {\"x\": 24, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"5749398a-677a-8ac7-7ee4-65619b001f71\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Committed Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"731398c0-66c3-9ec6-bca9-87d9933d4ea6\", \"layerType\": \"data\", \"metricAccessor\": \"c1d09bcb-20ca-d62b-ea82-385203329e8d\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\\n| STATS committed_rate = SUM(RATE(weblogic.jta.transactions.committed))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"731398c0-66c3-9ec6-bca9-87d9933d4ea6\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\\n| STATS committed_rate = SUM(RATE(weblogic.jta.transactions.committed))\"}, \"columns\": [{\"fieldName\": \"committed_rate\", \"columnId\": \"c1d09bcb-20ca-d62b-ea82-385203329e8d\", \"label\": \"Committed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"committed_rate\", \"columnId\": \"c1d09bcb-20ca-d62b-ea82-385203329e8d\", \"label\": \"Committed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"e7a41a75-5a71-2a2b-d676-e03f6e0cf0de\", \"gridData\": {\"x\": 32, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"e7a41a75-5a71-2a2b-d676-e03f6e0cf0de\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Rolled Back Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"b519f8a4-9b68-bac3-1916-3527f9c0b7fb\", \"layerType\": \"data\", \"metricAccessor\": \"cd766b73-baf0-e8e3-22ae-f73489029753\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.rolled_back IS NOT NULL\\n| STATS rollback_rate = SUM(RATE(weblogic.jta.transactions.rolled_back))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"b519f8a4-9b68-bac3-1916-3527f9c0b7fb\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.rolled_back IS NOT NULL\\n| STATS rollback_rate = SUM(RATE(weblogic.jta.transactions.rolled_back))\"}, \"columns\": [{\"fieldName\": \"rollback_rate\", \"columnId\": \"cd766b73-baf0-e8e3-22ae-f73489029753\", \"label\": \"Rolled Back/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"rollback_rate\", \"columnId\": \"cd766b73-baf0-e8e3-22ae-f73489029753\", \"label\": \"Rolled Back/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"e722bf84-b4bc-c8ce-c8ec-e4ac8bd2372b\", \"gridData\": {\"x\": 40, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"e722bf84-b4bc-c8ce-c8ec-e4ac8bd2372b\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Abandoned Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"153e283b-1387-8a4c-f68b-613879669796\", \"layerType\": \"data\", \"metricAccessor\": \"b7b8f8cc-ed99-8fe4-ea39-d0848c5e515e\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.abandoned IS NOT NULL\\n| STATS abandon_rate = SUM(RATE(weblogic.jta.transactions.abandoned))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"153e283b-1387-8a4c-f68b-613879669796\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.abandoned IS NOT NULL\\n| STATS abandon_rate = SUM(RATE(weblogic.jta.transactions.abandoned))\"}, \"columns\": [{\"fieldName\": \"abandon_rate\", \"columnId\": \"b7b8f8cc-ed99-8fe4-ea39-d0848c5e515e\", \"label\": \"Abandoned/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"abandon_rate\", \"columnId\": \"b7b8f8cc-ed99-8fe4-ea39-d0848c5e515e\", \"label\": \"Abandoned/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"cc83d21d-0885-8894-208b-e79db223a3ff\", \"gridData\": {\"x\": 16, \"y\": 8, \"w\": 8, \"h\": 6, \"i\": \"cc83d21d-0885-8894-208b-e79db223a3ff\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Active Transactions\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"fea715fd-7d1d-9762-84d8-fbc1c6def789\", \"layerType\": \"data\", \"metricAccessor\": \"e80d652a-0029-0b34-4d39-c9b5a4d47973\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.active IS NOT NULL\\n| STATS active_txn = SUM(LAST_OVER_TIME(weblogic.jta.transactions.active))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"fea715fd-7d1d-9762-84d8-fbc1c6def789\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.active IS NOT NULL\\n| STATS active_txn = SUM(LAST_OVER_TIME(weblogic.jta.transactions.active))\"}, \"columns\": [{\"fieldName\": \"active_txn\", \"columnId\": \"e80d652a-0029-0b34-4d39-c9b5a4d47973\", \"label\": \"Active Transactions\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"compact\": true}}}}], \"allColumns\": [{\"fieldName\": \"active_txn\", \"columnId\": \"e80d652a-0029-0b34-4d39-c9b5a4d47973\", \"label\": \"Active Transactions\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"compact\": true}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"e2cfe7b2-9d84-8385-a4fc-b31542f6abc3\", \"gridData\": {\"x\": 24, \"y\": 8, \"w\": 8, \"h\": 6, \"i\": \"e2cfe7b2-9d84-8385-a4fc-b31542f6abc3\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Commit Success Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"0dd2d4dd-e906-3286-b6ca-e7a19c0307e5\", \"layerType\": \"data\", \"metricAccessor\": \"b6d2f5fe-9082-8bf8-6688-994a0007536a\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.total IS NOT NULL\\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total)), committed_rate = SUM(RATE(weblogic.jta.transactions.committed))\\n| EVAL commit_pct = CASE(total_rate > 0, ROUND(committed_rate / total_rate * 100, 1), 100)\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"0dd2d4dd-e906-3286-b6ca-e7a19c0307e5\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.total IS NOT NULL\\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total)), committed_rate = SUM(RATE(weblogic.jta.transactions.committed))\\n| EVAL commit_pct = CASE(total_rate > 0, ROUND(committed_rate / total_rate * 100, 1), 100)\"}, \"columns\": [{\"fieldName\": \"commit_pct\", \"columnId\": \"b6d2f5fe-9082-8bf8-6688-994a0007536a\", \"label\": \"Commit Success %\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1, \"suffix\": \"%\"}}}}], \"allColumns\": [{\"fieldName\": \"commit_pct\", \"columnId\": \"b6d2f5fe-9082-8bf8-6688-994a0007536a\", \"label\": \"Commit Success %\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1, \"suffix\": \"%\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"eaa582b2-9e91-9e09-81ba-1b7ae9c176f4\", \"gridData\": {\"x\": 32, \"y\": 8, \"w\": 8, \"h\": 6, \"i\": \"eaa582b2-9e91-9e09-81ba-1b7ae9c176f4\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Total Stuck Threads\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"8b0d6d19-5184-dd6c-9e0e-00f096cb01ce\", \"layerType\": \"data\", \"metricAccessor\": \"87402977-6657-590a-b549-ab0010eda40d\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"8b0d6d19-5184-dd6c-9e0e-00f096cb01ce\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck))\"}, \"columns\": [{\"fieldName\": \"stuck\", \"columnId\": \"87402977-6657-590a-b549-ab0010eda40d\", \"label\": \"Stuck Threads\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"allColumns\": [{\"fieldName\": \"stuck\", \"columnId\": \"87402977-6657-590a-b549-ab0010eda40d\", \"label\": \"Stuck Threads\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"02f01f30-1c7c-2ed4-f84a-aa98cf77d4dc\", \"gridData\": {\"x\": 40, \"y\": 8, \"w\": 8, \"h\": 6, \"i\": \"02f01f30-1c7c-2ed4-f84a-aa98cf77d4dc\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"WM Pending Requests\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"5628bd4f-535b-f07e-59be-fa1a84d0b5ce\", \"layerType\": \"data\", \"metricAccessor\": \"f296ceeb-258e-2872-eb63-f78b42983288\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"5628bd4f-535b-f07e-59be-fa1a84d0b5ce\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending))\"}, \"columns\": [{\"fieldName\": \"pending\", \"columnId\": \"f296ceeb-258e-2872-eb63-f78b42983288\", \"label\": \"WM Pending Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"compact\": true}}}}], \"allColumns\": [{\"fieldName\": \"pending\", \"columnId\": \"f296ceeb-258e-2872-eb63-f78b42983288\", \"label\": \"WM Pending Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"compact\": true}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"98dd998b-7197-65f6-2395-6f3b86cdb1e8\", \"gridData\": {\"x\": 0, \"y\": 14, \"w\": 48, \"h\": 3, \"i\": \"98dd998b-7197-65f6-2395-6f3b86cdb1e8\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## JTA Transactions\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"6169dd04-172e-b785-c052-a04047dede28\", \"gridData\": {\"x\": 0, \"y\": 17, \"w\": 24, \"h\": 12, \"i\": \"6169dd04-172e-b785-c052-a04047dede28\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Transaction Rates Over Time\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"54a34b93-f317-7e8c-ba06-f8f009bf2649\", \"accessors\": [\"ddcc33b1-1501-69aa-4408-b3edcdf73fec\", \"01717fd9-de34-9a15-b116-fc6ce400ff46\", \"7144cb19-f6d9-895a-c16b-3da9c9bb8f6b\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"colorMapping\": {\"assignments\": [{\"rule\": {\"type\": \"matchExactly\", \"values\": [\"Committed/s\"]}, \"color\": {\"type\": \"colorCode\", \"colorCode\": \"#54b399\"}, \"touched\": false}, {\"rule\": {\"type\": \"matchExactly\", \"values\": [\"Rolled Back/s\"]}, \"color\": {\"type\": \"colorCode\", \"colorCode\": \"#d6bf57\"}, \"touched\": false}, {\"rule\": {\"type\": \"matchExactly\", \"values\": [\"Abandoned/s\"]}, \"color\": {\"type\": \"colorCode\", \"colorCode\": \"#cc5642\"}, \"touched\": false}], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\\n| STATS committed = SUM(RATE(weblogic.jta.transactions.committed)), rolled_back = SUM(RATE(weblogic.jta.transactions.rolled_back)), abandoned = SUM(RATE(weblogic.jta.transactions.abandoned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"54a34b93-f317-7e8c-ba06-f8f009bf2649\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\\n| STATS committed = SUM(RATE(weblogic.jta.transactions.committed)), rolled_back = SUM(RATE(weblogic.jta.transactions.rolled_back)), abandoned = SUM(RATE(weblogic.jta.transactions.abandoned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"committed\", \"columnId\": \"ddcc33b1-1501-69aa-4408-b3edcdf73fec\", \"label\": \"Committed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"rolled_back\", \"columnId\": \"01717fd9-de34-9a15-b116-fc6ce400ff46\", \"label\": \"Rolled Back/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"abandoned\", \"columnId\": \"7144cb19-f6d9-895a-c16b-3da9c9bb8f6b\", \"label\": \"Abandoned/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}], \"allColumns\": [{\"fieldName\": \"committed\", \"columnId\": \"ddcc33b1-1501-69aa-4408-b3edcdf73fec\", \"label\": \"Committed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"rolled_back\", \"columnId\": \"01717fd9-de34-9a15-b116-fc6ce400ff46\", \"label\": \"Rolled Back/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"abandoned\", \"columnId\": \"7144cb19-f6d9-895a-c16b-3da9c9bb8f6b\", \"label\": \"Abandoned/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"cc37127c-e5a6-10cc-31b0-b7856d5b70c9\", \"gridData\": {\"x\": 24, \"y\": 17, \"w\": 24, \"h\": 12, \"i\": \"cc37127c-e5a6-10cc-31b0-b7856d5b70c9\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Active Transactions Over Time\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"b01d203f-41da-5c54-99a3-0be841b2301e\", \"accessors\": [\"ac1658b9-8837-80ff-47f4-af2082089be6\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"378c7a5b-bbe3-f9f1-0840-0119fe6318c3\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.active IS NOT NULL\\n| STATS active = MAX(LAST_OVER_TIME(weblogic.jta.transactions.active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"b01d203f-41da-5c54-99a3-0be841b2301e\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.jta.transactions.active IS NOT NULL\\n| STATS active = MAX(LAST_OVER_TIME(weblogic.jta.transactions.active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"active\", \"columnId\": \"ac1658b9-8837-80ff-47f4-af2082089be6\", \"label\": \"Active Transactions\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.server\", \"columnId\": \"378c7a5b-bbe3-f9f1-0840-0119fe6318c3\", \"label\": \"attributes.server\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"active\", \"columnId\": \"ac1658b9-8837-80ff-47f4-af2082089be6\", \"label\": \"Active Transactions\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.server\", \"columnId\": \"378c7a5b-bbe3-f9f1-0840-0119fe6318c3\", \"label\": \"attributes.server\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"f3c72600-acb1-c4be-af9d-1055b48a0a2a\", \"gridData\": {\"x\": 0, \"y\": 29, \"w\": 48, \"h\": 3, \"i\": \"f3c72600-acb1-c4be-af9d-1055b48a0a2a\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## Work Managers\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"8d449065-fb34-d116-0595-7a9acebf0cc1\", \"gridData\": {\"x\": 0, \"y\": 32, \"w\": 24, \"h\": 12, \"i\": \"8d449065-fb34-d116-0595-7a9acebf0cc1\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Work Manager Request Rate by Application\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"af13969f-5a4a-3216-fb94-7b24f0bf864b\", \"accessors\": [\"38b01f33-5f3f-68a7-70e0-2bb73e259ed6\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.requests.completed IS NOT NULL\\n| STATS rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"af13969f-5a4a-3216-fb94-7b24f0bf864b\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.requests.completed IS NOT NULL\\n| STATS rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"rate\", \"columnId\": \"38b01f33-5f3f-68a7-70e0-2bb73e259ed6\", \"label\": \"Completed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.application\", \"columnId\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"label\": \"attributes.application\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"rate\", \"columnId\": \"38b01f33-5f3f-68a7-70e0-2bb73e259ed6\", \"label\": \"Completed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.application\", \"columnId\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"label\": \"attributes.application\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"c4d0c1eb-cd02-78aa-a31d-af6e149b97a0\", \"gridData\": {\"x\": 24, \"y\": 32, \"w\": 24, \"h\": 12, \"i\": \"c4d0c1eb-cd02-78aa-a31d-af6e149b97a0\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Work Manager Pending Requests by Application\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"abd65d3e-ac2e-fad2-6088-d8a492e22304\", \"accessors\": [\"7ed01d3c-a753-4d7e-c618-30f90592debf\"], \"layerType\": \"data\", \"seriesType\": \"bar_stacked\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"bar_stacked\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"abd65d3e-ac2e-fad2-6088-d8a492e22304\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"pending\", \"columnId\": \"7ed01d3c-a753-4d7e-c618-30f90592debf\", \"label\": \"Pending Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.application\", \"columnId\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"label\": \"attributes.application\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"pending\", \"columnId\": \"7ed01d3c-a753-4d7e-c618-30f90592debf\", \"label\": \"Pending Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.application\", \"columnId\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"label\": \"attributes.application\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"ced4fa9b-1779-7f58-215c-77356076c807\", \"gridData\": {\"x\": 0, \"y\": 44, \"w\": 48, \"h\": 12, \"i\": \"ced4fa9b-1779-7f58-215c-77356076c807\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Stuck Threads Over Time by Application\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"4f0b1d31-786c-7304-7f01-11f3878b98c3\", \"accessors\": [\"a8d21c04-5427-bef7-8a9c-e53caf073f9f\"], \"layerType\": \"data\", \"seriesType\": \"bar_stacked\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"colorMapping\": {\"assignments\": [{\"rule\": {\"type\": \"matchExactly\", \"values\": [\"Stuck Threads\"]}, \"color\": {\"type\": \"colorCode\", \"colorCode\": \"#cc5642\"}, \"touched\": false}], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"bar_stacked\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"4f0b1d31-786c-7304-7f01-11f3878b98c3\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"stuck\", \"columnId\": \"a8d21c04-5427-bef7-8a9c-e53caf073f9f\", \"label\": \"Stuck Threads\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.application\", \"columnId\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"label\": \"attributes.application\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"stuck\", \"columnId\": \"a8d21c04-5427-bef7-8a9c-e53caf073f9f\", \"label\": \"Stuck Threads\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.application\", \"columnId\": \"8b34b325-1b1d-8721-d744-b1c389eada63\", \"label\": \"attributes.application\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"6846de1d-5814-4383-23bd-3d372b362738\", \"gridData\": {\"x\": 0, \"y\": 56, \"w\": 48, \"h\": 15, \"i\": \"6846de1d-5814-4383-23bd-3d372b362738\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Work Manager Detail\", \"visualizationType\": \"lnsDatatable\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"columns\": [{\"columnId\": \"8f5532da-d705-f865-7435-05d8d92044d3\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"e3dc4273-54b9-ed40-7d83-5db4bf3c91b6\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"cb4bcec1-b0d5-f9c8-de4f-b92c85176e9e\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"4143aa8f-d1a6-3a6a-3e1f-d9b009b88051\", \"isTransposed\": false, \"isMetric\": true}, {\"columnId\": \"aebeba01-dc56-3708-60f5-a1c5b5498ca8\", \"isTransposed\": false, \"isMetric\": true}, {\"columnId\": \"28397a0d-94f4-fbd9-377f-2a0c90141f74\", \"isTransposed\": false, \"isMetric\": true}], \"layerId\": \"37c351ab-2ecd-d583-3309-3c358147778b\", \"layerType\": \"data\"}, \"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE attributes.workmanager IS NOT NULL\\n| STATS stuck = MAX(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)), pending = MAX(LAST_OVER_TIME(weblogic.workmanager.requests.pending)), completed_rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY attributes.server, attributes.application, attributes.workmanager\\n| SORT stuck DESC, pending DESC\\n| LIMIT 50\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"37c351ab-2ecd-d583-3309-3c358147778b\": {\"query\": {\"esql\": \"TS metrics-oracle_weblogic.otel-*\\n| WHERE attributes.workmanager IS NOT NULL\\n| STATS stuck = MAX(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)), pending = MAX(LAST_OVER_TIME(weblogic.workmanager.requests.pending)), completed_rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY attributes.server, attributes.application, attributes.workmanager\\n| SORT stuck DESC, pending DESC\\n| LIMIT 50\"}, \"columns\": [{\"fieldName\": \"attributes.server\", \"columnId\": \"8f5532da-d705-f865-7435-05d8d92044d3\", \"label\": \"Server\", \"customLabel\": true}, {\"fieldName\": \"attributes.application\", \"columnId\": \"e3dc4273-54b9-ed40-7d83-5db4bf3c91b6\", \"label\": \"Application\", \"customLabel\": true}, {\"fieldName\": \"attributes.workmanager\", \"columnId\": \"cb4bcec1-b0d5-f9c8-de4f-b92c85176e9e\", \"label\": \"Work Manager\", \"customLabel\": true}, {\"fieldName\": \"stuck\", \"columnId\": \"4143aa8f-d1a6-3a6a-3e1f-d9b009b88051\", \"label\": \"Stuck Threads\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"pending\", \"columnId\": \"aebeba01-dc56-3708-60f5-a1c5b5498ca8\", \"label\": \"Pending\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"completed_rate\", \"columnId\": \"28397a0d-94f4-fbd9-377f-2a0c90141f74\", \"label\": \"Completed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"allColumns\": [{\"fieldName\": \"attributes.server\", \"columnId\": \"8f5532da-d705-f865-7435-05d8d92044d3\", \"label\": \"Server\", \"customLabel\": true}, {\"fieldName\": \"attributes.application\", \"columnId\": \"e3dc4273-54b9-ed40-7d83-5db4bf3c91b6\", \"label\": \"Application\", \"customLabel\": true}, {\"fieldName\": \"attributes.workmanager\", \"columnId\": \"cb4bcec1-b0d5-f9c8-de4f-b92c85176e9e\", \"label\": \"Work Manager\", \"customLabel\": true}, {\"fieldName\": \"stuck\", \"columnId\": \"4143aa8f-d1a6-3a6a-3e1f-d9b009b88051\", \"label\": \"Stuck Threads\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"pending\", \"columnId\": \"aebeba01-dc56-3708-60f5-a1c5b5498ca8\", \"label\": \"Pending\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"completed_rate\", \"columnId\": \"28397a0d-94f4-fbd9-377f-2a0c90141f74\", \"label\": \"Completed/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}]",
-    "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"syncCursor\":true,\"syncTooltips\":false,\"hidePanelTitles\":false}",
-    "kibanaSavedObjectMeta": {
-      "searchSourceJSON": "{\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"disabled\":false,\"negate\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"data_stream.dataset\",\"field\":\"data_stream.dataset\",\"params\":{\"query\":\"oracle_weblogic.otel\"}},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"oracle_weblogic.otel\"}}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+    "attributes": {
+        "title": "[Oracle WebLogic OTel] Transactions & Work Managers",
+        "description": "JTA transaction health and per-application work manager analysis for Oracle WebLogic Server. Tracks transaction commit/rollback/abandon rates and application-level request processing.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "00816645-d7b5-8d12-2771-a432c7c69945",
+                                "order": 1,
+                                "label": "JVM & Thread Pool",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_00816645-d7b5-8d12-2771-a432c7c69945_dashboard"
+                            },
+                            {
+                                "id": "7a09fc62-eb10-269a-1318-b71d3a4d4304",
+                                "order": 2,
+                                "label": "Transactions & Work Managers",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_7a09fc62-eb10-269a-1318-b71d3a4d4304_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Oracle WebLogic OTel] Transactions & Work Managers\n\nJTA transaction and work manager analysis for WebLogic Server:\n- Transaction commit, rollback, and abandon rates\n- Active in-flight transaction counts\n- Per-application work manager request throughput\n- Stuck threads by application and work manager\n- Work manager pending request queue depths\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "e14c43df-9c45-3240-e15e-1fbccff26b58",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "e14c43df-9c45-3240-e15e-1fbccff26b58"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Transaction Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "d3856844-5bd3-1d08-b0ec-8a9db3e89c09",
+                                "layerType": "data",
+                                "metricAccessor": "dc70eee7-ae6c-0860-6f98-35b889cabdcd",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.total IS NOT NULL\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d3856844-5bd3-1d08-b0ec-8a9db3e89c09": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.total IS NOT NULL\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_rate",
+                                                    "columnId": "dc70eee7-ae6c-0860-6f98-35b889cabdcd",
+                                                    "label": "Transaction Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_rate",
+                                                    "columnId": "dc70eee7-ae6c-0860-6f98-35b889cabdcd",
+                                                    "label": "Transaction Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5749398a-677a-8ac7-7ee4-65619b001f71",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "5749398a-677a-8ac7-7ee4-65619b001f71"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Committed Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "731398c0-66c3-9ec6-bca9-87d9933d4ea6",
+                                "layerType": "data",
+                                "metricAccessor": "c1d09bcb-20ca-d62b-ea82-385203329e8d",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\n| STATS committed_rate = SUM(RATE(weblogic.jta.transactions.committed))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "731398c0-66c3-9ec6-bca9-87d9933d4ea6": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\n| STATS committed_rate = SUM(RATE(weblogic.jta.transactions.committed))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "committed_rate",
+                                                    "columnId": "c1d09bcb-20ca-d62b-ea82-385203329e8d",
+                                                    "label": "Committed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "committed_rate",
+                                                    "columnId": "c1d09bcb-20ca-d62b-ea82-385203329e8d",
+                                                    "label": "Committed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e7a41a75-5a71-2a2b-d676-e03f6e0cf0de",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "e7a41a75-5a71-2a2b-d676-e03f6e0cf0de"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Rolled Back Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "b519f8a4-9b68-bac3-1916-3527f9c0b7fb",
+                                "layerType": "data",
+                                "metricAccessor": "cd766b73-baf0-e8e3-22ae-f73489029753",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.rolled_back IS NOT NULL\n| STATS rollback_rate = SUM(RATE(weblogic.jta.transactions.rolled_back))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b519f8a4-9b68-bac3-1916-3527f9c0b7fb": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.rolled_back IS NOT NULL\n| STATS rollback_rate = SUM(RATE(weblogic.jta.transactions.rolled_back))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rollback_rate",
+                                                    "columnId": "cd766b73-baf0-e8e3-22ae-f73489029753",
+                                                    "label": "Rolled Back/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rollback_rate",
+                                                    "columnId": "cd766b73-baf0-e8e3-22ae-f73489029753",
+                                                    "label": "Rolled Back/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e722bf84-b4bc-c8ce-c8ec-e4ac8bd2372b",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "e722bf84-b4bc-c8ce-c8ec-e4ac8bd2372b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Abandoned Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "153e283b-1387-8a4c-f68b-613879669796",
+                                "layerType": "data",
+                                "metricAccessor": "b7b8f8cc-ed99-8fe4-ea39-d0848c5e515e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.abandoned IS NOT NULL\n| STATS abandon_rate = SUM(RATE(weblogic.jta.transactions.abandoned))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "153e283b-1387-8a4c-f68b-613879669796": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.abandoned IS NOT NULL\n| STATS abandon_rate = SUM(RATE(weblogic.jta.transactions.abandoned))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "abandon_rate",
+                                                    "columnId": "b7b8f8cc-ed99-8fe4-ea39-d0848c5e515e",
+                                                    "label": "Abandoned/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "abandon_rate",
+                                                    "columnId": "b7b8f8cc-ed99-8fe4-ea39-d0848c5e515e",
+                                                    "label": "Abandoned/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "cc83d21d-0885-8894-208b-e79db223a3ff",
+                "gridData": {
+                    "x": 16,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "cc83d21d-0885-8894-208b-e79db223a3ff"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Active Transactions",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "fea715fd-7d1d-9762-84d8-fbc1c6def789",
+                                "layerType": "data",
+                                "metricAccessor": "e80d652a-0029-0b34-4d39-c9b5a4d47973",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.active IS NOT NULL\n| STATS active_txn = SUM(LAST_OVER_TIME(weblogic.jta.transactions.active))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "fea715fd-7d1d-9762-84d8-fbc1c6def789": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.active IS NOT NULL\n| STATS active_txn = SUM(LAST_OVER_TIME(weblogic.jta.transactions.active))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "active_txn",
+                                                    "columnId": "e80d652a-0029-0b34-4d39-c9b5a4d47973",
+                                                    "label": "Active Transactions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "active_txn",
+                                                    "columnId": "e80d652a-0029-0b34-4d39-c9b5a4d47973",
+                                                    "label": "Active Transactions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e2cfe7b2-9d84-8385-a4fc-b31542f6abc3",
+                "gridData": {
+                    "x": 24,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "e2cfe7b2-9d84-8385-a4fc-b31542f6abc3"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Commit Success Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "0dd2d4dd-e906-3286-b6ca-e7a19c0307e5",
+                                "layerType": "data",
+                                "metricAccessor": "b6d2f5fe-9082-8bf8-6688-994a0007536a",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.total IS NOT NULL\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total)), committed_rate = SUM(RATE(weblogic.jta.transactions.committed))\n| EVAL commit_pct = CASE(total_rate > 0, ROUND(committed_rate / total_rate * 100, 1), 100)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0dd2d4dd-e906-3286-b6ca-e7a19c0307e5": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.total IS NOT NULL\n| STATS total_rate = SUM(RATE(weblogic.jta.transactions.total)), committed_rate = SUM(RATE(weblogic.jta.transactions.committed))\n| EVAL commit_pct = CASE(total_rate > 0, ROUND(committed_rate / total_rate * 100, 1), 100)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "commit_pct",
+                                                    "columnId": "b6d2f5fe-9082-8bf8-6688-994a0007536a",
+                                                    "label": "Commit Success %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "commit_pct",
+                                                    "columnId": "b6d2f5fe-9082-8bf8-6688-994a0007536a",
+                                                    "label": "Commit Success %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "eaa582b2-9e91-9e09-81ba-1b7ae9c176f4",
+                "gridData": {
+                    "x": 32,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "eaa582b2-9e91-9e09-81ba-1b7ae9c176f4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Stuck Threads",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "8b0d6d19-5184-dd6c-9e0e-00f096cb01ce",
+                                "layerType": "data",
+                                "metricAccessor": "87402977-6657-590a-b549-ab0010eda40d",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8b0d6d19-5184-dd6c-9e0e-00f096cb01ce": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "stuck",
+                                                    "columnId": "87402977-6657-590a-b549-ab0010eda40d",
+                                                    "label": "Stuck Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "stuck",
+                                                    "columnId": "87402977-6657-590a-b549-ab0010eda40d",
+                                                    "label": "Stuck Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "02f01f30-1c7c-2ed4-f84a-aa98cf77d4dc",
+                "gridData": {
+                    "x": 40,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "02f01f30-1c7c-2ed4-f84a-aa98cf77d4dc"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "WM Pending Requests",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "5628bd4f-535b-f07e-59be-fa1a84d0b5ce",
+                                "layerType": "data",
+                                "metricAccessor": "f296ceeb-258e-2872-eb63-f78b42983288",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5628bd4f-535b-f07e-59be-fa1a84d0b5ce": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "pending",
+                                                    "columnId": "f296ceeb-258e-2872-eb63-f78b42983288",
+                                                    "label": "WM Pending Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "pending",
+                                                    "columnId": "f296ceeb-258e-2872-eb63-f78b42983288",
+                                                    "label": "WM Pending Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "98dd998b-7197-65f6-2395-6f3b86cdb1e8",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 3,
+                    "i": "98dd998b-7197-65f6-2395-6f3b86cdb1e8"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## JTA Transactions"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "6169dd04-172e-b785-c052-a04047dede28",
+                "gridData": {
+                    "x": 0,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "6169dd04-172e-b785-c052-a04047dede28"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Transaction Rates Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "54a34b93-f317-7e8c-ba06-f8f009bf2649",
+                                        "accessors": [
+                                            "ddcc33b1-1501-69aa-4408-b3edcdf73fec",
+                                            "01717fd9-de34-9a15-b116-fc6ce400ff46",
+                                            "7144cb19-f6d9-895a-c16b-3da9c9bb8f6b"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Committed/s"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#54b399"
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Rolled Back/s"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#d6bf57"
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Abandoned/s"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#cc5642"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\n| STATS committed = SUM(RATE(weblogic.jta.transactions.committed)), rolled_back = SUM(RATE(weblogic.jta.transactions.rolled_back)), abandoned = SUM(RATE(weblogic.jta.transactions.abandoned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "54a34b93-f317-7e8c-ba06-f8f009bf2649": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.committed IS NOT NULL\n| STATS committed = SUM(RATE(weblogic.jta.transactions.committed)), rolled_back = SUM(RATE(weblogic.jta.transactions.rolled_back)), abandoned = SUM(RATE(weblogic.jta.transactions.abandoned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "committed",
+                                                    "columnId": "ddcc33b1-1501-69aa-4408-b3edcdf73fec",
+                                                    "label": "Committed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "rolled_back",
+                                                    "columnId": "01717fd9-de34-9a15-b116-fc6ce400ff46",
+                                                    "label": "Rolled Back/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "abandoned",
+                                                    "columnId": "7144cb19-f6d9-895a-c16b-3da9c9bb8f6b",
+                                                    "label": "Abandoned/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "committed",
+                                                    "columnId": "ddcc33b1-1501-69aa-4408-b3edcdf73fec",
+                                                    "label": "Committed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "rolled_back",
+                                                    "columnId": "01717fd9-de34-9a15-b116-fc6ce400ff46",
+                                                    "label": "Rolled Back/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "abandoned",
+                                                    "columnId": "7144cb19-f6d9-895a-c16b-3da9c9bb8f6b",
+                                                    "label": "Abandoned/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "cc37127c-e5a6-10cc-31b0-b7856d5b70c9",
+                "gridData": {
+                    "x": 24,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "cc37127c-e5a6-10cc-31b0-b7856d5b70c9"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Active Transactions Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "b01d203f-41da-5c54-99a3-0be841b2301e",
+                                        "accessors": [
+                                            "ac1658b9-8837-80ff-47f4-af2082089be6"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "378c7a5b-bbe3-f9f1-0840-0119fe6318c3",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.active IS NOT NULL\n| STATS active = MAX(LAST_OVER_TIME(weblogic.jta.transactions.active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b01d203f-41da-5c54-99a3-0be841b2301e": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.jta.transactions.active IS NOT NULL\n| STATS active = MAX(LAST_OVER_TIME(weblogic.jta.transactions.active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "ac1658b9-8837-80ff-47f4-af2082089be6",
+                                                    "label": "Active Transactions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.server",
+                                                    "columnId": "378c7a5b-bbe3-f9f1-0840-0119fe6318c3",
+                                                    "label": "attributes.server",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "ac1658b9-8837-80ff-47f4-af2082089be6",
+                                                    "label": "Active Transactions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.server",
+                                                    "columnId": "378c7a5b-bbe3-f9f1-0840-0119fe6318c3",
+                                                    "label": "attributes.server",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f3c72600-acb1-c4be-af9d-1055b48a0a2a",
+                "gridData": {
+                    "x": 0,
+                    "y": 29,
+                    "w": 48,
+                    "h": 3,
+                    "i": "f3c72600-acb1-c4be-af9d-1055b48a0a2a"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Work Managers"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "8d449065-fb34-d116-0595-7a9acebf0cc1",
+                "gridData": {
+                    "x": 0,
+                    "y": 32,
+                    "w": 24,
+                    "h": 12,
+                    "i": "8d449065-fb34-d116-0595-7a9acebf0cc1"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Work Manager Request Rate by Application",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "af13969f-5a4a-3216-fb94-7b24f0bf864b",
+                                        "accessors": [
+                                            "38b01f33-5f3f-68a7-70e0-2bb73e259ed6"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.requests.completed IS NOT NULL\n| STATS rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "af13969f-5a4a-3216-fb94-7b24f0bf864b": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.requests.completed IS NOT NULL\n| STATS rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "38b01f33-5f3f-68a7-70e0-2bb73e259ed6",
+                                                    "label": "Completed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                                    "label": "attributes.application",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "38b01f33-5f3f-68a7-70e0-2bb73e259ed6",
+                                                    "label": "Completed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                                    "label": "attributes.application",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c4d0c1eb-cd02-78aa-a31d-af6e149b97a0",
+                "gridData": {
+                    "x": 24,
+                    "y": 32,
+                    "w": 24,
+                    "h": 12,
+                    "i": "c4d0c1eb-cd02-78aa-a31d-af6e149b97a0"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Work Manager Pending Requests by Application",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "abd65d3e-ac2e-fad2-6088-d8a492e22304",
+                                        "accessors": [
+                                            "7ed01d3c-a753-4d7e-c618-30f90592debf"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "abd65d3e-ac2e-fad2-6088-d8a492e22304": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.requests.pending IS NOT NULL\n| STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "pending",
+                                                    "columnId": "7ed01d3c-a753-4d7e-c618-30f90592debf",
+                                                    "label": "Pending Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                                    "label": "attributes.application",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "pending",
+                                                    "columnId": "7ed01d3c-a753-4d7e-c618-30f90592debf",
+                                                    "label": "Pending Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                                    "label": "attributes.application",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "ced4fa9b-1779-7f58-215c-77356076c807",
+                "gridData": {
+                    "x": 0,
+                    "y": 44,
+                    "w": 48,
+                    "h": 12,
+                    "i": "ced4fa9b-1779-7f58-215c-77356076c807"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Stuck Threads Over Time by Application",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "4f0b1d31-786c-7304-7f01-11f3878b98c3",
+                                        "accessors": [
+                                            "a8d21c04-5427-bef7-8a9c-e53caf073f9f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Stuck Threads"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#cc5642"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4f0b1d31-786c-7304-7f01-11f3878b98c3": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.workmanager.threads.stuck IS NOT NULL\n| STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "stuck",
+                                                    "columnId": "a8d21c04-5427-bef7-8a9c-e53caf073f9f",
+                                                    "label": "Stuck Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                                    "label": "attributes.application",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "stuck",
+                                                    "columnId": "a8d21c04-5427-bef7-8a9c-e53caf073f9f",
+                                                    "label": "Stuck Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "8b34b325-1b1d-8721-d744-b1c389eada63",
+                                                    "label": "attributes.application",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6846de1d-5814-4383-23bd-3d372b362738",
+                "gridData": {
+                    "x": 0,
+                    "y": 56,
+                    "w": 48,
+                    "h": 15,
+                    "i": "6846de1d-5814-4383-23bd-3d372b362738"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Work Manager Detail",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "8f5532da-d705-f865-7435-05d8d92044d3",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "e3dc4273-54b9-ed40-7d83-5db4bf3c91b6",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "cb4bcec1-b0d5-f9c8-de4f-b92c85176e9e",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "4143aa8f-d1a6-3a6a-3e1f-d9b009b88051",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "aebeba01-dc56-3708-60f5-a1c5b5498ca8",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "28397a0d-94f4-fbd9-377f-2a0c90141f74",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "9cc45a18-e4bc-3c94-80df-47d1110fe0b1",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE attributes.workmanager IS NOT NULL\n| STATS stuck = MAX(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)), pending = MAX(LAST_OVER_TIME(weblogic.workmanager.requests.pending)), completed_rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY attributes.server, attributes.application, attributes.workmanager\n| SORT stuck DESC, pending DESC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "9cc45a18-e4bc-3c94-80df-47d1110fe0b1": {
+                                            "query": {
+                                                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE attributes.workmanager IS NOT NULL\n| STATS stuck = MAX(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)), pending = MAX(LAST_OVER_TIME(weblogic.workmanager.requests.pending)), completed_rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY attributes.server, attributes.application, attributes.workmanager\n| SORT stuck DESC, pending DESC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.server",
+                                                    "columnId": "8f5532da-d705-f865-7435-05d8d92044d3",
+                                                    "label": "Server",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "e3dc4273-54b9-ed40-7d83-5db4bf3c91b6",
+                                                    "label": "Application",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.workmanager",
+                                                    "columnId": "cb4bcec1-b0d5-f9c8-de4f-b92c85176e9e",
+                                                    "label": "Work Manager",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "stuck",
+                                                    "columnId": "4143aa8f-d1a6-3a6a-3e1f-d9b009b88051",
+                                                    "label": "Stuck Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "pending",
+                                                    "columnId": "aebeba01-dc56-3708-60f5-a1c5b5498ca8",
+                                                    "label": "Pending",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "completed_rate",
+                                                    "columnId": "28397a0d-94f4-fbd9-377f-2a0c90141f74",
+                                                    "label": "Completed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.server",
+                                                    "columnId": "8f5532da-d705-f865-7435-05d8d92044d3",
+                                                    "label": "Server",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.application",
+                                                    "columnId": "e3dc4273-54b9-ed40-7d83-5db4bf3c91b6",
+                                                    "label": "Application",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.workmanager",
+                                                    "columnId": "cb4bcec1-b0d5-f9c8-de4f-b92c85176e9e",
+                                                    "label": "Work Manager",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "stuck",
+                                                    "columnId": "4143aa8f-d1a6-3a6a-3e1f-d9b009b88051",
+                                                    "label": "Stuck Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "pending",
+                                                    "columnId": "aebeba01-dc56-3708-60f5-a1c5b5498ca8",
+                                                    "label": "Pending",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "completed_rate",
+                                                    "columnId": "28397a0d-94f4-fbd9-377f-2a0c90141f74",
+                                                    "label": "Completed/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "oracle_weblogic.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "oracle_weblogic.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "e3e284ff-4b05-b4cb-fbc5-a1f51cd4c02a": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "e3e284ff-4b05-b4cb-fbc5-a1f51cd4c02a",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "attributes.server",
+                        "title": "Server",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "a4a68d8d-371d-50b8-da51-6bbb6fde289a": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "a4a68d8d-371d-50b8-da51-6bbb6fde289a",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "attributes.application",
+                        "title": "Application",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
     },
-    "timeRestore": true,
-    "timeFrom": "now-1h",
-    "timeTo": "now",
-    "version": 1,
-    "controlGroupInput": {
-      "chainingSystem": "HIERARCHICAL",
-      "controlStyle": "oneLine",
-      "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-      "panelsJSON": "{\"e3e284ff-4b05-b4cb-fbc5-a1f51cd4c02a\":{\"grow\":false,\"order\":0,\"width\":\"medium\",\"type\":\"optionsListControl\",\"explicitInput\":{\"id\":\"e3e284ff-4b05-b4cb-fbc5-a1f51cd4c02a\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"attributes.server\",\"title\":\"Server\",\"searchTechnique\":\"prefix\",\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}},\"a4a68d8d-371d-50b8-da51-6bbb6fde289a\":{\"grow\":false,\"order\":1,\"width\":\"medium\",\"type\":\"optionsListControl\",\"explicitInput\":{\"id\":\"a4a68d8d-371d-50b8-da51-6bbb6fde289a\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"attributes.application\",\"title\":\"Application\",\"searchTechnique\":\"prefix\",\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}}}",
-      "showApplySelections": false
-    }
-  },
-  "coreMigrationVersion": "8.8.0",
-  "created_at": "2023-10-01T00:00:00Z",
-  "created_by": "admin",
-  "id": "oracle_weblogic_otel-transactions",
-  "managed": false,
-  "references": [
-    {
-      "type": "dashboard",
-      "id": "oracle_weblogic_otel-overview",
-      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
-    },
-    {
-      "type": "dashboard",
-      "id": "oracle_weblogic_otel-jvm-thread-pool",
-      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_00816645-d7b5-8d12-2771-a432c7c69945_dashboard"
-    },
-    {
-      "type": "dashboard",
-      "id": "oracle_weblogic_otel-transactions",
-      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_7a09fc62-eb10-269a-1318-b71d3a4d4304_dashboard"
-    },
-    {
-      "type": "index-pattern",
-      "id": "metrics-*",
-      "name": "controlGroup_e3e284ff-4b05-b4cb-fbc5-a1f51cd4c02a:optionsListDataView"
-    },
-    {
-      "type": "index-pattern",
-      "id": "metrics-*",
-      "name": "controlGroup_a4a68d8d-371d-50b8-da51-6bbb6fde289a:optionsListDataView"
-    }
-  ],
-  "type": "dashboard",
-  "typeMigrationVersion": "10.2.0",
-  "updated_at": "2023-10-01T00:00:00Z",
-  "updated_by": "admin",
-  "version": "1"
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "oracle_weblogic_otel-transactions",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "oracle_weblogic_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "oracle_weblogic_otel-jvm-thread-pool",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_00816645-d7b5-8d12-2771-a432c7c69945_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "oracle_weblogic_otel-transactions",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_7a09fc62-eb10-269a-1318-b71d3a4d4304_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_e3e284ff-4b05-b4cb-fbc5-a1f51cd4c02a:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_a4a68d8d-371d-50b8-da51-6bbb6fde289a:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
 }
