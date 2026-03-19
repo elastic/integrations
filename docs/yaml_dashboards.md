@@ -45,10 +45,10 @@ The compiler is distributed as a Python package and runs using [uv](https://gith
 REQS=.github/workflows/validate-yaml-dashboards.requirements.txt
 
 # Compile dashboards (no persistent install needed)
-uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.0 kb-dashboard compile --help
+uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.1 kb-dashboard compile --help
 
 # Lint dashboards
-uvx --with-requirements "$REQS" --from kb-dashboard-lint==0.4.0 kb-dashboard-lint check --help
+uvx --with-requirements "$REQS" --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check --help
 ```
 
 The pinned package hashes live in `.github/workflows/validate-yaml-dashboards.requirements.txt`. Keep this file updated when bumping compiler versions.
@@ -59,12 +59,12 @@ If you are migrating older YAML dashboards from `0.2.7`, use the built-in upgrad
 REQS=.github/workflows/validate-yaml-dashboards.requirements.txt
 
 # Check if upgrades are needed (no files written)
-uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.0 kb-dashboard upgrade \
+uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.1 kb-dashboard upgrade \
     --input-dir _dev/shared/kibana \
     --fail-on-change
 
 # Apply upgrades in place
-uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.0 kb-dashboard upgrade \
+uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.1 kb-dashboard upgrade \
     --input-dir _dev/shared/kibana \
     --write
 ```
@@ -123,11 +123,11 @@ cd packages/my_package
 REQS=../../.github/workflows/validate-yaml-dashboards.requirements.txt
 
 # Lint the YAML
-uvx --with-requirements "$REQS" --from kb-dashboard-lint==0.4.0 kb-dashboard-lint check \
+uvx --with-requirements "$REQS" --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check \
     --input-file _dev/shared/kibana/overview.yaml
 
 # Compile YAML to Elastic integration JSON
-uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.0 kb-dashboard compile \
+uvx --with-requirements "$REQS" --from kb-dashboard-cli==0.4.1 kb-dashboard compile \
     --input-dir _dev/shared/kibana \
     --output-dir kibana/dashboard \
     --format "elastic-integrations"
@@ -147,16 +147,16 @@ The compiler bundles all schema documentation, examples, and workflow guides. Us
 
 ```bash
 # Output the complete documentation (schema, examples, style guides) to stdout
-uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.0 kb-dashboard docs llms-full
+uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.1 kb-dashboard docs llms-full
 
 # Copy to clipboard (macOS)
-uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.0 kb-dashboard docs llms-full | pbcopy
+uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.1 kb-dashboard docs llms-full | pbcopy
 
 # List available workflow guides
-uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.0 kb-dashboard docs list-guides
+uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.1 kb-dashboard docs list-guides
 
 # Output a specific guide
-uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.0 kb-dashboard docs guide dashboard-style-guide
+uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.1 kb-dashboard docs guide dashboard-style-guide
 ```
 
 Feed the `llms-full` output to the LLM as context. It contains the full schema reference, panel type documentation, complete examples, and workflow guides. Run `kb-dashboard docs list-guides` to see all available guides. Currently bundled guides include:
@@ -207,13 +207,13 @@ After the LLM produces a YAML file:
 1. **Lint it** to catch schema issues:
 
    ```bash
-   uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-lint==0.4.0 kb-dashboard-lint check --input-file dashboard.yaml
+   uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check --input-file dashboard.yaml
    ```
 
 2. **Compile it** to verify it produces valid integration JSON:
 
    ```bash
-   uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.0 kb-dashboard compile \
+   uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.1 kb-dashboard compile \
        --input-file dashboard.yaml \
        --output-dir /tmp/output \
        --format "elastic-integrations"
@@ -222,7 +222,7 @@ After the LLM produces a YAML file:
 3. If you have kibana running, you can **Upload it** to your running Kibana instance to visually verify:
 
    ```bash
-   uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.0 kb-dashboard compile \
+   uvx --with-requirements .github/workflows/validate-yaml-dashboards.requirements.txt --from kb-dashboard-cli==0.4.1 kb-dashboard compile \
        --input-file dashboard.yaml \
        --upload \
        --kibana-url http://localhost:5601 \
