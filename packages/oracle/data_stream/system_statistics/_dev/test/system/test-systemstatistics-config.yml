@@ -51,9 +51,7 @@ agent:
       # Wait for Oracle listener/service registration to avoid transient ORA-12514 on startup.
       echo "Waiting for Oracle listener/service..."
       for i in $(seq 1 "${MAX_RETRIES}"); do
-        OUTPUT=$(echo "set heading off feedback off verify off echo off; select 'READY' from dual;" | sqlplus -s "${ORACLE_DSN}" 2>&1 || true)
-
-        if echo "${OUTPUT}" | grep -q "READY"; then
+        if OUTPUT=$(echo "select 1 from dual;" | sqlplus -s "${ORACLE_DSN}" 2>&1); then
           echo "Oracle is ready (attempt ${i})"
           break
         fi
