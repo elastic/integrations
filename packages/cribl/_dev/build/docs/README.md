@@ -28,7 +28,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     2. Configure the Cribl integration in Kibana
 
-        Map each `_dataId` configured in the step above to the pre-installed Fleet integration's datastream. 
+        Map each `_dataId` configured in the step above to the pre-installed Fleet integration's datastream. Each mapping can optionally include a namespace; if not configured, it defaults to `default`.
 
         ![Configure Elastic Cribl Integration](../img/elastic-cribl-config.png)
 

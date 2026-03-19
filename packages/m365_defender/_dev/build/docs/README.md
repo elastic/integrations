@@ -18,30 +18,40 @@ This integration supports below API versions to collect data.
     - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
   - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
     - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
-| Resource types            | Description                                                                                                                                                                       |
-| ---------------------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
-| AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
-| CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
-| DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
-| DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
-| DeviceFileEvents          | File creation, modification, and other file system events.                                                                                                                        |
-| DeviceImageLoadEvents     | DLL loading events.                                                                                                                                                               |
-| DeviceInfo                | Machine information, including OS information.                                                                                                                                    |
-| DeviceLogonEvents         | Sign-ins and other authentication events on devices.                                                                                                                              |
-| DeviceNetworkEvents       | Network connection and related events.                                                                                                                                            |
-| DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains.                                                                                                         |
-| DeviceProcessEvents       | Process creation and related events.                                                                                                                                              |
-| DeviceRegistryEvents      | Creation and modification of registry entries.                                                                                                                                    |
-| EmailAttachmentInfo       | Information about files attached to emails.                                                                                                                                       |
-| EmailEvents               | Microsoft 365 email events, including email delivery and blocking events.                                                                                                         |
-| EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox.                                                                       |
-| EmailUrlInfo              | Information about URLs in emails.                                                                                                                                                 |
-| IdentityInfo              | Account information from various sources, including Microsoft Entra ID.                                                                                                           |
-| IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
-| IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
-| IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
-| UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
+
+| Resource types | Description |
+| --- | --- |
+| AlertEvidence | Files, IP addresses, URLs, users, or devices associated with alerts. |
+| AlertInfo | Alerts from M365 Defender XDR services, including severity and threat categorization. |
+| BehaviorEntities | Information about entities (file, process, device, user, and others) that are involved in a behavior. |
+| BehaviorInfo | Information about behaviors from Microsoft Defender for Cloud Apps and User and Entity Behavior Analytics (UEBA). |
+| CloudAppEvents | Events involving accounts and objects in Office 365 and other cloud apps and services. |
+| CloudAuditEvents | Information about cloud audit events for various cloud platforms protected by the organization's Microsoft Defender for Cloud. |
+| CloudProcessEvents | Information about process events in multicloud hosted environments protected by the organization's Microsoft Defender for Cloud. |
+| CloudStorageAggregatedEvents | Information about storage activity and related events. |
+| DeviceEvents | Event types, including events triggered by security controls. |
+| DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints. |
+| DeviceFileEvents | File creation, modification, and other file system events. |
+| DeviceImageLoadEvents | DLL loading events. |
+| DeviceInfo | Machine information, including OS information. |
+| DeviceLogonEvents | Sign-ins and other authentication events on devices. |
+| DeviceNetworkEvents | Network connection and related events. |
+| DeviceNetworkInfo | Network properties of devices, as well as connected networks and domains. |
+| DeviceProcessEvents | Process creation and related events. |
+| DeviceRegistryEvents | Creation and modification of registry entries. |
+| EmailAttachmentInfo | Information about files attached to emails. |
+| EmailEvents | Microsoft 365 email events, including email delivery and blocking events. |
+| EmailPostDeliveryEvents | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox. |
+| EmailUrlInfo | Information about URLs in emails. |
+| IdentityInfo | Account information from various sources, including Microsoft Entra ID. |
+| IdentityLogonEvents | Authentication events on Active Directory and Microsoft online services. |
+| IdentityQueryEvents | Queries for Active Directory objects, such as users, groups, devices, and domains. |
+| IdentityDirectoryEvents | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+| MessageEvents | Details about messages sent and received within your organization at the time of delivery. |
+| MessagePostDeliveryEvents | Information about security events that occurred after the delivery of a Microsoft Teams message in your organization. |
+| MessageUrlInfo | Information about URLs sent through Microsoft Teams messages in your organization. |
+| UrlClickEvent | Safe Links clicks from email messages, Teams, and Office 365 apps. |
+
 
 ## What data does this integration collect?
 
@@ -74,6 +84,8 @@ Follow the steps below to configure data collection from Microsoft sources.
 
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 - A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping filebeat it can start back up at the spot that it stopped processing messages.
+
+**Authentication:** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
 #### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 

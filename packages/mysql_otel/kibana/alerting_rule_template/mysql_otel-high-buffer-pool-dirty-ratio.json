@@ -1,0 +1,39 @@
+{
+    "id": "mysql_otel-high-buffer-pool-dirty-ratio",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[MySQL OTel] High buffer pool dirty page ratio",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "mysql"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-mysqlreceiver.otel-*\n// Buffer pool usage (bytes) by status: clean vs dirty; gauges\n| WHERE metrics.mysql.buffer_pool.usage IS NOT NULL\n    AND attributes.status IN (\"dirty\", \"clean\")\n| STATS\n    dirty = MAX(metrics.mysql.buffer_pool.usage) WHERE attributes.status == \"dirty\",\n    clean = MAX(metrics.mysql.buffer_pool.usage) WHERE attributes.status == \"clean\"\n  BY resource.attributes.mysql.instance.endpoint\n| EVAL total = dirty + clean, ratio = CASE(total > 0, dirty / total, 0)\n// Alert when dirty ratio > 75%; InnoDB will flush aggressively above this\n| WHERE ratio > 0.75 AND total > 0\n| SORT ratio DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.mysql.instance.endpoint",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
