@@ -1,0 +1,64 @@
+---
+description: Pipeline for parsing OpenClaw session JSONL logs
+processors:
+  - json:
+      field: message
+      target_field: openclaw
+      ignore_failure: true
+  - drop:
+      if: "ctx.openclaw?.message?.role != 'user' && (ctx.openclaw?.message?.role != 'assistant' || ctx.openclaw?.message?.usage == null)"
+  - date:
+      field: openclaw.timestamp
+      target_field: @timestamp
+      formats:
+        - ISO8601
+  - rename:
+      field: openclaw.message.role
+      target_field: openclaw.role
+      ignore_missing: true
+  - rename:
+      field: openclaw.message.model
+      target_field: openclaw.model
+      ignore_missing: true
+  - rename:
+      field: openclaw.message.usage.input
+      target_field: openclaw.usage.input_tokens
+      ignore_missing: true
+  - rename:
+      field: openclaw.message.usage.output
+      target_field: openclaw.usage.output_tokens
+      ignore_missing: true
+  - rename:
+      field: openclaw.message.usage.totalTokens
+      target_field: openclaw.usage.total_tokens
+      ignore_missing: true
+  - rename:
+      field: openclaw.message.usage.cost.total
+      target_field: openclaw.cost.usd
+      ignore_missing: true
+  - script:
+      description: "Extract text from content array"
+      lang: painless
+      if: "ctx.openclaw?.message?.content != null"
+      source: |
+        def content = ctx.openclaw.message.content;
+        if (content instanceof List) {
+          for (def item : content) {
+            if (item.type == 'text' && item.text != null) {
+              ctx.openclaw.text = item.text;
+            } else if (item.type == 'thinking' && item.thinking != null) {
+              ctx.openclaw.thinking = item.thinking;
+            }
+          }
+        } else if (content instanceof String) {
+          ctx.openclaw.text = content;
+        }
+  - remove:
+      field: 
+        - message
+        - openclaw.message
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
