@@ -98,7 +98,7 @@ service:
 ### Metrics
 
 Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/prometheusreceiver/metadata.yaml)
-of the OpenTelemetry Prometheus receiver for details on the receiver. Traefik exposes metrics at its `/metrics` endpoint; the available metric names and labels are defined by Traefik and include entrypoint, router, service, and global metrics (request counts, duration histograms, open connections, TLS certificate expiry, configuration reload counts, and Go runtime metrics).
+of the OpenTelemetry Prometheus receiver for details on the receiver. For the authoritative Traefik metric specification (metric names, types, and labels) exposed at `/metrics`, refer to Traefik's [Prometheus metrics documentation](https://doc.traefik.io/traefik/observability/metrics/prometheus/). Traefik metrics include entrypoint, router, service, and global metrics (request counts, duration histograms, open connections, TLS certificate expiry, configuration reload counts, and Go runtime metrics).
 
 ## Dashboards
 
