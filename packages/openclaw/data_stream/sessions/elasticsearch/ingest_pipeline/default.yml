@@ -1,6 +1,12 @@
 ---
 description: Pipeline for parsing OpenClaw session JSONL logs
 processors:
+  - grok:
+      field: log.file.path
+      patterns:
+        - '/agents/%{DATA:openclaw.agent.id}/sessions/%{DATA:openclaw.session.id}\.jsonl$'
+      ignore_missing: true
+      ignore_failure: true
   - json:
       field: message
       target_field: openclaw
