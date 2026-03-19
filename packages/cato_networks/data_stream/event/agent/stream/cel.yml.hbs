@@ -39,40 +39,49 @@ program: |
     request(
       "POST",
       state.url.trim_right("/") + "/api/v1/graphql2"
-    ).with({
-      "Header": {
-        "Content-Type": ["application/json"],
-        "x-api-key": [state.api_key]
-      },
-      "Body": {
-        "query": state.query,
-        "variables": {
-          "accountIDs": [state.account_id],
-          ?"marker": state.?cursor.marker,
-        }
-      }.encode_json(),
-    }).do_request().as(resp,
-      resp.StatusCode == 200 ?
+    ).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"],
+          "x-api-key": [state.api_key],
+        },
+        "Body": {
+          "query": state.query,
+          "variables": {
+            "accountIDs": [state.account_id],
+            ?"marker": state.?cursor.marker,
+          },
+        }.encode_json(),
+      }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
         bytes(resp.Body).decode_json().as(body,
           // in case of rate limit and wrong API key, StatusCode will be 200 and eventsFeed will be null
-          body.?data.eventsFeed.orValue(null) != null ?
+          (body.?data.eventsFeed.orValue(null) != null) ?
             {
-              "events": body.data.eventsFeed.accounts[0].records.map(record, {
-                "message": record.fieldsMap.encode_json(),
-              }),
+              "events": body.data.eventsFeed.accounts[0].records.map(record,
+                {
+                  "message": record.fieldsMap.encode_json(),
+                }
+              ),
               "cursor": {
                 ?"marker": body.?data.eventsFeed.marker,
               },
-              "want_more": body.data.eventsFeed.fetchedCount == state.max_page_limit,
+              "want_more": body.data.eventsFeed.fetchedCount >= state.max_page_limit,
             }
           :
             {
               "events": {
                 "error": {
-                  "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + body.errors[0].message
-                }
+                  "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                    (has(body.errors) && size(body.errors) > 0) ?
+                      body.errors[0].message
+                    :
+                      "eventsFeed returned null (possible rate limit or invalid API key)"
+                  ),
+                },
               },
-              "want_more": false
+              "want_more": false,
             }
         )
       :
@@ -82,7 +91,7 @@ program: |
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
               "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
-                size(resp.Body) != 0 ?
+                (size(resp.Body) != 0) ?
                   string(resp.Body)
                 :
                   string(resp.Status) + " (" + string(resp.StatusCode) + ")"
