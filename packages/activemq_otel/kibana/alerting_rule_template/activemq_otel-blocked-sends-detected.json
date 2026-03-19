@@ -1,0 +1,36 @@
+{
+  "id": "activemq_otel-blocked-sends-detected",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[ActiveMQ OTel] Blocked sends detected",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "activemq",
+      "errors"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-activemq.otel-*\n// activemq.queue.blocked.sends is counter_long; dimension: activemq.destination.name\n| WHERE activemq.queue.blocked.sends IS NOT NULL\n| STATS blocked_rate = SUM(RATE(activemq.queue.blocked.sends)) BY activemq.broker.name, activemq.destination.name\n// Any blocked sends indicate memory pressure — critical signal\n| WHERE blocked_rate > 0\n| SORT blocked_rate DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "activemq.destination.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

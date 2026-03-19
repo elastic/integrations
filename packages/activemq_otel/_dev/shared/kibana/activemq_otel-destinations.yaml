@@ -1,0 +1,379 @@
+dashboards:
+  - id: activemq_otel-destinations
+    name: '[ActiveMQ OTel] Destinations & Message Flow'
+    description: >-
+      Queues, topics, message flow, and destination-level errors.
+    minimum_kibana_version: "8.14.0"
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: activemq.otel
+
+    controls:
+      - type: options
+        label: Broker
+        data_view: metrics-*
+        field: resource.attributes.activemq.broker.name
+      - type: options
+        label: Destination type
+        data_view: metrics-*
+        field: attributes.activemq.destination.type
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: activemq_otel-overview
+            - label: Broker Health & Capacity
+              dashboard: activemq_otel-broker-health
+            - label: Destinations & Message Flow
+              dashboard: activemq_otel-destinations
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [ActiveMQ OTel] Destinations & Message Flow
+
+            Queues, topics, and message flow:
+            - Total queue depth, consumers, producers
+            - Queue depth, enqueue/dequeue rate by destination
+            - Message wait time, inflight messages
+            - DLQ depth, expired messages, blocked sends
+
+      # ─── KPI Metric Row ──────────────────────────────────────────────
+      - title: Total Queue Depth
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.message.current IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS depth_per_dest = MAX(activemq.message.current) BY dest"
+            - "STATS total_depth = SUM(depth_per_dest)"
+          primary:
+            field: total_depth
+            label: Queue Depth
+            format:
+              type: number
+              compact: true
+              decimals: 2
+
+      - title: Total Consumers
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.consumer.count IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS consumers = SUM(activemq.consumer.count)"
+          primary:
+            field: consumers
+            label: Consumers
+            format:
+              type: number
+              compact: true
+
+      - title: Total Producers
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.producer.count IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS producers = SUM(activemq.producer.count)"
+          primary:
+            field: producers
+            label: Producers
+            format:
+              type: number
+              compact: true
+
+      # ─── Queue Depth (full-width) ───────────────────────────────────
+      - title: Queue Depth Over Time by Destination
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.message.current IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS depth = AVG(activemq.message.current) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: depth
+              label: Queue Depth
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: dest
+          appearance:
+            y_left_axis:
+              title: "Queue Depth"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Enqueue / Dequeue Rate ──────────────────────────────────────
+      - title: Enqueue Rate by Destination
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.message.enqueued IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS enqueue_rate = SUM(RATE(activemq.message.enqueued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: enqueue_rate
+              label: Enqueue/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: dest
+          appearance:
+            y_left_axis:
+              title: "Enqueue/sec"
+          legend:
+            visible: show
+            position: right
+
+      - title: Dequeue Rate by Destination
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.message.dequeued IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS dequeue_rate = SUM(RATE(activemq.message.dequeued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: dequeue_rate
+              label: Dequeue/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: dest
+          appearance:
+            y_left_axis:
+              title: "Dequeue/sec"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Message Wait & Inflight ─────────────────────────────────────
+      - title: Message Wait Time by Destination
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.message.wait_time.avg IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS wait_ms = AVG(activemq.message.wait_time.avg) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: wait_ms
+              label: Wait Time (ms)
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: dest
+          appearance:
+            y_left_axis:
+              title: "Wait Time (ms)"
+          legend:
+            visible: show
+            position: right
+
+      - title: Inflight Messages (Queue + Topic)
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.queue.message.inflight IS NOT NULL OR activemq.topic.message.inflight IS NOT NULL"
+            - "EVAL inflight = COALESCE(activemq.queue.message.inflight, 0) + COALESCE(activemq.topic.message.inflight, 0)"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS inflight = AVG(inflight) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: inflight
+              label: Inflight
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: dest
+          appearance:
+            y_left_axis:
+              title: "Inflight Messages"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Error & Capacity Signals ────────────────────────────────────
+      - title: DLQ Depth Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.message.current IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest == "ActiveMQ.DLQ"'
+            - "STATS dlq_depth = AVG(activemq.message.current) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: dlq_depth
+              label: DLQ Depth
+              format:
+                type: number
+                decimals: 0
+          appearance:
+            y_left_axis:
+              title: "Messages"
+          legend:
+            visible: show
+            position: right
+
+      - title: Expired Messages by Destination
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.message.expired IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS expired_rate = SUM(RATE(activemq.message.expired)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: expired_rate
+              label: Expired/sec
+          breakdown:
+            field: dest
+          appearance:
+            y_left_axis:
+              title: "Expired/sec"
+          legend:
+            visible: show
+            position: right
+
+      - title: Blocked Sends by Destination
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.queue.blocked.sends IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS blocked_rate = SUM(RATE(activemq.queue.blocked.sends)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: blocked_rate
+              label: Blocked/sec
+          breakdown:
+            field: dest
+          appearance:
+            y_left_axis:
+              title: "Blocked/sec"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Detail Tables ───────────────────────────────────────────────
+      - title: Destinations by Queue Depth
+        size: {w: 24, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.message.current IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS queue_depth = MAX(activemq.message.current) BY dest"
+            - "SORT queue_depth DESC"
+            - "LIMIT 20"
+          breakdowns:
+            - field: dest
+              label: Destination
+          metrics:
+            - field: queue_depth
+              label: Queue Depth
+
+      - title: Destination Type Distribution
+        size: {w: 24, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.destination.type IS NOT NULL"
+            - "EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)"
+            - 'WHERE dest IS NOT NULL AND NOT (dest LIKE "ActiveMQ.Advisory*")'
+            - "STATS count = COUNT_DISTINCT(dest) BY activemq.destination.type"
+            - "SORT count DESC"
+            - "LIMIT 10"
+          breakdowns:
+            - field: activemq.destination.type
+              label: Type
+          metrics:
+            - field: count
+              label: Count

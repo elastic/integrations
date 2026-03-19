@@ -1,12 +1,12 @@
 module github.com/elastic/integrations
 
-go 1.25.3
+go 1.25.8
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.13.0
-	github.com/elastic/elastic-package v0.120.0
+	github.com/elastic/elastic-package v0.121.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.9.1
 	github.com/elastic/package-registry v1.37.0
@@ -39,7 +39,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/PaesslerAG/gval v1.2.1 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
-	github.com/Pallinder/go-randomdata v1.2.0 // indirect
 	github.com/ProtonMail/go-crypto v1.3.0 // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f // indirect
 	github.com/ProtonMail/gopenpgp/v2 v2.9.0 // indirect
@@ -51,6 +50,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bitfield/gotestdox v0.2.2 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/brianvoe/gofakeit/v7 v7.1.2 // indirect
 	github.com/cbroglie/mustache v1.4.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
@@ -62,9 +62,8 @@ require (
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/cli/safeexec v1.0.0 // indirect
-	github.com/clipperhouse/displaywidth v0.9.0 // indirect
-	github.com/clipperhouse/stringish v0.1.1 // indirect
-	github.com/clipperhouse/uax29/v2 v2.5.0 // indirect
+	github.com/clipperhouse/displaywidth v0.10.0 // indirect
+	github.com/clipperhouse/uax29/v2 v2.6.0 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/cncf/xds/go v0.0.0-20251210132809-ee656c7534f5 // indirect
 	github.com/creack/pty v1.1.19 // indirect
@@ -72,14 +71,14 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dnephin/pflag v1.0.7 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/elastic/elastic-integration-corpus-generator-tool v0.11.0 // indirect
+	github.com/elastic/elastic-integration-corpus-generator-tool v0.12.0 // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
 	github.com/elastic/go-resource v0.2.0 // indirect
 	github.com/elastic/go-sysinfo v1.15.1 // indirect
 	github.com/elastic/go-windows v1.0.2 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
 	github.com/elastic/kbncontent v0.1.4 // indirect
-	github.com/elastic/package-spec/v3 v3.5.7 // indirect
+	github.com/elastic/package-spec/v3 v3.5.8 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.2 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.36.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.0 // indirect
@@ -154,9 +153,9 @@ require (
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
-	github.com/olekukonko/errors v1.1.0 // indirect
-	github.com/olekukonko/ll v0.1.4-0.20260115111900-9e59c2286df0 // indirect
-	github.com/olekukonko/tablewriter v1.1.3 // indirect
+	github.com/olekukonko/errors v1.2.0 // indirect
+	github.com/olekukonko/ll v0.1.6 // indirect
+	github.com/olekukonko/tablewriter v1.1.4 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/xattr v0.4.12 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
@@ -208,7 +207,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect
-	go.yaml.in/yaml/v2 v2.4.3 // indirect
+	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
@@ -229,17 +228,17 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	helm.sh/helm/v3 v3.20.0 // indirect
+	helm.sh/helm/v3 v3.20.1 // indirect
 	howett.net/plist v1.0.1 // indirect
-	k8s.io/api v0.35.1 // indirect
-	k8s.io/apiextensions-apiserver v0.35.0 // indirect
-	k8s.io/apimachinery v0.35.1 // indirect
-	k8s.io/cli-runtime v0.35.1 // indirect
-	k8s.io/client-go v0.35.1 // indirect
-	k8s.io/component-base v0.35.0 // indirect
+	k8s.io/api v0.35.2 // indirect
+	k8s.io/apiextensions-apiserver v0.35.1 // indirect
+	k8s.io/apimachinery v0.35.2 // indirect
+	k8s.io/cli-runtime v0.35.2 // indirect
+	k8s.io/client-go v0.35.2 // indirect
+	k8s.io/component-base v0.35.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
-	k8s.io/kubectl v0.35.0 // indirect
+	k8s.io/kubectl v0.35.1 // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	modernc.org/libc v1.67.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

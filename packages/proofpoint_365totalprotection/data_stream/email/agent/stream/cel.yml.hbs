@@ -1,0 +1,127 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+state:
+  api_key: '{{apikey}}'
+  domain_or_email: '{{domain_or_email}}'
+  # App-ID header is required by the Proofpoint API to identify the integration client.
+  # This is a fixed value specific to Elastic integrations with Proofpoint 365 Total Protection.
+  app_id: '1080999989'
+  interval: '{{interval}}'
+  limit: {{page_size}}
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    // Phase 1: resolve object_id for the configured domain or email.
+    request("GET", state.url.trim_right("/") + "/api/v0/object/?" +
+      {"name": [state.domain_or_email]}.format_query()
+    ).with({
+      "Header": {
+        "Authorization": ["Token " + state.api_key],
+        "App-ID": [state.app_id],
+      },
+    }).do_request().as(oid_resp, (oid_resp.StatusCode != 200) ?
+      {
+        "events": {
+          "error": {
+            "code": string(oid_resp.StatusCode),
+            "id": string(oid_resp.Status),
+            "message": "GET /api/v0/object/: " + (
+              (size(oid_resp.Body) != 0) ?
+                string(oid_resp.Body)
+              :
+                string(oid_resp.Status) + " (" + string(oid_resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    :
+      // Phase 2: search for emails using the resolved object_id.
+      oid_resp.Body.decode_json().as(oid_body,
+        // Freeze date range during pagination; recompute on fresh evaluations.
+        state.?cursor.date_to.orValue(now.format("2006-01-02T15:04:05Z")).as(date_to,
+          state.?cursor.date_from.orValue(
+            (now - duration(state.interval) - duration("30m")).format("2006-01-02T15:04:05Z")
+          ).as(date_from,
+            int(state.?cursor.offset.orValue(0)).as(offset,
+              request("POST", state.url.trim_right("/") + "/api/v0/emails/_search/?" +
+                {"object_id": [string(int(oid_body.object_id))]}.format_query()
+              ).with({
+                "Header": {
+                  "Content-Type": ["application/json"],
+                  "Authorization": ["Token " + state.api_key],
+                  "App-ID": [state.app_id],
+                },
+                "Body": {
+                  "cluster_id": 0,
+                  "limit": state.limit,
+                  "offset": offset,
+                  "date_from": date_from,
+                  "date_to": date_to,
+                }.encode_json(),
+              }).do_request().as(resp, (resp.StatusCode == 200) ?
+                resp.Body.decode_json().as(body,
+              (has(body.num_found_items) &&
+                int(body.num_found_items) > offset + int(state.limit)
+                  ).as(has_more,
+                    {
+                      "events": (has(body.emails) && body.emails.size() > 0) ?
+                        body.emails.map(e, {"message": e.encode_json()})
+                      :
+                        [],
+                      "cursor": has_more ?
+                        {
+                          "offset": offset + int(state.limit),
+                          "date_from": date_from,
+                          "date_to": date_to,
+                        }
+                      :
+                        {},
+                      "want_more": has_more,
+                    }
+                  )
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "POST /api/v0/emails/_search/: " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
