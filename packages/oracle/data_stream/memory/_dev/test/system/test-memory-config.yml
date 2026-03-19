@@ -42,4 +42,17 @@ agent:
     contents: |
       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-""}:/opt/oracle/instantclient_21_4"
       export PATH="${PATH}:/opt/oracle/instantclient_21_7:/opt/oracle/instantclient_21_4"
+      ORACLE_DSN="sys/Oradoc_db1@{{Hostname}}:{{Port}}/ORCLCDB.localdomain as sysdba"
+
+      # Wait for Oracle listener/service registration to avoid transient ORA-12514 on startup.
+      for i in $(seq 1 30); do
+        if echo "select 1 from dual;" | sqlplus -s "${ORACLE_DSN}" >/dev/null 2>&1; then
+          break
+        fi
+        if [ "${i}" -eq 30 ]; then
+          echo "Oracle service is not ready after 300s: ${ORACLE_DSN}"
+          exit 1
+        fi
+        sleep 10
+      done
       cd /opt/oracle/instantclient_21_4
