@@ -259,6 +259,11 @@ dashboards:
   filters:
   - field: data_stream.dataset
     equals: statsdreceiver
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: host.name
   panels:
   - title: Navigation
     size: {w: 48, h: 2}
@@ -552,6 +557,11 @@ dashboards:
   filters:
   - field: data_stream.dataset
     equals: statsdreceiver
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: host.name
   panels:
   - title: Navigation
     size: {w: 48, h: 2}
@@ -566,7 +576,7 @@ dashboards:
         dashboard: envoyproxy_otel-envoy-upstream-proxy
 
   - hide_title: true
-    size: {w: 16, h: 12}
+    size: {w: 16, h: 8}
     markdown:
       content: |
         ## [Envoy Proxy] Upstream & Proxy Health
@@ -680,30 +690,39 @@ dashboards:
           decimals: 0
 
   - title: Memory Utilization
-    size: {w: 24, h: 12}
+    hide_title: true
+    size: {w: 8, h: 4}
     esql:
-      type: gauge
+      type: metric
       query:
       - FROM metrics-statsdreceiver-default
       - WHERE data_stream.dataset == "statsdreceiver"
       - WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0
-      - EVAL util = 100 * (envoy.server.memory_allocated / envoy.server.memory_heap_size)
-      - STATS pct = AVG(util) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 80
-      metric:
+      - STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size)
+      - EVAL pct = allocated / heap
+      primary:
         field: pct
-        label: Memory % (allocated/heap)
+        label: Memory %
         format:
           type: percent
           decimals: 1
-      minimum:
-        field: _gauge_min
-      maximum:
-        field: _gauge_max
-      goal:
-        field: _gauge_goal
-      appearance:
-        shape: arc
-        ticks_position: auto
+
+  - title: TLS Certificate Expiry
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL
+      - STATS days = MAX(envoy.server.days_until_first_cert_expiring)
+      primary:
+        field: days
+        label: Days until first cert expires
+        format:
+          type: number
+          decimals: 0
 
   - title: Memory Over Time
     size: {w: 24, h: 12}
@@ -733,6 +752,29 @@ dashboards:
         label: Physical
         format:
           type: bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Runtime Config Loads
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.runtime.load_success IS NOT NULL OR envoy.runtime.override_dir_not_exists IS NOT NULL
+      - STATS load_success = MAX(envoy.runtime.load_success), override_missing = MAX(envoy.runtime.override_dir_not_exists) BY time_bucket =
+        BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: load_success
+        label: Load success
+      - field: override_missing
+        label: Override dir missing
       legend:
         visible: show
         position: right
@@ -785,42 +827,3 @@ dashboards:
       legend:
         visible: show
         position: right
-
-  - title: Runtime Config Loads
-    size: {w: 24, h: 10}
-    esql:
-      type: line
-      query:
-      - FROM metrics-statsdreceiver-default
-      - WHERE data_stream.dataset == "statsdreceiver"
-      - WHERE envoy.runtime.load_success IS NOT NULL OR envoy.runtime.override_dir_not_exists IS NOT NULL
-      - STATS load_success = MAX(envoy.runtime.load_success), override_missing = MAX(envoy.runtime.override_dir_not_exists) BY time_bucket =
-        BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-      - SORT time_bucket ASC
-      dimension:
-        field: time_bucket
-        data_type: date
-      metrics:
-      - field: load_success
-        label: Load success
-      - field: override_missing
-        label: Override dir missing
-      legend:
-        visible: show
-        position: right
-
-  - title: TLS Certificate Expiry
-    size: {w: 24, h: 10}
-    esql:
-      type: metric
-      query:
-      - FROM metrics-statsdreceiver-default
-      - WHERE data_stream.dataset == "statsdreceiver"
-      - WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL
-      - STATS days = MAX(envoy.server.days_until_first_cert_expiring)
-      primary:
-        field: days
-        label: Days until first cert expires
-        format:
-          type: number
-          decimals: 0

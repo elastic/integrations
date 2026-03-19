@@ -50,7 +50,7 @@
                     "x": 0,
                     "y": 2,
                     "w": 16,
-                    "h": 12,
+                    "h": 8,
                     "i": "0563dba8-e018-01bf-7e3c-91932750954e"
                 },
                 "type": "visualization",
@@ -700,10 +700,10 @@
             {
                 "panelIndex": "c7c75d5c-ee9d-0ca5-ca46-9ddf11431ecd",
                 "gridData": {
-                    "x": 16,
-                    "y": 10,
-                    "w": 24,
-                    "h": 12,
+                    "x": 32,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
                     "i": "c7c75d5c-ee9d-0ca5-ca46-9ddf11431ecd"
                 },
                 "type": "lens",
@@ -713,9 +713,10 @@
                             "events": []
                         }
                     },
+                    "hidePanelTitles": true,
                     "attributes": {
                         "title": "Memory Utilization",
-                        "visualizationType": "lnsGauge",
+                        "visualizationType": "lnsMetric",
                         "type": "lens",
                         "references": [],
                         "state": {
@@ -723,15 +724,11 @@
                                 "layerId": "801dfa0f-14de-b775-ad79-dfb4d3f51467",
                                 "layerType": "data",
                                 "metricAccessor": "fecf01e8-b2bf-41e9-f8fa-147c70f821a4",
-                                "minAccessor": "f8918670-9ead-11b5-dc1c-68b08812c5c3",
-                                "maxAccessor": "df43a52e-1915-7d84-6051-97401e28e414",
-                                "goalAccessor": "43a16f29-69fe-b71e-14f7-cd1cf19f6441",
-                                "shape": "arc",
-                                "ticksPosition": "auto",
-                                "labelMajorMode": "auto"
+                                "showBar": false,
+                                "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0\n| EVAL util = 100 * (envoy.server.memory_allocated / envoy.server.memory_heap_size)\n| STATS pct = AVG(util) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 80"
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0\n| STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size)\n| EVAL pct = allocated / heap"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -739,17 +736,17 @@
                                     "layers": {
                                         "801dfa0f-14de-b775-ad79-dfb4d3f51467": {
                                             "query": {
-                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0\n| EVAL util = 100 * (envoy.server.memory_allocated / envoy.server.memory_heap_size)\n| STATS pct = AVG(util) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 80"
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0\n| STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size)\n| EVAL pct = allocated / heap"
                                             },
                                             "columns": [
                                                 {
                                                     "fieldName": "pct",
                                                     "columnId": "fecf01e8-b2bf-41e9-f8fa-147c70f821a4",
-                                                    "label": "Memory % (allocated/heap)",
+                                                    "label": "Memory %",
                                                     "customLabel": true,
                                                     "meta": {
                                                         "type": "number",
-                                                        "esType": "long"
+                                                        "esType": "double"
                                                     },
                                                     "inMetricDimension": true,
                                                     "params": {
@@ -760,50 +757,17 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "fieldName": "_gauge_min",
-                                                    "columnId": "f8918670-9ead-11b5-dc1c-68b08812c5c3",
-                                                    "label": "_gauge_min",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
-                                                },
-                                                {
-                                                    "fieldName": "_gauge_max",
-                                                    "columnId": "df43a52e-1915-7d84-6051-97401e28e414",
-                                                    "label": "_gauge_max",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
-                                                },
-                                                {
-                                                    "fieldName": "_gauge_goal",
-                                                    "columnId": "43a16f29-69fe-b71e-14f7-cd1cf19f6441",
-                                                    "label": "_gauge_goal",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
                                                 }
                                             ],
                                             "allColumns": [
                                                 {
                                                     "fieldName": "pct",
                                                     "columnId": "fecf01e8-b2bf-41e9-f8fa-147c70f821a4",
-                                                    "label": "Memory % (allocated/heap)",
+                                                    "label": "Memory %",
                                                     "customLabel": true,
                                                     "meta": {
                                                         "type": "number",
-                                                        "esType": "long"
+                                                        "esType": "double"
                                                     },
                                                     "inMetricDimension": true,
                                                     "params": {
@@ -814,39 +778,6 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "fieldName": "_gauge_min",
-                                                    "columnId": "f8918670-9ead-11b5-dc1c-68b08812c5c3",
-                                                    "label": "_gauge_min",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
-                                                },
-                                                {
-                                                    "fieldName": "_gauge_max",
-                                                    "columnId": "df43a52e-1915-7d84-6051-97401e28e414",
-                                                    "label": "_gauge_max",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
-                                                },
-                                                {
-                                                    "fieldName": "_gauge_goal",
-                                                    "columnId": "43a16f29-69fe-b71e-14f7-cd1cf19f6441",
-                                                    "label": "_gauge_goal",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
                                                 }
                                             ],
                                             "timeField": "@timestamp"
@@ -872,7 +803,7 @@
                 "panelIndex": "b4ea36fb-3d79-d14e-db1f-e2d08d6badcc",
                 "gridData": {
                     "x": 0,
-                    "y": 22,
+                    "y": 10,
                     "w": 24,
                     "h": 12,
                     "i": "b4ea36fb-3d79-d14e-db1f-e2d08d6badcc"
@@ -1103,7 +1034,7 @@
                 "panelIndex": "4047598f-a84d-d14f-27e7-57b2a62e1665",
                 "gridData": {
                     "x": 0,
-                    "y": 34,
+                    "y": 22,
                     "w": 48,
                     "h": 12,
                     "i": "4047598f-a84d-d14f-27e7-57b2a62e1665"
@@ -1263,7 +1194,7 @@
                 "panelIndex": "92db87da-63d8-6acc-146f-dc41851cddad",
                 "gridData": {
                     "x": 0,
-                    "y": 46,
+                    "y": 34,
                     "w": 48,
                     "h": 12,
                     "i": "92db87da-63d8-6acc-146f-dc41851cddad"
@@ -1446,9 +1377,9 @@
                 "panelIndex": "148c455e-a42f-5f69-d529-9dc3678d8763",
                 "gridData": {
                     "x": 24,
-                    "y": 22,
+                    "y": 10,
                     "w": 24,
-                    "h": 10,
+                    "h": 12,
                     "i": "148c455e-a42f-5f69-d529-9dc3678d8763"
                 },
                 "type": "lens",
@@ -1605,10 +1536,10 @@
             {
                 "panelIndex": "fee94907-68f4-c998-69e2-a88548ee297c",
                 "gridData": {
-                    "x": 0,
-                    "y": 58,
-                    "w": 24,
-                    "h": 10,
+                    "x": 40,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
                     "i": "fee94907-68f4-c998-69e2-a88548ee297c"
                 },
                 "type": "lens",
@@ -1700,7 +1631,8 @@
                     "query": {
                         "query": "",
                         "language": "kuery"
-                    }
+                    },
+                    "hidePanelTitles": true
                 }
             }
         ],
@@ -1755,7 +1687,26 @@
                 "ignoreTimerange": false,
                 "ignoreValidations": false
             },
-            "panelsJSON": {},
+            "panelsJSON": {
+                "fe98772b-264a-3eea-cada-9bdcfb1bffa9": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "fe98772b-264a-3eea-cada-9bdcfb1bffa9",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
             "showApplySelections": false
         }
     },
@@ -1779,6 +1730,11 @@
             "type": "dashboard",
             "id": "envoyproxy_otel-envoy-upstream-proxy",
             "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_2d183e06-a931-a1fc-661a-a0cfc9f9cc10_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
         }
     ],
     "type": "dashboard",
