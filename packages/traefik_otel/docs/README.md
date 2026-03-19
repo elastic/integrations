@@ -42,7 +42,7 @@ curl http://<TRAEFIK_METRICS_HOST>/metrics
 
 ### Configuration
 
-Configure the OpenTelemetry Collector (or Elastic Distribution of OpenTelemetry Collector) to scrape Traefik's Prometheus endpoint and export to Elasticsearch. Ensure the Prometheus receiver, `resourcedetection`, and `cumulativetodelta` processors are available.
+Configure the OpenTelemetry Collector (or Elastic Distribution of OpenTelemetry Collector) to scrape Traefik's Prometheus endpoint and export to Elasticsearch. Ensure the Prometheus receiver, `resourcedetection`, `cumulativetodelta`, and `resource` processors are available.
 
 Placeholder reference:
 
@@ -68,10 +68,15 @@ receivers:
 processors:
   resourcedetection/system:
     detectors: ['hostname']
+  # Required for Traefik request-duration histograms: the Prometheus receiver emits cumulative-temporality histograms,
+  # but the Elasticsearch exporter in `otel` mapping mode expects delta-temporality histograms.
+  # Without this, you’ll see logs like "dropping cumulative temporality histogram traefik_*_request_duration_seconds".
   cumulativetodelta:
     include:
       match_type: regexp
       metrics: ['traefik_.*', 'go_.*', 'process_.*']
+  # Ensures metrics land in the dataset this package’s dashboards/alerts expect.
+  # Sets `data_stream.dataset=traefik` (upsert); the Elasticsearch exporter appends `.otel`, so it becomes `traefik.otel`.
   resource/dataset:
     attributes:
       - key: data_stream.dataset
