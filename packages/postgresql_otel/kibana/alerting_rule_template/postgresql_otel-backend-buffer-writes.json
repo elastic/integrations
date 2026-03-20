@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-backend-buffer-writes",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Backend buffer writes high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Buffers written by backend (not bgwriter) indicate background writer cannot keep up\n| WHERE postgresql.bgwriter.buffers.writes IS NOT NULL AND attributes.source == \"backend\"\n| EVAL writes_val = TO_DOUBLE(postgresql.bgwriter.buffers.writes)\n| STATS backend_writes = SUM(writes_val) BY service.instance.id\n// Threshold: > 100 buffers in window; adjust based on checkpoint frequency\n| WHERE backend_writes > 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
