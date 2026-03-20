@@ -6,7 +6,7 @@ This package leverages event logs. Prior to using this integration, you must hav
 
 **Note**: In versions 2.1.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blog:
+The following blog provides additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Detect data exfiltration activity with Kibana’s new integration](https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration)
 
 ## Installation

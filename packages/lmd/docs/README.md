@@ -4,7 +4,7 @@ The Lateral movement detection model package contains assets that detect lateral
 
 **Note**: In versions 2.1.2 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blogs:
+The following blogs provide additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Detecting Lateral Movement activity: A new Kibana integration](https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration)
 - [Identifying malicious Remote Desktop Protocol (RDP) connections with Elastic Security](https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security)
 
