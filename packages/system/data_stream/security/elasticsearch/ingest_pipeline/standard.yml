@@ -4450,8 +4450,28 @@ processors:
         int cnStart = objectDN.toLowerCase().indexOf("cn=");
         if (cnStart < 0) return;
         int valueStart = cnStart + 3;
-        int commaIdx = objectDN.indexOf(",", valueStart);
-        String cnValue = commaIdx >= 0 ? objectDN.substring(valueStart, commaIdx).trim() : objectDN.substring(valueStart).trim();
+        int dnLen = objectDN.length();
+        StringBuilder cn = new StringBuilder();
+        for (int i = valueStart; i < dnLen; i++) {
+          char c = objectDN.charAt(i);
+          if (c == 92 && i + 1 < dnLen) { // backslash escape
+            char n = objectDN.charAt(++i);
+            int d1 = Character.digit(n, 16);
+            if (d1 >= 0 && i + 1 < dnLen) { // hex escape
+              int d2 = Character.digit(objectDN.charAt(i + 1), 16);
+              if (d2 >= 0) {
+                cn.append((char)(d1 * 16 + d2));
+                i++;
+                continue;
+              }
+            }
+            cn.append(n); // simple escaped char
+            continue;
+          }
+          if (c == 44) break; // unescaped comma ends CN
+          cn.append(c);
+        }
+        String cnValue = cn.toString().trim();
         if (cnValue.length() == 0) return;
         if (objectClass.contains("user")) {
           if (ctx.user == null) ctx.put("user", new HashMap());
