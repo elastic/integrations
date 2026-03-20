@@ -318,9 +318,9 @@ When the integration is installed, a transform maintains the latest host metadat
 
 **Example ES|QL query:**
 
-```esql
+```sql
 FROM logs-crowdstrike.fdr-*
-| WHERE aws.s3.object.key LIKE "*fdrv2/data*"
+| WHERE aws.s3.object.key LIKE "*/data/*"
 | LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id
 | KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname
 | LIMIT 20
@@ -329,6 +329,8 @@ FROM logs-crowdstrike.fdr-*
 From Elasticsearch 8.19 onward, you can use the alias as the lookup target: `LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id`.
 
 **Using enriched fields:** Enrichment from the lookup is under the `crowdstrike.info.host.*` namespace (e.g. `crowdstrike.info.host.hostname` for hostname, `crowdstrike.info.host.cid` for customer ID). Use these fields in dashboards and detection rules when building on query-time enrichment.
+
+**Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach aidmaster and userinfo to events at ingest time. If you rely on query-time host enrichment only (transform + LOOKUP JOIN above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from userinfo; if you still need user fields from userinfo on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern.
 
 ## Logs
 
