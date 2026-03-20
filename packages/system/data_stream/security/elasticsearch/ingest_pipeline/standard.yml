@@ -4441,12 +4441,10 @@ processors:
   - script:
       lang: painless
       ignore_failure: true
+      if: ctx.event?.code == "5136" && ctx.winlog?.event_data?.ObjectDN != null
       tag: Event 5136 ObjectDN and ObjectClass mappings
       description: Parse ObjectDN for event 5136 to set user.target.name, group.name based on ObjectClass
       source: |-
-        if (ctx.event?.code != "5136" || ctx.winlog?.event_data?.ObjectDN == null) {
-          return;
-        }
         String objectDN = ctx.winlog.event_data.ObjectDN.toString();
         String objectClass = ctx.winlog?.event_data?.ObjectClass != null ? ctx.winlog.event_data.ObjectClass.toString().toLowerCase() : "";
         int cnStart = objectDN.toLowerCase().indexOf("cn=");
