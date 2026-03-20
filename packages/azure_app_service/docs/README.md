@@ -21,6 +21,8 @@ The Azure App Service logs integration retrieves different types of logs categor
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on requirements and setup instructions.
 
+**Authentication (Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+
 ## App Service Logs
 
 Collects different types of logs from Azure App Service via Event Hub.

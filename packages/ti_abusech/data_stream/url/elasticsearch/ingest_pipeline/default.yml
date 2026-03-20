@@ -20,18 +20,23 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_a131107f
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
   - set:
+      tag: set_labels_interval_ca65b42c
       field: labels.interval
       copy_from: _conf.interval
       if: ctx._conf?.interval != null && ctx._conf.interval != ''
@@ -40,28 +45,34 @@ processors:
   # General ECS fields #
   ######################
   - drop:
+      tag: drop_fbdaef0d
       description: Drop if message is empty string return by CEL program.
       if: ctx?.message == null || ctx.message == ""
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_abusech_url_61325982
       field: event.original
       target_field: abusech.url
   #####################
   # Threat ECS Fields #
   #####################
   - set:
+      tag: set_threat_indicator_type_2f871b98
       field: threat.indicator.type
       value: url
   - date:
+      tag: date_abusech_url_date_added_to_threat_indicator_first_seen_fb078f17
       field: abusech.url.date_added
       target_field: threat.indicator.first_seen
       formats:
@@ -69,6 +80,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ss Z"
       if: "ctx.abusech?.url?.date_added != null"
   - date:
+      tag: date_abusech_url_dateadded_to_threat_indicator_first_seen_90501b24
       field: abusech.url.dateadded
       target_field: threat.indicator.first_seen
       formats:
@@ -76,13 +88,15 @@ processors:
         - "yyyy-MM-dd HH:mm:ss Z"
       if: "ctx.abusech?.url?.dateadded != null && ctx.threat?.indicator?.first_seen == null"
   - date:
+      tag: date_abusech_url_last_online_to_threat_indicator_last_seen_ea1a5fcb
       field: abusech.url.last_online
       target_field: threat.indicator.last_seen
       formats:
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
       if: ctx.abusech?.url?.last_online != null
-  - remove: 
+  - remove:
+      tag: remove_abusech_url_last_online_b21fd05b
       field: abusech.url.last_online
       if: ctx.threat?.indicator?.last_seen != null
   - set:
@@ -90,37 +104,44 @@ processors:
       copy_from: abusech.url.url
       tag: set-indicator-name
   - uri_parts:
+      tag: uri_parts_abusech_url_url_to_threat_indicator_url_2863d71b
       field: abusech.url.url
       if: ctx.abusech?.url?.url != null
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
   - set:
+      tag: set_threat_indicator_url_full_44a8d2a4
       field: threat.indicator.url.full
       value: "{{{threat.indicator.url.original}}}"
       ignore_empty_value: true
   - rename:
+      tag: rename_abusech_url_urlhaus_reference_to_threat_indicator_reference_a4bba602
       field: abusech.url.urlhaus_reference
       target_field: threat.indicator.reference
       ignore_missing: true
   - rename:
+      tag: rename_abusech_url_urlhaus_link_to_threat_indicator_reference_d15ccf91
       field: abusech.url.urlhaus_link
       target_field: threat.indicator.reference
       if: ctx.abusech?.url?.urlhaus_link != null && ctx.threat?.indicator?.reference == null
       ignore_missing: true
   # Host can be both IP addresses and domain names
   - grok:
+      tag: grok_abusech_url_host_c98e0250
       field: abusech.url.host
       if: ctx.abusech?.url?.host != null
       patterns:
         - "(?:%{IP:threat.indicator.ip}|%{GREEDYDATA:threat.indicator.url.domain})"
       ignore_failure: true
   - rename:
+      tag: rename_abusech_url_reporter_to_threat_indicator_provider_7c166e1f
       field: abusech.url.reporter
       target_field: threat.indicator.provider
       ignore_missing: true
   # Copy tags and remove
   - foreach:
+      tag: foreach_abusech_url_tags_a7ea45c3
       field: abusech.url.tags
       if: ctx.abusech?.url?.tags instanceof List
       processor:
@@ -129,9 +150,11 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
+      tag: remove_abusech_url_tags_e64a8ba1
       field: abusech.url.tags
       ignore_missing: true
   - set:
+      tag: set_event_ingested_8db3b1b8
       field: event.ingested
       value: '{{{_ingest.timestamp}}}'
   ######################
@@ -183,14 +206,17 @@ processors:
   # Cleanup processors #
   ######################
   - set:
+      tag: set_threat_indicator_type_ac7917ab
       field: threat.indicator.type
       value: unknown
       if: ctx.threat?.indicator?.type == null
   - convert:
+      tag: convert_abusech_url_larted_62663657
       field: abusech.url.larted
       type: boolean
       ignore_missing: true
   - script:
+      tag: script_b7bb2433
       lang: painless
       if: ctx.abusech != null
       source: |
@@ -215,6 +241,7 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_97e5a966
       field:
         - abusech.url.date_added
         - abusech.url.dateadded
@@ -224,6 +251,7 @@ processors:
         - _conf
       ignore_missing: true
   - script:
+      tag: script_85ca118b
       description: Remove null/empty values recursively.
       lang: painless
       source: |-

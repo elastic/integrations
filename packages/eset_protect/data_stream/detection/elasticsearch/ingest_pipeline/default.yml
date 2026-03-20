@@ -29,7 +29,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.uuid
@@ -37,6 +37,365 @@ processors:
       tag: fingerprint_detection
       target_field: _id
       ignore_missing: true
+
+  # rename to snake case
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case
+      if: ctx.json != null
+      source: |
+        // Helper function to convert camelCase to snake_case
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              // Skip fields that contain '@' in their name
+              if (!entry.getKey().contains("@")) {
+                String newKey = camelToSnake(entry.getKey());
+                newObj[newKey] = convertToSnakeCase(entry.getValue());
+              }
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        // Apply the conversion
+        ctx.eset_protect = ctx.eset_protect ?: [:];
+        ctx.eset_protect.detection = convertToSnakeCase(ctx.json);
+
+  # rename fields collected from /v2/detections endpoint to match with /v1/detections response fields. This is required to keep the field consistent and avoid breaking change.
+  - rename:
+      field: eset_protect.detection.circumstances
+      tag: rename_circumstances
+      target_field: eset_protect.detection.context.circumstances
+      ignore_missing: true
+  - rename:
+      field: eset_protect.detection.device.display_name
+      tag: rename_device_display_name
+      target_field: eset_protect.detection.context.device_display_name
+      ignore_missing: true
+  - rename:
+      field: eset_protect.detection.device.uuid
+      tag: rename_device_uuid
+      target_field: eset_protect.detection.context.device_uuid
+      ignore_missing: true
+  - rename:
+      field: eset_protect.detection.process
+      tag: rename_process
+      target_field: eset_protect.detection.context.process
+      ignore_missing: true
+  - rename:
+      field: eset_protect.detection.user_name
+      tag: rename_user_name
+      target_field: eset_protect.detection.context.user_name
+      ignore_missing: true
+  - rename:
+      field: eset_protect.detection.network_traffic
+      tag: rename_network_traffic
+      target_field: eset_protect.detection.network_communication
+      ignore_missing: true
+  - rename:
+      field: eset_protect.detection.network_communication.protocol_keyword
+      tag: rename_network_traffic_protocol_keyword
+      target_field: eset_protect.detection.network_communication.protocol_name
+      ignore_missing: true
+
+  # convert values
+  - foreach:
+      field: eset_protect.detection.email.attachments
+      if: ctx.eset_protect?.detection?.email?.attachments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_read_only
+          tag: convert_email_attachments_is_read_only_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_read_only
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: eset_protect.detection.email.attachments
+      if: ctx.eset_protect?.detection?.email?.attachments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.size_bytes
+          tag: convert_email_attachments_size_bytes_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size_bytes
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: eset_protect.detection.email.body_parts
+      if: ctx.eset_protect?.detection?.email?.body_parts instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_read_only
+          tag: convert_email_body_parts_is_read_only_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_read_only
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: eset_protect.detection.email.body_parts
+      if: ctx.eset_protect?.detection?.email?.body_parts instanceof List
+      processor:
+        convert:
+          field: _ingest._value.size_bytes
+          tag: convert_email_body_parts_size_bytes_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size_bytes
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.email.is_read_only
+      tag: convert_email_is_read_only_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: eset_protect.detection.email.is_read_only
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.email.mta_smtp_details.sender_ip_address
+      tag: convert_email_mta_smtp_details_sender_ip_address_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.eset_protect?.detection?.email?.mta_smtp_details?.sender_ip_address != ''
+      on_failure:
+        - remove:
+            field: eset_protect.detection.email.mta_smtp_details.sender_ip_address
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.email.sender_ip_address
+      tag: convert_email_sender_ip_address_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.eset_protect?.detection?.email?.sender_ip_address != ''
+      on_failure:
+        - remove:
+            field: eset_protect.detection.email.sender_ip_address
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.file.is_read_only
+      tag: convert_file_is_read_only_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: eset_protect.detection.file.is_read_only
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.file.size_bytes
+      tag: convert_file_size_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: eset_protect.detection.file.size_bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.network_communication.local_ip_address
+      tag: convert_network_communication_local_ip_address_to_ip
+      target_field: eset_protect.detection.network_communication.local.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.eset_protect?.detection?.network_communication?.local_ip_address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: eset_protect.detection.network_communication.local_mac_address
+      target_field: eset_protect.detection.network_communication.local.mac_address
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_network_communication_local_mac_address
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: eset_protect.detection.network_communication.local.mac_address
+      tag: uppercase_device_mac
+      ignore_missing: true
+  - convert:
+      field: eset_protect.detection.network_communication.local_port
+      tag: convert_network_communication_local_port_to_long
+      target_field: eset_protect.detection.network_communication.local.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.network_communication.remote_ip_address
+      tag: convert_network_communication_remote_ip_address_to_ip
+      target_field: eset_protect.detection.network_communication.remote.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.eset_protect?.detection?.network_communication?.remote_ip_address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: eset_protect.detection.network_communication.remote_mac_address
+      target_field: eset_protect.detection.network_communication.remote.mac_address
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_network_communication_remote_mac_address
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: eset_protect.detection.network_communication.remote.mac_address
+      tag: uppercase_remote_device_mac
+      ignore_missing: true
+  - convert:
+      field: eset_protect.detection.network_communication.remote_port
+      tag: convert_network_communication_remote_port_to_long
+      target_field: eset_protect.detection.network_communication.remote.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.object_size_bytes
+      tag: convert_object_size_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: eset_protect.detection.object_size_bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: eset_protect.detection.occur_time
+      tag: date_occur_time
+      target_field: eset_protect.detection.occur_time
+      formats:
+        - ISO8601
+      if: ctx.eset_protect?.detection?.occur_time != null && ctx.eset_protect.detection.occur_time != ''
+      on_failure:
+        - remove:
+            field: eset_protect.detection.occur_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.resolved
+      tag: convert_detection_resolved_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: eset_protect.detection.resolved
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: eset_protect.detection.responses
+      if: ctx.eset_protect?.detection?.responses instanceof List
+      processor:
+        convert:
+          field: _ingest._value.device_restart_required
+          tag: convert_responses_device_restart_required_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.device_restart_required
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: eset_protect.detection.severity_score
+      tag: convert_detection_severity_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: eset_protect.detection.severity_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+  - set:
+      field: message
+      tag: set_message_from_detection_context_circumstances
+      copy_from: eset_protect.detection.context.circumstances
+      ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_detection_occur_time
+      copy_from: eset_protect.detection.occur_time
+      ignore_empty_value: true
+
+  # event.*
   - set:
       field: event.kind
       tag: set_event_kind
@@ -45,31 +404,48 @@ processors:
       field: event.category
       tag: append_intrusion_detection_into_event_category
       value: intrusion_detection
-      if: ctx.json?.category != null && ['DETECTION_CATEGORY_CORRELATION_RULE','DETECTION_CATEGORY_FIREWALL_RULE','DETECTION_CATEGORY_HIPS','DETECTION_CATEGORY_NETWORK_INTRUSION','DETECTION_CATEGORY_HIPS_RULE'].contains(ctx.json.category)
+      if: ctx.eset_protect?.detection?.category != null && ['DETECTION_CATEGORY_CORRELATION_RULE','DETECTION_CATEGORY_FIREWALL_RULE','DETECTION_CATEGORY_HIPS','DETECTION_CATEGORY_NETWORK_INTRUSION','DETECTION_CATEGORY_HIPS_RULE'].contains(ctx.eset_protect.detection.category)
   - append:
       field: event.category
       tag: append_malware_into_event_category
       value: malware
-      if: ctx.json?.category != null && ['DETECTION_CATEGORY_ANTIVIRUS'].contains(ctx.json.category)
+      if: ctx.eset_protect?.detection?.category != null && ['DETECTION_CATEGORY_ANTIVIRUS'].contains(ctx.eset_protect.detection.category)
   - append:
       field: event.category
       tag: append_web_into_event_category
       value: web
-      if: ctx.json?.category != null && ['DETECTION_CATEGORY_WEB_ACCESS'].contains(ctx.json.category)
+      if: ctx.eset_protect?.detection?.category != null && ['DETECTION_CATEGORY_WEB_ACCESS'].contains(ctx.eset_protect.detection.category)
   - append:
       field: event.category
       tag: append_vulnerability_into_event_category
       value: vulnerability
-      if: ctx.json?.category != null && ['DETECTION_CATEGORY_VULNERABILITY'].contains(ctx.json.category)
+      if: ctx.eset_protect?.detection?.category != null && ['DETECTION_CATEGORY_VULNERABILITY'].contains(ctx.eset_protect.detection.category)
   - append:
       field: event.category
       tag: append_package_into_event_category
       value: package
-      if: ctx.json?.category != null && ['DETECTION_CATEGORY_APPLICATION_PATCH'].contains(ctx.json.category)
+      if: ctx.eset_protect?.detection?.category != null && ['DETECTION_CATEGORY_APPLICATION_PATCH'].contains(ctx.eset_protect.detection.category)
   - append:
       field: event.type
       tag: append_info_into_event_type
       value: info
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_detection_severity_score
+      copy_from: eset_protect.detection.severity_score
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_detection_uuid
+      copy_from: eset_protect.detection.uuid
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_detection_context_circumstances
+      copy_from: eset_protect.detection.context.circumstances
+      ignore_empty_value: true
+  
+  # observer.*
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -82,121 +458,130 @@ processors:
       field: observer.type
       tag: set_observer_type
       value: ids
-  - rename:
-      field: json.category
-      tag: rename_category
-      target_field: eset_protect.detection.category
-      ignore_missing: true
+
+  # host.*
   - set:
-      field: rule.category
-      tag: set_rule_category_from_category
-      copy_from: eset_protect.detection.category
+      field: host.name
+      tag: set_host_name_from_detection_context_device_display_name
+      copy_from: eset_protect.detection.context.device_display_name
       ignore_empty_value: true
-  - rename:
-      field: json.context.circumstances
-      tag: rename_context_circumstances
-      target_field: eset_protect.detection.context.circumstances
-      ignore_missing: true
-  - set:
-      field: message
-      tag: set_message_from_detection_context_circumstances
-      copy_from: eset_protect.detection.context.circumstances
-      ignore_empty_value: true
-  - rename:
-      field: json.context.deviceUuid
-      tag: rename_context_deviceUuid
-      target_field: eset_protect.detection.context.device_uuid
-      ignore_missing: true
   - set:
       field: host.id
       tag: set_host_id_from_detection_context_device_uuid
       copy_from: eset_protect.detection.context.device_uuid
       ignore_empty_value: true
-  - append:
-      field: related.hosts
-      tag: append_context_device_uuid_into_related_hosts
-      value: "{{{eset_protect.detection.context.device_uuid}}}"
-      allow_duplicates: false
-      if: ctx.eset_protect?.detection?.context?.device_uuid != null
-  - rename:
-      field: json.context.process.path
-      tag: rename_context_process_path
-      target_field: eset_protect.detection.context.process.path
-      ignore_missing: true
+
+  # organization.*
   - set:
-      field: process.executable
-      tag: set_process_executable_from_detection_context_process_path
-      copy_from: eset_protect.detection.context.process.path
+      field: organization.id
+      tag: set_organization_id_from_detection_cloud_office_tenant_uuid
+      copy_from: eset_protect.detection.cloud_office_tenant_uuid
       ignore_empty_value: true
-  - grok:
-      field: eset_protect.detection.context.process.path
-      tag: grok_context_process_path
-      ignore_missing: true
-      patterns:
-        - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
-        - "^%{GREEDYDATA:json._temp}/%{DATA:process.name}$"
-        - "^%{DATA:process.name}$"
-      if: ctx.eset_protect?.detection?.context?.process?.path != ''
+
+  # email.*
+  - script:
+      description: Extract ECS email fields.
+      tag: script_extract_ecs_email_fields
+      lang: painless
+      source: |-
+        ctx.related = ctx.related ?: [:];
+        ctx.email = ctx.email ?: [:];
+        ctx.email.cc = ctx.email.cc ?: [:];
+        ctx.email.cc.address = ctx.email.cc.address ?: [];
+        ctx.email.from = ctx.email.from ?: [:];
+        ctx.email.from.address = ctx.email.from.address ?: [];
+        ctx.email.to = ctx.email.to ?: [:];
+        ctx.email.to.address = ctx.email.to.address ?: [];
+
+        def users = new HashSet();
+        def ips = new HashSet();
+        def hashes = new HashSet();
+        def det = ctx.eset_protect?.detection?.email;
+
+        // Attachments
+        if (det?.attachments instanceof List) {
+          def attachmentList = [];
+          for (att in det.attachments) {
+            def fileObj = [
+              'hash': [
+                'sha1': att?.hash_sha1,
+                'sha256': att?.hash_sha2256
+              ],
+              'size': att?.size_bytes
+            ];
+            attachmentList.add(['file': fileObj]);
+            if (att.hash_sha1 != null) hashes.add(att.hash_sha1);
+            if (att.hash_sha2256 != null) hashes.add(att.hash_sha2256);
+            if (att.last_editor != null) {
+              if (att.last_editor.email != null) users.add(att.last_editor.email);
+              if (att.last_editor.user_name != null) users.add(att.last_editor.user_name);
+              if (att.last_editor.user_uuid != null) users.add(att.last_editor.user_uuid);
+            }
+          }
+          ctx.email.attachments = attachmentList;
+        }
+
+        // Body parts
+        if (det?.body_parts instanceof List) {
+          for (b in det.body_parts) {
+            if (b.hash_sha1 != null) hashes.add(b.hash_sha1);
+            if (b.hash_sha2256 != null) hashes.add(b.hash_sha2256);
+            if (b.last_editor != null) {
+              if (b.last_editor.email != null) users.add(b.last_editor.email);
+              if (b.last_editor.user_name != null) users.add(b.last_editor.user_name);
+              if (b.last_editor.user_uuid != null) users.add(b.last_editor.user_uuid);
+            }
+          }
+        }
+
+        // Email addresses and IDs
+        ctx.email.cc.address.add(det?.cc);
+        ctx.email.from.address.add(det?.from);
+        ctx.email.to.address.add(det?.to);
+        ctx.email.subject = det?.subject;
+        ctx.email.message_id = det?.internet_message_id;
+        ctx.email.local_id = det?.reference;
+
+        if (det?.cc != null) users.add(det.cc);
+        if (det?.from != null) users.add(det.from);
+        if (det?.to != null) users.add(det.to);
+        if (det?.mailbox_user_uuid != null) users.add(det.mailbox_user_uuid);
+        if (det?.sender_ip_address != null) ips.add(det.sender_ip_address);
+        if (det?.mta_smtp_details?.sender_ip_address != null) ips.add(det.mta_smtp_details.sender_ip_address);
+
+        ctx.related.user = new ArrayList(users);
+        ctx.related.ip = new ArrayList(ips);
+        ctx.related.hash = new ArrayList(hashes);
       on_failure:
         - append:
             field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: json.context.userName
-      tag: rename_context_userName
-      target_field: eset_protect.detection.context.user_name
-      ignore_missing: true
-  - grok:
-      field: eset_protect.detection.context.user_name
-      tag: grok_user_name
-      ignore_missing: true
-      patterns:
-        - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
-        - '^%{HOSTNAME:user.domain}\\\\%{USERNAME:user.name}$'
-        - "^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$"
-        - "^%{GREEDYDATA:user.name}$"
-      if: ctx.eset_protect?.detection?.context?.user_name != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - append:
-      field: related.user
-      tag: append_user_name_into_related_user
-      value: "{{{user.name}}}"
-      allow_duplicates: false
-      if: ctx.user?.name != null
-  - rename:
-      field: json.displayName
-      tag: rename_displayName
-      target_field: eset_protect.detection.display_name
-      ignore_missing: true
-  - rename:
-      field: json.networkCommunication.direction
-      tag: rename_networkCommunication_direction
-      target_field: eset_protect.detection.network_communication.direction
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # file.*
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_detection_object_hash_sha1
+      copy_from: eset_protect.detection.object_hash_sha1
+      ignore_empty_value: true
+      if: ctx.eset_protect?.detection?.object_type_name == 'File'
+  - lowercase:
+      field: file.hash.sha1
+      tag: lowercase_file_hash_sha1
       ignore_missing: true
   - set:
-      field: network.direction
-      tag: set_network_direction_to_inbound
-      value: inbound
-      if: ctx.eset_protect?.detection?.network_communication?.direction == 'NETWORK_COMMUNICATION_DIRECTION_INBOUND'
+      field: file.name
+      tag: set_file_name_from_detection_object_name
+      copy_from: eset_protect.detection.object_name
+      ignore_empty_value: true
+      if: ctx.eset_protect?.detection?.object_type_name == 'File'
   - set:
-      field: network.direction
-      tag: set_network_direction_to_outbound
-      value: outbound
-      if: ctx.eset_protect?.detection?.network_communication?.direction == 'NETWORK_COMMUNICATION_DIRECTION_OUTBOUND'
-  - convert:
-      field: json.networkCommunication.localIpAddress
-      tag: convert_networkCommunication_localIpAddress_to_ip
-      target_field: eset_protect.detection.network_communication.local.ip_address
-      type: ip
-      ignore_missing: true
-      if: ctx.json?.networkCommunication?.localIpAddress != null && ctx.json.networkCommunication.localIpAddress != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+      field: file.size
+      tag: set_file_size_from_detection_object_size_bytes
+      copy_from: eset_protect.detection.object_size_bytes
+      ignore_empty_value: true
+      if: ctx.eset_protect?.detection?.object_type_name == 'File'
+
+  # source.*
   - set:
       field: source.ip
       tag: set_source_ip_from_detection_network_communication_local_ip_address
@@ -226,53 +611,18 @@ processors:
       tag: rename_source_as_organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-  - append:
-      field: related.ip
-      tag: append_network_communication_local_ip_address_into_related_ip
-      value: "{{{eset_protect.detection.network_communication.local.ip_address}}}"
-      allow_duplicates: false
-      if: ctx.eset_protect?.detection?.network_communication?.local?.ip_address != null
-  - convert:
-      field: json.networkCommunication.localPort
-      tag: convert_networkCommunication_localPort_to_long
-      target_field: eset_protect.detection.network_communication.local.port
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: source.mac
+      tag: set_source_mac_from_detection_network_communication_local_mac_address
+      copy_from: eset_protect.detection.network_communication.local.mac_address
+      ignore_empty_value: true
   - set:
       field: source.port
       tag: set_source_port_from_detection_network_communication_local_port
       copy_from: eset_protect.detection.network_communication.local.port
       ignore_empty_value: true
-  - rename:
-      field: json.networkCommunication.protocolName
-      tag: rename_networkCommunication_protocolName
-      target_field: eset_protect.detection.network_communication.protocol_name
-      ignore_missing: true
-  - set:
-      field: network.transport
-      tag: set_network_transport_from_detection_network_communication_protocol_name
-      copy_from: eset_protect.detection.network_communication.protocol_name
-      ignore_empty_value: true
-      if: ctx.eset_protect?.detection?.network_communication?.protocol_name != "0"
-  - lowercase:
-      field: network.transport
-      tag: lowercase_network_transport
-      ignore_missing: true
-  - convert:
-      field: json.networkCommunication.remoteIpAddress
-      tag: convert_networkCommunication_remoteIpAddress_to_ip
-      target_field: eset_protect.detection.network_communication.remote.ip_address
-      type: ip
-      ignore_missing: true
-      if: ctx.json?.networkCommunication?.remoteIpAddress != null && ctx.json.networkCommunication.remoteIpAddress != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+
+  # destination.*
   - set:
       field: destination.ip
       tag: set_destination_ip_from_detection_network_communication_remote_ip_address
@@ -302,195 +652,247 @@ processors:
       tag: rename_destination_as_organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-  - append:
-      field: related.ip
-      tag: append_network_communication_remote_ip_address_into_related_ip
-      value: "{{{eset_protect.detection.network_communication.remote.ip_address}}}"
-      allow_duplicates: false
-      if: ctx.eset_protect?.detection?.network_communication?.remote?.ip_address != null
-  - convert:
-      field: json.networkCommunication.remotePort
-      tag: convert_networkCommunication_remotePort_to_long
-      target_field: eset_protect.detection.network_communication.remote.port
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: destination.mac
+      tag: set_destination_mac_from_detection_network_communication_remote_mac_address
+      copy_from: eset_protect.detection.network_communication.remote.mac_address
+      ignore_empty_value: true
   - set:
       field: destination.port
       tag: set_destination_port_from_detection_network_communication_remote_port
       copy_from: eset_protect.detection.network_communication.remote.port
       ignore_empty_value: true
-  - rename:
-      field: json.objectTypeName
-      tag: rename_objectTypeName
-      target_field: eset_protect.detection.object_type_name
-      ignore_missing: true
-  - rename:
-      field: json.objectHashSha1
-      tag: rename_objectHashSha1
-      target_field: eset_protect.detection.object_hash_sha1
-      ignore_missing: true
+
+  # network.*
   - set:
-      field: file.hash.sha1
-      tag: set_file_hash_sha1_from_detection_object_hash_sha1
-      copy_from: eset_protect.detection.object_hash_sha1
+      field: network.direction
+      tag: set_network_direction_to_inbound
+      value: inbound
+      if: ctx.eset_protect?.detection?.network_communication?.direction == 'NETWORK_COMMUNICATION_DIRECTION_INBOUND'
+  - set:
+      field: network.direction
+      tag: set_network_direction_to_outbound
+      value: outbound
+      if: ctx.eset_protect?.detection?.network_communication?.direction == 'NETWORK_COMMUNICATION_DIRECTION_OUTBOUND'
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_detection_network_communication_protocol_name
+      copy_from: eset_protect.detection.network_communication.protocol_name
       ignore_empty_value: true
-      if: ctx.eset_protect?.detection?.object_type_name == "File"
+      if: ctx.eset_protect?.detection?.network_communication?.protocol_name != '0'
   - lowercase:
-      field: file.hash.sha1
-      tag: lowercase_file_hash_sha1
+      field: network.transport
+      tag: lowercase_network_transport
       ignore_missing: true
+  
+  # process.*
+  - set:
+      field: process.command_line
+      tag: set_process_command_line_from_detection_context_process_command_line
+      copy_from: eset_protect.detection.context.process.command_line
+      ignore_empty_value: true
+  - set:
+      field: process.executable
+      tag: set_process_executable_from_detection_context_process_path
+      copy_from: eset_protect.detection.context.process.path
+      ignore_empty_value: true
+  - grok:
+      field: eset_protect.detection.context.process.path
+      tag: grok_context_process_path
+      ignore_missing: true
+      patterns:
+        - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
+        - '^%{GREEDYDATA:json._temp}/%{DATA:process.name}$'
+        - '^%{DATA:process.name}$'
+      if: ctx.eset_protect?.detection?.context?.process?.path != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # rule.*
+  - set:
+      field: rule.category
+      tag: set_rule_category_from_category
+      copy_from: eset_protect.detection.category
+      ignore_empty_value: true
+  - set:
+      field: rule.uuid
+      tag: set_rule_uuid_from_detection_edr_rule_uuid
+      copy_from: eset_protect.detection.edr_rule_uuid
+      ignore_empty_value: true
+  
+  # user.*
+  - grok:
+      field: eset_protect.detection.context.user_name
+      tag: grok_user_name
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
+        - '^%{HOSTNAME:user.domain}\\\\%{USERNAME:user.name}$'
+        - '^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$'
+        - '^%{GREEDYDATA:user.name}$'
+      if: ctx.eset_protect?.detection?.context?.user_name != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # threat.*
+  - append:
+      field: threat.technique.name
+      tag: append_eset_protect_detection_type_name_into_threat_technique_name
+      value: '{{{eset_protect.detection.type_name}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.type_name != null
+
+  # related.*
+  - append:
+      field: related.hosts
+      tag: append_context_device_display_name_into_related_hosts
+      value: '{{{eset_protect.detection.context.device_display_name}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.context?.device_display_name != null
+  - append:
+      field: related.hosts
+      tag: append_context_device_uuid_into_related_hosts
+      value: '{{{eset_protect.detection.context.device_uuid}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.context?.device_uuid != null
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.ip
+      tag: append_network_communication_local_ip_address_into_related_ip
+      value: '{{{eset_protect.detection.network_communication.local.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.network_communication?.local?.ip_address != null
+  - append:
+      field: related.ip
+      tag: append_network_communication_remote_ip_address_into_related_ip
+      value: '{{{eset_protect.detection.network_communication.remote.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.network_communication?.remote?.ip_address != null
+  - append:
+      field: related.user
+      tag: append_file_last_editor_user_name_to_related_user
+      value: '{{{eset_protect.detection.file.last_editor.user_name}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.file?.last_editor?.user_name != null
+  - append:
+      field: related.user
+      tag: append_file_last_editor_user_uuid_to_related_user
+      value: '{{{eset_protect.detection.file.last_editor.user_uuid}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.file?.last_editor?.user_uuid != null
+  - append:
+      field: related.user
+      tag: append_file_last_editor_email_to_related_user
+      value: '{{{eset_protect.detection.file.last_editor.email}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.file?.last_editor?.email != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha1_to_related_hash
+      value: '{{{eset_protect.detection.file.hash_sha1}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.file?.hash_sha1 != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha2256_to_related_hash
+      value: '{{{eset_protect.detection.file.hash_sha2256}}}'
+      allow_duplicates: false
+      if: ctx.eset_protect?.detection?.file?.hash_sha2256 != null
   - append:
       field: related.hash
       tag: append_object_hash_sha1_into_related_hash
-      value: "{{{eset_protect.detection.object_hash_sha1}}}"
+      value: '{{{eset_protect.detection.object_hash_sha1}}}'
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.object_hash_sha1 != null
   - lowercase:
       field: related.hash
       tag: lowercase_related_hash
       ignore_missing: true
-  - rename:
-      field: json.objectName
-      tag: rename_objectName
-      target_field: eset_protect.detection.object_name
-      ignore_missing: true
-  - set:
-      field: file.name
-      tag: set_file_name_from_detection_object_name
-      copy_from: eset_protect.detection.object_name
-      ignore_empty_value: true
-      if: ctx.eset_protect?.detection?.object_type_name == "File"
-  - rename:
-      field: json.objectUrl
-      tag: rename_objectUrl
-      target_field: eset_protect.detection.object_url
-      ignore_missing: true
-  - date:
-      field: json.occurTime
-      tag: date_occurTime
-      target_field: eset_protect.detection.occur_time
-      formats:
-        - ISO8601
-      if: ctx.json?.occurTime != null && ctx.json.occurTime != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - set:
-      field: "@timestamp"
-      tag: set_@timestamp_from_detection_occur_time
-      copy_from: eset_protect.detection.occur_time
-      ignore_empty_value: true
   - foreach:
-      field: json.responses
-      if: ctx.json?.responses instanceof List
-      processor:
-        convert:
-          field: _ingest._value.deviceRestartRequired
-          tag: convert_responses_deviceRestartRequired_to_boolean
-          target_field: _ingest._value.device_restart_required
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.deviceRestartRequired
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - foreach:
-      field: json.responses
-      if: ctx.json?.responses instanceof List
-      processor:
-        rename:
-          field: _ingest._value.displayName
-          tag: rename_responses_displayName
-          target_field: _ingest._value.display_name
-          ignore_missing: true
-  - foreach:
-      field: json.responses
-      if: ctx.json?.responses instanceof List
-      processor:
-        rename:
-          field: _ingest._value.protectionName
-          tag: rename_responses_protectionName
-          target_field: _ingest._value.protection_name
-          ignore_missing: true
-  - foreach:
-      field: json.responses
-      if: ctx.json?.responses instanceof List
+      field: eset_protect.detection.email.attachments
+      if: ctx.eset_protect?.detection?.email?.attachments instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
         remove:
-          field: _ingest._value.deviceRestartRequired
-          tag: remove_responses_deviceRestartRequired
+          field:
+            - _ingest._value.hash_sha1
+            - _ingest._value.hash_sha2256
+            - _ingest._value.size_bytes
+          tag: remove_custom_duplicate_fields_from_email_attachments
           ignore_missing: true
-  - rename:
-      field: json.responses
-      tag: rename_responses
-      target_field: eset_protect.detection.responses
-      ignore_missing: true
-  - rename:
-      field: json.severityLevel
-      tag: rename_severityLevel
-      target_field: eset_protect.detection.severity_level
-      ignore_missing: true
-  - rename:
-      field: json.typeName
-      tag: rename_typeName
-      target_field: eset_protect.detection.type_name
-      ignore_missing: true
-  - append:
-      field: threat.technique.name
-      tag: append_eset_protect_detection_type_name_into_threat_technique_name
-      value: "{{{eset_protect.detection.type_name}}}"
-      allow_duplicates: false
-      if: ctx.eset_protect?.detection?.type_name != null
-  - rename:
-      field: json.uuid
-      tag: rename_uuid
-      target_field: eset_protect.detection.uuid
-      ignore_missing: true
   - remove:
       field:
         - eset_protect.detection.category
+        - eset_protect.detection.cloud_office_tenant_uuid
         - eset_protect.detection.context.device_uuid
+        - eset_protect.detection.context.device_display_name
+        - eset_protect.detection.context.process.command_line
         - eset_protect.detection.context.process.path
+        - eset_protect.detection.edr_rule_uuid
+        - eset_protect.detection.email.cc
+        - eset_protect.detection.email.from
+        - eset_protect.detection.email.internet_message_id
+        - eset_protect.detection.email.reference
+        - eset_protect.detection.email.subject
+        - eset_protect.detection.email.to
         - eset_protect.detection.network_communication.local.ip_address
+        - eset_protect.detection.network_communication.local.mac_address
         - eset_protect.detection.network_communication.local.port
         - eset_protect.detection.network_communication.protocol_name
         - eset_protect.detection.network_communication.remote.ip_address
+        - eset_protect.detection.network_communication.remote.mac_address
         - eset_protect.detection.network_communication.remote.port
         - eset_protect.detection.occur_time
+        - eset_protect.detection.severity_score
         - eset_protect.detection.type_name
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
-      field: json
+      field:
+        - json
+        - eset_protect.detection.network_communication.local_ip_address
+        - eset_protect.detection.network_communication.local_port
+        - eset_protect.detection.network_communication.remote_ip_address
+        - eset_protect.detection.network_communication.remote_port
+        - eset_protect.detection.network_communication.local_mac_address
+        - eset_protect.detection.network_communication.remote_mac_address
       tag: remove_json
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values
       lang: painless
-      description: Drops null/empty values recursively.
+      description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
-        boolean drop(Object o) {
-          if (o == null || o == '') {
-            return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
-          }
-          return false;
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        drop(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - append:
       field: event.kind
       value: pipeline_error
@@ -504,7 +906,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

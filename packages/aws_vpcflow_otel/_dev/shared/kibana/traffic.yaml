@@ -1,0 +1,435 @@
+---
+dashboards:
+  # Dashboard 2: Traffic Analysis - Distribution, sources, and security
+  - id: aws_vpcflow_otel-traffic
+    name: '[AWS VPC OTEL] Traffic Analysis'
+    description: Detailed traffic distribution, source analysis, and security deep dive
+    filters:
+      - field: data_stream.dataset
+        equals: aws.vpcflow.otel
+    controls:
+      # Primary filters
+      - type: options
+        label: Cloud Account ID
+        data_view: logs-*
+        field: cloud.account.id
+      - type: options
+        label: Network Interface
+        data_view: logs-*
+        field: network.interface.name
+      - type: options
+        label: Action
+        width: small
+        data_view: logs-*
+        field: aws.vpc.flow.action
+      # Traffic filters
+      - type: options
+        label: Protocol
+        width: small
+        data_view: logs-*
+        field: network.protocol.name
+      - type: options
+        label: Destination Port
+        width: small
+        data_view: logs-*
+        field: destination.port
+      - type: options
+        label: Source Port
+        width: small
+        data_view: logs-*
+        field: source.port
+    panels:
+      # Navigation
+      - size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: aws_vpcflow_otel-overview
+            - label: Traffic Analysis
+              dashboard: aws_vpcflow_otel-traffic
+            - label: Interface Analysis
+              dashboard: aws_vpcflow_otel-interface
+
+      # Traffic KPIs (no section header - first section)
+      - title: Total Flow Records
+        hide_title: true
+        size: {w: 10, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel"
+            - STATS total_flows = COUNT()
+          primary:
+            field: total_flows
+            label: Flow Records
+            format:
+              type: number
+              decimals: 0
+      - title: Unique Source IPs
+        hide_title: true
+        size: {w: 10, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND source.address IS NOT NULL
+            - STATS unique_sources = COUNT_DISTINCT(source.address)
+          primary:
+            field: unique_sources
+            label: Unique Sources
+            format:
+              type: number
+              decimals: 0
+      - title: Unique Destination IPs
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND destination.address IS NOT NULL
+            - STATS unique_destinations = COUNT_DISTINCT(destination.address)
+          primary:
+            field: unique_destinations
+            label: Unique Destinations
+            format:
+              type: number
+              decimals: 0
+      - title: Unique Protocols
+        hide_title: true
+        size: {w: 10, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND network.protocol.name IS NOT NULL
+            - STATS unique_protocols = COUNT_DISTINCT(network.protocol.name)
+          primary:
+            field: unique_protocols
+            label: Protocols
+            format:
+              type: number
+              decimals: 0
+      - title: Unique Destination Ports
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND destination.port IS NOT NULL
+            - STATS unique_ports = COUNT_DISTINCT(destination.port)
+          primary:
+            field: unique_ports
+            label: Dest Ports
+            format:
+              type: number
+              decimals: 0
+
+      # Traffic Trend
+      - title: Traffic by Action Over Time
+        size: {w: 48, h: 10}
+        esql:
+          type: area
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND aws.vpc.flow.action IS NOT NULL
+            - STATS flow_count = COUNT() BY aws.vpc.flow.action, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          mode: stacked
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: flow_count
+              label: Flow Count
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: aws.vpc.flow.action
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: REJECT
+                color: '#BD271E'
+              - value: ACCEPT
+                color: '#00BF6F'
+          appearance:
+            x_axis:
+              title: '@timestamp'
+            y_left_axis:
+              title: Flow Count
+
+      # Traffic Distribution
+      - title: Top Protocols
+        size: {w: 24, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND network.protocol.name IS NOT NULL
+            - STATS flow_count = COUNT() BY network.protocol.name
+            - SORT flow_count DESC
+            - LIMIT 10
+          metrics:
+            - field: flow_count
+              label: Flow Count
+              format:
+                type: number
+                decimals: 0
+          dimensions:
+            - field: network.protocol.name
+              label: Protocol
+      - title: Top Destination Ports
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND destination.port IS NOT NULL
+            - STATS flow_count = COUNT() BY destination.port
+            - SORT flow_count DESC
+            - LIMIT 10
+          dimension:
+            field: destination.port
+            label: Dest Port
+          metrics:
+            - field: flow_count
+              label: Flow Count
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Flow Count
+      # Source Analysis
+      - markdown:
+          content: '### Source Analysis'
+        size: {w: 48, h: 3}
+      - title: Top Source IPs - Detailed
+        size: {w: 48, h: 13}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND source.address IS NOT NULL
+            - EVAL is_accepted = CASE(aws.vpc.flow.action == "ACCEPT", 1, 0)
+            - EVAL is_rejected = CASE(aws.vpc.flow.action == "REJECT", 1, 0)
+            - STATS total_flows = COUNT(), accepted_flows = SUM(is_accepted), rejected_flows = SUM(is_rejected), total_bytes = SUM(aws.vpc.flow.bytes),
+              total_packets = SUM(aws.vpc.flow.packets) BY source.address
+            - EVAL rejection_rate = CASE(total_flows > 0, rejected_flows::double / total_flows::double, 0)
+            - SORT total_flows DESC
+            - LIMIT 20
+          dimensions:
+            - field: source.address
+              label: Source IP
+          metrics:
+            - field: total_flows
+              label: Total Flows
+              format:
+                type: number
+                decimals: 0
+            - field: accepted_flows
+              label: Accepted
+              format:
+                type: number
+                decimals: 0
+            - field: rejected_flows
+              label: Rejected
+              format:
+                type: number
+                decimals: 0
+            - field: rejection_rate
+              label: Rejection %
+              format:
+                type: percent
+                decimals: 1
+            - field: total_bytes
+              label: Bytes
+              format:
+                type: bytes
+            - field: total_packets
+              label: Packets
+              format:
+                type: number
+                decimals: 0
+          paging:
+            enabled: true
+            page_size: 10
+
+      # Security Deep Dive
+      - markdown:
+          content: '### Security Deep Dive'
+        size: {w: 48, h: 3}
+      - title: Rejected Traffic by Protocol
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND aws.vpc.flow.action == "REJECT" AND network.protocol.name IS NOT NULL
+            - STATS rejected_count = COUNT() BY network.protocol.name
+            - SORT rejected_count DESC
+            - LIMIT 10
+          dimension:
+            field: network.protocol.name
+            label: Protocol
+          metrics:
+            - field: rejected_count
+              label: Rejected Count
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+          color:
+            palette: negative
+          appearance:
+            y_left_axis:
+              title: Rejected Count
+      - title: Top Rejected Ports
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND aws.vpc.flow.action == "REJECT" AND destination.port IS NOT NULL
+            - STATS rejected_count = COUNT() BY destination.port
+            - SORT rejected_count DESC
+            - LIMIT 10
+          dimension:
+            field: destination.port
+            label: Dest Port
+          metrics:
+            - field: rejected_count
+              label: Rejected Count
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+          color:
+            palette: negative
+          appearance:
+            y_left_axis:
+              title: Rejected Count
+      - title: Detailed Rejection Logs
+        size: {w: 48, h: 13}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND aws.vpc.flow.action == "REJECT"
+            - KEEP @timestamp, source.address, destination.address, destination.port, network.protocol.name, network.interface.name, aws.vpc.flow.bytes,
+              aws.vpc.flow.packets
+            - SORT @timestamp DESC
+            - LIMIT 1000
+          dimensions:
+            - field: '@timestamp'
+              label: Timestamp
+            - field: source.address
+              label: Source IP
+            - field: destination.address
+              label: Destination IP
+            - field: destination.port
+              label: Dest Port
+            - field: network.protocol.name
+              label: Protocol
+            - field: network.interface.name
+              label: Interface
+          metrics:
+            - field: aws.vpc.flow.bytes
+              label: Bytes
+              format:
+                type: bytes
+            - field: aws.vpc.flow.packets
+              label: Packets
+              format:
+                type: number
+                decimals: 0
+          paging:
+            enabled: true
+            page_size: 15
+
+      # Top Sources and Destinations
+      - markdown:
+          content: '### Top Sources and Destinations'
+        size: {w: 48, h: 3}
+      - title: Top Destination Ports
+        size: {w: 16, h: 12}
+        esql:
+          type: bar
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND destination.port IS NOT NULL
+            - STATS flow_count = COUNT() BY destination.port
+            - SORT flow_count DESC
+            - LIMIT 10
+          dimension:
+            field: destination.port
+            label: Dest Port
+          metrics:
+            - field: flow_count
+              label: Flow Count
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Flow Count
+      - title: Top Destination IPs
+        size: {w: 16, h: 12}
+        esql:
+          type: bar
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND destination.address IS NOT NULL
+            - STATS flow_count = COUNT() BY destination.address
+            - SORT flow_count DESC
+            - LIMIT 10
+          dimension:
+            field: destination.address
+            label: Destination IP
+          metrics:
+            - field: flow_count
+              label: Flow Count
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Flow Count
+      - title: Top Source IPs
+        size: {w: 16, h: 12}
+        esql:
+          type: bar
+          query:
+            - FROM logs-*
+            - WHERE data_stream.dataset == "aws.vpcflow.otel" AND source.address IS NOT NULL
+            - STATS flow_count = COUNT() BY source.address
+            - SORT flow_count DESC
+            - LIMIT 10
+          dimension:
+            field: source.address
+            label: Source IP
+          metrics:
+            - field: flow_count
+              label: Flow Count
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Flow Count

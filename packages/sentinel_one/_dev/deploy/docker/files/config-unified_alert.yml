@@ -1,0 +1,1831 @@
+rules:
+  # 3rd request (based on detectedAt filtering)
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: ["POST"]
+    request_headers:
+      Content-Type: application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: /.*\"variables\":\{\"after\":\"cursor_page2\",\"filters\":\[\{\"dateTimeRange\":\{\"end\":\d+,\"start\":\d+,\"startInclusive\":false\},\"fieldId\":\"detectedAt\"\}\],\"first\":2,\"sort\":\{\"by\":\"detectedAt\",\"order\":\"ASC\"\}\}/
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "alerts": {
+                "totalCount": 5,
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "hasPreviousPage": false,
+                  "startCursor": "cursor_page2",
+                  "endCursor": "cursor_page2"
+                },
+                "edges": [
+                  {
+                    "cursor": "cursor_page2",
+                    "node": {
+                      "id": "01955559-ef01-b788-5678-0ef01237",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": null
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "eb655be8be894dae97711ebb9a9091ae",
+                          "agentVersion": "24.1.5.277",
+                          "assetTypeClassifier": "GCP Compute Instance",
+                          "category": "Server",
+                          "connectivityToConsole": "OFFLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": null,
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "WINDOWS",
+                          "osVersion": "Windows Server 2022 Datacenter 20348",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Virtual Machine"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "RANSOMWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-03-16T21:05:53.587Z",
+                      "dataSources": [
+                        "FILE",
+                        "PROCESS"
+                      ],
+                      "description": "Windows file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-03-16T21:05:52.096Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.1.5.277",
+                              "consoleIpAddress": null,
+                              "domain": "example.local",
+                              "ipV4": null,
+                              "ipV6": null,
+                              "lastLoggedInUser": null,
+                              "osName": "Windows Server 2022 Datacenter",
+                              "osRevision": "20348",
+                              "osType": "WINDOWS",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": {
+                              "accountId": "111222333444",
+                              "cloudProvider": "GCP",
+                              "image": "windows-server-2022-dc-v20241010",
+                              "instanceId": "i-0abcd111122223333",
+                              "instanceSize": "e2-standard-4",
+                              "location": "us-central1-f",
+                              "network": "default",
+                              "providerDetails": null,
+                              "tags": [
+                                "rdp",
+                                "Endpoint does not have sufficient permissions to fetch labels"
+                              ]
+                            },
+                            "kubernetes": {
+                              "clusterName": null,
+                              "containerId": "",
+                              "containerImageName": "",
+                              "containerLabels": null,
+                              "containerName": "",
+                              "controllerLabels": null,
+                              "controllerName": null,
+                              "controllerType": null,
+                              "namespaceLabels": null,
+                              "namespaceName": null,
+                              "nodeLabels": null,
+                              "nodeName": null,
+                              "podLabels": null,
+                              "podName": ""
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": null,
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": null
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-03-16T21:05:52.096Z",
+                      "lastSeenAt": "2025-03-16T21:05:53.584Z",
+                      "name": "mpsvc.dll detected as Ransomware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": null,
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "mpsvc.dll",
+                          "path": "\\Device\\HarddiskVolume3\\Windows\\mpsvc.dll",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e.exe"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "CRITICAL",
+                      "sloDetails": null,
+                      "status": "NEW",
+                      "storylineId": null,
+                      "ticketId": null,
+                      "updatedAt": "2025-03-16T21:05:53.584Z"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+          `}}
+  # 2nd request (based on detectedAt filtering)
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: ["POST"]
+    request_headers:
+      Content-Type: application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: /.*\"variables\":\{\"after\":\"cursor_page1\",\"filters\":\[\{\"dateTimeRange\":\{\"end\":\d+,\"start\":\d+,\"startInclusive\":false\},\"fieldId\":\"detectedAt\"\}\],\"first\":2,\"sort\":\{\"by\":\"detectedAt\",\"order\":\"ASC\"\}\}/
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "alerts": {
+                "totalCount": 5,
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "hasPreviousPage": false,
+                  "startCursor": "cursor_page2",
+                  "endCursor": "cursor_page2"
+                },
+                "edges": [
+                  {
+                    "cursor": "cursor_page2",
+                    "node": {
+                      "id": "01933339-cdef-9566-3456-8cdef89015",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": "analytic-uid-001"
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "c3d4e5f6-a7b8-9012-cdef-3456789012",
+                          "agentVersion": "24.2.2.20",
+                          "assetTypeClassifier": "Linux Server",
+                          "category": "Server",
+                          "connectivityToConsole": "ONLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": "clark",
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "LINUX",
+                          "osVersion": "Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Other Server"
+                        }
+                      ],
+                      "assignee": {
+                        "email": "jane.doe@example.com",
+                        "full_name": "Jane Doe",
+                        "user_id": "user-001"
+                      },
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "MALWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-02-06T13:35:05.051Z",
+                      "dataSources": [],
+                      "description": "Linux file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-02-06T13:35:05.051Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.2.2.20",
+                              "consoleIpAddress": null,
+                              "domain": "example.local",
+                              "ipV4": null,
+                              "ipV6": null,
+                              "lastLoggedInUser": null,
+                              "osName": "Linux",
+                              "osRevision": "Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                              "osType": "UNKNOWN",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": null,
+                            "kubernetes": {
+                              "clusterName": "prod-cluster-01",
+                              "containerId": "abc123def456789",
+                              "containerImageName": "nginx:1.21-alpine",
+                              "containerLabels": [
+                                "app=web",
+                                "tier=frontend"
+                              ],
+                              "containerName": "web-container",
+                              "controllerLabels": [
+                                "app=web"
+                              ],
+                              "controllerName": "web-deployment",
+                              "controllerType": "deployment",
+                              "namespaceLabels": [
+                                "env=prod"
+                              ],
+                              "namespaceName": "default",
+                              "nodeLabels": [
+                                "node-role=worker"
+                              ],
+                              "nodeName": "node-01",
+                              "podLabels": [
+                                "app=web",
+                                "pod-template-hash=abc123"
+                              ],
+                              "podName": "web-deployment-7d8f9c-xyz12"
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": "attacker.example.com",
+                          "ip": "216.160.83.57"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "clark@example.com",
+                          "name": "Clark Kent"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-02-06T13:35:05.051Z",
+                      "lastSeenAt": "2025-03-08T13:42:19.495Z",
+                      "name": "eicar.com.txt detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": null,
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "eicar.com.txt",
+                          "path": "/home/ubuntu/eicar.com.txt",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "curl"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": null,
+                      "status": "RESOLVED",
+                      "storylineId": null,
+                      "ticketId": null,
+                      "updatedAt": "2025-03-08T13:42:19.495Z"
+                    }
+                  },
+                  {
+                    "cursor": "cursor_page2_b",
+                    "node": {
+                      "id": "01944449-def0-a677-4567-9def90126",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": null
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "eb655be8be894dae97711ebb9a9091ae",
+                          "agentVersion": "24.1.5.277",
+                          "assetTypeClassifier": "GCP Compute Instance",
+                          "category": "Server",
+                          "connectivityToConsole": "OFFLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": null,
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "WINDOWS",
+                          "osVersion": "Windows Server 2022 Datacenter 20348",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Virtual Machine"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "MALWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-03-16T21:05:37.042Z",
+                      "dataSources": [],
+                      "description": "Windows file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-03-16T21:05:36.933Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.1.5.277",
+                              "consoleIpAddress": null,
+                              "domain": "example.local",
+                              "ipV4": null,
+                              "ipV6": "2a02:cf40::1",
+                              "lastLoggedInUser": null,
+                              "osName": "Windows Server 2022 Datacenter",
+                              "osRevision": "20348",
+                              "osType": "WINDOWS",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": {
+                              "accountId": "111222333444",
+                              "cloudProvider": "GCP",
+                              "image": "windows-server-2022-dc-v20241010",
+                              "instanceId": "i-0abcd111122223333",
+                              "instanceSize": "e2-standard-4",
+                              "location": "us-central1-f",
+                              "network": "default",
+                              "providerDetails": null,
+                              "tags": [
+                                "rdp",
+                                "Endpoint does not have sufficient permissions to fetch labels"
+                              ]
+                            },
+                            "kubernetes": {
+                              "clusterName": null,
+                              "containerId": "",
+                              "containerImageName": "",
+                              "containerLabels": null,
+                              "containerName": "",
+                              "controllerLabels": null,
+                              "controllerName": null,
+                              "controllerType": null,
+                              "namespaceLabels": null,
+                              "namespaceName": null,
+                              "nodeLabels": null,
+                              "nodeName": null,
+                              "podLabels": null,
+                              "podName": ""
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": null,
+                          "ip": "1.128.0.1"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "jane.doe@example.com",
+                          "name": "Jane Doe"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-03-16T21:05:36.933Z",
+                      "lastSeenAt": "2025-03-16T21:05:37.039Z",
+                      "name": "d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": null,
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e",
+                          "path": "\\Device\\HarddiskVolume3\\Users\\john.doe\\Downloads\\21759204261\\d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "explorer.exe"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": null,
+                      "status": "NEW",
+                      "storylineId": null,
+                      "ticketId": "TKT-10001",
+                      "updatedAt": "2025-03-16T21:05:37.039Z"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+          `}}
+  # 1st request (based on detectedAt filtering)
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: ["POST"]
+    request_headers:
+      Content-Type: application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: /.*\"variables\":\{\"filters\":\[\{\"dateTimeRange\":\{\"end\":\d+,\"start\":\d+,\"startInclusive\":false\},\"fieldId\":\"detectedAt\"\}\],\"first\":2,\"sort\":\{\"by\":\"detectedAt\",\"order\":\"ASC\"\}\}/
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "alerts": {
+                "totalCount": 5,
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "hasPreviousPage": false,
+                  "startCursor": "cursor_page1",
+                  "endCursor": "cursor_page1"
+                },
+                "edges": [
+                  {
+                    "cursor": "cursor_page1",
+                    "node": {
+                      "id": "01911119-abcd-7454-1234-6abcdef67893",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": "analytic-uid-001"
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                          "agentVersion": "24.2.2.20",
+                          "assetTypeClassifier": "Linux Server",
+                          "category": "Server",
+                          "connectivityToConsole": "ONLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": null,
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "LINUX",
+                          "osVersion": "Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Other Server"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "MALWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-02-04T15:54:59.485Z",
+                      "dataSources": [],
+                      "description": "Linux file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-02-04T15:54:59.485Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": null,
+                            "cloud": null,
+                            "kubernetes": {
+                              "clusterName": "prod-cluster-01",
+                              "containerId": "a1b2c3d4e5f6",
+                              "containerImageName": "ubuntu:22.04",
+                              "containerLabels": [
+                                "app=agent",
+                                "tier=security"
+                              ],
+                              "containerName": "sentinel-agent",
+                              "controllerLabels": [
+                                "app=sentinel"
+                              ],
+                              "controllerName": "sentinel-daemonset",
+                              "controllerType": "daemonset",
+                              "namespaceLabels": [
+                                "env=prod"
+                              ],
+                              "namespaceName": "security",
+                              "nodeLabels": [
+                                "node-role=worker"
+                              ],
+                              "nodeName": "worker-node-01",
+                              "podLabels": [
+                                "app=sentinel",
+                                "pod-template-hash=xyz99"
+                              ],
+                              "podName": "sentinel-daemonset-abc12"
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": "attacker.example.com",
+                          "ip": "1.128.0.1"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "john.doe@example.com",
+                          "name": "John Doe"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-02-04T15:54:59.485Z",
+                      "lastSeenAt": "2025-03-06T16:42:19.518Z",
+                      "name": "eicar.com.txt detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": "/usr/bin/curl -O https://example.com/file.txt",
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "eicar.com.txt",
+                          "path": "/tmp/eicar.com.txt",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "curl"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": {
+                        "timeToResolveData": {
+                          "actionComplete": false,
+                          "actionDue": 30,
+                          "completion": 3600,
+                          "completionTime": null,
+                          "status": "IN_PROGRESS",
+                          "target": 60,
+                          "targetTime": "2025-02-05T16:00:00.000Z"
+                        },
+                        "timeToResponseData": {
+                          "actionComplete": true,
+                          "actionDue": -5,
+                          "completion": 300,
+                          "completionTime": "2025-02-04T16:00:00.000Z",
+                          "status": "MET",
+                          "target": 15,
+                          "targetTime": "2025-02-04T15:55:00.000Z"
+                        }
+                      },
+                      "status": "RESOLVED",
+                      "storylineId": null,
+                      "ticketId": null,
+                      "updatedAt": "2025-03-06T16:42:19.518Z"
+                    }
+                  },
+                  {
+                    "cursor": "cursor_page1_b",
+                    "node": {
+                      "id": "01922229-bcde-8455-2345-7bcdef78904",
+                      "aiInvestigation": {
+                        "purpleAiStatus": "COMPLETED",
+                        "status": "RESOLVED",
+                        "verdict": "TRUE_POSITIVE"
+                      },
+                      "analystVerdict": "TRUE_POSITIVE_BENIGN_BUT_SUSPICIOUS",
+                      "analytics": {
+                        "category": "Manual",
+                        "name": "Custom Rule",
+                        "typeValue": "DYNAMIC",
+                        "uid": null
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "b2c3d4e5-f6a7-8901-bcde-f2345678901",
+                          "agentVersion": "24.2.2.20",
+                          "assetTypeClassifier": "Linux Server",
+                          "category": "Server",
+                          "connectivityToConsole": "OFFLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": "bob",
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "LINUX",
+                          "osVersion": "Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Other Server"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": [
+                        "action-contain",
+                        "action-kill-process"
+                      ],
+                      "classification": "MALWARE",
+                      "confidenceLevel": "SUSPICIOUS",
+                      "createdAt": "2025-02-06T13:38:13.137Z",
+                      "dataSources": [],
+                      "description": "Not available",
+                      "detectedAt": "2025-02-06T13:38:13.137Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.2.2.20",
+                              "consoleIpAddress": "81.2.69.144",
+                              "domain": "example.local",
+                              "ipV4": "81.2.69.193",
+                              "ipV6": null,
+                              "lastLoggedInUser": "bob",
+                              "osName": "Linux",
+                              "osRevision": "Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                              "osType": "UNKNOWN",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": null,
+                            "kubernetes": {
+                              "clusterName": "dev-cluster-us",
+                              "containerId": "b2c3d4e5f6a7",
+                              "containerImageName": "debian:bookworm",
+                              "containerLabels": [
+                                "app=bash",
+                                "tier=backend"
+                              ],
+                              "containerName": "bash-container",
+                              "controllerLabels": [
+                                "app=shell"
+                              ],
+                              "controllerName": "shell-deployment",
+                              "controllerType": "deployment",
+                              "namespaceLabels": [
+                                "env=dev"
+                              ],
+                              "namespaceName": "default",
+                              "nodeLabels": [
+                                "node-role=worker"
+                              ],
+                              "nodeName": "node-dev-02",
+                              "podLabels": [
+                                "app=shell",
+                                "pod-template-hash=def456"
+                              ],
+                              "podName": "shell-deployment-8e9f0d-qrs34"
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": "attacker.example.com",
+                          "ip": "175.16.199.1"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "bob@example.com",
+                          "name": "Bob Smith"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-02-06T13:38:13.137Z",
+                      "lastSeenAt": "2025-03-08T13:42:19.469Z",
+                      "name": "bash detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": "-bash",
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "bash",
+                          "path": "/bin/bash",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "sshd"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": null,
+                      "status": "RESOLVED",
+                      "storylineId": "21992229-74c7-332d-7390-be5ec73142b2",
+                      "ticketId": null,
+                      "updatedAt": "2025-03-08T13:42:19.469Z"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+          `}}
+  # 3rd request (based on updatedAt filtering)
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: ["POST"]
+    request_headers:
+      Content-Type: application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: /.*\"variables\":\{\"after\":\"cursor_page2\",\"filters\":\[\{\"dateTimeRange\":\{\"end\":\d+,\"start\":\d+,\"startInclusive\":false\},\"fieldId\":\"updatedAt\"\}\],\"first\":2,\"sort\":\{\"by\":\"updatedAt\",\"order\":\"ASC\"\}\}/
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "alerts": {
+                "totalCount": 5,
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "hasPreviousPage": false,
+                  "startCursor": "cursor_page2",
+                  "endCursor": "cursor_page2"
+                },
+                "edges": [
+                  {
+                    "cursor": "cursor_page2",
+                    "node": {
+                      "id": "01955559-ef01-b788-5678-0ef01237",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": null
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "eb655be8be894dae97711ebb9a9091ae",
+                          "agentVersion": "24.1.5.277",
+                          "assetTypeClassifier": "GCP Compute Instance",
+                          "category": "Server",
+                          "connectivityToConsole": "OFFLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": null,
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "WINDOWS",
+                          "osVersion": "Windows Server 2022 Datacenter 20348",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Virtual Machine"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "RANSOMWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-03-16T21:05:53.587Z",
+                      "dataSources": [
+                        "FILE",
+                        "PROCESS"
+                      ],
+                      "description": "Windows file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-03-16T21:05:52.096Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.1.5.277",
+                              "consoleIpAddress": null,
+                              "domain": "example.local",
+                              "ipV4": null,
+                              "ipV6": null,
+                              "lastLoggedInUser": null,
+                              "osName": "Windows Server 2022 Datacenter",
+                              "osRevision": "20348",
+                              "osType": "WINDOWS",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": {
+                              "accountId": "111222333444",
+                              "cloudProvider": "GCP",
+                              "image": "windows-server-2022-dc-v20241010",
+                              "instanceId": "i-0abcd111122223333",
+                              "instanceSize": "e2-standard-4",
+                              "location": "us-central1-f",
+                              "network": "default",
+                              "providerDetails": null,
+                              "tags": [
+                                "rdp",
+                                "Endpoint does not have sufficient permissions to fetch labels"
+                              ]
+                            },
+                            "kubernetes": {
+                              "clusterName": null,
+                              "containerId": "",
+                              "containerImageName": "",
+                              "containerLabels": null,
+                              "containerName": "",
+                              "controllerLabels": null,
+                              "controllerName": null,
+                              "controllerType": null,
+                              "namespaceLabels": null,
+                              "namespaceName": null,
+                              "nodeLabels": null,
+                              "nodeName": null,
+                              "podLabels": null,
+                              "podName": ""
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": null,
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": null
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-03-16T21:05:52.096Z",
+                      "lastSeenAt": "2025-03-16T21:05:53.584Z",
+                      "name": "mpsvc.dll detected as Ransomware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": null,
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "mpsvc.dll",
+                          "path": "\\Device\\HarddiskVolume3\\Windows\\mpsvc.dll",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e.exe"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "CRITICAL",
+                      "sloDetails": null,
+                      "status": "NEW",
+                      "storylineId": null,
+                      "ticketId": null,
+                      "updatedAt": "2025-03-16T21:05:53.584Z"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+          `}}
+  # 2nd request (based on updatedAt filtering)
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: ["POST"]
+    request_headers:
+      Content-Type: application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: /.*\"variables\":\{\"after\":\"cursor_page1\",\"filters\":\[\{\"dateTimeRange\":\{\"end\":\d+,\"start\":\d+,\"startInclusive\":false\},\"fieldId\":\"updatedAt\"\}\],\"first\":2,\"sort\":\{\"by\":\"updatedAt\",\"order\":\"ASC\"\}\}/
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "alerts": {
+                "totalCount": 5,
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "hasPreviousPage": false,
+                  "startCursor": "cursor_page2",
+                  "endCursor": "cursor_page2"
+                },
+                "edges": [
+                  {
+                    "cursor": "cursor_page2",
+                    "node": {
+                      "id": "01933339-cdef-9566-3456-8cdef89015",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": "analytic-uid-001"
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "c3d4e5f6-a7b8-9012-cdef-3456789012",
+                          "agentVersion": "24.2.2.20",
+                          "assetTypeClassifier": "Linux Server",
+                          "category": "Server",
+                          "connectivityToConsole": "ONLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": "clark",
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "LINUX",
+                          "osVersion": "Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Other Server"
+                        }
+                      ],
+                      "assignee": {
+                        "email": "jane.doe@example.com",
+                        "full_name": "Jane Doe",
+                        "user_id": "user-001"
+                      },
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "MALWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-02-06T13:35:05.051Z",
+                      "dataSources": [],
+                      "description": "Linux file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-02-06T13:35:05.051Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.2.2.20",
+                              "consoleIpAddress": null,
+                              "domain": "example.local",
+                              "ipV4": null,
+                              "ipV6": null,
+                              "lastLoggedInUser": null,
+                              "osName": "Linux",
+                              "osRevision": "Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                              "osType": "UNKNOWN",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": null,
+                            "kubernetes": {
+                              "clusterName": "prod-cluster-01",
+                              "containerId": "abc123def456789",
+                              "containerImageName": "nginx:1.21-alpine",
+                              "containerLabels": [
+                                "app=web",
+                                "tier=frontend"
+                              ],
+                              "containerName": "web-container",
+                              "controllerLabels": [
+                                "app=web"
+                              ],
+                              "controllerName": "web-deployment",
+                              "controllerType": "deployment",
+                              "namespaceLabels": [
+                                "env=prod"
+                              ],
+                              "namespaceName": "default",
+                              "nodeLabels": [
+                                "node-role=worker"
+                              ],
+                              "nodeName": "node-01",
+                              "podLabels": [
+                                "app=web",
+                                "pod-template-hash=abc123"
+                              ],
+                              "podName": "web-deployment-7d8f9c-xyz12"
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": "attacker.example.com",
+                          "ip": "216.160.83.57"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "clark@example.com",
+                          "name": "Clark Kent"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-02-06T13:35:05.051Z",
+                      "lastSeenAt": "2025-03-08T13:42:19.495Z",
+                      "name": "eicar.com.txt detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": null,
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "eicar.com.txt",
+                          "path": "/home/ubuntu/eicar.com.txt",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "curl"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": null,
+                      "status": "RESOLVED",
+                      "storylineId": null,
+                      "ticketId": null,
+                      "updatedAt": "2025-03-08T13:42:19.495Z"
+                    }
+                  },
+                  {
+                    "cursor": "cursor_page2_b",
+                    "node": {
+                      "id": "01944449-def0-a677-4567-9def90126",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": null
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "eb655be8be894dae97711ebb9a9091ae",
+                          "agentVersion": "24.1.5.277",
+                          "assetTypeClassifier": "GCP Compute Instance",
+                          "category": "Server",
+                          "connectivityToConsole": "OFFLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": null,
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "WINDOWS",
+                          "osVersion": "Windows Server 2022 Datacenter 20348",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Virtual Machine"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "MALWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-03-16T21:05:37.042Z",
+                      "dataSources": [],
+                      "description": "Windows file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-03-16T21:05:36.933Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.1.5.277",
+                              "consoleIpAddress": null,
+                              "domain": "example.local",
+                              "ipV4": null,
+                              "ipV6": "2a02:cf40::1",
+                              "lastLoggedInUser": null,
+                              "osName": "Windows Server 2022 Datacenter",
+                              "osRevision": "20348",
+                              "osType": "WINDOWS",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": {
+                              "accountId": "111222333444",
+                              "cloudProvider": "GCP",
+                              "image": "windows-server-2022-dc-v20241010",
+                              "instanceId": "i-0abcd111122223333",
+                              "instanceSize": "e2-standard-4",
+                              "location": "us-central1-f",
+                              "network": "default",
+                              "providerDetails": null,
+                              "tags": [
+                                "rdp",
+                                "Endpoint does not have sufficient permissions to fetch labels"
+                              ]
+                            },
+                            "kubernetes": {
+                              "clusterName": null,
+                              "containerId": "",
+                              "containerImageName": "",
+                              "containerLabels": null,
+                              "containerName": "",
+                              "controllerLabels": null,
+                              "controllerName": null,
+                              "controllerType": null,
+                              "namespaceLabels": null,
+                              "namespaceName": null,
+                              "nodeLabels": null,
+                              "nodeName": null,
+                              "podLabels": null,
+                              "podName": ""
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": null,
+                          "ip": "1.128.0.1"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "jane.doe@example.com",
+                          "name": "Jane Doe"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-03-16T21:05:36.933Z",
+                      "lastSeenAt": "2025-03-16T21:05:37.039Z",
+                      "name": "d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": null,
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e",
+                          "path": "\\Device\\HarddiskVolume3\\Users\\john.doe\\Downloads\\21759204261\\d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "explorer.exe"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": null,
+                      "status": "NEW",
+                      "storylineId": null,
+                      "ticketId": "TKT-10001",
+                      "updatedAt": "2025-03-16T21:05:37.039Z"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+          `}}
+  # 1st request (based on updatedAt filtering)
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: ["POST"]
+    request_headers:
+      Content-Type: application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: /.*\"variables\":\{\"filters\":\[\{\"dateTimeRange\":\{\"end\":\d+,\"start\":\d+,\"startInclusive\":false\},\"fieldId\":\"updatedAt\"\}\],\"first\":2,\"sort\":\{\"by\":\"updatedAt\",\"order\":\"ASC\"\}\}/
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "alerts": {
+                "totalCount": 5,
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "hasPreviousPage": false,
+                  "startCursor": "cursor_page1",
+                  "endCursor": "cursor_page1"
+                },
+                "edges": [
+                  {
+                    "cursor": "cursor_page1",
+                    "node": {
+                      "id": "01911119-abcd-7454-1234-6abcdef67893",
+                      "aiInvestigation": null,
+                      "analystVerdict": "UNDEFINED",
+                      "analytics": {
+                        "category": "Reputation",
+                        "name": "Agent Policy",
+                        "typeValue": "STATIC",
+                        "uid": "analytic-uid-001"
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                          "agentVersion": "24.2.2.20",
+                          "assetTypeClassifier": "Linux Server",
+                          "category": "Server",
+                          "connectivityToConsole": "ONLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": null,
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "LINUX",
+                          "osVersion": "Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Other Server"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": null,
+                      "classification": "MALWARE",
+                      "confidenceLevel": "MALICIOUS",
+                      "createdAt": "2025-02-04T15:54:59.485Z",
+                      "dataSources": [],
+                      "description": "Linux file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence",
+                      "detectedAt": "2025-02-04T15:54:59.485Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": null,
+                            "cloud": null,
+                            "kubernetes": {
+                              "clusterName": "prod-cluster-01",
+                              "containerId": "a1b2c3d4e5f6",
+                              "containerImageName": "ubuntu:22.04",
+                              "containerLabels": [
+                                "app=agent",
+                                "tier=security"
+                              ],
+                              "containerName": "sentinel-agent",
+                              "controllerLabels": [
+                                "app=sentinel"
+                              ],
+                              "controllerName": "sentinel-daemonset",
+                              "controllerType": "daemonset",
+                              "namespaceLabels": [
+                                "env=prod"
+                              ],
+                              "namespaceName": "security",
+                              "nodeLabels": [
+                                "node-role=worker"
+                              ],
+                              "nodeName": "worker-node-01",
+                              "podLabels": [
+                                "app=sentinel",
+                                "pod-template-hash=xyz99"
+                              ],
+                              "podName": "sentinel-daemonset-abc12"
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": "attacker.example.com",
+                          "ip": "1.128.0.1"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "john.doe@example.com",
+                          "name": "John Doe"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-02-04T15:54:59.485Z",
+                      "lastSeenAt": "2025-03-06T16:42:19.518Z",
+                      "name": "eicar.com.txt detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": "/usr/bin/curl -O https://example.com/file.txt",
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "eicar.com.txt",
+                          "path": "/tmp/eicar.com.txt",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "curl"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": {
+                        "timeToResolveData": {
+                          "actionComplete": false,
+                          "actionDue": 30,
+                          "completion": 3600,
+                          "completionTime": null,
+                          "status": "IN_PROGRESS",
+                          "target": 60,
+                          "targetTime": "2025-02-05T16:00:00.000Z"
+                        },
+                        "timeToResponseData": {
+                          "actionComplete": true,
+                          "actionDue": -5,
+                          "completion": 300,
+                          "completionTime": "2025-02-04T16:00:00.000Z",
+                          "status": "MET",
+                          "target": 15,
+                          "targetTime": "2025-02-04T15:55:00.000Z"
+                        }
+                      },
+                      "status": "RESOLVED",
+                      "storylineId": null,
+                      "ticketId": null,
+                      "updatedAt": "2025-03-06T16:42:19.518Z"
+                    }
+                  },
+                  {
+                    "cursor": "cursor_page1_b",
+                    "node": {
+                      "id": "01922229-bcde-8455-2345-7bcdef78904",
+                      "aiInvestigation": {
+                        "purpleAiStatus": "COMPLETED",
+                        "status": "RESOLVED",
+                        "verdict": "TRUE_POSITIVE"
+                      },
+                      "analystVerdict": "TRUE_POSITIVE_BENIGN_BUT_SUSPICIOUS",
+                      "analytics": {
+                        "category": "Manual",
+                        "name": "Custom Rule",
+                        "typeValue": "DYNAMIC",
+                        "uid": null
+                      },
+                      "assets": [
+                        {
+                          "accessible": true,
+                          "agentUuid": "b2c3d4e5-f6a7-8901-bcde-f2345678901",
+                          "agentVersion": "24.2.2.20",
+                          "assetTypeClassifier": "Linux Server",
+                          "category": "Server",
+                          "connectivityToConsole": "OFFLINE",
+                          "decommissioned": false,
+                          "id": "masked00asset000000000001",
+                          "lastLoggedInUser": "bob",
+                          "name": "host-masked",
+                          "origin": "RESOURCES",
+                          "osType": "LINUX",
+                          "osVersion": "Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                          "pendingReboot": false,
+                          "policy": "Default",
+                          "role": "TARGET",
+                          "status": "ACTIVE",
+                          "subcategory": "Other Server"
+                        }
+                      ],
+                      "assignee": null,
+                      "attackSurfaces": [
+                        "ENDPOINT"
+                      ],
+                      "availableActionIds": [
+                        "action-contain",
+                        "action-kill-process"
+                      ],
+                      "classification": "MALWARE",
+                      "confidenceLevel": "SUSPICIOUS",
+                      "createdAt": "2025-02-06T13:38:13.137Z",
+                      "dataSources": [],
+                      "description": "Not available",
+                      "detectedAt": "2025-02-06T13:38:13.137Z",
+                      "detectionSource": {
+                        "product": "CWS",
+                        "vendor": "SentinelOne"
+                      },
+                      "detectionTime": {
+                        "assets": [
+                          {
+                            "accessible": true,
+                            "asset": {
+                              "agentVersion": "24.2.2.20",
+                              "consoleIpAddress": "81.2.69.144",
+                              "domain": "example.local",
+                              "ipV4": "81.2.69.193",
+                              "ipV6": null,
+                              "lastLoggedInUser": "bob",
+                              "osName": "Linux",
+                              "osRevision": "Ubuntu 24.04.1 LTS 6.8.0-51-generic",
+                              "osType": "UNKNOWN",
+                              "policy": null,
+                              "subscriptionTime": "2025-01-15T10:00:00.000Z"
+                            },
+                            "cloud": null,
+                            "kubernetes": {
+                              "clusterName": "dev-cluster-us",
+                              "containerId": "b2c3d4e5f6a7",
+                              "containerImageName": "debian:bookworm",
+                              "containerLabels": [
+                                "app=bash",
+                                "tier=backend"
+                              ],
+                              "containerName": "bash-container",
+                              "controllerLabels": [
+                                "app=shell"
+                              ],
+                              "controllerName": "shell-deployment",
+                              "controllerType": "deployment",
+                              "namespaceLabels": [
+                                "env=dev"
+                              ],
+                              "namespaceName": "default",
+                              "nodeLabels": [
+                                "node-role=worker"
+                              ],
+                              "nodeName": "node-dev-02",
+                              "podLabels": [
+                                "app=shell",
+                                "pod-template-hash=def456"
+                              ],
+                              "podName": "shell-deployment-8e9f0d-qrs34"
+                            },
+                            "origin": "RESOURCES",
+                            "scope": {
+                              "accountId": "111222333444",
+                              "accountName": "AccountName",
+                              "groupName": "Default Group",
+                              "siteName": "Default site"
+                            }
+                          }
+                        ],
+                        "attacker": {
+                          "host": "attacker.example.com",
+                          "ip": "175.16.199.1"
+                        },
+                        "scope": {
+                          "accountId": "111222333444",
+                          "accountName": "AccountName",
+                          "groupName": "Default Group",
+                          "siteName": "Default site"
+                        },
+                        "targetUser": {
+                          "domain": "example.com",
+                          "emailAddress": "bob@example.com",
+                          "name": "Bob Smith"
+                        }
+                      },
+                      "exclusionHash": null,
+                      "externalId": "9876543210987654321",
+                      "firstSeenAt": "2025-02-06T13:38:13.137Z",
+                      "lastSeenAt": "2025-03-08T13:42:19.469Z",
+                      "name": "bash detected as Malware",
+                      "noteExists": false,
+                      "process": {
+                        "cmdLine": "-bash",
+                        "file": {
+                          "certSubject": "Example Corp",
+                          "md5": "5d41402abc4b2a76b9719d911017c592",
+                          "name": "bash",
+                          "path": "/bin/bash",
+                          "sha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                        },
+                        "parentName": "sshd"
+                      },
+                      "realTime": {
+                        "scope": {
+                          "account": {
+                            "id": "111222333444",
+                            "name": "AccountName"
+                          },
+                          "group": {
+                            "id": "3334445556667778889",
+                            "name": "Default Group"
+                          },
+                          "site": {
+                            "id": "2223334445556667778",
+                            "name": "Default site"
+                          }
+                        }
+                      },
+                      "result": "UNMITIGATED",
+                      "severity": "MEDIUM",
+                      "sloDetails": null,
+                      "status": "RESOLVED",
+                      "storylineId": "21992229-74c7-332d-7390-be5ec73142b2",
+                      "ticketId": null,
+                      "updatedAt": "2025-03-08T13:42:19.469Z"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+          `}}

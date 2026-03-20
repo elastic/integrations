@@ -1,0 +1,23 @@
+name: PR Buildkite Detective
+on:
+  status:
+
+permissions:
+  actions: read
+  contents: read
+  discussions: write
+  issues: write
+  pull-requests: write  # required by gh-aw compiler for add-comment (github/gh-aw#16673)
+
+jobs:
+  run:
+    if: >-
+      github.event_name == 'status' &&
+      github.event.state == 'failure' &&
+      github.event.context == 'buildkite/integrations'
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-pr-buildkite-detective.lock.yml@v0
+    with:
+      buildkite-org: "elastic"
+      allowed-bot-users: "buildkite-limited-access[bot]" # required as long as https://github.com/elastic/ai-github-actions/issues/632
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
