@@ -1,0 +1,89 @@
+title: "Collect Indicators from Strider Shield"
+type: logs
+ilm_policy: logs-ti_strider.indicator-default_policy
+streams:
+  - input: cel
+    vars:
+      - name: api_url
+        type: text
+        title: API URL
+        multi: false
+        required: true
+        show_user: false
+        default: https://app.striderintel.com/api/shield
+        description: The URL of the shield endpoint.
+      - name: auth_url
+        type: text
+        title: Auth URL
+        multi: false
+        required: true
+        show_user: false
+        default: https://auth.striderintel.com
+        description: Full URL of the OAuth2 token endpoint. Contact your Strider Client Success Manager for the correct endpoint.
+      - name: strider_id
+        type: text
+        title: Strider Client ID
+        multi: false
+        required: true
+        show_user: true
+        description: Client ID received from your Strider Client Success Manager.
+      - name: client_secret
+        type: text
+        title: Strider Client Secret
+        secret: true
+        multi: false
+        required: true
+        show_user: true
+        description: Client Secret received from your Strider Client Success Manager.
+      - name: polling_interval
+        type: text
+        title: Polling Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: Interval to poll the API, permitted units are s/m/h. To ensure a sync on the first of a month, set to daily.
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 2m
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ti_strider-indicator
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+    template_path: cel.yml.hbs
+    title: Fetch Items from API
+    description: Ingests item records from your external API.
