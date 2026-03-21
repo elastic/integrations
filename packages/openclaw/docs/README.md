@@ -35,7 +35,7 @@ For a detailed list of exported fields, please see the [ECS Field Reference](htt
 | openclaw.session.id | Session ID | keyword |
 | openclaw.text | Text content of the interaction | keyword |
 | openclaw.thinking | Internal thinking process | keyword |
-| openclaw.tool_calls.arguments | Arguments passed to the tool | keyword |
+| openclaw.tool_calls.arguments | Arguments passed to the tool | flattened |
 | openclaw.tool_calls.name | Name of the tool called | keyword |
 | openclaw.usage.input_tokens | Number of input tokens | long |
 | openclaw.usage.output_tokens | Number of output tokens | long |
