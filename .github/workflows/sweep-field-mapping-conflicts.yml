@@ -17,99 +17,80 @@ jobs:
       title-prefix: "[field-mapping-conflicts]"
       severity-threshold: "high"
       additional-instructions: |
-        You are a **field mapping type conflict sweeper** for the elastic/integrations
-        repository. Your goal is to find every field declaration that will cause indexing
-        failures, mapping conflicts, or silent data truncation in Elasticsearch.
+        You are auditing field mapping declarations in the elastic/integrations repository
+        for type conflicts that cause real indexing failures. Produce findings that would
+        impress a senior engineer: a small number of thoroughly investigated cases where a
+        real document would be rejected by Elasticsearch because the declared type cannot
+        hold the actual value. One confirmed conflict that causes guaranteed data loss is
+        worth more than a list of fields that might theoretically overflow.
 
-        ## The component
+        ## What field mappings guarantee
 
-        Every data stream declares its field mappings in YAML files under
-        `packages/<pkg>/data_stream/<stream>/fields/`. The main files are `fields.yml`
-        (package-specific fields), `ecs.yml` (ECS field imports), and `base-fields.yml`
-        (mandatory base fields). These declarations are compiled into Elasticsearch index
-        templates. Type mismatches between the field declaration and the actual data, or
-        between the same field declared differently across data streams, cause document
-        rejection or mapping conflicts that prevent indexing entirely.
-
-        ## The bug class
-
-        Four patterns produce the majority of mapping bugs in this repo:
-
-        **`type: integer` on fields that can exceed 32-bit range**: Elasticsearch's `integer`
-        type holds values up to ~2.1 billion. Fields like byte counts, nanosecond timestamps,
-        process IDs on some platforms, and network counters routinely exceed this. When they
-        do, Elasticsearch rejects the document. The correct type for such fields is `long`.
-        This is the single most common mapping bug across all packages.
-
-        **ECS field redeclared with a wrong type**: A package declares a field like
-        `event.duration`, `source.bytes`, or `http.response.body.size` in its `fields.yml`
-        with `type: keyword` or `type: integer` — but the ECS specification defines those
-        fields as `type: long`. When the package field declaration contradicts ECS, the
-        resulting template has a type conflict that blocks indexing.
-
-        **`event.kind` as `constant_keyword` in a data stream whose pipeline sets it to
-        `pipeline_error` on failure**: A `constant_keyword` field can only hold a single
-        value. If the pipeline's `on_failure` handler sets `event.kind: pipeline_error`,
-        but the field is declared as `constant_keyword: event` (or any other value), every
-        failed document will be rejected by Elasticsearch because the value doesn't match
-        the constant.
-
-        **Cross-data-stream type conflicts within the same package**: Two data streams in
-        the same package (e.g. `windows.forwarded` and `windows.sysmon_operational`) declare
-        the same field with different types. When both data streams write to an index with
-        a shared template, the conflict causes one or both streams to fail indexing.
+        Field mapping declarations under `packages/<pkg>/data_stream/<stream>/fields/` are
+        compiled into Elasticsearch index templates. The guarantee is: every document the
+        integration produces can be indexed without type errors. A mismatch between the
+        declared type and the actual data causes Elasticsearch to reject the document —
+        silently, from the user's perspective.
 
         ## How to investigate
 
-        Use Python to scan `fields.yml` files efficiently:
-        ```bash
-        python3 -c "
-        import yaml, glob, sys
+        **The constant_keyword conflict — start here.** Find every data stream where
+        `event.kind` is declared as `constant_keyword` AND the pipeline's `on_failure`
+        handler sets `event.kind: pipeline_error`. These are directly contradictory: the
+        mapping says the field always holds one value, the pipeline sets a different value
+        on failure. Every document that fails to parse is rejected by Elasticsearch — not
+        indexed in a degraded state, just silently lost. To confirm a finding, read both
+        files and verify both conditions are present in the same data stream.
 
-        # Find all integer fields
-        for f in glob.glob('packages/*/data_stream/*/fields/fields.yml'):
-            with open(f) as fh:
-                try: fields = yaml.safe_load(fh) or []
-                except: continue
-            for field in fields:
-                if isinstance(field, dict) and field.get('type') == 'integer':
-                    print(f, field.get('name'))
-        " 2>/dev/null | head -50
-        ```
+        **Integer overflow risks.** Do not file every field declared as `integer`. Instead,
+        reason about what the field actually receives. Fields named `bytes`, `packets`,
+        `duration`, `sequence_number`, or `timestamp_ms` on network, security, or
+        high-volume integrations are high risk — real production traffic regularly exceeds
+        2.1 billion for byte counters, nanosecond timestamps, and 64-bit sequence numbers.
+        Fields named `priority`, `retry_count`, or `version` are low risk. For each
+        candidate, read the ingest pipeline to understand what value is assigned to the
+        field, then reason about whether real production data from this source will exceed
+        the type's range.
 
-        For the `event.kind` constant keyword conflict, cross-reference `fields.yml`
-        declarations against the package's ingest pipeline `on_failure` handlers:
-        ```bash
-        # Packages that declare event.kind as constant_keyword
-        grep -rl 'constant_keyword' packages/*/data_stream/*/fields/ | xargs grep -l 'event.kind'
+        **Cross-data-stream conflicts.** Two data streams in the same package that declare
+        the same field with different types produce a mapping conflict when both write to a
+        shared index template. Most likely in large packages: `windows`, `aws`, `azure`,
+        `cisco_*`. These are worth checking for any package that has gone through major
+        restructuring.
 
-        # Packages whose pipelines set event.kind: pipeline_error
-        grep -rl 'pipeline_error' packages/*/data_stream/*/elasticsearch/ingest_pipeline/
-        ```
-        The intersection of these two sets is the highest-risk category.
+        For any finding, check the git history of the affected files:
+        `git log --oneline -p -- packages/<pkg>/data_stream/<stream>/fields/`
 
-        For cross-stream conflicts, look at packages with multiple data streams that share
-        field names — especially `windows`, `aws`, `gcp`, `azure`, and `cisco_*` families.
+        A field that was declared as `long` and changed to `integer` is a regression —
+        check whether the commit message explains why. A `constant_keyword` declaration
+        added after a pipeline already had a `pipeline_error` handler is a regression.
+        Regressions affect users who were previously working and are always higher priority
+        than original omissions.
 
-        For ECS type mismatches, focus on numeric ECS fields (`*.bytes`, `*.duration`,
-        `*.size`, `*.count`, `*.port`) declared as `integer` or `keyword` in `fields.yml`.
+        These patterns are starting points. If you understand the mapping and pipeline well
+        enough to find a conflict not described here, file it.
 
-        ## The bar for filing
+        ## The reproduction is the argument
 
-        Only report type conflicts that would cause real indexing failures or data truncation
-        for a user running the integration against production data. A field typed as `integer`
-        that only ever holds values under 1000 in practice is low risk. A byte-count field
-        typed as `integer` on a high-bandwidth network integration is high risk. Use your
-        judgment about what realistic data looks like.
+        For the `event.kind` constant_keyword conflict: show (1) the exact field declaration
+        with its constant value, (2) the `on_failure` handler that sets a different value,
+        and (3) what Elasticsearch does — it rejects the document because the value does not
+        match the constant. You must trace all three steps explicitly; "these seem contradictory"
+        is not a reproduction.
+
+        For integer overflow: show the specific field, the source data context, and why real
+        production data will exceed 2.1 billion. "Byte counts can be large" is not a
+        reproduction. "This integration monitors network interfaces and the pipeline assigns
+        `interface.ingress.bytes` from a 64-bit counter that will overflow a 32-bit integer
+        within hours on any gigabit link" is a reproduction.
 
         ## Output
 
-        File a single issue titled "[field-mapping-conflicts] Mapping type audit: integer
-        overflow risks, ECS conflicts, and constant_keyword pipeline_error collisions" containing:
-        - The `event.kind` constant_keyword conflicts (highest severity — causes indexing failure)
-        - The cross-data-stream type conflicts, by package
-        - The highest-risk `type: integer` fields (focus on byte counts, timestamps, counters)
-        - ECS type mismatches found
-        - A count of total fields audited
+        File a single issue containing:
+        - `event.kind` constant_keyword conflicts first — these cause guaranteed, silent data
+          loss for every document that fails to parse
+        - High-confidence integer overflow risks with the field, the source context, and
+          the concrete reason the range will be exceeded
+        - Cross-data-stream type conflicts, by package
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

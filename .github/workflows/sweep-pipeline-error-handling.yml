@@ -17,64 +17,35 @@ jobs:
       title-prefix: "[pipeline-error-handling]"
       severity-threshold: "high"
       additional-instructions: |
-        You are a **pipeline error handler compliance sweeper** for the elastic/integrations
-        repository. Your goal is to find every ingest pipeline that fails to correctly handle
-        processing errors — either silently dropping the original event or producing incomplete
-        error metadata that makes failures invisible to operators.
+        You are auditing ingest pipeline error handling in the elastic/integrations repository.
+        Find the cases that would matter most to a real operator: pipelines on free-form log
+        sources where parse failures are inevitable, and where those failures are currently
+        invisible — either because there is no `on_failure` handler at all, or because a
+        user-facing feature (`preserve_original_event`) silently does nothing when it is
+        needed most.
 
-        ## The component
+        ## What error handling guarantees
 
-        Ingest pipelines live at
-        `packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/*.yml`.
-        Every pipeline that can fail (which is all of them) should have a top-level
-        `on_failure` block that preserves the original event and records error details.
-        Many packages also expose a `preserve_original_event` user-configurable variable
-        that controls whether the raw log is kept in `event.original`.
+        Every ingest pipeline will eventually fail to parse a document. When it does, the
+        `on_failure` handler is the operator's only tool for understanding what happened.
+        Without `event.kind: pipeline_error`, failed documents are indexed with no signal
+        that anything went wrong — they appear in the index, missing all parsed fields, with
+        no way to find them. Without `error.message`, there is nothing to diagnose. A missing
+        or incomplete handler makes every pipeline failure invisible in production.
 
-        ## The bug class
-
-        When an ingest pipeline fails to parse a document, it falls into its `on_failure`
-        handler. If the handler is missing or incomplete, the failure is invisible: the
-        document may be indexed in a degraded state (missing all parsed fields), or the
-        error details are lost, making it impossible for an operator to diagnose why their
-        data isn't appearing. Two patterns cause the majority of bugs in this area:
-
-        **Missing or incomplete top-level `on_failure`**: A pipeline has no `on_failure`
-        block at all, or has one that does not set `event.kind: pipeline_error` and does
-        not append to `error.message`. Without `event.kind: pipeline_error`, operators
-        cannot filter for failed documents. Without `error.message`, they cannot diagnose
-        the cause.
-
-        The canonical correct pattern is:
-        ```yaml
-        on_failure:
-          - append:
-              field: error.message
-              value: "Processor {{{_ingest.on_failure_processor_type}}} with tag
-                {{{_ingest.on_failure_processor_tag}}} in pipeline
-                {{{_ingest.pipeline}}} failed with message:
-                {{{_ingest.on_failure_message}}}"
-              allow_duplicates: false
-          - set:
-              field: event.kind
-              value: pipeline_error
-        ```
-
-        **`preserve_original_event` declared in manifest but not used in pipeline**: A
-        package's `manifest.yml` exposes a `preserve_original_event` variable, which the
-        user enables to retain the raw log in `event.original`. But the pipeline's
-        `on_failure` handler doesn't check this variable — so when a pipeline error occurs,
-        the original event is not preserved regardless of the user's setting. This defeats
-        the purpose of the feature and is the root cause of a recurring class of bug reports
-        across Cisco, CrowdStrike, Fortinet, and AWS packages.
+        The `preserve_original_event` feature makes this worse when it goes wrong: users
+        enable it specifically to retain the raw log when parsing fails. A pipeline whose
+        `on_failure` handler does not check the `preserve_original_event` tag silently
+        discards the raw log regardless of the user's setting. The user believes they have
+        a safety net. They do not.
 
         ## How to investigate
 
-        Scan all pipelines for the presence and correctness of `on_failure` blocks:
+        Start with a scan to understand the full landscape:
+
         ```bash
         python3 -c "
         import yaml, glob
-
         missing, incomplete = [], []
         for f in glob.glob('packages/*/data_stream/*/elasticsearch/ingest_pipeline/*.yml'):
             with open(f) as fh:
@@ -88,42 +59,56 @@ jobs:
             has_msg  = any('error.message' in str(proc) for proc in on_fail)
             if not (has_kind and has_msg):
                 incomplete.append((f, has_kind, has_msg))
-
         print('MISSING on_failure:', len(missing))
-        for f in missing[:10]: print(' ', f)
+        for f in missing[:20]: print(' ', f)
         print('INCOMPLETE on_failure:', len(incomplete))
-        for f, hk, hm in incomplete[:10]:
-            print(f'  {f} (has kind={hk}, has msg={hm})')
+        for f, hk, hm in incomplete[:20]: print(f'  {f} (kind={hk}, msg={hm})')
         " 2>/dev/null
         ```
 
-        For the `preserve_original_event` mismatch, cross-reference manifests against pipelines:
+        The scan gives you scope. Now apply judgment. A missing handler on a network device
+        syslog pipeline (`cisco_asa`, `cisco_ftd`, `panw`, `fortinet_fortigate`) guarantees
+        real-world failures — these sources produce format variants in every production
+        deployment. A missing handler on a tightly controlled API pipeline is lower priority.
+
+        For each high-priority missing handler, check the git history:
+        `git log --oneline -p -- packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/`
+
+        A handler that was present and removed during a refactor is a regression — the commit
+        message will often confirm whether it was intentional. A recently simplified pipeline
+        that used to have more careful error handling is always higher priority than one that
+        never had it, because it affects users who were previously working correctly.
+
+        For `preserve_original_event`, find packages that expose it in `manifest.yml`:
         ```bash
-        # Packages with preserve_original_event variable
-        grep -rl 'preserve_original_event' packages/*/manifest.yml | \
-          sed 's|/manifest.yml||' | xargs -I{} basename {}
+        grep -rl 'preserve_original_event' packages/*/manifest.yml | sed 's|/manifest.yml||'
         ```
-        For each such package, check whether its pipeline's `on_failure` contains a
-        conditional that reads the `preserve_original_event` tag.
+        For each, read the pipeline's `on_failure` handler. Does it contain a conditional
+        that checks `preserve_original_event` before deciding whether to keep `event.original`?
+        If not, the feature is advertised but non-functional when it matters most.
 
-        Focus your detailed review on the highest-traffic packages: `cisco_asa`, `cisco_ftd`,
-        `cisco_ios`, `panw`, `fortinet_fortigate`, `crowdstrike`, `aws`, `windows`, `system`.
+        ## Verify before filing
 
-        ## The bar for filing
+        For missing or incomplete handlers: confirm that parse failures are realistic for
+        this integration. Every syslog and agent-based integration will produce failures;
+        structured API integrations are lower risk. Confirm the gap is real — some pipelines
+        rely on child pipelines that have their own handlers, or use `ignore_failure` on
+        every processor as a deliberate choice.
 
-        Only file findings where a real pipeline failure (which will happen eventually for any
-        integration running against real-world log data) would result in invisible data loss or
-        useless error metadata. A pipeline with a missing `on_failure` that only processes
-        perfectly structured data from a controlled API is lower priority than one processing
-        free-form syslog from network devices.
+        For `preserve_original_event` gaps: confirm the variable is user-visible in
+        `manifest.yml`, that the `on_failure` handler does not use it, and that the
+        integration processes logs where parse failures will occur.
 
         ## Output
 
-        File a single issue titled "[pipeline-error-handling] Error handler audit: missing
-        on_failure blocks and preserve_original_event gaps in ingest pipelines" containing:
-        - Pipelines with no `on_failure` at all (highest severity)
-        - Pipelines with an `on_failure` missing `event.kind: pipeline_error` or `error.message`
-        - Packages where `preserve_original_event` is declared but not used in `on_failure`
-        - Counts of each category and the total number of pipelines reviewed
+        File a single issue containing:
+        - Total pipelines scanned and counts by category
+        - The highest-priority missing handler cases: integrations on free-form log sources
+          where failures are certain, especially any that appear to be regressions from git
+          history
+        - The `preserve_original_event` gaps, by package, with confirmation that both
+          conditions are present
+        - Do not list every pipeline with a gap — focus on the ones where real users will
+          be affected
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

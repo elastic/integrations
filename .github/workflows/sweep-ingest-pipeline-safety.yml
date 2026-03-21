@@ -17,94 +17,79 @@ jobs:
       title-prefix: "[ingest-pipeline-safety]"
       severity-threshold: "high"
       additional-instructions: |
-        You are an **ingest pipeline null-safety and grok robustness sweeper** for the
-        elastic/integrations repository. Your goal is to find every pattern in ingest
-        pipelines that will cause a `null_pointer_exception`, `NullPointerException`, or
-        silent pipeline failure when an input log arrives with a missing field, an unexpected
-        value type, or a log format variant not seen during initial development.
+        You are auditing ingest pipelines in the elastic/integrations repository for
+        robustness against real-world log variation. Produce findings that would impress a
+        senior engineer: a small number of thoroughly investigated cases where a log variant
+        that actually occurs in production causes a document to fail indexing silently. One
+        confirmed failure with a concrete triggering document is worth more than a list of
+        processors that look suspicious.
 
-        ## The component
+        ## What ingest pipelines guarantee
 
-        Every integration package under `packages/` contains one or more data streams, each
-        with an ingest pipeline at `packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/`.
-        These pipelines process raw logs before indexing. They are written in YAML and use
-        Elasticsearch ingest processor types: `grok`, `dissect`, `script` (Painless),
-        `convert`, `date`, `rename`, `set`, `append`, and others.
-
-        The highest-risk packages based on bug history are: `cisco_asa`, `cisco_ftd`,
-        `cisco_ios`, `panw`, `fortinet_fortigate`, `crowdstrike`, `aws`, `gcp`, `mimecast`,
-        and `windows`. Start with these but cover others too.
-
-        ## The bug class
-
-        Three patterns cause the majority of ingest pipeline failures in production:
-
-        **Unsafe dot-path access in Painless scripts**: A script processor accesses
-        `ctx.a.b.c` but only guards `if (ctx.a != null)`, leaving `ctx.a.b` and `ctx.a.b.c`
-        unguarded. When a log arrives where `ctx.a.b` is null or missing, the script throws
-        `null_pointer_exception` and the document fails to index (or falls to `on_failure`).
-        The safe pattern is to guard every level: `if (ctx.a != null && ctx.a.b != null && ctx.a.b.c != null)`.
-
-        **Grok patterns that fail on field variants**: A grok pattern assumes a specific
-        format (e.g. IPv4, specific field separator, fixed field count) but real logs from
-        the same source can arrive in alternative formats (IPv6, different separators, extra
-        optional fields). When the grok fails, the document falls to `on_failure` or is
-        dropped. Look for grok patterns with no fallback alternative (`|` alternate pattern)
-        on fields that plausibly vary.
-
-        **Type conversion on fields that are not always the expected type**: A `convert`
-        processor with `type: integer` or `type: float` on a field that can also arrive as
-        a string or be absent. Without `ignore_failure: true` or a prior existence check,
-        this fails silently. Particularly common with byte count fields, duration fields,
-        and status codes that can be numeric or textual.
+        Every ingest pipeline under `packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/`
+        processes raw log documents before indexing. The guarantee is: every document either
+        parses successfully and is indexed, or fails and is captured by the `on_failure`
+        handler in a degraded-but-visible state. Silent loss — a document that is neither
+        indexed correctly nor surfaced as a failure — is the failure mode to find.
 
         ## How to investigate
 
-        Pick 10-15 of the highest-risk packages. For each one, read the ingest pipeline YAML
-        files. Focus on:
+        Pick 3-5 pipelines from high-traffic integrations (`cisco_asa`, `crowdstrike`, `aws`,
+        `panw`, `fortinet_fortigate`) and read them thoroughly. Before looking for bugs,
+        understand what logs this pipeline actually processes: what does a normal document
+        look like, and what format variations does the source system produce? Then trace the
+        pipeline against those variations.
 
-        1. Every `script` processor — read the Painless source and trace every dot-path
-           access. Is every intermediate path guarded with a null check?
-        2. Every `grok` processor on fields that could vary — does the pattern have
-           alternatives (`|`) for common variants? Is `ignore_failure: true` present, and
-           if so, is there a downstream processor that handles the missing parse result?
-        3. Every `convert` processor — does it have `ignore_failure: true` or a prior
-           `if: ctx.fieldName instanceof Number` guard?
-        4. Every `date` processor — does it handle timezone variants or missing timezone?
+        **Painless scripts.** Read every `script` processor and trace every dot-path access.
+        The question is not "is there a null check somewhere" but "does the null check cover
+        every level of the path for every log variant this integration receives?" A guard on
+        `ctx.cisco` does not protect `ctx.cisco.asa.message_id` when the `asa` object is
+        absent in certain message types. Read the vendor documentation or look at the
+        integration's own test fixtures in `_dev/test/pipeline/` to understand which fields
+        are actually optional.
 
-        You can use `grep` and `python3` to scan pipeline YAML files efficiently:
-        ```bash
-        find packages -path "*/ingest_pipeline/*.yml" | head -20
-        python3 -c "
-        import yaml, glob, sys
-        for f in glob.glob('packages/*/data_stream/*/elasticsearch/ingest_pipeline/*.yml'):
-            with open(f) as fh:
-                try: pipeline = yaml.safe_load(fh)
-                except: continue
-            for proc in (pipeline or {}).get('processors', []):
-                if 'script' in proc:
-                    src = proc['script'].get('source', '')
-                    if 'ctx.' in src:
-                        print(f, src[:100])
-        " 2>/dev/null | head -40
-        ```
+        **Grok patterns.** For each `grok` processor on a variable field — IP addresses,
+        timestamps, user agents, status codes — ask whether the source system ever produces
+        this field in a format the pattern does not match. A pattern handling only IPv4 will
+        fail silently on IPv6 addresses. A fixed-field dissection will fail on log lines with
+        optional trailing fields. If the test fixtures do not cover the variant, the pipeline
+        has probably never been tested against it.
 
-        ## The bar for filing
+        **Type conversions.** For each `convert` processor without `ignore_failure: true`,
+        check whether the field is always the expected type. Status codes, byte counts, and
+        duration fields frequently arrive as strings in some firmware versions and as numbers
+        in others.
 
-        Only report patterns where a realistic log from the actual source system could trigger
-        the failure. The field must plausibly be absent or in a different type in real-world
-        log data — not just in an adversarially crafted document. If the integration's own
-        `_dev/test/pipeline/` test fixtures already cover the variant, the pipeline is likely
-        already hardened for that case (though you should verify).
+        Before filing any finding, check the git history for the pipeline file:
+        `git log --oneline -p -- packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/`
+
+        A null guard that was present and then removed in a recent refactor is a regression —
+        the commit message will usually confirm whether it was intentional. A recently added
+        script processor that accesses new fields is a candidate if those fields are not
+        guaranteed to be present. Regressions are higher priority than original omissions
+        because they affect users who were previously working correctly.
+
+        These patterns are starting points. If you understand a pipeline well enough to find
+        a failure mode not described here, that is exactly what we want.
+
+        ## The reproduction is the argument
+
+        When you think you have found something, construct the exact document that triggers
+        the failure. Trace it through the pipeline step by step — which processor throws,
+        what the exception is, what the resulting indexed document looks like, and why that
+        is incorrect. If you can express this as an Elasticsearch Simulate API call
+        (`POST /_ingest/pipeline/<id>/_simulate`), include it.
+
+        If you cannot construct a concrete document that fails, keep investigating. You may
+        find that a prior processor guarantees the field is present, that the log source
+        never actually omits it, or that `ignore_failure` on a preceding processor already
+        handles the variant.
 
         ## Output
 
-        File a single issue titled "[ingest-pipeline-safety] Null-safety audit: unsafe
-        dot-path access and fragile grok patterns in ingest pipelines" containing:
-        - A checklist grouped by package, with: pipeline file path, the unsafe processor,
-          the specific pattern that fails, and the one-line fix
-        - A count of how many pipelines you reviewed vs how many had findings
-        - Priority: packages where failures would affect the most users (cisco_asa, aws, system
-          are highest traffic)
+        File a single issue containing:
+        - Each confirmed bug: the pipeline file, the processor, the exact triggering document,
+          what the failure looks like, and the one-line fix
+        - Pipelines you read thoroughly and found safe, with what protects them
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
