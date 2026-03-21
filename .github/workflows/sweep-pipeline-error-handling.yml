@@ -1,0 +1,129 @@
+name: "Sweeper: Pipeline Error Handler Compliance"
+on:
+  schedule:
+    - cron: "0 9 * * 3"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
+    with:
+      title-prefix: "[pipeline-error-handling]"
+      severity-threshold: "high"
+      additional-instructions: |
+        You are a **pipeline error handler compliance sweeper** for the elastic/integrations
+        repository. Your goal is to find every ingest pipeline that fails to correctly handle
+        processing errors — either silently dropping the original event or producing incomplete
+        error metadata that makes failures invisible to operators.
+
+        ## The component
+
+        Ingest pipelines live at
+        `packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/*.yml`.
+        Every pipeline that can fail (which is all of them) should have a top-level
+        `on_failure` block that preserves the original event and records error details.
+        Many packages also expose a `preserve_original_event` user-configurable variable
+        that controls whether the raw log is kept in `event.original`.
+
+        ## The bug class
+
+        When an ingest pipeline fails to parse a document, it falls into its `on_failure`
+        handler. If the handler is missing or incomplete, the failure is invisible: the
+        document may be indexed in a degraded state (missing all parsed fields), or the
+        error details are lost, making it impossible for an operator to diagnose why their
+        data isn't appearing. Two patterns cause the majority of bugs in this area:
+
+        **Missing or incomplete top-level `on_failure`**: A pipeline has no `on_failure`
+        block at all, or has one that does not set `event.kind: pipeline_error` and does
+        not append to `error.message`. Without `event.kind: pipeline_error`, operators
+        cannot filter for failed documents. Without `error.message`, they cannot diagnose
+        the cause.
+
+        The canonical correct pattern is:
+        ```yaml
+        on_failure:
+          - append:
+              field: error.message
+              value: "Processor {{{_ingest.on_failure_processor_type}}} with tag
+                {{{_ingest.on_failure_processor_tag}}} in pipeline
+                {{{_ingest.pipeline}}} failed with message:
+                {{{_ingest.on_failure_message}}}"
+              allow_duplicates: false
+          - set:
+              field: event.kind
+              value: pipeline_error
+        ```
+
+        **`preserve_original_event` declared in manifest but not used in pipeline**: A
+        package's `manifest.yml` exposes a `preserve_original_event` variable, which the
+        user enables to retain the raw log in `event.original`. But the pipeline's
+        `on_failure` handler doesn't check this variable — so when a pipeline error occurs,
+        the original event is not preserved regardless of the user's setting. This defeats
+        the purpose of the feature and is the root cause of a recurring class of bug reports
+        across Cisco, CrowdStrike, Fortinet, and AWS packages.
+
+        ## How to investigate
+
+        Scan all pipelines for the presence and correctness of `on_failure` blocks:
+        ```bash
+        python3 -c "
+        import yaml, glob
+
+        missing, incomplete = [], []
+        for f in glob.glob('packages/*/data_stream/*/elasticsearch/ingest_pipeline/*.yml'):
+            with open(f) as fh:
+                try: p = yaml.safe_load(fh) or {}
+                except: continue
+            on_fail = p.get('on_failure', [])
+            if not on_fail:
+                missing.append(f)
+                continue
+            has_kind = any('event.kind' in str(proc) for proc in on_fail)
+            has_msg  = any('error.message' in str(proc) for proc in on_fail)
+            if not (has_kind and has_msg):
+                incomplete.append((f, has_kind, has_msg))
+
+        print('MISSING on_failure:', len(missing))
+        for f in missing[:10]: print(' ', f)
+        print('INCOMPLETE on_failure:', len(incomplete))
+        for f, hk, hm in incomplete[:10]:
+            print(f'  {f} (has kind={hk}, has msg={hm})')
+        " 2>/dev/null
+        ```
+
+        For the `preserve_original_event` mismatch, cross-reference manifests against pipelines:
+        ```bash
+        # Packages with preserve_original_event variable
+        grep -rl 'preserve_original_event' packages/*/manifest.yml | \
+          sed 's|/manifest.yml||' | xargs -I{} basename {}
+        ```
+        For each such package, check whether its pipeline's `on_failure` contains a
+        conditional that reads the `preserve_original_event` tag.
+
+        Focus your detailed review on the highest-traffic packages: `cisco_asa`, `cisco_ftd`,
+        `cisco_ios`, `panw`, `fortinet_fortigate`, `crowdstrike`, `aws`, `windows`, `system`.
+
+        ## The bar for filing
+
+        Only file findings where a real pipeline failure (which will happen eventually for any
+        integration running against real-world log data) would result in invisible data loss or
+        useless error metadata. A pipeline with a missing `on_failure` that only processes
+        perfectly structured data from a controlled API is lower priority than one processing
+        free-form syslog from network devices.
+
+        ## Output
+
+        File a single issue titled "[pipeline-error-handling] Error handler audit: missing
+        on_failure blocks and preserve_original_event gaps in ingest pipelines" containing:
+        - Pipelines with no `on_failure` at all (highest severity)
+        - Pipelines with an `on_failure` missing `event.kind: pipeline_error` or `error.message`
+        - Packages where `preserve_original_event` is declared but not used in `on_failure`
+        - Counts of each category and the total number of pipelines reviewed
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

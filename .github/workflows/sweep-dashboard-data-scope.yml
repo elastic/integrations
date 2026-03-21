@@ -1,0 +1,109 @@
+name: "Sweeper: Dashboard Data Scope and Filter Integrity"
+on:
+  schedule:
+    - cron: "0 9 * * 4"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
+    with:
+      title-prefix: "[dashboard-data-scope]"
+      severity-threshold: "high"
+      additional-instructions: |
+        You are a **dashboard data scope sweeper** for the elastic/integrations repository.
+        Your goal is to find every dashboard that queries data outside its integration's own
+        dataset — polluting the dashboard with data from other integrations or showing no data
+        when the user expects to see their integration's logs.
+
+        ## The component
+
+        Dashboard JSON files live at `packages/<pkg>/kibana/dashboard/*.json`. Each dashboard
+        belongs to exactly one integration package and should only query data from that
+        package's data streams (e.g. `logs-aws.*`, `metrics-kubernetes.*`). Dashboards also
+        contain control panels (filters, dropdowns) that must be scoped to the same dataset
+        — a control panel querying `logs-*` will show values from every integration's logs,
+        not just the one the user is investigating.
+
+        ## The bug class
+
+        Two problems have caused widespread dashboard bugs across many integrations at once:
+
+        **Over-broad index pattern references**: A dashboard visualization or control panel
+        references `logs-*`, `metrics-*`, or `*` as its data view/index pattern instead of
+        the integration-specific pattern (e.g. `logs-aws.cloudtrail-*`). The user sees data
+        from every other integration installed in their cluster, making the dashboard useless
+        for scoped investigation. This hit 38 integrations simultaneously in a single batch
+        issue.
+
+        **Stale `indexPatternId` format**: Older dashboards use a static `indexPatternId`
+        reference to a Kibana saved object that may not exist in the user's Kibana instance,
+        instead of the modern data view approach tied to the integration's dataset. These
+        dashboards show "no data source" errors for users on newer Kibana versions.
+
+        ## How to investigate
+
+        Use `jq` or Python to scan dashboard JSON for over-broad patterns:
+        ```bash
+        # Find dashboards referencing logs-* or metrics-* wildcards
+        find packages -path "*/kibana/dashboard/*.json" | while read f; do
+          if grep -qE '"(logs|metrics)-\*"' "$f"; then
+            echo "$f"
+          fi
+        done | head -30
+
+        # Find ControlGroupInput panels with unscoped data views
+        python3 -c "
+        import json, glob, re
+        for f in glob.glob('packages/*/kibana/dashboard/*.json'):
+            with open(f) as fh:
+                try: d = json.load(fh)
+                except: continue
+            content = json.dumps(d)
+            # Look for logs-* or metrics-* in control group inputs
+            if re.search(r'logs-\*|metrics-\*', content):
+                pkg = f.split('/')[1]
+                print(pkg, f)
+        " 2>/dev/null | head -30
+        ```
+
+        For each finding, determine:
+        1. Is this a visualization data source (always bad) or just incidentally in a filter
+           value that happens to contain a wildcard?
+        2. What is the correct scoped pattern for this package (e.g. `logs-cisco_asa.*`)?
+        3. Is the package affected by the `SVR00002` validation check, and is it suppressed
+           in `validation.yml`? A suppressed check means the problem is known but unresolved.
+
+        Check `validation.yml` files for suppressed checks:
+        ```bash
+        grep -rl 'SVR00002\|exclude_checks' packages/*/validation.yml 2>/dev/null
+        ```
+
+        Focus on packages with many dashboards and high user traffic: `aws`, `kubernetes`,
+        `elasticsearch`, `system`, `windows`, `cisco_*`, `azure`, `gcp`.
+
+        ## The bar for filing
+
+        Only report dashboards that a real user would open and see incorrect data or an error.
+        A visualization that shows a harmless extra filter is lower priority than one where
+        the control panel actively shows values from unrelated integrations. Stale
+        `indexPatternId` references that cause "no data source" errors are always high
+        priority because they break the dashboard entirely.
+
+        ## Output
+
+        File a single issue titled "[dashboard-data-scope] Dashboard audit: over-broad index
+        patterns and stale data view references" containing:
+        - Dashboards with control panels querying `logs-*` or `metrics-*` (highest priority)
+        - Dashboards with stale `indexPatternId` references causing "no data source" errors
+        - Packages with `SVR00002` suppressed in `validation.yml` without justification
+        - The correct scoped pattern for each finding
+        - Total dashboards reviewed and percentage with findings
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

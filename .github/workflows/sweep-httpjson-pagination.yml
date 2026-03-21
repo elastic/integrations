@@ -1,0 +1,112 @@
+name: "Sweeper: httpjson and CEL Pagination and Cursor Integrity"
+on:
+  schedule:
+    - cron: "0 9 * * 5"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
+    with:
+      title-prefix: "[httpjson-pagination]"
+      severity-threshold: "high"
+      additional-instructions: |
+        You are a **pagination and cursor integrity sweeper** for HTTP-based integrations in
+        the elastic/integrations repository. Your goal is to find every structural defect in
+        `httpjson` and `cel` input configurations that can cause duplicate events, missed
+        events, excessive API requests, or a cursor that drifts to the wrong type.
+
+        ## The component
+
+        HTTP-based integrations configure their inputs using agent stream templates at
+        `packages/<pkg>/data_stream/<stream>/agent/stream/*.yml.hbs` (Handlebars templates
+        rendered into Filebeat `httpjson` or `cel` input configs). These define how the
+        integration pages through API responses, where it stores its cursor (the last-seen
+        event timestamp or ID), and how it constructs the next request URL.
+
+        Pagination and cursor bugs are hard to detect with live testing because they require
+        API access and specific server behavior. But most of the bugs are structural and
+        detectable from the config files alone.
+
+        ## The bug class
+
+        Four patterns produce the majority of pagination and cursor bugs:
+
+        **Cursor stored as float instead of integer**: When a cursor value is a large integer
+        (e.g. a Unix timestamp in milliseconds, an event sequence number, or a large ID),
+        JSON parsing can represent it as a float64. When used in the next request URL, it
+        renders in scientific notation (e.g. `1.7e+12` instead of `1700000000000`), which
+        most APIs reject or misinterpret, breaking pagination entirely.
+
+        **Missing `terminate` processor in chain steps**: In `httpjson` chain configurations,
+        if there is no `terminate` processor to stop pagination when the response is empty
+        or when all pages have been fetched, the integration keeps requesting the same last
+        page indefinitely, causing excessive API calls and potential rate limiting.
+
+        **Rate limit config present in manifest but disconnected from input**: A package's
+        `manifest.yml` exposes rate limit variables (`rate_limit.limit`, `rate_limit.reset`)
+        but the agent stream template does not wire them into the `httpjson` `rate_limit`
+        config block. The integration then ignores the API's rate limit headers and gets
+        rate-limited or banned.
+
+        **Cursor value not advanced on empty response**: When an API returns an empty page
+        (no new events), the correct behavior is to advance the cursor to the current time
+        so the next poll starts from now. If the cursor is not advanced on empty response,
+        the integration re-requests the same time window on every poll, generating redundant
+        API calls and potentially re-indexing old events.
+
+        ## How to investigate
+
+        Scan agent stream templates for the patterns above:
+        ```bash
+        # Find httpjson and cel inputs
+        find packages -path "*/agent/stream/*.yml.hbs" | head -20
+
+        # Look for cursor definitions using integer-typed fields
+        grep -rn 'cursor\|\.last_id\|\.sequence\|\.offset' \
+          packages/*/data_stream/*/agent/stream/*.yml.hbs 2>/dev/null | head -30
+
+        # Find chain steps - check for terminate processor
+        grep -rn 'chain\|terminate' \
+          packages/*/data_stream/*/agent/stream/*.yml.hbs 2>/dev/null | head -30
+
+        # Find rate_limit in manifests
+        grep -rl 'rate_limit' packages/*/data_stream/*/manifest.yml 2>/dev/null
+        ```
+
+        For each `httpjson` input that uses pagination, read the full agent stream template
+        and ask:
+        1. What type is the cursor value? Could it become a float when parsed from JSON?
+        2. Is there a `terminate` condition that stops pagination on empty response?
+        3. Are rate limit headers wired into the `rate_limit` config block?
+        4. What happens on empty response — does the cursor advance?
+
+        Focus on packages known to have pagination bugs: `akamai`, `carbon_black_cloud`,
+        `ti_crowdstrike`, `ti_misp`, `mimecast`, `google_workspace`, `okta`, `o365`.
+
+        ## The bar for filing
+
+        Only report defects that would cause real data quality problems (duplicates, gaps,
+        excessive API calls, rate limiting) for a user running the integration against a
+        real API. A cursor that theoretically could become a float but uses a timestamp small
+        enough to never be represented in scientific notation is low risk. A sequence number
+        that is a large integer and IS used in a URL path is high risk.
+
+        ## Output
+
+        File a single issue titled "[httpjson-pagination] Pagination audit: cursor type
+        drift, missing terminate conditions, and disconnected rate limit configs" containing:
+        - Integrations where cursor values could become floats in API requests
+        - Integrations with chain steps missing terminate conditions
+        - Integrations where rate limit manifest variables are not connected to input config
+        - Integrations where empty-response cursor advancement is missing
+        - For each finding: the agent stream template file, the specific misconfiguration,
+          and the correct fix
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
