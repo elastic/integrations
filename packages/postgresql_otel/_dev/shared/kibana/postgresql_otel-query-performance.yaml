@@ -1,0 +1,227 @@
+---
+# PostgreSQL OpenTelemetry Query Performance Dashboard
+# Converted from Kibana dashboard JSON
+# Query execution times, top queries from pg_stat_statements, temp file usage, and sequential scan rates
+#
+# Data source: metrics-postgresqlreceiver.otel-*, logs-postgresqlreceiver.otel-*
+dashboards:
+  - id: postgresql_otel-query-performance
+    name: '[PostgreSQL OTel] Query Performance'
+    description: Query execution times, top queries from pg_stat_statements, temp file usage, and sequential scan rates.
+    controls:
+      - type: options
+        label: Instance
+        data_view: metrics-*
+        field: resource.attributes.service.instance.id
+      - type: options
+        label: Database
+        data_view: metrics-*
+        field: resource.attributes.postgresql.database.name
+    panels:
+      # Links navigation (y=0)
+      - size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: postgresql_otel-overview
+            - label: Connections
+              dashboard: postgresql_otel-connections
+            - label: Workload
+              dashboard: postgresql_otel-workload
+            - label: Query Performance
+              dashboard: postgresql_otel-query-performance
+            - label: I/O Health
+              dashboard: postgresql_otel-io-health
+            - label: Locks
+              dashboard: postgresql_otel-locks
+            - label: Active Queries
+              dashboard: postgresql_otel-active-queries
+
+      # Markdown description (y=2)
+      - size: {w: 16, h: 14}
+        position: {x: 0, y: 2}
+        hide_title: true
+        markdown:
+          content: |
+            ## [PostgreSQL OTel] Query Performance
+
+            This dashboard monitors query performance:
+            - Temp file creation and I/O (queries spilling to disk)
+            - Buffer cache hit ratio
+            - Top queries by execution time and call volume
+            - Sequential scans (when available)
+
+      # Temp Files Created (y=2)
+      - title: Temp Files Created
+        hide_title: true
+        size: {w: 10, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.temp_files IS NOT NULL
+            | STATS temp_files = SUM(INCREASE(postgresql.temp_files))
+          primary:
+            field: temp_files
+            label: Temp Files
+            format:
+              type: number
+              decimals: 0
+
+      # Temp I/O bytes (y=2)
+      - title: Temp I/O (bytes)
+        hide_title: true
+        size: {w: 10, h: 4}
+        position: {x: 26, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.temp.io IS NOT NULL
+            | STATS temp_io = SUM(INCREASE(postgresql.temp.io))
+          primary:
+            field: temp_io
+            label: Temp I/O
+            format:
+              type: bytes
+              decimals: 2
+
+      # Buffer Hit Ratio (y=2)
+      - title: Buffer Hit Ratio
+        hide_title: true
+        size: {w: 12, h: 4}
+        position: {x: 36, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.blks_hit IS NOT NULL OR postgresql.blks_read IS NOT NULL
+            | STATS hit = MAX(TO_DOUBLE(postgresql.blks_hit)), read = MAX(TO_DOUBLE(postgresql.blks_read))
+            | EVAL hit_ratio = CASE(read + hit > 0, hit / (hit + read), 0.0)
+          primary:
+            field: hit_ratio
+            label: Hit Ratio
+            format:
+              type: percent
+              decimals: 1
+
+      # Temp Files Over Time (y=6)
+      - title: Temp Files Over Time
+        size: {w: 32, h: 10}
+        position: {x: 16, y: 6}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.temp_files IS NOT NULL
+            | STATS temp_files = SUM(RATE(postgresql.temp_files)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.postgresql.database.name
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: temp_files
+              label: Temp Files/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: resource.attributes.postgresql.database.name
+
+      # Temp I/O Over Time (y=16)
+      - title: Temp I/O Over Time
+        size: {w: 48, h: 10}
+        position: {x: 0, y: 16}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.temp.io IS NOT NULL
+            | STATS temp_io = SUM(RATE(postgresql.temp.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.postgresql.database.name
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: temp_io
+              label: Temp I/O bytes/sec
+              format:
+                type: bytes
+                decimals: 2
+          breakdown:
+            field: resource.attributes.postgresql.database.name
+
+      # Top Queries by Execution Time (y=26)
+      - title: Top Queries by Execution Time (Delta)
+        size: {w: 48, h: 15}
+        position: {x: 0, y: 26}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-postgresqlreceiver.otel-*
+            | WHERE event_name == "db.server.top_query"
+            | WHERE attributes.postgresql.total_exec_time IS NOT NULL
+            | STATS exec_time = SUM(attributes.postgresql.total_exec_time), calls = SUM(attributes.postgresql.calls), rows = SUM(attributes.postgresql.rows) BY query = attributes.db.query.text, attributes.db.namespace
+            | SORT exec_time DESC
+            | LIMIT 20
+          breakdowns:
+            - field: query
+              label: Query
+            - field: attributes.db.namespace
+              label: Database
+          metrics:
+            - field: exec_time
+              label: Exec Time (ms)
+              format:
+                type: number
+                decimals: 2
+            - field: calls
+              label: Calls
+              format:
+                type: number
+                decimals: 2
+            - field: rows
+              label: Rows
+              format:
+                type: number
+                decimals: 2
+
+      # Top Queries by Call Volume (y=41)
+      - title: Top Queries by Call Volume
+        size: {w: 48, h: 15}
+        position: {x: 0, y: 41}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-postgresqlreceiver.otel-*
+            | WHERE event_name == "db.server.top_query"
+            | WHERE attributes.postgresql.calls IS NOT NULL
+            | STATS calls = SUM(attributes.postgresql.calls), exec_time = SUM(attributes.postgresql.total_exec_time), rows = SUM(attributes.postgresql.rows) BY query = attributes.db.query.text, attributes.db.namespace
+            | SORT calls DESC
+            | LIMIT 20
+          breakdowns:
+            - field: query
+              label: Query
+            - field: attributes.db.namespace
+              label: Database
+          metrics:
+            - field: calls
+              label: Calls
+              format:
+                type: number
+                decimals: 2
+            - field: exec_time
+              label: Exec Time (ms)
+              format:
+                type: number
+                decimals: 2
+            - field: rows
+              label: Rows
+              format:
+                type: number
+                decimals: 2
