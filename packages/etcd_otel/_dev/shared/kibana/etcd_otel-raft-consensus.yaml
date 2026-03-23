@@ -151,14 +151,14 @@ dashboards:
             - TS metrics-etcd.otel-*
             - |
               WHERE data_stream.dataset == "etcd.otel"
-              | FORK ( WHERE etcd_server_proposals_committed_total IS NOT NULL | STATS rate = SUM(DELTA(etcd_server_proposals_committed_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL metric = "committed" ) ( WHERE etcd_server_proposals_applied_total IS NOT NULL | STATS rate = SUM(DELTA(etcd_server_proposals_applied_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL metric = "applied" )
+              | FORK ( WHERE etcd_server_proposals_committed_total IS NOT NULL | STATS value = SUM(DELTA(etcd_server_proposals_committed_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL metric = "committed" ) ( WHERE etcd_server_proposals_applied_total IS NOT NULL | STATS value = SUM(DELTA(etcd_server_proposals_applied_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL metric = "applied" )
             - SORT time_bucket ASC
           dimension:
             field: time_bucket
             data_type: date
           metrics:
-            - field: rate
-              label: Proposals/sec
+            - field: value
+              label: Proposals
               format:
                 type: number
                 decimals: 1

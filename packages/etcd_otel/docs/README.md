@@ -9,7 +9,7 @@ This content pack provides dashboards, alert rules, and SLO templates for monito
 The etcd OpenTelemetry assets have been tested with:
 
 - OpenTelemetry Collector Prometheus receiver with EDOT Collector v9.2.1
-- OpenTelemetry Collector Prometheus receiver with OpenTelemetry Collector Contrib
+- OpenTelemetry Collector Prometheus receiver with OpenTelemetry Collector Contrib v0.146.1
 
 etcd tested against:
 
@@ -49,6 +49,11 @@ receivers:
             - targets: [<ETCD_TARGETS>]
 
 processors:
+  resource/dataset:
+    attributes:
+      - key: data_stream.dataset
+        value: etcd.otel
+        action: upsert
   batch:
     timeout: 10s
     send_batch_size: 1024
@@ -67,7 +72,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch]
+      processors: [resource/dataset, batch]
       exporters: [elasticsearch/otel]
 ```
 
