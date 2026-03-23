@@ -1,0 +1,111 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  account_id: {{account_id}}
+  api_key: {{api_key}}
+  query: >-
+    query AuditFeed($timeFrame: TimeFrame! $accountIDs: [ID!] $marker: String) {
+      auditFeed(timeFrame: $timeFrame accountIDs: $accountIDs marker: $marker) {
+        fetchedCount
+        hasMore
+        marker
+        accounts {
+          records {
+            fieldsMap
+          }
+        }
+      }
+    }
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+      request(
+        "POST",
+        state.url.trim_right("/") + "/api/v1/graphql2"
+      ).with({
+        "Header": {
+          "Content-Type": ["application/json"],
+          "x-api-key": [state.api_key]
+        },
+        "Body": {
+          "query": state.query,
+            "variables": {
+              "timeFrame": "last.P90D", // last.P90D = Past 90 Days (API gives error if timeframe is older than 90 days)
+              "accountIDs": [state.account_id],
+              ?"marker": state.?cursor.marker,
+            }
+        }.encode_json(),
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body,
+          // in case of rate limit and wrong API key, StatusCode will be 200 and auditFeed will be null
+          body.?data.auditFeed.orValue(null) != null ?
+            {
+              "events": body.data.auditFeed.accounts[0].records.map(record, {
+                "message": record.fieldsMap.encode_json(),
+              }),
+              "cursor": {
+                ?"marker": optional.of(body.?data.auditFeed.marker)
+              },
+              "want_more": body.?data.auditFeed.hasMore.orValue(false),
+            }
+          :
+            {
+              "events": {
+                "error": {
+                  "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + body.errors[0].message
+                }
+              },
+              "want_more": false,
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
