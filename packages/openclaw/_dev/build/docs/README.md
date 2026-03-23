@@ -18,6 +18,6 @@ The `sessions` data stream collects detailed, turn-by-turn interactions from Ope
 
 **Exported Fields**
 
-For a detailed list of exported fields, please see the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) and the specific fields listed below:
+For a detailed list of exported fields, refer to the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) and the specific fields listed below:
 
 {{fields "sessions"}}
