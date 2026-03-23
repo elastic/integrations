@@ -4,21 +4,20 @@ inputs:
     meta:
       package:
         name: microsoft_exchange_server
-    name: test-custom-processors-microsoft_exchange_server
+    name: test-custom-processors-messagetracking-microsoft_exchange_server
     streams:
       - data_stream:
-          dataset: microsoft_exchange_server.imap4_pop3
+          dataset: microsoft_exchange_server.messagetracking
         exclude_files:
           - .gz$
         paths:
-          - C:\Program Files\Microsoft\Exchange Server\V15\Logging\Imap4\IMAP*.LOG
-          - C:\Program Files\Microsoft\Exchange Server\V15\Logging\Pop3\POP*.LOG
+          - C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking\*.LOG
         processors:
           - add_locale: null
           - add_fields:
               target: test
               fields:
-                source: imap4_pop3_test
+                source: messagetracking_test
           - drop_fields:
               fields:
                 - agent.ephemeral_id
@@ -36,7 +35,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-microsoft_exchange_server.imap4_pop3-ep
+                    - logs-microsoft_exchange_server.messagetracking-ep
                   privileges:
                     - auto_configure
                     - create_doc
