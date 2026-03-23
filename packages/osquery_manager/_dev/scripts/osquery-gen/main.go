@@ -31,7 +31,14 @@ type versionConfig struct {
 type config struct {
 	Osquery versionConfig `yaml:"osquery"`
 	Beats   versionConfig `yaml:"beats"`
-	ECS     versionConfig `yaml:"ecs"`
+}
+
+type packageBuildYAML struct {
+	Dependencies struct {
+		ECS struct {
+			Reference string `yaml:"reference"`
+		} `yaml:"ecs"`
+	} `yaml:"dependencies"`
 }
 
 type semver struct {
@@ -71,7 +78,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("resolve beats specs ref: %v", err)
 	}
-	ecsVersion, err := resolveLatestPatch("elastic/ecs", cfg.ECS.Version)
+	ecsVersionSpec, err := loadECSVersionSpecFromBuildYAML(outputRoot)
+	if err != nil {
+		log.Fatalf("load ecs version from build.yml: %v", err)
+	}
+	ecsVersion, err := resolveLatestPatch("elastic/ecs", ecsVersionSpec)
 	if err != nil {
 		log.Fatalf("resolve ecs version: %v", err)
 	}
@@ -98,10 +109,29 @@ func loadConfig(path string) (config, error) {
 	if strings.TrimSpace(cfg.Beats.Version) == "" {
 		return cfg, fmt.Errorf("beats.version is required")
 	}
-	if strings.TrimSpace(cfg.ECS.Version) == "" {
-		return cfg, fmt.Errorf("ecs.version is required")
-	}
 	return cfg, nil
+}
+
+func loadECSVersionSpecFromBuildYAML(repoRoot string) (string, error) {
+	path := filepath.Join(repoRoot, "packages", "osquery_manager", "_dev", "build", "build.yml")
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("read %s: %w", path, err)
+	}
+	var doc packageBuildYAML
+	if err := yaml.Unmarshal(b, &doc); err != nil {
+		return "", fmt.Errorf("parse %s: %w", path, err)
+	}
+	ref := strings.TrimSpace(doc.Dependencies.ECS.Reference)
+	if ref == "" {
+		return "", fmt.Errorf("%s: dependencies.ecs.reference is required", path)
+	}
+	ref = strings.TrimPrefix(ref, "git@")
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return "", fmt.Errorf("%s: dependencies.ecs.reference must be a git ref (e.g. git@v9.3.0)", path)
+	}
+	return ref, nil
 }
 
 func findRepoRoot() string {
