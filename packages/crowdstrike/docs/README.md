@@ -312,9 +312,9 @@ The integration sets `event.severity` according to the mapping in the table abov
 
 ### Query-time host metadata enrichment (LOOKUP JOIN)
 
-When the integration is installed, a transform maintains the latest host metadata (aidmaster) per host in a lookup index. You can enrich FDR event data with this metadata at query time using [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
+When the integration is installed, a transform maintains the latest host metadata (`aidmaster`) per host in a lookup index. You can enrich FDR event data with this metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
 
-**Lookup index:** `logs-crowdstrike_lookup.dest_aidmaster-1` (alias: `logs-crowdstrike_lookup.aidmaster`). The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from aidmaster are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
+**Lookup index:** `logs-crowdstrike_lookup.dest_aidmaster-1` (alias: `logs-crowdstrike_lookup.aidmaster`). The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from `aidmaster` are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
 
 **Example ES|QL query:**
 
@@ -330,7 +330,7 @@ From Elasticsearch 8.19 onward, you can use the alias as the lookup target: `LOO
 
 **Using enriched fields:** Enrichment from the lookup is under the `crowdstrike.info.host.*` namespace (e.g. `crowdstrike.info.host.hostname` for hostname, `crowdstrike.info.host.cid` for customer ID). Use these fields in dashboards and detection rules when building on query-time enrichment.
 
-**Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach aidmaster and userinfo to events at ingest time. If you rely on query-time host enrichment only (transform + LOOKUP JOIN above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from userinfo; if you still need user fields from userinfo on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern.
+**Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern.
 
 ## Logs
 
