@@ -29,9 +29,13 @@ processors:
 - date:
     field: gitlab.api.time
     target_field: '@timestamp'
+    tag: date_parse_api_time
     formats:
-    - ISO8601
-    ignore_failure: true
+      - ISO8601
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
     field: gitlab.api.severity
     target_field: log.level
@@ -54,7 +58,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: gitlab.api.view
     type: double
@@ -66,7 +70,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - script:
     tag: kv_params
     lang: painless
@@ -126,7 +130,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - dot_expander:
     path: gitlab.api
     field: meta.user
@@ -149,17 +153,27 @@ processors:
     ignore_failure: true
     processor:
       convert:
-        field: _ingest._value.name
+        field: _ingest._value
         type: ip
-        target_field: _ingest._value.name_ips
         ignore_missing: true
         on_failure:
           - remove:
-              field: _ingest._value.ip
+              field: _ingest._value
               ignore_missing: true
 - remove:
     field: gitlab.api.remote_ip
     ignore_missing: true
+- foreach:
+    field: source.ip
+    if: ctx.source?.ip instanceof List
+    tag: foreach_source_ip
+    ignore_failure: true
+    processor:
+      append:
+        field: related.ip
+        tag: append_source_ip_into_related_ip
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
 - rename:
     field: gitlab.api.ua
     target_field: user_agent.original
@@ -226,11 +240,9 @@ processors:
     - error
     allow_duplicates: false
     if: ctx.http?.response?.status_code != null && (ctx.http.response.status_code < 200 || ctx.http.response.status_code >= 400)
-- append:
+- set:
     field: event.kind
-    value:
-    - pipeline_error
-    allow_duplicates: false
+    value: pipeline_error
     if: ctx.error?.message != null
 - script:
     description: Drops null/empty values recursively.
@@ -456,14 +468,14 @@ processors:
 - set:
     field: host.name
     tag: set_host_name_from_api_host
-    copy_from: gitlab.api.host
+    copy_from: url.domain
     ignore_empty_value: true
 - append:
     field: related.hosts
     tag: append_api_host_into_related_hosts
-    value: '{{{gitlab.api.host}}}'
+    value: '{{{url.domain}}}'
     allow_duplicates: false
-    if: ctx.gitlab?.api?.host != null
+    if: ctx.url?.domain != null
 - convert:
     field: gitlab.api.meta.gl_user_id
     tag: convert_gl_user_id_to_keyword
@@ -484,21 +496,6 @@ processors:
     field: organization.id
     tag: set_organization_id_from_api_meta_organization_id
     copy_from: gitlab.api.meta.organization_id
-    ignore_empty_value: true
-- set:
-    field: http.request.method
-    tag: set_http_request_method_from_api_method
-    copy_from: gitlab.api.method
-    ignore_empty_value: true
-- set:
-    field: url.path
-    tag: set_url_path_from_api_path
-    copy_from: gitlab.api.path
-    ignore_empty_value: true
-- set:
-    field: process.pid
-    tag: set_process_pid_from_api_pid
-    copy_from: gitlab.api.pid
     ignore_empty_value: true
 - convert:
     field: gitlab.api.redis_queues_calls
@@ -769,27 +766,12 @@ processors:
     tag: set_event_severity_from_api_severity
     copy_from: gitlab.api.severity
     ignore_empty_value: true
-- set:
-    field: http.response.status_code
-    tag: set_http_response_status_code_from_api_status
-    copy_from: gitlab.api.status
-    ignore_empty_value: true
-- set:
-    field: user.id
-    tag: set_user_id_from_api_user_id
-    copy_from: gitlab.api.user_id
-    ignore_empty_value: true
 - append:
     field: related.user
     tag: append_api_user_id_into_related_user
     value: '{{{gitlab.api.user_id}}}'
     allow_duplicates: false
     if: ctx.gitlab?.api?.user_id != null
-- set:
-    field: user.name
-    tag: set_user_name_from_api_username
-    copy_from: gitlab.api.username
-    ignore_empty_value: true
 - append:
     field: related.user
     tag: append_api_username_into_related_user
@@ -797,13 +779,13 @@ processors:
     allow_duplicates: false
     if: ctx.gitlab?.api?.username != null
 on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
 - append:
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
       in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-- set:
-    field: event.kind
-    value: pipeline_error
 - append:
     field: tags
     value: preserve_original_event

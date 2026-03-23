@@ -127,6 +127,14 @@ processors:
       field: gitlab.sidekiq.message
       target_field: message
       ignore_missing: true
+  - rename:
+      field: gitlab.sidekiq.trace_propagation_headers.sentry-trace
+      tag: rename_trace_propagation_headers_sentry_trace_to_trace_propagation_headers_sentry_trace
+      target_field: gitlab.sidekiq.trace_propagation_headers.sentry_trace
+      ignore_missing: true
+  - remove:
+      field: gitlab.sidekiq.trace_propagation_headers.sentry-trace
+      ignore_missing: true
   - rename: 
       field: gitlab.sidekiq.duration
       target_field: event.duration
@@ -175,6 +183,18 @@ processors:
       on_failure:
         - remove:
             field: gitlab.sidekiq.cpu_s
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gitlab.sidekiq.redis_cache_duration_s
+      tag: convert_redis_cache_duration_s_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.sidekiq.redis_cache_duration_s
             ignore_missing: true
         - append:
             field: error.message
@@ -911,20 +931,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: gitlab.sidekiq.enqueued_at
-      tag: date_enqueued_at
-      target_field: gitlab.sidekiq.enqueued_at
-      formats:
-        - ISO8601
-      if: ctx.gitlab?.sidekiq?.enqueued_at != null && ctx.gitlab.sidekiq.enqueued_at != ''
-      on_failure:
-        - remove:
-            field: gitlab.sidekiq.enqueued_at
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_hold_duration_s
       tag: convert_exclusive_lock_hold_duration_s_to_double
@@ -951,8 +957,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.sidekiq.exclusive_lock_wait_duration_s
-      tag: convert_exclusive_lock_wait_duration_s_to_long
-      type: long
+      tag: convert_exclusive_lock_wait_duration_s_to_double
+      type: double
       ignore_missing: true
       on_failure:
         - remove:

@@ -240,6 +240,15 @@ processors:
       tag: set_http_request_referrer_from_pages_referrer
       copy_from: gitlab.pages.referrer
       ignore_empty_value: true
+  - dissect:
+      field: remote_addr
+      tag: dissect_remote_addr
+      pattern: '%{}:%{POSTINT:source.port}'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.address
       tag: set_source_address_from_pages_remote_addr

@@ -164,7 +164,7 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 | gitlab.api.queue_duration_s |  | float |
 | gitlab.api.redis_allowed_cross_slot_calls |  | long |
 | gitlab.api.redis_cache_calls |  | long |
-| gitlab.api.redis_cache_duration_s |  | float |
+| gitlab.api.redis_cache_duration_s |  | double |
 | gitlab.api.redis_cache_read_bytes |  | long |
 | gitlab.api.redis_cache_write_bytes |  | long |
 | gitlab.api.redis_calls |  | long |
@@ -976,7 +976,7 @@ Collect logs for abusive protect paths requests or requests over the Rate Limit.
 | gitlab.auth.rate_limiting_gates |  | keyword |
 | gitlab.auth.redis_allowed_cross_slot_calls |  | long |
 | gitlab.auth.redis_cache_calls |  | long |
-| gitlab.auth.redis_cache_duration_s |  | float |
+| gitlab.auth.redis_cache_duration_s |  | double |
 | gitlab.auth.redis_cache_read_bytes |  | long |
 | gitlab.auth.redis_cache_write_bytes |  | long |
 | gitlab.auth.redis_calls |  | long |
@@ -1197,9 +1197,9 @@ Collect logs for Pages. Check out the [GitLab Pages log docs](https://docs.gitla
 | gitlab.pages.host |  | keyword |
 | gitlab.pages.in_place |  | boolean |
 | gitlab.pages.level |  | keyword |
-| gitlab.pages.listen_addr.Zone |  | keyword |
 | gitlab.pages.listen_addr.ip |  | ip |
 | gitlab.pages.listen_addr.port |  | long |
+| gitlab.pages.listen_addr.zone |  | keyword |
 | gitlab.pages.lookup_name |  | keyword |
 | gitlab.pages.method |  | keyword |
 | gitlab.pages.msg |  | keyword |
@@ -1397,9 +1397,9 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab.production.db_txn_count |  | long |
 | gitlab.production.db_write_count |  | long |
 | gitlab.production.duration_s | Total time to retrieve the request. | double |
-| gitlab.production.exception.backtrace |  | keyword |
+| gitlab.production.exception.backtrace |  | text |
 | gitlab.production.exception.class |  | keyword |
-| gitlab.production.exception.message |  | keyword |
+| gitlab.production.exception.message |  | text |
 | gitlab.production.format |  | keyword |
 | gitlab.production.graphql.complexity |  | long |
 | gitlab.production.graphql.depth |  | long |
@@ -1440,13 +1440,13 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab.production.params.user.password |  | keyword |
 | gitlab.production.params.variables |  | keyword |
 | gitlab.production.path |  | keyword |
-| gitlab.production.path_traversal_check_duration_s |  | long |
+| gitlab.production.path_traversal_check_duration_s |  | double |
 | gitlab.production.pid | The worker’s Linux process ID. | keyword |
 | gitlab.production.queue_duration_s |  | float |
 | gitlab.production.rate_limiting_gates |  | keyword |
 | gitlab.production.redis_allowed_cross_slot_calls |  | long |
 | gitlab.production.redis_cache_calls |  | long |
-| gitlab.production.redis_cache_duration_s |  | float |
+| gitlab.production.redis_cache_duration_s |  | double |
 | gitlab.production.redis_cache_read_bytes |  | long |
 | gitlab.production.redis_cache_write_bytes |  | long |
 | gitlab.production.redis_calls |  | long |
@@ -1761,12 +1761,12 @@ Collect logs from sidekiq for jobs background jobs that take a long time. Check 
 | gitlab.sidekiq.duration_s |  | double |
 | gitlab.sidekiq.enqueue_latency_s |  | double |
 | gitlab.sidekiq.enqueued_at |  | date |
-| gitlab.sidekiq.exception.backtrace |  | keyword |
+| gitlab.sidekiq.exception.backtrace |  | text |
 | gitlab.sidekiq.exception.class |  | keyword |
-| gitlab.sidekiq.exception.message |  | keyword |
+| gitlab.sidekiq.exception.message |  | text |
 | gitlab.sidekiq.exclusive_lock_hold_duration_s |  | double |
 | gitlab.sidekiq.exclusive_lock_requested_count |  | long |
-| gitlab.sidekiq.exclusive_lock_wait_duration_s |  | long |
+| gitlab.sidekiq.exclusive_lock_wait_duration_s |  | double |
 | gitlab.sidekiq.extra.batched_git_ref_updates_cleanup_scheduler_worker.stats.total_projects |  | long |
 | gitlab.sidekiq.extra.cells_stale_requests_cleanup_cron_worker.removed_count |  | long |
 | gitlab.sidekiq.extra.ci_catalog_resources_process_sync_events_worker.consumable_events |  | long |
@@ -1832,7 +1832,7 @@ Collect logs from sidekiq for jobs background jobs that take a long time. Check 
 | gitlab.sidekiq.queue_duration_s |  | double |
 | gitlab.sidekiq.queue_namespace |  | keyword |
 | gitlab.sidekiq.redis_cache_calls |  | long |
-| gitlab.sidekiq.redis_cache_duration_s |  | keyword |
+| gitlab.sidekiq.redis_cache_duration_s |  | double |
 | gitlab.sidekiq.redis_cache_read_bytes |  | long |
 | gitlab.sidekiq.redis_cache_write_bytes |  | long |
 | gitlab.sidekiq.redis_calls | Total number of calls made to Redis. | long |
@@ -1880,7 +1880,7 @@ Collect logs from sidekiq for jobs background jobs that take a long time. Check 
 | gitlab.sidekiq.target_scheduling_latency_s |  | long |
 | gitlab.sidekiq.time |  | date |
 | gitlab.sidekiq.trace_propagation_headers.baggage |  | keyword |
-| gitlab.sidekiq.trace_propagation_headers.sentry-trace |  | keyword |
+| gitlab.sidekiq.trace_propagation_headers.sentry_trace |  | keyword |
 | gitlab.sidekiq.unique_args |  | keyword |
 | gitlab.sidekiq.unique_digest |  | keyword |
 | gitlab.sidekiq.unique_expiration |  | long |
