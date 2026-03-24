@@ -2,11 +2,11 @@
 
 This integration periodically fetches logs and metrics from [HAProxy](https://www.haproxy.org/) servers.
 
-The Integration can collect metrics in two datastreams from HAProxy: `info` and `stat`. `info` is not available when using the stats page. For more information, refer to the [HAProxy module](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-haproxy).
+The Integration can collect metrics in two datastreams from HAProxy: `info`, `stat` and `metrics`. `info` is not available when using the stats page. For more information, refer to the [HAProxy module](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-haproxy).
 
 ## Compatibility
 
-The `log` dataset was tested with logs from HAProxy `1.8`, `1.9` and `2.0`, `2.6` running on a Debian. It is not available on Windows. 
+The `log` dataset was tested with logs from HAProxy `1.8`, `1.9` and `2.0`, `2.6`, `3.2` running on a Debian. It is not available on Windows. 
 The integration supports the following default log patterns:
 * [Default log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.1)
 * [TCP log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.2)
@@ -14,7 +14,8 @@ The integration supports the following default log patterns:
 * [HTTPS log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.4)
 * [Error log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.5)
 
-The `info` and `stat` datasets were tested with HAProxy versions from `1.6`, `1.7`, `1.8` to `2.0`. 
+The `info` and `stat` datasets were tested with HAProxy versions from `1.6`, `1.7`, `1.8` to `3.2`.  
+The `metrics` dataset collects metrics from Prometheus metrics. It was tested with HAProxy `2.8` and `3.2`. In Haproxy it was introduced in `2.0`. For configuration instructions, refer to the [HAProxy documentation](https://www.haproxy.com/documentation/haproxy-configuration-tutorials/alerts-and-monitoring/prometheus/).
 
 ## Troubleshooting
 
@@ -651,5 +652,360 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | process.pid | Process id. | long |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+
+
+### metrics
+
+The HAProxy `metrics` metricset collects metric fields from HAProxy Prometheus metrics.
+
+An example event for `metrics` looks as following:
+
+```json
+{
+    "@timestamp": "2026-03-24T00:27:13.407Z",
+    "agent": {
+        "ephemeral_id": "70c712a8-e9ce-4360-ad68-a47aad61bc02",
+        "id": "bdfe958f-242b-4f40-8cc5-93f6388e5345",
+        "name": "EPGETBIW05AD",
+        "type": "metricbeat",
+        "version": "9.3.1"
+    },
+    "data_stream": {
+        "dataset": "haproxy.metrics",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "bdfe958f-242b-4f40-8cc5-93f6388e5345",
+        "snapshot": false,
+        "version": "9.3.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "haproxy.metrics",
+        "duration": 10873000,
+        "ingested": "2026-03-24T00:27:13Z",
+        "module": "prometheus"
+    },
+    "haproxy": {
+        "metrics": {
+            "haproxy_frontend_bytes_in_total": 17229,
+            "haproxy_frontend_bytes_out_total": 2084777,
+            "haproxy_frontend_connections_rate_max": 6,
+            "haproxy_frontend_connections_total": 46,
+            "haproxy_frontend_current_session_rate": 1,
+            "haproxy_frontend_current_sessions": 1,
+            "haproxy_frontend_denied_connections_total": 0,
+            "haproxy_frontend_denied_sessions_total": 0,
+            "haproxy_frontend_failed_header_rewriting_total": 0,
+            "haproxy_frontend_http_cache_hits_total": 0,
+            "haproxy_frontend_http_cache_lookups_total": 0,
+            "haproxy_frontend_http_comp_bytes_bypassed_total": 0,
+            "haproxy_frontend_http_comp_bytes_in_total": 0,
+            "haproxy_frontend_http_comp_bytes_out_total": 0,
+            "haproxy_frontend_http_comp_responses_total": 0,
+            "haproxy_frontend_http_requests_rate_max": 6,
+            "haproxy_frontend_http_requests_total": 46,
+            "haproxy_frontend_intercepted_requests_total": 31,
+            "haproxy_frontend_internal_errors_total": 0,
+            "haproxy_frontend_limit_session_rate": 0,
+            "haproxy_frontend_limit_sessions": 25000,
+            "haproxy_frontend_max_session_rate": 6,
+            "haproxy_frontend_max_sessions": 2,
+            "haproxy_frontend_request_errors_total": 0,
+            "haproxy_frontend_requests_denied_total": 0,
+            "haproxy_frontend_responses_denied_total": 0,
+            "haproxy_frontend_sessions_total": 46
+        }
+    },
+    "host": {
+        "architecture": "arm64",
+        "hostname": "EPGETBIW05AD",
+        "id": "EA0EF0A6-3698-566E-93AD-49EC580C1969",
+        "ip": [
+            "192.168.8.247",
+            "fe80::432:f789:5d89:8418",
+            "fe80::4e2:681:a281:2d4d",
+            "fe80::1036:28ff:fe7c:649e",
+            "fe80::a2a5:e63d:cc82:b7ef",
+            "fe80::ce81:b1c:bd2c:69e",
+            "fe80::ed2d:e501:f5f3:db4f"
+        ],
+        "mac": [
+            "12-36-28-7C-64-9E",
+            "1A-52-43-7C-F8-C2",
+            "36-BD-64-BA-FB-00",
+            "36-BD-64-BA-FB-04",
+            "36-BD-64-BA-FB-08",
+            "42-29-38-E4-A3-AA",
+            "42-29-38-E4-A3-AB",
+            "42-29-38-E4-A3-AC",
+            "42-29-38-E4-A3-CA",
+            "42-29-38-E4-A3-CB",
+            "42-29-38-E4-A3-CC",
+            "A6-51-3F-B3-70-0A"
+        ],
+        "name": "epgetbiw05ad",
+        "os": {
+            "build": "25D2128",
+            "family": "darwin",
+            "kernel": "25.3.0",
+            "name": "macOS",
+            "platform": "darwin",
+            "type": "macos",
+            "version": "26.3.1"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://localhost:8405/metrics",
+        "type": "prometheus"
+    }
+}
+```
+
+The fields reported are:
+
+**ECS Field Reference**
+
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| haproxy.metrics.haproxy_backend_active_servers | Total number of active UP servers with a non-zero weight | double | gauge |
+| haproxy.metrics.haproxy_backend_agg_check_status | Backend's aggregated gauge of servers' state check status | double | gauge |
+| haproxy.metrics.haproxy_backend_agg_server_check_status | [DEPRECATED] Backend's aggregated gauge of servers' status | double | gauge |
+| haproxy.metrics.haproxy_backend_agg_server_status | Backend's aggregated gauge of servers' status | double | gauge |
+| haproxy.metrics.haproxy_backend_backup_servers | Total number of backup UP servers with a non-zero weight | double | gauge |
+| haproxy.metrics.haproxy_backend_bytes_in_total | Total number of request bytes since process started | long | counter |
+| haproxy.metrics.haproxy_backend_bytes_out_total | Total number of response bytes since process started | long | counter |
+| haproxy.metrics.haproxy_backend_check_last_change_seconds | How long ago the last server state changed, in seconds | double | gauge |
+| haproxy.metrics.haproxy_backend_check_up_down_total | Total number of failed checks causing UP to DOWN server transitions, per server/backend, since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_client_aborts_total | Total number of requests or connections aborted by the client since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_connect_time_average_seconds | Avg. connect time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_backend_connection_attempts_total | Total number of outgoing connection attempts on this backend/server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_connection_errors_total | Total number of failed connections to server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_connection_reuses_total | Total number of reused connection on this backend/server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_current_queue | Number of current queued connections | double | gauge |
+| haproxy.metrics.haproxy_backend_current_session_rate | Total number of sessions processed by this object over the last second (sessions for listeners/frontends, requests for backends/servers) | double | gauge |
+| haproxy.metrics.haproxy_backend_current_sessions | Number of current sessions on the frontend, backend or server | double | gauge |
+| haproxy.metrics.haproxy_backend_downtime_seconds_total | Total time spent in DOWN state, for server or backend | double | gauge |
+| haproxy.metrics.haproxy_backend_failed_header_rewriting_total | Total number of failed HTTP header rewrites since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_http_cache_hits_total | Total number of HTTP requests not found in the cache on this frontend/backend since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_http_cache_lookups_total | Total number of HTTP requests looked up in the cache on this frontend/backend since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_http_comp_bytes_bypassed_total | Total number of bytes that bypassed HTTP compression for this object since the worker process started (CPU/memory/bandwidth limitation) | long | counter |
+| haproxy.metrics.haproxy_backend_http_comp_bytes_in_total | Total number of bytes submitted to the HTTP compressor for this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_http_comp_bytes_out_total | Total number of bytes emitted by the HTTP compressor for this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_http_comp_responses_total | Total number of HTTP responses that were compressed for this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_http_requests_total | Total number of HTTP requests processed by this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_http_responses_total | Total number of HTTP responses with status 100-199 returned by this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_internal_errors_total | Total number of internal errors since process started | long | counter |
+| haproxy.metrics.haproxy_backend_last_session_seconds | How long ago some traffic was seen on this object on this worker process, in seconds | double | gauge |
+| haproxy.metrics.haproxy_backend_limit_sessions | Frontend/listener/server's maxconn, backend's fullconn | double | gauge |
+| haproxy.metrics.haproxy_backend_loadbalanced_total | Total number of requests routed by load balancing since the worker process started (ignores queue pop and stickiness) | long | counter |
+| haproxy.metrics.haproxy_backend_max_connect_time_seconds | Maximum observed time spent waiting for a connection to complete | double | gauge |
+| haproxy.metrics.haproxy_backend_max_queue | Highest value of queued connections encountered since process started | double | gauge |
+| haproxy.metrics.haproxy_backend_max_queue_time_seconds | Maximum observed time spent in the queue | double | gauge |
+| haproxy.metrics.haproxy_backend_max_response_time_seconds | Maximum observed time spent waiting for a server response | double | gauge |
+| haproxy.metrics.haproxy_backend_max_session_rate | Highest value of sessions per second observed since the worker process started | double | gauge |
+| haproxy.metrics.haproxy_backend_max_sessions | Highest value of current sessions encountered since process started | double | gauge |
+| haproxy.metrics.haproxy_backend_max_total_time_seconds | Maximum observed total request+response time (request+queue+connect+response+processing) | double | gauge |
+| haproxy.metrics.haproxy_backend_queue_time_average_seconds | Avg. queue time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_backend_redispatch_warnings_total | Total number of server redispatches due to connection failures since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_requests_denied_total | Total number of denied requests since process started | long | counter |
+| haproxy.metrics.haproxy_backend_response_errors_total | Total number of invalid responses since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_response_time_average_seconds | Avg. response time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_backend_responses_denied_total | Total number of denied responses since process started | long | counter |
+| haproxy.metrics.haproxy_backend_retry_warnings_total | Total number of server connection retries since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_server_aborts_total | Total number of requests or connections aborted by the server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_backend_sessions_total | Total number of sessions since process started | long | counter |
+| haproxy.metrics.haproxy_backend_status | Current status of the service, per state label value. | double | gauge |
+| haproxy.metrics.haproxy_backend_total_time_average_seconds | Avg. total time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_backend_uweight | Server's user weight, or sum of active servers' user weights for a backend | double | gauge |
+| haproxy.metrics.haproxy_backend_weight | Server's effective weight, or sum of active servers' effective weights for a backend | double | gauge |
+| haproxy.metrics.haproxy_frontend_bytes_in_total | Total number of request bytes since process started | long | counter |
+| haproxy.metrics.haproxy_frontend_bytes_out_total | Total number of response bytes since process started | long | counter |
+| haproxy.metrics.haproxy_frontend_connections_rate_max | Highest value of connections per second observed since the worker process started | double | gauge |
+| haproxy.metrics.haproxy_frontend_connections_total | Total number of new connections accepted on this frontend since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_current_session_rate | Total number of sessions processed by this object over the last second (sessions for listeners/frontends, requests for backends/servers) | double | gauge |
+| haproxy.metrics.haproxy_frontend_current_sessions | Number of current sessions on the frontend, backend or server | double | gauge |
+| haproxy.metrics.haproxy_frontend_denied_connections_total | Total number of incoming connections blocked on a listener/frontend by a tcp-request connection rule since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_denied_sessions_total | Total number of incoming sessions blocked on a listener/frontend by a tcp-request connection rule since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_failed_header_rewriting_total | Total number of failed HTTP header rewrites since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_http_cache_hits_total | Total number of HTTP requests not found in the cache on this frontend/backend since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_http_cache_lookups_total | Total number of HTTP requests looked up in the cache on this frontend/backend since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_http_comp_bytes_bypassed_total | Total number of bytes that bypassed HTTP compression for this object since the worker process started (CPU/memory/bandwidth limitation) | long | counter |
+| haproxy.metrics.haproxy_frontend_http_comp_bytes_in_total | Total number of bytes submitted to the HTTP compressor for this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_http_comp_bytes_out_total | Total number of bytes emitted by the HTTP compressor for this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_http_comp_responses_total | Total number of HTTP responses that were compressed for this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_http_requests_rate_max | Highest value of http requests observed since the worker process started | double | gauge |
+| haproxy.metrics.haproxy_frontend_http_requests_total | Total number of HTTP requests processed by this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_http_responses_total | Total number of HTTP responses with status 100-199 returned by this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_intercepted_requests_total | Total number of HTTP requests intercepted on the frontend (redirects/stats/services) since the worker process started | long | counter |
+| haproxy.metrics.haproxy_frontend_internal_errors_total | Total number of internal errors since process started | long | counter |
+| haproxy.metrics.haproxy_frontend_limit_session_rate | Limit on the number of sessions accepted in a second (frontend only, 'rate-limit sessions' setting) | double | gauge |
+| haproxy.metrics.haproxy_frontend_limit_sessions | Frontend/listener/server's maxconn, backend's fullconn | double | gauge |
+| haproxy.metrics.haproxy_frontend_max_session_rate | Highest value of sessions per second observed since the worker process started | double | gauge |
+| haproxy.metrics.haproxy_frontend_max_sessions | Highest value of current sessions encountered since process started | double | gauge |
+| haproxy.metrics.haproxy_frontend_request_errors_total | Total number of invalid requests since process started | long | counter |
+| haproxy.metrics.haproxy_frontend_requests_denied_total | Total number of denied requests since process started | long | counter |
+| haproxy.metrics.haproxy_frontend_responses_denied_total | Total number of denied responses since process started | long | counter |
+| haproxy.metrics.haproxy_frontend_sessions_total | Total number of sessions since process started | long | counter |
+| haproxy.metrics.haproxy_frontend_status | Current status of the service, per state label value. | double | gauge |
+| haproxy.metrics.haproxy_process_active_peers | Current number of verified active peers connections on the current worker process | double | gauge |
+| haproxy.metrics.haproxy_process_build_info | Build info | double | gauge |
+| haproxy.metrics.haproxy_process_busy_polling_enabled | 1 if busy-polling is currently in use on the worker process, otherwise zero (config.busy-polling) | double | gauge |
+| haproxy.metrics.haproxy_process_bytes_out_rate | Number of bytes emitted by current worker process over the last second | double | gauge |
+| haproxy.metrics.haproxy_process_bytes_out_total | Total number of bytes emitted by current worker process since started | long | counter |
+| haproxy.metrics.haproxy_process_connected_peers | Current number of peers having passed the connection step on the current worker process | double | gauge |
+| haproxy.metrics.haproxy_process_connections_total | Total number of connections on this worker process since started | long | counter |
+| haproxy.metrics.haproxy_process_current_backend_ssl_key_rate | Number of SSL keys created on backends in this worker process over the last second | double | gauge |
+| haproxy.metrics.haproxy_process_current_connection_rate | Number of front connections created on this worker process over the last second | double | gauge |
+| haproxy.metrics.haproxy_process_current_connections | Current number of connections on this worker process | double | gauge |
+| haproxy.metrics.haproxy_process_current_frontend_ssl_key_rate | Number of SSL keys created on frontends in this worker process over the last second | double | gauge |
+| haproxy.metrics.haproxy_process_current_run_queue | Total number of active tasks+tasklets in the current worker process | double | gauge |
+| haproxy.metrics.haproxy_process_current_session_rate | Number of sessions created on this worker process over the last second | double | gauge |
+| haproxy.metrics.haproxy_process_current_ssl_connections | Current number of SSL endpoints on this worker process (front+back) | double | gauge |
+| haproxy.metrics.haproxy_process_current_ssl_rate | Number of SSL connections created on this worker process over the last second | double | gauge |
+| haproxy.metrics.haproxy_process_current_tasks | Total number of tasks in the current worker process (active + sleeping) | double | gauge |
+| haproxy.metrics.haproxy_process_current_zlib_memory | Amount of memory currently used by HTTP compression on the current worker process (in bytes) | double | gauge |
+| haproxy.metrics.haproxy_process_dropped_logs_total | Total number of dropped logs for current worker process since started | long | counter |
+| haproxy.metrics.haproxy_process_failed_resolutions | Total number of failed DNS resolutions in current worker process since started | long | counter |
+| haproxy.metrics.haproxy_process_frontend_ssl_reuse | Percent of frontend SSL connections which did not require a new key | double | gauge |
+| haproxy.metrics.haproxy_process_hard_max_connections | Hard limit on the number of per-process connections (imposed by Memmax_MB or Ulimit-n) | double | gauge |
+| haproxy.metrics.haproxy_process_http_comp_bytes_in_total | Number of bytes submitted to the HTTP compressor in this worker process over the last second | long | counter |
+| haproxy.metrics.haproxy_process_http_comp_bytes_out_total | Number of bytes emitted by the HTTP compressor in this worker process over the last second | long | counter |
+| haproxy.metrics.haproxy_process_idle_time_percent | Percentage of last second spent waiting in the current worker thread | double | gauge |
+| haproxy.metrics.haproxy_process_jobs | Current number of active jobs on the current worker process (frontend connections, master connections, listeners) | double | gauge |
+| haproxy.metrics.haproxy_process_limit_connection_rate | Hard limit for ConnRate (global.maxconnrate) | double | gauge |
+| haproxy.metrics.haproxy_process_limit_http_comp | Limit of CompressBpsOut beyond which HTTP compression is automatically disabled | double | gauge |
+| haproxy.metrics.haproxy_process_limit_session_rate | Hard limit for SessRate (global.maxsessrate) | double | gauge |
+| haproxy.metrics.haproxy_process_limit_ssl_rate | Hard limit for SslRate (global.maxsslrate) | double | gauge |
+| haproxy.metrics.haproxy_process_listeners | Current number of active listeners on the current worker process | double | gauge |
+| haproxy.metrics.haproxy_process_max_backend_ssl_key_rate | Highest SslBackendKeyRate reached on this worker process since started (in SSL keys per second) | double | gauge |
+| haproxy.metrics.haproxy_process_max_connection_rate | Highest ConnRate reached on this worker process since started (in connections per second) | double | gauge |
+| haproxy.metrics.haproxy_process_max_connections | Hard limit on the number of per-process connections (configured or imposed by Ulimit-n) | double | gauge |
+| haproxy.metrics.haproxy_process_max_fds | Hard limit on the number of per-process file descriptors | double | gauge |
+| haproxy.metrics.haproxy_process_max_frontend_ssl_key_rate | Highest SslFrontendKeyRate reached on this worker process since started (in SSL keys per second) | double | gauge |
+| haproxy.metrics.haproxy_process_max_memory_bytes | Worker process's hard limit on memory usage in byes (-m on command line) | double | gauge |
+| haproxy.metrics.haproxy_process_max_pipes | Hard limit on the number of pipes for splicing, 0=unlimited | double | gauge |
+| haproxy.metrics.haproxy_process_max_session_rate | Highest SessRate reached on this worker process since started (in sessions per second) | double | gauge |
+| haproxy.metrics.haproxy_process_max_sockets | Hard limit on the number of per-process sockets | double | gauge |
+| haproxy.metrics.haproxy_process_max_ssl_connections | Hard limit on the number of per-process SSL endpoints (front+back), 0=unlimited | double | gauge |
+| haproxy.metrics.haproxy_process_max_ssl_rate | Highest SslRate reached on this worker process since started (in connections per second) | double | gauge |
+| haproxy.metrics.haproxy_process_max_zlib_memory | Limit on the amount of memory used by HTTP compression above which it is automatically disabled (in bytes, see global.maxzlibmem) | double | gauge |
+| haproxy.metrics.haproxy_process_nbproc | Number of started worker processes (historical, always 1) | double | gauge |
+| haproxy.metrics.haproxy_process_nbthread | Number of started threads (global.nbthread) | double | gauge |
+| haproxy.metrics.haproxy_process_node | Node name (global.node) | double | gauge |
+| haproxy.metrics.haproxy_process_pipes_free_total | Current number of allocated and available pipes in this worker process | long | counter |
+| haproxy.metrics.haproxy_process_pipes_used_total | Current number of pipes in use in this worker process | long | counter |
+| haproxy.metrics.haproxy_process_pool_allocated_bytes | Amount of memory allocated in pools (in bytes) | double | gauge |
+| haproxy.metrics.haproxy_process_pool_failures_total | Number of failed pool allocations since this worker was started | long | counter |
+| haproxy.metrics.haproxy_process_pool_used_bytes | Amount of pool memory currently used (in bytes) | double | gauge |
+| haproxy.metrics.haproxy_process_recv_logs_total | Total number of log messages received by log-forwarding listeners on this worker process since started | long | counter |
+| haproxy.metrics.haproxy_process_relative_process_id | Relative worker process number (1) | double | gauge |
+| haproxy.metrics.haproxy_process_requests_total | Total number of requests on this worker process since started | long | counter |
+| haproxy.metrics.haproxy_process_spliced_bytes_out_total | Total number of bytes emitted by current worker process through a kernel pipe since started | long | counter |
+| haproxy.metrics.haproxy_process_ssl_cache_lookups_total | Total number of SSL session ID lookups in the SSL session cache on this worker since started | long | counter |
+| haproxy.metrics.haproxy_process_ssl_cache_misses_total | Total number of SSL session ID lookups that didn't find a session in the SSL session cache on this worker since started | long | counter |
+| haproxy.metrics.haproxy_process_ssl_connections_total | Total number of SSL endpoints on this worker process since started (front+back) | long | counter |
+| haproxy.metrics.haproxy_process_start_time_seconds | Start time in seconds | double | gauge |
+| haproxy.metrics.haproxy_process_stopping | 1 if the worker process is currently stopping, otherwise zero | double | gauge |
+| haproxy.metrics.haproxy_process_total_warnings | Total warnings issued | long | counter |
+| haproxy.metrics.haproxy_process_unstoppable_jobs | Current number of unstoppable jobs on the current worker process (master connections) | double | gauge |
+| haproxy.metrics.haproxy_process_uptime_seconds | How long ago this worker process was started (seconds) | double | gauge |
+| haproxy.metrics.haproxy_resolver_any_err | Any errors | double | gauge |
+| haproxy.metrics.haproxy_resolver_cname | CNAME | double | gauge |
+| haproxy.metrics.haproxy_resolver_cname_error | CNAME error | double | gauge |
+| haproxy.metrics.haproxy_resolver_invalid | Invalid | double | gauge |
+| haproxy.metrics.haproxy_resolver_nx | NX | double | gauge |
+| haproxy.metrics.haproxy_resolver_other | Other | double | gauge |
+| haproxy.metrics.haproxy_resolver_outdated | Outdated | double | gauge |
+| haproxy.metrics.haproxy_resolver_refused | Refused | double | gauge |
+| haproxy.metrics.haproxy_resolver_send_error | Send error | double | gauge |
+| haproxy.metrics.haproxy_resolver_sent | Sent | double | gauge |
+| haproxy.metrics.haproxy_resolver_timeout | Timeout | double | gauge |
+| haproxy.metrics.haproxy_resolver_too_big | Too big | double | gauge |
+| haproxy.metrics.haproxy_resolver_truncated | Truncated | double | gauge |
+| haproxy.metrics.haproxy_resolver_update | Update | double | gauge |
+| haproxy.metrics.haproxy_resolver_valid | Valid | double | gauge |
+| haproxy.metrics.haproxy_server_active | Total number of active UP servers with a non-zero weight | double | gauge |
+| haproxy.metrics.haproxy_server_backup | Total number of backup UP servers with a non-zero weight | double | gauge |
+| haproxy.metrics.haproxy_server_bytes_in_total | Total number of request bytes since process started | long | counter |
+| haproxy.metrics.haproxy_server_bytes_out_total | Total number of response bytes since process started | long | counter |
+| haproxy.metrics.haproxy_server_check_code | layer5-7 code, if available of the last health check. | double | gauge |
+| haproxy.metrics.haproxy_server_check_duration_seconds | Total duration of the latest server health check, in seconds. | double | gauge |
+| haproxy.metrics.haproxy_server_check_failures_total | Total number of failed individual health checks per server/backend, since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_check_last_change_seconds | How long ago the last server state changed, in seconds | double | gauge |
+| haproxy.metrics.haproxy_server_check_status | Status of last health check, per state label value. | double | gauge |
+| haproxy.metrics.haproxy_server_check_up_down_total | Total number of failed checks causing UP to DOWN server transitions, per server/backend, since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_client_aborts_total | Total number of requests or connections aborted by the client since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_connect_time_average_seconds | Avg. connect time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_server_connection_attempts_total | Total number of outgoing connection attempts on this backend/server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_connection_errors_total | Total number of failed connections to server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_connection_reuses_total | Total number of reused connection on this backend/server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_current_queue | Number of current queued connections | double | gauge |
+| haproxy.metrics.haproxy_server_current_session_rate | Total number of sessions processed by this object over the last second (sessions for listeners/frontends, requests for backends/servers) | double | gauge |
+| haproxy.metrics.haproxy_server_current_sessions | Number of current sessions on the frontend, backend or server | double | gauge |
+| haproxy.metrics.haproxy_server_current_throttle | Throttling ratio applied to a server's maxconn and weight during the slowstart period (0 to 100%) | double | gauge |
+| haproxy.metrics.haproxy_server_downtime_seconds_total | Total time spent in DOWN state, for server or backend | long | counter |
+| haproxy.metrics.haproxy_server_failed_header_rewriting_total | Total number of failed HTTP header rewrites since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_http_requests_total | Total number of HTTP requests processed by this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_http_responses_total | Total number of HTTP responses with status 100-199 returned by this object since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_idle_connections_current | Current number of idle connections available for reuse on this server | double | gauge |
+| haproxy.metrics.haproxy_server_idle_connections_limit | Limit on the number of available idle connections on this server (server 'pool_max_conn' directive) | double | gauge |
+| haproxy.metrics.haproxy_server_internal_errors_total | Total number of internal errors since process started | long | counter |
+| haproxy.metrics.haproxy_server_last_session_seconds | How long ago some traffic was seen on this object on this worker process, in seconds | double | gauge |
+| haproxy.metrics.haproxy_server_limit_sessions | Frontend/listener/server's maxconn, backend's fullconn | double | gauge |
+| haproxy.metrics.haproxy_server_loadbalanced_total | Total number of requests routed by load balancing since the worker process started (ignores queue pop and stickiness) | long | counter |
+| haproxy.metrics.haproxy_server_max_connect_time_seconds | Maximum observed time spent waiting for a connection to complete | double | gauge |
+| haproxy.metrics.haproxy_server_max_queue | Highest value of queued connections encountered since process started | double | gauge |
+| haproxy.metrics.haproxy_server_max_queue_time_seconds | Maximum observed time spent in the queue | double | gauge |
+| haproxy.metrics.haproxy_server_max_response_time_seconds | Maximum observed time spent waiting for a server response | double | gauge |
+| haproxy.metrics.haproxy_server_max_session_rate | Highest value of sessions per second observed since the worker process started | double | gauge |
+| haproxy.metrics.haproxy_server_max_sessions | Highest value of current sessions encountered since process started | double | gauge |
+| haproxy.metrics.haproxy_server_max_total_time_seconds | Maximum observed total request+response time (request+queue+connect+response+processing) | double | gauge |
+| haproxy.metrics.haproxy_server_need_connections_current | Estimated needed number of connections | double | gauge |
+| haproxy.metrics.haproxy_server_queue_limit | Limit on the number of connections in queue, for servers only (maxqueue argument) | double | gauge |
+| haproxy.metrics.haproxy_server_queue_time_average_seconds | Avg. queue time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_server_redispatch_warnings_total | Total number of server redispatches due to connection failures since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_response_errors_total | Total number of invalid responses since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_response_time_average_seconds | Avg. response time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_server_responses_denied_total | Total number of denied responses since process started | long | counter |
+| haproxy.metrics.haproxy_server_retry_warnings_total | Total number of server connection retries since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_safe_idle_connections_current | Current number of safe idle connections | double | gauge |
+| haproxy.metrics.haproxy_server_server_aborts_total | Total number of requests or connections aborted by the server since the worker process started | long | counter |
+| haproxy.metrics.haproxy_server_sessions_total | Total number of sessions since process started | long | counter |
+| haproxy.metrics.haproxy_server_status | Current status of the service, per state label value. | double | gauge |
+| haproxy.metrics.haproxy_server_total_time_average_seconds | Avg. total time for last 1024 successful connections. | double | gauge |
+| haproxy.metrics.haproxy_server_unsafe_idle_connections_current | Current number of unsafe idle connections | double | gauge |
+| haproxy.metrics.haproxy_server_used_connections_current | Current number of connections in use | double | gauge |
+| haproxy.metrics.haproxy_server_uweight | Server's user weight, or sum of active servers' user weights for a backend | double | gauge |
+| haproxy.metrics.haproxy_server_weight | Server's effective weight, or sum of active servers' effective weights for a backend | double | gauge |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| prometheus.labels.instance | Prometheus target instance label. | keyword |  |
+| prometheus.labels.job | Prometheus target job label. | keyword |  |
+| prometheus.labels.proxy | HAProxy proxy label exported with metrics. | keyword |  |
+| prometheus.labels.state | HAProxy state label exported with metrics. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
