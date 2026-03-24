@@ -1,4 +1,22 @@
 rules:
+  # Return an empty ConfigRules list to verify the program handles empty lists
+  # appropriately.
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.DescribeConfigRules"
+    request_body: '{"NextToken":"page3"}'
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "ConfigRules": []
+          }
+          `}}
   - path: /
     methods: ["POST"]
     request_headers:
@@ -35,7 +53,8 @@ rules:
                   "SourceIdentifier": "REQUIRED_TAGS"
                 }
               }
-            ]
+            ],
+            "NextToken": "page3"
           }
           `}}
   - path: /

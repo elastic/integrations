@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects GenAI tools connecting to unusual domains on macOS. Adversaries may compromise GenAI tools through prompt injection, malicious MCP servers, or poisoned plugins to establish C2 channels or exfiltrate sensitive data to attacker-controlled infrastructure. AI agents with network access can be manipulated to beacon to external servers, download malicious payloads, or transmit harvested credentials and documents.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-endpoint.events.network*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GenAI Process Connection to Unusual Domain",
+        "new_terms_fields": [
+            "destination.domain"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating GenAI Process Connection to Unusual Domain\n\nGenAI tools with network access can be weaponized to contact attacker infrastructure for C2, data exfiltration, or payload retrieval. Compromised MCP servers, malicious plugins, or prompt injection attacks can redirect AI agents to connect to arbitrary domains. While legitimate GenAI tools connect to vendor APIs and CDNs, connections to unusual domains may indicate exploitation.\n\n### Possible investigation steps\n\n- Review the destination domain to determine if it's a legitimate GenAI service, CDN, package registry, or potentially malicious infrastructure.\n- Investigate the GenAI process command line and configuration to identify what triggered the connection (plugin, MCP server, user prompt).\n- Check if the domain was recently registered, uses a suspicious TLD, or has a low reputation score in threat intelligence feeds.\n- Review the timing and context of the connection to determine if it correlates with user activity or was automated.\n- Examine network traffic to and from the domain to identify the nature of the communication (API calls, file downloads, data exfiltration).\n- Check for other hosts in the environment connecting to the same domain to determine if this is an isolated incident.\n- Investigate whether the GenAI tool's configuration files were recently modified to add new MCP servers or plugins.\n- Correlate with file events to see if the GenAI tool downloaded or created files around the same time as the connection.\n\n### False positive analysis\n\n- GenAI tools may connect to new domains as vendors update their infrastructure, CDNs, or API endpoints.\n- Package managers (npm, pip) used by MCP servers may connect to package registries for dependency resolution.\n- Legitimate MCP servers and AI plugins connect to their respective backend services.\n- Developer workflows testing new AI integrations or MCP servers will naturally trigger alerts for novel domain connections.\n\n### Response and remediation\n\n- If the domain is confirmed malicious, block it at the network level and investigate the source of the compromise.\n- Review the GenAI tool's configuration for unauthorized MCP servers, plugins, or extensions that initiated the connection.\n- Investigate any data that may have been sent to the suspicious domain and assess the potential for data exfiltration.\n- Review and rotate any API keys, tokens, or credentials used by the GenAI tool.\n- Update detection rules to monitor the identified domain across all hosts in the environment.\n",
+        "query": "event.category:network and host.os.type:macos and\nprocess.name:(\n    Claude or \"Claude Helper\" or \"Claude Helper (Plugin)\" or Copilot or Cursor or\n    \"Cursor Helper\" or \"Cursor Helper (Plugin)\" or GPT4All or Jan or \"Jan Helper\" or\n    KoboldCpp or \"LM Studio\" or Ollama or Windsurf or \"Windsurf Helper\" or\n    \"Windsurf Helper (Plugin)\" or bunx or claude or codex or copilot or cursor or deno or\n    gemini-cli or genaiscript or gpt4all or grok or jan or koboldcpp or llama-cli or\n    llama-server or lmstudio or npx or ollama or pnpm or qwen or textgen or windsurf or yarn\n) and destination.domain:(* and not (\n    aka.ms or anthropic.com or atlassian.com or cursor.com or cursor.sh or github.com or\n    gpt4all.io or hf.co or huggingface.co or lmstudio.ai or localhost or ollama.ai or\n    ollama.com or openai.com or *.aka.ms or *.akamaized.net or *.amazonaws.com or\n    *.amplitude.com or *.anthropic.com or *.atlassian.com or *.aws.amazon.com or\n    *.azure.com or *.cdn.cloudflare.net or *.cloudflare-dns.com or *.cloudflare.com or\n    *.cloudflarestorage.com or *.codeium.com or *.cursor.com or *.cursor.sh or\n    *.datadoghq.com or *.elastic-cloud.com or *.elastic.co or *.exp-tas.com or\n    *.gemini.google.com or *.generativelanguage.googleapis.com or *.github.com or\n    *.githubcopilot.com or *.githubusercontent.com or *.gitkraken.com or *.gitkraken.dev or\n    *.google.com or *.googleapis.com or *.gpt4all.io or *.grok.x.ai or *.hf.co or\n    *.honeycomb.io or *.huggingface.co or *.intercom.io or *.jan.ai or *.launchdarkly.com or\n    *.lmstudio.ai or *.microsoft.com or *.mixpanel.com or *.msedge.net or *.npmjs.com or\n    *.npmjs.org or *.ollama.ai or *.ollama.com or *.openai.com or *.pypi.org or\n    *.r2.cloudflarestorage.com or *.segment.io or *.sentry.io or *.visualstudio.com or\n    *.vsassets.io or *.vscode-cdn.net or *.windsurf.ai or *.x.ai or *.yarnpkg.com\n))\n",
+        "references": [
+            "https://atlas.mitre.org/techniques/AML.T0086",
+            "https://glama.ai/blog/2025-11-11-the-lethal-trifecta-securing-model-context-protocol-against-data-flow-attacks",
+            "https://www.elastic.co/security-labs/elastic-advances-llm-security",
+            "https://specterops.io/blog/2025/11/21/an-evening-with-claude-code"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9050506c-df6d-4bdf-bc82-fcad0ef1e8c1",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Domain: LLM",
+            "Mitre Atlas: T0086"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/",
+                        "subtechnique": [
+                            {
+                                "id": "T1071.001",
+                                "name": "Web Protocols",
+                                "reference": "https://attack.mitre.org/techniques/T1071/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "9050506c-df6d-4bdf-bc82-fcad0ef1e8c1_1",
+    "type": "security-rule"
+}

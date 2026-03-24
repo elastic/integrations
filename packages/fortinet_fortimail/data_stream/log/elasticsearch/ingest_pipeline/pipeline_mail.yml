@@ -2,45 +2,55 @@
 description: Pipeline for processing Mail logs.
 processors:
   - set:
+      tag: set_event_category_98057b5a
       field: event.category
       value: [email]
       override: true
   - set:
+      tag: set_event_outcome_bc82a5f8
       field: event.outcome
       value: success
       if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail' && ctx.temp?.status.toLowerCase() == 'success'
   - set:
+      tag: set_event_outcome_4d7fed36
       field: event.outcome
       value: failure
       if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail' && ctx.temp?.status.toLowerCase() == 'failure'
   - append:
+      tag: append_event_category_4b6ee264
       field: event.category
       value: 'authentication'
       if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail'
       allow_duplicates: false
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - append:
+      tag: append_event_type_2ff73bea
       field: event.type
       value: 'end'
       if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail'
   - append:
+      tag: append_fortinet_fortimail_log_user_2f9ddf12
       field: fortinet_fortimail.log.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - append:
+      tag: append_user_name_9b60aa7e
       field: user.name
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - append:
+      tag: append_related_user_4554486e
       field: related.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - grok:
+      tag: grok_message_affe3e37
       field: message
       if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail'
       patterns:
@@ -51,58 +61,71 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_ip_bf78f00c
       field: related.ip
       value: '{{{fortinet_fortimail.log.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.ip != null
   - append:
+      tag: append_fortinet_fortimail_log_user_2f9ddf13
       field: fortinet_fortimail.log.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - append:
+      tag: append_user_name_9b60aa7f
       field: user.name
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - append:
+      tag: append_related_user_4554486f
       field: related.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - rename:
+      tag: rename_temp_action_to_fortinet_fortimail_log_action_d1d0a68f
       field: temp.action
       target_field: fortinet_fortimail.log.action
       ignore_missing: true
   - set:
+      tag: set_event_action_fac205d4
       field: event.action
       copy_from: fortinet_fortimail.log.action
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_module_to_fortinet_fortimail_log_module_fb389af3
       field: temp.module
       target_field: fortinet_fortimail.log.module
       ignore_missing: true
   - rename:
+      tag: rename_temp_reason_to_fortinet_fortimail_log_reason_a448343f
       field: temp.reason
       target_field: fortinet_fortimail.log.reason
       ignore_missing: true
   - rename:
+      tag: rename_temp_session_id_to_fortinet_fortimail_log_session_id_c4b20db7
       field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
   - rename:
+      tag: rename_temp_status_to_fortinet_fortimail_log_status_b34786cf
       field: temp.status
       target_field: fortinet_fortimail.log.status
       ignore_missing: true
   - rename:
+      tag: rename_temp_submodule_to_fortinet_fortimail_log_sub_module_b2295dde
       field: temp.submodule
       target_field: fortinet_fortimail.log.sub_module
       ignore_missing: true
   - rename:
+      tag: rename_temp_ui_to_fortinet_fortimail_log_ui_ecc5d28f
       field: temp.ui
       target_field: fortinet_fortimail.log.ui
       ignore_missing: true
   - grok:
+      tag: grok_fortinet_fortimail_log_ui_cfbad394
       field: fortinet_fortimail.log.ui
       ignore_missing: true
       patterns:
@@ -113,23 +136,28 @@ processors:
         PROTOCOL: SSH|telnet|ssh|http|HTTP
       ignore_failure: true
   - set:
+      tag: set_source_ip_a1237bd8
       field: source.ip
       copy_from: fortinet_fortimail.log.ui_ip
       ignore_empty_value: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_bace2435
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
   - append:
+      tag: append_related_ip_f8ea089a
       field: related.ip
       value: '{{{fortinet_fortimail.log.ui_ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.ui_ip != null
   - set:
+      tag: set_network_protocol_5da2dd0c
       field: network.protocol
       copy_from: fortinet_fortimail.log.network
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_network_protocol_49872259
       field: network.protocol
       ignore_missing: true
 on_failure:
@@ -138,4 +166,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a single Okta device token hash (dt_hash) is associated with multiple operating system types. This is highly anomalous because a device token is tied to a specific device and its operating system. This alert strongly indicates that an attacker has stolen a device token and is using it to impersonate a legitimate user from a different machine.",
+        "false_positives": [
+            "Applications will tag the operating system as null when the device is not recognized as a managed device. In environments where users frequently switch between managed and unmanaged devices, this may lead to false positives."
+        ],
+        "from": "now-60m",
+        "index": [
+            "logs-okta.system-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "okta.debug_context.debug_data.dt_hash",
+                "user.email",
+                "source.ip",
+                "user_agent.os.name",
+                "event.action"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Okta Multiple OS Names Detected for a Single DT Hash",
+        "note": "## Triage and analysis\n\n### Investigating Okta Multiple OS Names Detected for a Single DT Hash\n\nThis rule detects when a single Okta device token hash (dt_hash) is associated with multiple operating system types. This is highly anomalous because a device token is tied to a specific device and its operating system. This alert strongly indicates that an attacker has stolen a device token token and is using it to impersonate a legitimate user from a different machine.\n\n### Possible investigation steps\n- Review the `okta.debug_context.debug_data.dt_hash` field to identify the specific device\ntrust hash associated with multiple operating systems.\n- Examine the `user.email` field to determine which user account is associated with the suspicious activity\n- Analyze the `source.ip` field to identify the IP addresses from which the different operating systems were reported. Look for any unusual or unexpected locations.\n- Review the `user_agent.os.name` field to see the different operating systems reported for the\nsame dt_hash. This will help identify the nature of the anomaly.\n- Check the `event.action` field to understand the context of the authentication events (e.g., MFA verification, standard authentication).\n- Investigate the timeline of events to see when the different operating systems were reported for the same dt_hash. Look for patterns or sequences that may indicate malicious activity.\n- Correlate this activity with other security events in your environment, such as failed login attempts, unusual access patterns, or alerts from endpoint security solutions.\n\n### False positive analysis\n- Applications will tag the operating system as null when the device is not recognized as a managed device\n- In environments where users frequently switch between managed and unmanaged devices, this may lead to false positives.\n\n### Response and remediation\n- Immediately investigate the user account associated with the suspicious activity to determine if it has been compromised.\n- If compromise is confirmed, reset the user's credentials and enforce multi-factor authentication (MFA)\n- Revoke any active sessions associated with the compromised account to prevent further unauthorized access.\n- Review and monitor the affected dt_hash for any further suspicious activity.\n- Educate users about the importance of device security and the risks associated with device tokens.\n- Implement additional monitoring for device token tokens and consider using conditional access policies to restrict access based on device compliance status.\n",
+        "query": "data_stream.dataset: \"okta.system\"\n    and not okta.debug_context.debug_data.dt_hash: \"-\"\n    and user_agent.os.name: *\n    and event.action: (\n        \"user.authentication.verify\" or\n        \"user.authentication.auth_via_mfa\"\n    )\n",
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "okta.debug_context.debug_data.dt_hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.os.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "fb3ca230-af4e-11f0-900d-f661ea17fbcc",
+        "severity": "high",
+        "tags": [
+            "Domain: Identity",
+            "Data Source: Okta",
+            "Data Source: Okta System Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "user_agent.os.name",
+                    "value": 2
+                }
+            ],
+            "field": [
+                "okta.debug_context.debug_data.dt_hash"
+            ],
+            "value": 1
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 1
+    },
+    "id": "fb3ca230-af4e-11f0-900d-f661ea17fbcc_1",
+    "type": "security-rule"
+}

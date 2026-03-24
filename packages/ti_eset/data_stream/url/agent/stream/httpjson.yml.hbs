@@ -44,8 +44,9 @@ response.pagination:
   - set:
       target: url.params.added_after
       value: >-
-        [[ if .last_response.body.more ]][[ .last_response.header.Get "X-TAXII-Date-Added-Last" ]][[ end ]]
+        [[ if index .last_response.body "more" ]][[ if .last_response.body.more ]][[ .last_response.header.Get "X-TAXII-Date-Added-Last" ]][[ end ]][[ end ]]
       fail_on_template_error: true
+      do_not_log_failure: true
 
 response.split:
   target: body.objects

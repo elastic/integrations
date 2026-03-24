@@ -26,6 +26,12 @@ processors:
     field: message
     format: auto
     timezone: "{{tz_offset}}"
+- drop_event:
+    when:
+      and:
+        - not:
+            has_fields: ['log.syslog.priority']
+        - has_fields: ['error.message']
 {{#if processors}}
 {{processors}}
 {{/if}}

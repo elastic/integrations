@@ -2,230 +2,283 @@
 description: Pipeline for parsing fortinet firewall logs (traffic pipeline)
 processors:
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - set:
+    tag: set_event_action_d2842801
     field: event.action
     value: "{{{fortinet.firewall.action}}}"
     ignore_empty_value: true
 - set:
+    tag: set_event_outcome_e219d8f1
     field: event.outcome
     value: success
     if: ctx.fortinet?.firewall?.action != null
 - append:
+    tag: append_event_category_7afdca3c
     field: event.category
     value: network
 - append:
+    tag: append_event_type_ab8d9d0e
     field: event.type
     value: connection
 - append:
+    tag: append_event_type_7a3e52b1
     field: event.type
     value: start
     if: ctx.fortinet?.firewall?.action == 'start'
 - append:
+    tag: append_event_type_95005a3f
     field: event.type
     value: end
     if: ctx.fortinet?.firewall?.action != null && ctx.fortinet?.firewall?.action !='start'
 - append:
+    tag: append_event_type_a0c004ed
     field: event.type
     value: protocol
     if: ctx.fortinet?.firewall?.app != null && ctx.fortinet?.firewall?.action != 'deny'
 - append:
+    tag: append_event_type_b0751c98
     field: event.type
     value: allowed
     if: ctx.fortinet?.firewall?.utmaction == null && ctx.fortinet?.firewall?.action != 'deny'
 - append:
+    tag: append_event_type_4099186f
     field: event.type
     value: denied
     if: ctx.fortinet?.firewall?.utmaction == 'block' || ctx.fortinet?.firewall?.action == 'deny'
 - rename:
+    tag: rename_fortinet_firewall_dstip_to_destination_ip_72bf25a6
     field: fortinet.firewall.dstip
     target_field: destination.ip
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_tranip_to_destination_nat_ip_7b6fb54b
     field: fortinet.firewall.tranip
     target_field: destination.nat.ip
     type: ip
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_fortinet_firewall_tranip_c5cd8948
           field: fortinet.firewall.tranip
       - append:
+          tag: append_error_message_7bacc1e0
           field: error.message
           value: '{{{_ingest.on_failure_message}}}'
 - convert:
+    tag: convert_fortinet_firewall_dstport_to_destination_port_37791676
     field: fortinet.firewall.dstport
     target_field: destination.port
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_tranport_to_destination_nat_port_0a1cdcdb
     field: fortinet.firewall.tranport
     target_field: destination.nat.port
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_rcvddelta_fbf14766
     field: fortinet.firewall.rcvddelta
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_rcvdbyte_to_destination_bytes_65439a41
     field: fortinet.firewall.rcvdbyte
     target_field: destination.bytes
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_rcvdpkt_to_destination_packets_523a1dfa
     field: fortinet.firewall.rcvdpkt
     target_field: destination.packets
     type: long
     ignore_failure: true
     ignore_missing: true
 - append:
+    tag: append_email_to_address_20a3bc20
     field: email.to.address
     value: "{{{fortinet.firewall.dstcollectedemail}}}"
     if: ctx.fortinet?.firewall?.dstcollectedemail != null
 - rename:
+    tag: rename_fortinet_firewall_dstname_to_destination_address_55c832a1
     field: fortinet.firewall.dstname
     target_field: destination.address
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_dstunauthuser_to_destination_user_name_379463a0
     field: fortinet.firewall.dstunauthuser
     target_field: destination.user.name
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_group_to_source_user_group_name_8ef934c4
     field: fortinet.firewall.group
     target_field: source.user.group.name
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_sentdelta_5e362e81
     field: fortinet.firewall.sentdelta
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_sentbyte_to_source_bytes_fe52ad03
     field: fortinet.firewall.sentbyte
     target_field: source.bytes
     type: long
     ignore_failure: true
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_srcdomain_to_source_domain_0f9ec89a
     field: fortinet.firewall.srcdomain
     target_field: source.domain
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_srcip_to_source_ip_79344114
     field: fortinet.firewall.srcip
     target_field: source.ip
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_srcmac_to_source_mac_bfde8f82
     field: fortinet.firewall.srcmac
     target_field: source.mac
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_srcport_to_source_port_dbc962e4
     field: fortinet.firewall.srcport
     target_field: source.port
     type: long
     ignore_failure: true
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_unauthuser_to_source_user_name_45077c3a
     field: fortinet.firewall.unauthuser
     target_field: source.user.name
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_user_to_source_user_name_5bbf0229
     field: fortinet.firewall.user
     target_field: source.user.name
     ignore_missing: true
     if: ctx.source?.user?.name == null
 - append:
+    tag: append_email_from_address_bc766c69
     field: email.from.address
     value: "{{{fortinet.firewall.collectedemail}}}"
     if: ctx.fortinet?.firewall?.collectedemail != null
 - convert:
+    tag: convert_fortinet_firewall_sentpkt_to_source_packets_ada35c44
     field: fortinet.firewall.sentpkt
     target_field: source.packets
     type: long
     ignore_failure: true
     ignore_missing: true
 - convert:
+    tag: convert_fortinet_firewall_transip_to_source_nat_ip_c36fcafa
     field: fortinet.firewall.transip
     target_field: source.nat.ip
     type: ip
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_fortinet_firewall_transip_91f00e56
           field: fortinet.firewall.transip
       - append:
+          tag: append_error_message_421bc80b
           field: error.message
           value: '{{{_ingest.on_failure_message}}}'
 - convert:
+    tag: convert_fortinet_firewall_transport_to_source_nat_port_06b4f995
     field: fortinet.firewall.transport
     target_field: source.nat.port
     type: long
     ignore_failure: true
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_app_to_network_application_352bb492
     field: fortinet.firewall.app
     target_field: network.application
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_filename_to_file_name_d7a6e0d3
     field: fortinet.firewall.filename
     target_field: file.name
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_logid_to_event_code_d1ce9848
     field: fortinet.firewall.logid
     target_field: event.code
     ignore_missing: true
     if: ctx.event?.code == null
 - rename:
+    tag: rename_fortinet_firewall_msg_to_message_18251f47
     field: fortinet.firewall.msg
     target_field: message
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_comment_to_rule_description_09652b08
     field: fortinet.firewall.comment
     target_field: rule.description
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_policyid_to_rule_id_220b73f8
     field: fortinet.firewall.policyid
     target_field: rule.id
     ignore_missing: true
     if: ctx.rule?.id == null
 - rename:
+    tag: rename_fortinet_firewall_poluuid_to_rule_uuid_67e505b2
     field: fortinet.firewall.poluuid
     target_field: rule.uuid
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_policytype_to_rule_ruleset_1b162d39
     field: fortinet.firewall.policytype
     target_field: rule.ruleset
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_policyname_to_rule_name_d59c3713
     field: fortinet.firewall.policyname
     target_field: rule.name
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_appcat_to_rule_category_89544502
     field: fortinet.firewall.appcat
     target_field: rule.category
     ignore_missing: true
 - gsub:
+    tag: gsub_rule_category_90e9a3c8
     field: rule.category
     pattern: "\\."
     replacement: "-"
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_proto_to_network_iana_number_930125ae
     field: fortinet.firewall.proto
     target_field: network.iana_number
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_service_to_network_protocol_c028ec88
     field: fortinet.firewall.service
     target_field: network.protocol
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_srcthreatfeed_to_threat_feed_name_9d1d1b8e
     field: fortinet.firewall.srcthreatfeed
     target_field: threat.feed.name
     ignore_missing: true
 - lowercase:
+    tag: lowercase_network_protocol_49872259
     field: network.protocol
     ignore_missing: true
 - uri_parts:
+    tag: uri_parts_fortinet_firewall_url_to_url_e619068b
     field: fortinet.firewall.url
     target_field: url
     keep_original: false
@@ -241,9 +294,11 @@ processors:
     lang: painless
     source: ctx.fortinet.firewall.deltabytes = ctx.fortinet.firewall.rcvddelta + ctx.fortinet.firewall.sentdelta
 - remove:
+    tag: remove_fortinet_firewall_url_5d47c5fc
     field: fortinet.firewall.url
     ignore_missing: true
 - remove:
+    tag: remove_11027338
     field:
     - fortinet.firewall.dstport
     - fortinet.firewall.tranport
@@ -260,4 +315,12 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

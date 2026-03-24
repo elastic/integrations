@@ -1,15 +1,16 @@
 version: '2.3'
 services:
   ping-one-audit-http-endpoint:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
       - STREAM_ADDR=http://elastic-agent:9577/
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/audit.log
   ping_one:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     hostname: ping_one
     ports:
       - 8080

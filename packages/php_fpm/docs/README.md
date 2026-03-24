@@ -35,7 +35,7 @@ In order to ingest data from PHP-FPM, you must know the host(s) and status path 
 
 Host configuration format: `http[s]://host[:port]`
 
-Example host configuration: `http://localhost:8080`
+Example host configuration: `http://example.com:8080`
 
 Status path configuration format: `/path`
 

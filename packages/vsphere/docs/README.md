@@ -37,7 +37,7 @@ Data Streams:
     - Since the performance API has usage restrictions based on data collection intervals, users should ensure that the period is configured optimally to receive real-time data. Users can still collect summary metrics if performance metrics are not supported for the configured instance.
     - Period configuration can be determined based on the [Data Collection Intervals](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html) and [Data Collection Levels](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html).
 
-## Prerequisites
+## What do I need to use this integration?
 
 You can store and search your data using Elasticsearch and visualize and manage it with Kibana. We recommend using our hosted Elasticsearch Service on Elastic Cloud or self-managing the Elastic Stack on your own hardware.
 
@@ -294,6 +294,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.cluster.name | Cluster name. | keyword |  |
 | vsphere.cluster.network.count | Number of networks associated with the cluster. | long | gauge |
 | vsphere.cluster.network.names | List of all the network names associated with the cluster. | keyword |  |
+| vsphere.cluster.resourcepool.id | ID of resource pool associated with the cluster. | keyword |  |
 | vsphere.cluster.triggered_alarms.description | Description of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |

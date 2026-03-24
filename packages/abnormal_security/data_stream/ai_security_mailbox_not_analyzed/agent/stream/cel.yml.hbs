@@ -48,7 +48,7 @@ program: |
         "Authorization": ["Bearer " + string(state.access_token)],
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
-        resp.Body.decode_json().as(body, has(body.results) && size(body.results) > 0 ?
+        resp.Body.decode_json_string_numbers().as(body, has(body.results) && size(body.results) > 0 ?
           {
             "events": body.results.map(result,
               {

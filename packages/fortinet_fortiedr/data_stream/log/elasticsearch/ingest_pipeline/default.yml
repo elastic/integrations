@@ -2,21 +2,27 @@
 description: Pipeline for Fortinet FortiEDR Endpoint Detection and Response
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_observer_vendor_7e57c221
       field: observer.vendor
       value: Fortinet
   - set:
+      tag: set_observer_product_021ae16c
       field: observer.product
       value: FortiEDR
   - set:
+      tag: set_observer_type_d173ab65
       field: observer.type
       value: edr
   - set:
+      tag: set_event_category_36016f0f
       field: event.category
       value: malware
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -26,6 +32,7 @@ processors:
   # This populates the host.hostname, process.name, timestamp and other fields
   # from the header and stores the message contents in _temp_.full_message.
   - grok:
+      tag: grok_event_original_cd3ce7b9
       field: event.original
       patterns:
         - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
@@ -38,12 +45,14 @@ processors:
         HOST_PROCESS_MSG: "(?:-|%{SYSLOGHOST:log.syslog.hostname}) (?:-|%{PROCESS:log.syslog.appname}) (?:-|%{POSINT:log.syslog.procid}) (?:-|%{NOTSPACE:log.syslog.msgid})"
         PROCESS: "(?:[^%\\s:\\[]+)"
   - date:
+      tag: date__temp__raw_date_to_@timestamp_829b2f69
       if: ctx._temp_?.raw_date != null
       field: _temp_.raw_date
       target_field: "@timestamp"
       formats:
         - ISO8601
   - script:
+      tag: script_4a9d0c10
       lang: painless
       source: |
         if (ctx.log?.syslog?.priority != null) {
@@ -56,6 +65,7 @@ processors:
         }
   # Get FortiEDR fields
   - kv:
+      tag: kv__temp__full_message_to_fortinet_edr_1f579157
       field: _temp_.full_message
       target_field: fortinet.edr
       field_split: ";"
@@ -65,134 +75,172 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_fortinet_edr_Action_to_fortinet_edr_action_35599e37
       field: "fortinet.edr.Action"
       target_field: fortinet.edr.action
   - rename:
+      tag: rename_fortinet_edr_Autonomous_System_to_fortinet_edr_autonomous_system_39cbe4f8
       field: "fortinet.edr.Autonomous System"
       target_field: fortinet.edr.autonomous_system
   - rename:
+      tag: rename_fortinet_edr_Certificate_to_fortinet_edr_certificate_b250c7d7
       field: "fortinet.edr.Certificate"
       target_field: fortinet.edr.certificate
   - rename:
+      tag: rename_fortinet_edr_Classification_to_fortinet_edr_classification_017c02c3
       field: "fortinet.edr.Classification"
       target_field: fortinet.edr.classification
   - rename:
+      tag: rename_fortinet_edr_Count_to_fortinet_edr_count_61261977
       field: "fortinet.edr.Count"
       target_field: fortinet.edr.count
   - rename:
+      tag: rename_fortinet_edr_Country_to_fortinet_edr_country_e678e3c3
       field: "fortinet.edr.Country"
       target_field: fortinet.edr.country
   - rename:
+      tag: rename_fortinet_edr_Destination_to_fortinet_edr_destination_52d05a37
       field: "fortinet.edr.Destination"
       target_field: fortinet.edr.destination
   - rename:
+      tag: rename_fortinet_edr_Device_Name_to_fortinet_edr_device_name_cde7b780
       field: "fortinet.edr.Device Name"
       target_field: fortinet.edr.device_name
   - rename:
+      tag: rename_fortinet_edr_Event_ID_to_fortinet_edr_event_id_7626f88a
       field: "fortinet.edr.Event ID"
       target_field: fortinet.edr.event_id
   - rename:
+      tag: rename_fortinet_edr_First_Seen_to_fortinet_edr_first_seen_996ed276
       field: "fortinet.edr.First Seen"
       target_field: fortinet.edr.first_seen
   - rename:
+      tag: rename_fortinet_edr_Last_Seen_to_fortinet_edr_last_seen_18134fa4
       field: "fortinet.edr.Last Seen"
       target_field: fortinet.edr.last_seen
   - rename:
+      tag: rename_fortinet_edr_MAC_Address_to_fortinet_edr_mac_address_1efb5ac2
       field: "fortinet.edr.MAC Address"
       target_field: fortinet.edr.mac_address
   - rename:
+      tag: rename_fortinet_edr_Operating_System_to_fortinet_edr_operating_system_f598a6f0
       field: "fortinet.edr.Operating System"
       target_field: fortinet.edr.operating_system
   - rename:
+      tag: rename_fortinet_edr_Organization_to_fortinet_edr_organization_06a21789
       field: "fortinet.edr.Organization"
       target_field: fortinet.edr.organization
   - rename:
+      tag: rename_fortinet_edr_Organization_ID_to_fortinet_edr_organization_id_07371d10
       field: "fortinet.edr.Organization ID"
       target_field: fortinet.edr.organization_id
   - rename:
+      tag: rename_fortinet_edr_Process_Name_to_fortinet_edr_process_name_dc7a1cd4
       field: "fortinet.edr.Process Name"
       target_field: fortinet.edr.process_name
   - rename:
+      tag: rename_fortinet_edr_Process_Path_to_fortinet_edr_process_path_bfe8b920
       field: "fortinet.edr.Process Path"
       target_field: fortinet.edr.process_path
   - rename:
+      tag: rename_fortinet_edr_Process_Type_to_fortinet_edr_process_type_bbe737a6
       field: "fortinet.edr.Process Type"
       target_field: fortinet.edr.process_type
   - rename:
+      tag: rename_fortinet_edr_Raw_Data_ID_to_fortinet_edr_raw_data_id_64467335
       field: "fortinet.edr.Raw Data ID"
       target_field: fortinet.edr.raw_data_id
   - rename:
+      tag: rename_fortinet_edr_Rules_List_to_fortinet_edr_rules_list_c59abb2e
       field: "fortinet.edr.Rules List"
       target_field: fortinet.edr.rules_list
   - rename:
+      tag: rename_fortinet_edr_Script_to_fortinet_edr_script_d0bb93b5
       field: "fortinet.edr.Script"
       target_field: fortinet.edr.script
   - rename:
+      tag: rename_fortinet_edr_Script_Path_to_fortinet_edr_script_path_4aae1f50
       field: "fortinet.edr.Script Path"
       target_field: fortinet.edr.script_path
   - rename:
+      tag: rename_fortinet_edr_Severity_to_fortinet_edr_severity_c5d4dfa9
       field: "fortinet.edr.Severity"
       target_field: fortinet.edr.severity
   - rename:
+      tag: rename_fortinet_edr_Users_to_fortinet_edr_users_d370e51b
       field: "fortinet.edr.Users"
       target_field: fortinet.edr.users
   # Map to ECS fields
   - set:
+      tag: set_event_id_a4647cb7
       field: event.id
       copy_from: fortinet.edr.event_id
       if: ctx.fortinet?.edr?.event_id != null
   - set:
+      tag: set_event_action_f6e21da8
       field: event.action
       copy_from: fortinet.edr.action
       if: ctx.fortinet?.edr?.action != null
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - set:
+      tag: set_host_hostname_c6ee9f9c
       field: host.hostname
       copy_from: fortinet.edr.device_name
       if: ctx.fortinet?.edr?.device_name != null && ctx.fortinet.edr.device_name != "N/A"
   - set:
+      tag: set_host_os_full_cb6ed2c5
       field: host.os.full
       copy_from: fortinet.edr.operating_system
       if: ctx.fortinet?.edr?.operating_system != null && ctx.fortinet.edr.operating_system != "N/A"
   - append:
+      tag: append_related_hosts_06cfcc6e
       field: related.hosts
       value:
         - '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
   - append:
+      tag: append_related_hosts_09fefffb
       field: related.hosts
       value:
         - '{{{log.syslog.hostname}}}'
       if: ctx.log?.syslog?.hostname != null
   - append:
+      tag: append_host_mac_82405959
       field: host.mac
       value: '{{{fortinet.edr.mac_address}}}'
       if: ctx.fortinet?.edr?.mac_address != null && ctx.fortinet.edr.mac_address != "N/A"
   - set:
+      tag: set_user_id_b4e1deff
       field: user.id
       copy_from: fortinet.edr.users
       if: ctx.fortinet?.edr?.users != null && ctx.fortinet.edr.users != "N/A"
   - set:
+      tag: set_process_name_fd547906
       field: process.name
       copy_from: fortinet.edr.process_name
       if: ctx.fortinet?.edr?.process_name != null && ctx.fortinet.edr.process_name != "N/A"
   - set:
+      tag: set_process_executable_cfcf1f21
       field: process.executable
       copy_from: fortinet.edr.process_path
       if: ctx.fortinet?.edr?.process_path != null && ctx.fortinet.edr.process_path != "N/A"
   - append:
+      tag: append_related_user_256d2798
       field: related.user
       value:
         - '{{{user.id}}}'
       if: ctx.user?.id != null
   - append:
+      tag: append_related_hosts_018c6b42
       field: related.hosts
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null && ctx.host?.name != ''
   - date:
+      tag: date_fortinet_edr_first_seen_to_fortinet_edr_first_seen_b7d71a2b
       if: ctx.fortinet?.edr?.first_seen != null
       field: fortinet.edr.first_seen
       target_field: fortinet.edr.first_seen
@@ -204,10 +252,12 @@ processors:
         - "MMM d yyyy HH:mm:ss z"
         - "MMM d yyyy HH:mm:ss"
   - set:
+      tag: set_event_start_f62a8a60
       field: event.start
       copy_from: fortinet.edr.first_seen
       if: ctx.fortinet?.edr?.first_seen != null
   - date:
+      tag: date_fortinet_edr_last_seen_to_fortinet_edr_last_seen_754580b9
       if: ctx.fortinet?.edr?.last_seen != null
       field: fortinet.edr.last_seen
       target_field: fortinet.edr.last_seen
@@ -219,17 +269,33 @@ processors:
         - "MMM d yyyy HH:mm:ss z"
         - "MMM d yyyy HH:mm:ss"
   - set:
+      tag: set_event_end_8b3b4ca3
       field: event.end
       copy_from: fortinet.edr.last_seen
       if: ctx.fortinet?.edr?.last_seen != null
   - remove:
+      tag: remove_4282d280
       field:
         - _temp_
       ignore_failure: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

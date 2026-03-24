@@ -30,19 +30,20 @@ You can monitor and view logs from the ingested documents for Nagios XI in the `
 
 This integration has been tested against `Nagios-XI Version: 5.8.7`
 
-## Prerequisites:
-- Elasticsearch: For storing and searching data.
-- Kibana: For visualizing and managing data.
+## What do I need to use this integration?
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
 You have two options for deploying Elasticsearch and Kibana:
-1. Elastic Cloud (Recommended): Fully managed and hosted by Elastic.
-2. Self-Managed: Deploy and manage the Elastic Stack on your own hardware.
 
-In order to ingest data from Nagios XI, you must know the host for Nagios XI and add that host when configuring the integration package.
+-  Elastic Cloud (Recommended): Fully managed and hosted by Elastic.
+-  Self-Managed: Deploy and manage the Elastic Stack on your own hardware.
+
+To ingest data from Nagios XI, you must know the host for Nagios XI and add that host when configuring the integration package.
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, check the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Validation
 
@@ -139,7 +140,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Metrics reference
 
-### Host Metrics
+### Host metrics
 
 This is the `host` data stream.
 
@@ -326,7 +327,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | nagios_xi.host.status_update_time | Refers to the timestamp or time of the most recent status update for a host. It indicates the time when the current status of the object was last updated. | date |
 
 
-### Service Metrics
+### Service metrics
 
 This is the `service` dataset.
 
@@ -444,7 +445,7 @@ An example event for `service` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 

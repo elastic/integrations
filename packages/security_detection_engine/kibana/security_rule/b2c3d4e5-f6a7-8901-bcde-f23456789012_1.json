@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "Detects child process execution from GenAI tools or MCP (Model Context Protocol) servers. Adversaries exploit AI agents to execute system commands, exfiltrate data, or establish persistence. MCP servers provide LLMs direct access to execute shell commands, read files, and interact with external services. This building block provides visibility into AI-initiated process execution for correlation with other suspicious activity.",
+        "from": "now-119m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "interval": "60m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "GenAI or MCP Server Child Process Execution",
+        "query": "process where event.type == \"start\" \n  and (\n    // GenAI clients\n    process.parent.name in (\n      \"Cursor\", \"Cursor.exe\", \"cursor\",\n      \"Cursor Helper\", \"Cursor Helper (Plugin)\", \"Cursor Helper (GPU)\", \"Cursor Helper (Renderer)\",\n      \"Claude\", \"Claude.exe\", \"claude\",\n      \"Claude Helper\", \"Claude Helper (Plugin)\", \"Claude Helper (GPU)\", \"Claude Helper (Renderer)\",\n      \"Windsurf\", \"Windsurf.exe\", \"windsurf\",\n      \"Windsurf Helper\", \"Windsurf Helper (Plugin)\", \"Windsurf Helper (GPU)\", \"Windsurf Helper (Renderer)\",\n      \"Code\", \"Code.exe\", \"code\",\n      \"Code Helper\", \"Code Helper (Plugin)\", \"Code Helper (GPU)\", \"Code Helper (Renderer)\",\n      \"codex\", \"codex.exe\",\n      \"Copilot\", \"Copilot.exe\", \"copilot\",\n      \"Jan\", \"Jan.exe\", \"jan\",\n      \"Jan Helper\", \"Jan Helper (Plugin)\", \"Jan Helper (GPU)\", \"Jan Helper (Renderer)\",\n      \"LM Studio\", \"LM Studio.exe\", \"lmstudio\",\n      \"Ollama\", \"Ollama.exe\", \"ollama\",\n      \"GPT4All\", \"gpt4all\", \"gpt4all.exe\",\n      \"textgen.exe\", \"textgen\", \"text-generation-webui.exe\", \"oobabooga.exe\",\n      \"gemini-cli.exe\", \"gemini-cli\",\n      \"genaiscript.exe\", \"genaiscript\",\n      \"grok.exe\", \"grok\",\n      \"qwen.exe\", \"qwen\",\n      \"koboldcpp.exe\", \"koboldcpp\", \"KoboldCpp\",\n      \"llama-server\", \"llama-cli\"\n    ) or\n    // Package managers running MCP servers\n    (process.parent.name in (\"npx\", \"npx.exe\", \"pnpm\", \"pnpm.exe\", \"yarn\", \"yarn.exe\", \"bunx\", \"bunx.exe\") and\n     process.parent.command_line like~ (\"*@modelcontextprotocol/*\", \"*mcp-server-*\", \"*mcp_server*\")) or\n    \n    // Node/Deno/Bun running MCP servers\n    (process.parent.name in (\"node\", \"node.exe\", \"deno\", \"deno.exe\", \"bun\", \"bun.exe\") and\n     process.parent.command_line like~ (\"*@modelcontextprotocol/*\", \"*mcp-server-*\", \"*mcp_server*\")) or\n    \n    // Python MCP servers\n    (process.parent.name like~ \"python*\" and\n     process.parent.command_line like~ (\"*-m mcp_server*\", \"*mcp-server-*\", \"*mcp_server*\")) or\n    \n    // MCP server binaries\n    process.parent.name like~ (\"mcp-server*\", \"*-mcp-server\", \"*_mcp_server*\") or\n    process.parent.name in (\"mcp-server\", \"mcp-server-elastic-cloud\", \"github-mcp-server\")\n  )\n  and process.name != null\n  // Exclusions\n  and not (\n    // Runtime self-spawns\n    (process.parent.name in (\"node\", \"node.exe\") and process.name in (\"node\", \"node.exe\")) or\n    (process.parent.name like~ \"python*\" and process.name like~ \"python*\") or\n    (process.parent.name in (\"deno\", \"deno.exe\") and process.name in (\"deno\", \"deno.exe\")) or\n    (process.parent.name in (\"bun\", \"bun.exe\") and process.name in (\"bun\", \"bun.exe\")) or\n    \n    // Helper process self-spawns\n    (process.parent.name == \"Cursor\" and process.name like~ \"Cursor Helper*\") or\n    (process.parent.name == \"Claude\" and process.name like~ \"Claude Helper*\") or\n    (process.parent.name == \"Windsurf\" and process.name like~ \"Windsurf Helper*\") or\n    (process.parent.name == \"Code\" and process.name like~ \"Code Helper*\") or\n    (process.parent.name == \"Jan\" and process.name like~ \"Jan Helper*\") or\n    (process.parent.name == \"LM Studio\" and process.name like~ \"LM Studio Helper*\") or\n    (process.parent.name == \"Ollama\" and process.name like~ \"Ollama Helper*\") or\n    \n    // Version and help checks\n    process.args in (\"--version\", \"--help\", \"-v\", \"-h\", \"-V\", \"version\", \"help\")\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Rule Type: BBR",
+            "Domain: LLM",
+            "Mitre Atlas: T0053"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012_1",
+    "type": "security-rule"
+}

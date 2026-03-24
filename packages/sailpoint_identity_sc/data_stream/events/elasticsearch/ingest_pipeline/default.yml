@@ -1,8 +1,25 @@
 ---
 description: Pipeline for processing sailpoint identity security cloud events
 processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
   - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
       target_field: sailpoint_identity_sc.events
 
   - fingerprint:
@@ -67,10 +84,6 @@ processors:
       field: event.kind
       value: event
 
-  - set:
-      field: ecs.version
-      value: "8.11.0"
-
   - append:
       field: event.category
       value: iam
@@ -132,6 +145,7 @@ processors:
   - remove:
       field: sailpoint_identity_sc.events.ip_address
       if: ctx.sailpoint_identity_sc.events?.ip_address == "" 
+      ignore_missing: true
 
   - append:
       field: host.ip
@@ -145,11 +159,28 @@ processors:
       ignore_missing: true
       ignore_failure: true
  ################### Error Log fields ###################
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
+      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

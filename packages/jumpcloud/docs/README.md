@@ -255,11 +255,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2023-01-14T08:16:06.495Z",
     "agent": {
-        "ephemeral_id": "6bb5080e-3d3c-4b5c-8d62-af0f195b06c8",
-        "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e2d0afd0-0975-4fa9-9aba-651f43f2d8d4",
+        "id": "bac6d975-c0ec-4381-aeef-e1316762e2e5",
+        "name": "elastic-agent-32306",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "client": {
         "geo": {
@@ -278,16 +278,16 @@ An example event for `events` looks as following:
     },
     "data_stream": {
         "dataset": "jumpcloud.events",
-        "namespace": "ep",
+        "namespace": "38185",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
+        "id": "bac6d975-c0ec-4381-aeef-e1316762e2e5",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "admin_login_attempt",
@@ -295,10 +295,10 @@ An example event for `events` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-10-26T06:57:29.823Z",
+        "created": "2025-09-19T10:07:32.322Z",
         "dataset": "jumpcloud.events",
         "id": "63c264c6c1bd55c1b7e901a4",
-        "ingested": "2023-10-26T06:57:32Z",
+        "ingested": "2025-09-19T10:07:35Z",
         "module": "directory",
         "original": "{\"@version\":\"1\",\"changes\":[{\"field\":\"active\",\"to\":true},{\"field\":\"displayName\",\"to\":\"Willy Wonka\"},{\"field\":\"emails\",\"to\":[{\"primary\":true,\"type\":\"work\",\"value\":\"w.wonka@chocolate.biz\"}]},{\"field\":\"externalId\",\"to\":\"63ec9bba89a64e507ce0a4c2\"},{\"field\":\"schemas\",\"to\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"]}],\"client_ip\":\"81.2.69.144\",\"event_type\":\"admin_login_attempt\",\"geoip\":{\"continent_code\":\"OC\",\"country_code\":\"AU\",\"latitude\":-27.658,\"longitude\":152.8915,\"region_code\":\"QLD\",\"region_name\":\"Queensland\",\"timezone\":\"Australia/Brisbane\"},\"id\":\"63c264c6c1bd55c1b7e901a4\",\"initiated_by\":{\"email\":\"user.name@sub.domain.tld\",\"id\":\"123456789abcdef123456789\",\"type\":\"admin\"},\"mfa\":true,\"organization\":\"1234abcdef123456789abcde\",\"provider\":null,\"service\":\"directory\",\"success\":true,\"timestamp\":\"2023-01-14T08:16:06.495Z\",\"useragent\":{\"device\":\"Mac\",\"major\":\"109\",\"minor\":\"0\",\"name\":\"Chrome\",\"os\":\"Mac OS X\",\"os_full\":\"Mac OS X 10.15.7\",\"os_major\":\"10\",\"os_minor\":\"15\",\"os_name\":\"Mac OS X\",\"os_patch\":\"7\",\"os_version\":\"10.15.7\",\"patch\":\"0\",\"version\":\"109.0.0.0\"}}",
         "outcome": "success",

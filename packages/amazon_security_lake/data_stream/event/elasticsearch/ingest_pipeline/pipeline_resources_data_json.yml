@@ -1,0 +1,22 @@
+---
+description: Pipeline for processing resources that may have a data string
+processors:
+  - rename:
+      field: _ingest._value
+      target_field: _tmp_resource
+  - json:
+      field: _tmp_resource.data
+      if: ctx._tmp_resource?.data instanceof String
+      on_failure:
+        - rename:
+            field: _tmp_resource.data
+            target_field: _tmp_resource.data.value
+  - rename:
+      field: _tmp_resource.data
+      target_field: _tmp_resource.data.value
+      if: ctx._tmp_resource?.data != null && !(ctx._tmp_resource.data instanceof Map)
+  - set:
+      field: _ingest._value
+      copy_from: _tmp_resource
+  - remove:
+      field: _tmp_resource

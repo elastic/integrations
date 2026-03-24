@@ -1,0 +1,104 @@
+{
+    "attributes": {
+        "author": [
+            "Austin Songer",
+            "Elastic"
+        ],
+        "description": "Identifies when an Amazon EventBridge rule is disabled or deleted. EventBridge rules are commonly used to automate operational workflows and security-relevant routing (for example, forwarding events to Lambda, SNS/SQS, or security tooling). Disabling or deleting a rule can break critical integrations, suppress detections, and reduce visibility. Adversaries may intentionally impair EventBridge rules to disrupt monitoring, delay response, or hide follow-on actions.",
+        "false_positives": [
+            "EventBridge rules may be disabled or deleted during legitimate maintenance, refactoring, environment teardown, or migration to new event patterns/targets. Verify whether the initiating identity, user agent, and source host are expected to administer EventBridge and whether the change aligns with an approved change window or deployment."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EventBridge Rule Disabled or Deleted",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS EventBridge Rule Disabled or Deleted\n\nEventBridge rules define when events are matched and where they are delivered. Disabling or deleting a rule can interrupt\nautomation, break alerting pipelines, and create blind spots in detection coverage. In security-focused designs, EventBridge\nis frequently used to forward CloudTrail findings, Config/Security Hub events, GuardDuty findings, or application security\nsignals to downstream responders.\n\nThis rule detects successful `DisableRule` or `DeleteRule` actions. Depending on what the affected rule does, this activity\nmay indicate routine operational work or deliberate impairment of monitoring and response paths.\n\n### Possible investigation steps\n\n**Identify the actor and access path**\n- Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id` to determine which principal performed the change.\n- Review `user.name`, `user_agent.original`, and `source.ip` to understand how the action was performed (console vs CLI/SDK/automation) and from where.\n\n**Confirm what changed and what it impacts**\n- Use `aws.cloudtrail.request_parameters` to identify the rule name/ARN and whether the action was `DisableRule` or `DeleteRule`.\n- Determine what the rule was used for and assess blast radius:\n  - Was the rule on a shared event bus or a critical account/region?\n  - Was it a centralized \u201csecurity routing\u201d rule that aggregates events from many accounts?\n\n**Reconstruct timing and sequence**\n- Correlate `@timestamp` with surrounding CloudTrail activity for the same actor and the same rule name/ARN.\n- Look for companion actions that often occur with impairment attempts:\n  - IAM changes that expand permissions (`PutRolePolicy`, `AttachRolePolicy`, `UpdateAssumeRolePolicy`, access key creation).\n  - Changes that disable other telemetry or controls (CloudTrail changes, Config recorder stopped, GuardDuty/Security Hub changes).\n  - Follow-on actions against sensitive services immediately after the rule was disabled/deleted.\n\n**Validate authorization and change management**\n- Check whether the change aligns with a known deployment, infrastructure-as-code run, or approved change ticket. Confirm with the owning team whether the rule was intentionally disabled/deleted and whether there is a documented replacement.\n\n### False positive analysis\n\n- **Planned maintenance and refactoring**\n  - Rules may be removed during redesign of event patterns, target migrations, or application decommissioning.\n- **Infrastructure-as-code or automation**\n  - CI/CD pipelines and IaC (Terraform/CloudFormation/CDK) can disable/delete rules during drift correction or environment rotation.\n\n### Response and remediation\n\n**Restore visibility and business function**\n- If the rule is security- or business-critical, restore functionality immediately:\n  - Re-enable the rule if it was disabled.\n  - If deleted, recreate it from the last known-good baseline (IaC state, templates, or documented configuration).\n- Validate delivery by confirming new matching events reach intended targets (for example, downstream Lambda/SNS/SQS) and that monitoring pipelines resume.\n\n**Contain potential compromise**\n- If the actor is unexpected or the access path is suspicious:\n  - Restrict the principal\u2019s permissions to EventBridge and related services while you investigate (least-privilege containment).\n  - Rotate/disable credentials associated with `aws.cloudtrail.user_identity.access_key_id` when applicable.\n  - For assumed roles, investigate the originating principal and consider temporarily limiting role assumption via IAM conditions or trust policy changes.\n\n**Scope the incident**\n- Pivot in CloudTrail using the same `aws.cloudtrail.user_identity.arn`, access key, and `source.ip` to identify additional EventBridge rule modifications, changes to event buses, permissions, or resource policies that could enable unauthorized routing.\n- Determine whether the rule impairment created a monitoring gap and identify the time window of reduced visibility for retrospective review.\n\n**Hardening and prevention**\n- Reduce the likelihood of silent impairment:\n  - Restrict `events:DisableRule` and `events:DeleteRule` to a small set of administrative roles; use IAM conditions (for example, `aws:PrincipalArn`, `aws:RequestedRegion`, source VPC/IP conditions where appropriate).\n  - Consider AWS Organizations SCP guardrails in production accounts to limit destructive EventBridge changes.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "event.dataset: aws.cloudtrail \n    and event.provider: events.amazonaws.com \n    and event.action: (DeleteRule or DisableRule) \n    and event.outcome: success\n",
+        "references": [
+            "https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_DeleteRule.html",
+            "https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_DisableRule.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "87594192-4539-4bc4-8543-23bc3d5bd2b4",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS EventBridge",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1489",
+                        "name": "Service Stop",
+                        "reference": "https://attack.mitre.org/techniques/T1489/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 210
+    },
+    "id": "87594192-4539-4bc4-8543-23bc3d5bd2b4_210",
+    "type": "security-rule"
+}

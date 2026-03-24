@@ -12,6 +12,14 @@ Then, you could view real-time updates to disk space used on your system in Kiba
 You could also set up a new rule in the Elastic Observability Metrics app to alert you when the percent free is
 less than 10% of the total disk space.
 
+## Choosing the right integration for Windows event logs
+
+If you're collecting Windows event logs, note that there are three related integrations:
+
+- **System integration** (this integration): Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
+- **[Windows integration](https://www.elastic.co/docs/reference/integrations/windows)**: Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
+- **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel. Use this when you need to collect from channels not covered by the System or Windows integrations. Note that this integration does not include specialized ingest pipelines—you'll need to create custom pipelines if additional processing is required.
+  
 ## Data streams
 
 The System integration collects two types of data: logs and metrics.
@@ -367,10 +375,36 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "network"}}
 
+### NTP
+
+The System `ntp` data stream provides Network Time Protocol metrics (offsets) collected from the
+NTP servers. One event is created for NTP server.
+
+#### Supported operating systems
+
+- FreeBSD
+- Linux
+- macOS
+- OpenBSD
+- Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "ntp"}}
+
+{{event "ntp"}}
+
 ### Process
 
 The System `process` data stream provides process statistics. One document is
-provided for each process.
+provided for each process. 
+Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
 #### Supported operating systems
 
@@ -459,3 +493,6 @@ This data should be available without elevated permissions.
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "uptime"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}

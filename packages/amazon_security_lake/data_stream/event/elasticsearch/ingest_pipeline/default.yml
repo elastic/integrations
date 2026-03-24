@@ -83,12 +83,35 @@ processors:
           return null;
         }
         processFields(ctx.ocsf);
-  - rename:
-      field: ocsf.resource
-      target_field: ocsf.resources
-      tag: rename_resource_to_resources
+  - script:
+      description: Append resource to resources.
+      tag: script_ocsf_resources
+      lang: painless
+      if: ctx.ocsf?.resources == null && ctx.ocsf?.resource != null
+      source: |-
+        ctx.ocsf.resources = [ctx.ocsf.resource];
+        ctx.ocsf.remove('resource');
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.resources
       ignore_missing: true
-      if: ctx.ocsf?.resources == null
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "pipeline_resources_data_json" }}'
+  - json:
+      field: ocsf.unmapped
+      if: ctx.ocsf?.unmapped instanceof String
+      on_failure:
+        - rename:
+            field: ocsf.unmapped
+            target_field: ocsf.unmapped.value
+  - rename:
+      field: ocsf.unmapped
+      target_field: ocsf.unmapped.value
+      if: ctx.ocsf?.unmapped != null && !(ctx.ocsf.unmapped instanceof Map)
   - rename:
       field: ocsf.finding_info_list
       target_field: ocsf.finding_info
@@ -484,6 +507,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.end_time_dt != null && ctx.ocsf.end_time_dt != ''
       on_failure:
         - remove:
@@ -522,6 +546,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.time_dt != null && ctx.ocsf.time_dt != ''
       on_failure:
         - remove:
@@ -550,6 +575,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.time_dt != null && ctx.ocsf.time_dt != ''
       on_failure:
         - remove:
@@ -579,6 +605,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.metadata?.logged_time_dt != null && ctx.ocsf.metadata.logged_time_dt != ''
       on_failure:
         - remove:
@@ -608,6 +635,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.metadata?.modified_time_dt != null && ctx.ocsf.metadata.modified_time_dt != ''
       on_failure:
         - remove:
@@ -637,6 +665,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.metadata?.processed_time_dt != null && ctx.ocsf.metadata.processed_time_dt != ''
       on_failure:
         - remove:
@@ -720,6 +749,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.start_time_dt != null && ctx.ocsf.start_time_dt != ''
       on_failure:
         - remove:

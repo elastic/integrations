@@ -35,7 +35,7 @@ To collect data from the Splunk API, you need the following information:
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
+1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search top bar, type **Splunk**.
 3. Select the **Splunk** integration and add it.
 4. Add all the required integration configuration parameters, including the URL, username, password, and Splunk Search String, to enable data collection.
@@ -56,3 +56,13 @@ This is the `alert` dataset.
 {{event "alert"}}
 
 {{fields "alert"}}
+
+### Search
+
+This is the `search` dataset.
+
+#### Example
+
+{{event "search"}}
+
+{{fields "search"}}

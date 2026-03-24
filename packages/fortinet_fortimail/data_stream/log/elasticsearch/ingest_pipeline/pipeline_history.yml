@@ -10,31 +10,38 @@ processors:
       if: ctx.temp?.client_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_ac99aa3d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_5387e179
       field: related.ip
       value: '{{{fortinet_fortimail.log.client.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.client?.ip != null
   - set:
+      tag: set_source_ip_f6f51834
       field: source.ip
       copy_from: fortinet_fortimail.log.client.ip
       ignore_empty_value: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_bace2435
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
   - rename:
+      tag: rename_temp_client_name_to_fortinet_fortimail_log_client_name_629e2e1e
       field: temp.client_name
       target_field: fortinet_fortimail.log.client.name
       ignore_missing: true
   - append:
+      tag: append_related_user_5d80ed0f
       field: related.user
       value: '{{{fortinet_fortimail.log.client.name}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.client?.name != null
   - set:
+      tag: set_source_user_name_818409d3
       field: source.user.name
       copy_from: fortinet_fortimail.log.client.name
       ignore_empty_value: true
@@ -47,82 +54,101 @@ processors:
       if: ctx.temp?.dst_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_228d93f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_bb6cbf32
       field: related.ip
       value: '{{{fortinet_fortimail.log.destination_ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.destination_ip != null
   - set:
+      tag: set_destination_ip_7ada744f
       field: destination.ip
       copy_from: fortinet_fortimail.log.destination_ip
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_direction_to_fortinet_fortimail_log_direction_0c74ea2f
       field: temp.direction
       target_field: fortinet_fortimail.log.direction
       ignore_missing: true
   - set:
+      tag: set_email_direction_a0a27af4
       field: email.direction
       copy_from: fortinet_fortimail.log.direction
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_from_to_fortinet_fortimail_log_from_5b70ec4b
       field: temp.from
       target_field: fortinet_fortimail.log.from
       ignore_missing: true
   - append:
+      tag: append_related_user_d0753b7c
       field: related.user
       value: '{{{fortinet_fortimail.log.from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
   - append:
+      tag: append_email_from_address_7f1e9688
       field: email.from.address
       value: '{{{fortinet_fortimail.log.from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
   - rename:
+      tag: rename_temp_subject_to_fortinet_fortimail_log_subject_798cf6cf
       field: temp.subject
       target_field: fortinet_fortimail.log.subject
       ignore_missing: true
   - set:
+      tag: set_email_subject_a26859b4
       field: email.subject
       copy_from: fortinet_fortimail.log.subject
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_to_to_fortinet_fortimail_log_to_45dc2e79
       field: temp.to
       target_field: fortinet_fortimail.log.to
       ignore_missing: true
   - append:
+      tag: append_related_user_b1d2b872
       field: related.user
       value: '{{{fortinet_fortimail.log.to}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.to != null
   - append:
+      tag: append_email_to_address_3c4f03db
       field: email.to.address
       value: '{{{fortinet_fortimail.log.to}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.to != null
   - rename:
+      tag: rename_temp_mailer_to_fortinet_fortimail_log_mailer_352ef303
       field: temp.mailer
       target_field: fortinet_fortimail.log.mailer
       ignore_missing: true
   - set:
+      tag: set_email_x_mailer_9ee3219f
       field: email.x_mailer
       copy_from: fortinet_fortimail.log.mailer
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_session_id_to_fortinet_fortimail_log_session_id_c4b20db7
       field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
   - rename:
+      tag: rename_temp_endpoint_to_fortinet_fortimail_log_endpoint_dbd671e1
       field: temp.endpoint
       target_field: fortinet_fortimail.log.endpoint
       ignore_missing: true
   - rename:
+      tag: rename_temp_polid_to_fortinet_fortimail_log_policy_id_f1846b83
       field: temp.polid
       target_field: fortinet_fortimail.log.policy_id
       ignore_missing: true
   - rename:
+      tag: rename_temp_domain_to_fortinet_fortimail_log_domain_86dbca07
       field: temp.domain
       target_field: fortinet_fortimail.log.domain
       ignore_missing: true
@@ -133,41 +159,51 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_875edc31
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_temp_resolved_to_fortinet_fortimail_log_resolved_94f3801f
       field: temp.resolved
       target_field: fortinet_fortimail.log.resolved
       ignore_missing: true
   - set:
+      tag: set_event_outcome_73905c42
       field: event.outcome
       value: 'success'
       if: ctx.fortinet_fortimail?.log?.resolved?.toLowerCase() == 'ok'
   - set:
+      tag: set_event_outcome_a34432c7
       field: event.outcome
       value: 'failure'
       if: ctx.fortinet_fortimail?.log?.resolved?.toLowerCase() == 'fail'
   - set:
+      tag: set_event_outcome_6f947b7c
       field: event.outcome
       value: 'unknown'
       if: ctx.event?.outcome == null
   - rename:
+      tag: rename_temp_virus_to_fortinet_fortimail_log_virus_96d68353
       field: temp.virus
       target_field: fortinet_fortimail.log.virus
       ignore_missing: true
   - rename:
+      tag: rename_temp_disposition_to_fortinet_fortimail_log_disposition_879ef12f
       field: temp.disposition
       target_field: fortinet_fortimail.log.disposition
       ignore_missing: true
   - rename:
+      tag: rename_temp_classifier_to_fortinet_fortimail_log_classifier_8fcd3ce5
       field: temp.classifier
       target_field: fortinet_fortimail.log.classifier
       ignore_missing: true
   - rename:
+      tag: rename_temp_hfrom_to_fortinet_fortimail_log_hfrom_0d5aa52f
       field: temp.hfrom
       target_field: fortinet_fortimail.log.hfrom
       ignore_missing: true
   - rename:
+      tag: rename_temp_src_type_to_fortinet_fortimail_log_source_type_8d293373
       field: temp.src_type
       target_field: fortinet_fortimail.log.source.type
       ignore_missing: true
@@ -180,25 +216,31 @@ processors:
       if: ctx.temp?.message_length != ''
       on_failure:
         - append:
+            tag: append_error_message_7dc7598c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_temp_client_cc_to_fortinet_fortimail_log_client_cc_aa4598ce
       field: temp.client_cc
       target_field: fortinet_fortimail.log.client.cc
       ignore_missing: true
   - rename:
+      tag: rename_temp_detail_to_fortinet_fortimail_log_detail_a92c18d9
       field: temp.detail
       target_field: fortinet_fortimail.log.detail
       ignore_missing: true
   - rename:
+      tag: rename_temp_message_id_to_fortinet_fortimail_log_message_id_2a15e1cd
       field: temp.message_id
       target_field: fortinet_fortimail.log.message_id
       ignore_missing: true
   - rename:
+      tag: rename_temp_recv_time_to_fortinet_fortimail_log_recv_time_f206036f
       field: temp.recv_time
       target_field: fortinet_fortimail.log.recv_time
       ignore_missing: true
   - rename:
+      tag: rename_temp_notif_delay_to_fortinet_fortimail_log_notif_delay_60f502bb
       field: temp.notif_delay
       target_field: fortinet_fortimail.log.notif_delay
       ignore_missing: true
@@ -211,6 +253,7 @@ processors:
       if: ctx.temp?.scan_time != ''
       on_failure:
         - append:
+            tag: append_error_message_8aabfee8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -222,13 +265,16 @@ processors:
       if: ctx.temp?.xfer_time != ''
       on_failure:
         - append:
+            tag: append_error_message_fbef5dec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_temp_srcfolder_to_fortinet_fortimail_log_source_folder_0e0d2066
       field: temp.srcfolder
       target_field: fortinet_fortimail.log.source.folder
       ignore_missing: true
   - rename:
+      tag: rename_temp_read_status_to_fortinet_fortimail_log_read_status_9fff5b87
       field: temp.read_status
       target_field: fortinet_fortimail.log.read_status
       ignore_missing: true
@@ -238,4 +284,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

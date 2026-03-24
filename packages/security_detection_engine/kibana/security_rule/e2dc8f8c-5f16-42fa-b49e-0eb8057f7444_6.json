@@ -1,0 +1,101 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "Adversaries may attempt to get a listing of network connections to or from a compromised system.",
+        "from": "now-119m",
+        "history_window_start": "now-5d",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "interval": "60m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "System Network Connections Discovery",
+        "new_terms_fields": [
+            "process.parent.executable",
+            "process.command_line",
+            "agent.id"
+        ],
+        "query": "event.category:process and host.os.type:(linux or macos) and event.type:start and event.action:exec and\nprocess.name:(\"netstat\" or \"lsof\" or \"ss\" or \"iftop\" or \"ip\" or \"nmcli\" or \"arp\" or \"route\" or \"ifconfig\" or \"netcfg\" or \"networksetup\") and\nnot (\n  process.parent.executable:(\n    /Library/Elastic/Agent/* or \"/Applications/Docker.app/Contents/MacOS/com.docker.backend\" or\n    \"/opt/NinjaRMMAgent/programfiles/ninjarmm-linagent\" or \"/usr/local/ASR/Vx/bin/svagents\"\n  ) or\n  process.working_directory:(\"/var/ossec\" or \"/usr/lib/check_mk_agent/plugins\" or \"/opt/microsoft/mdatp/sbin\")\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e2dc8f8c-5f16-42fa-b49e-0eb8057f7444",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Rule Type: BBR",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1049",
+                        "name": "System Network Connections Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1049/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 6
+    },
+    "id": "e2dc8f8c-5f16-42fa-b49e-0eb8057f7444_6",
+    "type": "security-rule"
+}

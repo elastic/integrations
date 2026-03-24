@@ -2,14 +2,17 @@
 description: Pipeline for parsing Sophos XG firewall logs.
 processors:
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
 
 - set:
+    tag: set_event_original_49bb683a
     field: event.original
     copy_from: message
     override: false
 - grok:
+    tag: grok_event_original_3d5e1657
     field: event.original
     patterns:
     - '^%{SYSLOG5424PRI}(%{SYSLOGTIMESTAMP} %{NOTSPACE} )?%{GREEDYDATA:message}$'
@@ -19,6 +22,7 @@ processors:
 
 # split Sophos-XG fields
 - kv:
+    tag: kv_message_f9cfaaff
     field: message
     field_split: " (?=[a-zA-Z0-9_]+=)"
     value_split: "="
@@ -52,22 +56,33 @@ processors:
 - set:
     description: "Set timezone from log timezone"
     field: _temp_.tz
+    tag: set_tz_from_log
     copy_from: sophos.xg.timezone
     override: false
     if: ctx.sophos?.xg?.timezone != null
 - set:
     description: Convert "Z" timezone to "UTC"
+    tag: convert_z_to_utc
     field: _temp_.tz
     value: UTC
     if: ctx._temp_?.tz == 'Z'
 - set:
-    description: "Set timezone from config tz_offset"
+    description: "Set timezone from config (tz_offset)"
+    tag: set_tz_from_conf_offset
     field: _temp_.tz
     copy_from: _conf.tz_offset
     override: false
     if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
 - set:
+    description: "Set time zone from event.timezone (locale)"
+    tag: set_tz_from_locale
+    field: _temp_.tz
+    copy_from: event.timezone
+    override: false
+    if: ctx.event?.timezone != null
+- set:
     description: "If timezone is not set from any previous source, default to UTC"
+    tag: set_tz_default_utc
     field: _temp_.tz
     value: UTC
     override: false
@@ -80,7 +95,6 @@ processors:
 
         Sophos XG timezone may not match Java supported zone IDs. This allows users
         to map Sophos timezone to standard time zone names.
-
       source: >-
           def conf = ctx['_conf'];
           if (conf == null) return;
@@ -96,33 +110,38 @@ processors:
             }
           }
 - set:
+    tag: set_event_time_zone
     field: event.timezone
     copy_from: _temp_.tz
-    if: ctx.event?.timezone == null
 
 # Convert numeric based timezones to the standard time format
 # i.e. "-530" to "-5:30"
 - gsub:
+    tag: gsub_event_timezone_a832fb8b
     field: event.timezone
     pattern: '([+-][0-9]{2})([0-9]{2})'
     replacement: '$1:$2'
     ignore_missing: true
 - gsub:
+    tag: gsub_event_timezone_3865278c
     field: event.timezone
     pattern: '([+-])([0-9]):?([0-9]{2})'
     replacement: '$10$2:$3'
     ignore_missing: true
 
 - set:
+    tag: set__temp__time_4bed1062
     field: _temp_.time
     value: "{{{sophos.xg.date}}} {{{sophos.xg.time}}}"
     if: ctx.sophos?.xg?.date != null && ctx.sophos?.xg?.time != null
 - set:
+    tag: set__temp__time_bc6eee5a
     field: _temp_.time
     copy_from: sophos.xg.timestamp
     ignore_empty_value: true
     if: ctx._temp_?.time == null
 - date:
+    tag: date__temp__time_2f23ff71
     field: _temp_.time
     timezone: "{{{ event.timezone }}}"
     formats:
@@ -134,9 +153,11 @@ processors:
     on_failure:
       # Try to re-parse as configured timezone or UTC if unknown.
       - remove:
+          tag: remove_event_timezone_6fd19f61
           field: event.timezone
           ignore_missing: true
       - set:
+          tag: set_event_timezone_df0d4223
           field: event.timezone
           copy_from: _conf.tz_offset
           ignore_empty_value: true
@@ -152,6 +173,7 @@ processors:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_event_timezone_89fc5431
                 field: event.timezone
                 ignore_missing: true
             # Try to re-parse as UTC to catch when TZ is invalid or unknown.
@@ -166,10 +188,12 @@ processors:
                   - ISO8601
                 on_failure:
                   - append:
+                      tag: append_error_message_51f56d86
                       field: error.message
                       value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
                   - fail:
-                      message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"    
+                      tag: fail_308bfcc7
+                      message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
       - date:
           tag: "date_utc_fallback"
           timezone: UTC
@@ -182,13 +206,16 @@ processors:
             - ISO8601
           on_failure:
             - append:
+                tag: append_error_message_48bb1ac5
                 field: error.message
                 value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
             - fail:
+                tag: fail_e74f569e
                 message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
 # Sets starts, end and duration when start and duration is known
 - script:
+    tag: script_763b9a9c
     lang: painless
     if: ctx.sophos?.xg?.duration != null
     source: >-
@@ -196,7 +223,6 @@ processors:
       ctx.event.start = ctx['@timestamp'];
       ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
       ctx.event.end = start.plus(ctx.event.duration, ChronoUnit.NANOS);
-
 # Removes all empty fields
 - script:
     description: Remove empty fields.
@@ -221,6 +247,7 @@ processors:
 #   severity: 1 digit
 #   message ID: 5 digits
 - gsub:
+    tag: gsub_sophos_xg_log_id_to_event_severity_8874c1b2
     description: Set event.severity from log_id.
     field: sophos.xg.log_id
     target_field: event.severity
@@ -228,10 +255,12 @@ processors:
     replacement: '$1'
     ignore_failure: true
 - convert:
+    tag: convert_event_severity_5f837ce4
     field: event.severity
     type: long
     ignore_missing: true
 - gsub:
+    tag: gsub_sophos_xg_log_id_to_event_code_2e8d3d98
     description: Set event.code from log_id.
     field: sophos.xg.log_id
     target_field: event.code
@@ -243,39 +272,48 @@ processors:
 ## ECS Log Mapping ##
 #####################
 - set:
+    tag: set_log_level_9dc4582c
     if: ctx.event?.severity == 0
     field: log.level
     value: unknown
 - set:
+    tag: set_log_level_dac77a91
     if: ctx.event?.severity == 1
     field: log.level
     value: alert
 - set:
+    tag: set_log_level_9b729fb3
     if: ctx.event?.severity == 2
     field: log.level
     value: critical
 - set:
+    tag: set_log_level_0c4b686f
     if: ctx.event?.severity == 3
     field: log.level
     value: error
 - set:
+    tag: set_log_level_fbd9786e
     if: ctx.event?.severity == 4
     field: log.level
     value: warning
 - set:
+    tag: set_log_level_8942543c
     if: ctx.event?.severity == 5
     field: log.level
     value: notification
 - set:
+    tag: set_log_level_63fb9b79
     if: ctx.event?.severity == 6
     field: log.level
     value: informational
 - set:
+    tag: set_log_level_6e590d3c
     if: ctx.event?.severity == 7
     field: log.level
     value: debug
 
 - set:
+    tag: set_log_level_419f6627
     field: log.level
     copy_from: sophos.xg.severity
     ignore_empty_value: true
@@ -284,51 +322,64 @@ processors:
 ## ECS Observer Mapping ##
 ##########################
 - set:
+    tag: set_observer_vendor_9746d13c
     field: observer.vendor
     value: Sophos
 - set:
+    tag: set_observer_product_c3919d60
     field: observer.product
     value: XG
 - set:
+    tag: set_observer_type_5dddf3ba
     field: observer.type
     value: firewall
 - rename:
+    tag: rename_sophos_xg_device_id_to_observer_serial_number_d584b1e7
     field: sophos.xg.device_id
     target_field: observer.serial_number
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_device_serial_id_to_observer_serial_number_b152511e
     field: sophos.xg.device_serial_id
     target_field: observer.serial_number
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_out_interface_to_observer_egress_interface_name_b6ead0c0
     field: sophos.xg.out_interface
     target_field: observer.egress.interface.name
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_in_interface_to_observer_ingress_interface_name_f2f2105d
     field: sophos.xg.in_interface
     target_field: observer.ingress.interface.name
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_srczone_to_observer_ingress_zone_f655eb94
     field: sophos.xg.srczone
     target_field: observer.ingress.zone
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_src_zone_to_observer_ingress_zone_1aabe2ed
     field: sophos.xg.src_zone
     target_field: observer.ingress.zone
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_dstzone_to_observer_egress_zone_4de05155
     field: sophos.xg.dstzone
     target_field: observer.egress.zone
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_dst_zone_to_observer_egress_zone_1457240c
     field: sophos.xg.dst_zone
     target_field: observer.egress.zone
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_srczonetype_to_sophos_xg_src_zone_type_a6ac22f2
     field: sophos.xg.srczonetype
     target_field: sophos.xg.src_zone_type
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_dstzonetype_to_sophos_xg_dst_zone_type_1d062ef4
     field: sophos.xg.dstzonetype
     target_field: sophos.xg.dst_zone_type
     ignore_missing: true
@@ -337,6 +388,7 @@ processors:
 ## Set host.name ##
 ###################
 - script:
+    tag: script_230bf9ca
     lang: painless
     if: ctx.observer?.serial_number != null
     source: >-
@@ -356,11 +408,11 @@ processors:
           ctx.host = new HashMap();
         }
         ctx.host.name = name;
-
 #############
 ## Cleanup ##
 #############
 - remove:
+    tag: remove_ec2ae201
     field:
     - message
     - _temp_
@@ -378,6 +430,7 @@ processors:
     ignore_missing: true
 
 - convert:
+    tag: convert_sophos_xg_sent_bytes_to_source_bytes_fe4aa61b
     field: sophos.xg.sent_bytes
     target_field: source.bytes
     type: long
@@ -385,6 +438,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.sent_bytes != null"
 - convert:
+    tag: convert_sophos_xg_bytes_sent_to_source_bytes_73587aff
     field: sophos.xg.bytes_sent
     target_field: source.bytes
     type: long
@@ -392,6 +446,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.bytes_sent != null"
 - convert:
+    tag: convert_sophos_xg_recv_bytes_to_destination_bytes_af4ed216
     field: sophos.xg.recv_bytes
     target_field: destination.bytes
     type: long
@@ -399,6 +454,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.recv_bytes != null"
 - convert:
+    tag: convert_sophos_xg_bytes_received_to_destination_bytes_ed6b976a
     field: sophos.xg.bytes_received
     target_field: destination.bytes
     type: long
@@ -410,36 +466,44 @@ processors:
 ## ECS Source/Destination MAC
 #############################
 - rename:
+    tag: rename_sophos_xg_src_mac_to_source_mac_a2de8961
     field: sophos.xg.src_mac
     target_field: source.mac
     ignore_failure: true
 - uppercase:
+    tag: uppercase_source_mac_5b4e7be2
     field: source.mac
     ignore_missing: true
 - gsub:
+    tag: gsub_source_mac_be7d44dc
     field: source.mac
     pattern: '[-:. ]'
     replacement: ''
     ignore_missing: true
 - gsub:
+    tag: gsub_source_mac_a230b90b
     field: source.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
 
 - rename:
+    tag: rename_sophos_xg_dst_mac_to_destination_mac_d84b8bc9
     field: sophos.xg.dst_mac
     target_field: destination.mac
     ignore_failure: true
 - uppercase:
+    tag: uppercase_destination_mac_04de3657
     field: destination.mac
     ignore_missing: true
 - gsub:
+    tag: gsub_destination_mac_80c7dedb
     field: destination.mac
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
 - gsub:
+    tag: gsub_destination_mac_1aa8a244
     field: destination.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
@@ -449,40 +513,52 @@ processors:
 ## Product Specific Pipelines ##
 ###############################
 - pipeline:
+    tag: pipeline_62d4efd3
     name: '{{ IngestPipeline "antispam" }}'
     if: "ctx.sophos?.xg?.log_type == 'Anti-Spam'"
 - pipeline:
+    tag: pipeline_11343b5d
     name: '{{ IngestPipeline "antivirus" }}'
     if: "ctx.sophos?.xg?.log_type == 'Anti-Virus'"
 - pipeline:
+    tag: pipeline_d9812224
     name: '{{ IngestPipeline "atp" }}'
     if: "ctx.sophos?.xg?.log_type == 'ATP'"
 - pipeline:
+    tag: pipeline_37cd08d0
     name: '{{ IngestPipeline "cfilter" }}'
     if: "ctx.sophos?.xg?.log_type == 'Content Filtering'"
 - pipeline:
+    tag: pipeline_d5543f20
     name: '{{ IngestPipeline "event" }}'
     if: "ctx.sophos?.xg?.log_type == 'Event'"
 - pipeline:
+    tag: pipeline_31c91fe0
     name: '{{ IngestPipeline "firewall" }}'
     if: "ctx.sophos?.xg?.log_type == 'Firewall'"
 - pipeline:
+    tag: pipeline_d77b6c34
     name: '{{ IngestPipeline "idp" }}'
     if: "ctx.sophos?.xg?.log_type == 'IDP'"
 - pipeline:
+    tag: pipeline_433e7328
     name: '{{ IngestPipeline "sandstorm" }}'
     if: "ctx.sophos?.xg?.log_type == 'Sandbox'"
 - pipeline:
+    tag: pipeline_c50068a0
     name: '{{ IngestPipeline "systemhealth" }}'
     if: "ctx.sophos?.xg?.log_type == 'System Health'"
 - pipeline:
+    tag: pipeline_cc7679ac
     name: '{{ IngestPipeline "waf" }}'
     if: "ctx.sophos?.xg?.log_type == 'WAF'"
 - pipeline:
+    tag: pipeline_06ce7f78
     name: '{{ IngestPipeline "wifi" }}'
     if: "ctx.sophos?.xg?.log_type == 'Wireless Protection'"
 
 - gsub:
+    tag: gsub_sophos_xg_eventtime_4b301060
     field: sophos.xg.eventtime
     pattern: "\\s[A-Z]{2,4}$"
     replacement: ""
@@ -490,8 +566,8 @@ processors:
     description: >
       Remove timezone from eventtime (converting time with both timezone and with
       the previously parsed event.timezone results in incorrect time)
-
 - date:
+    tag: date_sophos_xg_eventtime_to_sophos_xg_eventtime_7e1f1a67
     if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone == null
     field: sophos.xg.eventtime
     timezone: UTC
@@ -503,8 +579,10 @@ processors:
     - ISO8601
     on_failure:
       - remove:
+          tag: remove_sophos_xg_eventtime_9ec1b245
           field: sophos.xg.eventtime
 - date:
+    tag: date_sophos_xg_eventtime_to_sophos_xg_eventtime_fd4e5f38
     if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone != null
     timezone: "{{{ event.timezone }}}"
     field: sophos.xg.eventtime
@@ -516,22 +594,26 @@ processors:
     - ISO8601
     on_failure:
       - remove:
+          tag: remove_sophos_xg_eventtime_84f4669a
           field: sophos.xg.eventtime
 
 ##################
 # GeoIP Enrichment
 ##################
 - geoip:
+    tag: geoip_source_ip_to_source_geo_7bd19e14
     field: source.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.geo == null"
+    if: "ctx.source?.geo == null && ctx.source?.ip != ''"
 - geoip:
+    tag: geoip_destination_ip_to_destination_geo_2e6f037e
     field: destination.ip
     target_field: destination.geo
     ignore_missing: true
-    if: "ctx.destination?.geo == null"
+    if: "ctx.destination?.geo == null && ctx.destination?.ip != ''"
 - geoip:
+    tag: geoip_source_ip_to_source_as_8e9a21f6
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -539,7 +621,9 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
+    if: "ctx.source?.ip != ''"
 - geoip:
+    tag: geoip_destination_ip_to_destination_as_347fd9e1
     database_file: GeoLite2-ASN.mmdb
     field: destination.ip
     target_field: destination.as
@@ -547,17 +631,21 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
+    if: "ctx.destination?.ip != ''"
 - geoip:
+    tag: geoip_source_nat_ip_to_source_geo_d0303b8f
     field: source.nat.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.geo == null"
+    if: "ctx.source?.geo == null && ctx.source?.nat?.ip != ''"
 - geoip:
+    tag: geoip_destination_nat_ip_to_destination_geo_7b148969
     field: destination.nat.ip
     target_field: destination.geo
     ignore_missing: true
-    if: "ctx.destination?.geo == null"
+    if: "ctx.destination?.geo == null && ctx.destination?.nat?.ip != ''"
 - geoip:
+    tag: geoip_source_nat_ip_to_source_as_3dfd3c2f
     database_file: GeoLite2-ASN.mmdb
     field: source.nat.ip
     target_field: source.as
@@ -565,8 +653,9 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
-    if: "ctx.source?.as == null"
+    if: "ctx.source?.as == null && ctx.source?.nat?.ip != ''"
 - geoip:
+    tag: geoip_destination_nat_ip_to_destination_as_ecca1593
     database_file: GeoLite2-ASN.mmdb
     field: destination.nat.ip
     target_field: destination.as
@@ -574,20 +663,24 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
-    if: "ctx.destination?.as == null"
+    if: "ctx.destination?.as == null && ctx.destination?.nat?.ip != ''"
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 - rename:
+    tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
     field: destination.as.asn
     target_field: destination.as.number
     ignore_missing: true
 - rename:
+    tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
     field: destination.as.organization_name
     target_field: destination.as.organization.name
     ignore_missing: true
@@ -596,33 +689,38 @@ processors:
 ## ECS Network
 ##############
 - lowercase:
+    tag: lowercase_network_protocol_d249a697
     field: network.protocol
     ignore_failure: true
 - set:
+    tag: set_network_protocol_f8131c8e
     description: Rename pops network.protocol to pop3s.
     if: ctx.network?.protocol == "pops"
     field: network.protocol
     value: pop3s
 - lowercase:
+    tag: lowercase_network_transport_25502ef0
     field: network.transport
     ignore_failure: true
 - script:
+    tag: script_7a41cd50
     lang: painless
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
     if: "ctx.source?.bytes != null && ctx.destination?.bytes != null"
     ignore_failure: true
 - script:
+    tag: script_8baeb286
     lang: painless
     source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
     if: "ctx.source?.packets != null && ctx.destination?.packets != null"
     ignore_failure: true
 - community_id:
+    tag: community_id_5a62f383
     ignore_failure: true
 
 ############################
 ## User fields normalization
 ############################
-
 - rename:
     field: user.name
     target_field: user.email
@@ -653,21 +751,25 @@ processors:
 ## ECS Related Hosts
 ####################
 - append:
+    tag: append_related_hosts_452ef445
     if: ctx.host?.name != null
     field: related.hosts
     value: '{{{host.name}}}'
     allow_duplicates: false
 - append:
+    tag: append_related_hosts_e5210c4d
     if: ctx.url?.domain != null
     field: related.hosts
     value: '{{{url.domain}}}'
     allow_duplicates: false
 - append:
+    tag: append_related_hosts_b0d2e007
     if: ctx.source?.domain != null
     field: related.hosts
     value: '{{{source.domain}}}'
     allow_duplicates: false
 - append:
+    tag: append_related_hosts_b0d7ba0b
     if: ctx.destination?.domain != null
     field: related.hosts
     value: '{{{destination.domain}}}'
@@ -677,21 +779,25 @@ processors:
 ## ECS Related IP
 #################
 - append:
+    tag: append_related_ip_8121c591
     if: ctx.source?.ip != null
     field: related.ip
     value: '{{{source.ip}}}'
     allow_duplicates: false
 - append:
+    tag: append_related_ip_c1a6356b
     if: ctx.destination?.ip != null
     field: related.ip
     value: '{{{destination.ip}}}'
     allow_duplicates: false
 - append:
+    tag: append_related_ip_53b62ed8
     if: ctx.source?.nat?.ip != null
     field: related.ip
     value: '{{{source.nat.ip}}}'
     allow_duplicates: false
 - append:
+    tag: append_related_ip_6a388074
     if: ctx.destination?.nat?.ip != null
     field: related.ip
     value: '{{{destination.nat.ip}}}'
@@ -701,21 +807,25 @@ processors:
 ## ECS Related User
 ###################
 - append:
+    tag: append_related_user_837e080f
     if: ctx.user?.name != null
     field: related.user
     value: "{{{user.name}}}"
     allow_duplicates: false
 - append:
+    tag: append_related_user_34fcf415
     if: ctx.user?.email != null
     field: related.user
     value: "{{{user.email}}}"
     allow_duplicates: false
 - append:
+    tag: append_related_user_f745a124
     if: ctx.source?.user?.name != null
     field: related.user
     value: "{{{source.user.name}}}"
     allow_duplicates: false
 - append:
+    tag: append_related_user_443c831a
     if: ctx.source?.user?.email != null
     field: related.user
     value: "{{{source.user.email}}}"
@@ -725,11 +835,13 @@ processors:
 ## ECS Related Hash
 ###################
 - append:
+    tag: append_related_hash_b56c7961
     if: ctx.file?.hash?.sha1 != null
     field: related.hash
     value: "{{{file.hash.sha1}}}"
     allow_duplicates: false
 - append:
+    tag: append_related_hash_017aef51
     if: ctx.file?.hash?.sha256 != null
     field: related.hash
     value: "{{{file.hash.sha256}}}"
@@ -739,11 +851,13 @@ processors:
 ## Cleanup ##
 #############
 - rename:
+    tag: rename_sophos_xg_reason_to_event_reason_0840e299
     field: sophos.xg.reason
     target_field: event.reason
     ignore_failure: true
 
 - remove:
+    tag: remove_1d7e9bd5
     field:
       - sophos.xg.bytes_received
       - sophos.xg.bytes_sent
@@ -755,10 +869,24 @@ processors:
       - sophos.xg.severity
       - sophos.xg.src_country
     ignore_missing: true
+- append:
+    tag: append_preserve_original_event_on_error
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+    if: ctx.error?.message != null
 on_failure:
 - set:
     field: event.kind
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

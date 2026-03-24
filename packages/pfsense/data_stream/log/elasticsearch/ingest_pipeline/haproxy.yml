@@ -2,21 +2,16 @@
 description: Pipeline for parsing PFsense HAProxy http, tcp and default logs.
 processors:
   - grok:
+      tag: grok_message_27190f7e
       field: message
       patterns:
       - 'Connect from (%{IPORHOST:source.address}|-):%{POSINT:source.port:long} %{WORD} %{IPORHOST:destination.address}:%{POSINT:destination.port:long} \(%{NOTSPACE:haproxy.frontend_name}/%{WORD:haproxy.mode}\)'
       # HTTP(S)
-      - '(%{IPORHOST:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{NOTSPACE:haproxy.frontend_name} %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} 
-        %{NUMBER:haproxy.http.request.time_wait_ms:long}/%{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:haproxy.http.request.time_wait_without_data_ms:long}/%{NUMBER:_temp.duration:long} 
-        %{NUMBER:http.response.status_code:long} %{NUMBER:haproxy.bytes_read:long} %{NOTSPACE:haproxy.http.request.captured_cookie} %{NOTSPACE:haproxy.http.response.captured_cookie} %{NOTSPACE:haproxy.termination_state} 
-        %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long} %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long} 
-        (\{%{DATA:haproxy.http.request.captured_headers}\} \{%{DATA:haproxy.http.response.captured_headers}\} |\{%{DATA}\} )?"%{GREEDYDATA:haproxy.http.request.raw_request_line}"'
+      - '(%{IPORHOST:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{NOTSPACE:haproxy.frontend_name} %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} %{NUMBER:haproxy.http.request.time_wait_ms:long}/%{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:haproxy.http.request.time_wait_without_data_ms:long}/%{NUMBER:_temp.duration:long} %{NUMBER:http.response.status_code:long} %{NUMBER:haproxy.bytes_read:long} %{NOTSPACE:haproxy.http.request.captured_cookie} %{NOTSPACE:haproxy.http.response.captured_cookie} %{NOTSPACE:haproxy.termination_state} %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long} %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long} (\{%{DATA:haproxy.http.request.captured_headers}\} \{%{DATA:haproxy.http.response.captured_headers}\} |\{%{DATA}\} )?"%{GREEDYDATA:haproxy.http.request.raw_request_line}"'
+
       # TCP
-      - '(%{IP:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] 
-        %{NOTSPACE:haproxy.frontend_name} %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} 
-        %{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:_temp.duration:long} 
-        %{NUMBER:haproxy.bytes_read:long} %{NOTSPACE:haproxy.termination_state} %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long} 
-        %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long}'
+      - '(%{IP:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{NOTSPACE:haproxy.frontend_name} %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} %{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:_temp.duration:long} %{NUMBER:haproxy.bytes_read:long} %{NOTSPACE:haproxy.termination_state} %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long} %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long}'
+
       # Error
       - '(%{IP:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{NOTSPACE:haproxy.frontend_name}/%{BIND_NAME:haproxy.bind_name}:? %{GREEDYDATA:haproxy.error_message}'
       ignore_missing: false
@@ -25,8 +20,10 @@ processors:
         BIND_NAME: ((%{IP:destination.address})?(:%{POSINT:destination.port:long})?|%{NOTSPACE})
       on_failure:
         - drop:
+            tag: drop_b0ce4f13
             description: Drop if not a connection log
   - date:
+      tag: date_haproxy_request_date_to_timestamp_e0201264
       if: ctx.haproxy?.request_date != null && ctx.event?.timezone == null
       field: haproxy.request_date
       target_field: '@timestamp'
@@ -34,6 +31,7 @@ processors:
       - dd/MMM/yyyy:HH:mm:ss.SSS
       - MMM dd HH:mm:ss
   - date:
+      tag: date_haproxy_request_date_to_timestamp_8084f896
       if: ctx.haproxy?.request_date != null && ctx.event?.timezone != null
       field: haproxy.request_date
       target_field: '@timestamp'
@@ -42,58 +40,70 @@ processors:
       - MMM dd HH:mm:ss
       timezone: '{{{ event.timezone }}}'
   - remove:
+      tag: remove_haproxy_request_date_ba26ea6b
       field: haproxy.request_date
       ignore_missing: true
   - grok:
+      tag: grok_haproxy_http_request_raw_request_line_edca39ab
       field: haproxy.http.request.raw_request_line
       patterns:
         - '%{WORD:http.request.method}%{SPACE}%{URIPATHPARAM:url.original}%{SPACE}HTTP/%{NUMBER:http.version}'
       ignore_missing: true
       if: 'ctx.haproxy?.http?.request?.raw_request_line != null && !ctx.haproxy?.http?.request?.raw_request_line.isEmpty() && ctx.haproxy?.http?.request?.raw_request_line != "<BADREQ>"'
   - uri_parts:
+      tag: uri_parts_url_original_c5d45689
       field: url.original
       ignore_failure: true
       if: ctx.url?.original != null
   - split:
+      tag: split_haproxy_http_request_captured_headers_066d989f
       field: haproxy.http.request.captured_headers
       separator: \|
       ignore_failure: true
       ignore_missing: true
   - split:
+      tag: split_haproxy_http_response_captured_headers_f2f5c8fd
       field: haproxy.http.response.captured_headers
       separator: \|
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_bd0ddda1
       lang: painless
       source: ctx.event.duration = Math.round(ctx._temp.duration * params.scale)
       params:
         scale: 1000000
       if: ctx._temp?.duration != null
   - convert:
+      tag: convert_haproxy_bytes_read_to_http_response_bytes_414f1a1d
       field: haproxy.bytes_read
       target_field: http.response.bytes
       type: long
       ignore_missing: true
       if: ctx.containsKey('http')
   - append:
+      tag: append_event_category_f910d3f5
       field: event.category
       value: web
       if: "ctx.haproxy?.mode == 'HTTP' || ctx.haproxy?.http != null"
   - append:
+      tag: append_event_type_fa71cb3a
       field: event.type
       value: access
       if: "ctx.source?.address != null && ctx.destination?.address != null"
   - set:
+      tag: set_event_outcome_b50e8224
       field: event.outcome
       value: success
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_75086854
       field: event.outcome
       value: failure
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - remove:
-      field: 
+      tag: remove_b050d090
+      field:
         - _temp
         - haproxy.request_date
       ignore_missing: true
@@ -103,4 +113,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

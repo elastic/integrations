@@ -6,15 +6,18 @@ config:
     benchmark: cis_gcp
     gcp:
       {{#if gcp.project_id}}
-      project_id: {{gcp.project_id}}
+      project_id: !!str {{gcp.project_id}}
       {{/if}}
       {{#if gcp.organization_id}}
-      organization_id: "{{gcp.organization_id}}"
+      organization_id: !!str {{gcp.organization_id}}
       {{/if}}
       {{#if gcp.account_type}}
       account_type: {{gcp.account_type}}
       {{else}}
       account_type: single-account
+      {{/if}}
+      {{#if gcp.supports_cloud_connectors}}
+      supports_cloud_connectors: {{gcp.supports_cloud_connectors}}
       {{/if}}
       credentials:
         {{#if gcp.credentials.file}}
@@ -22,6 +25,15 @@ config:
         {{/if}}
         {{#if gcp.credentials.json}}
         credentials_json: '{{gcp.credentials.json}}'
+        {{/if}}
+        {{#if gcp.credentials.service_account_email}}
+        service_account_email: {{gcp.credentials.service_account_email}}
+        {{/if}}
+        {{#if gcp.credentials.audience}}
+        audience: {{gcp.credentials.audience}}
+        {{/if}}
+        {{#if gcp_credentials_cloud_connector_id}}
+        cloud_connector_id: {{gcp_credentials_cloud_connector_id}}
         {{/if}}
 {{#if condition}}
 condition: {{ condition }}

@@ -42,9 +42,8 @@ program: |
         "Authorization": ["Basic " + (state.user + ":" + state.password).base64()],
         "X-Requested-With": ["curl"],
       }
-    }).do_request().as(resp,
-      resp.StatusCode == 200
-      ?
+    }).do_request().as(resp, (
+      resp.StatusCode == 200 ?
         string(resp.Body).as(text, {
           "csv": (
             text.contains_substr("----BEGIN_RESPONSE_BODY_CSV") ?
@@ -92,7 +91,43 @@ program: |
           },
           "want_more": false,
         }
-    )
+    ).with(
+      resp.Header.transformMapEntry(k, v,
+        // Canonicalise header keys to match rate_limit conventions.
+        // -Limit, -Remaining and -Reset are magic suffixes in rate_limit.
+        {
+          k.has_suffix("-Limit") ?
+            (k.trim_suffix("-Limit").to_lower() + "-Limit")
+          : k.has_suffix("-Remaining") ?
+            (k.trim_suffix("-Remaining").to_lower() + "-Remaining")
+          :
+            k.to_lower(): v,
+        }
+      ).as(headers,
+        // Calculate rate limits.
+        rate_limit(
+          headers.with(
+            {
+              "x-ratelimit-Reset": [string(headers[?"x-ratelimit-towait-sec"][0].orValue("3600"))],
+            }
+          ),
+          "x-ratelimit",
+          false,
+          true,
+          duration(string(headers[?"x-ratelimit-window-sec"][0].orValue("3600")) + "s"),
+          0
+        )
+      ).as(rate_headers, rate_headers.with({
+        // Work around inf detection in input.
+        // If the headers are missing or rate_limit failed, rate and
+        // next may be missing. So use optional types.
+        ?"rate": rate_headers.?rate == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+        ?"next": rate_headers.?next == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+      })).as(limit, {
+         "header": resp.Header,
+         "rate_limit": limit,
+       })
+    ))
   )
 tags:
 {{#if preserve_duplicate_custom_fields}}

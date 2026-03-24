@@ -4,6 +4,7 @@ processors:
   # It has been observed that proxysg sometimes uses two space characters instead of single spaces between some fields with this log format.
   # This will break the CSV processor used to parse logs, so first replace all double spaces with single spaces.
   - gsub:
+      tag: gsub__temp__message_b4fb3b49
       field: _temp_.message
       pattern: " {2}"
       replacement: " "
@@ -42,7 +43,7 @@ processors:
         - proxysg.server_to_client.bytes
         - proxysg.client_to_server.bytes
         - proxysg.x_virus_id
-        - proxysg.client_to_server.threat_source 
+        - proxysg.client_to_server.threat_source
         - proxysg.client_to_server.threat_id
         - proxysg.remote_to_server.threat_source
         - proxysg.remote_to_server.threat_id
@@ -55,3 +56,18 @@ processors:
         - proxysg.x_bluecoat.transaction_uuid
         - proxysg.x_icap_reqmod_header_x_icap_metadata
         - proxysg.x_icap_respmod_header_x_icap_metadata
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

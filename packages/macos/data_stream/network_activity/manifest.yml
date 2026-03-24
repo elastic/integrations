@@ -1,0 +1,136 @@
+title: Network Activity
+type: logs
+streams:
+  - input: unifiedlogs
+    title: Network Activity logs
+    description: Collect Network Activity logs from macOS.
+    template_path: unifiedlogs.yml.hbs
+    enabled: false
+    vars:
+      - name: predicate
+        type: text
+        title: Predicate
+        description: |
+          Filters messages using the provided predicate based on NSPredicate.
+          A compound predicate or multiple predicates can be provided as a list.
+          For detailed information on the use of predicate based filtering,
+          please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
+        multi: true
+        show_user: false
+        default:
+          - 'composedMessage CONTAINS "connect" AND (composedMessage CONTAINS "TCP" OR composedMessage CONTAINS "UDP")'
+          - 'composedMessage CONTAINS "disconnect" OR composedMessage CONTAINS "closed connection"'
+          - 'subsystem == "com.apple.necp" AND composedMessage CONTAINS "new connection"'
+          - 'eventMessage CONTAINS[c] "listening" AND eventMessage CONTAINS[c] "service"'
+      - name: start
+        type: text
+        title: Start date
+        description: |
+          Shows content starting from the provided date.
+          The following date/time formats are accepted:
+          `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD HH:MM:SSZZZZZ`.
+        show_user: false
+      - name: end
+        type: text
+        title: End date
+        description: |
+          Shows content up to the provided date.
+          The following date/time formats are accepted:
+          `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD HH:MM:SSZZZZZ`.
+        show_user: false
+      - name: process
+        type: text
+        title: Process
+        description: |
+          A list of the processes on which to operate. It accepts a PID or process name.
+        multi: true
+        show_user: false
+      - name: source
+        type: bool
+        title: Include source
+        description: |
+          Include symbol names and source line numbers for messages, if available.
+        show_user: false
+      - name: info
+        type: bool
+        title: Include info
+        description: |
+          Disable or enable info level messages.
+        show_user: false
+      - name: debug
+        type: bool
+        title: Include debug
+        description: |
+          Disable or enable debug level messages.
+        show_user: false
+      - name: backtrace
+        type: bool
+        title: Include backtrace
+        description: |
+          Disable or enable backtrace level messages.
+        show_user: false
+      - name: signpost
+        type: bool
+        title: Include signpost
+        description: |
+          Disable or enable signpost level messages.
+        show_user: false
+      - name: unreliable
+        type: bool
+        title: Annotate unreliable
+        description: |
+          Annotate events with whether the log was emitted unreliably.
+        show_user: false
+      - name: mach_continuous_time
+        type: bool
+        title: Use mach continuous time
+        description: |
+          Use mach continuous time timestamps rather than walltime.
+        show_user: false
+      - name: backfill
+        type: bool
+        title: Must backfill
+        description: |
+          If set to true the input will process all available logs since the beginning
+          of time the first time it starts.
+        show_user: false
+      - name: archive_file
+        type: text
+        title: Archive file
+        description: |
+          Display events stored in the given archive.
+          The archive must be a valid log archive bundle with the suffix `.logarchive`.
+        show_user: false
+      - name: trace_file
+        type: text
+        title: Trace file
+        description: |
+          Display events stored in the given `.tracev3` file.
+          In order to be decoded, the file must be contained within a valid `.logarchive`.
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field event.original.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data-stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - macos-network_activity
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.

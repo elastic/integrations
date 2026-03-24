@@ -69,7 +69,7 @@ processors:
     ignore_missing: true
 - set:
     field: ecs.version
-    value: '8.11.0'
+    value: '8.17.0'
 
 ##############
 # ECS compat #
@@ -80,6 +80,14 @@ processors:
     field: host.ip
     value: '{{{jamf_pro.inventory.general.last_ip_address}}}'
     ignore_failure: true
+- set:
+    field: host.id
+    copy_from: jamf_pro.inventory.udid
+    ignore_empty_value: true
+- set:
+    field: host.name
+    copy_from: jamf_pro.inventory.general.name
+    ignore_empty_value: true
 - set:
     field: host.address
     copy_from: host.ip

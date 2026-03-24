@@ -69,35 +69,35 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-30T11:10:37.869Z",
+    "@timestamp": "2026-03-16T12:08:09.236Z",
     "agent": {
-        "ephemeral_id": "6545769f-e426-4e1c-9549-44bd7f788ee4",
-        "id": "afb159d9-5bc3-429a-b8a7-3cda969112a5",
-        "name": "elastic-agent-88629",
+        "ephemeral_id": "76ec2ae7-3746-4270-a2fe-1b60749b72dc",
+        "id": "aa20cb69-aca0-43ea-a4fe-15175ccd455b",
+        "name": "elastic-agent-40804",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset",
-        "namespace": "81787",
+        "namespace": "93360",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "afb159d9-5bc3-429a-b8a7-3cda969112a5",
+        "id": "aa20cb69-aca0-43ea-a4fe-15175ccd455b",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2025-05-30T11:10:37.869Z",
+        "created": "2026-03-16T12:08:09.236Z",
         "dataset": "rapid7_insightvm.asset",
-        "ingested": "2025-05-30T11:10:40Z",
+        "ingested": "2026-03-16T12:08:12Z",
         "kind": "state",
         "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
         "type": [
@@ -155,6 +155,12 @@ An example event for `asset` looks as following:
                         "type": "SITE"
                     }
                 ],
+                "tags_nested": [
+                    {
+                        "name": "lab",
+                        "type": "SITE"
+                    }
+                ],
                 "total_vulnerabilities": 2
             }
         }
@@ -190,6 +196,9 @@ An example event for `asset` looks as following:
 | rapid7.insightvm.asset.credential_assessments.port | The port the authentication was used on. | long |
 | rapid7.insightvm.asset.credential_assessments.protocol | The protocol the authentication was used on. | keyword |
 | rapid7.insightvm.asset.credential_assessments.status | The authentication of the last scan performed. | keyword |
+| rapid7.insightvm.asset.credential_assessments_nested.port | The port the authentication was used on. | long |
+| rapid7.insightvm.asset.credential_assessments_nested.protocol | The protocol the authentication was used on. | keyword |
+| rapid7.insightvm.asset.credential_assessments_nested.status | The authentication of the last scan performed. | keyword |
 | rapid7.insightvm.asset.critical_vulnerabilities | The count of critical vulnerability findings. | long |
 | rapid7.insightvm.asset.exploits | The count of known unique exploits that can be used to exploit vulnerabilities on the asset. | long |
 | rapid7.insightvm.asset.host_name | The host name (local or FQDN). | keyword |
@@ -252,10 +261,14 @@ An example event for `asset` looks as following:
 | rapid7.insightvm.asset.severe_vulnerabilities | The count of severe vulnerability findings. | long |
 | rapid7.insightvm.asset.tags.name | The stored value. | keyword |
 | rapid7.insightvm.asset.tags.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
+| rapid7.insightvm.asset.tags_nested.name | The stored value. | keyword |
+| rapid7.insightvm.asset.tags_nested.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
 | rapid7.insightvm.asset.total_vulnerabilities | The total count of vulnerability findings. | long |
 | rapid7.insightvm.asset.type | Enum: "hypervisor" "mobile" "guest" "physical" "unknown" The type of asset. | keyword |
 | rapid7.insightvm.asset.unique_identifiers.id | The unique identifier. | keyword |
 | rapid7.insightvm.asset.unique_identifiers.source | The source of the unique identifier. | keyword |
+| rapid7.insightvm.asset.unique_identifiers_nested.id | The unique identifier. | keyword |
+| rapid7.insightvm.asset.unique_identifiers_nested.source | The source of the unique identifier. | keyword |
 
 
 ### asset_vulnerability
@@ -270,24 +283,24 @@ An example event for `asset_vulnerability` looks as following:
 {
     "@timestamp": "2025-05-27T18:21:36.279Z",
     "agent": {
-        "ephemeral_id": "8f30a153-d7fb-4630-8931-752c0f5190e4",
-        "id": "3e3bd5a6-8efb-4f70-b560-987a16383f05",
-        "name": "elastic-agent-64243",
+        "ephemeral_id": "6791a699-9aa4-48a9-b74b-52f7d5f69aee",
+        "id": "2ee34ce2-2eab-4e18-b86e-0c9e82820d6f",
+        "name": "elastic-agent-49978",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset_vulnerability",
-        "namespace": "30380",
+        "namespace": "58811",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3e3bd5a6-8efb-4f70-b560-987a16383f05",
-        "snapshot": true,
-        "version": "8.19.0"
+        "id": "2ee34ce2-2eab-4e18-b86e-0c9e82820d6f",
+        "snapshot": false,
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -297,7 +310,7 @@ An example event for `asset_vulnerability` looks as following:
         "created": "2025-05-12T16:25:35.000Z",
         "dataset": "rapid7_insightvm.asset_vulnerability",
         "id": "8babcde1-1234-5678-0912-cabcdef1284e-default-asset-6|unix-anonymous-root-logins|2025-05-27T18:21:36.279Z",
-        "ingested": "2025-06-07T12:24:02Z",
+        "ingested": "2026-03-16T12:09:00Z",
         "kind": "event",
         "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"credential_assessments\":[{\"port\":22,\"protocol\":\"TCP\",\"status\":\"NO_CREDS_SUPPLIED\"}],\"critical_vulnerabilities\":3,\"exploits\":0,\"host_name\":\"computer-test\",\"id\":\"8babcde1-1234-5678-0912-cabcdef1284e-default-asset-6\",\"ip\":\"10.50.5.112\",\"last_assessed_for_vulnerabilities\":\"2025-05-27T18:21:36.279Z\",\"last_scan_end\":\"2025-05-27T18:21:36.279Z\",\"last_scan_start\":\"2025-05-27T18:20:41.505Z\",\"mac\":\"00:00:5E:00:53:02\",\"malware_kits\":0,\"moderate_vulnerabilities\":1,\"os_architecture\":\"x86_64\",\"os_description\":\"Red Hat Enterprise Linux 7.9\",\"os_family\":\"Linux\",\"os_name\":\"Enterprise Linux\",\"os_system_name\":\"Red Hat Linux\",\"os_type\":\"\",\"os_vendor\":\"Red Hat\",\"os_version\":\"7.9\",\"risk_score\":18250,\"severe_vulnerabilities\":48,\"tags\":[{\"name\":\"Ahmedabad\",\"type\":\"LOCATION\"},{\"name\":\"test\",\"type\":\"SITE\"},{\"name\":\"rapid7 insight agents\",\"type\":\"SITE\"}],\"total_vulnerabilities\":52,\"type\":\"guest\",\"unique_identifiers\":[{\"id\":\"CEF12345-ABCD-1234-ABCD-95ABCDEF1234\",\"source\":\"dmidecode\"},{\"id\":\"e80644e940123456789abcdef66a8b16\",\"source\":\"R7 Agent\"}],\"vulnerability\":{\"added\":\"2004-11-30T00:00:00Z\",\"categories\":\"CVSS Score Predicted with Rapid7 AI,UNIX\",\"check_id\":null,\"cves\":\"\",\"cvss_v2_access_complexity\":\"low\",\"cvss_v2_access_vector\":\"network\",\"cvss_v2_authentication\":\"single\",\"cvss_v2_availability_impact\":\"partial\",\"cvss_v2_confidentiality_impact\":\"partial\",\"cvss_v2_exploit_score\":7.9520000338554375,\"cvss_v2_impact_score\":6.442976653521584,\"cvss_v2_integrity_impact\":\"partial\",\"cvss_v2_score\":6.5,\"cvss_v2_vector\":\"(AV:N/AC:L/Au:S/C:P/I:P/A:P)\",\"cvss_v3_attack_complexity\":\"low\",\"cvss_v3_attack_vector\":\"local\",\"cvss_v3_availability_impact\":\"high\",\"cvss_v3_confidentiality_impact\":\"high\",\"cvss_v3_exploit_score\":2.515145325,\"cvss_v3_impact_score\":5.873118720000001,\"cvss_v3_integrity_impact\":\"high\",\"cvss_v3_privileges_required\":\"none\",\"cvss_v3_scope\":\"unchanged\",\"cvss_v3_score\":8.4,\"cvss_v3_user_interaction\":\"none\",\"cvss_v3_vector\":\"CVSS:3.0/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\",\"denial_of_service\":false,\"description\":\"Anonymous root logins should only be allowed from system console. /etc/securetty allows you to specify on which tty's and virtual consoles root is allowed to login. The tty and vc's listed in this file will allow root to login on certain tty's and VC's. On other tty or vc's root user will not be allowed and user has to \\\"su\\\" to become root.\",\"exploits\":[],\"first_found\":\"2025-05-12T16:25:35Z\",\"id\":\"unix-anonymous-root-logins\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"links\":[],\"malware_kits\":[],\"modified\":\"2025-02-18T00:00:00Z\",\"nic\":null,\"pci_cvss_score\":6.5,\"pci_fail\":true,\"pci_severity_score\":4,\"pci_special_notes\":\"\",\"pci_status\":\"fail\",\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eFollowing entries in /etc/securetty \\n                                 may allow anonymous root logins: \\u003cul\\u003e\\u003cli\\u003ettyS0\\u003c/li\\u003e\\u003cli\\u003ettysclp0\\u003c/li\\u003e\\u003cli\\u003esclp_line0\\u003c/li\\u003e\\u003cli\\u003e3270/tty1\\u003c/li\\u003e\\u003cli\\u003ehvc0\\u003c/li\\u003e\\u003cli\\u003ehvc1\\u003c/li\\u003e\\u003cli\\u003ehvc2\\u003c/li\\u003e\\u003cli\\u003ehvc3\\u003c/li\\u003e\\u003cli\\u003ehvc4\\u003c/li\\u003e\\u003cli\\u003ehvc5\\u003c/li\\u003e\\u003cli\\u003ehvc6\\u003c/li\\u003e\\u003cli\\u003ehvc7\\u003c/li\\u003e\\u003cli\\u003ehvsi0\\u003c/li\\u003e\\u003cli\\u003ehvsi1\\u003c/li\\u003e\\u003cli\\u003ehvsi2\\u003c/li\\u003e\\u003cli\\u003exvc0\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"published\":\"2004-11-30T00:00:00Z\",\"references\":\"\",\"reintroduced\":null,\"risk_score\":562,\"severity\":\"severe\",\"severity_score\":7,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eRemove all the entries in /etc/securetty except console,\\n            tty[0-9]* and vc\\\\[0-9]* \\u003c/p\\u003e\\u003cp\\u003eNote: ssh does not use /etc/securetty. To disable root login\\n            through ssh, use the \\u0026quot;PermitRootLogin\\u0026quot; setting in /etc/ssh/sshd_config\\n            and restart the ssh daemon. \\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-anonymous-root-logins\",\"solution_summary\":\"Edit '/etc/securetty' entries\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"title\":\"Anonymous root login is allowed\",\"vulnerability_id\":\"unix-anonymous-root-logins\"}}",
         "severity": 7,
@@ -365,6 +378,16 @@ An example event for `asset_vulnerability` looks as following:
             "total_vulnerabilities": 52,
             "type": "guest",
             "unique_identifiers": [
+                {
+                    "id": "CEF12345-ABCD-1234-ABCD-95ABCDEF1234",
+                    "source": "dmidecode"
+                },
+                {
+                    "id": "e80644e940123456789abcdef66a8b16",
+                    "source": "R7 Agent"
+                }
+            ],
+            "unique_identifiers_nested": [
                 {
                     "id": "CEF12345-ABCD-1234-ABCD-95ABCDEF1234",
                     "source": "dmidecode"
@@ -497,6 +520,9 @@ An example event for `asset_vulnerability` looks as following:
 | rapid7_insightvm.asset_vulnerability.credential_assessments.port | The port the authentication was used on. | long |
 | rapid7_insightvm.asset_vulnerability.credential_assessments.protocol | The protocol the authentication was used on. | keyword |
 | rapid7_insightvm.asset_vulnerability.credential_assessments.status | The authentication of the last scan performed. | keyword |
+| rapid7_insightvm.asset_vulnerability.credential_assessments_nested.port | The port the authentication was used on. | long |
+| rapid7_insightvm.asset_vulnerability.credential_assessments_nested.protocol | The protocol the authentication was used on. | keyword |
+| rapid7_insightvm.asset_vulnerability.credential_assessments_nested.status | The authentication of the last scan performed. | keyword |
 | rapid7_insightvm.asset_vulnerability.critical_vulnerabilities | The count of critical vulnerability findings. | long |
 | rapid7_insightvm.asset_vulnerability.exploits | The count of known unique exploits that can be used to exploit vulnerabilities on the asset. | long |
 | rapid7_insightvm.asset_vulnerability.host_name | The host name (local or FQDN). | keyword |
@@ -520,10 +546,14 @@ An example event for `asset_vulnerability` looks as following:
 | rapid7_insightvm.asset_vulnerability.severe_vulnerabilities | The count of severe vulnerability findings. | long |
 | rapid7_insightvm.asset_vulnerability.tags.name | The stored value. | keyword |
 | rapid7_insightvm.asset_vulnerability.tags.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
+| rapid7_insightvm.asset_vulnerability.tags_nested.name | The stored value. | keyword |
+| rapid7_insightvm.asset_vulnerability.tags_nested.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
 | rapid7_insightvm.asset_vulnerability.total_vulnerabilities | The total count of vulnerability findings. | long |
 | rapid7_insightvm.asset_vulnerability.type | The type of asset. | keyword |
 | rapid7_insightvm.asset_vulnerability.unique_identifiers.id | The unique identifier. | keyword |
 | rapid7_insightvm.asset_vulnerability.unique_identifiers.source | The source of the unique identifier. | keyword |
+| rapid7_insightvm.asset_vulnerability.unique_identifiers_nested.id | The unique identifier. | keyword |
+| rapid7_insightvm.asset_vulnerability.unique_identifiers_nested.source | The source of the unique identifier. | keyword |
 | rapid7_insightvm.asset_vulnerability.vulnerability.added | The date the vulnerability coverage was added. The format is an ISO 8601 date, YYYY-MM-DD. | date |
 | rapid7_insightvm.asset_vulnerability.vulnerability.categories | Comma-separated list of categories the vulnerability is classified under. | keyword |
 | rapid7_insightvm.asset_vulnerability.vulnerability.check_id | The identifier of the vulnerability check. | keyword |
@@ -611,34 +641,34 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2018-06-08T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "dbee2821-362a-4d7a-9e8e-0fcd816d4696",
-        "id": "6a264171-bdc2-47a0-a131-9a515aa1c01f",
-        "name": "elastic-agent-42291",
+        "ephemeral_id": "51272efb-9e22-492c-b0c6-2c23d0325153",
+        "id": "9d4fc84a-897a-4b36-97d5-2030f9c4cd00",
+        "name": "elastic-agent-25034",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.vulnerability",
-        "namespace": "75615",
+        "namespace": "84038",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6a264171-bdc2-47a0-a131-9a515aa1c01f",
-        "snapshot": false,
-        "version": "8.18.0"
+        "id": "9d4fc84a-897a-4b36-97d5-2030f9c4cd00",
+        "snapshot": true,
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2025-05-30T11:12:58.134Z",
+        "created": "2025-09-22T06:51:39.125Z",
         "dataset": "rapid7_insightvm.vulnerability",
         "id": "7-zip-cve-2008-6536",
-        "ingested": "2025-05-30T11:13:00Z",
+        "ingested": "2025-09-22T06:51:41Z",
         "kind": "event",
         "original": "{\"added\":\"2018-05-16T00:00:00Z\",\"categories\":\"7-Zip\",\"cves\":\"CVE-2008-6536\",\"cvss_v2_access_complexity\":\"low\",\"cvss_v2_access_vector\":\"network\",\"cvss_v2_authentication\":\"none\",\"cvss_v2_availability_impact\":\"complete\",\"cvss_v2_confidentiality_impact\":\"complete\",\"cvss_v2_exploit_score\":9.996799,\"cvss_v2_impact_score\":10.000845,\"cvss_v2_integrity_impact\":\"complete\",\"cvss_v2_score\":10,\"cvss_v2_vector\":\"AV:N/AC:L/Au:N/C:C/I:C/A:C\",\"cvss_v3_attack_complexity\":null,\"cvss_v3_attack_vector\":null,\"cvss_v3_availability_impact\":null,\"cvss_v3_confidentiality_impact\":null,\"cvss_v3_exploit_score\":0,\"cvss_v3_impact_score\":0,\"cvss_v3_integrity_impact\":null,\"cvss_v3_privileges_required\":null,\"cvss_v3_scope\":null,\"cvss_v3_score\":0,\"cvss_v3_user_interaction\":null,\"cvss_v3_vector\":null,\"denial_of_service\":false,\"description\":\"Unspecified vulnerability in 7-zip before 4.5.7 has unknown impact and remote attack vectors, as demonstrated by the PROTOS GENOME test suite for Archive Formats (c10).\",\"exploits\":[],\"id\":\"7-zip-cve-2008-6536\",\"links\":[{\"href\":\"http://www.securityfocus.com/bid/28285\",\"id\":\"28285\",\"rel\":\"advisory\",\"source\":\"bid\"},{\"href\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"id\":\"41247\",\"rel\":\"advisory\",\"source\":\"xf\"},{\"href\":\"http://nvd.nist.gov/vuln/detail/CVE-2008-6536\",\"id\":\"CVE-2008-6536\",\"rel\":\"advisory\",\"source\":\"cve\"},{\"href\":\"http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html\",\"id\":\"http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/\",\"id\":\"http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.securityfocus.com/bid/28285\",\"id\":\"http://www.securityfocus.com/bid/28285\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.vupen.com/english/advisories/2008/0914/references\",\"id\":\"http://www.vupen.com/english/advisories/2008/0914/references\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf\",\"id\":\"http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"id\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"rel\":\"advisory\",\"source\":\"url\"}],\"malware_kits\":[],\"modified\":\"2018-06-08T00:00:00Z\",\"pci_cvss_score\":10,\"pci_fail\":true,\"pci_severity_score\":5,\"pci_special_notes\":\"\",\"pci_status\":\"fail\",\"published\":\"2009-03-29T00:00:00Z\",\"references\":\"bid:28285,xf:41247,cve:CVE-2008-6536,url:http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html,url:http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/,url:http://www.securityfocus.com/bid/28285,url:http://www.vupen.com/english/advisories/2008/0914/references,url:http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf,url:https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"risk_score\":885.16,\"severity\":\"critical\",\"severity_score\":10,\"title\":\"7-Zip: CVE-2008-6536: Unspecified vulnerability in 7-zip before 4.5.7\"}",
         "risk_score": 885.16,

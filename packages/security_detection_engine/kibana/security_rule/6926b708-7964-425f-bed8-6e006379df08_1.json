@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This detection correlates FortiGate's application control SOCKS events with Elastic Defend network event to identify the source process performing SOCKS traffic. Adversaries may use a connection proxy to direct network traffic between systems or act as an intermediary for network communications to a command and control server to avoid direct connections to their infrastructure.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*",
+            "logs-fortinet_fortigate.log-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "SOCKS Traffic from an Unusual Process",
+        "note": "## Triage and analysis\n\n### Investigating SOCKS Traffic from an Unusual Process\n\n### Possible investigation steps\n\n- Review the process details like command_line, privileges, global relevance and reputation.\n- Review the parent process execution details like command_line, global relevance and reputation.\n- Examine all network connection details performed by the process during last 48h.\n- Examine all localhost network connections performed by the same process to verify if there is any port forwarding with another process on the same machine.\n- Correlate the alert with other security events or logs to identify any patterns or additional indicators of compromise related to the same process or network activity.\n\n### False positive analysis\n\n- Browser proxy extensions and Add-ons.\n- Development and deployment tools.\n- Third party trusted tools using SOCKS for network communication.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate the suspicious processes and all associated children and parents.\n- Conduct a thorough review of the system's configuration files to identify unauthorized changes.\n- Reset credentials for any accounts associated with the source machine.\n- Implement network-level controls to block traffic via SOCKS unless authorized.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n",
+        "query": "sequence by source.port, source.ip, destination.ip with maxspan=1m\n [network where event.dataset == \"fortinet_fortigate.log\" and event.action == \"signature\" and network.application in (\"SOCKS4\", \"SOCKS5\")]\n [network where event.module == \"endpoint\" and event.action in (\"disconnect_received\", \"connection_attempted\")]\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1090/",
+            "https://www.elastic.co/docs/reference/integrations/fortinet_fortigate",
+            "https://www.elastic.co/docs/reference/integrations/endpoint"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.31.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.application",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "6926b708-7964-425f-bed8-6e006379df08",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Data Source: Fortinet",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1090",
+                        "name": "Proxy",
+                        "reference": "https://attack.mitre.org/techniques/T1090/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "6926b708-7964-425f-bed8-6e006379df08_1",
+    "type": "security-rule"
+}

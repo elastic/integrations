@@ -2,74 +2,90 @@
 description: Pipeline for parsing Suricata EVE logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_observer_product_b61fc183
       if: ctx.tags != null && ctx.tags.contains('forwarded')
       field: observer.product
       value: Suricata
   - set:
+      tag: set_observer_type_14259d96
       if: ctx.tags != null && ctx.tags.contains('forwarded')
       field: observer.type
       value: ids
   - set:
+      tag: set_observer_vendor_1da66a11
       if: ctx.tags != null && ctx.tags.contains('forwarded')
       field: observer.vendor
       value: OISF
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - set:
+      tag: set_event_created_097d2f67
       field: event.created
       copy_from: '@timestamp'
       override: false
       ignore_failure: true
   - json:
+      tag: json_event_original_to_suricata_eve_6392efc6
       field: event.original
       target_field: suricata.eve
   - rename:
+      tag: rename_suricata_eve_ether_dest_mac_to_destination_mac_0dd855eb
       field: suricata.eve.ether.dest_mac
       target_field: destination.mac
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_ether_src_mac_to_source_mac_18469f30
       field: suricata.eve.ether.src_mac
       target_field: source.mac
       ignore_missing: true
   # Format source.mac address.
   - gsub:
+      tag: gsub_source_mac_061bf27a
       field: source.mac
       pattern: '[-:.]'
       replacement: ''
       ignore_missing: true
   - gsub:
+      tag: gsub_source_mac_a230b90b
       field: source.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
   # Format destination.mac address.
   - gsub:
+      tag: gsub_destination_mac_80c7dedb
       field: destination.mac
       pattern: '[-:.]'
       replacement: ''
       ignore_missing: true
   - gsub:
+      tag: gsub_destination_mac_1aa8a244
       field: destination.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_destination_mac_04de3657
       field: destination.mac
       ignore_missing: true
   # Format host.mac addresses.
   - script:
+      tag: script_6d904333
       lang: painless
       if: ctx.host?.mac != null
-      source:
+      source: |
         def fixup(ArrayList macs) {
           for (def i = 0; i < macs.length; i++) {
             macs[i] = macs[i].replace(':','-').toUpperCase();
@@ -79,63 +95,77 @@ processors:
         ctx.host['mac'] = fixup(ctx.host?.mac);
 
   - rename:
+      tag: rename_suricata_eve_src_ip_to_source_address_10be4995
       field: suricata.eve.src_ip
       target_field: source.address
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_0a89ba51
       field: source.address
       target_field: source.ip
       type: ip
       ignore_failure: true
   - convert:
+      tag: convert_suricata_eve_src_port_to_source_port_2ba6a53f
       field: suricata.eve.src_port
       target_field: source.port
       type: integer
       ignore_failure: true
   - rename:
+      tag: rename_suricata_eve_dest_ip_to_destination_address_a684fa9a
       field: suricata.eve.dest_ip
       target_field: destination.address
       ignore_missing: true
   - convert:
+      tag: convert_destination_address_to_destination_ip_9045f827
       field: destination.address
       target_field: destination.ip
       type: ip
       ignore_failure: true
   - convert:
+      tag: convert_suricata_eve_dest_port_to_destination_port_7df89714
       field: suricata.eve.dest_port
       target_field: destination.port
       type: integer
       ignore_failure: true
   - rename:
+      tag: rename_suricata_eve_proto_to_network_transport_75448649
       field: suricata.eve.proto
       target_field: network.transport
       ignore_missing: true
   - convert:
+      tag: convert_suricata_eve_flow_id_6bef3442
       field: suricata.eve.flow_id
       type: string
       ignore_missing: true
   - date:
+      tag: date_@timestamp_to_event_created_0f8ef74a
       field: '@timestamp'
       target_field: event.created
       formats:
         - ISO8601
       ignore_failure: true
   - date:
+      tag: date_suricata_eve_timestamp_f976b0fd
       field: suricata.eve.timestamp
       formats:
         - ISO8601
   - community_id:
+      tag: community_id_d2308e7a
       target_field: network.community_id
       ignore_failure: true
   - registered_domain:
+      tag: registered_domain_suricata_eve_dns_rrname_to_dns_question_29240b38
       field: suricata.eve.dns.rrname
       target_field: dns.question
       ignore_missing: true
   # Handle the different Suricata event types.
   - lowercase:
+      tag: lowercase_suricata_eve_event_type_9dc832ee
       field: suricata.eve.event_type
       ignore_missing: true
   - script:
+      tag: script_3c5eb683
       lang: painless
       ignore_failure: true
       params:
@@ -243,13 +273,16 @@ processors:
         });
   ## Anomaly and Alert
   - lowercase:
+      tag: lowercase_suricata_eve_app_proto_3d6a98c3
       field: suricata.eve.app_proto
       ignore_missing: true
   - set:
+      tag: set_network_protocol_740ee73e
       if: ctx?.suricata?.eve?.app_proto == "ftp-data"
       field: network.protocol
       value: ftp
   - set:
+      tag: set_network_protocol_ee041af9
       if: >-
         ctx?.suricata?.eve?.app_proto != "failed" && ctx?.suricata?.eve?.app_proto != "template" && ctx?.suricata?.eve?.app_proto != "template-rust"
       field: network.protocol
@@ -257,51 +290,62 @@ processors:
       ignore_failure: true
   ## HTTP
   - set:
+      tag: set_event_outcome_f191d8d5
       if: 'ctx?.suricata?.eve?.event_type == "http" && ctx?.suricata?.eve?.http?.status != null && ctx?.suricata?.eve?.http?.status < 400'
       field: event.outcome
       value: success
   - set:
+      tag: set_event_outcome_1ddc1927
       if: 'ctx?.suricata?.eve?.event_type == "http" && ctx?.suricata?.eve?.http?.status != null && ctx?.suricata?.eve?.http?.status >= 400'
       field: event.outcome
       value: failure
   - convert:
+      tag: convert_suricata_eve_http_http_port_2b05b881
       field: suricata.eve.http.http_port
       type: integer
       if: ctx?.suricata?.eve?.http?.http_port != null
   ## DNS
   - pipeline:
+      tag: pipeline_5d478e62
       if: >-
         ctx?.network?.protocol == "dns"
       name: '{{ IngestPipeline "dns" }}'
   ## TLS
   - pipeline:
+      tag: pipeline_ad93e586
       if: ctx.network?.protocol == "tls" && ctx.suricata?.eve?.tls != null
       name: '{{ IngestPipeline "tls" }}'
   ## Flow
   - append:
+      tag: append_event_type_c3c9cd09
       if: ctx?.suricata?.eve?.flow?.state == "new"
       field: event.type
       value:
         - start
   - append:
+      tag: append_event_type_beeb6e2a
       if: ctx?.suricata?.eve?.flow?.state == "closed"
       field: event.type
       value:
         - end
   - set:
+      tag: set_http_request_method_43a0077e
       field: http.request.method
       copy_from: suricata.eve.http.http_method
       ignore_failure: true
   - rename:
+      tag: rename_suricata_eve_http_status_to_http_response_status_code_c333c29f
       field: suricata.eve.http.status
       target_field: http.response.status_code
       ignore_missing: true
   - append:
+      tag: append_destination_domain_7cf471f1
       if: ctx.suricata?.eve?.http?.hostname != null
       value: '{{{suricata.eve.http.hostname}}}'
       field: destination.domain
       allow_duplicates: false
   - remove:
+      tag: remove_suricata_eve_http_hostname_1315fcd5
       field: suricata.eve.http.hostname
       ignore_failure: true
   - script:
@@ -320,11 +364,13 @@ processors:
 
       ignore_failure: true
   - set:
+      tag: set_url_domain_6197242b
       if: "ctx?.network?.protocol == 'http'"
       field: url.domain
       copy_from: destination.domain
       ignore_failure: true
   - grok:
+      tag: grok_suricata_eve_http_url_ec5b3fcc
       field: suricata.eve.http.url
       patterns:
         - '%{PATH:url.path}(?:\?%{QUERY:url.query})?(?:#%{ANY:url.fragment})?'
@@ -334,58 +380,72 @@ processors:
         QUERY: '[^#]*'
         ANY: '.*'
   - rename:
+      tag: rename_suricata_eve_http_url_to_url_original_a26f2bd1
       field: suricata.eve.http.url
       target_field: url.original
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_http_http_refer_to_http_request_referrer_025b80ab
       field: suricata.eve.http.http_refer
       target_field: http.request.referrer
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_http_length_to_http_response_body_bytes_7321ce72
       field: suricata.eve.http.length
       target_field: http.response.body.bytes
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_fileinfo_filename_to_file_path_3ce1bbb8
       field: suricata.eve.fileinfo.filename
       target_field: file.path
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_fileinfo_size_to_file_size_45668422
       field: suricata.eve.fileinfo.size
       target_field: file.size
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_transport_bc8c1c12
       field: network.transport
       ignore_missing: true
   # Suricata alert and metadata
   - convert:
+      tag: convert_suricata_eve_alert_category_to_message_07340e3d
       field: suricata.eve.alert.category
       target_field: message
       type: string
       ignore_missing: true
   - set:
+      tag: set_rule_category_100e00fc
       field: rule.category
       value: "{{{suricata.eve.alert.category}}}"
       ignore_empty_value: true
   - set:
+      tag: set_rule_id_3e043a01
       field: rule.id
       value: "{{{suricata.eve.alert.signature_id}}}"
       ignore_empty_value: true
   - set:
+      tag: set_rule_name_b45bf5fb
       field: rule.name
       value: "{{{suricata.eve.alert.signature}}}"
       ignore_empty_value: true
   - set:
+      tag: set_suricata_eve_alert_action_aeb3a7e1
       field: suricata.eve.alert.action
       value: denied
       if: "ctx?.suricata?.eve?.alert?.action == 'blocked'"
   - append:
+      tag: append_event_type_d01a8583
       field: event.type
       value: "{{{suricata.eve.alert.action}}}"
       if: "ctx?.suricata?.eve?.alert?.action != null"
   - remove:
+      tag: remove_suricata_eve_alert_action_c69c960c
       field: suricata.eve.alert.action
       ignore_failure: true
   - rename:
+      tag: rename_suricata_eve_alert_severity_to_event_severity_22350c44
       field: suricata.eve.alert.severity
       target_field: event.severity
       ignore_missing: true
@@ -393,67 +453,83 @@ processors:
   # by suricata rules, to prevent the defined keys to be set as flattened type:
   # https://better-schema.readthedocs.io/en/latest/schema.html#defined-keys
   - rename:
+      tag: rename_suricata_eve_alert_metadata_protocols_to_suricata_eve_alert_protocols_d7d59953
       field: suricata.eve.alert.metadata.protocols
       target_field: suricata.eve.alert.protocols
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_attack_target_to_suricata_eve_alert_attack_target_b2c3b433
       field: suricata.eve.alert.metadata.attack_target
       target_field: suricata.eve.alert.attack_target
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_capec_id_to_suricata_eve_alert_capec_id_5dea2239
       field: suricata.eve.alert.metadata.capec_id
       target_field: suricata.eve.alert.capec_id
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_cwe_id_to_suricata_eve_alert_cwe_id_ef91f347
       field: suricata.eve.alert.metadata.cwe_id
       target_field: suricata.eve.alert.cwe_id
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_malware_to_suricata_eve_alert_malware_02fde907
       field: suricata.eve.alert.metadata.malware
       target_field: suricata.eve.alert.malware
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_cve_to_suricata_eve_alert_cve_8f19ac5f
       field: suricata.eve.alert.metadata.cve
       target_field: suricata.eve.alert.cve
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_cvss_v2_base_to_suricata_eve_alert_cvss_v2_base_1f95abdd
       field: suricata.eve.alert.metadata.cvss_v2_base
       target_field: suricata.eve.alert.cvss_v2_base
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_cvss_v2_temporal_to_suricata_eve_alert_cvss_v2_temporal_21bd0e2b
       field: suricata.eve.alert.metadata.cvss_v2_temporal
       target_field: suricata.eve.alert.cvss_v2_temporal
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_cvss_v3_base_to_suricata_eve_alert_cvss_v3_base_e48a2383
       field: suricata.eve.alert.metadata.cvss_v3_base
       target_field: suricata.eve.alert.cvss_v3_base
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_cvss_v3_temporal_to_suricata_eve_alert_cvss_v3_temporal_697775c5
       field: suricata.eve.alert.metadata.cvss_v3_temporal
       target_field: suricata.eve.alert.cvss_v3_temporal
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_priority_to_suricata_eve_alert_priority_17a48765
       field: suricata.eve.alert.metadata.priority
       target_field: suricata.eve.alert.priority
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_hostile_to_suricata_eve_alert_hostile_f9dfb81f
       field: suricata.eve.alert.metadata.hostile
       target_field: suricata.eve.alert.hostile
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_infected_to_suricata_eve_alert_infected_5d1f3e51
       field: suricata.eve.alert.metadata.infected
       target_field: suricata.eve.alert.infected
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_created_at_to__tmp__created_at_00583afe
       field: suricata.eve.alert.metadata.created_at
       target_field: _tmp_.created_at
       ignore_missing: true
   - join:
+      tag: join__tmp__created_at_04aedeb4
       field: _tmp_.created_at
       description: Converts date field to string
       separator: ","
       if: ctx._tmp_?.created_at != null
   - date:
+      tag: date__tmp__created_at_to_suricata_eve_alert_created_at_fbdecee8
       field: _tmp_.created_at
       target_field: suricata.eve.alert.created_at
       formats:
@@ -462,15 +538,18 @@ processors:
       if: ctx._tmp_?.created_at != null
       ignore_failure: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_updated_at_to__tmp__updated_at_251cc19a
       field: suricata.eve.alert.metadata.updated_at
       target_field: _tmp_.updated_at
       ignore_missing: true
   - join:
+      tag: join__tmp__updated_at_7922d4aa
       field: _tmp_.updated_at
       description: Converts date field to string
       separator: ","
       if: ctx._tmp_?.updated_at != null
   - date:
+      tag: date__tmp__updated_at_to_suricata_eve_alert_updated_at_eeae3c01
       field: _tmp_.updated_at
       target_field: suricata.eve.alert.updated_at
       formats:
@@ -479,59 +558,73 @@ processors:
       if: ctx._tmp_?.updated_at != null
       ignore_failure: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_filename_to_file_name_a453da55
       field: suricata.eve.alert.metadata.filename
       target_field: file.name
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_classtype_to_suricata_eve_alert_classtype_498e1127
       field: suricata.eve.alert.metadata.classtype
       target_field: suricata.eve.alert.classtype
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_rule_source_to_suricata_eve_alert_rule_source_c48e0c63
       field: suricata.eve.alert.metadata.rule_source
       target_field: suricata.eve.alert.rule_source
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_sid_to_suricata_eve_alert_sid_03846e9b
       field: suricata.eve.alert.metadata.sid
       target_field: suricata.eve.alert.sid
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_mitre_attack_to_threat_tactic_id_3b78ac60
       field: suricata.eve.alert.metadata.mitre_attack
       target_field: threat.tactic.id
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_mitre_tactic_id_to_threat_tactic_id_2d105840
       field: suricata.eve.alert.metadata.mitre_tactic_id
       target_field: threat.tactic.id
       ignore_missing: true
       if: ctx.threat?.tactic?.id == null
   - rename:
+      tag: rename_suricata_eve_alert_metadata_mitre_tactic_name_to_threat_tactic_name_ef9d3d90
       field: suricata.eve.alert.metadata.mitre_tactic_name
       target_field: threat.tactic.name
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_mitre_technique_id_to_threat_technique_id_73587d1a
       field: suricata.eve.alert.metadata.mitre_technique_id
       target_field: threat.technique.id
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_alert_metadata_mitre_technique_id_to_threat_technique_name_3d062064
       field: suricata.eve.alert.metadata.mitre_technique_id
       target_field: threat.technique.name
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_flow_pkts_toclient_to_destination_packets_0f40713e
       field: suricata.eve.flow.pkts_toclient
       target_field: destination.packets
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_flow_pkts_toserver_to_source_packets_32d9aba3
       field: suricata.eve.flow.pkts_toserver
       target_field: source.packets
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_flow_bytes_toclient_to_destination_bytes_bdd9181b
       field: suricata.eve.flow.bytes_toclient
       target_field: destination.bytes
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_flow_bytes_toserver_to_source_bytes_1155f3f8
       field: suricata.eve.flow.bytes_toserver
       target_field: source.bytes
       ignore_missing: true
   - script:
+      tag: script_2001ce44
       lang: painless
       source: >
         long getOrZero(def map, def key) {
@@ -554,20 +647,22 @@ processors:
             network['packets'] = sp+dp;
           }
         }
-
   - date:
+      tag: date_suricata_eve_flow_start_to_event_start_cffd43aa
       field: suricata.eve.flow.start
       target_field: event.start
       formats:
         - ISO8601
       ignore_failure: true
   - date:
+      tag: date_suricata_eve_flow_end_to_event_end_3f1929d8
       field: suricata.eve.flow.end
       target_field: event.end
       formats:
         - ISO8601
       ignore_failure: true
   - script:
+      tag: script_0dedf283
       lang: painless
       source: >
         Instant ins(def d) {
@@ -585,25 +680,29 @@ processors:
             ev['duration'] = Duration.between(start,end).toNanos();
           }
         }
-
   - lowercase:
+      tag: lowercase_suricata_eve_proto_to_network_transport_ab64331e
       field: suricata.eve.proto
       target_field: network.transport
       ignore_missing: true
   - user_agent:
+      tag: user_agent_suricata_eve_http_http_user_agent_4766abd7
       field: suricata.eve.http.http_user_agent
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_0e79e8a4
       if: ctx.source?.geo == null
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_2f67bd6f
       if: ctx.destination?.geo == null
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -612,6 +711,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -620,51 +720,62 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - append:
+      tag: append_related_hosts_54de93c0
       field: related.hosts
       value: '{{{url.domain}}}'
       if: ctx.url?.domain != null && ctx.url?.domain != ''
       allow_duplicates: false
   - append:
+      tag: append_related_ip_549fa858
       if: ctx?.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_da872846
       if: ctx?.destination?.ip != null
       field: related.ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hash_3cb6ef23
       field: related.hash
       value: "{{{tls.server.ja3s}}}"
       if: "ctx?.tls?.server?.ja3s != null"
   - append:
+      tag: append_related_hash_c48aa022
       field: related.hash
       value: "{{{tls.client.ja3}}}"
       if: "ctx?.tls?.client?.ja3 != null"
       allow_duplicates: false
   - remove:
+      tag: remove_suricata_eve_alert_metadata_d8a4610a
       field: suricata.eve.alert.metadata
       if: "ctx.suricata?.eve?.alert?.metadata == null || ctx.suricata?.eve?.alert?.metadata.isEmpty()"
       ignore_failure: true
       ignore_missing: true
   - remove:
+      tag: remove_6e03eba3
       field:
         - suricata.eve.app_proto
         - suricata.eve.flow.end
@@ -677,10 +788,24 @@ processors:
         - dns.question.domain
         - _tmp_
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

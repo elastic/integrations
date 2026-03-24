@@ -1,0 +1,16 @@
+deployer: docker
+service: gcs-mock-service
+input: gcs
+vars:
+  project_id: fake-gcs-project
+  service_account_key: "{\"type\":\"service_account\",\"project_id\":\"fake-gcs-project\"}"
+data_stream:
+  vars:
+    alternative_host: "http://{{Hostname}}:{{Port}}"
+    number_of_workers: 1
+    poll: true
+    poll_interval: 15s
+    buckets: |
+      - name: testbucket
+assert:
+  hit_count: 1

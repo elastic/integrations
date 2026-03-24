@@ -274,6 +274,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | nats.stats.cores | The number of logical cores the NATS process runs on | integer | gauge |
 | nats.stats.cpu | The current cpu usage of NATs process | scaled_float | gauge |
 | nats.stats.http.req_stats.uri.connz | The number of hits on connz monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.gatewayz | The number of hits on gatewayz monitoring uri | long | counter |
 | nats.stats.http.req_stats.uri.root | The number of hits on root monitoring uri | long | counter |
 | nats.stats.http.req_stats.uri.routez | The number of hits on routez monitoring uri | long | counter |
 | nats.stats.http.req_stats.uri.subsz | The number of hits on subsz monitoring uri | long | counter |
@@ -287,6 +288,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | nats.stats.slow_consumers | The number of slow consumers currently on NATS | long | gauge |
 | nats.stats.total_connections | The number of totally created clients | long | counter |
 | nats.stats.uptime | The period the server is up (sec) | long | counter |
+| nats.stats.version | The specifies version. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
@@ -737,15 +739,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| nats.connection.id | A unique numeric identifier assigned by the NATS server to a connection | keyword |  |
 | nats.connection.idle_time | The period the connection is idle (sec) | long | counter |
 | nats.connection.in.bytes | The amount of incoming bytes | long | counter |
 | nats.connection.in.messages | The amount of incoming messages | long | counter |
+| nats.connection.ip | The ip of the connection | ip |  |
+| nats.connection.lang | Language of the file. | keyword |  |
+| nats.connection.last_activity | The timestamp of the last activity on this connection | date |  |
 | nats.connection.name | The name of the connection | keyword |  |
 | nats.connection.out.bytes | The amount of outgoing bytes | long | counter |
 | nats.connection.out.messages | The amount of outgoing messages | long | counter |
 | nats.connection.pending_bytes | The number of pending bytes of this connection | long | gauge |
+| nats.connection.port | The port of the connection | integer |  |
+| nats.connection.start | The timestamp when the connection was established | date |  |
 | nats.connection.subscriptions | The number of subscriptions in this connection | integer | gauge |
 | nats.connection.uptime | The period the connection is up (sec) | long | counter |
+| nats.connection.version | The specifies version | keyword |  |
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |

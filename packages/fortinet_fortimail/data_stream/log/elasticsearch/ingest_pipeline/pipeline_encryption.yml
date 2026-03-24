@@ -2,10 +2,12 @@
 description: Pipeline for processing Encryption logs.
 processors:
   - rename:
+      tag: rename_temp_session_id_to_fortinet_fortimail_log_session_id_c4b20db7
       field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
   - grok:
+      tag: grok_message_2eb49cca
       field: message
       patterns:
         - '^%{DATA}(?i)user %{NOTSPACE:temp.user} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:temp.msg}$'
@@ -14,41 +16,49 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_ip_bf78f00c
       field: related.ip
       value: '{{{fortinet_fortimail.log.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.ip != null
   - append:
+      tag: append_fortinet_fortimail_log_user_2f9ddf13
       field: fortinet_fortimail.log.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - append:
+      tag: append_user_name_9b60aa7f
       field: user.name
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - append:
+      tag: append_related_user_4554486f
       field: related.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
   - append:
+      tag: append_related_user_0e980ca0
       field: related.user
       value: '{{{fortinet_fortimail.log.sent_from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.sent_from != null
   - append:
+      tag: append_email_from_address_d2cf608c
       field: email.from.address
       value: '{{{fortinet_fortimail.log.sent_from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.sent_from != null
   - append:
+      tag: append_fortinet_fortimail_log_subject_cc39b1e0
       field: fortinet_fortimail.log.subject
       value: '{{{temp.subject}}}'
       allow_duplicates: false
       if: ctx.temp?.subject != null
   - append:
+      tag: append_email_subject_4ee59141
       field: email.subject
       value: '{{{temp.subject}}}'
       allow_duplicates: false
@@ -59,4 +69,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

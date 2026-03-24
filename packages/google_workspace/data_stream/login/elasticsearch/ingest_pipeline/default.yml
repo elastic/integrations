@@ -28,6 +28,10 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.events == null
+      description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
+      tag: drop_empty_events
   - set:
       field: event.kind
       value: event
@@ -215,6 +219,27 @@ processors:
             ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["boolValue"];
           }    
         }
+  - rename:
+      field: json.networkInfo.ipAsn
+      target_field: google_workspace.login.network_info.ip_asn
+      ignore_missing: true
+  - rename:
+      field: json.networkInfo.regionCode
+      target_field: google_workspace.login.network_info.region_code
+      ignore_missing: true
+  - rename:
+      field: json.networkInfo.subdivisionCode
+      target_field: google_workspace.login.network_info.subdivision_code
+      ignore_missing: true
+  - rename:
+      field: json.resourceIds
+      target_field: google_workspace.login.resource_ids
+      ignore_missing: true
+  - convert:
+      field: google_workspace.login.timestamp
+      target_field: google_workspace.login.timestamp
+      type: long
+      ignore_missing: true
   - script:
       lang: painless
       if: ctx?.google_workspace?.login?.timestamp != null

@@ -1,25 +1,31 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_c8ab9fa2
       field: event.category
       value: [configuration]
   - append:
+      tag: append_event_type_8b66b73a
       field: event.type
       value: [info]
   - grok:
+      tag: grok_message_7466a657
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
+      tag: grok_message_c232cfac
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
+      tag: date__tmp_timestamp_9ef85c6a
       field: _tmp.timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
@@ -27,12 +33,15 @@ processors:
         - MMM [ ]d HH:mm:ss[.SSSSSS][.SSS]
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_1d810625
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_7efc4dc7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date__tmp_timestamp_1d2a12b9
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
       formats:
@@ -42,52 +51,64 @@ processors:
       timezone: '{{{event.timezone}}}'
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_26d11908
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_0a8243aa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - kv:
+      tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
   - grok:
+      tag: grok_cisco_ise_log_message_description_859375fa
       field: cisco_ise.log.message.description
       if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
       patterns:
         - "^%{DATA:event.action}:"
       ignore_failure: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_Device_IP_Address_to_client_ip_b34586ce
       field: cisco_ise.log.log_details.Device IP Address
       target_field: client.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_31b55c65
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_Device_IP_Address_ed1bebc1
       field: cisco_ise.log.log_details.Device IP Address
       ignore_missing: true
   - append:
+      tag: append_related_ip_c5270880
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_Protocol_to_network_protocol_1b41af3c
       field: cisco_ise.log.log_details.Protocol
       target_field: network.protocol
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_protocol_49872259
       field: network.protocol
       ignore_missing: true
   - date:
+      tag: date_cisco_ise_log_log_details_RequestReceivedTime_to_cisco_ise_log_request_received_time_c877ce0d
       field: cisco_ise.log.log_details.RequestReceivedTime
       target_field: cisco_ise.log.request.received_time
       if: ctx.cisco_ise?.log?.log_details?.RequestReceivedTime != null
@@ -95,82 +116,101 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_e7d1b3d4
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
   - remove:
+      tag: remove_cisco_ise_log_log_details_RequestReceivedTime_0f6b5b89
       field: cisco_ise.log.log_details.RequestReceivedTime
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_PolicyType_to_cisco_ise_log_policy_type_ad70a261
       field: cisco_ise.log.log_details.PolicyType
       target_field: cisco_ise.log.policy.type
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_AcsSessionID_to_cisco_ise_log_acs_session_id_cc91d981
       field: cisco_ise.log.log_details.AcsSessionID
       target_field: cisco_ise.log.acs.session.id
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_AuthorizationPolicyMatchedRule_to_cisco_ise_log_auth_policy_matched_rule_4a4d3ab0
       field: cisco_ise.log.log_details.AuthorizationPolicyMatchedRule
       target_field: cisco_ise.log.auth.policy.matched.rule
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_CurrentIDStoreName_to_cisco_ise_log_currentid_store_name_5a66776e
       field: cisco_ise.log.log_details.CurrentIDStoreName
       target_field: cisco_ise.log.currentid.store_name
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_ISEPolicySetName_to_cisco_ise_log_ise_policy_set_name_13435a5e
       field: cisco_ise.log.log_details.ISEPolicySetName
       target_field: cisco_ise.log.ise.policy.set_name
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_IdentityPolicyMatchedRule_to_cisco_ise_log_identity_policy_matched_rule_fa387b9d
       field: cisco_ise.log.log_details.IdentityPolicyMatchedRule
       target_field: cisco_ise.log.identity.policy.matched.rule
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_IdentitySelectionMatchedRule_to_cisco_ise_log_identity_selection_matched_rule_71dbb2a1
       field: cisco_ise.log.log_details.IdentitySelectionMatchedRule
       target_field: cisco_ise.log.identity.selection.matched.rule
       ignore_missing: true
   - append:
+      tag: append_user_name_ae749538
       field: user.name
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_ece444e8
       field: related.user
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_cisco_ise_log_log_details_OriginalUserName_2336f51f
       field: cisco_ise.log.log_details.OriginalUserName
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_SelectedAccessService_to_cisco_ise_log_selected_access_service_67d23689
       field: cisco_ise.log.log_details.SelectedAccessService
       target_field: cisco_ise.log.selected.access.service
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_SelectedAuthorizationProfiles_to_cisco_ise_log_selected_authorization_profiles_c87320c3
       field: cisco_ise.log.log_details.SelectedAuthorizationProfiles
       target_field: cisco_ise.log.selected.authorization.profiles
       ignore_missing: true
   - append:
+      tag: append_user_name_7223f00c
       field: user.name
       value: '{{{cisco_ise.log.log_details.UserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_ddbc817c
       field: related.user
       value: '{{{cisco_ise.log.log_details.UserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_cisco_ise_log_log_details_UserName_6d6c9452
       field: cisco_ise.log.log_details.UserName
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_CPMSessionID_to_cisco_ise_log_cpm_session_id_fedffb1d
       field: cisco_ise.log.log_details.CPMSessionID
       target_field: cisco_ise.log.cpm.session.id
       ignore_missing: true
   - remove:
+      tag: remove_25df5c8b
       field:
         - _tmp
         - cisco_ise.log.log_details_raw
@@ -181,4 +221,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

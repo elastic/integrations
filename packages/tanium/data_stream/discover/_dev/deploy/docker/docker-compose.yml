@@ -1,0 +1,18 @@
+version: "2.3"
+services:
+  tanium-tcp-discover:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9083 -p=tcp
+      /sample_logs/discover.log
+  tanium-discover-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9089/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/discover.log

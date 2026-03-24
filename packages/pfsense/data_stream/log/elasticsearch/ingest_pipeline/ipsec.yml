@@ -2,6 +2,7 @@
 description: Pipeline for PFsense IPSEC logs
 processors:
   - grok:
+      tag: grok_message_d7d9a2d7
       field: message
       patterns:
         - '%{PREFIX}%{GREEDYDATA}%{SOURCE} to %{DEST} \(%{NONNEGINT:network.bytes:long} bytes\)'
@@ -11,24 +12,29 @@ processors:
         SOURCE: '%{IP:source.address}\[%{NONNEGINT:source.port:long}\]'
         DEST: '%{IP:destination.address}\[%{NONNEGINT:destination.port:long}\]'
   - append:
+      tag: append_event_type_ac4d9a80
       field: event.type
       value: connection
       allow_duplicates: false
       if: ctx.source?.address != null
   - append:
+      tag: append_event_type_6887ab9d
       field: event.type
       value: end
       allow_duplicates: false
       if: ctx.message.toLowerCase().contains('disconnected')
   - set:
+      tag: set_source_ip_0313ebc9
       field: source.ip
       value: "{{{source.address}}}"
       ignore_empty_value: true
   - set:
+      tag: set_destination_ip_ca415005
       field: destination.ip
       value: "{{{destination.address}}}"
-      ignore_empty_value: true  
+      ignore_empty_value: true
   - set:
+      tag: set_network_protocol_2d8e203a
       field: network.protocol
       value: ipsec
 on_failure:
@@ -37,4 +43,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

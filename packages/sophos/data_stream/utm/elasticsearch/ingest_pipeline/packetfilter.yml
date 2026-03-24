@@ -20,14 +20,14 @@ processors:
   - append:
       if: ctx.event?.action == 'accept'
       field: event.type
-      value: 
+      value:
         - allowed
       allow_duplicates: false
       tag: append_type_allowed
   - append:
       if: ctx.event?.action == 'drop'
       field: event.type
-      value: 
+      value:
         - denied
       allow_duplicates: false
       tag: append_type_denied
@@ -190,11 +190,13 @@ processors:
       target_field: source.geo
       ignore_missing: true
       tag: geo_source_ip
+      if: ctx.source?.ip != ''
   - geoip:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
       tag: geo_destination_ip
+      if: ctx.destination?.ip != ''
 
   # IP Autonomous System (AS) Lookup
   - geoip:
@@ -206,6 +208,7 @@ processors:
           - organization_name
       ignore_missing: true
       tag: geo_source_as
+      if: ctx.source?.ip != ''
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -215,6 +218,7 @@ processors:
           - organization_name
       ignore_missing: true
       tag: geo_destination_as
+      if: ctx.destination?.ip != ''
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -264,8 +268,15 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

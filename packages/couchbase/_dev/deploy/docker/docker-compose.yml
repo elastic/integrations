@@ -1,4 +1,3 @@
-version: '2.3'
 services:
   couchbase:
     image: couchbase/server-sandbox:${COUCHBASE_VERSION:-7.1.0}
@@ -7,10 +6,12 @@ services:
       - ./files/setup.sh:/setup.sh
       - ./files/entrypoint.sh:/entrypoint.sh
     healthcheck:
-      test: ["CMD", "curl", "-s", "-f", "http://Administrator:password@localhost:8091/pools/default/buckets/beer-sample/stats"]
-      interval: 2s
-      timeout: 2s
-      retries: 40
+      # Check both bucket stats AND verify bucket warmup is complete (itemCount > 0)
+      test: ["CMD-SHELL", "curl -sf http://Administrator:password@localhost:8091/pools/default/buckets/travel-sample/stats && curl -sf http://Administrator:password@localhost:8091/pools/default/buckets/beer-sample/stats && curl -sf 'http://Administrator:password@localhost:8091/pools/default/buckets/travel-sample' | grep -q '\"itemCount\":[1-9]'"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+      start_period: 45s
     ports:
       - 8091
   sgw:
@@ -21,15 +22,29 @@ services:
         condition: service_healthy
     volumes:
       - ./files/sync-gateway-config.txt:/etc/sync_gateway/sync_gateway.json
-    command: -adminInterface :4985 /etc/sync_gateway/sync_gateway.json
+    # Use entrypoint to wait for Couchbase data service before starting SGW
+    entrypoint: ["/bin/sh", "-c", "sleep 5 && /entrypoint.sh -adminInterface :4985 /etc/sync_gateway/sync_gateway.json"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4985 || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 45s
+    restart: on-failure:3
     ports:
       - 4985
   exporter:
     build:
       context: ./files/
       dockerfile: Dockerfile
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:9421/metrics"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     ports:
       - 9421
     depends_on:
       sgw:
-        condition: service_started
+        condition: service_healthy

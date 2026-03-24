@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects potential password spraying attacks via SSH by identifying multiple failed login attempts from a single source IP address targeting various user accounts within a short time frame. Password spraying is a technique where an attacker attempts to gain unauthorized access by trying a few commonly used passwords against many different accounts, rather than targeting a single account with multiple password attempts.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Password Spraying Attack via SSH",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Password Spraying Attack via SSH\n\nThis rule flags bursts of failed SSH logins coming from the same network origin against many different Linux accounts within a short window, indicating password spraying that can precede account compromise. It matters because attackers try a small set of common passwords across broad user lists to evade lockouts and find one weak credential. A typical pattern is an external VPS rapidly trying passwords like \u201cWelcome123\u201d or \u201cSpring2024!\u201d against 30+ usernames (e.g., admin, test, ubuntu, devops) over five minutes via SSH on a single server.\n\n### Possible investigation steps\n\n- Check for any successful SSH authentications from the same source IP within a short window around the failures and, if found, pivot to session details such as interactive TTY use, sudo activity, and modifications like authorized_keys updates.\n- Enrich the source IP with geolocation, ASN, reputation, and cloud-provider attribution and verify whether it is observed attempting SSH across multiple hosts to confirm a broad spray pattern.\n- Compare the attempted usernames against your directory to identify valid and privileged or service accounts and confirm whether lockouts, password resets, or MFA challenges were triggered.\n- Determine if the affected host is internet-exposed and which port SSH is reachable on, then review current SSH authentication settings (password vs key-based, PAM/MFA) to assess risk of compromise.\n- Correlate the source IP with approved scanners, bastion hosts, or change tickets and maintenance windows to quickly rule out sanctioned testing or misconfigured monitoring.\n\n### False positive analysis\n\n- A misconfigured internal automation or admin script on a management or jump host sequentially attempts SSH to many accounts with an outdated password, producing more than 10 distinct usernames and at least 30 failures from a single source IP within five minutes.\n- Legitimate users behind a shared NAT or bastion host concurrently attempt SSH with expired credentials during a password rotation or temporary authentication issue, making failures across many distinct usernames appear to come from one IP.\n\n### Response and remediation\n\n- Immediately block the spraying source IP(s) at host firewalls (iptables/nftables) and edge controls, and temporarily restrict SSH (port 22) to approved bastion/jump host CIDRs only.\n- If any login succeeded or an sshd session from the same IP is active, terminate it, remove any newly added ~/.ssh/authorized_keys entries, and force password resets with MFA for the targeted users.\n- Before restoring normal access, verify no persistence by checking for changes to /etc/ssh/sshd_config, sudoers, or cron jobs and reviewing /var/log/auth.log and lastlog for anomalies, then re-enable only required accounts.\n- Escalate to incident response if privileged or service accounts were targeted, the spray spanned multiple servers, or there is evidence of sudo activity, file changes under /root or /etc, or a successful login, and preserve auth logs, bash histories, and firewall block artifacts.\n- Harden SSH by disabling PasswordAuthentication, enforcing key-based auth with PAM MFA, setting conservative MaxAuthTries and LoginGraceTime, enabling fail2ban or equivalent bans, and restricting access via AllowUsers/AllowGroups and security group rules.\n",
+        "query": "from logs-system.auth-* metadata _id, _index, _version\n\n// Create 5-minute time buckets\n| eval Esql.time_window_date_trunc = date_trunc(5 minutes, @timestamp)\n\n// Ensure event.action values in a list are expanded\n| mv_expand event.action \n\n| where\n  event.category == \"authentication\" and event.action in (\"ssh_login\", \"user_login\") and event.outcome == \"failure\" and\n  source.ip is not null \n\n// Keep relevant fields\n| keep\n   @timestamp,\n   _id,\n   _index,\n   _version,\n   event.category,\n   event.action,\n   event.outcome,\n   source.ip,\n   process.name,\n   user.name,\n   event.dataset,\n   data_stream.namespace,\n   agent.id,\n   user.id,\n   Esql.time_window_date_trunc\n\n| stats\n  Esql.event_count = count(*),\n  Esql.user_name_count_distinct = count_distinct(user.name),\n  Esql.user_name_values = values(user.name),\n  Esql.process_name_values = values(process.name),\n  Esql.event_dataset_values = values(event.dataset),\n  Esql.data_stream_namespace_values = values(data_stream.namespace)\n\n  by Esql.time_window_date_trunc, source.ip\n\n| where Esql.user_name_count_distinct > 10 and Esql.event_count >= 30\n",
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.data_stream_namespace_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_dataset_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_window_date_trunc",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "9e81b1fd-e9fb-49a7-8ebe-0d1a14090142",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            },
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "9e81b1fd-e9fb-49a7-8ebe-0d1a14090142_1",
+    "type": "security-rule"
+}

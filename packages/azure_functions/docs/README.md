@@ -2,7 +2,7 @@
 
 The Azure Functions integration allows you to monitor Azure Functions. Azure Functions is an event-driven, serverless compute platform that helps you develop more efficiently using the programming language of your choice. Triggers cause a function to run. A trigger defines how a function is invoked and a function must have exactly one trigger. 
 
-Use Azure Functions to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
+Use Azure Functions to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer to common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
 
 ## Hosting plans and metrics
 
@@ -24,24 +24,81 @@ Supported log categories:
 
 #### Requirements and setup
 
-Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+#### Authentication
+
+The integration supports two authentication methods: **connection string** (shared access key) and **client secret** (Microsoft Entra ID). The same method is used for both Event Hub and Storage Account.
+
+##### Connection string authentication
+
+The Elastic Agent can use a connection string to access the event hub and fetch the exported logs. The connection string contains details about the event hub and the credentials required to access it.
+
+To get the connection string for your Event Hubs namespace:
+
+1. Visit the **Event Hubs namespace** you created in a previous step.
+1. Select **Settings** > **Shared access policies**.
+
+Create a new Shared Access Policy (SAS):
+
+1. Select **Add** to open the creation panel.
+1. Add a **Policy name** (for example, "ElasticAgent").
+1. Select the **Listen** claim.
+1. Click **Create**.
+
+When the SAS Policy is ready, select it to display the information panel.
+
+Take note of the **Connection string–primary key**, which you will use later when specifying a **connection_string** in the integration settings.
+
+##### Client secret authentication (Microsoft Entra ID)
+
+Instead of a connection string, you can authenticate using a Microsoft Entra ID app registration (service principal) with a client secret. This uses Azure RBAC and is useful when you want to avoid shared keys or enforce role-based access.
+
+**Prerequisites:** An Event Hub, a Storage Account, and a Microsoft Entra ID app registration with a client secret.
+
+**Steps:**
+
+1. **Register an app in Microsoft Entra ID**  
+   In the [Azure Portal](https://portal.azure.com/), go to **Microsoft Entra ID** > **App registrations** > **New registration**. Note the **Application (client) ID** and **Directory (tenant) ID**.
+
+2. **Create a client secret**  
+   In the app, go to **Certificates & secrets** > **New client secret**. Copy the secret value; you will need it in the integration (for example `client_secret`). It is shown only once.
+
+3. **Assign required permissions to the app**  
+   The service principal needs the following Azure RBAC permissions (see the [Filebeat azure-eventhub input reference](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) for the same requirements):
+
+   **For Azure Event Hubs:**
+   - **Azure Event Hubs Data Receiver** role on the Event Hubs namespace or Event Hub, or
+   - A custom role with: `Microsoft.EventHub/namespaces/eventhubs/read`, `Microsoft.EventHub/namespaces/eventhubs/consumergroups/read`
+
+   **For Azure Storage Account:**
+   - **Storage Blob Data Contributor** role on the Storage Account or container, or
+   - A custom role with: `Microsoft.Storage/storageAccounts/blobServices/containers/read`, `Microsoft.Storage/storageAccounts/blobServices/containers/write`, `Microsoft.Storage/storageAccounts/blobServices/containers/delete`, `Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action`
+
+   For detailed setup, see the Microsoft documentation: [Create an Azure service principal with Azure CLI](https://learn.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli), [Create an Azure AD app registration using the Azure portal](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal), [Assign Azure roles using Azure CLI](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-cli), [Azure Event Hubs authentication and authorization](https://learn.microsoft.com/en-us/azure/event-hubs/authorize-access-azure-active-directory), [Authorize access to blobs using Azure Active Directory](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
+
+4. **Configure the integration**  
+   Set **Authentication type** to **Client Secret**. Provide **Tenant ID**, **Client ID**, **Client Secret**, and the fully qualified **Event Hub namespace** (for example `yournamespace.servicebus.windows.net`). Use the same Storage Account and container as for connection string authentication; the integration will use the client secret to access both Event Hubs and Storage.
 
 #### Configuration options
+
+`auth_type` :
+_string_
+Authentication method for Event Hub and Storage Account. **Connection String** (default): use `connection_string` and `storage_account_key`. **Client Secret**: use Microsoft Entra ID with `tenant_id`, `client_id`, `client_secret`, and `eventhub_namespace` (RBAC); no connection string or storage key needed.
+
 `eventhub` :
-  _string_
-An Event Hub is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+_string_
+An Event Hub is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (for example, the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
 _string_
- The publish/subscribe mechanism of Event Hubs is enabled through consumer groups. A consumer group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
+The publish/subscribe mechanism of Event Hubs is enabled through consumer groups. A consumer group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
 Default value: `$Default`
 
 `connection_string` :
 _string_
-The connection string is required to communicate with Event Hubs, see steps [here](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
-
-A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the Azure logs package it can start back up at the spot that it stopped processing messages.
+(Required when `auth_type` is **Connection String**.) The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
 
 `storage_account` :
 _string_
@@ -49,15 +106,35 @@ The name of the storage account where the state/offsets will be stored and updat
 
 `storage_account_key` :
 _string_
-The storage account key, this key will be used to authorize access to data in your storage account.
+(Required when `auth_type` is **Connection String**.) The storage account key used to authorize access to checkpoint data. Not used when `auth_type` is **Client Secret**; the integration uses the same client secret for Storage.
+
+`eventhub_namespace` :
+_string_
+(Required when `auth_type` is **Client Secret**.) The fully qualified Event Hubs namespace (for example `yournamespace.servicebus.windows.net`). Do not use the short namespace name.
+
+`tenant_id` :
+_string_
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID (directory) tenant ID where the app is registered.
+
+`client_id` :
+_string_
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application (client) ID. The app's service principal must have **Azure Event Hubs Data Receiver** on the Event Hub and **Storage Blob Data Contributor** on the Storage Account.
+
+`client_secret` :
+_string_
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application client secret from the app's Certificates & secrets.
+
+`authority_host` :
+_string_
+(Optional, for client secret authentication.) Microsoft Entra ID authority endpoint. Defaults to `https://login.microsoftonline.com` (Azure Public Cloud). Use a different endpoint for other clouds (for example Azure Government, China, Germany).
 
 `storage_account_container` :
 _string_
-The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You must use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). Do not reuse the same container name for more than one Azure log type. Refer to [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name, if not specified.
 
 `resource_manager_endpoint` :
 _string_
-Optional, by default we are using the Azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different Azure environment.
+Optional. By default, the integration uses the Azure public environment. To override, you can provide a specific Azure environment.
 
 Resource manager endpoints:
 
@@ -130,7 +207,7 @@ An example event for `functionapplogs` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Check the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information.
 
 **Exported fields**
 
@@ -138,6 +215,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.category | The log category name. | keyword |
+| azure.event_primary_stamp_name | The primary stamp name for the event | keyword |
+| azure.event_stamp_name | The stamp name for the event | keyword |
+| azure.event_stamp_type | The stamp type for the event | keyword |
 | azure.function.app_name | The Function application name. | keyword |
 | azure.function.category | The category of the operation. | keyword |
 | azure.function.event_id | The event ID. | long |
@@ -174,9 +254,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 #### Requirements
 
-To use this integration you will need:
+* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires the Monitoring Reader role to collect metrics from Function Apps. Check the Setup section for more details.
 
-* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires the Monitoring Reader role to access to be able to collect metrics from Function Apps. See more details in the Setup section.
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en/marketplace/apps/elastic.ec-azure-pp?tab=overview), or self-manage the Elastic Stack on your hardware.
 
 #### Setup
@@ -236,7 +315,7 @@ Take note of the content in the **Value** column in the **Client secrets** table
 7. Select **Assign access to** > **User, group, or service principal**, and select **Select members**. This page does not display Azure AD applications in the available options by default.
 8. To find your application, search by name (for example, "elastic-agent") and select it from the list.
 9. Click the **Select** button.
-10. Then click the **Review + assign** button.
+10. Click the **Review + assign** button.
 
 Take note of the following values, which you will use later when specifying settings.
 
@@ -247,14 +326,14 @@ Your App Registration is now ready to be used with the Elastic Agent.
 
 #### Additional Resources
 
-If you want to learn more about this process, you can read these two general guides from Microsoft:
+To learn more about this process, check the following Microsoft guides:
 
 * [Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) 
 * [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
 
 #### Main options
 
-The settings' main section contains all the options needed to access the Azure APIs and collect the Azure Functions metrics data. You will now use all the values from [App registration](#register-a-new-app) including:
+The Settings main section contains all the options needed to access the Azure APIs and collect the Azure Functions metrics data. You will now use all the values from [App registration](#register-a-new-app) including:
 
 `Client ID` _string_
 : The unique identifier of the App Registration (sometimes referred to as Application ID).
@@ -273,7 +352,7 @@ The settings' main section contains all the options needed to access the Azure A
 There are two additional advanced options:
 
 `Resource Manager Endpoint` _string_
-: Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
+: Optional. By default, the integration uses the Azure public environment. To override, you can provide a specific resource manager endpoint to use a different Azure environment.
 
 Examples:
 
@@ -283,7 +362,7 @@ Examples:
 * `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
 
 `Active Directory Endpoint`  _string_
-: Optional. By default, the integration uses the associated Active Directory Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
+: Optional. By default, the integration uses the associated Active Directory Endpoint. To override, you can provide a specific active directory endpoint to use a different Azure environment.
 
 Examples:
 
@@ -445,7 +524,7 @@ An example event for `metrics` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Check the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information.
 
 **Exported fields**
 

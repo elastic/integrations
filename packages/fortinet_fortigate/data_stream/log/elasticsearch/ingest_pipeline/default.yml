@@ -2,20 +2,25 @@
 description: Pipeline for parsing fortinet firewall logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_original_b9758751
       field: event.original
       copy_from: message
   - remove:
+      tag: remove_message_7144efd2
       field: message
   - grok:
+      tag: grok_event_original_995e7c66
       field: event.original
       ecs_compatibility: v1
       patterns:
         - "^(?:%{SYSLOG5424PRI}%{NONNEGINT} )+(?:%{TIMESTAMP_ISO8601}|-) +(?:%{HOSTNAME:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(?:%{GREEDYDATA:syslog5424_msg}|-|)"
         - "^(?:%{SYSLOG5424PRI} *)?%{GREEDYDATA:syslog5424_msg}$"
   - script:
+      tag: script_4a9d0c10
       lang: painless
       source: |
         if (ctx.log?.syslog?.priority != null) {
@@ -27,10 +32,12 @@ processors:
           ctx.log.syslog['facility'] = facility;
         }
   - gsub:
+      tag: gsub_syslog5424_msg_b526c35d
       field: syslog5424_msg
-      pattern: "[\u0000-\u001F\u007F]"
+      pattern: "[\x00-\x1f\x7f]"
       replacement: ""
   - script:
+      tag: script_2073fe5f
       lang: painless
       if: ctx.syslog5424_msg != null
       description: |
@@ -97,6 +104,7 @@ processors:
         }
         ctx.fortinet.firewall = map;
   - script:
+      tag: script_dc02f280
       lang: painless
       source: |
         def fw = ctx.fortinet?.firewall;
@@ -106,45 +114,75 @@ processors:
             fw.entrySet().removeIf(entry -> entry.getValue() == "N/A" || pat.matcher(entry.getKey()).find());
         }
   - set:
+      tag: set_observer_vendor_7e57c221
       field: observer.vendor
       value: Fortinet
   - set:
+      tag: set_observer_product_19a6a908
       field: observer.product
       value: Fortigate
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: firewall
   # Fortigate may set two timezones for an event. Use the first.
   - set:
+      tag: set_event_timezone_5c5e1e41
       if: ctx.fortinet?.firewall?.tz != null && !(ctx.fortinet.firewall.tz instanceof List)
       field: event.timezone
       copy_from: fortinet.firewall.tz
   - set:
+      tag: set_event_timezone_1f1c0600
       if: ctx.fortinet?.firewall?.tz instanceof List && ctx.fortinet.firewall.tz.length != 0
       field: event.timezone
       copy_from: fortinet.firewall.tz.0
   # The timezone may be formatted for human consumption, so fix that too.
   - gsub:
+      tag: gsub_event_timezone_1ce50a02
       field: event.timezone
       pattern: ^(?:[A-Z]{1,4})([+-])([0-9]):?([0-9]{2})$
       replacement: $10$2$3
       ignore_missing: true
       ignore_failure: true
   - gsub:
+      tag: gsub_event_timezone_46d548b8
       field: event.timezone
       pattern: ^(?:[A-Z]{1,4})([+-][0-9]{2}):?([0-9]{2})$
       replacement: $1$2
       ignore_missing: true
       ignore_failure: true
+
   - set:
+      field: event.timezone
+      copy_from: _conf.tz_offset
+      if: ctx.event?.timezone == null && ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
+      ignore_empty_value: true
+
+  - script:
+      lang: painless
+      tag: script_tz_mapping
+      if: ctx.event?.timezone == null && ctx._conf?.tz_map != null &&ctx.fortinet?.firewall?.timezone != null && ctx.fortinet?.firewall?.timezone != ''
+      source: |
+        def tz = ctx.fortinet?.firewall?.timezone;
+        for (def item : ctx._conf.tz_map) {
+          if (item.tz_match_value == tz) {
+            ctx.event.timezone = item.tz_replace_value;
+            break;
+          }
+        }
+
+  - set:
+      tag: set__temp_time_2240d59c
       field: _temp.time
       value: "{{{fortinet.firewall.date}}} {{{fortinet.firewall.time}}} {{{event.timezone}}}"
       if: ctx.fortinet?.firewall?.date != null && ctx.fortinet?.firewall?.time != null && ctx.event?.timezone != null
   - set:
+      tag: set__temp_time_41a88693
       field: _temp.time
       value: "{{{fortinet.firewall.date}}} {{{fortinet.firewall.time}}}"
       if: ctx.fortinet?.firewall?.date != null && ctx.fortinet?.firewall?.time != null && ctx.event?.timezone == null
   - date:
+      tag: date__temp_time_to_timestamp_745b440f
       field: _temp.time
       target_field: "@timestamp"
       formats:
@@ -155,6 +193,7 @@ processors:
       timezone: "{{{event.timezone}}}"
       if: ctx._temp?.time != null && ctx.event?.timezone != null
   - date:
+      tag: date__temp_time_to_timestamp_978d46f3
       field: _temp.time
       target_field: "@timestamp"
       formats:
@@ -164,11 +203,13 @@ processors:
         - ISO8601
       if: ctx._temp?.time != null && ctx.event?.timezone == null
   - gsub:
+      tag: gsub_fortinet_firewall_eventtime_7a46875e
       field: fortinet.firewall.eventtime
       pattern: "\\d{6}$"
       replacement: ""
       if: ctx.fortinet?.firewall?.eventtime != null && (ctx.fortinet?.firewall?.eventtime).length() > 18
   - date:
+      tag: date_fortinet_firewall_eventtime_to_event_start_2c86beef
       field: fortinet.firewall.eventtime
       target_field: event.start
       formats:
@@ -176,6 +217,7 @@ processors:
       timezone: "{{{event.timezone}}}"
       if: ctx.fortinet?.firewall?.eventtime != null && ctx.event?.timezone != null && (ctx.fortinet?.firewall?.eventtime).length() > 11
   - date:
+      tag: date_fortinet_firewall_eventtime_to_event_start_5c1ae327
       field: fortinet.firewall.eventtime
       target_field: event.start
       formats:
@@ -183,97 +225,119 @@ processors:
       timezone: "{{{event.timezone}}}"
       if: ctx.fortinet?.firewall?.eventtime != null && ctx.event?.timezone != null && (ctx.fortinet?.firewall?.eventtime).length() <= 11
   - date:
+      tag: date_fortinet_firewall_eventtime_to_event_start_d17d3bd3
       field: fortinet.firewall.eventtime
       target_field: event.start
       formats:
         - UNIX_MS
       if: ctx.fortinet?.firewall?.eventtime != null && ctx.event?.timezone == null && (ctx.fortinet?.firewall?.eventtime).length() > 11
   - date:
+      tag: date_fortinet_firewall_eventtime_to_event_start_c49d753b
       field: fortinet.firewall.eventtime
       target_field: event.start
       formats:
         - UNIX
       if: ctx.fortinet?.firewall?.eventtime != null && ctx.event?.timezone == null && (ctx.fortinet?.firewall?.eventtime).length() <= 11
   - rename:
+      tag: rename_fortinet_firewall_devname_to_observer_name_81fc9d96
       field: fortinet.firewall.devname
       target_field: observer.name
       ignore_missing: true
   - rename:
+      tag: rename_syslog5424_host_to_observer_name_193d2ffb
       field: syslog5424_host
       target_field: observer.name
       if: ctx.observer?.name == null && ctx.syslog5424_host !== null
       ignore_missing: true
   - remove:
+      tag: remove_c1748a95
       field:
         - syslog5424_host
         - syslog5424_msg
       ignore_missing: true
   - script:
+      tag: script_587fe567
       lang: painless
       source: "ctx.event.duration = Long.parseLong(ctx.fortinet.firewall.duration) * 1000000000"
       if: ctx.fortinet?.firewall?.duration != null
   - rename:
+      tag: rename_fortinet_firewall_devid_to_observer_serial_number_60129b13
       field: fortinet.firewall.devid
       target_field: observer.serial_number
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_dstintf_to_observer_egress_interface_name_340a1617
       field: fortinet.firewall.dstintf
       target_field: observer.egress.interface.name
       ignore_missing: true
       if: ctx.observer?.egress?.interface?.name == null
   - rename:
+      tag: rename_fortinet_firewall_srcintf_to_observer_ingress_interface_name_2eb05d40
       field: fortinet.firewall.srcintf
       target_field: observer.ingress.interface.name
       ignore_missing: true
       if: ctx.observer?.ingress?.interface?.name == null
   - rename:
+      tag: rename_fortinet_firewall_dst_int_to_observer_egress_interface_name_247e22bb
       field: fortinet.firewall.dst_int
       target_field: observer.egress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_src_int_to_observer_ingress_interface_name_a72a5c7a
       field: fortinet.firewall.src_int
       target_field: observer.ingress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_level_to_log_level_0e7843bb
       field: fortinet.firewall.level
       target_field: log.level
       ignore_missing: true
   - append:
+      tag: append_email_cc_address_4d235e7f
       field: email.cc.address
       value: "{{{fortinet.firewall.cc}}}"
       if: ctx.fortinet?.cc?.address != null
   - set:
+      tag: set_email_subject_5cfd5faa
       field: email.subject
       copy_from: fortinet.firewall.subject
       if: ctx.fortinet?.firewall?.subject != null
   - lowercase:
+      tag: lowercase_fortinet_firewall_srcname_to_host_name_bae14896
       target_field: host.name
       field: fortinet.firewall.srcname
       if: ctx.fortinet?.firewall?.srcname != null
   - set:
+      tag: set_user_name_4fd1694d
       field: user.name
       copy_from: source.user.name
       if: ctx.source?.user?.name != null && ctx.user?.name == null
   - rename:
+      tag: rename_fortinet_firewall_msg_to_message_18251f47
       field: fortinet.firewall.msg
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_dstmac_to_destination_mac_f4450c6e
       field: fortinet.firewall.dstmac
       target_field: destination.mac
       ignore_missing: true
   - gsub:
+      tag: gsub_destination_mac_52ddb47b
       field: destination.mac
       pattern: ':'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_destination_mac_04de3657
       field: destination.mac
       ignore_missing: true
   - pipeline:
+      tag: pipeline_0b88bd91
       name: '{{ IngestPipeline "event" }}'
       if: ctx.fortinet?.firewall?.type == 'event'
   - pipeline:
+      tag: pipeline_4025c313
       name: '{{ IngestPipeline "login" }}'
       if: >-
         if (ctx.message instanceof String) {
@@ -282,42 +346,51 @@ processors:
         }
         return false;
   - pipeline:
+      tag: pipeline_6d53bc4d
       name: '{{ IngestPipeline "traffic" }}'
       if: ctx.fortinet?.firewall?.type == 'traffic'
   - pipeline:
+      tag: pipeline_461401ce
       name: '{{ IngestPipeline "utm" }}'
       if: ctx.fortinet?.firewall?.type == 'utm' || ctx.fortinet?.firewall?.type == 'dns'
   - rename:
+      tag: rename_fortinet_firewall_eventtype_to_event_action_d051663b
       field: fortinet.firewall.eventtype
       target_field: event.action
       ignore_missing: true
       if: ctx.event?.action == null
   - rename:
+      tag: rename_fortinet_firewall_reason_to_event_reason_86432253
       field: fortinet.firewall.reason
       target_field: event.reason
       ignore_missing: true
       if: ctx.event?.reason == null
   - rename:
+      tag: rename_fortinet_firewall_eventsubtype_to_event_reason_7e989cdd
       field: fortinet.firewall.eventsubtype
       target_field: event.reason
       ignore_missing: true
       if: ctx.event?.reason == null
   - rename:
+      tag: rename_fortinet_firewall_dir_to_network_direction_9bc88a5a
       field: fortinet.firewall.dir
       target_field: network.direction
       ignore_missing: true
       if: ctx.network?.direction == null
   - rename:
+      tag: rename_fortinet_firewall_direction_to_network_direction_a0716d1c
       field: fortinet.firewall.direction
       target_field: network.direction
       ignore_missing: true
       if: ctx.network?.direction == null
   - network_direction:
+      tag: network_direction_af8b6e3d
       internal_networks_field: _temp.internal_networks
       ignore_missing: true
       if: ctx.network?.direction == null
   # Handle interface-based network directionality
   - set:
+      tag: set_network_direction_0fbdc385
       field: network.direction
       value: inbound
       if: >
@@ -328,6 +401,7 @@ processors:
         ctx._temp.external_interfaces.contains(ctx.observer.ingress.interface.name) &&
         ctx._temp.internal_interfaces.contains(ctx.observer.egress.interface.name)
   - set:
+      tag: set_network_direction_1f1faa3e
       field: network.direction
       value: outbound
       if: >
@@ -338,6 +412,7 @@ processors:
         ctx._temp.external_interfaces.contains(ctx.observer.egress.interface.name) &&
         ctx._temp.internal_interfaces.contains(ctx.observer.ingress.interface.name)
   - set:
+      tag: set_network_direction_fd72b4eb
       field: network.direction
       value: internal
       if: >
@@ -348,6 +423,7 @@ processors:
         ctx._temp.internal_interfaces.contains(ctx.observer.egress.interface.name) &&
         ctx._temp.internal_interfaces.contains(ctx.observer.ingress.interface.name)
   - set:
+      tag: set_network_direction_707f3fa1
       field: network.direction
       value: external
       if: >
@@ -358,6 +434,7 @@ processors:
         ctx._temp.external_interfaces.contains(ctx.observer.egress.interface.name) &&
         ctx._temp.external_interfaces.contains(ctx.observer.ingress.interface.name)
   - set:
+      tag: set_network_direction_fdc5ffc3
       field: network.direction
       value: unknown
       if: >
@@ -377,6 +454,7 @@ processors:
         )
   # Normalize the network direction
   - script:
+      tag: script_2ad0e621
       lang: painless
       ignore_failure: true
       params:
@@ -393,78 +471,96 @@ processors:
       if: ctx.network?.direction instanceof String
   # Fix up network direction field to match ECS-allowable values.
   - set:
+      tag: set_network_direction_8fd7edc5
       field: network.direction
       value: unknown
       if: ctx.network?.direction != null && !(['ingress', 'egress', 'inbound', 'outbound', 'internal', 'external'].contains(ctx.network.direction))
   - rename:
+      tag: rename_fortinet_firewall_interface_to_observer_ingress_interface_name_26e89051
       field: fortinet.firewall.interface
       target_field: observer.ingress.interface.name
       ignore_missing: true
       if: ctx.observer?.ingress?.interface?.name == null && (['ingress', 'inbound', 'internal'].contains(ctx.network?.direction))
   - rename:
+      tag: rename_fortinet_firewall_interface_to_observer_egress_interface_name_4a104736
       field: fortinet.firewall.interface
       target_field: observer.egress.interface.name
       ignore_missing: true
       if: ctx.observer?.egress?.interface?.name == null && (['egress', 'outbound', 'external'].contains(ctx.network?.direction))
   - convert:
+      tag: convert_fortinet_firewall_auditid_ec0373ea
       field: fortinet.firewall.auditid
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_audittime_0d65ad6e
       field: fortinet.firewall.audittime
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_quotamax_a2257e1c
       field: fortinet.firewall.quotamax
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_quotaused_6a99b037
       field: fortinet.firewall.quotaused
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_size_4d138169
       field: fortinet.firewall.size
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_disklograte_cc8fa1f9
       field: fortinet.firewall.disklograte
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_fazlograte_0b3f0dbb
       field: fortinet.firewall.fazlograte
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_lanin_7938bde0
       field: fortinet.firewall.lanin
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_lanout_826341f9
       field: fortinet.firewall.lanout
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_setuprate_a6988fbd
       field: fortinet.firewall.setuprate
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_wanin_754b2213
       field: fortinet.firewall.wanin
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_wanout_2bbe180c
       field: fortinet.firewall.wanout
       type: long
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_0e79e8a4
       field: source.ip
       target_field: source.geo
       ignore_missing: true
       if: ctx.source?.geo == null
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_2f67bd6f
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
       if: ctx.destination?.geo == null
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -473,6 +569,7 @@ processors:
       - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -481,16 +578,19 @@ processors:
       - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_source_nat_ip_to_source_geo_9fb0fcc3
       field: source.nat.ip
       target_field: source.geo
       ignore_missing: true
       if: ctx.source?.geo == null
   - geoip:
+      tag: geoip_destination_nat_ip_to_destination_geo_b429ceb4
       field: destination.nat.ip
       target_field: destination.geo
       ignore_missing: true
       if: ctx.destination?.geo == null
   - geoip:
+      tag: geoip_source_nat_ip_to_source_as_d9d3c7d1
       database_file: GeoLite2-ASN.mmdb
       field: source.nat.ip
       target_field: source.as
@@ -500,6 +600,7 @@ processors:
       ignore_missing: true
       if: ctx.source?.as == null
   - geoip:
+      tag: geoip_destination_nat_ip_to_destination_as_dcccb906
       database_file: GeoLite2-ASN.mmdb
       field: destination.nat.ip
       target_field: destination.as
@@ -509,32 +610,39 @@ processors:
       ignore_missing: true
       if: ctx.destination?.as == null
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - script:
+      tag: script_7a41cd50
       lang: painless
       source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
       if: ctx.source?.bytes != null && ctx.destination?.bytes != null
       ignore_failure: true
   - script:
+      tag: script_8baeb286
       lang: painless
       source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
       if: ctx.source?.packets != null && ctx.destination?.packets != null
       ignore_failure: true
   - script:
+      tag: script_c5ddceda
       lang: painless
       ignore_failure: true
       if: ctx.network?.iana_number != null
@@ -564,90 +672,96 @@ processors:
             ctx.network.transport = 'sctp';
         }
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
   - gsub:
+      tag: gsub_source_mac_3ceae5bc
       field: source.mac
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
-      field: related.ip
-      value: "{{{source.nat.ip}}}"
-      if: ctx.source?.nat?.ip != null
-      allow_duplicates: false
-  - append:
-      field: related.ip
-      value: "{{{destination.nat.ip}}}"
-      if: ctx.destination?.nat?.ip != null
-      allow_duplicates: false
-  - append:
+      tag: append_related_ip_53b62ed8
       field: related.ip
       value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
+      tag: append_related_ip_6a388074
       field: related.ip
       value: "{{{destination.nat.ip}}}"
-      allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
+      allow_duplicates: false
   - append:
+      tag: append_related_ip_1ccb183c
       field: related.ip
       value: "{{{fortinet.firewall.ip}}}"
       allow_duplicates: false
       if: ctx.fortinet?.firewall?.ip != null
   - append:
+      tag: append_related_ip_45cc2958
       field: related.ip
       value: "{{{fortinet.firewall.assignip}}}"
       allow_duplicates: false
       if: ctx.fortinet?.firewall?.assignip != null
   - append:
+      tag: append_related_ip_a5b82964
       field: related.ip
       value: "{{{fortinet.firewall.tunnelip}}}"
       allow_duplicates: false
       if: ctx.fortinet?.firewall?.tunnelip != null
   - append:
+      tag: append_related_user_f745a124
       field: related.user
       value: "{{{source.user.name}}}"
       if: ctx.source?.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_8f37bc82
       field: related.user
       value: "{{{destination.user.name}}}"
       if: ctx.destination?.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_aa05bed9
       field: related.hosts
       value: "{{{destination.address}}}"
       if: ctx.destination?.address != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_439b2767
       field: related.hosts
       value: "{{{source.address}}}"
       if: ctx.source?.address != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_452ef445
       field: related.hosts
       value: "{{{host.name}}}"
       if: ctx.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_c4ad0d16
       field: related.hosts
       value: "{{{dns.question.name}}}"
       if: ctx.dns?.question?.name != null
       allow_duplicates: false
 
   - script:
+      tag: script_b4f88753
       lang: painless
       source: |
         def dnsIPs = ctx.dns?.resolved_ip;
@@ -680,8 +794,10 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_c87f67c3
       field:
         - _temp
+        - _conf
         - fortinet.firewall.tz
         - fortinet.firewall.date
         - fortinet.firewall.devid
@@ -689,10 +805,24 @@ processors:
         - fortinet.firewall.time
         - fortinet.firewall.duration
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

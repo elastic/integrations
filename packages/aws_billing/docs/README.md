@@ -10,17 +10,17 @@ This integration is designed specifically to support standard CUR 2.0 exports wi
 
 > **IMPORTANT:** The integration currently supports only CUR 2.0 reports **without** resource IDs and **split cost allocation data**, and requires a very specific configuration of the CUR export.
 
-## Compatibility
+### Compatibility
 
 This integration supports CUR 2.0 reports only with the specified configurations. If your report includes resource IDs or split allocation data, the integration **will not work**.
 
-## Data Streams
+## What data does this integration collect?
 
 This integration collects data into a single stream:
 
 * `billing`: Contains all metrics from your CUR 2.0 billing reports.
 
-## Requirements
+## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for
 visualizing and managing it. You can use our hosted Elasticsearch Service on
@@ -32,7 +32,7 @@ Before using any AWS integration you will need:
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, please take a look at the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
+For more details about these requirements, refer to the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 To collect AWS CUR reports, you would need specific AWS permissions to access the necessary data. Here's a list of permissions required for an IAM user to collect AWS CUR metrics:
 
@@ -41,7 +41,7 @@ To collect AWS CUR reports, you would need specific AWS permissions to access th
 
 ### AWS Cost and Usage Report (CUR) Export
 
-To use this integration, you must first create a **standard CUR 2.0 data export** in AWS. This will automatically create an S3 bucket if one does not already exist.
+To use this integration, you must create a **standard CUR 2.0 data export** in AWS. This will automatically create an S3 bucket if one does not already exist.
 
 #### Required CUR Export Configuration
 

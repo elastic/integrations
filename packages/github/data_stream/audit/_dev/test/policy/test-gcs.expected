@@ -1,0 +1,43 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: github
+      name: test-gcs-github
+      streams:
+        - auth.credentials_json.account_key: ${SECRET_0}
+          buckets:
+            - name: testbucket
+          data_stream:
+            dataset: github.audit
+            type: logs
+          file_selectors: null
+          max_workers: 3
+          poll: true
+          poll_interval: 15s
+          project_id: gcs-project
+          publisher_pipeline.disable_host: true
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+            - github.audit
+      type: gcs
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-github.audit-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

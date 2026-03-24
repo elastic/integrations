@@ -5,22 +5,27 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - set:
+    tag: set_event_outcome_0dcf9638
     field: event.outcome
     value: success
     if: "ctx.juniper?.srx?.tag != null"
 - append:
+    tag: append_event_category_7afdca3c
     field: event.category
     value: network
 - convert:
+    tag: convert_juniper_srx_application_risk_to_event_risk_score_ecf0044e
     field: juniper.srx.application_risk
     type: float
     target_field: event.risk_score
     ignore_missing: true
     ignore_failure: true
 - append:
+    tag: append_event_type_4ac76073
     field: event.type
     value:
       - start
@@ -28,6 +33,7 @@ processors:
       - connection
     if: "ctx.juniper?.srx?.tag.endsWith('CREATE') || ctx.juniper?.srx?.tag.endsWith('UPDATE') || ctx.juniper?.srx?.tag.endsWith('CREATE_LS') || ctx.juniper?.srx?.tag.endsWith('UPDATE_LS')"
 - append:
+    tag: append_event_type_6c144eba
     field: event.type
     value:
       - end
@@ -35,20 +41,24 @@ processors:
       - connection
     if: "ctx.juniper?.srx?.tag.endsWith('CLOSE') || ctx.juniper?.srx?.tag.endsWith('CLOSE_LS')"
 - append:
+    tag: append_event_type_2d6a93a8
     field: event.type
     value:
       - denied
       - connection
     if: "ctx.juniper?.srx?.tag.endsWith('DENY') || ctx.juniper?.srx?.tag.endsWith('DENY_LS')"
 - set:
+    tag: set_event_action_7d2c7233
     field: event.action
     value: flow_started
     if: "ctx.juniper?.srx?.tag.endsWith('CREATE') || ctx.juniper?.srx?.tag.endsWith('UPDATE') || ctx.juniper?.srx?.tag.endsWith('CREATE_LS') || ctx.juniper?.srx?.tag.endsWith('UPDATE_LS')"
 - set:
+    tag: set_event_action_afbd980e
     field: event.action
     value: flow_close
     if: "ctx.juniper?.srx?.tag.endsWith('CLOSE') || ctx.juniper?.srx?.tag.endsWith('CLOSE_LS')"
 - set:
+    tag: set_event_action_362c4710
     field: event.action
     value: flow_deny
     if: "ctx.juniper?.srx?.tag.endsWith('DENY') || ctx.juniper?.srx?.tag.endsWith('DENY_LS')"
@@ -57,20 +67,24 @@ processors:
 ## ECS Server/Destination Mapping ##
 ####################################
 - rename:
+    tag: rename_juniper_srx_destination_address_to_destination_ip_e8465038
     field: juniper.srx.destination_address
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.destination_address != null"
 - set:
+    tag: set_server_ip_b30dc0d0
     field: server.ip
     value: '{{{destination.ip}}}'
     if: "ctx.destination?.ip != null"
 - rename:
+    tag: rename_juniper_srx_nat_destination_address_to_destination_nat_ip_b0b44c85
     field: juniper.srx.nat_destination_address
     target_field: destination.nat.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_destination_address != null"
 - convert:
+    tag: convert_juniper_srx_destination_port_to_destination_port_afc59f66
     field: juniper.srx.destination_port
     target_field: destination.port
     type: long
@@ -78,10 +92,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.destination_port != null"
 - set:
+    tag: set_server_port_5a9bab8d
     field: server.port
     value: '{{{destination.port}}}'
     if: "ctx?.destination?.port != null"
 - convert:
+    tag: convert_server_port_to_server_port_dbd5a35a
     field: server.port
     target_field: server.port
     type: long
@@ -89,6 +105,7 @@ processors:
     ignore_missing: true
     if: "ctx.server?.port != null"
 - convert:
+    tag: convert_juniper_srx_nat_destination_port_to_destination_nat_port_d95b5eff
     field: juniper.srx.nat_destination_port
     target_field: destination.nat.port
     type: long
@@ -96,10 +113,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_destination_port != null"
 - set:
+    tag: set_server_nat_port_6a96e9e4
     field: server.nat.port
     value: '{{{destination.nat.port}}}'
     if: "ctx.destination?.nat?.port != null"
 - convert:
+    tag: convert_server_nat_port_to_server_nat_port_01bd4004
     field: server.nat.port
     target_field: server.nat.port
     type: long
@@ -107,6 +126,7 @@ processors:
     ignore_missing: true
     if: "ctx.server?.nat?.port != null"
 - convert:
+    tag: convert_juniper_srx_bytes_from_server_to_destination_bytes_ab856f4c
     field: juniper.srx.bytes_from_server
     target_field: destination.bytes
     type: long
@@ -114,10 +134,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.bytes_from_server != null"
 - set:
+    tag: set_server_bytes_e8aa8006
     field: server.bytes
     value: '{{{destination.bytes}}}'
     if: "ctx.destination?.bytes != null"
 - convert:
+    tag: convert_server_bytes_to_server_bytes_5e344962
     field: server.bytes
     target_field: server.bytes
     type: long
@@ -125,6 +147,7 @@ processors:
     ignore_missing: true
     if: "ctx.server?.bytes != null"
 - convert:
+    tag: convert_juniper_srx_packets_from_server_to_destination_packets_067a5c0a
     field: juniper.srx.packets_from_server
     target_field: destination.packets
     type: long
@@ -132,10 +155,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.packets_from_server != null"
 - set:
+    tag: set_server_packets_fe2eeb78
     field: server.packets
     value: '{{{destination.packets}}}'
     if: "ctx.destination?.packets != null"
 - convert:
+    tag: convert_server_packets_to_server_packets_f30a2640
     field: server.packets
     target_field: server.packets
     type: long
@@ -147,25 +172,30 @@ processors:
 ## ECS Client/Source Mapping ##
 ###############################
 - rename:
+    tag: rename_juniper_srx_source_address_to_source_ip_3dec95bd
     field: juniper.srx.source_address
     target_field: source.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.source_address != null"
 - set:
+    tag: set_client_ip_8ef1d10e
     field: client.ip
     value: '{{{source.ip}}}'
     if: "ctx.source?.ip != null"
 - rename:
+    tag: rename_juniper_srx_nat_source_address_to_source_nat_ip_9d517460
     field: juniper.srx.nat_source_address
     target_field: source.nat.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_source_address != null"
 - rename:
+    tag: rename_juniper_srx_sourceip_to_source_ip_003ae86d
     field: juniper.srx.sourceip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.sourceip != null"
 - convert:
+    tag: convert_juniper_srx_source_port_to_source_port_a068e03b
     field: juniper.srx.source_port
     target_field: source.port
     type: long
@@ -173,10 +203,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.source_port != null"
 - set:
+    tag: set_client_port_5123faf0
     field: client.port
     value: '{{{source.port}}}'
     if: "ctx.source?.port != null"
 - convert:
+    tag: convert_client_port_to_client_port_ed0556c6
     field: client.port
     target_field: client.port
     type: long
@@ -184,6 +216,7 @@ processors:
     ignore_missing: true
     if: "ctx.client?.port != null"
 - convert:
+    tag: convert_juniper_srx_nat_source_port_to_source_nat_port_13eaef22
     field: juniper.srx.nat_source_port
     target_field: source.nat.port
     type: long
@@ -191,10 +224,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_source_port != null"
 - set:
+    tag: set_client_nat_port_b9674a98
     field: client.nat.port
     value: '{{{source.nat.port}}}'
     if: "ctx.source?.nat?.port != null"
 - convert:
+    tag: convert_client_nat_port_to_client_nat_port_92cc3098
     field: client.nat.port
     target_field: client.nat.port
     type: long
@@ -202,6 +237,7 @@ processors:
     ignore_missing: true
     if: "ctx.client?.nat?.port != null"
 - convert:
+    tag: convert_juniper_srx_bytes_from_client_to_source_bytes_a03973f1
     field: juniper.srx.bytes_from_client
     target_field: source.bytes
     type: long
@@ -209,10 +245,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.bytes_from_client != null"
 - set:
+    tag: set_client_bytes_56782c4e
     field: client.bytes
     value: '{{{source.bytes}}}'
     if: "ctx.source?.bytes != null"
 - convert:
+    tag: convert_client_bytes_to_client_bytes_e1cc4a86
     field: client.bytes
     target_field: client.bytes
     type: long
@@ -220,6 +258,7 @@ processors:
     ignore_missing: true
     if: "ctx.client?.bytes != null"
 - convert:
+    tag: convert_juniper_srx_packets_from_client_to_source_packets_d7bce28b
     field: juniper.srx.packets_from_client
     target_field: source.packets
     type: long
@@ -227,10 +266,12 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.packets_from_client != null"
 - set:
+    tag: set_client_packets_837b4d14
     field: client.packets
     value: '{{{source.packets}}}'
     if: "ctx.source?.packets != null"
 - convert:
+    tag: convert_client_packets_to_client_packets_ccfe9f54
     field: client.packets
     target_field: client.packets
     type: long
@@ -238,6 +279,7 @@ processors:
     ignore_missing: true
     if: "ctx.client?.packets != null"
 - rename:
+    tag: rename_juniper_srx_username_to_source_user_name_06dbdaea
     field: juniper.srx.username
     target_field: source.user.name
     ignore_missing: true
@@ -247,6 +289,7 @@ processors:
 ## ECS Rule Mapping ##
 ######################
 - rename:
+    tag: rename_juniper_srx_policy_name_to_rule_name_61107798
     field: juniper.srx.policy_name
     target_field: rule.name
     ignore_missing: true
@@ -256,21 +299,25 @@ processors:
 ## ECS Network/Geo Mapping ##
 #############################
 - rename:
+    tag: rename_juniper_srx_protocol_id_to_network_iana_number_822bce82
     field: juniper.srx.protocol_id
     target_field: network.iana_number
     ignore_missing: true
     if: "ctx.juniper?.srx?.protocol_id != null"
 - geoip:
+    tag: geoip_source_ip_to_source_geo_0e79e8a4
     field: source.ip
     target_field: source.geo
     ignore_missing: true
     if: "ctx.source?.geo == null"
 - geoip:
+    tag: geoip_destination_ip_to_destination_geo_2f67bd6f
     field: destination.ip
     target_field: destination.geo
     ignore_missing: true
     if: "ctx.destination?.geo == null"
 - geoip:
+    tag: geoip_source_ip_to_source_as_28d69883
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -279,6 +326,7 @@ processors:
     - organization_name
     ignore_missing: true
 - geoip:
+    tag: geoip_destination_ip_to_destination_as_8a007787
     database_file: GeoLite2-ASN.mmdb
     field: destination.ip
     target_field: destination.as
@@ -287,16 +335,19 @@ processors:
     - organization_name
     ignore_missing: true
 - geoip:
+    tag: geoip_source_nat_ip_to_source_geo_9fb0fcc3
     field: source.nat.ip
     target_field: source.geo
     ignore_missing: true
     if: "ctx.source?.geo == null"
 - geoip:
+    tag: geoip_destination_nat_ip_to_destination_geo_b429ceb4
     field: destination.nat.ip
     target_field: destination.geo
     ignore_missing: true
     if: "ctx.destination?.geo == null"
 - geoip:
+    tag: geoip_source_nat_ip_to_source_as_d9d3c7d1
     database_file: GeoLite2-ASN.mmdb
     field: source.nat.ip
     target_field: source.as
@@ -306,6 +357,7 @@ processors:
     ignore_missing: true
     if: "ctx.source?.as == null"
 - geoip:
+    tag: geoip_destination_nat_ip_to_destination_as_dcccb906
     database_file: GeoLite2-ASN.mmdb
     field: destination.nat.ip
     target_field: destination.as
@@ -315,27 +367,33 @@ processors:
     ignore_missing: true
     if: "ctx.destination?.as == null"
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 - rename:
+    tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
     field: destination.as.asn
     target_field: destination.as.number
     ignore_missing: true
 - rename:
+    tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
     field: destination.as.organization_name
     target_field: destination.as.organization.name
     ignore_missing: true
 - script:
+    tag: script_ad31ac56
     lang: painless
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
     if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
     ignore_failure: true
 - script:
+    tag: script_1c111324
     lang: painless
     source: "ctx.network.packets = ctx.client.packets + ctx.server.packets"
     if: "ctx?.client?.packets != null && ctx?.server?.packets != null"
@@ -345,6 +403,7 @@ processors:
 ## Cleanup ##
 #############
 - remove:
+    tag: remove_afd957da
     field:
     - juniper.srx.application_risk
     - juniper.srx.destination_port
@@ -360,8 +419,15 @@ processors:
 on_failure:
 - append:
     field: error.message
-    value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
 - set:
     field: event.kind
     value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

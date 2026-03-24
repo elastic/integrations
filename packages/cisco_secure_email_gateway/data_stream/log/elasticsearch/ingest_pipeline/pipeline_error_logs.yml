@@ -1,12 +1,15 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_bf076d66
       field: event.type
       value: [error]
   - grok:
+      tag: grok_cisco_secure_email_gateway_log_message_d14e38b7
       field: cisco_secure_email_gateway.log.message
       patterns:
         - '^Internal %{DATA:network.protocol} giving up on message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}\.$'
@@ -16,6 +19,7 @@ processors:
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
       ignore_failure: true
   - lowercase:
+      tag: lowercase_network_protocol_d249a697
       field: network.protocol
       ignore_failure: true
 on_failure:
@@ -24,4 +28,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

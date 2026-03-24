@@ -1,0 +1,42 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects potential resource exhaustion or data breach attempts by monitoring for users who consistently generate high input token counts, submit numerous requests, and receive large responses. This behavior could indicate an attempt to overload the system or extract an unusually large amount of data, possibly revealing sensitive information or causing service disruptions.",
+        "false_positives": [
+            "Authorized heavy usage of the system that is business justified and monitored."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Abuse of Resources by High Token Count and Large Response Sizes",
+        "note": "## Triage and analysis\n\n### Investigating Potential Abuse of Resources by High Token Count and Large Response Sizes\n\nAmazon Bedrock is AWS\u2019s managed service that enables developers to build and scale generative AI applications using large foundation models (FMs) from top providers.\n\nBedrock offers a variety of pretrained models from Amazon (such as the Titan series), as well as models from providers like Anthropic, Meta, Cohere, and AI21 Labs.\n\n#### Possible investigation steps\n\n- Identify the user account that used high prompt token counts and whether it should perform this kind of action.\n- Investigate large response sizes and the number of requests made by the user account.\n- Investigate other alerts associated with the user account during the past 48 hours.\n- Consider the time of day. If the user is a human (not a program or script), did the activity take place during a normal time of day?\n- Examine the account's prompts and responses in the last 24 hours.\n- If you suspect the account has been compromised, scope potentially compromised assets by tracking Amazon Bedrock model access, prompts generated, and responses to the prompts by the account in the last 24 hours.\n\n### False positive analysis\n\n- Verify the user account that used high prompt and large response sizes, has a business justification for the heavy usage of the system.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Disable or limit the account during the investigation and response.\n- Identify the possible impact of the incident and prioritize accordingly; the following actions can help you gain context:\n    - Identify the account role in the cloud environment.\n    - Identify if the attacker is moving laterally and compromising other Amazon Bedrock Services.\n    - Identify any regulatory or legal ramifications related to this activity.\n    - Identify potential resource exhaustion and impact on billing.\n- Review the permissions assigned to the implicated user group or role behind these requests to ensure they are authorized and expected to access bedrock and ensure that the least privilege principle is being followed.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection via the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
+        "query": "from logs-aws_bedrock.invocation-*\n\n// keep token usage data\n| keep\n  user.id,\n  gen_ai.usage.prompt_tokens,\n  gen_ai.usage.completion_tokens\n\n// Aggregate usage metrics\n| stats\n    Esql.ml_usage_prompt_tokens_max = max(gen_ai.usage.prompt_tokens),\n    Esql.ml_invocations_total_count = count(*),\n    Esql.ml_usage_completion_tokens_avg = avg(gen_ai.usage.completion_tokens)\n  by\n    user.id\n\n// Filter for suspicious usage patterns\n| where\n  Esql.ml_usage_prompt_tokens_max > 5000\n  and Esql.ml_invocations_total_count > 10\n  and Esql.ml_usage_completion_tokens_avg > 500\n\n// Calculate a custom risk factor\n| eval Esql.ml_risk_score =\n    (Esql.ml_usage_prompt_tokens_max / 1000) *\n    Esql.ml_invocations_total_count *\n    (Esql.ml_usage_completion_tokens_avg / 500)\n\n// Filter on risk score\n| where Esql.ml_risk_score > 10\n\n// sort high risk users to top\n| sort Esql.ml_risk_score desc\n",
+        "references": [
+            "https://atlas.mitre.org/techniques/AML.T0051",
+            "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+            "https://www.elastic.co/security-labs/elastic-advances-llm-security"
+        ],
+        "risk_score": 47,
+        "rule_id": "b1773d05-f349-45fb-9850-287b8f92f02d",
+        "setup": "## Setup\n\nThis rule requires that guardrails are configured in AWS Bedrock. For more information, see the AWS Bedrock documentation:\n\nhttps://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-create.html\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: LLM",
+            "Data Source: AWS Bedrock",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS S3",
+            "Use Case: Potential Overload",
+            "Use Case: Resource Exhaustion",
+            "Mitre Atlas: LLM04",
+            "Resources: Investigation Guide"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 5
+    },
+    "id": "b1773d05-f349-45fb-9850-287b8f92f02d_5",
+    "type": "security-rule"
+}

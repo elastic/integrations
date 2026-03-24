@@ -1,9 +1,11 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - grok:
+      tag: grok_cisco_secure_email_gateway_log_message_54b25783
       field: cisco_secure_email_gateway.log.message
       patterns:
         - '^req:%{DATA:client.ip:IP} user:%{DATA:user.name} id:%{DATA:event.id} %{NUMBER:http.response.status_code:long} %{WORD:http.request.method} %{DATA:url.path} HTTP/%{NUMBER:http.version} %{GREEDYDATA:user_agent.original}$'
@@ -17,52 +19,63 @@ processors:
         - '^%{DATA:cisco_secure_email_gateway.log.object} has been %{DATA:cisco_secure_email_gateway.log.action} for user %{USERNAME:user.name}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
   - user_agent:
+      tag: user_agent_user_agent_original_bb67b69d
       field: user_agent.original
       if: ctx.user_agent?.original != '-'
       ignore_failure: true
   - set:
+      tag: set_event_category_e2105a21
       field: event.category
       value: [web]
       if: ctx.http?.request?.method != null
   - set:
+      tag: set_event_type_5e568b71
       field: event.type
       value: [access]
       if: ctx.http?.request?.method != null
   - set:
+      tag: set_event_category_53f0010f
       field: event.category
       value: [session]
       if: ctx.cisco_secure_email_gateway?.log?.result == 'expired' || ctx.cisco_secure_email_gateway?.log?.action == 'logged out'
   - set:
+      tag: set_event_type_089f2472
       field: event.type
       value: [end]
-      if:  ctx.cisco_secure_email_gateway?.log?.result == 'expired' || ctx.cisco_secure_email_gateway?.log?.action == 'logged out'
+      if: ctx.cisco_secure_email_gateway?.log?.result == 'expired' || ctx.cisco_secure_email_gateway?.log?.action == 'logged out'
   - remove:
+      tag: remove_user_name_4a108c86
       field: user.name
       if: ctx.user?.name == '-'
       ignore_failure: true
   - remove:
+      tag: remove_user_agent_original_a3f86a32
       field: user_agent.original
       if: ctx.user_agent?.original == '-'
       ignore_failure: true
   - append:
+      tag: append_related_ip_c5270880
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_3c5161f0
       field: related.ip
       value: '{{{host.ip}}}'
       if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_20a67990
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null &&  ctx.user.name != '-'
@@ -74,4 +87,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

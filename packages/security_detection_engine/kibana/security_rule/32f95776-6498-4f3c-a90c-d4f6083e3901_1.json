@@ -1,0 +1,102 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to masquerade as the Service Host process `svchost.exe` to evade detection and blend in with normal system activity.",
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Masquerading as Svchost",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Masquerading as Svchost\n\nsvchost.exe is a legitimate Windows system process responsible for hosting multiple Windows services. Adversaries may attempt to masquerade as svchost.exe to evade detection and blend in with normal system activity. This is often achieved by renaming a malicious executable to svchost.exe, placing it outside of standard Windows directories or running it with unusual parent processes or command-line arguments.\n\n### Possible investigation steps\n\n- Review the process.executable and process.parent.executable fields to confirm the location and unexpected parents..\n- Check the process.command_line field for unusual arguments. Legitimate svchost.exe instances typically use the -k parameter followed by a valid service group name.\n- Investigate the process.code_signature field to determine if the binary is signed by Microsoft. Unsigned or invalid signatures are strong indicators of masquerading.\n- Correlate the event with other telemetry from the same host to identify additional indicators such as file creation, network connections, or registry modifications related to the suspicious process.\n- Review related file creation events to determine how and when the fake svchost.exe was introduced to the system (e.g. dropped by another malware component or downloaded from the network).\n\n### False positive analysis\n\n- Some legitimate third-party applications may use executables named svchost.exe within their own installation paths. Verify the vendor, file hash, and digital signature to determine legitimacy.\n- In virtualized or sandboxed environments, custom service hosts may appear with similar naming conventions. Validate these against known baseline configurations.\n- Ensure that system recovery or diagnostic tools using temporary binaries are not misidentified as malicious. Review event timing and system logs to confirm.\n- Regularly maintain an inventory of known legitimate `svchost.exe` locations and hashes to minimize false positives across managed hosts.\n\n### Response and remediation\n\n- Isolate the affected host immediately to prevent lateral movement or further compromise.\n- Terminate any suspicious svchost.exe processes executing from non-standard locations.\n- Quarantine and remove the rogue binary after verification through hash reputation or sandbox analysis.\n- Perform a full system scan to identify additional malicious files or persistence mechanisms associated with the masqueraded process.\n- Review and reset any credentials used by the compromised process if credential theft or impersonation is suspected.\n- Analyze recent network activity from the affected host for potential data exfiltration or commandand-control communication.\n- Escalate the incident to the security operations or incident response team for deeper investigation and forensic analysis.\n- Implement detections to monitor for future attempts of process masquerading, and update security baselines and EDR exclusions accordingly.\n",
+        "query": "FROM logs-* metadata _id, _version, _index\n| where event.category == \"process\" and event.type == \"start\" and\n  match(process.name, \"svchost.exe\", { \"fuzziness\": 1, \"max_expansions\": 10 }) and\n  not process.executable in (\"C:\\\\Windows\\\\SysWOW64\\\\svchost.exe\", \"C:\\\\Windows\\\\System32\\\\svchost.exe\") and\n  not process.executable like \"\"\"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\svchost.exe\"\"\" and\n  not process.executable like \"\"\"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\SysWOW64\\\\svchost.exe\"\"\"\n| keep event.dataset, host.name, host.id, user.id, user.name, process.executable, process.parent.executable, process.command_line\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "32f95776-6498-4f3c-a90c-d4f6083e3901",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/",
+                        "subtechnique": [
+                            {
+                                "id": "T1036.005",
+                                "name": "Match Legitimate Resource Name or Location",
+                                "reference": "https://attack.mitre.org/techniques/T1036/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "32f95776-6498-4f3c-a90c-d4f6083e3901_1",
+    "type": "security-rule"
+}

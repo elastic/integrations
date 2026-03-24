@@ -224,13 +224,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| actor.entity.id | ID or multiple IDs of the entity performing the action described by the event. | keyword |
+| actor.entity.id | [Deprecated] This field is maintained for backward compatibility. Use type-specific fields instead: user.entity.id for user accounts, service.entity.id for service accounts and GCP services, host.entity.id for compute instances, or entity.id for other types. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| entity.id | Generic entity identifier for principals that don't fit into specific categories (user, service, host). Used as a fallback for unknown or miscellaneous entity types like GitHub repo references. | keyword |
+| entity.target.id | Generic entity identifier for targets that don't fit into specific categories. Used for projects, zones, and other miscellaneous GCP resources. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gcp.audit.access.caller_ip_geo.region_code |  | keyword |
+| gcp.audit.access.method_name |  | keyword |
+| gcp.audit.access.principal_email |  | keyword |
+| gcp.audit.access.principal_subject |  | keyword |
+| gcp.audit.access.service_name |  | keyword |
+| gcp.audit.access.user_agent |  | keyword |
+| gcp.audit.action_time |  | date |
+| gcp.audit.action_type |  | keyword |
+| gcp.audit.affected_resources |  | keyword |
 | gcp.audit.authentication_info.authority_selector | The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority. | keyword |
 | gcp.audit.authentication_info.principal_email | The email address of the authenticated user making the request. | keyword |
 | gcp.audit.authentication_info.principal_subject | String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities. | keyword |
@@ -246,12 +257,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
 | gcp.audit.flattened | Contains the full audit document as sent by GCP. | flattened |
 | gcp.audit.labels | A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined. | flattened |
+| gcp.audit.learn_more_uri |  | keyword |
 | gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
 | gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
 | gcp.audit.logentry_operation.last | Optional. Set this to True if this is the last log entry in the operation. | boolean |
 | gcp.audit.logentry_operation.producer | Optional. An arbitrary producer identifier. The combination of id and producer must be globally unique. | keyword |
 | gcp.audit.metadata | Service-specific data about the request, response, and other information associated with the current audited event. | flattened |
 | gcp.audit.method_name | The name of the service method or operation. For API calls, this  should be the name of the API method.  For example, 'google.datastore.v1.Datastore.RunQuery'. | keyword |
+| gcp.audit.notification | Plain-text GKE cluster notification message (for example, upgrade notifications). | keyword |
 | gcp.audit.num_response_items | The number of items returned from a List or Query API method, if applicable. | long |
 | gcp.audit.policy_violation_info.payload | Resource payload that is currently in scope and is subjected to orgpolicy conditions. | flattened |
 | gcp.audit.policy_violation_info.resource_tags | Tags referenced on the resource at the time of evaluation. | flattened |
@@ -260,14 +273,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.policy_violation_info.violations.constraint | Constraint name. | keyword |
 | gcp.audit.policy_violation_info.violations.errorMessage | Error message that policy is indicating. | keyword |
 | gcp.audit.policy_violation_info.violations.policyType | Indicates the type of the policy. | keyword |
+| gcp.audit.receive_timestamp |  | date |
 | gcp.audit.request |  | flattened |
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
+| gcp.audit.resource.labels.resource_container |  | keyword |
+| gcp.audit.resource.type |  | keyword |
 | gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
+| gcp.audit.source_log_ids.insert_id |  | keyword |
+| gcp.audit.source_log_ids.log_time |  | date |
+| gcp.audit.source_log_ids.query_uri |  | keyword |
+| gcp.audit.source_log_ids.resource_container |  | keyword |
 | gcp.audit.status.code | The status code, which should be an enum value of google.rpc.Code. | integer |
 | gcp.audit.status.details | A list of messages that carry the error details. | flattened |
 | gcp.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
@@ -285,12 +305,27 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.source.vpc.subnetwork_name | Subnetwork on which the VM is operating. | keyword |
 | gcp.source.vpc.vpc_name | VPC on which the VM is operating. | keyword |
 | host.containerized | If the host is a container. | boolean |
+| host.entity.id | Unique identifier for Compute Engine instances acting as principals in GCP audit events. Contains instance resource paths. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| host.target.entity.id | Unique identifier for compute resources targeted by GCP audit events. Includes Compute Engine instance IDs and resource paths. | keyword |
 | input.type | Input type | keyword |
+| labels.cluster_location |  | keyword |
+| labels.cluster_name |  | keyword |
+| labels.payload.currentVersion |  | keyword |
+| labels.payload.operation |  | keyword |
+| labels.payload.resource |  | keyword |
+| labels.payload.resourceType |  | keyword |
+| labels.payload.targetVersion |  | keyword |
+| labels.project_id |  | keyword |
+| labels.type_url |  | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
-| target.entity.id | ID or multiple IDs of the entity targeted by the action described by the event. | keyword |
+| service.entity.id | Unique identifier for service accounts and GCP services acting as principals. Contains serviceAccount: prefixed values, \*.iam.gserviceaccount.com addresses, and \*.googleapis.com services. | keyword |
+| service.target.entity.id | Unique identifier for GCP service resources targeted by audit events. Includes Cloud Storage buckets, Cloud Functions, BigQuery datasets, Compute Engine resources, networking components, and other GCP services. | keyword |
+| target.entity.id | [Deprecated] This field is maintained for backward compatibility. Use type-specific fields instead: user.target.entity.id for IAM principals, service.target.entity.id for GCP service resources, host.target.entity.id for compute instances, or entity.target.id for other types. | keyword |
+| user.entity.id | Unique identifier for user accounts acting as principals in GCP audit events. Contains email addresses and user: prefixed identifiers. | keyword |
+| user.target.entity.id | Unique identifier for IAM principals targeted by GCP audit events. Includes service accounts, users, and groups. | keyword |
 
 
 An example event for `audit` looks as following:
@@ -306,11 +341,11 @@ An example event for `audit` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "da325f64-9209-4ce8-b7b9-1a98fbcf04a5",
-        "id": "3ee263c0-32c5-4060-8539-ecdf1abde99a",
-        "name": "elastic-agent-67309",
+        "ephemeral_id": "d3d085d3-8938-4909-9bcb-9a9ec8bc1665",
+        "id": "7fc8d2fb-f718-4f96-9c78-1118e4203336",
+        "name": "elastic-agent-81621",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "client": {
         "user": {
@@ -318,6 +353,7 @@ An example event for `audit` looks as following:
         }
     },
     "cloud": {
+        "availability_zone": "global",
         "project": {
             "id": "elastic-beats"
         },
@@ -325,16 +361,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.audit",
-        "namespace": "96942",
+        "namespace": "55990",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3ee263c0-32c5-4060-8539-ecdf1abde99a",
+        "id": "7fc8d2fb-f718-4f96-9c78-1118e4203336",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -343,10 +379,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2025-04-22T05:28:14.956Z",
+        "created": "2026-03-19T05:40:34.897Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2025-04-22T05:28:17Z",
+        "ingested": "2026-03-19T05:40:37Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -369,8 +405,12 @@ An example event for `audit` looks as following:
                 }
             ],
             "num_response_items": 61,
+            "receive_timestamp": "2019-12-19T00:44:25.262Z",
             "request": {
                 "@type": "type.googleapis.com/compute.instances.aggregatedList"
+            },
+            "resource": {
+                "type": "api"
             },
             "resource_location": {
                 "current_locations": [
@@ -391,6 +431,15 @@ An example event for `audit` looks as following:
                 "status_value": "Success"
             },
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
+        }
+    },
+    "host": {
+        "target": {
+            "entity": {
+                "id": [
+                    "projects/elastic-beats/global/instances"
+                ]
+            }
         }
     },
     "input": {
@@ -429,6 +478,14 @@ An example event for `audit` looks as following:
             ]
         }
     },
+    "user": {
+        "email": "xxx@xxx.xxx",
+        "entity": {
+            "id": [
+                "xxx@xxx.xxx"
+            ]
+        }
+    },
     "user_agent": {
         "device": {
             "name": "Mac"
@@ -440,7 +497,7 @@ An example event for `audit` looks as following:
             "name": "Mac OS X",
             "version": "10.15"
         },
-        "version": "71.0."
+        "version": "71.0"
     }
 }
 ```
@@ -501,11 +558,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "175ae0b3-355c-4ca7-87ea-d5f1ee34102e",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cd1c89d8-2d1f-4675-8db5-21f626346e8c",
+        "id": "c99413b7-5945-4236-afee-9db819890b2e",
+        "name": "elastic-agent-71045",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -517,7 +574,7 @@ An example event for `firewall` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.firewall",
-        "namespace": "ep",
+        "namespace": "72710",
         "type": "logs"
     },
     "destination": {
@@ -530,9 +587,9 @@ An example event for `firewall` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "c99413b7-5945-4236-afee-9db819890b2e",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "event": {
         "action": "firewall-rule",
@@ -540,10 +597,10 @@ An example event for `firewall` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-10-25T04:20:37.182Z",
+        "created": "2026-03-18T10:19:42.129Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2023-10-25T04:20:41Z",
+        "ingested": "2026-03-18T10:19:45Z",
         "kind": "event",
         "type": [
             "allowed",
@@ -671,71 +728,62 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "0b8165a2-0e25-4e9a-bb68-271697e0993f",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "0cd9c2ae-9bc2-4b4b-89ee-a9c84cf58543",
+        "id": "85d6d011-dc32-421f-88b4-d5a601e0b4d9",
+        "name": "elastic-agent-30695",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "cloud": {
-        "availability_zone": "us-east1-b",
-        "instance": {
-            "name": "kibana"
-        },
-        "project": {
-            "id": "my-sample-project"
-        },
-        "provider": "gcp",
-        "region": "us-east1"
+        "provider": "gcp"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
-        "namespace": "ep",
+        "namespace": "70287",
         "type": "logs"
     },
     "destination": {
-        "address": "10.139.99.242",
-        "domain": "elasticsearch",
-        "ip": "10.139.99.242",
-        "port": 9200
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "port": 65320
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "85d6d011-dc32-421f-88b4-d5a601e0b4d9",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2023-10-25T04:21:42.006Z",
+        "created": "2026-03-18T10:21:18.456Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:49:51.821056075Z",
-        "id": "ut8lbrffooxz5",
-        "ingested": "2023-10-25T04:21:43Z",
+        "end": "2019-06-14T03:49:56.220714119Z",
+        "id": "ut8lbrffooxyv",
+        "ingested": "2026-03-18T10:21:20Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:20.510622432Z",
+        "start": "2019-06-14T03:40:00.560917237Z",
         "type": [
             "connection"
         ]
     },
     "gcp": {
-        "destination": {
-            "instance": {
-                "project_id": "my-sample-project",
-                "region": "us-east1",
-                "zone": "us-east1-b"
-            },
-            "vpc": {
-                "project_id": "my-sample-project",
-                "subnetwork_name": "default",
-                "vpc_name": "default"
-            }
-        },
         "source": {
             "instance": {
                 "project_id": "my-sample-project",
@@ -749,9 +797,9 @@ An example event for `vpcflow` looks as following:
             }
         },
         "vpcflow": {
-            "reporter": "DEST",
+            "reporter": "SRC",
             "rtt": {
-                "ms": 201
+                "ms": 220
             }
         }
     },
@@ -762,40 +810,27 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 11773,
-        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
-        "direction": "internal",
+        "bytes": 51075,
+        "community_id": "1:35LvCkME5lZSqhiM4O+MxjttWtA=",
+        "direction": "outbound",
         "iana_number": "6",
-        "name": "default",
-        "packets": 94,
+        "packets": 608,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "67.43.156.13",
-            "10.139.99.242"
+            "10.139.99.242",
+            "67.43.156.13"
         ]
     },
     "source": {
-        "address": "67.43.156.13",
-        "as": {
-            "number": 35908
-        },
-        "bytes": 11773,
-        "domain": "kibana",
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.13",
-        "packets": 94,
-        "port": 33576
+        "address": "10.139.99.242",
+        "bytes": 51075,
+        "domain": "elasticsearch",
+        "ip": "10.139.99.242",
+        "packets": 608,
+        "port": 9200
     },
     "tags": [
         "forwarded",
@@ -854,11 +889,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "fd6c4189-cbc6-493a-acfb-c9e7b2b7588c",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "9d33c655-9785-483e-b6bc-cb22ba116cea",
+        "id": "625702bb-3e9e-48b3-825a-5c6b6c33f75b",
+        "name": "elastic-agent-42938",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "cloud": {
         "project": {
@@ -869,7 +904,7 @@ An example event for `dns` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.dns",
-        "namespace": "ep",
+        "namespace": "49808",
         "type": "logs"
     },
     "destination": {
@@ -902,9 +937,9 @@ An example event for `dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "625702bb-3e9e-48b3-825a-5c6b6c33f75b",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "event": {
         "action": "dns-query",
@@ -912,10 +947,10 @@ An example event for `dns` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-10-25T04:19:40.300Z",
+        "created": "2026-03-18T10:19:00.183Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2023-10-25T04:19:41Z",
+        "ingested": "2026-03-18T10:19:03Z",
         "kind": "event",
         "outcome": "success"
     },
@@ -1000,11 +1035,11 @@ An example event for `loadbalancing` looks as following:
 {
     "@timestamp": "2020-06-08T23:41:30.078Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "33aed168-6d97-4912-ab3b-1a396ca824bf",
+        "id": "969be203-c3f2-46e4-a107-78e7b3810687",
+        "name": "elastic-agent-10908",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.18.0"
     },
     "cloud": {
         "project": {
@@ -1014,7 +1049,7 @@ An example event for `loadbalancing` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.loadbalancing_logs",
-        "namespace": "ep",
+        "namespace": "28532",
         "type": "logs"
     },
     "destination": {
@@ -1030,9 +1065,9 @@ An example event for `loadbalancing` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "969be203-c3f2-46e4-a107-78e7b3810687",
+        "snapshot": false,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1042,7 +1077,7 @@ An example event for `loadbalancing` looks as following:
         "created": "2020-06-08T23:41:30.588Z",
         "dataset": "gcp.loadbalancing_logs",
         "id": "1oek5rg3l3fxj7",
-        "ingested": "2023-01-13T15:02:22Z",
+        "ingested": "2026-03-18T10:20:32Z",
         "kind": "event",
         "type": [
             "info"
@@ -1165,6 +1200,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
 | gcp.billing.effective_price | The charged price for usage of the Google Cloud SKUs and SKU tiers. Reflects contract pricing if applicable, otherwise, it's the list price. | float |
 | gcp.billing.invoice_month | Billing report month. | keyword |
+| gcp.billing.labels | Resource labels as key-value pairs. Labels are user-defined metadata that can be attached to GCP resources. | object |
+| gcp.billing.location.country | The country code for the resource location (e.g., US, GB). | keyword |
+| gcp.billing.location.region | The geographic region where the resource was used (e.g., us-central1, europe-west1). | keyword |
+| gcp.billing.location.zone | The specific zone within the region (e.g., us-central1-a). | keyword |
 | gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
 | gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
 | gcp.billing.service_description | The Google Cloud service that reported the Cloud Billing data. | keyword |
@@ -1175,6 +1214,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.tags.key |  | keyword |
 | gcp.billing.tags.value |  | keyword |
 | gcp.billing.total | Total billing amount. | float |
+| gcp.billing.usage_end_time | The end time of the usage period for this billing record. | date |
+| gcp.billing.usage_start_time | The start time of the usage period for this billing record. | date |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -1222,7 +1263,16 @@ An example event for `billing` looks as following:
                     "key": "size",
                     "value": "standard"
                 }
-            ]
+            ],
+            "labels": {
+                "test_label": "value"
+            },
+            "location": {
+                "region": "us-central1",
+                "country": "US"
+            },
+            "usage_start_time": "2023-10-22T22:00:00.000Z",
+            "usage_end_time": "2023-10-22T23:00:00.000Z"
         }
     },
     "metricset": {
@@ -1634,8 +1684,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.gke.node.memory.allocatable_utilization.pct | The fraction of the allocatable memory that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed allocatable memory bytes. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double | gauge |
 | gcp.gke.node.memory.total.bytes | Number of bytes of memory allocatable on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node.memory.used.bytes | Cumulative memory bytes used by the node. Sampled every 60 seconds. | long | gauge |
-| gcp.gke.node.network.received_bytes.count | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long | counter |
-| gcp.gke.node.network.sent_bytes.count | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.network.received.bytes | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.network.sent.bytes | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long | counter |
 | gcp.gke.node.pid_limit.value | The max PID of OS on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node.pid_used.value | The number of running process in the OS on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node_daemon.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used by the node level system daemon in seconds. Sampled every 60 seconds. | double | counter |

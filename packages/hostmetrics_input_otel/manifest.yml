@@ -1,0 +1,131 @@
+format_version: 3.5.0
+name: hostmetrics_input_otel
+title: "Host Metrics OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect system metrics using OpenTelemetry Collector"
+type: input
+categories:
+  - monitoring
+  - os_system
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/system-otel.svg
+    title: System OTel logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: hostmetricsreceiver
+    type: metrics
+    title: Host Metrics OpenTelemetry Input
+    description: Collect system metrics using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: period
+        type: text
+        title: Period
+        required: false
+        show_user: true
+        default: 30s
+      - name: cpu
+        type: bool
+        title: Enable CPU scraper
+        description: CPU utilization metrics
+        required: false
+        show_user: true
+        default: true
+      - name: memory
+        type: bool
+        title: Enable Memory scraper
+        description: Memory utilization metrics
+        required: false
+        show_user: true
+        default: true
+      - name: process
+        type: bool
+        title: Enable Process scraper
+        description: Per process CPU, Memory, and Disk I/O metrics
+        required: false
+        show_user: true
+        default: true
+      - name: processes
+        type: bool
+        title: Enable Processes scraper
+        description: Process count metrics
+        required: false
+        show_user: true
+        default: true
+      - name: network
+        type: bool
+        title: Enable Network scraper
+        description: Network interface I/O metrics & TCP connection metrics
+        required: false
+        show_user: true
+        default: true
+      - name: load
+        type: bool
+        title: Enable Load scraper
+        description: CPU load metrics
+        required: false
+        show_user: true
+        default: true
+      - name: disk
+        type: bool
+        title: Enable Disk scraper
+        description: Disk I/O metrics
+        required: false
+        show_user: true
+        default: true
+      - name: filesystem
+        type: bool
+        title: Enable Filesystem scraper
+        description: File System utilization metrics
+        required: false
+        show_user: true
+        default: true
+      - name: system_config
+        type: yaml
+        title: Resource Detection Processor / System configuration
+        description: Configuration for [resourcedetectionprocessor's system component](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourcedetectionprocessor/internal/system/documentation.md)
+        show_user: true
+        required: false
+        default: |
+          hostname_sources: ["os"]
+          resource_attributes:
+            host.name:
+              enabled: true
+            host.id:
+              enabled: false
+            host.arch:
+              enabled: true
+            host.ip:
+              enabled: true
+            host.mac:
+              enabled: true
+            host.cpu.vendor.id:
+              enabled: true
+            host.cpu.family:
+              enabled: true
+            host.cpu.model.id:
+              enabled: true
+            host.cpu.model.name:
+              enabled: true
+            host.cpu.stepping:
+              enabled: true
+            host.cpu.cache.l2.size:
+              enabled: true
+            os.description:
+              enabled: true
+            os.type:
+              enabled: true
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

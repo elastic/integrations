@@ -1,0 +1,30 @@
+{
+    "id": "system-disk-io-saturation",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[System] Disk I/O Saturation",
+        "tags": [
+            "System"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when disk devices show sustained saturation via utilization and queue depth metrics.\n// Groups by host/device, enforces minimum work, and uses Little's Law to estimate queue depth.\n// Adjust utilization or queue depth thresholds in the final WHERE clause as needed.\nFROM metrics-system.diskio-*\n| WHERE `system.diskio.name` NOT RLIKE \"(loop|ram|sr|dm-)\"\n| STATS\nmax_io_time = MAX(`system.diskio.io.time`::LONG),\nmin_io_time = MIN(`system.diskio.io.time`::LONG),\nmax_read_time = MAX(`system.diskio.read.time`::LONG),\nmin_read_time = MIN(`system.diskio.read.time`::LONG),\nmax_write_time = MAX(`system.diskio.write.time`::LONG),\nmin_write_time = MIN(`system.diskio.write.time`::LONG),\nmax_read_ops = MAX(`system.diskio.read.count`::LONG),\nmin_read_ops = MIN(`system.diskio.read.count`::LONG),\nmax_write_ops = MAX(`system.diskio.write.count`::LONG),\nmin_write_ops = MIN(`system.diskio.write.count`::LONG),\nfirst_ts = MIN(@timestamp),\nlast_ts = MAX(@timestamp)\nBY `host.name`, `system.diskio.name`\n| EVAL elapsed_ms = TO_DOUBLE(TO_LONG(last_ts) - TO_LONG(first_ts))\n| WHERE elapsed_ms >= 60000\n| EVAL io_time_delta = CASE(max_io_time >= min_io_time, max_io_time - min_io_time, 0)\n| EVAL read_time_delta = CASE(max_read_time >= min_read_time, max_read_time - min_read_time, 0)\n| EVAL write_time_delta = CASE(max_write_time >= min_write_time, max_write_time - min_write_time, 0)\n| EVAL read_ops_delta = CASE(max_read_ops >= min_read_ops, max_read_ops - min_read_ops, 0)\n| EVAL write_ops_delta = CASE(max_write_ops >= min_write_ops, max_write_ops - min_write_ops, 0)\n| EVAL total_ops = read_ops_delta + write_ops_delta\n| WHERE total_ops >= 100\n| EVAL io_util_pct = CASE(elapsed_ms > 0, 100.0 * io_time_delta / elapsed_ms, 0.0)\n| EVAL avg_iops = CASE(elapsed_ms > 0, total_ops / (elapsed_ms / 1000.0), 0.0)\n| EVAL total_io_time_ms = read_time_delta + write_time_delta\n| EVAL avg_latency_ms = CASE(\ntotal_ops > 0 AND total_io_time_ms > 0,\ntotal_io_time_ms / TO_DOUBLE(total_ops),\n0\n)\n| EVAL est_queue_depth = CASE(\navg_latency_ms > 0 AND avg_iops > 0,\n(avg_iops * avg_latency_ms) / 1000,\n0\n)\n| WHERE io_util_pct > 90\nOR est_queue_depth > 10\nOR (io_util_pct > 70 AND est_queue_depth > 5)"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

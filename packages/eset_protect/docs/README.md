@@ -6,29 +6,29 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
 
-**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [ESET Connect - Incident Management](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Incident%20Management).
+**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the **Incident Management - List detections** ([v1](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html) & [v2](https://help.eset.com/eset_connect/en-US/incident_management_v2_detections_get.html) endpoints).
 
-**[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [ESET Connect - Automation](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Automation).
+**[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [Automation - List tasks](https://help.eset.com/eset_connect/en-US/automation_v1_device_tasks_get.html) endpoint.
 
-**Event** is used to retrieve Detection, Firewall, HIPS, Audit, and ESET Inspect logs using the [Syslog Server](https://help.eset.com/protect_cloud/en-US/events-exported-to-json-format.html?admin_server_settings_export_to_syslog.html). ESET notifications are also retrieved but in plain text.
+**Event** is used to retrieve Detection, Firewall, HIPS, Audit, and ESET Inspect logs using the [Syslog Server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_export_to_syslog.html). ESET notifications are also retrieved but in plain text.
 
 ## Requirements
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-This module has been tested against the **ESET PROTECT (version: 5.0.9.1)**.
-
 ## Setup
 
 ### Collect data from ESET Connect
 
-1. [Create API User Account](https://help.eset.com/eset_connect/en-US/use_api_with_swagger.html?create_api_user_account.html)
+1. [Create API User Account](https://help.eset.com/eset_connect/en-US/create_api_user_account.html)
 2. Retrieve the username and password generated during the creation of an API user account.
 3. Retrieve the region from the ESET Web Console URL.
 
+**NOTE**: Detection logs can be collected using the v2 endpoint only after your API user has signed in to your ESET Cloud Office Security instance at least once; this ensures the account is recognized. Note that the v2 endpoint is not supported in the Japanese region.
+
 ### Collect data from ESET PROTECT via Syslog
 
-Follow these steps to [configure syslog server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_export_to_syslog.html?admin_server_settings_syslog.html):
+Follow these steps to [configure syslog server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_syslog.html):
 
 1. Set the format of the payload to **JSON** (Hint: ESET Notifications are sent as plain text, regardless of the selection made https://help.eset.com/protect_admin/12.0/en-US/events-exported-to-json-format.html).
 2. Set the format of the envelope to **Syslog**.
@@ -58,15 +58,15 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2023-10-26T13:36:53.000Z",
     "agent": {
-        "ephemeral_id": "a2da59f5-382d-41e2-be5e-0b06df998911",
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "9fed99a0-45df-42ef-afb4-d96ed33cfe85",
+        "id": "d0b8ac83-9cce-4df1-aa84-794fb6ff89df",
+        "name": "elastic-agent-39862",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.detection",
-        "namespace": "ep",
+        "namespace": "77988",
         "type": "logs"
     },
     "destination": {
@@ -95,9 +95,9 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "id": "d0b8ac83-9cce-4df1-aa84-794fb6ff89df",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "eset_protect": {
         "detection": {
@@ -132,9 +132,11 @@ An example event for `detection` looks as following:
             "intrusion_detection"
         ],
         "dataset": "eset_protect.detection",
-        "ingested": "2024-04-16T05:41:07Z",
+        "id": "xxx-xxxx-xxxx-1234-xxxxxxxxxxxx",
+        "ingested": "2026-02-18T06:46:50Z",
         "kind": "alert",
         "original": "{\"category\":\"DETECTION_CATEGORY_NETWORK_INTRUSION\",\"context\":{\"circumstances\":\"Eicar\",\"deviceUuid\":\"xxx-xxxx-1234-5678-xxxxxxxxxxxx\",\"process\":{\"path\":\"C:\\\\Windows\\\\chrome.exe\"},\"userName\":\"testingpc\\\\example\"},\"networkCommunication\":{\"protocolName\":\"0\",\"remoteIpAddress\":\"89.160.20.112\",\"remotePort\":443},\"objectHashSha1\":\"AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D\",\"objectTypeName\":\"File\",\"objectUrl\":\"C:\\\\Temp\\\\06516f11-xxxx-xxxx-xxxx-37da66b5de99_ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8.zip.e99\\\\ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8\",\"occurTime\":\"2023-10-26T13:36:53Z\",\"responses\":[{}],\"severityLevel\":\"SEVERITY_LEVEL_MEDIUM\",\"typeName\":\"TCP Port scanning attack\",\"uuid\":\"xxx-xxxx-xxxx-1234-xxxxxxxxxxxx\"}",
+        "reason": "Eicar",
         "type": [
             "info"
         ]
@@ -206,27 +208,118 @@ An example event for `detection` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | eset_protect.detection.category | Category of detection. | keyword |
+| eset_protect.detection.cloud_office_tenant_uuid | Reference to cloud office tenant. | keyword |
 | eset_protect.detection.context.circumstances | Human-friendly description of [detection]'s circumstances. | keyword |
+| eset_protect.detection.context.device_display_name | Human-friendly name of the device with detection. | keyword |
 | eset_protect.detection.context.device_uuid | Reference to [device]. | keyword |
+| eset_protect.detection.context.process.command_line | Argument used with the command. | keyword |
 | eset_protect.detection.context.process.path | Disk path to the executable. | keyword |
+| eset_protect.detection.context.process.uuid | Universally Unique Identifier References use this identifier, so it must be filled in all the cases except the resource creation. | keyword |
 | eset_protect.detection.context.user_name | User name in whose context detection occurred. | keyword |
 | eset_protect.detection.display_name | Human-friendly name of the detection. This value can be used to look up details at http://www.virusradar.com/en/threat_encyclopedia. | keyword |
+| eset_protect.detection.edr_rule_uuid | Reference to the EDR rule which triggered the detection. | keyword |
+| eset_protect.detection.email.attachments.contained_files | List of files contained within this file, in case this file has internal structure. | keyword |
+| eset_protect.detection.email.attachments.hash_sha1 | SHA-1 digest of file's content. | keyword |
+| eset_protect.detection.email.attachments.hash_sha2256 | SHA-2 256 digest of file's content. | keyword |
+| eset_protect.detection.email.attachments.is_read_only | True if the scanned object was read-only and cannot be modified/cleaned/deleted. | boolean |
+| eset_protect.detection.email.attachments.last_editor.email | Email of the user. | keyword |
+| eset_protect.detection.email.attachments.last_editor.user_name | Name of the user. | keyword |
+| eset_protect.detection.email.attachments.last_editor.user_uuid | Reference to user. | keyword |
+| eset_protect.detection.email.attachments.origin | Object origin denotes a system managing object's life-cycle. | keyword |
+| eset_protect.detection.email.attachments.path | File path. | keyword |
+| eset_protect.detection.email.attachments.reference | How the file is referred to. | keyword |
+| eset_protect.detection.email.attachments.size_bytes | File size in bytes. | long |
+| eset_protect.detection.email.attachments.storages.archive_reference | Reference to the archive containing the file. Can be an URL or path to the parent archive. | keyword |
+| eset_protect.detection.email.attachments.storages.cloud_drive_user_uuid | If the file resides in the cloud on a cloud drive (for example, Google Drive or Microsoft OneDrive), this attribute references the user who owns that drive. | keyword |
+| eset_protect.detection.email.attachments.storages.display_name | Human readable name of the storage. | keyword |
+| eset_protect.detection.email.attachments.storages.email_reference | Reference to the email containing the file. | keyword |
+| eset_protect.detection.email.attachments.storages.ms_sharepoint_root_site_uuid | Reference to Microsoft Sharepoint root site. | keyword |
+| eset_protect.detection.email.attachments.storages.ms_sharepoint_site_uuid | Reference to Microsoft Sharepoint site. | keyword |
+| eset_protect.detection.email.attachments.storages.ms_teams_team_uuid | Reference to Microsoft Teams team. | keyword |
+| eset_protect.detection.email.attachments.storages.uuid | Unique identifier of the file storage instance where the file resides. | keyword |
+| eset_protect.detection.email.body_parts.contained_files | List of files contained within this file, in case this file has internal structure. | keyword |
+| eset_protect.detection.email.body_parts.hash_sha1 | SHA-1 digest of file's content. | keyword |
+| eset_protect.detection.email.body_parts.hash_sha2256 | SHA-2 256 digest of file's content. | keyword |
+| eset_protect.detection.email.body_parts.is_read_only | True if the scanned object was read-only and cannot be modified/cleaned/deleted. | boolean |
+| eset_protect.detection.email.body_parts.last_editor.email | Email of the user. | keyword |
+| eset_protect.detection.email.body_parts.last_editor.user_name | Name of the user. | keyword |
+| eset_protect.detection.email.body_parts.last_editor.user_uuid | Reference to user. | keyword |
+| eset_protect.detection.email.body_parts.origin | Object origin denotes a system managing object's life-cycle. | keyword |
+| eset_protect.detection.email.body_parts.path | File path. | keyword |
+| eset_protect.detection.email.body_parts.reference | How the file is referred to. | keyword |
+| eset_protect.detection.email.body_parts.size_bytes | File size in bytes. | long |
+| eset_protect.detection.email.body_parts.storages.archive_reference | Reference to the archive containing the file. Can be an URL or path to the parent archive. | keyword |
+| eset_protect.detection.email.body_parts.storages.cloud_drive_user_uuid | If the file resides in the cloud on a cloud drive (for example, Google Drive or Microsoft OneDrive), this attribute references the user who owns that drive. | keyword |
+| eset_protect.detection.email.body_parts.storages.display_name | Human readable name of the storage. | keyword |
+| eset_protect.detection.email.body_parts.storages.email_reference | Reference to the email containing the file. | keyword |
+| eset_protect.detection.email.body_parts.storages.ms_sharepoint_root_site_uuid | Reference to Microsoft Sharepoint root site. | keyword |
+| eset_protect.detection.email.body_parts.storages.ms_sharepoint_site_uuid | Reference to Microsoft Sharepoint site. | keyword |
+| eset_protect.detection.email.body_parts.storages.ms_teams_team_uuid | Reference to Microsoft Teams team. | keyword |
+| eset_protect.detection.email.body_parts.storages.uuid | Unique identifier of the file storage instance where the file resides. | keyword |
+| eset_protect.detection.email.cc | Carbon copy recipient(s) of the email. | keyword |
+| eset_protect.detection.email.contained_urls | URLs contained in the email. | keyword |
+| eset_protect.detection.email.from | Sender(s) of the email. | keyword |
+| eset_protect.detection.email.headers | Header of the email. | keyword |
+| eset_protect.detection.email.internet_message_id | Unique identifier of the message. | keyword |
+| eset_protect.detection.email.is_read_only | True if the scanned object was read-only and cannot be modified/cleaned/deleted. | boolean |
+| eset_protect.detection.email.mailbox_user_uuid | Reference to the user who owns the mailbox, if the email can be associated with a mailbox. | keyword |
+| eset_protect.detection.email.mailbox_uuid | Reference to mailbox. | keyword |
+| eset_protect.detection.email.mta_smtp_details.hello | Parameter of extended HELLO (EHLO) or HELLO (HELO) command. | keyword |
+| eset_protect.detection.email.mta_smtp_details.recipients | Parameter of RECIPIENT (RCPT) command or multiple commands for multiple recipients. | keyword |
+| eset_protect.detection.email.mta_smtp_details.sender | Parameter (reverse-path) of MAIL (MAIL FROM) command. A sender of the email. | keyword |
+| eset_protect.detection.email.mta_smtp_details.sender_ip_address | IP address of the sender. Might be IPv4 or IPv6. | ip |
+| eset_protect.detection.email.origin | Object origin denotes a system managing object's life-cycle. | keyword |
+| eset_protect.detection.email.reference | How the email is referred to. | keyword |
+| eset_protect.detection.email.sender_ip_address | IP address of the sender. Might be IPv4 or IPv6. | ip |
+| eset_protect.detection.email.subject | Subject of the email. | keyword |
+| eset_protect.detection.email.to | Recipient(s) of the email. | keyword |
+| eset_protect.detection.file.contained_files | List of files contained within this file, in case this file has internal structure. | keyword |
+| eset_protect.detection.file.hash_sha1 | SHA-1 digest of file's content. | keyword |
+| eset_protect.detection.file.hash_sha2256 | SHA-2 256 digest of file's content. | keyword |
+| eset_protect.detection.file.is_read_only | True if the scanned object was read-only and cannot be modified/cleaned/deleted. | boolean |
+| eset_protect.detection.file.last_editor.email | Email of the user. | keyword |
+| eset_protect.detection.file.last_editor.user_name | Name of the user. | keyword |
+| eset_protect.detection.file.last_editor.user_uuid | Reference to user. | keyword |
+| eset_protect.detection.file.origin | Object origin denotes a system managing object's life-cycle. | keyword |
+| eset_protect.detection.file.path | File path. | keyword |
+| eset_protect.detection.file.reference | How the file is referred to. | keyword |
+| eset_protect.detection.file.size_bytes | File size in bytes. | long |
+| eset_protect.detection.file.storages.archive_reference | Reference to the archive containing the file. Can be an URL or path to the parent archive. | keyword |
+| eset_protect.detection.file.storages.cloud_drive_user_uuid | If the file resides in the cloud on a cloud drive (for example, Google Drive or Microsoft OneDrive), this attribute references the user who owns that drive. | keyword |
+| eset_protect.detection.file.storages.display_name | Human readable name of the storage. | keyword |
+| eset_protect.detection.file.storages.email_reference | Reference to the email containing the file. | keyword |
+| eset_protect.detection.file.storages.ms_sharepoint_root_site_uuid | Reference to Microsoft Sharepoint root site. | keyword |
+| eset_protect.detection.file.storages.ms_sharepoint_site_uuid | Reference to Microsoft Sharepoint site. | keyword |
+| eset_protect.detection.file.storages.ms_teams_team_uuid | Reference to Microsoft Teams team. | keyword |
+| eset_protect.detection.file.storages.uuid | Unique identifier of the file storage instance where the file resides. | keyword |
 | eset_protect.detection.network_communication.direction | Direction of network communication. | keyword |
 | eset_protect.detection.network_communication.local.ip_address | IPv4 or IPv6 address of the device (i.e. the device where detection occurred). | ip |
+| eset_protect.detection.network_communication.local.mac_address | The MAC (L2) address of endpoint-local network interface. | keyword |
 | eset_protect.detection.network_communication.local.port | TCP or UDP port on the device (i.e. the device where detection occurred). | long |
 | eset_protect.detection.network_communication.protocol_name | Human readable name of the protocol used to communicate between local and remote hosts. | keyword |
 | eset_protect.detection.network_communication.remote.ip_address | IPv4 or IPv6 address of the remote host (i.e. not the device where detection occurred). | ip |
+| eset_protect.detection.network_communication.remote.mac_address | The MAC (L2) address of the remote network interface (possibly the MAC address of the gateway). | keyword |
 | eset_protect.detection.network_communication.remote.port | TCP or UDP port on the remote host (i.e. not the device where detection occurred). | long |
+| eset_protect.detection.note | Arbitrary text. | keyword |
 | eset_protect.detection.object_hash_sha1 | SHA1 hash of content of scanned object. | keyword |
 | eset_protect.detection.object_name | Name/path of scanned object. | keyword |
+| eset_protect.detection.object_size_bytes | Object's size in bytes. | long |
 | eset_protect.detection.object_type_name | Human-friendly type name of scanned object. | keyword |
 | eset_protect.detection.object_url | URL (uniform resource locator) of scanned object. | keyword |
 | eset_protect.detection.occur_time | Timestamp of detection occurrence. | date |
+| eset_protect.detection.resolved | If true, the detection is resolved and poses a threat no more. | boolean |
+| eset_protect.detection.responses.action_type | Categories of operations that can be performed on objects. | keyword |
 | eset_protect.detection.responses.description | Human-readable description of the response. | keyword |
 | eset_protect.detection.responses.device_restart_required | Response needs restart of the device to be completed. | boolean |
 | eset_protect.detection.responses.display_name | Human-friendly name of the response. | keyword |
+| eset_protect.detection.responses.email_reference | Reference to the affected email. | keyword |
+| eset_protect.detection.responses.file_reference | Reference to the file affected by the response. | keyword |
 | eset_protect.detection.responses.protection_name | Human-readable name of the protection that performed the response. | keyword |
+| eset_protect.detection.scan_uuid | Reference to the on-demand scan during which the detection occurred. | keyword |
 | eset_protect.detection.severity_level | Severity levels abstracted to cover all the possible GUIs. Vocabulary is leaving interpretation of severity level completely to API client. | keyword |
+| eset_protect.detection.severity_score | The integer representation of the severity level to be comparable in queries. | long |
+| eset_protect.detection.triggering_event.data | Data of the event described as generic structure. | flattened |
+| eset_protect.detection.triggering_event.type | Event that triggered the detection. | keyword |
 | eset_protect.detection.type_name | Human-friendly type of detection. | keyword |
 | eset_protect.detection.uuid | Universally Unique Identifier of detection. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
@@ -245,26 +338,26 @@ An example event for `device_task` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-16T05:41:49.641Z",
+    "@timestamp": "2025-11-10T06:07:33.442Z",
     "agent": {
-        "ephemeral_id": "a2da59f5-382d-41e2-be5e-0b06df998911",
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "2de42df7-1a70-45c2-bdb4-f36db2841c08",
+        "id": "3d09e751-a7b0-418a-ba1c-07154b8f5558",
+        "name": "elastic-agent-81384",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.device_task",
-        "namespace": "ep",
+        "namespace": "78597",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "id": "3d09e751-a7b0-418a-ba1c-07154b8f5558",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "eset_protect": {
         "device_task": {
@@ -304,7 +397,7 @@ An example event for `device_task` looks as following:
         "action": "Shutdown computer",
         "agent_id_status": "verified",
         "dataset": "eset_protect.device_task",
-        "ingested": "2024-04-16T05:41:59Z",
+        "ingested": "2025-11-10T06:07:36Z",
         "kind": "event",
         "original": "{\"action\":{\"name\":\"Shutdown computer\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via context menu\",\"displayName\":\"Reboot Computer - via context menu\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-XXXX-1234-feeb35010ea7\",\"0205321e-XXXX-XXXX-5678-feeb35010ea7\",\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-XXXX-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
         "type": [
@@ -380,15 +473,15 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-06-21T03:56:20.000Z",
     "agent": {
-        "ephemeral_id": "fe2f9827-1823-4a86-8826-b6789530f104",
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "15db6629-f3a1-4a0f-94ea-1bf6ec62aaba",
+        "id": "adf2804e-ca6b-4c6b-90af-e9060e7ee1b2",
+        "name": "elastic-agent-28441",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.event",
-        "namespace": "ep",
+        "namespace": "71776",
         "type": "logs"
     },
     "destination": {
@@ -416,9 +509,9 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "id": "adf2804e-ca6b-4c6b-90af-e9060e7ee1b2",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "eset_protect": {
         "event": {
@@ -451,7 +544,7 @@ An example event for `event` looks as following:
             "web"
         ],
         "dataset": "eset_protect.event",
-        "ingested": "2024-04-16T05:42:56Z",
+        "ingested": "2025-10-30T10:35:48Z",
         "kind": "alert",
         "original": "{\"event_type\":\"FilteredWebsites_Event\",\"ipv4\":\"192.168.30.30\",\"hostname\":\"win-test\",\"group_name\":\"All/Lost & found\",\"os_name\":\"Microsoft Windows 11 Pro\",\"group_description\":\"Lost & found static group\",\"source_uuid\":\"d9477661-8fa4-4144-b8d4-e37b983bcd69\",\"occured\":\"21-Jun-2021 03:56:20\",\"severity\":\"Warning\",\"event\":\"An attempt to connect to URL\",\"target_address\":\"89.160.20.128\",\"target_address_type\":\"IPv4\",\"scanner_id\":\"HTTP filter\",\"action_taken\":\"blocked\",\"object_uri\":\"https://test.com\",\"hash\":\"ABCDAA625E6961037B8904E113FD0C232A7D0EDC\",\"username\":\"WIN-TEST\\\\Administrator\",\"processname\":\"C:\\\\Program Files\\\\Web browser\\\\brwser.exe\",\"rule_id\":\"Blocked by PUA blacklist\"}",
         "type": [
@@ -477,7 +570,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.247.8:59824"
+            "address": "192.168.241.3:58054"
         },
         "syslog": {
             "appname": "ERAServer",

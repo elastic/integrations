@@ -2,6 +2,11 @@
 
 CrowdStrike Falcon Intelligence is a threat intelligence product that provides advanced cybersecurity insights to organizations. Leveraging machine learning and behavioural analytics, Falcon Intelligence delivers real-time threat data, enabling proactive threat detection and response. With a focus on actionable intelligence, it empowers businesses to stay ahead of cyber adversaries and enhance their overall security posture. This [CrowdStrike Falcon Intelligence](https://www.crowdstrike.com/en-us/) integration enables you to consume and analyze CrowdStrike Falcon Intelligence data within Elastic Security, including Intel Indicator and IOCs, providing you with visibility and context for your cloud environments within Elastic Security.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The CrowdStrike Falcon Intelligence integration collects two types of data: IOC and Intel Indicator.

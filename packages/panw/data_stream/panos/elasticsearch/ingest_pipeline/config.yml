@@ -3,6 +3,7 @@ description: Pipeline for PanOS Config Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/config-log-fields
 processors:
   - csv:
+      tag: csv_message_e2e3e7de
       field: message
       target_fields:
         - panw.panos.host.ip
@@ -14,6 +15,7 @@ processors:
         - panw.panos.path
         - _temp_.check_field
   - convert:
+      tag: convert__temp__check_field_5a04d649
       field: _temp_.check_field
       type: long
       ignore_missing: true
@@ -71,6 +73,7 @@ processors:
         - _temp_.future_use1
         - _temp_.high_res_timestamp
   - script:
+      tag: script_edc601fd
       description: Set Event Action.
       lang: painless
       ignore_failure: true
@@ -84,53 +87,62 @@ processors:
         move: cmd-move
         rename: cmd-rename
         set: cmd-set
-      source:
-        ctx.event.action = params.get(ctx.panw.panos.cmd);
+      source: ctx.event.action = params.get(ctx.panw.panos.cmd);
   - set:
+      tag: set_event_outcome_a8d719f3
       field: event.outcome
       value: success
       ignore_failure: true
       if: ctx.panw?.panos?.result == 'Succeeded'
   - set:
+      tag: set_event_outcome_98bc1180
       field: event.outcome
       value: failure
       ignore_failure: true
       if: ctx.panw?.panos?.result == 'Failed'
   - set:
+      tag: set_event_outcome_332ce513
       field: event.outcome
       value: unknown
       ignore_failure: true
       if: '!["Succeeded", "Failed"].contains(ctx.panw.panos.action)'
 
-# Set event.kind & event.category field.
+  # Set event.kind & event.category field.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_c8ab9fa2
       field: event.category
       value:
         - configuration
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
+      tag: set_host_ip_ae377e8b
       field: host.ip
       copy_from: panw.panos.host.ip
       ignore_failure: true
   - set:
+      tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
 
-# Set event.outcome from panw.panos.result: documented allowed values are Submitted, Succeeded, Failed, and Unauthorized
+  # Set event.outcome from panw.panos.result: documented allowed values are Submitted, Succeeded, Failed, and Unauthorized
   - set:
+      tag: set_event_outcome_057c7750
       if: ctx.panw?.panos?.result == "Succeeded"
       field: event.outcome
       value: success
   - set:
+      tag: set_event_outcome_777b32fd
       if: ctx.panw?.panos?.result == "Failed"
       field: event.outcome
       value: failure
   - set:
+      tag: set_event_outcome_bcf074fb
       if: ctx.event?.outcome == null || ctx.event.outcome == ""
       field: event.outcome
       value: unknown
@@ -142,7 +154,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Config pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

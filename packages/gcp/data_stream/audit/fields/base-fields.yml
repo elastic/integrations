@@ -20,7 +20,10 @@
   value: gcp.audit
 - name: actor.entity.id
   description: |
-    ID or multiple IDs of the entity performing the action described by the event.
+    [Deprecated] This field is maintained for backward compatibility.
+    Use type-specific fields instead: user.entity.id for user accounts,
+    service.entity.id for service accounts and GCP services, host.entity.id
+    for compute instances, or entity.id for other types.
   type: keyword
 - name: related.entity
   description: |
@@ -31,5 +34,74 @@
   type: keyword
 - name: target.entity.id
   description: |
-    ID or multiple IDs of the entity targeted by the action described by the event.
+    [Deprecated] This field is maintained for backward compatibility.
+    Use type-specific fields instead: user.target.entity.id for IAM principals,
+    service.target.entity.id for GCP service resources, host.target.entity.id
+    for compute instances, or entity.target.id for other types.
   type: keyword
+- name: user
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Unique identifier for user accounts acting as principals in GCP audit events. Contains email addresses and user: prefixed identifiers."
+    - name: target
+      type: group
+      fields:
+        - name: entity
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: "Unique identifier for IAM principals targeted by GCP audit events. Includes service accounts, users, and groups."
+- name: service
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Unique identifier for service accounts and GCP services acting as principals. Contains serviceAccount: prefixed values, *.iam.gserviceaccount.com addresses, and *.googleapis.com services."
+    - name: target
+      type: group
+      fields:
+        - name: entity
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: "Unique identifier for GCP service resources targeted by audit events. Includes Cloud Storage buckets, Cloud Functions, BigQuery datasets, Compute Engine resources, networking components, and other GCP services."
+- name: host
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Unique identifier for Compute Engine instances acting as principals in GCP audit events. Contains instance resource paths."
+    - name: target
+      type: group
+      fields:
+        - name: entity
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: "Unique identifier for compute resources targeted by GCP audit events. Includes Compute Engine instance IDs and resource paths."
+- name: entity
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: "Generic entity identifier for principals that don't fit into specific categories (user, service, host). Used as a fallback for unknown or miscellaneous entity types like GitHub repo references."
+    - name: target
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Generic entity identifier for targets that don't fit into specific categories. Used for projects, zones, and other miscellaneous GCP resources."

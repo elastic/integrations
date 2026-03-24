@@ -4,6 +4,7 @@ description: Pipeline for Suricata DNS answers v2
 # Suricata DNS v2 events contain all answers in a single event.
 processors:
   - rename:
+      tag: rename_suricata_eve_dns_answers_to_dns_answers_4c255780
       field: suricata.eve.dns.answers
       target_field: dns.answers
       ignore_missing: true
@@ -42,4 +43,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

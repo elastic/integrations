@@ -1,0 +1,29 @@
+{
+    "id": "aws-bedrock-agentcore-identity-throttles",
+    "type": "alerting_rule_template",
+    "attributes": {
+      "name": "[AWS Bedrock AgentCore] Identity throttles",
+      "tags": ["AWS", "Amazon Bedrock AgentCore"],
+      "ruleTypeId": ".es-query",
+      "schedule": {
+        "interval": "5m"
+      },
+      "params": {
+        "searchType": "esqlQuery",
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m",
+        "esqlQuery": {
+          "esql": "// Alert triggers when throttling occurs during AWS Bedrock AgentCore Identity operations.\n//\n// Identity service handles authentication and token management for agents.\n// Throttling in identity operations can indicate:\n// - Workload access token fetch throttles: Rate limiting on workload identity tokens\n// - Resource access token fetch throttles: Rate limiting on OAuth2 token fetches\n// - API key fetch throttles: Rate limiting on API key retrievals\n//\n// Token fetch throttling can prevent agents from accessing protected resources\n// and may cause cascading failures in agent workflows.\n//\n// The alert is grouped by cloud account and region to identify affected environments.\n//\n// To reduce alert noise, increase the threshold (e.g., `total_throttles > 10`).\n\nFROM metrics-aws_bedrock_agentcore.metrics-*\n| STATS workload_throttles = sum(aws.bedrock_agentcore.metrics.WorkloadAccessTokenFetchThrottles.sum), resource_throttles = sum(aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchThrottles.sum), apikey_throttles = sum(aws.bedrock_agentcore.metrics.ApiKeyFetchThrottles.sum) BY cloud.account.id, cloud.region\n| EVAL total_throttles = COALESCE(workload_throttles, TO_LONG(0)) + COALESCE(resource_throttles, TO_LONG(0)) + COALESCE(apikey_throttles, TO_LONG(0))\n| WHERE total_throttles > 0"
+        },
+        "groupBy": "row",
+        "timeField": "event.ingested"
+      },
+      "alertDelay": {
+        "active": 1
+      }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+  }
+

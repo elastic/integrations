@@ -246,13 +246,20 @@ On the other hand, **Audit** events are exposed through Microsoft-Windows-DNS-Se
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
-| winlog.channel | Used to enable special event processing. Channel values below 16 are reserved for use by Microsoft to enable special treatment by the ETW runtime. Channel values 16 and above will be ignored by the ETW runtime (treated the same as channel 0) and can be given user-defined semantics. | keyword |
+| winlog.channel | The channel field indicates the channel that the event was logged to. Channels are used to categorize events and can be used to filter events in the Windows Event Viewer. | keyword |
 | winlog.flags | Flags that provide information about the event such as the type of session it was logged to and if the event contains extended data. | keyword |
+| winlog.flags_raw | Raw bitmask representation of the flags field. This is useful for debugging purposes. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
+| winlog.keywords_raw | Raw bitmask representation of the keywords field. This is useful for debugging purposes. | keyword |
+| winlog.level | The level field indicates the severity of the event. It is used to classify the event into categories such as informational, warning, error, etc. | keyword |
+| winlog.level_raw | Raw numeric representation of the level field. This is useful for debugging purposes. | long |
 | winlog.opcode | Code used to mark events with special semantics. Internal ETW metadata. | keyword |
+| winlog.opcode_raw | Raw numeric representation of the opcode field. This is useful for debugging purposes. | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
+| winlog.provider_message | A human-readable representation of the provider that logged the event. This is typically the name of the provider. | keyword |
 | winlog.session | Configured session to forward ETW events from providers to consumers. | keyword |
 | winlog.task | A categorical identifier for the type of task performed during the event. | keyword |
+| winlog.task_raw | Raw numeric representation of the task field. This is useful for debugging purposes. | long |
 | winlog.version | Specify the version of a manifest-based event. | long |
 
 

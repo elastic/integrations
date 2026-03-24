@@ -58,11 +58,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "f0fa8393-26a1-453e-96fe-212743206a30",
-        "id": "da1b4fd1-cf45-42bc-8036-09da5b16e085",
-        "name": "elastic-agent-91674",
+        "ephemeral_id": "40bd1d11-37ac-4006-99ce-92ac21f7ffa1",
+        "id": "7dc9c937-a616-4c11-9dd0-4aa93489a9ee",
+        "name": "elastic-agent-26045",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "client": {
         "geo": {
@@ -84,28 +84,28 @@ An example event for `system` looks as following:
     },
     "data_stream": {
         "dataset": "okta.system",
-        "namespace": "58099",
+        "namespace": "80451",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "da1b4fd1-cf45-42bc-8036-09da5b16e085",
+        "id": "7dc9c937-a616-4c11-9dd0-4aa93489a9ee",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "event": {
         "action": "user.session.start",
         "agent_id_status": "verified",
         "category": [
-            "authentication",
-            "session"
+            "session",
+            "authentication"
         ],
-        "created": "2025-06-04T15:16:49.436Z",
+        "created": "2025-12-05T10:50:48.615Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2025-06-04T15:16:50Z",
+        "ingested": "2025-12-05T10:50:49Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
@@ -205,9 +205,13 @@ An example event for `system` looks as following:
         }
     },
     "tags": [
+        "session",
+        "okta-system",
+        "end-user-visible",
+        "event-hook-eligible",
+        "user",
         "preserve_original_event",
-        "forwarded",
-        "okta-system"
+        "forwarded"
     ],
     "user": {
         "email": "xxxxxx@elastic.co",

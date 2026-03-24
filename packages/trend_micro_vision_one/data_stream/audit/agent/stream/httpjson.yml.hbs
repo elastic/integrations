@@ -1,6 +1,6 @@
 config_version: 2
 interval: {{interval}}
-resource.tracer:
+request.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/httpjson/http-request-trace-*.ndjson"
   maxbackups: 5
@@ -40,6 +40,7 @@ response.pagination:
       target: url.value
       value: '[[if index .last_response.body "nextLink"]][[replaceAll " " "%20" .last_response.body.nextLink]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   last_update_at:
     value: '[[.last_response.url.params.Get "endDateTime"]]'

@@ -4,14 +4,17 @@
 description: Pipeline for parsing junipersrx firewall logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_event_original_1c0892fa
       field: event.original
       patterns:
       # 1. SRX Traffic structured log pattern
@@ -25,8 +28,9 @@ processors:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME})"
         JUNIPER_TRAFFIC_PROCESS: "RT_FLOW|RT_UTM|RT_IDP|RT_IDS|RT_AAMW|RT_SECINTEL"
 
-# split Juniper-SRX fields
+  # split Juniper-SRX fields
   - kv:
+      tag: kv__temp__traffic_structured_835d8dff
       field: _temp_.traffic_structured
       field_split: ' (?=[a-z0-9\_\-]+=)'
       value_split: "="
@@ -34,8 +38,9 @@ processors:
       ignore_missing: true
       ignore_failure: false
       trim_value: '"'
-# split Juniper-SRX fields
+  # split Juniper-SRX fields
   - kv:
+      tag: kv__temp__system_structured_a0e2a827
       field: _temp_.system_structured
       field_split: ' (?=[a-z0-9\_\-]+=)'
       value_split: "="
@@ -45,21 +50,24 @@ processors:
       trim_value: '"'
 
   - rename:
+      tag: rename_syslog_program_to_juniper_srx_process_f214a5fd
       field: syslog_program
       target_field: juniper.srx.process
       ignore_missing: true
 
-# Converts all kebab-case key names to snake_case
+  # Converts all kebab-case key names to snake_case
   - script:
+      tag: script_edf2be06
       lang: painless
       if: ctx.juniper?.srx != null
       source: >-
         ctx.juniper.srx = ctx?.juniper?.srx.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace('-', '_'), e -> e.getValue()));
 
-#
-# Parse the date
-#
+  #
+  # Parse the date
+  #
   - date:
+      tag: date__temp__raw_date_to_timestamp_cce7bafb
       if: "ctx?.event?.timezone == null"
       field: _temp_.raw_date
       target_field: "@timestamp"
@@ -70,6 +78,7 @@ processors:
       - ISO8601
       - MMM d HH:mm:ss
   - date:
+      tag: date__temp__raw_date_to_timestamp_c52b4811
       if: "ctx?.event?.timezone != null"
       timezone: "{{{ event.timezone }}}"
       field: _temp_.raw_date
@@ -81,15 +90,17 @@ processors:
       - ISO8601
       - MMM d HH:mm:ss
 
-# Can possibly be omitted if there is a solution for the equal signs and the calculation of the start time.
-# -> juniper.srx.elapsed_time
+  # Can possibly be omitted if there is a solution for the equal signs and the calculation of the start time.
+  # -> juniper.srx.elapsed_time
   - rename:
+      tag: rename_juniper_srx_elapsed_time_to_juniper_srx_duration_701cf6fb
       field: juniper.srx.elapsed_time
       target_field: juniper.srx.duration
       if: "ctx?.juniper?.srx?.elapsed_time != null"
 
-# Sets starts, end and duration when start and duration is known
+  # Sets starts, end and duration when start and duration is known
   - script:
+      tag: script_7e38cd49
       lang: painless
       if: ctx?.juniper?.srx?.duration != null
       source: >-
@@ -97,9 +108,9 @@ processors:
         ctx.event.start = ctx['@timestamp'];
         ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
         ctx.event.end = start.plus(ctx.event.duration, ChronoUnit.NANOS);
-
-# Removes all empty fields
+  # Removes all empty fields
   - script:
+      tag: script_cf2acace
       lang: painless
       if: ctx.juniper?.srx != null
       params:
@@ -111,9 +122,9 @@ processors:
       source: >-
         ctx?.juniper?.srx.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
 
-#######################
-## ECS Event Mapping ##
-#######################
+  #######################
+  ## ECS Event Mapping ##
+  #######################
   - convert:
       field: syslog_pri
       type: long
@@ -121,130 +132,161 @@ processors:
       tag: convert_syslog_pri_to_long
       on_failure:
         - append:
+            tag: append_error_message_cb579996
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-#####################
-## ECS Log Mapping ##
-#####################
-# https://www.juniper.net/documentation/en_US/junos/topics/reference/general/syslog-interpreting-msg-generated-structured-data-format.html#fac_sev_codes
+  #####################
+  ## ECS Log Mapping ##
+  #####################
+  # https://www.juniper.net/documentation/en_US/junos/topics/reference/general/syslog-interpreting-msg-generated-structured-data-format.html#fac_sev_codes
   - set:
+      tag: set_log_level_305a5e17
       field: "log.level"
       if: '["0", "8", "16", "24", "32", "40", "48", "56", "64", "72", "80", "88", "96", "104", "112", "128", "136", "144", "152", "160", "168", "176", "184"].contains(ctx.syslog_pri)'
       value: emergency
   - set:
+      tag: set_log_level_8c41f683
       field: "log.level"
       if: '["1", "9", "17", "25", "33", "41", "49", "57", "65", "73", "81", "89", "97", "105", "113", "129", "137", "145", "153", "161", "169", "177", "185"].contains(ctx.syslog_pri)'
       value: alert
   - set:
+      tag: set_log_level_4dce4136
       field: "log.level"
       if: '["2", "10", "18", "26", "34", "42", "50", "58", "66", "74", "82", "90", "98", "106", "114", "130", "138", "146", "154", "162", "170", "178", "186"].contains(ctx.syslog_pri)'
       value: critical
   - set:
+      tag: set_log_level_9b2de346
       field: "log.level"
       if: '["3", "11", "19", "27", "35", "43", "51", "59", "67", "75", "83", "91", "99", "107", "115", "131", "139", "147", "155", "163", "171", "179", "187"].contains(ctx.syslog_pri)'
       value: error
   - set:
+      tag: set_log_level_0d83309f
       field: "log.level"
       if: '["4", "12", "20", "28", "36", "44", "52", "60", "68", "76", "84", "92", "100", "108", "116", "132", "140", "148", "156", "164", "172", "180", "188"].contains(ctx.syslog_pri)'
       value: warning
   - set:
+      tag: set_log_level_db3ebf41
       field: "log.level"
       if: '["5", "13", "21", "29", "37", "45", "53", "61", "69", "77", "85", "93", "101", "109", "117", "133", "141", "149", "157", "165", "173", "181", "189"].contains(ctx.syslog_pri)'
       value: notification
   - set:
+      tag: set_log_level_06f4ad99
       field: "log.level"
       if: '["6", "14", "22", "30", "38", "46", "54", "62", "70", "78", "86", "94", "102", "110", "118", "134", "142", "150", "158", "166", "174", "182", "190"].contains(ctx.syslog_pri)'
       value: informational
   - set:
+      tag: set_log_level_fa626596
       field: "log.level"
       if: '["7", "15", "23", "31", "39", "47", "55", "63", "71", "79", "87", "95", "103", "111", "119", "135", "143", "151", "159", "167", "175", "183", "191"].contains(ctx.syslog_pri)'
       value: debug
 
-##########################
-## ECS Observer Mapping ##
-##########################
+  ##########################
+  ## ECS Observer Mapping ##
+  ##########################
   - set:
+      tag: set_observer_vendor_0dddae31
       field: observer.vendor
       value: Juniper
   - set:
+      tag: set_observer_product_55d301f8
       field: observer.product
       value: SRX
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: firewall
   - rename:
+      tag: rename_syslog_hostname_to_observer_name_0e507484
       field: syslog_hostname
       target_field: observer.name
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_packet_incoming_interface_to_observer_ingress_interface_name_b3fe55be
       field: juniper.srx.packet_incoming_interface
       target_field: observer.ingress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_destination_interface_name_to_observer_egress_interface_name_8e26b5e7
       field: juniper.srx.destination_interface_name
       target_field: observer.egress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_source_interface_name_to_observer_ingress_interface_name_7bba8d7e
       field: juniper.srx.source_interface_name
       target_field: observer.ingress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_interface_name_to_observer_ingress_interface_name_4023c7b6
       field: juniper.srx.interface_name
       target_field: observer.ingress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_source_zone_name_to_observer_ingress_zone_ebc8c681
       field: juniper.srx.source_zone_name
       target_field: observer.ingress.zone
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_source_zone_to_observer_ingress_zone_485dace5
       field: juniper.srx.source_zone
       target_field: observer.ingress.zone
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_destination_zone_name_to_observer_egress_zone_11d0b14c
       field: juniper.srx.destination_zone_name
       target_field: observer.egress.zone
       ignore_missing: true
   - rename:
+      tag: rename_juniper_srx_destination_zone_to_observer_egress_zone_613e7806
       field: juniper.srx.destination_zone
       target_field: observer.egress.zone
       ignore_missing: true
   - rename:
+      tag: rename_tag_to_juniper_srx_tag_5c32d586
       field: tag
       target_field: juniper.srx.tag
       ignore_missing: true
 
-# Remove message as it is used inside sub-pipelines.
+  # Remove message as it is used inside sub-pipelines.
   - remove:
+      tag: remove_291e7fed
       field:
         - message
       ignore_missing: true
 
-################################
-## Product Specific Pipelines ##
-################################
+  ################################
+  ## Product Specific Pipelines ##
+  ################################
   - pipeline:
+      tag: pipeline_2b1643ea
       name: '{{ IngestPipeline "flow" }}'
       if: "ctx.juniper?.srx?.process == 'RT_FLOW'"
   - pipeline:
+      tag: pipeline_ade2e55a
       name: '{{ IngestPipeline "utm" }}'
       if: "ctx.juniper?.srx?.process == 'RT_UTM'"
   - pipeline:
+      tag: pipeline_dcc5b626
       name: '{{ IngestPipeline "idp" }}'
       if: "ctx.juniper?.srx?.process == 'RT_IDP'"
   - pipeline:
+      tag: pipeline_e84ce6f2
       name: '{{ IngestPipeline "ids" }}'
       if: "ctx.juniper?.srx?.process == 'RT_IDS'"
   - pipeline:
+      tag: pipeline_cae011a3
       name: '{{ IngestPipeline "atp" }}'
       if: "ctx.juniper?.srx?.process == 'RT_AAMW'"
   - pipeline:
+      tag: pipeline_437cce90
       name: '{{ IngestPipeline "secintel" }}'
       if: "ctx.juniper?.srx?.process == 'RT_SECINTEL'"
   - pipeline:
+      tag: pipeline_fdd9fd1e
       name: '{{ IngestPipeline "system" }}'
       if: "ctx.juniper?.srx?.process == null || !['RT_FLOW', 'RT_UTM', 'RT_IDP', 'RT_IDS', 'RT_AAMW', 'RT_SECINTEL'].contains(ctx.juniper.srx.process)"
   - script:
+      tag: script_aaef8fa9
       lang: painless
       ignore_failure: true
       if: ctx?.network?.iana_number != null
@@ -286,68 +328,78 @@ processors:
       ignore_failure: true
       if: ctx.source?.user?.name == null && ctx.source?.user?.domain == null
 
-#########################
-## ECS Related Mapping ##
-#########################
+  #########################
+  ## ECS Related Mapping ##
+  #########################
   - append:
+      tag: append_related_ip_30d15214
       if: 'ctx.source?.ip != null'
       field: related.ip
       value: '{{{source.ip}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_ip_51dd17d0
       if: 'ctx.destination?.ip != null'
       field: related.ip
       value: '{{{destination.ip}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_ip_72f15221
       if: 'ctx.source?.nat?.ip != null'
       field: related.ip
       value: '{{{source.nat.ip}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_ip_90fb5760
       if: 'ctx?.destination?.nat?.ip != null'
       field: related.ip
       value: '{{{destination.nat.ip}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_5154efa2
       if: 'ctx.url?.domain != null'
       field: related.hosts
       value: '{{{url.domain}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_feadfaea
       if: 'ctx.source?.domain != null'
       field: related.hosts
       value: '{{{source.domain}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_d0d56b04
       if: 'ctx.destination?.domain != null'
       field: related.hosts
       value: '{{{destination.domain}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_user_c3407f64
       if: 'ctx?.source?.user?.name != null'
       field: related.user
       value: '{{{source.user.name}}}'
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_user_71bd8078
       if: 'ctx?.source?.user?.email != null'
       field: related.user
       value: '{{{source.user.email}}}'
       ignore_failure: true
       allow_duplicates: false
 
-#########################
-## ECS Process Mapping ##
-#########################
+  #########################
+  ## ECS Process Mapping ##
+  #########################
   - set:
+      tag: set_process_name_643474b7
       field: process.name
       value: "{{{juniper.srx.process}}}"
       if: ctx.juniper?.srx?.process != null
@@ -359,18 +411,20 @@ processors:
       if: "ctx.syslog_pid != null"
       on_failure:
         - append:
+            tag: append_error_message_dd102488
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_syslog_pid_to_process_pid_ddc3cfdd
       field: syslog_pid
       target_field: process.pid
       ignore_missing: true
 
-
-#############
-## Cleanup ##
-#############
+  #############
+  ## Cleanup ##
+  #############
   - remove:
+      tag: remove_b6b616b2
       field:
         # Could be parsed when more use cases appear
         - _temp_
@@ -380,11 +434,24 @@ processors:
         - juniper.srx.dstzone
         - syslog_pri
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

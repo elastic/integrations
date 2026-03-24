@@ -1,0 +1,68 @@
+---
+description: Pipeline for parsing Kafka replica manager metrics
+processors:
+  - set:
+      field: event.kind
+      value: metric
+  - rename:
+      field: jolokia.metrics
+      target_field: kafka.replica_manager
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: service.type
+      value: kafka
+
+  # Add metric fingerprint list
+  - script:
+      lang: painless
+      source: |
+        def queue = new ArrayList();
+        def fingerprint = new ArrayList();
+
+        if (ctx.containsKey('kafka') && ctx.kafka.containsKey('replica_manager')) {
+            queue.add(['p': 'kafka.replica_manager', 'v': ctx.kafka.replica_manager]);
+
+            while (!queue.isEmpty()) {
+                def item = queue.remove(0);
+                def path = item.p;
+                def val = item.v;
+
+                if (val instanceof Map) {
+                    for (entry in val.entrySet()) {
+                        def key = entry.getKey();
+                        def child = entry.getValue();
+                        def childPath = path + '.' + key;
+                        queue.add(['p': childPath, 'v': child]);
+                    }
+                } else {
+                    fingerprint.add(path);
+                }
+            }
+
+            ctx.kafka_replica_manager_metric_fingerprint = fingerprint;
+        }
+
+  - fingerprint:
+      fields: [kafka_replica_manager_metric_fingerprint]
+      target_field: kafka.replica_manager.metric_fingerprint
+      ignore_failure: true
+
+  # Cleanup
+  - remove:
+      field: kafka_replica_manager_metric_fingerprint
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'

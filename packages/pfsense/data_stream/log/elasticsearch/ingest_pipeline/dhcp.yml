@@ -2,6 +2,7 @@
 description: Pipeline for PFsense DHCP logs
 processors:
   - grok:
+      tag: grok_message_efb70afb
       field: message
       patterns:
         - '%{DATA:_tmp.action}/%{INTERFACE:observer.ingress.interface.name}/%{MAC_ADDRESS:server.mac}/%{NOTSPACE:pfsense.dhcp.subnet}'
@@ -21,68 +22,83 @@ processors:
         MIDDLE: '(?:%{FROM}|%{ON}|%{FOR})'
         DUID: '(?i)[0-9a-f]{2}(:[0-9a-f]{2})+'
   - append:
+      tag: append_event_type_c741503d
       field: event.type
-      value: 
+      value:
         - connection
         - protocol
         - info
       allow_duplicates: false
   - set:
+      tag: set_network_protocol_ea539779
       field: network.protocol
       value: dhcp
   - set:
+      tag: set_network_protocol_98d42096
       field: network.protocol
       value: dhcpv6
       if: ctx.event.provider == 'dhcp6c' || (ctx.server?.address != null && ctx.server.address.contains(':')) || (ctx.client?.address != null && ctx.client.address.contains(':'))
   - set:
+      tag: set_network_transport_a6cfd568
       field: network.transport
       value: udp
   - convert:
+      tag: convert_client_address_to_client_ip_c718a334
       field: client.address
       target_field: client.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_server_address_to_server_ip_940441bc
       field: server.address
       target_field: server.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
   - uppercase:
+      tag: uppercase_client_mac_230df574
       field: client.mac
       ignore_missing: true
   - gsub:
+      tag: gsub_client_mac_3eb17338
       field: client.mac
       pattern: '[:]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_server_mac_12d7a2a0
       field: server.mac
       ignore_missing: true
   - gsub:
+      tag: gsub_server_mac_5d413db4
       field: server.mac
       pattern: '[:]'
       replacement: '-'
       ignore_missing: true
   - lowercase:
+      tag: lowercase__tmp_action_5d4e19c7
       field: _tmp.action
       ignore_missing: true
   - gsub:
+      tag: gsub__tmp_action_to_event_action_2c25be60
       field: _tmp.action
       target_field: event.action
       pattern: ' '
       replacement: '-'
       ignore_missing: true
   - set:
+      tag: set_source_a194c11b
       field: source
       copy_from: client
       ignore_empty_value: true
   - set:
+      tag: set_destination_bb802684
       field: destination
       copy_from: server
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_8bba1f0b
       field: related.hosts
       value: "{{{pfsense.dhcp.hostname}}}"
       allow_duplicates: false
@@ -93,4 +109,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

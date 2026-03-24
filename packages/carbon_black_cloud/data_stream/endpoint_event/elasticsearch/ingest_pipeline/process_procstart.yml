@@ -1,0 +1,181 @@
+---
+description: Pipeline for parsing Carbon Black Cloud Endpoint Events.
+processors:
+  # grandparent
+  - rename:
+      field: json.parent_cmdline
+      target_field: carbon_black_cloud.endpoint_event.process.grandparent.command_line
+      ignore_missing: true
+  - rename:
+      field: json.parent_path
+      target_field: carbon_black_cloud.endpoint_event.process.grandparent.executable
+      ignore_missing: true
+  - convert:
+      field: json.parent_pid
+      target_field: carbon_black_cloud.endpoint_event.process.grandparent.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.parent_guid
+      target_field: carbon_black_cloud.endpoint_event.process.grandparent.entity_id
+      ignore_missing: true
+  - rename:
+      field: json.parent_reputation
+      target_field: carbon_black_cloud.endpoint_event.process.grandparent.reputation
+      ignore_missing: true
+  - rename:
+      field: json.parent_hash_md5
+      target_field: carbon_black_cloud.endpoint_event.process.grandparent.hash.md5
+      ignore_missing: true
+  - rename:
+      field: json.parent_hash_sha256
+      target_field: carbon_black_cloud.endpoint_event.process.grandparent.hash.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.process.grandparent.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.process.grandparent?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.process.grandparent.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.process.grandparent?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+
+  # parent
+  - rename:
+      field: json.process_cmdline
+      target_field: process.parent.command_line
+      ignore_missing: true
+  - rename:
+      field: json.process_path
+      target_field: process.parent.executable
+      ignore_missing: true
+  - convert:
+      field: json.process_pid
+      target_field: process.parent.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.process_guid
+      target_field: process.parent.entity_id
+      ignore_missing: true
+  - rename:
+      field: json.process_username
+      target_field: carbon_black_cloud.endpoint_event.process.parent.username
+      ignore_missing: true
+  - rename:
+      field: json.process_reputation
+      target_field: carbon_black_cloud.endpoint_event.process.parent.reputation
+      ignore_missing: true
+  - foreach:
+      field: json.process_publisher
+      processor:
+        split:
+          field: _ingest._value.state
+          separator: " \\| "
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.process_publisher
+      target_field: carbon_black_cloud.endpoint_event.process.parent.publisher
+      ignore_missing: true
+  - convert:
+      field: json.process_duration
+      target_field: carbon_black_cloud.endpoint_event.process.parent.duration
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.process_terminated
+      target_field: carbon_black_cloud.endpoint_event.process.parent.terminated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.process_hash_md5
+      target_field: process.parent.hash.md5
+      ignore_missing: true
+  - rename:
+      field: json.process_hash_sha256
+      target_field: process.parent.hash.sha256
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{carbon_black_cloud.endpoint_event.process.parent.username}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.process?.parent?.username != null
+      allow_duplicates: false
+      ignore_failure: true
+
+  # process
+  - rename:
+      field: json.childproc_name
+      target_field: process.executable
+      ignore_missing: true
+  - rename:
+      field: json.childproc_username
+      target_field: process.user.name
+      ignore_missing: true
+  - convert:
+      field: json.childproc_pid
+      target_field: process.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.childproc_guid
+      target_field: process.entity_id
+      ignore_missing: true
+  - foreach:
+      field: json.childproc_publisher
+      processor:
+        split:
+          field: _ingest._value.state
+          separator: " \\| "
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.childproc_publisher
+      target_field: carbon_black_cloud.endpoint_event.process.publisher
+      ignore_missing: true
+  - rename:
+      field: json.childproc_reputation
+      target_field: carbon_black_cloud.endpoint_event.process.reputation
+      ignore_missing: true
+  - rename:
+      field: json.childproc_hash_md5
+      target_field: process.hash.md5
+      ignore_missing: true
+  - rename:
+      field: json.childproc_hash_sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

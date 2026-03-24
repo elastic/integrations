@@ -2,13 +2,16 @@
 description: Pipeline for processing sample logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_original_13abeb50
       copy_from: message
       field: event.original
-      ignore_failure: true 
+      ignore_failure: true
   - set:
+      tag: set_observer_vendor_ccce1c0c
       field: observer.vendor
       value: Stormshield
 
@@ -56,8 +59,8 @@ processors:
             kvSplit = i + 1;
           }
         }
-
   - remove:
+      tag: remove_message_884e8cdd
       field: message
       ignore_missing: true
   - rename:
@@ -67,18 +70,20 @@ processors:
       ignore_missing: true
 
   - grok:
+      tag: grok_stormshield_tz_83475777
       field: stormshield.tz
       patterns:
         - "(?:%{OFFSET:_temp_.tz_offset})(?:%{HOUR:_temp_.tz_hour}):?(?:%{MINUTE:_temp_.tz_minute})"
       pattern_definitions:
         OFFSET: "[+-]?"
   - remove:
+      tag: remove_stormshield_tz_34a7793e
       field: stormshield.tz
       ignore_missing: true
 
   # rename some fields
-
   - set:
+      tag: set_event_timezone_12cd7302
       field: "event.timezone"
       value: "{{{_temp_.tz_offset}}}{{{_temp_.tz_hour}}}:{{{_temp_.tz_minute}}}"
       if: ctx._temp_?.tz_hour != null
@@ -101,96 +106,116 @@ processors:
       if: ctx.stormshield?.startime != null
       on_failure:
         - remove:
+            tag: remove_event_start_d4aae144
             field: event.start
             ignore_missing: true
 
   - pipeline:
+      tag: pipeline_53794933
       name: '{{ IngestPipeline "filterstat" }}'
       if: ctx.stormshield?.logtype == 'filterstat'
 
   - pipeline:
+      tag: pipeline_f4b47c6b
       name: '{{ IngestPipeline "monitor" }}'
       if: ctx.stormshield?.logtype == 'monitor'
 
   - pipeline:
+      tag: pipeline_f8f02187
       name: '{{ IngestPipeline "count" }}'
       if: ctx.stormshield?.logtype == 'count'
 
   #########################################################
   # Now rename things to ECS
-
   - set:
+      tag: set_observer_name_dbff7bfc
       field: observer.name
       copy_from: stormshield.fw
       if: ctx.stormshield?.fw != null
 
   - set:
+      tag: set_observer_type_2e0374c7
       field: observer.type
       copy_from: stormshield.id
       if: ctx.stormshield?.id != null
 
   - convert:
+      tag: convert_stormshield_modsrc_to_source_nat_ip_cf7c07ec
       field: stormshield.modsrc
       target_field: source.nat.ip
       type: ip
       if: ctx.stormshield?.modsrc != null && ctx.stormshield?.modsrc != ctx.stormshield?.src
 
   - convert:
+      tag: convert_stormshield_src_to_source_ip_73654510
       field: stormshield.src
       target_field: source.ip
       type: ip
       ignore_missing: true
   - remove:
+      tag: remove_stormshield_src_d5b88ee0
       field: stormshield.src
       ignore_missing: true
   - remove:
+      tag: remove_stormshield_modsrc_a449f1ca
       field: stormshield.modsrc
       ignore_missing: true
 
   - convert:
+      tag: convert_stormshield_modsrcport_to_source_nat_port_00eac2c8
       field: stormshield.modsrcport
       target_field: source.nat.port
       type: long
       if: ctx.stormshield?.modsrcport != null && ctx.source?.nat?.ip != null
   - convert:
+      tag: convert_stormshield_srcport_to_source_port_7c1342b4
       field: stormshield.srcport
       target_field: source.port
       type: long
       ignore_missing: true
   - remove:
+      tag: remove_stormshield_srcport_3c6f39f1
       field: stormshield.srcport
       ignore_missing: true
   - remove:
+      tag: remove_stormshield_modsrcport_9ca3962b
       field: stormshield.modsrcport
       ignore_missing: true
 
   - convert:
+      tag: convert_stormshield_origdst_to_destination_ip_4884c3cd
       field: stormshield.origdst
       target_field: destination.ip
       type: ip
       ignore_missing: true
   - convert:
+      tag: convert_stormshield_dst_to_destination_ip_0a06151b
       field: stormshield.dst
       target_field: destination.ip
       type: ip
       if: ctx.stormshield?.origdst == null && ctx.stormshield?.dst != null
   - convert:
+      tag: convert_stormshield_dst_to_destination_nat_ip_d9516ee1
       field: stormshield.dst
       target_field: destination.nat.ip
       type: ip
       if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null && ctx.stormshield?.origdst != ctx.stormshield?.dst
   - remove:
+      tag: remove_stormshield_dst_a0577a87
       field: stormshield.dst
       ignore_missing: true
   - remove:
+      tag: remove_stormshield_origdst_c06e672e
       field: stormshield.origdst
       ignore_missing: true
 
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_490e70ac
       field: destination.ip
       target_field: destination.geo
       if: ctx.destination?.geo == null && ctx.destination?.ip != null
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -199,18 +224,22 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_a6ce09b6
       field: source.ip
       target_field: source.geo
       if: ctx.source?.geo == null && ctx.source?.ip != null
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -219,64 +248,77 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_action_to_event_action_20ea0064
       field: stormshield.action
       target_field: event.action
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_ipproto_to_network_transport_fe179286
       field: stormshield.ipproto
       target_field: network.transport
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_proto_to_network_protocol_de7495b2
       field: stormshield.proto
       target_field: network.protocol
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_ruleid_to_rule_id_3f0df8e2
       field: stormshield.ruleid
       target_field: rule.id
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_rulename_to_rule_name_185d1b3a
       field: stormshield.rulename
       target_field: rule.name
       ignore_missing: true
 
   - convert:
+      tag: convert_stormshield_sent_to_source_bytes_f00964db
       field: stormshield.sent
       target_field: source.bytes
       type: long
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_dstname_to_destination_domain_675a68da
       field: stormshield.dstname
       target_field: destination.domain
       ignore_missing: true
 
   - convert:
+      tag: convert_destination_ip_2d5160a7
       field: destination.ip
       type: ip
       ignore_missing: true
 
   - remove:
+      tag: remove_stormshield_dst_a0577a88
       field: stormshield.dst
       ignore_missing: true
 
   - uppercase:
+      tag: uppercase_stormshield_dstmac_2adad632
       field: stormshield.dstmac
       ignore_missing: true
 
   - gsub:
+      tag: gsub_stormshield_dstmac_to_destination_mac_7323577a
       field: stormshield.dstmac
       pattern: ':'
       replacement: '-'
@@ -285,45 +327,54 @@ processors:
       if: ctx.destination?.mac == null
 
   - convert:
+      tag: convert_stormshield_origdstport_to_destination_port_cf49af73
       field: stormshield.origdstport
       target_field: destination.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_stormshield_dstport_to_destination_nat_port_563c55e8
       field: stormshield.dstport
       target_field: destination.nat.port
       type: long
       if: ctx.stormshield?.dstport != null && ctx.destination?.nat?.ip != null
   - convert:
+      tag: convert_stormshield_dstport_to_destination_port_97a318e1
       field: stormshield.dstport
       target_field: destination.port
       type: long
       if: ctx.stormshield?.dstport != null && ctx.destination?.nat?.ip == null
 
   - remove:
+      tag: remove_stormshield_dstport_2624d352
       field: stormshield.dstport
       ignore_missing: true
   - remove:
+      tag: remove_stormshield_origdstport_52e65f4f
       field: stormshield.origdstport
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_dstcountry_to_destination_geo_country_iso_code_10b567a3
       field: stormshield.dstcountry
       target_field: destination.geo.country_iso_code
       if: ctx.destination?.geo == null
       ignore_missing: true
 
   - rename:
+      tag: rename_stormshield_srccountry_to_source_geo_country_iso_code_02684478
       field: stormshield.srccountry
       target_field: source.geo.country_iso_code
       if: ctx.source?.geo == null
       ignore_missing: true
 
   - uppercase:
+      tag: uppercase_stormshield_srcmac_91eed18f
       field: stormshield.srcmac
       ignore_missing: true
 
   - gsub:
+      tag: gsub_stormshield_srcmac_to_source_mac_a33ebf19
       field: stormshield.srcmac
       pattern: ':'
       replacement: '-'
@@ -332,6 +383,7 @@ processors:
       if: ctx.source?.mac == null
 
   - remove:
+      tag: remove_stormshield_srcmac_7a7df067
       field: stormshield.srcmac
       ignore_missing: true
 
@@ -352,6 +404,7 @@ processors:
         }
 
   - convert:
+      tag: convert_stormshield_srcport_to_source_port_157d07ae
       field: stormshield.srcport
       target_field: source.port
       type: long
@@ -359,6 +412,7 @@ processors:
       ignore_missing: true
 
   - remove:
+      tag: remove_stormshield_srcport_3c6f39f2
       field: stormshield.srcport
       ignore_missing: true
 
@@ -391,6 +445,7 @@ processors:
             ctx.stormshield.remove("ipv");
         }
         
+
   - script:
       tag: script_move_things
       lang: painless
@@ -443,48 +498,52 @@ processors:
             }
             return true;
         });
-
   - convert:
+      tag: convert_stormshield_metadata_Byte_in_count_to_stormshield_in_bytes_fe222e42
       field: stormshield.metadata.Byte.in_count
       target_field: stormshield.in_bytes
       type: long
       ignore_missing: true
 
   - convert:
+      tag: convert_stormshield_metadata_Byte_out_count_to_stormshield_out_bytes_afd01540
       field: stormshield.metadata.Byte.out_count
       target_field: stormshield.out_bytes
       type: long
       ignore_missing: true
 
-
   # ------------------------------------------------------------
   # Add the 'related' fields
-
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
 
   - append:
+      tag: append_related_ip_53b62ed8
       field: related.ip
       value: "{{{source.nat.ip}}}"
       if: ctx.source?.nat?.ip != null
       allow_duplicates: false
 
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx.destination?.ip != null
       allow_duplicates: false
 
   - append:
+      tag: append_related_ip_6a388074
       field: related.ip
       value: "{{{destination.nat.ip}}}"
       if: ctx.destination?.nat?.ip != null
       allow_duplicates: false
 
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       if: ctx.user?.name != null
@@ -492,16 +551,30 @@ processors:
 
   # ------------------------------------------------------------
   # Cleanup
-
   - remove:
+      tag: remove__temp__ef8e4353
       field: _temp_
       ignore_missing: true
       ignore_failure: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
 - append:
     field: error.message
-    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
 - set:
     field: event.kind
     value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

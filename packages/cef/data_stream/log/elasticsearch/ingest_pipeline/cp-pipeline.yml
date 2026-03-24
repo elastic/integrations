@@ -276,26 +276,32 @@ processors:
         ctx["_tmp_copy"] = actions;
 
   - foreach:
+      tag: foreach__tmp_copy_ac4d5b1c
       field: _tmp_copy
       processor:
         set:
           field: '{{{_ingest._value.to}}}'
           value: '{{{_ingest._value.value}}}'
   - remove:
+      tag: remove__tmp_copy_02a3c909
       field: _tmp_copy
   - set:
+      tag: set_email_to_address_a2fb0fab
       if: ctx?.destination?.user?.email != null
       field: email.to.address
       value: ['{{{destination.user.email}}}']
   - set:
+      tag: set_email_from_address_865dddfa
       if: ctx?.source?.user?.email != null
       field: email.from.address
       value: ['{{{source.user.email}}}']
   - set:
+      tag: set_email_subject_d55a1a90
       if: ctx?.checkpoint?.email_subject != null
       field: email.subject
       copy_from: checkpoint.email_subject
   - set:
+      tag: set_email_message_id_70b21e23
       if: ctx?.checkpoint?.email_session_id != null
       field: email.message_id
       copy_from: checkpoint.email_session_id
@@ -306,6 +312,7 @@ processors:
       type: float
       on_failure:
         - remove:
+            tag: remove_event_risk_score_6ee4e8c9
             field: event.risk_score
   - convert:
       field: event.severity
@@ -314,6 +321,7 @@ processors:
       type: long
       on_failure:
         - remove:
+            tag: remove_event_severity_8251ac98
             field: event.severity
   # event.duration is a string and contains seconds. Convert to long nanos.
   - script:
@@ -327,41 +335,50 @@ processors:
       tag: calculate duration
       on_failure:
         - remove:
+            tag: remove_event_duration_8107f601
             field: event.duration
             ignore_missing: true
   # checkpoint.file_hash can be either MD5, SHA1 or SHA256.
   - rename:
+      tag: rename_checkpoint_file_hash_to_file_hash_md5_00c600f1
       if: ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==32
       field: checkpoint.file_hash
       target_field: file.hash.md5
   - rename:
+      tag: rename_checkpoint_file_hash_to_file_hash_sha1_5b63a3eb
       if: ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==40
       field: checkpoint.file_hash
       target_field: file.hash.sha1
   - rename:
+      tag: rename_checkpoint_file_hash_to_file_hash_sha256_9082ab2f
       if: ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==64
       field: checkpoint.file_hash
       target_field: file.hash.sha256
   # Event kind is 'event' by default. 'alert' when a risk score and rule info
   # is present.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_kind_97cac9f4
       if: ctx.cef?.extensions?.cp_app_risk != null && ctx.rule != null
       field: event.kind
       value: alert
   # Set event.category to network/malware/intrusion_detection depending on which
   # fields have been populated.
   - append:
+      tag: append_event_category_01d5fb4a
       if: ctx.source?.ip != null && ctx.destination?.ip != null
       field: event.category
       value: network
   - append:
+      tag: append_event_category_3f3c21f2
       if: ctx.checkpoint?.protection_id != null || ctx.checkpoint?.spyware_name != null || ctx.checkpoint?.malware_family != null || ctx.checkpoint?.spyware_status != null
       field: event.category
       value: malware
   - append:
+      tag: append_event_category_762d9429
       if: ctx.event?.category != null && !(ctx.event.action.contains("malware")) && (ctx.checkpoint?.protection_type != null || ctx.cef.extensions?.flexString2Label == "Attack Information")
       field: event.category
       value: intrusion_detection
@@ -378,8 +395,15 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

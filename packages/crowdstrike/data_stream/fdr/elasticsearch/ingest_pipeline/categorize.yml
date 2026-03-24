@@ -1,0 +1,1875 @@
+---
+description: Pipeline for categorizing Crowdstrike events
+processors:
+  - set:
+      tag: set_event_category_604aa117
+      if: ctx.crowdstrike?.event_simpleName != null && ctx.crowdstrike.event_simpleName.endsWith('Written')
+      field: event.category
+      value:
+        - file
+  - script:
+      description: Categorize events.
+      tag: categorize_events_6b04e496
+      params:
+        AcUninstallConfirmation:
+          category:
+            - package
+          kind: state
+          outcome: success
+          type:
+            - deletion
+        AcUnloadConfirmation:
+          category:
+            - package
+          kind: state
+          outcome: success
+          type:
+            - deletion
+        ActiveDirectoryAuthentication:
+          category:
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - start
+        ActiveDirectoryAuthenticationFailure:
+          category:
+            - authentication
+          kind: event
+          outcome: failure
+          type:
+            - start
+        ActiveDirectoryIncomingDceRpcEpmRequest:
+          category:
+            - api
+          kind: event
+          outcome: unknown
+          type:
+            - start
+        ActiveDirectoryIncomingDceRpcRequest:
+          category:
+            - api
+          kind: event
+          outcome: unknown
+          type:
+            - start
+        ActiveDirectoryIncomingLdapSearchRequest:
+          category:
+            - database
+          kind: event
+          outcome: unknown
+          type:
+            - access
+        ActiveDirectoryIncomingPsExecExecution2:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        ActiveDirectoryInteractiveDomainLogon:
+          category:
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - start
+        ActiveDirectoryServiceAccessRequest:
+          category:
+            - database
+          kind: event
+          outcome: success
+          type:
+            - access
+        ActiveDirectoryServiceAccessRequestFailure:
+          category:
+            - database
+          kind: event
+          outcome: failure
+          type:
+            - access
+        AgentConnect:
+          category:
+            - network
+            - session
+          kind: event
+          outcome: success
+          type:
+            - connection
+            - info
+        AgentOnline:
+          category:
+            - configuration
+            - package
+            - host
+          kind: state
+          outcome: success
+          type:
+            - change
+            - installation
+            - start
+        AmsiRegistrationStatus:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - info
+        AsepFileChange:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+            - change
+        AsepKeyUpdate:
+          category:
+            - registry
+          kind: event
+          outcome: success
+          type:
+            - change
+        AsepValueUpdate:
+          category:
+            - registry
+          kind: event
+          outcome: success
+          type:
+            - change
+        AssociateIndicator:
+          category:
+            - threat
+          kind: event
+          outcome: unknown
+          type:
+            - indicator
+        AssociateTreeIdWithRoot:
+          category:
+            - malware
+          kind: alert
+          outcome: success
+          type:
+            - info
+        BITSJobCreated:
+          category:
+            - network
+            - file
+          kind: event
+          outcome: success
+          type:
+            - connection
+            - creation
+        BZip2FileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        BehaviorWhitelisted:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        BrowserInjectedThread:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - access
+            - change
+        ClassifiedModuleLoad:
+          category:
+            - library
+          kind: event
+          type:
+            - start
+        CloudAssociateTreeIdWithRoot:
+          category:
+            - malware
+          kind: alert
+          outcome: success
+          type:
+            - deletion
+        CommandHistory:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - end
+            - info
+        ConfigStateUpdate:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        CrashNotification:
+          category:
+            - host
+          kind: event
+          outcome: failure
+          type:
+            - info
+        CreateProcessArgs:
+          category:
+            - process
+          kind: state
+          outcome: success
+          type:
+            - start
+        CreateService:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        CreateThreadNoStartImage:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        CreateThreadReflectiveDll:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - change
+        CriticalEnvironmentVariableChanged:
+          category:
+            - configuration
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        CriticalFileAccessed:
+          category:
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - access
+        CriticalFileModified:
+          category:
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - change
+        CurrentSystemTags:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - info
+        CustomIOABasicProcessDetectionInfoEvent:
+          category:
+            - malware
+          kind: alert
+          outcome: unknown
+          type:
+            - info
+        DCSyncAttempted:
+          category:
+            - configuration
+            - iam
+          kind: event
+          outcome: unknown
+          type:
+            - access
+        DcOffline:
+          category:
+            - iam
+          kind: event
+          outcome: success
+          type:
+            - info
+        DcOnline:
+          category:
+            - iam
+          kind: event
+          outcome: success
+          type:
+            - info
+        DcStatus:
+          category:
+            - iam
+          kind: state
+          outcome: success
+          type:
+            - info
+        DetectAnalysis:
+          category:
+            - malware
+          kind: alert
+          outcome: success
+          type:
+            - info
+        DetectionExcluded:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+            - info
+        DirectoryCreate:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        DllInjection:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - change
+        DmpFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        DnsRequest:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - protocol
+        DocumentProgramInjectedThread:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - access
+            - change
+        DriverLoad:
+          category:
+            - driver
+          kind: event
+          outcome: success
+          type:
+            - start
+        DwgFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        EarlyExploitPivotDetect:
+          category:
+            - malware
+          kind: event
+          outcome: unknown
+          type:
+            - info
+        EndOfProcess:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - end
+        ErrorEvent:
+          category:
+            - package
+          kind: event
+          outcome: failure
+          type:
+            - info
+        EtwErrorEvent:
+          category:
+            - package
+            - host
+          kind: event
+          outcome: failure
+          type:
+            - info
+        ExecutableDeleted:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - deletion
+        FalconHostRegTamperingInfo:
+          category:
+            - registry
+          kind: alert
+          outcome: unknown
+          type:
+            - change
+        FalconProcessHandleOpDetectInfo:
+          category:
+            - malware
+            - process
+          kind: alert
+          type:
+            - info
+            - access
+        FalconServiceStatus:
+          category:
+            - package
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        FileCreateInfo:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        FileDeleteInfo:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - deletion
+        FileDetectInfo:
+          category:
+            - file
+          kind: alert
+          outcome: unknown
+          type:
+            - creation
+        FileInfo:
+          category:
+            - file
+          kind: event
+          outcome: unknown
+          type:
+            - info
+        FileOpenInfo:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - access
+        FileRenameInfo:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - change
+        FileSystemOperationBlocked:
+          category:
+            - file
+          kind: event
+          outcome: failure
+          type:
+            - change
+            - deletion
+        FileSystemOperationDetectInfo:
+          category:
+            - file
+          kind: event
+          outcome: unknown
+          type:
+            - change
+            - deletion
+        FileTimestampsModified:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - change
+        FileWrittenWithEntropyHigh:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        FirewallChangeOption:
+          category:
+            - configuration
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallDeleteRule:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallDeleteRuleIP4:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallDeleteRuleIP6:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallDisabled:
+          category:
+            - configuration
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallEnabled:
+          category:
+            - configuration
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallSetRule:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallSetRuleIP4:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirewallSetRuleIP6:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        FirmwareAnalysisErrorEvent:
+          category:
+            - host
+          kind: state
+          outcome: failure
+          type:
+            - info
+        FirmwareAnalysisHardwareData:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - info
+        FirmwareAnalysisStatus:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - info
+        FlashThreadCreateProcess:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        FsPostOpenSnapshotFile:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - access
+        FsVolumeMounted:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        FsVolumeUnmounted:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        HostInfo:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - info
+        HostedServiceStarted:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        HostedServiceStopped:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - end
+        HostnameChanged:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        HttpRequestDetect:
+          category:
+            - network
+            - session
+          kind: event
+          outcome: success
+          type:
+            - connection
+            - start
+        HttpVisibilityStatus:
+          category:
+            - session
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        IOServiceRegister:
+          category:
+            - package
+          kind: event
+          outcome: success
+          type:
+            - change
+        ImageHash:
+          category:
+            - library
+          kind: event
+          outcome: success
+          type:
+            - start
+        InjectedThread:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - change
+        InjectedThreadFromUnsignedModule:
+          category:
+            - process
+          kind: alert
+          outcome: success
+          type:
+            - change
+        InstallBundleDownloadComplete:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        InstallServiceDownloadComplete:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        InstalledApplication:
+          category:
+            - package
+          kind: event
+          outcome: success
+          type:
+            - installation
+        InstalledBrowserExtension:
+          category:
+            - package
+          kind: event
+          type:
+            - installation
+        InstalledUpdates:
+          category:
+            - host
+            - package
+          kind: event
+          outcome: success
+          type:
+            - change
+            - installation
+        InstanceMetadata:
+          category:
+            - host
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        IoSessionConnected:
+          category:
+            - session
+          kind: event
+          outcome: success
+          type:
+            - start
+        IoSessionLoggedOn:
+          category:
+            - session
+          kind: event
+          outcome: success
+          type:
+            - end
+        JarFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        JavaClassFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        JavaInjectedThread:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - change
+        KernelModeLoadImage:
+          category:
+            - driver
+          kind: event
+          outcome: success
+          type:
+            - start
+        KernelServiceStarted:
+          category:
+            - process
+          kind: event
+          type:
+            - start
+        KextLoad:
+          category:
+            - driver
+          kind: event
+          outcome: success
+          type:
+            - start
+        KextUnload:
+          category:
+            - driver
+          kind: event
+          outcome: success
+          type:
+            - end
+        LFODownloadConfirmation:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        LfoUploadDataComplete:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - change
+        LfoUploadDataFailed:
+          category:
+            - file
+          kind: event
+          outcome: failure
+          type:
+            - change
+        LfoUploadDataUnneeded:
+          category:
+            - file
+          kind: event
+          outcome: failure
+          type:
+            - change
+        LocalIpAddressIP4:
+          category:
+            - configuration
+            - host
+          kind: state
+          outcome: success
+          type:
+            - change
+        LocalIpAddressIP6:
+          category:
+            - configuration
+            - host
+          kind: state
+          outcome: success
+          type:
+            - change
+        LocalIpAddressRemovedIP4:
+          category:
+            - configuration
+            - host
+          kind: state
+          outcome: success
+          type:
+            - change
+        LocalIpAddressRemovedIP6:
+          category:
+            - configuration
+            - host
+          kind: state
+          outcome: success
+          type:
+            - change
+        LsassHandleFromUnsignedModule:
+          category:
+            - process
+          kind: alert
+          outcome: unknown
+          type:
+            - change
+        MachOFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - change
+        ManifestDownloadComplete:
+          category:
+            - configuration
+            - file
+          kind: event
+          outcome: success
+          type:
+            - change
+            - creation
+        ModifyServiceBinary:
+          category:
+            - file
+          kind: event
+          outcome: unknown
+          type:
+            - change
+        ModuleBlockedEvent:
+          category:
+            - process
+            - malware
+          kind: alert
+          outcome: success
+          type:
+            - info
+            - denied
+        ModuleBlockedEventWithPatternId:
+          category:
+            - process
+            - malware
+          kind: event
+          outcome: unknown
+          type:
+            - info
+        ModuleDetectInfo:
+          category:
+            - process
+            - malware
+          kind: event
+          outcome: unknown
+          type:
+            - info
+        MountedVolume:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - info
+        NeighborListIP4:
+          category:
+            - host
+            - network
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        NeighborListIP6:
+          category:
+            - host
+            - network
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        NetShareAdd:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        NetShareDelete:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        NetShareSecurityModify:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        NetworkCloseIP4:
+          category:
+            - network
+          kind: event
+          outcome: unknown
+          type:
+            - end
+            - connection
+        NetworkCloseIP6:
+          category:
+            - network
+          kind: event
+          outcome: unknown
+          type:
+            - end
+            - connection
+        NetworkConnectIP4:
+          category:
+            - network
+          kind: event
+          outcome: unknown
+          type:
+            - start
+            - connection
+        NetworkConnectIP6:
+          category:
+            - network
+          kind: event
+          outcome: unknown
+          type:
+            - start
+            - connection
+        NetworkListenIP4:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - start
+        NetworkListenIP6:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - start
+        NetworkReceiveAcceptIP4:
+          category:
+            - network
+          kind: event
+          outcome: unknown
+          type:
+            - allowed
+            - access
+            - connection
+        NetworkReceiveAcceptIP6:
+          category:
+            - network
+          kind: event
+          outcome: unknown
+          type:
+            - allowed
+            - access
+            - connection
+        NewExecutableRenamed:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - change
+        NewExecutableWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        NewScriptWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        OciContainerTelemetry:
+          category:
+            - host
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        OleFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        OoxmlFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        OsVersionInfo:
+          category:
+            - host
+          kind: event
+          outcome: success
+          type:
+            - info
+        PackedExecutableWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        PdfFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        PeFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        PeVersionInfo:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - info
+        PrivilegedProcessHandleFromUnsignedModule:
+          category:
+            - process
+          kind: alert
+          outcome: success
+          type:
+            - access
+        ProcessBlocked:
+          category:
+            - process
+          kind: alert
+          outcome: failure
+          type:
+            - access
+        ProcessExecOnPackedExecutable:
+          category:
+            - process
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - access
+        ProcessExecOnSMBFile:
+          category:
+            - process
+            - file
+            - network
+          kind: alert
+          outcome: success
+          type:
+            - access
+        ProcessHandleOpDetectInfo:
+          category:
+            - process
+            - malware
+          kind: alert
+          outcome: success
+          type:
+            - info
+        ProcessInjection:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - change
+        ProcessRollup2:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        ProcessRollup2Stats:
+          category:
+            - process
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        ProcessSelfDeleted:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - end
+        PromiscuousBindIP4:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - change
+        PtyCreated:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        QuarantineActionResult:
+          category:
+            - file
+          kind: alert
+          outcome: unknown
+          type:
+            - info
+        QuarantinedFile:
+          category:
+            - file
+          kind: alert
+          outcome: unknown
+          type:
+            - change
+        QuarantinedFileState:
+          category:
+            - file
+          kind: alert
+          outcome: unknown
+          type:
+            - info
+        QueueApcEtw:
+          category:
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - creation
+        RansomwareCreateFile:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        RansomwareFileAccessPattern:
+          category:
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - access
+        RansomwareOpenFile:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - access
+        RarFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        RawBindIP4:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - start
+            - connection
+        RawBindIP6:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - start
+            - connection
+        ReflectiveDllOpenProcess:
+          category:
+            - process
+          kind: alert
+          outcome: success
+          type:
+            - access
+        ReflectiveDotnetModuleLoad:
+          category:
+            - library
+          kind: event
+          type:
+            - start
+        RegCrowdstrikeKeyUpdate:
+          category:
+            - registry
+          kind: event
+          outcome: success
+          type:
+            - change
+        RegCrowdstrikeValueUpdate:
+          category:
+            - registry
+          kind: event
+          outcome: success
+          type:
+            - change
+        RegGenericValueUpdate:
+          category:
+            - registry
+          kind: event
+          outcome: success
+          type:
+            - change
+        RegSystemConfigValueUpdate:
+          category:
+            - registry
+            - host
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        RegisterRawInputDevicesEtw:
+          category:
+            - host
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        RegistryOperationDetectInfo:
+          category:
+            - registry
+          kind: alert
+          outcome: success
+          type:
+            - info
+        RemoteBruteForceDetectInfo:
+          category:
+            - malware
+            - authentication
+          kind: alert
+          outcome: success
+          type:
+            - info
+        RemovableDiskModuleLoadAttempt:
+          category:
+            - configuration
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        RemovableMediaVolumeMounted:
+          category:
+            - configuration
+            - host
+          kind: event
+          outcome: success
+          type:
+            - change
+        RtfFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        SAMHashDumpFromUnsignedModule:
+          category:
+            - registry
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - access
+            - creation
+        ScheduledTaskDeleted:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - deletion
+        ScheduledTaskModified:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        ScheduledTaskRegistered:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - creation
+        ScreenshotTakenEtw:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - access
+        ScriptControlBlocked:
+          category:
+            - malware
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - info
+        ScriptControlDetectInfo:
+          category:
+            - malware
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - info
+        ScriptControlErrorEvent:
+          category:
+            - malware
+            - file
+          kind: alert
+          outcome: failure
+          type:
+            - info
+        ScriptControlScanInfo:
+          category:
+            - malware
+            - file
+          kind: state
+          outcome: success
+          type:
+            - info
+        ScriptControlScanTelemetry:
+          category:
+            - malware
+            - file
+          kind: state
+          outcome: success
+          type:
+            - info
+        SensitiveWmiQuery:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - info
+        SensorAntiTamperState:
+          category:
+            - configuration
+          kind: state
+          type:
+            - info
+        SensorHeartbeat:
+          category:
+            - package
+          kind: event
+          outcome: success
+          type:
+            - info
+        SensorSettingsUpdate:
+          category:
+            - configuration
+          kind: event
+          type:
+            - change
+        ServiceStarted:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        ServiceStopped:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - end
+        ServicesStatusInfo:
+          category:
+            - configuration
+          kind: state
+          type:
+            - info
+        SetWinEventHookEtw:
+          category:
+            - host
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        SevenZipFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        SignInfoError:
+          category:
+            - file
+          kind: state
+          outcome: failure
+          type:
+            - info
+        SignInfoWithCertAndContext:
+          category:
+            - file
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        SignInfoWithContext:
+          category:
+            - file
+          kind: state
+          outcome: unknown
+          type:
+            - info
+        SmbClientNamedPipeConnectEtw:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - connection
+        SmbClientShareClosedEtw:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - connection
+            - end
+        SmbClientShareOpenedEtw:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - connection
+            - start
+        SmbServerShareOpenedEtw:
+          category:
+            - network
+          kind: event
+          outcome: success
+          type:
+            - connection
+            - start
+        SmbServerV1AuditEtw:
+          category:
+            - network
+          kind: state
+          outcome: unknown
+          type:
+            - connection
+        SnapshotVolumeMounted:
+          category:
+            - host
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        SudoCommandAttempt:
+          category:
+            - authentication
+          kind: event
+          outcome: unknown
+          type:
+            - start
+        SuspiciousCreateSymbolicLink:
+          category:
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - creation
+            - info
+        SuspiciousDnsRequest:
+          category:
+            - network
+          kind: alert
+          outcome: success
+          type:
+            - start
+            - protocol
+        SuspiciousEseFileWritten:
+          category:
+            - malware
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - creation
+            - info
+        SuspiciousPeFileWritten:
+          category:
+            - malware
+            - file
+          kind: alert
+          outcome: success
+          type:
+            - creation
+            - info
+        SuspiciousPrivilegedProcessHandle:
+          category:
+            - process
+          kind: event
+          type:
+            - info
+        SuspiciousRegAsepUpdate:
+          category:
+            - malware
+            - registry
+            - configuration
+          kind: alert
+          outcome: success
+          type:
+            - change
+            - info
+        SuspiciousUserRemoteAPCAttempt:
+          category:
+            - malware
+            - process
+          kind: alert
+          outcome: success
+          type:
+            - info
+        SyntheticProcessRollup2:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        SystemCapacity:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - info
+        TarFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        TelemetryCounters2:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - info
+        TelemetryNetworkConnections:
+          category:
+            - network
+          kind: state
+          outcome: success
+          type:
+            - connection
+        TelemetryStats:
+          category:
+            - host
+          kind: state
+          outcome: success
+          type:
+            - info
+        TerminateProcess:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - end
+        TokenImpersonated:
+          category:
+            - process
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - info
+            - change
+        UACCOMElevation:
+          category:
+            - process
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - info
+            - change
+        UACExeElevation:
+          category:
+            - process
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - info
+            - change
+        UACMSIElevation:
+          category:
+            - process
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - info
+            - change
+        UmppaErrorEvent:
+          category:
+            - package
+          kind: event
+          outcome: failure
+          type:
+            - info
+        UnsignedModuleLoad:
+          category:
+            - library
+          kind: event
+          outcome: success
+          type:
+            - start
+        UpdateManifestDownloadComplete:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        UserAccountAddedToGroup:
+          category:
+            - configuration
+            - iam
+          kind: event
+          outcome: success
+          type:
+            - change
+            - group
+        UserAccountCreated:
+          category:
+            - configuration
+            - iam
+          kind: event
+          outcome: success
+          type:
+            - creation
+        UserAccountDeleted:
+          category:
+            - configuration
+            - iam
+          kind: event
+          outcome: success
+          type:
+            - deletion
+        UserExceptionDEP:
+          category:
+            - process
+            - malware
+          kind: alert
+          outcome: success
+          type:
+            - info
+        UserFontLoad:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        UserIdentity:
+          category:
+            - authentication
+            - iam
+          kind: event
+          outcome: success
+          type:
+            - info
+            - user
+        UserLogoff:
+          category:
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - end
+        UserLogon:
+          category:
+            - authentication
+          kind: event
+          outcome: success
+          type:
+            - start
+        UserLogonFailed:
+          category:
+            - authentication
+          kind: event
+          outcome: failure
+          type:
+            - start
+        UserLogonFailed2:
+          category:
+            - authentication
+          kind: event
+          outcome: failure
+          type:
+            - start
+        VolumeSnapshotCreated:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        VolumeSnapshotDeleted:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - deletion
+        WfpFilterTamperingFilterAdded:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        WfpFilterTamperingFilterDeleted:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        WmiCreateProcess:
+          category:
+            - process
+          kind: event
+          outcome: success
+          type:
+            - start
+        WmiFilterConsumerBindingEtw:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        WmiProviderRegistrationEtw:
+          category:
+            - configuration
+          kind: event
+          outcome: success
+          type:
+            - change
+        WroteExeAndGeneratedServiceEvent:
+          category:
+            - process
+          kind: alert
+          outcome: success
+          type:
+            - access
+        XarFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+        ZipFileWritten:
+          category:
+            - file
+          kind: event
+          outcome: success
+          type:
+            - creation
+      source: |-
+        def m = params.get(ctx.crowdstrike?.event_simpleName);
+        if (m != null) {
+          m.forEach((k, v) -> {
+            if (v instanceof List) {
+              ctx.event[k] = new ArrayList(v);
+            } else {
+              ctx.event[k] = v;
+            }
+          });
+        }

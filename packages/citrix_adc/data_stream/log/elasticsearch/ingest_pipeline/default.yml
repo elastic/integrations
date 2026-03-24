@@ -42,21 +42,27 @@ processors:
         SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.syslog_timestamp}|%{TIMESTAMP_ISO8601:_tmp.syslog_timestamp8601})'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_tmp.tz}?'
   - pipeline:
-      name: '{{ IngestPipeline "cef" }}'
-      tag: pipeline_cef
-      if: ctx.citrix?.detail != null && ctx.citrix.detail.startsWith("CEF:")
-  - pipeline:
       name: '{{ IngestPipeline "native" }}'
       tag: pipeline_native
       if: ctx.citrix?.detail != null && !ctx.citrix.detail.startsWith("CEF:")
+  - set:
+      field: citrix.detail
+      tag: set_cef_detail_from_extended_message
+      copy_from: citrix.extended.message
+      if: ctx.citrix?.extended?.message != null && ctx.citrix.extended.message.startsWith("CEF:")
+      override: true
+  - pipeline:
+      name: '{{ IngestPipeline "cef" }}'
+      tag: pipeline_cef
+      if: ctx.citrix?.detail != null && ctx.citrix.detail.startsWith("CEF:")
   - convert:
       field: event.severity
       tag: convert_event_severity_to_long
       type: long
       ignore_missing: true
 
-# Time zone (in order: log, config, locale, default to UTC).
 
+  # Time zone (in order: log, config, locale, default to UTC).
   - set:
       field: _tmp.tz
       value: UTC
@@ -79,8 +85,8 @@ processors:
       field: event.timezone
       copy_from: _tmp.tz
 
-# Syslog timestamp
 
+  # Syslog timestamp
   - date:
       if: ctx._tmp?.timestamp8601 != null
       tag: date_syslog_timestamp8601
@@ -174,8 +180,8 @@ processors:
           }
         });
 
-# Native-format timestamp
 
+  # Native-format timestamp
   - date:
       tag: date_timestamp_native
       field: _tmp.timestamp_native
@@ -234,8 +240,10 @@ processors:
         - ISO8601
         - yyyy/MM/dd:HH:mm:ss
         - yyyy/MM/dd:HH:mm:ss z
+        - yyyy/MM/dd:HH:mm:ssz
         - MM/dd/yyyy:HH:mm:ss
         - MM/dd/yyyy:HH:mm:ss z
+        - MM/dd/yyyy:HH:mm:ssz
       on_failure:
         - append:
             field: error.message
@@ -257,8 +265,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-# Move vendor time fields to ECS.
 
+  # Move vendor time fields to ECS.
   - set:
       tag: set_@timestamp_from_citrix_native
       field: '@timestamp'
@@ -450,6 +458,12 @@ processors:
         - _conf
       tag: remove_tmp_and_conf
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - remove:
       field:
@@ -465,3 +479,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

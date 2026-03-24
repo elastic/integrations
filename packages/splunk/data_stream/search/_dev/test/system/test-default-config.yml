@@ -1,0 +1,21 @@
+input: cel
+service: splunk
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    username: search_user
+    password: password
+    query: "search *"
+    interval: 5m
+    initial_interval: 24h
+    batch_size: 2
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+    enable_request_tracer: true
+    field_mapping: |-
+      host: host.name
+      field1: splunk.search.result.important_user_field
+    default_fields: |-
+      "event.module": splunk
+assert:
+  hit_count: 3

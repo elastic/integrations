@@ -39,7 +39,9 @@ response.pagination:
     target: body.meta.pagination.pageToken
     value: >-
         [[- if (eq (len .last_response.body.fail) 0) -]]
-          [[- .last_response.body.meta.pagination.next -]]
+          [[- if index .last_response.body.meta.pagination "next" -]]
+            [[- .last_response.body.meta.pagination.next -]]
+          [[- end -]]
         [[- end -]]
     fail_on_template_error: true
     do_not_log_failure: true

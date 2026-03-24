@@ -33,12 +33,12 @@ You will need the following information:
 2. Authentication credentials such as username, password, API key, or bearer token depending on the selected authentication type.
 
 Note:
-1. Users must have `read` index privileges on the `..alerts-security.alerts-<space_id>` indices to access and query security alerts.
+1. Users must have `read` index privileges on the `.alerts-security.alerts-<space_id>` indices to access and query security alerts.
 2. To learn how to create authentication credentials and use the appropriate authentication type, refer to the Elasticsearch Authentication [Documentation](https://www.elastic.co/docs/deploy-manage/users-roles/cluster-or-deployment-auth/user-authentication).
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
+1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search top bar, type **Elastic Security**.
 3. Select the **Elastic Security** integration and add it.
 4. Add all the required integration configuration parameters such as username, password, API key, or bearer token depending on the selected authentication type to enable data collection.

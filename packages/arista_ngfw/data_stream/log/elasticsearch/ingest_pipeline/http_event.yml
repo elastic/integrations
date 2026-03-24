@@ -5,17 +5,20 @@ processors:
   ## HTTP Events ##
   #################
   - remove:
+      tag: remove_arista_httpRequestEvent_timeStamp_d03be2c1
       if: ctx.arista?.httpRequestEvent?.timeStamp != null
       field: arista.httpRequestEvent.timeStamp
       ignore_missing: true
   - remove:
+      tag: remove_arista_httpRequestEvent_sessionEvent_timeStamp_4607f4e6
       if: ctx.arista?.httpRequestEvent?.sessionEvent?.timeStamp != null
       field: arista.httpRequestEvent.sessionEvent.timeStamp
       ignore_missing: true
   - foreach:
+      tag: foreach_arista_httpRequestEvent_sessionEvent_8d4549d3
       if: ctx.arista?.httpRequestEvent?.sessionEvent != null
       field: arista.httpRequestEvent.sessionEvent
-      processor: 
+      processor:
         rename:
           field: _ingest._value
           target_field: arista.{{{_ingest._key}}}
@@ -27,64 +30,79 @@ processors:
                 value: "{{{ _ingest.on_failure_message }}}"
       ignore_failure: true
   - remove:
+      tag: remove_arista_httpRequestEvent_contentLength_09c83ac2
       field: arista.httpRequestEvent.contentLength
       ignore_missing: true
   - rename:
+      tag: rename_arista_httpRequestEvent_domain_to_destination_domain_0f063721
       field: arista.httpRequestEvent.domain
       target_field: destination.domain
       ignore_missing: true
   - rename:
+      tag: rename_arista_httpRequestEvent_method_to_http_request_method_6d68afee
       field: arista.httpRequestEvent.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_arista_httpRequestEvent_requestId_to_arista_requestId_2cbb226d
       field: arista.httpRequestEvent.requestId
       target_field: arista.requestId
       ignore_missing: true
   - rename:
+      tag: rename_arista_httpRequestEvent_requestUri_to_arista_requestUri_f782d291
       field: arista.httpRequestEvent.requestUri
       target_field: arista.requestUri
       ignore_missing: true
   - rename:
+      tag: rename_arista_httpRequestEvent_timeStamp_to_arista_timeStamp_b8bbc525
       field: arista.httpRequestEvent.timeStamp
       target_field: arista.timeStamp
       ignore_missing: true
   - rename:
+      tag: rename_arista_domain_to_destination_domain_41a9e66a
       field: arista.domain
       target_field: destination.domain
       ignore_missing: true
   - rename:
+      tag: rename_arista_method_to_http_request_method_8bec64d7
       field: arista.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_arista_contentLength_to_http_request_bytes_58db7ed7
       if: ctx.arista?.class == 'class com.untangle.app.http.HttpRequestEvent'
       field: arista.contentLength
       target_field: http.request.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_contentLength_to_http_response_bytes_5c9b0795
       if: ctx.arista?.class == 'class com.untangle.app.http.HttpResponseEvent'
       field: arista.contentLength
       target_field: http.response.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_requestUri_to_url_path_e4123169
       field: arista.requestUri
       target_field: url.path
       ignore_missing: true
   - rename:
+      tag: rename_arista_contentFilename_to_file_name_bb6867d5
       field: arista.contentFilename
       target_field: file.name
       ignore_failure: true
   - dissect:
+      tag: dissect_arista_requestLine_29153989
       description: Parse HTTP request method and full URL from requestLine
       if: ctx.arista?.requestLine != null && ctx.arista.requestLine.contains(' ')
       field: arista.requestLine
       pattern: '%{http.request.method} %{_temp.url_full}'
   - uri_parts:
+      tag: uri_parts__temp_url_full_4359ea69
       if: ctx._temp?.url_full != null
       field: _temp.url_full
       ignore_failure: true
   - rename:
+      tag: rename__temp_url_full_to_url_full_893448c8
       field: _temp.url_full
       target_field: url.full
       ignore_missing: true
@@ -93,6 +111,7 @@ processors:
   ## Clean Up ##
   ##############
   - remove:
+      tag: remove_8dacd0e4
       description: Remove Arista fields that are not necessary after parsing to ECS
       field:
         - arista.contentType
@@ -106,4 +125,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

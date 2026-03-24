@@ -2,11 +2,7 @@
 
 The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database. 
 
-## Logs
-
-### Audit
-
-The GitHub audit log records all events related to the GitHub organization/enterprise. See [Organization audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) and [Enterprise audit log actions](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) for more details.
+## What do I need to use this integration?
 
 To use this integration, the following prerequisites must be met:
 
@@ -23,13 +19,31 @@ For Organizations:
   - You must be using GitHub Enterprise Cloud.
   - The organization must be part of an enterprise plan that includes audit log functionality.
 
-Github integration can collect audit logs from 2 sources: [Github API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise) and [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs).
+## Logs
 
-When using Github API to collect audit log events, below requirements must be met for Personal Access Token (PAT):
+### Audit
+
+The GitHub audit log records all events related to the GitHub organization/enterprise. See [Organization audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) and [Enterprise audit log actions](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) for more details.
+
+The GitHub integration can collect audit logs from the following sources: [GitHub API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise), [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs), [Azure Blob Storage](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-blob-storage), [AWS S3 or AWS SQS](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3) and [Google Cloud Storage](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-google-cloud-storage).
+
+When using GitHub API to collect audit log events, below requirements must be met for Personal Access Token (PAT):
  - You must use a Personal Access Token with `read:audit_log` scope. This applies to both organization and enterprise admins.
  - If you're an enterprise admin, ensure your token also includes `admin:enterprise` scope to access enterprise-wide logs.
 
-To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming. For more details, see [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
+To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming.
+
+**Authentication (Azure Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+
+To collect audit log events from Azure Blob Storage, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-blob-storage) to setup audit log streaming.
+To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3) to setup audit log streaming. For more details, refer to this [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
+To collect audit log events from Google Cloud Storage, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-google-cloud-storage) to setup audit log streaming.
+
+For Filebeat input documentation, refer to the following pages:
+ - [Azure Event Hub](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-azure-eventhub)
+ - [Azure Blob Storage](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-azure-blob-storage)
+ - [AWS S3](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3)
+ - [Google Cloud Storage](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-gcs)
 
 *This integration is not compatible with GitHub Enterprise server.*
 
@@ -38,11 +52,20 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
 | github.active |  | boolean |
 | github.actor_id | The id of the actor who performed the action. | keyword |
 | github.actor_ip | The IP address of the entity performing the action. | ip |
@@ -77,8 +100,10 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | github.login_method |  | keyword |
 | github.logout_reason |  | keyword |
 | github.message |  | keyword |
+| github.multi_repo |  | boolean |
 | github.name |  | keyword |
 | github.new_role |  | keyword |
+| github.number |  | long |
 | github.old_role |  | keyword |
 | github.operation_type |  | keyword |
 | github.org | GitHub organization name. | keyword |
@@ -86,6 +111,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | github.permission | GitHub user permissions for the event. | keyword |
 | github.programmatic_access_type | Type of authentication used. | keyword |
 | github.public_repo |  | boolean |
+| github.publicly_leaked |  | boolean |
 | github.pull_request_id |  | keyword |
 | github.pull_request_title |  | keyword |
 | github.pull_request_url |  | keyword |
@@ -100,6 +126,8 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
 | github.request_category |  | keyword |
+| github.secret_type |  | keyword |
+| github.secret_type_display_name |  | keyword |
 | github.secrets_updated |  | keyword |
 | github.source_branch |  | keyword |
 | github.target_branch |  | keyword |
@@ -117,6 +145,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
 
 
 An example event for `audit` looks as following:
@@ -125,24 +154,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "e422bd43-ded6-4afa-8af1-07165e8555e7",
-        "id": "078a54a8-5f77-45fb-a22a-f7414d1895a0",
-        "name": "elastic-agent-15787",
+        "ephemeral_id": "c09b35c2-fdcc-49ac-8a3a-6115c04e0ecc",
+        "id": "28342e9d-df80-4a76-b0ec-5d8aab2b7adc",
+        "name": "elastic-agent-20025",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "98676",
+        "namespace": "96282",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "078a54a8-5f77-45fb-a22a-f7414d1895a0",
+        "id": "28342e9d-df80-4a76-b0ec-5d8aab2b7adc",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "repo.destroy",
@@ -151,10 +180,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2025-07-09T06:53:42.986Z",
+        "created": "2025-11-24T10:06:23.406Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-07-09T06:53:44Z",
+        "ingested": "2025-11-24T10:06:24Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -189,10 +218,10 @@ An example event for `audit` looks as following:
 
 ### Code Scanning
 
-The Code Scanning lets you retrieve all security vulnerabilities and coding errors from a repository setup using GitHub Advanced Security Code Scanning feature. See [About code scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) for more details.
+The Code Scanning lets you retrieve all security vulnerabilities and coding errors from a repository setup using GitHub Advanced Security Code Scanning feature. Refer to [About code scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) for more details.
 
 To use this integration, GitHub Apps must have the `security_events` read permission. 
-Or use a personal access token with the `security_events` scope for private repos or `public_repo` scope for public repos. See [List code scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/code-scanning#list-code-scanning-alerts-for-a-repository)
+Or use a personal access token with the `security_events` scope for private repos or `public_repo` scope for public repos. Refer to [List code scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/code-scanning#list-code-scanning-alerts-for-a-repository).
 
 **Exported fields**
 
@@ -276,30 +305,30 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "6f5c6543-1ec5-4ebd-92ca-19a9411e709f",
-        "id": "dea91ede-5989-4df4-bcc2-52d312289c0f",
-        "name": "elastic-agent-33638",
+        "ephemeral_id": "a8d5c536-dff6-4072-9594-3833ba1eb159",
+        "id": "dfc3f7de-e5e1-4502-a207-fc0596cae3aa",
+        "name": "elastic-agent-29299",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.code_scanning",
-        "namespace": "46044",
+        "namespace": "52388",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dea91ede-5989-4df4-bcc2-52d312289c0f",
+        "id": "dfc3f7de-e5e1-4502-a207-fc0596cae3aa",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2025-07-09T06:54:31Z",
+        "ingested": "2025-11-24T10:02:53Z",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}",
         "type": [
             "creation"
@@ -367,10 +396,10 @@ An example event for `code_scanning` looks as following:
 
 ### Secret Scanning
 
-The GitHub Secret Scanning lets you retrieve secret scanning for advanced security alerts from a repository setup using GitHub Advanced Security Secret Scanning feature. See [About Secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning) for more details.
+The GitHub Secret Scanning lets you retrieve secret scanning for advanced security alerts from a repository setup using GitHub Advanced Security Secret Scanning feature. Refer to [About Secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning) for more details.
 
 To use this integration, GitHub Apps must have the `secret_scanning_alerts` read permission. 
-Or you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [List secret scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning#list-secret-scanning-alerts-for-a-repository)
+Or you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. Refer to [List secret scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning#list-secret-scanning-alerts-for-a-repository)
 
 **Exported fields**
 
@@ -447,30 +476,30 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "469df46a-95c5-4dad-80a8-e6a85c09e9b6",
-        "id": "6c25a893-0a1b-4b3d-98e9-bb6681c5fa62",
-        "name": "elastic-agent-90778",
+        "ephemeral_id": "0ab1b8c7-ade2-42a6-abd9-1ad982cff568",
+        "id": "5980590c-e9fd-49fd-a2a4-365727917f35",
+        "name": "elastic-agent-51688",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.secret_scanning",
-        "namespace": "59764",
+        "namespace": "68527",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6c25a893-0a1b-4b3d-98e9-bb6681c5fa62",
+        "id": "5980590c-e9fd-49fd-a2a4-365727917f35",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2025-07-09T06:58:29Z",
+        "ingested": "2025-11-24T10:09:12Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}",
         "type": [
             "creation"
@@ -523,9 +552,9 @@ An example event for `secret_scanning` looks as following:
 
 ### Dependabot
 
-The GitHub Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using GitHub Advanced Security Dependabot feature. See [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
+The GitHub Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using GitHub Advanced Security Dependabot feature. Check [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
 
-To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
+To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. Check [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
 
 **Exported fields**
 
@@ -746,11 +775,18 @@ An example event for `dependabot` looks as following:
 
 ### Issues
 
-The GitHub Issues datastream lets you retrieve github issues, including pull requests, issue assignees, comments, labels, and milestones. See [About Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=latest) for more details. You can retrieve issues for specific repository or for entire organization. Since GitHub API considers pull requests as issues, users can use `github.issues.is_pr` field to filter for only pull requests. 
+The GitHub Issues datastream lets you retrieve github issues, including pull requests, issue assignees, comments, labels, and milestones. Check [About Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=latest) for more details. You can retrieve issues for specific repository or for entire organization. Since GitHub API considers pull requests as issues, users can use `github.issues.is_pr` field to filter for only pull requests. 
 
 All issues including `closed` are retrieved by default. If users want to retrieve only `open` requests, you need to change `State` parameter to `open`.
 
-To use this integration, users must use GitHub Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [GitHub Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+To use this integration, users must use GitHub Apps or Personal Access Token with `read` permission to repositories or organization. Refer to [GitHub Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+
+**Note**: The Issues API can fetch a maximum of 30,000 issues when querying at the organization level. No limitation exists when querying for the repository level.
+
+**Note**: Ensure the GitHub Personal Access Token includes following fine-grained permission for the repository:
+- At least `Read-only` permission on Issues
+- At least `Read-only` permission on Metadata
+If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
 **Exported fields**
 
@@ -851,30 +887,30 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "2104d082-ca1c-4f37-af08-a3c618b7a1b1",
-        "id": "82ca2524-bffb-48d1-8b37-a9bf993e6898",
-        "name": "elastic-agent-93717",
+        "ephemeral_id": "a263f7f1-a457-4b20-ae6e-458f8bf47a03",
+        "id": "716707b5-76c9-4707-b805-cfe61efc5968",
+        "name": "elastic-agent-58663",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.issues",
-        "namespace": "15567",
+        "namespace": "85867",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "82ca2524-bffb-48d1-8b37-a9bf993e6898",
+        "id": "716707b5-76c9-4707-b805-cfe61efc5968",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2025-07-09T06:57:42Z",
+        "ingested": "2025-11-24T10:11:01Z",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}",
         "type": [
             "creation"
@@ -980,7 +1016,7 @@ An example event for `issues` looks as following:
 
 ### Security Advisories
 
-The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed global security advisories from the GitHub advisory database. See [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
+The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed global security advisories from the GitHub advisory database. Check [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
 
 To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) (GitHub App user access tokens, GitHub App installation access tokens, Fine-grained personal access tokens). This fine-grained token does not require any permissions. 
 
@@ -1060,6 +1096,7 @@ To use this integration, you must [create a fine-grained personal access token](
 | github.security_advisory.vulnerabilities.package.ecosystem |  | keyword |
 | github.security_advisory.vulnerabilities.package.name |  | keyword |
 | github.security_advisory.vulnerabilities.vulnerable_version_range |  | keyword |
+| github.security_advisory.withdrawn_at |  | date |
 | input.type | Type of filebeat input. | keyword |
 
 

@@ -77,22 +77,7 @@ mapped_pages:
 
 `elastic-package` provides different types of test runners. See [*Test an integration*](/extend/testing.md) to learn about the various methods for testing packages.
 
-The `test` subcommand requires a reference to the live {{stack}}. You can define service endpoints using environment variables. If you’re using the {{stack}} created with `elastic-package`, you can use export endpoints with `elastic-package stack shellinit`:
-
-```bash
-$ eval "$(elastic-package stack shellinit)"
-```
-
-To preview environment variables:
-
-```bash
-$ elastic-package stack shellinit
-export ELASTIC_PACKAGE_ELASTICSEARCH_HOST=http://127.0.0.1:9200
-export ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME=elastic
-export ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD=changeme
-export ELASTIC_PACKAGE_KIBANA_HOST=http://127.0.0.1:5601
-```
-
+The `test` subcommand requires a reference to the live {{stack}}. This can be set up with `elastic=package stack up` command.
 
 ## Review test coverage [_review_test_coverage]
 

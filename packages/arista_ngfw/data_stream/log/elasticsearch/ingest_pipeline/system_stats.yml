@@ -6,40 +6,49 @@ processors:
   #######################
   # Active Hosts stats
   - rename:
+      tag: rename_arista_activeHosts_to_arista_hosts_active_7bae756a
       field: arista.activeHosts
       target_field: arista.hosts.active
       ignore_missing: true
   # Disk usage stats
   - rename:
+      tag: rename_arista_diskTotal_to_arista_disk_total_bytes_6e3a1e0d
       field: arista.diskTotal
       target_field: arista.disk.total.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_diskUsed_to_arista_disk_used_bytes_ecb60861
       field: arista.diskUsed
       target_field: arista.disk.used.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_diskFree_to_arista_disk_free_bytes_4c9165dd
       field: arista.diskFree
       target_field: arista.disk.free.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_diskUsedPercent_to_arista_disk_used_pct_c78c426c
       field: arista.diskUsedPercent
       target_field: arista.disk.used.pct
       ignore_missing: true
   - rename:
+      tag: rename_arista_diskFreePercent_to_arista_disk_free_pct_486fe59e
       field: arista.diskFreePercent
       target_field: arista.disk.free.pct
       ignore_missing: true
   # CPU usage stats
   - rename:
+      tag: rename_arista_cpuSystem_to_arista_cpu_system_pct_eb928247
       field: arista.cpuSystem
       target_field: arista.cpu.system.pct
       ignore_missing: true
   - rename:
+      tag: rename_arista_cpuUser_to_arista_cpu_user_pct_a710137b
       field: arista.cpuUser
       target_field: arista.cpu.user.pct
       ignore_missing: true
   - script:
+      tag: script_1d39adc9
       description: Adds the system and user CPU usage for a total
       if: ctx.arista?.cpu?.system?.pct != null && ctx.arista?.cpu?.user?.pct != null
       lang: painless
@@ -52,64 +61,79 @@ processors:
           ctx.arista.cpu.total.pct = (ctx.arista.cpu.system.pct + ctx.arista.cpu.user.pct);
         }
   - rename:
+      tag: rename_arista_load1_to_arista_cpu_load_1_44ca3130
       field: arista.load1
       target_field: arista.cpu.load.1
       ignore_missing: true
   - rename:
+      tag: rename_arista_load5_to_arista_cpu_load_5_59b825e0
       field: arista.load5
       target_field: arista.cpu.load.5
       ignore_missing: true
   - rename:
+      tag: rename_arista_load15_to_arista_cpu_load_15_d46b9748
       field: arista.load15
       target_field: arista.cpu.load.15
       ignore_missing: true
   # Memory usage stats
   - rename:
+      tag: rename_arista_memTotal_to_arista_memory_total_bytes_14d33019
       field: arista.memTotal
       target_field: arista.memory.total.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_memUsed_to_arista_memory_used_bytes_44f2c41d
       field: arista.memUsed
       target_field: arista.memory.used.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_memFree_to_arista_memory_free_bytes_9d7721b9
       field: arista.memFree
       target_field: arista.memory.free.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_memCache_to_arista_memory_cache_bytes_b4d1d36d
       field: arista.memCache
       target_field: arista.memory.cache.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_memUsedPercent_to_arista_memory_used_pct_5ceaff5c
       field: arista.memUsedPercent
       target_field: arista.memory.used.pct
       ignore_missing: true
   - rename:
+      tag: rename_arista_memFreePercent_to_arista_memory_free_pct_80e782ee
       field: arista.memFreePercent
       target_field: arista.memory.free.pct
       ignore_missing: true
   - rename:
+      tag: rename_arista_memBuffers_to_arista_memory_buffers_5b204f38
       field: arista.memBuffers
       target_field: arista.memory.buffers
       ignore_missing: true
   # Swap usage stats
   - rename:
+      tag: rename_arista_swapTotal_to_arista_memory_swap_total_bytes_0a023dea
       field: arista.swapTotal
       target_field: arista.memory.swap.total.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_swapUsed_to_arista_memory_swap_used_bytes_1b2718e6
       field: arista.swapUsed
       target_field: arista.memory.swap.used.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_swapFree_to_arista_memory_swap_free_bytes_a3e8b980
       field: arista.swapFree
       target_field: arista.memory.swap.free.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_swapUsedPercent_to_arista_memory_swap_used_pct_a59508bd
       field: arista.swapUsedPercent
       target_field: arista.memory.swap.used.pct
       ignore_missing: true
   - rename:
+      tag: rename_arista_swapFreePercent_to_arista_memory_swap_free_pct_574776b9
       field: arista.swapFreePercent
       target_field: arista.memory.swap.free.pct
       ignore_missing: true
@@ -119,4 +143,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

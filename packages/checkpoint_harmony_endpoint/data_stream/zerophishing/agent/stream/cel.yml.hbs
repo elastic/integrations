@@ -97,7 +97,8 @@ program: |
   					// Any error - We're at the start, so clear everything and retry after interval.
   					state.with(
   						{
-  							"events": {"error": {"message": "Error response: " + string(resp.Body)}},
+  							// events is intentionally a list, otherwise it's impossible to update the cursor
+  							"events": [{"error": {"message": "Error response: " + string(resp.Body)}}],
   							"want_more": false,
   							"cursor": state.cursor.with(
   								{
@@ -215,7 +216,8 @@ program: |
   				// Clear the task ID, and reset the sequence for the same timeframe.
   				state.with(
   					{
-  						"events": {
+  						// events is intentionally a list, otherwise it's impossible to update the cursor
+  						"events": [{
   							"error": {
   								"code": string(resp.StatusCode),
   								"id": string(resp.Status),
@@ -226,7 +228,7 @@ program: |
   										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
   								),
   							},
-  						},
+  						}],
   						"want_more": false,
   						"cursor": state.cursor.with(
   							{
@@ -268,7 +270,8 @@ program: |
   				// 503 Service Unavailable - Clear the task ID and page token, and end the sequence.
   				state.with(
   					{
-  						"events": {
+  						// events is intentionally a list, otherwise it's impossible to update the cursor
+  						"events": [{
   							"error": {
   								"code": string(resp.StatusCode),
   								"id": string(resp.Status),
@@ -279,7 +282,7 @@ program: |
   										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
   								),
   							},
-  						},
+  						}],
   						"want_more": false,
   						"cursor": state.cursor.with(
   							{
@@ -333,7 +336,8 @@ program: |
   				// Clear the task ID and page token, and reset the sequence for the same timeframe.
   				state.with(
   					{
-  						"events": {
+  						// events is intentionally a list, otherwise it's impossible to update the cursor
+  						"events": [{
   							"error": {
   								"code": string(resp.StatusCode),
   								"id": string(resp.Status),
@@ -344,7 +348,7 @@ program: |
   										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
   								),
   							},
-  						},
+  						}],
   						"want_more": false,
   						"cursor": state.cursor.with(
   							{

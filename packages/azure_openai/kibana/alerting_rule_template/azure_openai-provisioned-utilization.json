@@ -1,0 +1,28 @@
+{
+  "id": "azure_openai-provisioned-utilization",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Azure OpenAI] Provisioned Utilization above threshold",
+    "tags": ["Azure OpenAI"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the provisioned utilization exceeds the recommended threshold value {85%} within the look back time window.\n// The alert is grouped by Model Deployment Name.\n// You can adjust the threshold value by modifying the provisioned_utilization in the WHERE clause, which is specified in percent.\nFROM metrics-azure.open_ai-default\n| KEEP azure.open_ai.provisioned_managed_utilization_v2.avg, azure.dimensions.model_deployment_name, @timestamp\n| WHERE azure.dimensions.model_deployment_name IS NOT NULL\n| STATS provisioned_utilization = MAX(azure.open_ai.provisioned_managed_utilization_v2.avg) * 100 BY azure.dimensions.model_deployment_name\n| WHERE provisioned_utilization > 85\n| EVAL provisioned_utilization = ROUND(provisioned_utilization, 2)\n| SORT provisioned_utilization DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

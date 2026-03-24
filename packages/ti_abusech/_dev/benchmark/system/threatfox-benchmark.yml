@@ -1,0 +1,25 @@
+---
+description: Benchmark 100000 Threatfox events ingested
+input: cel
+vars:
+  enable_request_tracer: true
+  auth_key: test_auth_key
+data_stream:
+  name: threatfox
+  vars:
+    url: "http://svc-abusech:8080/api/v1/"
+    preserve_original_event: true
+    ioc_expiration_duration: 5d
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: abusech
+  generator:
+    total_events: 100000
+    template:
+      path: ./threatfox-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./threatfox-benchmark/config.yml
+    fields:
+      path: ./threatfox-benchmark/fields.yml
