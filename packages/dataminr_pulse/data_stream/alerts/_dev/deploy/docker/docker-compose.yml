@@ -1,9 +1,15 @@
 version: "2.3"
 services:
-  elastic-siem-integration:
-    image: python:3.12-slim
-    volumes:
-      - ./files:/app
-    command: ["python", "/app/mock_server.py"]
+  dataminr-pulse:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: dataminr-pulse
     ports:
       - 8080
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8080'
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/config.yml
