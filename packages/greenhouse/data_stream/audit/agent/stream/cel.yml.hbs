@@ -38,8 +38,9 @@ program: |
   state.with(
     // Check if token needs refresh (expired or not present)
     (
-      !has(state.token) || state.token == "" ||
-      !has(state.token_expires) || timestamp(state.token_expires) < now
+      state.?token.orValue("") == "" ||
+      state.?token_expires.orValue("") == "" ||
+      timestamp(state.token_expires) < now
     ).as(need_token,
       need_token ?
         // Step 1: Get OAuth access token using Client Credentials flow (Harvest API V3)
@@ -48,153 +49,105 @@ program: |
             "Content-Type": ["application/x-www-form-urlencoded"],
             "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
           },
-          "Body": bytes("grant_type=client_credentials" + (has(state.user_id) && state.user_id != "" ? "&sub=" + state.user_id : ""))
+          "Body": bytes("grant_type=client_credentials" + (state.?user_id.orValue("") != "" ? "&sub=" + state.user_id : ""))
         }).do_request().as(token_resp,
           token_resp.StatusCode == 200 ?
-            bytes(token_resp.Body).decode_json().as(token_body, {
+            token_resp.Body.decode_json().as(token_body, {
               "token": token_body.access_token,
               "token_expires": token_body.expires_at,
-              "cursor": has(state.cursor) ? state.cursor : {},
             })
           :
-            {
-              "events": [{
-                "error": {
-                  "code": string(token_resp.StatusCode),
-                  "message": "Failed to obtain OAuth access token: " + (
-                    size(token_resp.Body) != 0 ?
-                      string(token_resp.Body)
-                    :
-                      string(token_resp.Status) + " (" + string(token_resp.StatusCode) + ")"
-                  ),
-                }
-              }],
-              "want_more": false,
-              "cursor": has(state.cursor) ? state.cursor : {},
-            }
+            // Single-object error form: deletes cursor so next run retries cleanly
+            {"error": {
+              "code": string(token_resp.StatusCode),
+              "message": "POST " + state.token_url + ": " + (
+                size(token_resp.Body) != 0 ?
+                  string(token_resp.Body)
+                :
+                  string(token_resp.Status) + " (" + string(token_resp.StatusCode) + ")"
+              ),
+            }}
         )
       :
         // Token still valid, use existing
         {
           "token": state.token,
           "token_expires": state.token_expires,
-          "cursor": has(state.cursor) ? state.cursor : {},
         }
     ).as(auth,
       // Check if we got an error during token acquisition
-      has(auth.events) ?
-        auth
+      has(auth.error) ?
+        {"events": auth}
       :
         // Step 2: Build query parameters for audit log request
-        (
-          has(state.cursor) && has(state.cursor.last_event_time) ?
-            state.cursor.last_event_time
-          :
-            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        state.?cursor.last_event_time.orValue(
+          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
         ).as(after_time,
-          // Build headers including pagination if we have cursor
+          // Build headers; include pagination tokens if present in cursor
           {
             "Authorization": ["Bearer " + auth.token],
             "Content-Type": ["application/json"],
             "Size": [string(int(state.batch_size))],
           }.as(base_headers,
-            (
-              has(state.cursor) && has(state.cursor.pit_id) && state.cursor.pit_id != "" ?
-                base_headers.with({"Pit-Id": [state.cursor.pit_id]})
-              :
-                base_headers
-            ).as(headers_with_pit,
-              (
-                has(state.cursor) && has(state.cursor.search_after) && state.cursor.search_after != "" ?
-                  headers_with_pit.with({"Search-After": [state.cursor.search_after]})
+            state.?cursor.pit_id.orValue("") != "" ?
+              base_headers.with({"Pit-Id": [state.cursor.pit_id]})
+            :
+              base_headers
+          ).as(headers_with_pit,
+            state.?cursor.search_after.orValue("") != "" ?
+              headers_with_pit.with({"Search-After": [state.cursor.search_after]})
+            :
+              headers_with_pit
+          ).as(headers,
+            // Build URL with query params
+            (state.url.trim_right("/") + "/events?" + {
+              "paging": ["true"],
+              "after_time": [after_time],
+              ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
+              ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
+            }.format_query()).as(request_url,
+              request("GET", request_url).with({
+                "Header": headers
+              }).do_request().as(resp,
+                resp.StatusCode == 200 ?
+                  resp.Body.decode_json().as(body, {
+                    "token": auth.token,
+                    "token_expires": auth.token_expires,
+                    "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
+                    "cursor": {
+                      "pit_id": body.?paging.pit_id.orValue(""),
+                      "search_after": body.?paging.next_search_after.orValue(""),
+                      "last_event_time": size(body.?results.orValue([])) > 0 ?
+                        body.results[size(body.results) - 1].event_time
+                      :
+                        after_time,
+                    },
+                    "want_more": body.?paging.next_search_after.orValue(null) != null,
+                  })
+                : resp.StatusCode == 401 ?
+                  // Token expired — clear token so it is refreshed on next interval
+                  {
+                    "token": "",
+                    "token_expires": "",
+                    "want_more": false,
+                  }
+                : string(resp.Body).contains("Pit_Id") ?
+                  // Pit_Id expired — single-object error form clears the cursor
+                  {"error": {
+                    "code": string(resp.StatusCode),
+                    "message": "GET /events: Pit_Id expired, will retry without pagination token",
+                  }}
                 :
-                  headers_with_pit
-              ).as(headers,
-                // Build URL with query params
-                (
-                  state.url.trim_right("/") + "/events?" + {
-                    "paging": ["true"],
-                    "after_time": [after_time],
-                    ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
-                    ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
-                  }.format_query()
-                ).as(request_url,
-                  // Make the audit log API request
-                  request("GET", request_url).with({
-                    "Header": headers
-                  }).do_request().as(resp,
-                    resp.StatusCode == 200 ?
-                      bytes(resp.Body).decode_json().as(body,
-                        {
-                          // Preserve token for next iteration
-                          "token": auth.token,
-                          "token_expires": auth.token_expires,
-                          // Map events to messages
-                          "events": has(body.results) && size(body.results) > 0 ?
-                            body.results.map(e, {
-                              "message": e.encode_json()
-                            })
-                          :
-                            [],
-                          // Update cursor with pagination info
-                          "cursor": {
-                            "pit_id": has(body.paging) && has(body.paging.pit_id) ? string(body.paging.pit_id) : "",
-                            "search_after": has(body.paging) && has(body.paging.next_search_after) && body.paging.next_search_after != null ?
-                              string(body.paging.next_search_after)
-                            :
-                              "",
-                            "last_event_time": has(body.results) && size(body.results) > 0 ?
-                              body.results[size(body.results) - 1].event_time
-                            :
-                              after_time,
-                          },
-                          // Continue pagination if there are more results
-                          "want_more": has(body.paging) && has(body.paging.next_search_after) && body.paging.next_search_after != null,
-                        }
-                      )
-                    : resp.StatusCode == 401 ?
-                      // Token expired, clear it and retry on next interval
-                      {
-                        "token": "",
-                        "token_expires": "",
-                        "events": [],
-                        "want_more": false,
-                        "cursor": has(state.cursor) ? state.cursor : {},
-                      }
-                    : string(resp.Body).contains("Pit_Id") || string(resp.Body).contains("pit_id") ?
-                      // Pit_Id expired - clear pagination cursor but keep last_event_time
-                      {
-                        "token": auth.token,
-                        "token_expires": auth.token_expires,
-                        "events": [],
-                        "want_more": false,
-                        "cursor": {
-                          "pit_id": "",
-                          "search_after": "",
-                          "last_event_time": has(state.cursor) && has(state.cursor.last_event_time) ? state.cursor.last_event_time : after_time,
-                        },
-                      }
-                    :
-                      // Other error - preserve state
-                      {
-                        "token": auth.token,
-                        "token_expires": auth.token_expires,
-                        "events": [{
-                          "error": {
-                            "code": string(resp.StatusCode),
-                            "message": "Audit log API request failed: " + (
-                              size(resp.Body) != 0 ?
-                                string(resp.Body)
-                              :
-                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                            ),
-                          }
-                        }],
-                        "want_more": false,
-                        "cursor": has(state.cursor) ? state.cursor : {},
-                      }
-                  )
-                )
+                  // Other error — single-object form: cursor cleared, next run retries
+                  {"error": {
+                    "code": string(resp.StatusCode),
+                    "message": "GET /events: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  }}
               )
             )
           )
