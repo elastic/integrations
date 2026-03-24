@@ -6,8 +6,8 @@ Apache Cassandra is a distributed, wide-column NoSQL database designed for high 
 
 The Cassandra OpenTelemetry assets have been tested with:
 
-- OpenTelemetry JMX Scraper from opentelemetry-java-contrib with EDOT Collector v9.2.1
-- OpenTelemetry JMX Scraper from opentelemetry-java-contrib with OpenTelemetry Collector Contrib
+- OpenTelemetry JMX Scraper from opentelemetry-java-contrib v1.54.0 with EDOT Collector v9.2.1
+- OpenTelemetry JMX Scraper from opentelemetry-java-contrib v1.54.0 with OpenTelemetry Collector Contrib v0.146.0
 
 Cassandra tested against:
 
