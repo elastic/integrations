@@ -66,7 +66,7 @@ processors:
         - '^%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{DATA:message}$'
         - '^%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{RESOURCE}, Action: %{DATA:event.action}$'
       pattern_definitions:
-        SHARED: 'Users: %{USER:user.name}, Source IP: (127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
+        SHARED: 'Users: (---|(%{DATA:user.domain}\\)?%{USER:user.name}), Source IP: (---|127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
         RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
         FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
   - grok:

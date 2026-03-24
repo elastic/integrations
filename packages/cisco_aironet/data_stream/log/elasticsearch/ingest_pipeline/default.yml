@@ -17,13 +17,14 @@ processors:
       field: event.original
       patterns:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: %{DATA:host.name}: %{INT}: %{AIRONET_DATE}: %%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE}: %%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{INT}: %{AIRONET_DATE}: %%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{DATA:host.name}: -%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
         SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE}"
         SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
-        AIRONET_DATE: "%{MONTH:_temp_.raw_date_month}\\s+%{MONTHDAY:_temp_.raw_date_monthday}(\\s+%{YEAR:_temp_.raw_date_year})? %{TIME:_temp_.raw_date_time}( %{TZ:_temp_.raw_date_timezone})?"
+        AIRONET_DATE: "%{MONTH:_temp_.raw_date_month}\\s+%{MONTHDAY:_temp_.raw_date_monthday}(\\s+%{YEAR:_temp_.raw_date_year})?\\s+%{TIME:_temp_.raw_date_time}(\\s+%{WORD:_temp_.raw_date_timezone})?"
   - script:
       tag: script_4a9d0c10
       lang: painless

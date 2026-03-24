@@ -1,0 +1,429 @@
+{
+    "attributes": {
+        "description": "Forensic pack for credential access and privilege escalation — suspicious processes (UAC bypass, password dumping tools), logged-in users, NTFS journal (SAM hive access), and PowerShell history.",
+        "name": "forensic-credential-access",
+        "version": 1,
+        "queries": [
+            {
+                "id": "suspicious_processes_windows_elastic",
+                "query": "-- Windows Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    p.elevated_token,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    a.result AS signature_status,\n    a.subject_name AS signature_signer,\n    CASE\n        WHEN a.result IS NOT NULL AND a.result != 'trusted' THEN 'untrusted_signature'\n        WHEN a.result IS NULL AND p.path NOT LIKE 'C:\\\\Windows\\\\%' THEN 'unsigned_non_system'\n        WHEN p.path LIKE '%\\\\Temp\\\\%' OR p.path LIKE '%\\\\tmp\\\\%' THEN 'suspicious_path_temp'\n        WHEN p.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 'suspicious_path_appdata_temp'\n        WHEN p.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 'suspicious_path_public'\n        WHEN p.path LIKE '%\\\\Downloads\\\\%' THEN 'suspicious_path_downloads'\n        WHEN p.name IN ('powershell.exe', 'pwsh.exe') AND (p.cmdline LIKE '%encodedcommand%' OR p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-enc %' OR p.cmdline LIKE '%bypass%' OR p.cmdline LIKE '%hidden%') THEN 'powershell_suspicious_args'\n        WHEN p.name = 'cmd.exe' AND (p.cmdline LIKE '%/c %' OR p.cmdline LIKE '%/k %') AND pp.name NOT IN ('explorer.exe', 'cmd.exe', 'powershell.exe', 'pwsh.exe') THEN 'cmd_unusual_parent'\n        WHEN p.name IN ('mshta.exe', 'wscript.exe', 'cscript.exe') THEN 'script_host_execution'\n        WHEN p.name IN ('certutil.exe', 'bitsadmin.exe') AND (p.cmdline LIKE '%http%' OR p.cmdline LIKE '%ftp%' OR p.cmdline LIKE '%decode%' OR p.cmdline LIKE '%urlcache%') THEN 'lolbin_download'\n        WHEN p.name = 'rundll32.exe' AND (p.cmdline LIKE '%javascript%' OR p.cmdline LIKE '%vbscript%') THEN 'rundll32_script'\n        WHEN p.name IN ('regsvr32.exe', 'msiexec.exe') AND p.cmdline LIKE '%http%' THEN 'lolbin_remote_payload'\n        WHEN p.name IN ('msbuild.exe', 'installutil.exe', 'regasm.exe', 'regsvcs.exe') THEN 'dotnet_lolbin'\n        WHEN p.name IN ('eventvwr.exe', 'fodhelper.exe', 'computerdefaults.exe', 'sdclt.exe') AND pp.name NOT IN ('explorer.exe', 'svchost.exe') THEN 'uac_bypass_tool'\n        WHEN p.name = 'wmic.exe' AND (p.cmdline LIKE '%process%call%create%' OR p.cmdline LIKE '%/node:%') THEN 'wmic_execution'\n        WHEN pp.name = 'wmiprvse.exe' OR pp.name = 'wsmprovhost.exe' THEN 'remote_execution_parent'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN authenticode a ON p.path = a.path\nWHERE p.path != ''\nAND p.name NOT IN ('Registry', 'Memory Compression')\nAND (\n    -- Untrusted signatures (explicit non-trusted result)\n    (a.result IS NOT NULL AND a.result != 'trusted')\n    -- Unsigned non-system binaries\n    OR (a.result IS NULL AND p.path NOT LIKE 'C:\\\\Windows\\\\%' AND p.path NOT LIKE 'C:\\\\Program Files\\\\%' AND p.path NOT LIKE 'C:\\\\Program Files (x86)\\\\%')\n    -- Suspicious execution paths (narrowed to reduce noise)\n    OR p.path LIKE '%\\\\Temp\\\\%'\n    OR p.path LIKE '%\\\\tmp\\\\%'\n    OR p.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%'\n    OR p.path LIKE '%\\\\Users\\\\Public\\\\%'\n    OR p.path LIKE '%\\\\Downloads\\\\%'\n    -- PowerShell abuse patterns\n    OR (p.name IN ('powershell.exe', 'pwsh.exe') AND (\n        p.cmdline LIKE '%encodedcommand%'\n        OR p.cmdline LIKE '%-e %'\n        OR p.cmdline LIKE '%-enc %'\n        OR p.cmdline LIKE '%bypass%'\n        OR p.cmdline LIKE '%hidden%'\n        OR p.cmdline LIKE '%downloadstring%'\n        OR p.cmdline LIKE '%iex%'\n        OR p.cmdline LIKE '%invoke-expression%'\n        OR p.cmdline LIKE '%webclient%'\n    ))\n    -- Script host execution\n    OR p.name IN ('mshta.exe', 'wscript.exe', 'cscript.exe')\n    -- LOLBin download/decode\n    OR (p.name IN ('certutil.exe', 'bitsadmin.exe') AND (p.cmdline LIKE '%http%' OR p.cmdline LIKE '%decode%' OR p.cmdline LIKE '%urlcache%'))\n    -- Rundll32 script execution\n    OR (p.name = 'rundll32.exe' AND (p.cmdline LIKE '%javascript%' OR p.cmdline LIKE '%vbscript%'))\n    -- Remote payload LOLBins\n    OR (p.name IN ('regsvr32.exe', 'msiexec.exe') AND p.cmdline LIKE '%http%')\n    -- .NET LOLBins (AppLocker bypass)\n    OR p.name IN ('msbuild.exe', 'installutil.exe', 'regasm.exe', 'regsvcs.exe')\n    -- UAC bypass tools with unusual parents\n    OR (p.name IN ('eventvwr.exe', 'fodhelper.exe', 'computerdefaults.exe', 'sdclt.exe') AND pp.name NOT IN ('explorer.exe', 'svchost.exe'))\n    -- WMIC lateral movement / execution\n    OR (p.name = 'wmic.exe' AND (p.cmdline LIKE '%process%call%create%' OR p.cmdline LIKE '%/node:%'))\n    -- Remote execution indicators\n    OR pp.name IN ('wmiprvse.exe', 'wsmprovhost.exe')\n    -- Process running from memory (not on disk)\n    OR p.on_disk = 0\n);",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.suspicious_processes"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.parent.command_line",
+                        "value": {
+                            "field": "parent_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "suspicious_process",
+                                "threat_hunting",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "logged_in_users_elastic",
+                "query": "-- Logged In Users Enumeration (Cross-Platform)\n-- Lists all currently logged-in users with session details\n-- Use case: User activity forensics, lateral movement detection, active session enumeration\n-- Windows logon types: console (interactive), remote (RDP), service, etc.\n-- Linux/macOS: pts (pseudo-terminal), tty (console), etc.\nSELECT\n  datetime(time, 'unixepoch') AS login_time,\n  user AS username,\n  type AS logon_type,\n  tty,\n  host AS remote_host,\n  pid,\n  sid AS user_sid,\n  registry_hive\nFROM logged_in_users\nORDER BY time DESC",
+                "interval": 3600,
+                "platform": "linux,darwin,windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "session"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.logged_in_users"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "user_sid"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "source.address",
+                        "value": {
+                            "field": "remote_host"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "user_activity",
+                                "session"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "ntfs_usn_journal_events_windows_elastic",
+                "query": "-- NTFS Update Sequence Number (USN) Journal Events\n-- Tracks filesystem changes including file creation, modification, deletion, and renames\n-- NOTE: Unlike Linux/macOS file_events, NTFS USN Journal does not provide file hashes (table limitation)\n-- REQUIRED: Enable in Kibana osquery integration config:\n-- {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\n--  \"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"],\"users\":[\"C:\\\\Users\\\\%%\"],\"programdata\":[\"C:\\\\ProgramData\\\\%%\"]}}\nSELECT\n  action,\n  CASE\n    WHEN action = 'FileCreation' THEN 'creation'\n    WHEN action = 'FileDeletion' THEN 'deletion'\n    WHEN action = 'Close' THEN 'info'\n    ELSE 'change'\n  END AS event_type,\n  path,\n  old_path,\n  category,\n  drive_letter,\n  file_attributes,\n  node_ref_number AS mft_entry,\n  parent_ref_number AS parent_mft_entry,\n  datetime(record_timestamp, 'unixepoch') AS record_time,\n  record_usn,\n  partial,\n  datetime(time, 'unixepoch') AS event_time\nFROM ntfs_journal_events\nWHERE action IS NOT NULL",
+                "interval": 3600,
+                "platform": "windows",
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "field": "event_type"
+                        }
+                    },
+                    {
+                        "key": "event.kind",
+                        "value": {
+                            "value": "event"
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ntfs_journal_events"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.inode",
+                        "value": {
+                            "field": "mft_entry"
+                        }
+                    },
+                    {
+                        "key": "file.attributes",
+                        "value": {
+                            "field": "file_attributes"
+                        }
+                    },
+                    {
+                        "key": "file.parent.inode",
+                        "value": {
+                            "field": "parent_mft_entry"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ntfs_journal",
+                                "usn",
+                                "filesystem_forensics",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "powershell_history_windows_elastic",
+                "query": "-- Comprehensive PowerShell Forensic Monitoring Query (Hybrid Approach)\n-- Uses powershell_events for Event ID 4104 (Script Block Logging) with automatic reconstruction\n-- Uses windows_eventlog for Event ID 4103 (Module Logging) and 4688 (Process Creation)\n-- Focus: Fileless malware detection, obfuscated command tracking\n-- Last updated: 2025-12-09\n--\n-- PREREQUISITES:\n-- 1. Windows Script Block Logging must be enabled (GPO or registry)\n-- 2. Elastic Agent osquery integration requires this config in Fleet policy:\n--    { \"options\": { \"disable_events\": \"false\", \"enable_powershell_events_subscriber\": \"true\", \"enable_windows_events_subscriber\": \"true\" } }\n--\n-- PERFORMANCE TIP: For large environments, add time filter to powershell_events:\n-- WHERE time > (strftime('%s', 'now') - 86400)  -- last 24 hours\n\n-- Part 1: Script Block Logging (Event ID 4104) via powershell_events\n-- Benefits: Automatic script reconstruction across fragmented blocks\nSELECT\n    datetime AS event_time,\n    time,\n    4104 AS eventid,\n    'Microsoft-Windows-PowerShell' AS provider_name,\n    NULL AS level,\n    NULL AS task,\n    NULL AS computer_name,\n    'Microsoft-Windows-PowerShell/Operational' AS channel,\n    NULL AS pid,\n    NULL AS tid,\n    NULL AS data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    script_block_id,\n    script_block_count,\n    script_text,\n    script_name,\n    script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM powershell_events\n\nUNION ALL\n\n-- Part 2: Module Logging (Event ID 4103) via windows_eventlog\n-- Captures obfuscated command context and payload\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    json_extract(data, '$.EventData.ProviderName') AS ps_provider_name,\n    json_extract(data, '$.EventData.ContextInfo') AS context_info,\n    json_extract(data, '$.EventData.Payload') AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-PowerShell/Operational'\n    AND eventid = 4103\n\nUNION ALL\n\n-- Part 3: Process Creation (Event ID 4688) via windows_eventlog\n-- Captures command line and parent/child process relationships\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    json_extract(data, '$.EventData.CommandLine') AS command_line,\n    json_extract(data, '$.EventData.NewProcessName') AS process_name,\n    json_extract(data, '$.EventData.ParentProcessName') AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Security'\n    AND eventid = 4688\n    AND data LIKE '%powershell%'\n\nORDER BY event_time DESC;",
+                "interval": 300,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.powershell_history"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "eventid"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "provider_name"
+                        }
+                    },
+                    {
+                        "key": "log.level",
+                        "value": {
+                            "field": "level"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.thread.id",
+                        "value": {
+                            "field": "tid"
+                        }
+                    },
+                    {
+                        "key": "powershell.provider.name",
+                        "value": {
+                            "field": "ps_provider_name"
+                        }
+                    },
+                    {
+                        "key": "powershell.context_info",
+                        "value": {
+                            "field": "context_info"
+                        }
+                    },
+                    {
+                        "key": "powershell.payload",
+                        "value": {
+                            "field": "payload"
+                        }
+                    },
+                    {
+                        "key": "powershell.file.script_block_id",
+                        "value": {
+                            "field": "script_block_id"
+                        }
+                    },
+                    {
+                        "key": "powershell.file.script_block_count",
+                        "value": {
+                            "field": "script_block_count"
+                        }
+                    },
+                    {
+                        "key": "powershell.file.script_block_text",
+                        "value": {
+                            "field": "script_text"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "script_name"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "script_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command_line"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_process_name"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "powershell",
+                                "execution",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-a2e5f6b7-c8d9-4e0f-2a1b-3c4d5e6f7a8b",
+    "references": [],
+    "type": "osquery-pack-asset"
+}

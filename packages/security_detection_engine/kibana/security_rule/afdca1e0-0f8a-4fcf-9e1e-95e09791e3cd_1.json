@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when curl is executed via a shell profile upon login. This indicates a curl command was added to the user's shell profile (like .zshrc or .bashrc) and is executed automatically at login, which could be used for persistence and payload delivery.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Curl Execution via Shell Profile",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Curl Execution via Shell Profile\n\nShell profile scripts (.zshrc, .bashrc, .bash_profile, .zprofile) execute automatically when users open new terminal sessions, making them valuable persistence mechanisms. Threat actors inject curl commands into these profiles to download and execute additional payloads each time the user opens a terminal, creating a reliable beacon mechanism that persists across system reboots. This detection rule identifies curl execution with download flags that originates directly from shell profile execution at login.\n\n### Possible investigation steps\n\n- Review the shell profile files (.zshrc, .bashrc, .bash_profile, .zprofile) for the affected user to identify the injected curl command and its destination URL.\n- Analyze the process.args to determine the full curl command including output destination (-o, --output) and any other flags used.\n- Investigate the destination URL in threat intelligence databases to determine if it is associated with known malicious infrastructure.\n- Review the file modification timestamps of the shell profile files to determine when the malicious entry was added.\n- Check browser history, email attachments, and download logs to understand how the attacker initially gained access to modify the profile.\n- Examine the user.name associated with the modified profile to assess the scope of potential data access.\n- Search for downloaded files on the system that may have been retrieved by the curl command and analyze their contents.\n\n### False positive analysis\n\n- Developers may add curl commands to shell profiles for convenience, such as fetching daily updates or checking API endpoints. Verify the URL destination and purpose with the user.\n- Some shell customization frameworks and plugins use curl to update themselves on shell startup. Review common frameworks like Oh My Zsh for expected behavior.\n- Enterprise tools may configure shell profiles for authentication or environment setup. Confirm with IT operations if such configurations are expected.\n- Elastic infrastructure URLs are already excluded in the query to reduce noise from legitimate Elastic tooling.\n\n### Response and remediation\n\n- Remove the malicious curl command from the affected shell profile file immediately.\n- Block the destination URL at the network perimeter to prevent payload delivery.\n- Search for any files that were downloaded by the curl command and quarantine or remove them.\n- Review user credentials and tokens that may have been exposed, as shell sessions often contain sensitive environment variables.\n- Investigate how the shell profile was modified to identify the initial access vector.\n- Check other user accounts on the system for similar shell profile modifications.\n- Reset the user's shell profile from a known-good backup or template if available.\n- Monitor for curl execution from shell profiles across the environment to identify additional compromised systems.\n",
+        "query": "sequence with maxspan=10s\n  [process where host.os.type == \"macos\" and event.type == \"start\" and event.action == \"exec\" and\n    process.name in (\"bash\", \"zsh\", \"sh\") and\n    process.args in (\"-zsh\", \"-sh\", \"-bash\") and process.args_count == 1 and\n    process.parent.name == \"login\"] by process.entity_id\n  [process where host.os.type == \"macos\" and event.type == \"start\" and event.action == \"exec\" and\n    process.name in (\"curl\", \"nscurl\") and\n    process.args in (\"-o\", \"--output\", \"--download\", \"-dl\", \"-dir\", \"--directory\", \"-F\", \"--form\") and\n    not process.args like (\"https://upload.elastic.co*\", \"https://vault-ci-prod.elastic.dev\", \"https://artifacts.elastic.co*\")] by process.parent.entity_id\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "afdca1e0-0f8a-4fcf-9e1e-95e09791e3cd",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.004",
+                                "name": "Unix Shell Configuration Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1546/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "afdca1e0-0f8a-4fcf-9e1e-95e09791e3cd_1",
+    "type": "security-rule"
+}

@@ -3,6 +3,8 @@ The Privileged Access Detection package contains assets to detect anomalous priv
 
 The package transform supports data from Elastic Endpoint via Elastic Defend and the Okta integration. Prior to using this integration, either the Okta integration should be installed and configured, and/or Elastic Defend should be installed through Elastic Agent and collecting data from hosts, or have equivalent tools/endpoints set up. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) and [Okta Integration](https://www.elastic.co/docs/reference/integrations/okta) for more information. The **Transform** and **Anomaly Detection Jobs** sections have detailed platform support.
 
+**Note**: This package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
+
 ## Installation
 
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Privileged Access Detection**. Configure the integration name and agent policy. Click **Save and Continue**.
@@ -70,10 +72,10 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
 **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [pad-ml file](https://github.com/elastic/integrations/blob/main/packages/pad/kibana/ml_module/pad-ml.json#L10). Additionally, we recommend backdating the datafeed for these anomaly detection jobs to a specific timeframe, as some datafeed queries are resource-intensive and may lead to query delays. We advise you to start the datafeed with 2-3 months' worth of data.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana.
     1. You have started the above anomaly detection jobs.
-    1. You have **read** access to `.ml-anomalies-shared` index or are assigned the `machine_learning_user` role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
+    1. You have **read** access to `.ml-anomalies-shared` data stream/index or are assigned the `machine_learning_user` role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
     1. After enabling the jobs, go to **Management > Stack Management > Kibana > Data Views**.  Click on **Create data view** with the following settings:
         - Name: `.ml-anomalies-shared`
-        - Index pattern : `.ml-anomalies-shared`
+        - Index pattern : `.ml-anomalies-shared*`
         - Select **Show Advanced settings** enable **Allow hidden and system indices**
         - Custom data view ID: `.ml-anomalies-shared`
 
@@ -91,6 +93,21 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 | pad.pivot_transform_windows_privilege_type | 	Collects special privileges assigned to a user for Windows events | logs-*        | 	ml_windows_privilege_type_pad-[version]      | ml_windows_privilege_type_pad.all      | Windows            |
 
 When querying the destination indices for Okta and Windows logs, we advise using the alias for the destination index (`ml_okta_multiple_user_sessions_pad.all` and `ml_windows_privilege_type_pad.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
+
+## Customize Privileged Access Detection Transform
+
+To customize filters in the Privileged Access Detection transform, follow the below steps. You can use these instructions to update basic settings or to update filters for fields such as `process.name`, `@timestamp` and others.
+1. To update settings such as retention policy, frequency, or destination configuration, stop the transform, click **Edit** from the **Actions** bar, make the required changes, and start the transform again.
+![Privileged Access Detection transform](../img/pad_transform_update.png)
+1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-pad.pivot_transform_windows_privilege_list-default-<FLEET-TRANSFORM-VERSION>`**.
+1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
+![Privileged Access Detection transform](../img/pad_transform_1.png)
+1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
+![Privileged Access Detection transform](../img/pad_transform_2.png)
+1. Scroll down and select the **Next** button at the bottom right. Under the **Transform details** section, enter a new **Transform ID** and **Destination index** of your choice, then click on the **Next** button.
+![Privileged Access Detection transform](../img/pad_transform_3.png)
+1. Lastly, select the **Create and Start** option. Your updated transform will now start collecting data. **Note:** Do not forget to update your data view based on the new **Destination index** you have just created.
+![Privileged Access Detection transform](../img/pad_transform_4.png)
 
 ### Anomaly Detection Jobs
 
@@ -118,6 +135,22 @@ When querying the destination indices for Okta and Windows logs, we advise using
 | pad_okta_rare_region_name_by_user                          | Detects an unusual region name for a user.                                                     | Okta Integration     |
 | pad_okta_rare_host_name_by_user                            | Detects an unusual host name for a user.                                                       | Okta Integration     |
 
+## Customize ML jobs for Privileged Access Detection
+
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Privileged Access Detection ML jobs, follow the steps below.
+1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
+![Privileged Access Detection jobs](../img/pad_ml_job_1.png)
+1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.
+![Privileged Access Detection jobs](../img/pad_ml_job_2.png)
+1. You may also update the model memory limit if your environment has high data volume or if the job requires additional resources. Go to the **Job details** section and update the **Model memory limit** and hit **Save**. For more information on resizing ML jobs, refer to the [documentation](https://www.elastic.co/docs/explore-analyze/machine-learning/anomaly-detection/anomaly-detection-scale#set-model-memory-limit).
+![Privileged Access Detection jobs](../img/pad_ml_job_3.png)
+1. In order to do more advanced changes to your job, clone the job by selecting **Clone job** from the **Actions** menu.
+![Privileged Access Detection jobs](../img/pad_ml_job_4.png)
+1. In the cloned job, you can update datafeed settings such as **Frequency** and **Query delay**, which help control how often data is analyzed and account for ingestion delays.
+![Privileged Access Detection jobs](../img/pad_ml_job_5.png)
+1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
+![Privileged Access Detection jobs](../img/pad_ml_job_6.png)
+1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
 
 ## Licensing
 

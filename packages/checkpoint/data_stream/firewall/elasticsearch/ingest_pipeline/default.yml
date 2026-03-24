@@ -1021,10 +1021,20 @@ processors:
   - script:
       tag: script_parse_checkpoint_packets_dropped
       description: Parse packets field containing connection tuples into structured packets_dropped array.
-      if: ctx.checkpoint?.packets instanceof String && ctx.checkpoint.packets.trim().startsWith('<')
+      if: ctx.checkpoint?.packets instanceof String && ctx.checkpoint.packets.contains('<')
       lang: painless
       source: |
         String packetsStr = ctx.checkpoint.packets.trim();
+        if (packetsStr.startsWith('(sample')) {
+          int closeParenIdx = packetsStr.indexOf(')');
+          if (closeParenIdx > 0) {
+            ctx.checkpoint.packets_data_is_sampled = true;
+            packetsStr = packetsStr.substring(closeParenIdx + 1).trim();
+          }
+        }
+        if (packetsStr.endsWith('";')) {
+          packetsStr = packetsStr.substring(0, packetsStr.length() - 2);
+        }
         def parsed = [];
         String[] entries = packetsStr.splitOnToken('>');
         for (int i = 0; i < entries.length; i++) {

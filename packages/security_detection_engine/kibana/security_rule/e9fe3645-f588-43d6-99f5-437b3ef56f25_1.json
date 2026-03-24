@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when EC2 Serial Console Access is enabled for an AWS account. The EC2 Serial Console provides direct, text-based access to an instance's serial port, bypassing the network layer entirely. While useful for troubleshooting boot issues or network misconfigurations, enabling serial console access in production environments is rare and potentially dangerous. Adversaries may enable this feature to establish an out-of-band communication channel that evades network-based security monitoring, firewalls, and VPC controls. This access method can be used for persistent backdoor access or to interact with compromised instances without triggering network-based detection mechanisms.",
+        "false_positives": [
+            "Administrators may legitimately enable serial console access during troubleshooting of instances with boot issues, network misconfigurations, or SSH access problems. Verify whether the user identity, user agent, and/or source IP should be making changes in your environment. Serial console access enablement by unfamiliar users or from unexpected locations should be investigated. If this is expected behavior for troubleshooting, it can be exempted from the rule, but ensure serial console access is disabled after troubleshooting is complete."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EC2 Serial Console Access Enabled",
+        "note": "## Triage and analysis\n\n### Investigating AWS EC2 Serial Console Access Enabled\n\nThe EC2 Serial Console provides a direct connection to an instance's serial port, allowing access even when network connectivity is unavailable. This feature operates completely outside the network layer, meaning traffic does not traverse VPCs, security groups, NACLs, or any network-based monitoring tools. Enabling serial console access at the account level is a prerequisite for using this feature on individual instances.\n\nThis rule detects successful `EnableSerialConsoleAccess` API calls, which may indicate an adversary attempting to establish an out-of-band access channel. In most production environments, serial console access should remain disabled unless actively troubleshooting specific issues.\n\n### Possible investigation steps\n\n- **Identify the actor**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.type` to determine who enabled serial console access.\n  - Verify whether this principal has a legitimate need for troubleshooting access.\n\n- **Review request context**\n  - Check `source.ip`, `source.geo`, and `user_agent.original` for anomalous access patterns.\n  - Determine whether this action occurred during normal business hours or maintenance windows.\n\n- **Check for follow-on activity**\n  - Search for `SendSerialConsoleSSHPublicKey` API calls, which indicate actual usage of the serial console.\n  - Review whether any EC2 instances show serial console sessions after this enablement.\n\n- **Correlate with other suspicious activity**\n  - Look for preceding credential theft indicators (e.g., `GetSecretValue`, `CreateAccessKey`).\n  - Check for other defense evasion actions such as GuardDuty modifications, CloudTrail changes, or security group modifications.\n\n- **Verify business justification**\n  - Confirm with the identified user or team whether there was a legitimate troubleshooting need.\n  - Check for related incident tickets or change requests.\n\n### False positive analysis\n\n- **Legitimate troubleshooting**\n  - Serial console may be enabled temporarily to troubleshoot instances with SSH access issues or boot failures.\n  - Verify this corresponds to known incidents and ensure it was disabled afterward.\n\n- **Automated infrastructure provisioning**\n  - Some IaC tools may enable serial console access during instance setup. Validate against CI/CD logs.\n\n### Response and remediation\n\n- **Immediate containment**\n  - If unauthorized, immediately disable serial console access using `DisableSerialConsoleAccess`.\n  - Review any instances that may have been accessed via serial console.\n\n- **Investigation**\n  - Audit CloudTrail for all serial console-related API calls (`EnableSerialConsoleAccess`, `DisableSerialConsoleAccess`, `SendSerialConsoleSSHPublicKey`, `GetSerialConsoleAccessStatus`).\n  - Check for any data exfiltration or lateral movement that occurred during the enabled period.\n\n- **Hardening**\n  - Restrict `ec2:EnableSerialConsoleAccess` permissions to a limited set of administrative roles.\n  - Implement AWS Config rules or Security Hub controls to alert on serial console access state changes.\n  - Consider using SCPs to prevent serial console enablement in production accounts.\n\n### Additional information\n- **[AWS Documentation: EC2 Serial Console](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-serial-console.html)**\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)**\n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)**\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"ec2.amazonaws.com\"\n    and event.action: \"EnableSerialConsoleAccess\"\n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_EnableSerialConsoleAccess.html",
+            "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-serial-console.html",
+            "https://permiso.io/blog/lucr-3-scattered-spider-getting-saas-y-in-the-cloud"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e9fe3645-f588-43d6-99f5-437b3ef56f25",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS EC2",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "e9fe3645-f588-43d6-99f5-437b3ef56f25_1",
+    "type": "security-rule"
+}
