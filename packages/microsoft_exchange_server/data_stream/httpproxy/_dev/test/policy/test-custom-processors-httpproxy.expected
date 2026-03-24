@@ -4,20 +4,20 @@ inputs:
     meta:
       package:
         name: microsoft_exchange_server
-    name: test-custom-processors-microsoft_exchange_server
+    name: test-custom-processors-httpproxy-microsoft_exchange_server
     streams:
       - data_stream:
-          dataset: microsoft_exchange_server.smtp
+          dataset: microsoft_exchange_server.httpproxy
         exclude_files:
           - .gz$
         paths:
-          - C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\Hub\ProtocolLog\SmtpSend\*.LOG
+          - C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\*\*.LOG
         processors:
           - add_locale: null
           - add_fields:
               target: test
               fields:
-                source: smtp_test
+                source: httpproxy_test
           - drop_fields:
               fields:
                 - agent.ephemeral_id
@@ -35,7 +35,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-microsoft_exchange_server.smtp-ep
+                    - logs-microsoft_exchange_server.httpproxy-ep
                   privileges:
                     - auto_configure
                     - create_doc
