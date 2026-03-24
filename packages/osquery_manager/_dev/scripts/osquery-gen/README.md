@@ -11,6 +11,7 @@ patch where applicable, and generates:
 - `packages/osquery_manager/data_stream/result/fields/ecs.yml`
 - `packages/osquery_manager/schemas/osquery.json`
 - `packages/osquery_manager/schemas/ecs.json`
+- `packages/osquery_manager/schemas/metadata.json` (`ecs_version`, `osquery_version`)
 
 Extension metadata in osquery schema is enforced:
 
