@@ -2,7 +2,7 @@
 
 This integration periodically fetches logs and metrics from [HAProxy](https://www.haproxy.org/) servers.
 
-The Integration can collect metrics in two datastreams from HAProxy: `info`, `stat` and `metrics`. `info` is not available when using the stats page. For more information, refer to the [HAProxy module](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-haproxy).
+The Integration can collect metrics in three datastreams from HAProxy: `info`, `stat` and `metrics`. `info` is not available when using the stats page. For more information, refer to the [HAProxy module](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-haproxy).
 
 ## Compatibility
 
