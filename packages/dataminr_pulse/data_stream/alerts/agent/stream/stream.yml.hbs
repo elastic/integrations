@@ -147,78 +147,22 @@ program: |
                           has(alert.intelAgents) && size(alert.intelAgents) > 0 ?
                             alert.intelAgents.map(agent,
                               has(agent.discoveredEntities) && size(agent.discoveredEntities) > 0 ?
-                                agent.discoveredEntities[0].as(first_entity,
-                                  agent.discoveredEntities.filter(entity, 
-                                    entity.type == "vulnerability" || entity.type == "threatActor" || entity.type == "malware"
-                                  ).as(individual_entities,
-                                    agent.discoveredEntities.exists(e, e.type == "ipAddress" || e.type == "url").as(has_ip_url,
-                                      agent.discoveredEntities.exists(e, 
-                                        e.type != "vulnerability" && e.type != "threatActor" && e.type != "malware" && 
-                                        e.type != "ipAddress" && e.type != "url"
-                                      ).as(has_other,
-                                        (
-                                          individual_entities.map(entity,
-                                            {
-                                              "message": alert.with({
-                                                "intelAgents": alert.intelAgents,
-                                                "discovered_entity": entity,
-                                                "entityType": entity.type,
-                                                "is_main": (entity.type == first_entity.type && entity.name == first_entity.name) ? "yes" : "no",
-                                                "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
-                                                "fetched_alerts": size(api_body.alerts),
-                                                "fetch_timestamp": fetch_ts
-                                              }).encode_json()
-                                            }
-                                          ) +
-                                          (has_ip_url ? [{
-                                            "message": alert.with({
-                                              "intelAgents": alert.intelAgents,
-                                              "entityType": "url-ipAddress",
-                                              "is_main": (first_entity.type == "ipAddress" || first_entity.type == "url") ? "yes" : "no",
-                                              "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
-                                              "fetched_alerts": size(api_body.alerts),
-                                              "fetch_timestamp": fetch_ts
-                                            }).encode_json()
-                                          }] : []) +
-                                          (has_other ? [{
-                                            "message": alert.with({
-                                              "intelAgents": alert.intelAgents,
-                                              "entityType": "consolidated",
-                                              "is_main": (first_entity.type != "vulnerability" && first_entity.type != "threatActor" &&
-                                                           first_entity.type != "malware" && first_entity.type != "ipAddress" &&
-                                                           first_entity.type != "url") ? "yes" : "no",
-                                              "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
-                                              "fetched_alerts": size(api_body.alerts),
-                                              "fetch_timestamp": fetch_ts
-                                            }).encode_json()
-                                          }] : [])
-                                        )
-                                      )
-                                    )
-                                  )
+                                agent.discoveredEntities.filter(e,
+                                  e.type == "vulnerability" || e.type == "threatActor" || e.type == "malware"
+                                ).map(entity,
+                                  {"message": alert.with({"entityType": entity.type, "discovered_entity": entity}).encode_json()}
                                 )
+                                + (agent.discoveredEntities.exists(e, e.type == "ipAddress" || e.type == "url") ?
+                                  [{"message": alert.with({"entityType": "url-ipAddress"}).encode_json()}] : [])
+                                + (agent.discoveredEntities.exists(e,
+                                    e.type != "vulnerability" && e.type != "threatActor" && e.type != "malware" &&
+                                    e.type != "ipAddress" && e.type != "url") ?
+                                  [{"message": alert.with({"entityType": "consolidated"}).encode_json()}] : [])
                               :
-                                [{
-                                  "message": alert.with({
-                                    "intelAgents": alert.intelAgents,
-                                    "entityType": "no-entities",
-                                    "is_main": "yes",
-                                    "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
-                                    "fetched_alerts": size(api_body.alerts),
-                                    "fetch_timestamp": fetch_ts
-                                  }).encode_json()
-                                }]
+                                [{"message": alert.with({"entityType": "no-entities"}).encode_json()}]
                             ).flatten()
                           :
-                            [{
-                              "message": alert.with({
-                                "entityType": "no-intelAgents",
-                                "is_main": "yes",
-                                "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
-                                "fetched_alerts": size(api_body.alerts),
-                                "fetch_timestamp": fetch_ts
-                              }).encode_json()
-                            }]
+                            [{"message": alert.with({"entityType": "no-intelAgents"}).encode_json()}]
                         ).flatten() : []
                       ) + [{
                         "message": {

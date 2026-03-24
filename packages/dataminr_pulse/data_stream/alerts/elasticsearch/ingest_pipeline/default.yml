@@ -33,13 +33,60 @@ processors:
       tag: json_event_original
       target_field: json
 
-  # Handle master documents
-  - set:
-      field: dataminr_pulse.is_main
-      copy_from: json.is_main
-      ignore_empty_value: true
-      if: ctx.json?.is_main != null
-      tag: set_is_main
+  # Compute is_main: the document whose entity type matches the first discovered entity's category
+  - script:
+      lang: painless
+      tag: compute_is_main
+      if: ctx.json?.entityType != null && ctx.json?.log_type == null
+      source: |
+        def entityType = ctx.json.entityType;
+        if (entityType.equals('no-entities') || entityType.equals('no-intelAgents')) {
+          if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
+          ctx.dataminr_pulse.is_main = 'yes';
+          return;
+        }
+        String firstType = null;
+        String firstName = null;
+        if (ctx.json.intelAgents instanceof List && ctx.json.intelAgents.size() > 0) {
+          def agent = ctx.json.intelAgents[0];
+          if (agent.discoveredEntities instanceof List && agent.discoveredEntities.size() > 0) {
+            def first = agent.discoveredEntities[0];
+            firstType = first.type;
+            firstName = first.containsKey('name') ? first.name : null;
+          }
+        }
+        if (firstType == null) {
+          if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
+          ctx.dataminr_pulse.is_main = 'yes';
+          return;
+        }
+        String firstCategory;
+        if (firstType.equals('vulnerability') || firstType.equals('threatActor') || firstType.equals('malware')) {
+          firstCategory = firstType;
+        } else if (firstType.equals('ipAddress') || firstType.equals('url')) {
+          firstCategory = 'url-ipAddress';
+        } else {
+          firstCategory = 'consolidated';
+        }
+        if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
+        if (entityType.equals('vulnerability') || entityType.equals('threatActor') || entityType.equals('malware')) {
+          if (entityType.equals(firstCategory)) {
+            def currentName = ctx.json.discovered_entity != null && ctx.json.discovered_entity.containsKey('name') ? ctx.json.discovered_entity.name : null;
+            ctx.dataminr_pulse.is_main = (currentName != null && currentName.equals(firstName)) ? 'yes' : 'no';
+          } else {
+            ctx.dataminr_pulse.is_main = 'no';
+          }
+        } else {
+          ctx.dataminr_pulse.is_main = entityType.equals(firstCategory) ? 'yes' : 'no';
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              in pipeline {{{_ingest.pipeline}}}
+              failed with message: {{{_ingest.on_failure_message}}}
 
   # Handle log documents (auth or alert-fetch)
   - set:
@@ -178,23 +225,6 @@ processors:
       ignore_failure: true
 
   #  Process alert documents
-  # Extract alert-level metadata fields
-  - set:
-      field: dataminr_pulse.cursor_used
-      tag: set_cursor_used
-      copy_from: json.cursor_used
-      ignore_empty_value: true
-      if: ctx._temp?.is_log != true && ctx.json?.cursor_used != null
-
-  # Remove metadata fields from json object after extraction
-  - remove:
-      field:
-        - json.cursor_used
-        - json.fetched_alerts
-        - json.fetch_timestamp
-      tag: remove_extracted_metadata
-      ignore_missing: true
-      if: ctx._temp?.is_log != true
 
   # Store entityType for tracking document type
   - set:
@@ -1049,7 +1079,16 @@ processors:
         - dataminr_pulse.intel_agents_raw
       tag: remove_unwanted_fields
       ignore_missing: true
-
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
