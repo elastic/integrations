@@ -1,0 +1,288 @@
+---
+dashboards:
+  - name: "[IIS OTel] Sites & Pools"
+    id: iis_otel-sites
+    description: >-
+      Per-site and per-application-pool breakdown of request rate, network throughput, connections,
+      queue metrics, and rejections. Supports capacity planning and per-tenant analysis.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    filters:
+      - field: "data_stream.dataset"
+        equals: "iisreceiver.otel"
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+        width: medium
+      - type: options
+        label: Site
+        data_view: metrics-*
+        field: iis.site
+        width: medium
+      - type: options
+        label: Application Pool
+        data_view: metrics-*
+        field: iis.application_pool
+        width: medium
+    panels:
+      # Navigation Links
+      - links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: iis_otel-overview
+            - label: Sites & Pools
+              dashboard: iis_otel-sites
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+
+      # Dashboard Overview Markdown
+      - markdown:
+          content: |
+            ## [IIS OTel] Sites & Pools
+
+            This dashboard provides per-site and per-application-pool breakdowns:
+
+            - **Per-site** — Request rate, network throughput, active connections
+            - **Per-pool** — Queue depth, rejection rate, queue age, active threads
+            - **Detail tables** — Top sites and pools by traffic and health
+
+            Use the Host, Site, and Application Pool filters to narrow the view.
+        size: {w: 16, h: 12}
+        position: {x: 0, y: 2}
+
+      # Request Rate by Site Chart
+      - title: Request Rate by Site
+        size: {w: 32, h: 12}
+        position: {x: 16, y: 2}
+        esql:
+          type: area
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL
+            | STATS request_rate = SUM(RATE(`iis.request.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: request_rate
+          breakdown:
+            field: iis.site
+
+      # Network Throughput by Site
+      - title: Network Throughput by Site
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 14}
+        esql:
+          type: area
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.network.io` IS NOT NULL AND iis.site IS NOT NULL
+            | STATS throughput = SUM(RATE(`iis.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: throughput
+          breakdown:
+            field: iis.site
+
+      # Active Connections by Site
+      - title: Active Connections by Site
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 14}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.connection.active` IS NOT NULL AND iis.site IS NOT NULL
+            | STATS connections = SUM(`iis.connection.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+          breakdown:
+            field: iis.site
+
+      # Per-Application-Pool Metrics Section Header
+      - markdown:
+          content: |
+            ## Per-Application-Pool Metrics
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 26}
+
+      # Queue Depth by Pool
+      - title: Queue Depth by Pool
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 29}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL
+            | STATS queue_depth = SUM(`iis.request.queue.count`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: queue_depth
+          breakdown:
+            field: iis.application_pool
+
+      # Rejection Rate by Pool
+      - title: Rejection Rate by Pool
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 29}
+        esql:
+          type: line
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL
+            | STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rejection_rate
+          breakdown:
+            field: iis.application_pool
+
+      # Queue Age by Pool
+      - title: Queue Age by Pool
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 41}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.age.max` IS NOT NULL AND iis.application_pool IS NOT NULL
+            | STATS queue_age_ms = MAX(`iis.request.queue.age.max`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: queue_age_ms
+          breakdown:
+            field: iis.application_pool
+
+      # Active Threads Over Time
+      - title: Active Threads Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 41}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.thread.active` IS NOT NULL
+            | STATS threads = SUM(`iis.thread.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: threads
+
+      # Detail Tables Section Header
+      - markdown:
+          content: |
+            ## Top Sites & Application Pools
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 53}
+
+      # Top Sites by Request Count Table
+      - title: Top Sites by Request Count
+        size: {w: 24, h: 15}
+        position: {x: 0, y: 56}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL
+            - STATS total_requests = SUM(INCREASE(`iis.request.count`)) BY iis.site
+            - SORT total_requests DESC
+            - LIMIT 50
+          dimensions:
+            - field: iis.site
+              label: Site
+          metrics:
+            - field: total_requests
+              label: Total Requests
+              format:
+                type: number
+                decimals: 0
+
+      # Top Pools by Rejection Rate Table
+      - title: Top Pools by Rejection Rate
+        size: {w: 24, h: 15}
+        position: {x: 24, y: 56}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL
+            - STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY iis.application_pool
+            - SORT rejection_rate DESC
+            - LIMIT 50
+          dimensions:
+            - field: iis.application_pool
+              label: Application Pool
+          metrics:
+            - field: rejection_rate
+              label: Rejections/sec
+              format:
+                type: number
+                decimals: 2
+
+      # Top Sites by Request Rate Table
+      - title: Top Sites by Request Rate
+        size: {w: 24, h: 15}
+        position: {x: 0, y: 71}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL
+            - STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site
+            - SORT req_rate DESC
+            - LIMIT 50
+          dimensions:
+            - field: iis.site
+              label: Site
+          metrics:
+            - field: req_rate
+              label: Requests/sec
+              format:
+                type: number
+                decimals: 1
+
+      # Top Pools by Queue Depth Table
+      - title: Top Pools by Queue Depth
+        size: {w: 24, h: 15}
+        position: {x: 24, y: 71}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL
+            - STATS max_queue = MAX(`iis.request.queue.count`) BY pool = iis.application_pool
+            - SORT max_queue DESC
+            - LIMIT 50
+          dimensions:
+            - field: pool
+              label: Application Pool
+          metrics:
+            - field: max_queue
+              label: Max Queue Depth
+              format:
+                type: number
+                decimals: 0

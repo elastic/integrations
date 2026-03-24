@@ -1,0 +1,37 @@
+{
+  "id": "iis_otel-request-rejections",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[IIS OTel] Request rejections detected",
+    "ruleTypeId": ".es-query",
+    "tags": ["observability", "iis"],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-iisreceiver.otel-*\n| WHERE iis.request.rejected IS NOT NULL\n| STATS rejected_increase = SUM(INCREASE(iis.request.rejected)) BY iis.application_pool, host.name\n| WHERE rejected_increase > 0\n| SORT rejected_increase DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "iis.application_pool",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
