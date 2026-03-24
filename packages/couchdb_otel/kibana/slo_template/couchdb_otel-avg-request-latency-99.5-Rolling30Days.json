@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "[CouchDB OTel] Average request latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the average request latency of Apache CouchDB via OTel metrics, ensuring that 99.5% of 1-minute time intervals show average per-request processing time below 200 milliseconds over a rolling period of 30 days to maintain responsive document and view operations for clients.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"couchdbreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "last_value",
+              "field": "couchdb.average_request_time",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 200
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "couchdb",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.couchdb.node.name"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "couchdb_otel-overview"
+      }
+    ]
+  },
+  "id": "couchdb_otel-avg-request-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

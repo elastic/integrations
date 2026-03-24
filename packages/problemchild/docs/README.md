@@ -6,7 +6,7 @@ This package support data from Elastic Endpoint via Elastic Defend or winlogbeat
 
 **Note**: In versions 2.1.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blogs and webinar:
+The following blogs and webinar provide additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Detecting Living-off-the-land attacks with new Elastic Integration](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration)
 - [ProblemChild: Detecting living-off-the-land attacks using the Elastic Stack](https://www.elastic.co/blog/problemchild-detecting-living-off-the-land-attacks)
 - [ProblemChild: Generate alerts to detect living-off-the-land attacks](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks)

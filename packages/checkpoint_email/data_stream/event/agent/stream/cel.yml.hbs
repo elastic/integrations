@@ -121,6 +121,23 @@ program: |
               "max_time": max_time,
             }),
           })
+        : resp.StatusCode == 401 ?
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "expiry": now - duration("1h"),
+          }
         :
           {
             "events": {
