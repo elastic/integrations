@@ -7,27 +7,297 @@
         - name: category
           type: keyword
           description: Category of detection.
+        - name: cloud_office_tenant_uuid
+          type: keyword
+          description: Reference to cloud office tenant.
         - name: context
           type: group
           fields:
             - name: circumstances
               type: keyword
               description: Human-friendly description of [detection]'s circumstances.
+            - name: device_display_name
+              type: keyword
+              description: Human-friendly name of the device with detection.
             - name: device_uuid
               type: keyword
               description: Reference to [device].
             - name: process
               type: group
               fields:
+                - name: command_line
+                  type: keyword
+                  description: Argument used with the command.
                 - name: path
                   type: keyword
                   description: Disk path to the executable.
+                - name: uuid
+                  type: keyword
+                  description: Universally Unique Identifier References use this identifier, so it must be filled in all the cases except the resource creation.
             - name: user_name
               type: keyword
               description: User name in whose context detection occurred.
         - name: display_name
           type: keyword
           description: Human-friendly name of the detection. This value can be used to look up details at http://www.virusradar.com/en/threat_encyclopedia.
+        - name: edr_rule_uuid
+          type: keyword
+          description: Reference to the EDR rule which triggered the detection.
+        - name: email
+          type: group
+          fields:
+            - name: attachments
+              type: group
+              fields:
+                - name: contained_files
+                  type: keyword
+                  description: List of files contained within this file, in case this file has internal structure.
+                - name: hash_sha1
+                  type: keyword
+                  description: SHA-1 digest of file's content.
+                - name: hash_sha2256
+                  type: keyword
+                  description: SHA-2 256 digest of file's content.
+                - name: is_read_only
+                  type: boolean
+                  description: True if the scanned object was read-only and cannot be modified/cleaned/deleted.
+                - name: last_editor
+                  type: group
+                  fields:
+                    - name: email
+                      type: keyword
+                      description: Email of the user.
+                    - name: user_name
+                      type: keyword
+                      description: Name of the user.
+                    - name: user_uuid
+                      type: keyword
+                      description: Reference to user.
+                - name: origin
+                  type: keyword
+                  description: Object origin denotes a system managing object's life-cycle.
+                - name: path
+                  type: keyword
+                  description: File path.
+                - name: reference
+                  type: keyword
+                  description: How the file is referred to.
+                - name: size_bytes
+                  type: long
+                  description: File size in bytes.
+                - name: storages
+                  type: group
+                  fields:
+                    - name: archive_reference
+                      type: keyword
+                      description: Reference to the archive containing the file. Can be an URL or path to the parent archive.
+                    - name: cloud_drive_user_uuid
+                      type: keyword
+                      description: If the file resides in the cloud on a cloud drive (for example, Google Drive or Microsoft OneDrive), this attribute references the user who owns that drive.
+                    - name: display_name
+                      type: keyword
+                      description: Human readable name of the storage.
+                    - name: email_reference
+                      type: keyword
+                      description: Reference to the email containing the file.
+                    - name: ms_sharepoint_root_site_uuid
+                      type: keyword
+                      description: Reference to Microsoft Sharepoint root site.
+                    - name: ms_sharepoint_site_uuid
+                      type: keyword
+                      description: Reference to Microsoft Sharepoint site.
+                    - name: ms_teams_team_uuid
+                      type: keyword
+                      description: Reference to Microsoft Teams team.
+                    - name: uuid
+                      type: keyword
+                      description: Unique identifier of the file storage instance where the file resides.
+            - name: body_parts
+              type: group
+              fields:
+                - name: contained_files
+                  type: keyword
+                  description: List of files contained within this file, in case this file has internal structure.
+                - name: hash_sha1
+                  type: keyword
+                  description: SHA-1 digest of file's content.
+                - name: hash_sha2256
+                  type: keyword
+                  description: SHA-2 256 digest of file's content.
+                - name: is_read_only
+                  type: boolean
+                  description: True if the scanned object was read-only and cannot be modified/cleaned/deleted.
+                - name: last_editor
+                  type: group
+                  fields:
+                    - name: email
+                      type: keyword
+                      description: Email of the user.
+                    - name: user_name
+                      type: keyword
+                      description: Name of the user.
+                    - name: user_uuid
+                      type: keyword
+                      description: Reference to user.
+                - name: origin
+                  type: keyword
+                  description: Object origin denotes a system managing object's life-cycle.
+                - name: path
+                  type: keyword
+                  description: File path.
+                - name: reference
+                  type: keyword
+                  description: How the file is referred to.
+                - name: size_bytes
+                  type: long
+                  description: File size in bytes.
+                - name: storages
+                  type: group
+                  fields:
+                    - name: archive_reference
+                      type: keyword
+                      description: Reference to the archive containing the file. Can be an URL or path to the parent archive.
+                    - name: cloud_drive_user_uuid
+                      type: keyword
+                      description: If the file resides in the cloud on a cloud drive (for example, Google Drive or Microsoft OneDrive), this attribute references the user who owns that drive.
+                    - name: display_name
+                      type: keyword
+                      description: Human readable name of the storage.
+                    - name: email_reference
+                      type: keyword
+                      description: Reference to the email containing the file.
+                    - name: ms_sharepoint_root_site_uuid
+                      type: keyword
+                      description: Reference to Microsoft Sharepoint root site.
+                    - name: ms_sharepoint_site_uuid
+                      type: keyword
+                      description: Reference to Microsoft Sharepoint site.
+                    - name: ms_teams_team_uuid
+                      type: keyword
+                      description: Reference to Microsoft Teams team.
+                    - name: uuid
+                      type: keyword
+                      description: Unique identifier of the file storage instance where the file resides.
+            - name: cc
+              type: keyword
+              description: Carbon copy recipient(s) of the email.
+            - name: contained_urls
+              type: keyword
+              description: URLs contained in the email.
+            - name: from
+              type: keyword
+              description: Sender(s) of the email.
+            - name: headers
+              type: keyword
+              description: Header of the email.
+            - name: internet_message_id
+              type: keyword
+              description: Unique identifier of the message.
+            - name: is_read_only
+              type: boolean
+              description: True if the scanned object was read-only and cannot be modified/cleaned/deleted.
+            - name: mailbox_user_uuid
+              type: keyword
+              description: Reference to the user who owns the mailbox, if the email can be associated with a mailbox.
+            - name: mailbox_uuid
+              type: keyword
+              description: Reference to mailbox.
+            - name: mta_smtp_details
+              type: group
+              fields:
+                - name: hello
+                  type: keyword
+                  description: Parameter of extended HELLO (EHLO) or HELLO (HELO) command.
+                - name: recipients
+                  type: keyword
+                  description: Parameter of RECIPIENT (RCPT) command or multiple commands for multiple recipients.
+                - name: sender
+                  type: keyword
+                  description: Parameter (reverse-path) of MAIL (MAIL FROM) command. A sender of the email.
+                - name: sender_ip_address
+                  type: ip
+                  description: IP address of the sender. Might be IPv4 or IPv6.
+            - name: origin
+              type: keyword
+              description: Object origin denotes a system managing object's life-cycle.
+            - name: reference
+              type: keyword
+              description: How the email is referred to.
+            - name: sender_ip_address
+              type: ip
+              description: IP address of the sender. Might be IPv4 or IPv6.
+            - name: subject
+              type: keyword
+              description: Subject of the email.
+            - name: to
+              type: keyword
+              description: Recipient(s) of the email.
+        - name: file
+          type: group
+          fields:
+            - name: contained_files
+              type: keyword
+              description: List of files contained within this file, in case this file has internal structure.
+            - name: hash_sha1
+              type: keyword
+              description: SHA-1 digest of file's content.
+            - name: hash_sha2256
+              type: keyword
+              description: SHA-2 256 digest of file's content.
+            - name: is_read_only
+              type: boolean
+              description: True if the scanned object was read-only and cannot be modified/cleaned/deleted.
+            - name: last_editor
+              type: group
+              fields:
+                - name: email
+                  type: keyword
+                  description: Email of the user.
+                - name: user_name
+                  type: keyword
+                  description: Name of the user.
+                - name: user_uuid
+                  type: keyword
+                  description: Reference to user.
+            - name: origin
+              type: keyword
+              description: Object origin denotes a system managing object's life-cycle.
+            - name: path
+              type: keyword
+              description: File path.
+            - name: reference
+              type: keyword
+              description: How the file is referred to.
+            - name: size_bytes
+              type: long
+              description: File size in bytes.
+            - name: storages
+              type: group
+              fields:
+                - name: archive_reference
+                  type: keyword
+                  description: Reference to the archive containing the file. Can be an URL or path to the parent archive.
+                - name: cloud_drive_user_uuid
+                  type: keyword
+                  description: If the file resides in the cloud on a cloud drive (for example, Google Drive or Microsoft OneDrive), this attribute references the user who owns that drive.
+                - name: display_name
+                  type: keyword
+                  description: Human readable name of the storage.
+                - name: email_reference
+                  type: keyword
+                  description: Reference to the email containing the file.
+                - name: ms_sharepoint_root_site_uuid
+                  type: keyword
+                  description: Reference to Microsoft Sharepoint root site.
+                - name: ms_sharepoint_site_uuid
+                  type: keyword
+                  description: Reference to Microsoft Sharepoint site.
+                - name: ms_teams_team_uuid
+                  type: keyword
+                  description: Reference to Microsoft Teams team.
+                - name: uuid
+                  type: keyword
+                  description: Unique identifier of the file storage instance where the file resides.
         - name: network_communication
           type: group
           fields:
@@ -40,6 +310,9 @@
                 - name: ip_address
                   type: ip
                   description: IPv4 or IPv6 address of the device (i.e. the device where detection occurred).
+                - name: mac_address
+                  type: keyword
+                  description: The MAC (L2) address of endpoint-local network interface.
                 - name: port
                   type: long
                   description: TCP or UDP port on the device (i.e. the device where detection occurred).
@@ -52,15 +325,24 @@
                 - name: ip_address
                   type: ip
                   description: IPv4 or IPv6 address of the remote host (i.e. not the device where detection occurred).
+                - name: mac_address
+                  type: keyword
+                  description: The MAC (L2) address of the remote network interface (possibly the MAC address of the gateway).
                 - name: port
                   type: long
                   description: TCP or UDP port on the remote host (i.e. not the device where detection occurred).
+        - name: note
+          type: keyword
+          description: Arbitrary text.
         - name: object_hash_sha1
           type: keyword
           description: SHA1 hash of content of scanned object.
         - name: object_name
           type: keyword
           description: Name/path of scanned object.
+        - name: object_size_bytes
+          type: long
+          description: Object's size in bytes.
         - name: object_type_name
           type: keyword
           description: Human-friendly type name of scanned object.
@@ -70,9 +352,15 @@
         - name: occur_time
           type: date
           description: Timestamp of detection occurrence.
+        - name: resolved
+          type: boolean
+          description: If true, the detection is resolved and poses a threat no more.
         - name: responses
           type: group
           fields:
+            - name: action_type
+              type: keyword
+              description: Categories of operations that can be performed on objects.
             - name: description
               type: keyword
               description: Human-readable description of the response.
@@ -82,12 +370,33 @@
             - name: display_name
               type: keyword
               description: Human-friendly name of the response.
+            - name: email_reference
+              type: keyword
+              description: Reference to the affected email.
+            - name: file_reference
+              type: keyword
+              description: Reference to the file affected by the response.
             - name: protection_name
               type: keyword
               description: Human-readable name of the protection that performed the response.
+        - name: scan_uuid
+          type: keyword
+          description: Reference to the on-demand scan during which the detection occurred.
         - name: severity_level
           type: keyword
           description: Severity levels abstracted to cover all the possible GUIs. Vocabulary is leaving interpretation of severity level completely to API client.
+        - name: severity_score
+          type: long
+          description: The integer representation of the severity level to be comparable in queries.
+        - name: triggering_event
+          type: group
+          fields:
+            - name: data
+              type: flattened
+              description: Data of the event described as generic structure.
+            - name: type
+              type: keyword
+              description: Event that triggered the detection.
         - name: type_name
           type: keyword
           description: Human-friendly type of detection.
