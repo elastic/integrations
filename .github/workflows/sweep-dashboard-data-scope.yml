@@ -1,0 +1,99 @@
+name: "Sweeper: Dashboard Data Scope and Filter Integrity"
+on:
+  schedule:
+    - cron: "0 9 * * 4"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
+    with:
+      title-prefix: "[dashboard-data-scope]"
+      severity-threshold: "high"
+      additional-instructions: |
+        You are auditing dashboards in the elastic/integrations repository for data scope
+        bugs. Find cases that would matter to a real user: dashboards where opening the page
+        shows data from unrelated integrations, or where a panel is completely broken because
+        its data source reference does not exist. One confirmed bug that any user with multiple
+        integrations installed would immediately notice is worth more than a list of dashboards
+        with broad-looking patterns that turn out to be harmless.
+
+        ## What dashboards guarantee
+
+        Dashboard JSON files live at `packages/<pkg>/kibana/dashboard/*.json`. Each dashboard
+        belongs to exactly one integration and should only query that integration's own data
+        streams. A dashboard that queries `logs-*` instead of `logs-aws.cloudtrail-*` shows
+        data from every other integration installed in the cluster — the user opens the AWS
+        CloudTrail dashboard and sees Kubernetes, Windows, and Cisco logs mixed in. Control
+        panels are the most damaging: a filter dropdown querying `logs-*` shows field values
+        from every integration's data, making it impossible to filter meaningfully.
+
+        Stale `indexPatternId` references — a static Kibana saved object ID rather than a
+        dynamically resolved data view — produce "no data source" errors on panels in Kibana
+        installations where that saved object does not exist.
+
+        ## How to investigate
+
+        Scan for candidates:
+        ```bash
+        python3 -c "
+        import json, glob, re
+        for f in glob.glob('packages/*/kibana/dashboard/*.json'):
+            with open(f) as fh:
+                try: content = fh.read()
+                except: continue
+            if re.search(r'\"(logs|metrics)-\*\"', content):
+                print(f)
+        " 2>/dev/null
+        ```
+
+        For each candidate, open the file and understand what role the broad pattern plays.
+        This is the critical judgment: a `logs-*` string in the `indexRefName` of a
+        visualization or the data source of a control panel is always wrong. A `logs-*`
+        string in a panel title, description, or filter label that does not affect what data
+        is actually queried is harmless. Do not file the harmless ones.
+
+        For confirmed scope bugs, determine the correct scoped pattern for the package. It
+        is always `<type>-<package>.<datastream>-*`, e.g. `logs-aws.cloudtrail-*`. Read
+        the package's `manifest.yml` and data stream definitions to confirm.
+
+        Check `validation.yml` for suppressed `SVR00002` checks:
+        ```bash
+        grep -rl 'SVR00002\|exclude_checks' packages/*/validation.yml 2>/dev/null
+        ```
+        A suppressed check without a comment explaining why is itself a finding — the
+        problem was identified by the validator and deliberately left unresolved.
+
+        For any confirmed finding in a high-traffic package, check the git history:
+        `git log --oneline -- packages/<pkg>/kibana/dashboard/`
+        Dashboards are sometimes regenerated in bulk migrations that inadvertently broaden
+        data view references. A broad pattern introduced in a recent bulk commit is a
+        regression affecting everyone who updated.
+
+        ## Verify before filing
+
+        For each scope finding, confirm all three:
+        1. The broad pattern is the actual data source for a query or control panel, not an
+           incidental string in metadata
+        2. The package has a correct scoped pattern that should be used instead
+        3. The bug is visible to any user who has more than one integration installed
+
+        For stale `indexPatternId` references, confirm the referenced ID is not a data view
+        the integration installs as part of its own assets.
+
+        ## Output
+
+        File a single issue containing:
+        - Control panels and visualizations with over-broad data sources, by dashboard, with
+          the correct scoped pattern for each
+        - Stale `indexPatternId` references that produce "no data source" errors, by package
+        - Packages with `SVR00002` suppressed without explanation
+        - Total dashboards scanned and number with confirmed findings
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
