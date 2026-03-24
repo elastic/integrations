@@ -67,7 +67,30 @@
         "description": "Dashboard for audit logs from Cato Networks",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cato_networks.audit"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cato_networks.audit"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -1957,9 +1980,14 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-03-06T12:07:47.328Z",
+    "created_at": "2026-03-23T12:20:59.342Z",
     "id": "cato_networks-95cbb672-baae-4508-b188-24a51b4d36da",
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "pie-05:indexpattern-datasource-layer-3aaedefc-cd1c-4827-b704-f7b06e72175b",
@@ -2023,6 +2051,11 @@
         {
             "id": "logs-*",
             "name": "controlGroup_e951c76c-38af-46fa-ba34-18e6d0b9f22f:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],

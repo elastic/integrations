@@ -127,12 +127,12 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            field: cato_networks.audit.change.After.preferPrimaryWAN
+            field: cato_networks.audit.change.After.socketInterfaces
             ignore_missing: true
   - remove:
       field: cato_networks.audit.change.After.socketInterfaces
       tag: remove_change_After_socketInterfaces
-      if: ctx.cato_networks?.audit?.change?.After?.socketInterfaces instanceof String
+      if: ctx.cato_networks?.audit?.change?.After?.socketInterfacesDouble != null
       ignore_missing: true
 
   - append:
@@ -866,6 +866,9 @@ processors:
       description: Removes fractional value from date type field that is not an array to parse successfully in date processor later.
       source: |
         def removeFractional(def value) {
+          if (value == '') {
+            return value;
+          }
           return (long)Double.parseDouble(value);
         }
         if (ctx.cato_networks?.audit?.change?.After?.startDate != null) {
@@ -1037,6 +1040,9 @@ processors:
       lang: painless
       source: |
         def removeFractional(def value) {
+          if (value == '') {
+            return value;
+          }
           return (long)Double.parseDouble(value);
         }
         if (ctx.cato_networks?.audit?.change?.After?.allowedUpdatableItems instanceof List) {
@@ -1967,7 +1973,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
-      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_naturalOrder
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_meta_data_speed
       if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
       processor:
         dissect:
@@ -2212,9 +2218,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: cato_networks.audit.change.After.socketsSettings.primary.links
-      tag: foreach_change_After_socketsSettings_primary_links
-      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_metadata_speed
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
       processor:
         dissect:
           field: _ingest._value.metadata.speed
@@ -2541,6 +2547,17 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_metadata_speed
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        dissect:
+          field: _ingest._value.metadata.speed
+          tag: dissect_metadata_speed
+          pattern: '_%{_ingest._value.metadata.speed}'
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
       tag: foreach_change_After_socketsSettings_primary_links_naturalOrder
       if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
       processor:
@@ -2828,16 +2845,16 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
   - append:
       field: error.message
       value: |-
         Processor '{{{_ingest.on_failure_processor_type}}}'
         {{{_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}}'
         {{{_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.kind
-      tag: set_pipeline_error_to_event_kind
-      value: pipeline_error
   - append:
       field: tags
       tag: append_tags
