@@ -40,8 +40,8 @@ redact:
 program: |
   timestamp(now).as(fetch_ts,
     [408, 429, 500, 502, 503, 504].as(retryable_codes,
-      (state.access_token == "" || 
-       (int(state.expires_at) > 0 && 
+      (state.access_token == "" ||
+       (int(state.expires_at) > 0 &&
         fetch_ts >= timestamp("1970-01-01T00:00:00Z") + duration(string(int(state.expires_at) - int(state.token_expiry_buffer_ms)) + "ms"))
       ).as(need_auth,
         need_auth ?

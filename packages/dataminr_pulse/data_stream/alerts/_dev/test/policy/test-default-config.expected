@@ -11,7 +11,228 @@ inputs:
             dataset: dataminr_pulse.alerts
           interval: 5m
           max_executions: 10
-          program: "timestamp(now).as(fetch_ts,\n  [408, 429, 500, 502, 503, 504].as(retryable_codes,\n    (state.access_token == \"\" || \n     (int(state.expires_at) > 0 && \n      fetch_ts >= timestamp(\"1970-01-01T00:00:00Z\") + duration(string(int(state.expires_at) - int(state.token_expiry_buffer_ms)) + \"ms\"))\n    ).as(need_auth,\n      need_auth ?\n        post(\n          state.auth_url,\n          \"application/x-www-form-urlencoded\",\n          {\n            \"grant_type\": [\"api_key\"],\n            \"client_id\": [state.client_id],\n            \"client_secret\": [state.client_secret]\n          }.format_query()\n        ).as(auth_resp,\n          (size(auth_resp.Body) > 0 ? bytes(auth_resp.Body).decode_json() : {}).as(auth_body,\n            auth_resp.StatusCode == 200 && has(auth_body.dmaToken) && auth_body.dmaToken != \"\" ?\n              {\n                \"new_state\": state.with({\n                  \"access_token\": string(auth_body.dmaToken),\n                  \"expires_at\": has(auth_body.expire) ? int(auth_body.expire) : 0\n                }),\n                \"auth_event\": {\n                  \"message\": {\n                    \"log_type\": \"auth\",\n                    \"status\": \"success\",\n                    \"client_id\": state.client_id,\n                    \"expires_at\": has(auth_body.expire) ? int(auth_body.expire) : 0,\n                    \"http_status_code\": auth_resp.StatusCode,\n                    \"fetch_timestamp\": fetch_ts\n                  }.encode_json()\n                },\n                \"should_fetch\": true,\n                \"auth_failed\": false\n              }\n            :\n            retryable_codes.exists(c, c == auth_resp.StatusCode).as(is_retryable,\n              (has(auth_body.errors) && size(auth_body.errors) > 0 ?\n                string(auth_body.errors[0].message) :\n                auth_resp.StatusCode == 200 ? \"No valid token received\" : \"Authentication failed with HTTP \" + string(auth_resp.StatusCode)\n              ).as(error_message,\n                (has(auth_body.errors) && size(auth_body.errors) > 0 ? int(auth_body.errors[0].code) : 0).as(error_code,\n                  {\n                    \"new_state\": state,\n                    \"auth_event\": {\n                      \"message\": (is_retryable ?\n                        {\n                          \"log_type\": \"auth\",\n                          \"status\": \"retry\",\n                          \"client_id\": state.client_id,\n                          \"error_message\": error_message,\n                          \"error_code\": error_code,\n                          \"http_status_code\": auth_resp.StatusCode,\n                          \"retry_number\": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,\n                          \"fetch_timestamp\": fetch_ts\n                        }\n                      :\n                        {\n                          \"log_type\": \"auth\",\n                          \"status\": \"failed\",\n                          \"client_id\": state.client_id,\n                          \"error_message\": error_message,\n                          \"error_code\": error_code,\n                          \"http_status_code\": auth_resp.StatusCode,\n                          \"fetch_timestamp\": fetch_ts,\n                          \"response_body\": string(auth_resp.Body)\n                        }\n                      ).encode_json()\n                    },\n                    \"should_fetch\": false,\n                    \"auth_failed\": !is_retryable,\n                    \"want_more\": is_retryable\n                  }\n                )\n              )\n            )\n          )\n        )\n      :\n        {\n          \"new_state\": state,\n          \"auth_event\": {},\n          \"should_fetch\": true,\n          \"auth_failed\": false\n        }\n    ).as(auth_result,\n      auth_result.should_fetch ?\n        (auth_result.new_state.next_cursor != \"\" ?\n          auth_result.new_state.base_url + auth_result.new_state.next_cursor :\n          auth_result.new_state.url + \"?\" + {\"pageSize\": [string(state.page_size)]}.format_query()\n        ).as(request_url,\n          get_request(request_url).with({\n            \"Header\": {\n              \"Authorization\": [\"Bearer \" + auth_result.new_state.access_token],\n              \"Accept\": [\"application/json\"],\n              \"x-application-name\": [\"connector_elastic_siem\"],\n                \"x-application-version\": [state.version]\n            }\n          }).do_request().as(api_resp,\n            (size(api_resp.Body) > 0 ? bytes(api_resp.Body).decode_json() : {}).as(api_body,\n              api_resp.StatusCode == 200 ?\n                auth_result.new_state.with({\n                  \"events\": (has(auth_result.auth_event.message) ? [auth_result.auth_event] : []) +\n                    (has(api_body.alerts) && size(api_body.alerts) > 0 ?\n                      api_body.alerts.map(alert,\n                        has(alert.intelAgents) && size(alert.intelAgents) > 0 ?\n                          alert.intelAgents.map(agent,\n                            has(agent.discoveredEntities) && size(agent.discoveredEntities) > 0 ?\n                              agent.discoveredEntities.filter(e,\n                                e.type == \"vulnerability\" || e.type == \"threatActor\" || e.type == \"malware\"\n                              ).map(entity,\n                                {\"message\": alert.with({\"entityType\": entity.type, \"discovered_entity\": entity}).encode_json()}\n                              )\n                              + (agent.discoveredEntities.exists(e, e.type == \"ipAddress\" || e.type == \"url\") ?\n                                [{\"message\": alert.with({\"entityType\": \"url-ipAddress\"}).encode_json()}] : [])\n                              + (agent.discoveredEntities.exists(e,\n                                  e.type != \"vulnerability\" && e.type != \"threatActor\" && e.type != \"malware\" &&\n                                  e.type != \"ipAddress\" && e.type != \"url\") ?\n                                [{\"message\": alert.with({\"entityType\": \"consolidated\"}).encode_json()}] : [])\n                            :\n                              [{\"message\": alert.with({\"entityType\": \"no-entities\"}).encode_json()}]\n                          ).flatten()\n                        :\n                          [{\"message\": alert.with({\"entityType\": \"no-intelAgents\"}).encode_json()}]\n                      ).flatten() : []\n                    ) + [{\n                      \"message\": {\n                        \"log_type\": \"alert-fetch\",\n                        \"status\": \"success\",\n                        \"api_endpoint\": request_url,\n                        \"input_alert_fetch_count\": int(state.page_size),\n                        \"next_cursor\": has(api_body.nextPage) && api_body.nextPage != \"\" ? string(api_body.nextPage) : \"\",\n                        \"http_status_code\": api_resp.StatusCode,\n                        \"cursor_used\": auth_result.new_state.next_cursor != \"\" ? auth_result.new_state.next_cursor : \"initial\",\n                        \"fetched_alerts\": has(api_body.alerts) ? size(api_body.alerts) : 0,\n                        \"fetch_timestamp\": fetch_ts\n                      }.encode_json()\n                    }],\n                  \"next_cursor\": has(api_body.nextPage) && api_body.nextPage != \"\" ? string(api_body.nextPage) : \"\",\n                  \"access_token\": auth_result.new_state.access_token,\n                  \"expires_at\": auth_result.new_state.expires_at,\n                  \"last_fetch_timestamp\": fetch_ts,\n                  \"retry_count\": 0,\n                  \"want_more\": false\n                })\n              :\n              api_resp.StatusCode == 401 ?\n                auth_result.new_state.with({\n                  \"events\": (has(auth_result.auth_event.message) ? [auth_result.auth_event] : []) + [{\n                    \"message\": {\n                      \"log_type\": \"alert-fetch\",\n                      \"status\": \"retry\",\n                      \"api_endpoint\": request_url,\n                      \"input_alert_fetch_count\": int(state.page_size),\n                      \"error_message\": \"Authentication failed - token will be regenerated\",\n                      \"http_status_code\": api_resp.StatusCode,\n                      \"cursor_used\": auth_result.new_state.next_cursor != \"\" ? auth_result.new_state.next_cursor : \"initial\",\n                      \"retry_number\": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,\n                      \"fetched_alerts\": 0,\n                      \"fetch_timestamp\": fetch_ts\n                    }.encode_json()\n                  }],\n                  \"access_token\": \"\",\n                  \"expires_at\": 0,\n                  \"retry_count\": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,\n                  \"want_more\": true\n                })\n              :\n              retryable_codes.exists(c, c == api_resp.StatusCode).as(is_retryable,\n                (has(api_body.error) ? string(api_body.error) : \"API request failed with HTTP \" + string(api_resp.StatusCode)).as(error_message,\n                  auth_result.new_state.with({\n                    \"events\": (has(auth_result.auth_event.message) ? [auth_result.auth_event] : []) + [{\n                      \"message\": (is_retryable ?\n                        {\n                          \"log_type\": \"alert-fetch\",\n                          \"status\": \"retry\",\n                          \"api_endpoint\": request_url,\n                          \"input_alert_fetch_count\": int(state.page_size),\n                          \"error_message\": error_message,\n                          \"http_status_code\": api_resp.StatusCode,\n                          \"cursor_used\": auth_result.new_state.next_cursor != \"\" ? auth_result.new_state.next_cursor : \"initial\",\n                          \"retry_number\": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,\n                          \"fetched_alerts\": 0,\n                          \"fetch_timestamp\": fetch_ts\n                        }\n                      :\n                        {\n                          \"log_type\": \"alert-fetch\",\n                          \"status\": \"failed\",\n                          \"api_endpoint\": request_url,\n                          \"input_alert_fetch_count\": int(state.page_size),\n                          \"error_message\": error_message,\n                          \"http_status_code\": api_resp.StatusCode,\n                          \"cursor_used\": auth_result.new_state.next_cursor != \"\" ? auth_result.new_state.next_cursor : \"initial\",\n                          \"fetched_alerts\": 0,\n                          \"fetch_timestamp\": fetch_ts,\n                          \"response_body\": string(api_resp.Body)\n                        }\n                      ).encode_json()\n                    }],\n                    \"access_token\": auth_result.new_state.access_token,\n                    \"expires_at\": auth_result.new_state.expires_at,\n                    \"next_cursor\": (api_resp.StatusCode == 400 || api_resp.StatusCode == 404) ? \"\" : auth_result.new_state.next_cursor,\n                    \"retry_count\": is_retryable ? (has(state.retry_count) ? int(state.retry_count) : 0) + 1 : 0,\n                    \"want_more\": is_retryable\n                  })\n                )\n              )\n            )\n          )\n        )\n      :\n        auth_result.new_state.with({\n          \"events\": [auth_result.auth_event],\n          \"retry_count\": (has(auth_result.want_more) && auth_result.want_more) ? (has(state.retry_count) ? int(state.retry_count) : 0) + 1 : 0,\n          \"want_more\": has(auth_result.want_more) ? auth_result.want_more : false\n        })\n    )\n  )\n)\n"
+          program: |
+            timestamp(now).as(fetch_ts,
+              [408, 429, 500, 502, 503, 504].as(retryable_codes,
+                (state.access_token == "" ||
+                 (int(state.expires_at) > 0 &&
+                  fetch_ts >= timestamp("1970-01-01T00:00:00Z") + duration(string(int(state.expires_at) - int(state.token_expiry_buffer_ms)) + "ms"))
+                ).as(need_auth,
+                  need_auth ?
+                    post(
+                      state.auth_url,
+                      "application/x-www-form-urlencoded",
+                      {
+                        "grant_type": ["api_key"],
+                        "client_id": [state.client_id],
+                        "client_secret": [state.client_secret]
+                      }.format_query()
+                    ).as(auth_resp,
+                      (size(auth_resp.Body) > 0 ? bytes(auth_resp.Body).decode_json() : {}).as(auth_body,
+                        auth_resp.StatusCode == 200 && has(auth_body.dmaToken) && auth_body.dmaToken != "" ?
+                          {
+                            "new_state": state.with({
+                              "access_token": string(auth_body.dmaToken),
+                              "expires_at": has(auth_body.expire) ? int(auth_body.expire) : 0
+                            }),
+                            "auth_event": {
+                              "message": {
+                                "log_type": "auth",
+                                "status": "success",
+                                "client_id": state.client_id,
+                                "expires_at": has(auth_body.expire) ? int(auth_body.expire) : 0,
+                                "http_status_code": auth_resp.StatusCode,
+                                "fetch_timestamp": fetch_ts
+                              }.encode_json()
+                            },
+                            "should_fetch": true,
+                            "auth_failed": false
+                          }
+                        :
+                        retryable_codes.exists(c, c == auth_resp.StatusCode).as(is_retryable,
+                          (has(auth_body.errors) && size(auth_body.errors) > 0 ?
+                            string(auth_body.errors[0].message) :
+                            auth_resp.StatusCode == 200 ? "No valid token received" : "Authentication failed with HTTP " + string(auth_resp.StatusCode)
+                          ).as(error_message,
+                            (has(auth_body.errors) && size(auth_body.errors) > 0 ? int(auth_body.errors[0].code) : 0).as(error_code,
+                              {
+                                "new_state": state,
+                                "auth_event": {
+                                  "message": (is_retryable ?
+                                    {
+                                      "log_type": "auth",
+                                      "status": "retry",
+                                      "client_id": state.client_id,
+                                      "error_message": error_message,
+                                      "error_code": error_code,
+                                      "http_status_code": auth_resp.StatusCode,
+                                      "retry_number": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
+                                      "fetch_timestamp": fetch_ts
+                                    }
+                                  :
+                                    {
+                                      "log_type": "auth",
+                                      "status": "failed",
+                                      "client_id": state.client_id,
+                                      "error_message": error_message,
+                                      "error_code": error_code,
+                                      "http_status_code": auth_resp.StatusCode,
+                                      "fetch_timestamp": fetch_ts,
+                                      "response_body": string(auth_resp.Body)
+                                    }
+                                  ).encode_json()
+                                },
+                                "should_fetch": false,
+                                "auth_failed": !is_retryable,
+                                "want_more": is_retryable
+                              }
+                            )
+                          )
+                        )
+                      )
+                    )
+                  :
+                    {
+                      "new_state": state,
+                      "auth_event": {},
+                      "should_fetch": true,
+                      "auth_failed": false
+                    }
+                ).as(auth_result,
+                  auth_result.should_fetch ?
+                    (auth_result.new_state.next_cursor != "" ?
+                      auth_result.new_state.base_url + auth_result.new_state.next_cursor :
+                      auth_result.new_state.url + "?" + {"pageSize": [string(state.page_size)]}.format_query()
+                    ).as(request_url,
+                      get_request(request_url).with({
+                        "Header": {
+                          "Authorization": ["Bearer " + auth_result.new_state.access_token],
+                          "Accept": ["application/json"],
+                          "x-application-name": ["connector_elastic_siem"],
+                            "x-application-version": [state.version]
+                        }
+                      }).do_request().as(api_resp,
+                        (size(api_resp.Body) > 0 ? bytes(api_resp.Body).decode_json() : {}).as(api_body,
+                          api_resp.StatusCode == 200 ?
+                            auth_result.new_state.with({
+                              "events": (has(auth_result.auth_event.message) ? [auth_result.auth_event] : []) +
+                                (has(api_body.alerts) && size(api_body.alerts) > 0 ?
+                                  api_body.alerts.map(alert,
+                                    has(alert.intelAgents) && size(alert.intelAgents) > 0 ?
+                                      alert.intelAgents.map(agent,
+                                        has(agent.discoveredEntities) && size(agent.discoveredEntities) > 0 ?
+                                          agent.discoveredEntities.filter(e,
+                                            e.type == "vulnerability" || e.type == "threatActor" || e.type == "malware"
+                                          ).map(entity,
+                                            {"message": alert.with({"entityType": entity.type, "discovered_entity": entity}).encode_json()}
+                                          )
+                                          + (agent.discoveredEntities.exists(e, e.type == "ipAddress" || e.type == "url") ?
+                                            [{"message": alert.with({"entityType": "url-ipAddress"}).encode_json()}] : [])
+                                          + (agent.discoveredEntities.exists(e,
+                                              e.type != "vulnerability" && e.type != "threatActor" && e.type != "malware" &&
+                                              e.type != "ipAddress" && e.type != "url") ?
+                                            [{"message": alert.with({"entityType": "consolidated"}).encode_json()}] : [])
+                                        :
+                                          [{"message": alert.with({"entityType": "no-entities"}).encode_json()}]
+                                      ).flatten()
+                                    :
+                                      [{"message": alert.with({"entityType": "no-intelAgents"}).encode_json()}]
+                                  ).flatten() : []
+                                ) + [{
+                                  "message": {
+                                    "log_type": "alert-fetch",
+                                    "status": "success",
+                                    "api_endpoint": request_url,
+                                    "input_alert_fetch_count": int(state.page_size),
+                                    "next_cursor": has(api_body.nextPage) && api_body.nextPage != "" ? string(api_body.nextPage) : "",
+                                    "http_status_code": api_resp.StatusCode,
+                                    "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
+                                    "fetched_alerts": has(api_body.alerts) ? size(api_body.alerts) : 0,
+                                    "fetch_timestamp": fetch_ts
+                                  }.encode_json()
+                                }],
+                              "next_cursor": has(api_body.nextPage) && api_body.nextPage != "" ? string(api_body.nextPage) : "",
+                              "access_token": auth_result.new_state.access_token,
+                              "expires_at": auth_result.new_state.expires_at,
+                              "last_fetch_timestamp": fetch_ts,
+                              "retry_count": 0,
+                              "want_more": false
+                            })
+                          :
+                          api_resp.StatusCode == 401 ?
+                            auth_result.new_state.with({
+                              "events": (has(auth_result.auth_event.message) ? [auth_result.auth_event] : []) + [{
+                                "message": {
+                                  "log_type": "alert-fetch",
+                                  "status": "retry",
+                                  "api_endpoint": request_url,
+                                  "input_alert_fetch_count": int(state.page_size),
+                                  "error_message": "Authentication failed - token will be regenerated",
+                                  "http_status_code": api_resp.StatusCode,
+                                  "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
+                                  "retry_number": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
+                                  "fetched_alerts": 0,
+                                  "fetch_timestamp": fetch_ts
+                                }.encode_json()
+                              }],
+                              "access_token": "",
+                              "expires_at": 0,
+                              "retry_count": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
+                              "want_more": true
+                            })
+                          :
+                          retryable_codes.exists(c, c == api_resp.StatusCode).as(is_retryable,
+                            (has(api_body.error) ? string(api_body.error) : "API request failed with HTTP " + string(api_resp.StatusCode)).as(error_message,
+                              auth_result.new_state.with({
+                                "events": (has(auth_result.auth_event.message) ? [auth_result.auth_event] : []) + [{
+                                  "message": (is_retryable ?
+                                    {
+                                      "log_type": "alert-fetch",
+                                      "status": "retry",
+                                      "api_endpoint": request_url,
+                                      "input_alert_fetch_count": int(state.page_size),
+                                      "error_message": error_message,
+                                      "http_status_code": api_resp.StatusCode,
+                                      "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
+                                      "retry_number": (has(state.retry_count) ? int(state.retry_count) : 0) + 1,
+                                      "fetched_alerts": 0,
+                                      "fetch_timestamp": fetch_ts
+                                    }
+                                  :
+                                    {
+                                      "log_type": "alert-fetch",
+                                      "status": "failed",
+                                      "api_endpoint": request_url,
+                                      "input_alert_fetch_count": int(state.page_size),
+                                      "error_message": error_message,
+                                      "http_status_code": api_resp.StatusCode,
+                                      "cursor_used": auth_result.new_state.next_cursor != "" ? auth_result.new_state.next_cursor : "initial",
+                                      "fetched_alerts": 0,
+                                      "fetch_timestamp": fetch_ts,
+                                      "response_body": string(api_resp.Body)
+                                    }
+                                  ).encode_json()
+                                }],
+                                "access_token": auth_result.new_state.access_token,
+                                "expires_at": auth_result.new_state.expires_at,
+                                "next_cursor": (api_resp.StatusCode == 400 || api_resp.StatusCode == 404) ? "" : auth_result.new_state.next_cursor,
+                                "retry_count": is_retryable ? (has(state.retry_count) ? int(state.retry_count) : 0) + 1 : 0,
+                                "want_more": is_retryable
+                              })
+                            )
+                          )
+                        )
+                      )
+                    )
+                  :
+                    auth_result.new_state.with({
+                      "events": [auth_result.auth_event],
+                      "retry_count": (has(auth_result.want_more) && auth_result.want_more) ? (has(state.retry_count) ? int(state.retry_count) : 0) + 1 : 0,
+                      "want_more": has(auth_result.want_more) ? auth_result.want_more : false
+                    })
+                )
+              )
+            )
           redact:
             fields:
                 - client_id
