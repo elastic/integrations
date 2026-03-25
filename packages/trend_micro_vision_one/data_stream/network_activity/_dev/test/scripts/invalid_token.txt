@@ -39,9 +39,9 @@ cp stdout got_docs.json
 exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
 stdout '^1$'
 
-# Verify the error code matches the 401 response.
-exec jq -r '.hits.hits[0]._source.error.code' got_docs.json
-stdout '^401$'
+# Verify the error message indicates the 401 response.
+exec jq -r '.hits.hits[0]._source.error.message' got_docs.json
+stdout 'Unauthorized'
 
 # No network activity data events should be present.
 exec jq '[.hits.hits[]._source | select(.trend_micro_vision_one.network_activity != null)] | length' got_docs.json

@@ -40,7 +40,7 @@ exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
 stdout '^1$'
 
 # Verify the error code matches the 503 response.
-exec jq -r '.hits.hits[0]._source.error.code' got_docs.json
+exec jq -r '.hits.hits[0]._source.error.message' got_docs.json
 stdout '^503$'
 
 # No sslblacklist data events should be present.
@@ -57,6 +57,8 @@ exec rm -rf ${PACKAGE_ROOT}/licenses
 
 -- test_config.yaml --
 input: cel
+vars:
+  auth_key: test_auth_key
 data_stream:
   vars:
     url: http://abusech-mock:8080/blacklist/sslblacklist.csv
