@@ -317,22 +317,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "6ba12a3a-1d29-29e0-0391-471183744f75",
+                                "layerId": "cc1059a3-e3af-76a3-6dab-61028f0d4f85",
                                 "layerType": "data",
                                 "metricAccessor": "a87f1080-accf-3343-99c7-8b8e223ff755",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_wal_size IS NOT NULL\n| STATS wal_bytes = SUM(LAST_OVER_TIME(storage_wal_size))"
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL\n| STATS wal_bytes = MAX(storage_wal_size)"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "6ba12a3a-1d29-29e0-0391-471183744f75": {
+                                        "cc1059a3-e3af-76a3-6dab-61028f0d4f85": {
                                             "query": {
-                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_wal_size IS NOT NULL\n| STATS wal_bytes = SUM(LAST_OVER_TIME(storage_wal_size))"
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL\n| STATS wal_bytes = MAX(storage_wal_size)"
                                             },
                                             "columns": [
                                                 {
@@ -521,22 +521,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "1a4bff58-17f3-71a0-9cc9-295825627cfb",
+                                "layerId": "8daf2872-1dab-40e8-c5ce-e35d25b23d7c",
                                 "layerType": "data",
                                 "metricAccessor": "cbfb9c47-a48a-9576-a48d-7f8074101172",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = SUM(LAST_OVER_TIME(storage_compactions_queued))"
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued)"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "1a4bff58-17f3-71a0-9cc9-295825627cfb": {
+                                        "8daf2872-1dab-40e8-c5ce-e35d25b23d7c": {
                                             "query": {
-                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = SUM(LAST_OVER_TIME(storage_compactions_queued))"
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued)"
                                             },
                                             "columns": [
                                                 {
@@ -1198,7 +1198,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "0166e255-f85b-ca18-aca6-d5af7395fc6a",
+                                        "layerId": "9bd7da4f-0b8f-2ae4-08e0-e13afa87bdcf",
                                         "accessors": [
                                             "5045b327-6f3f-2187-95f2-382e9e76b43d",
                                             "cec076f5-2bdd-065c-2167-1a2ddf560672",
@@ -1244,15 +1244,15 @@
                                 }
                             },
                             "query": {
-                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL\n| STATS wal = SUM(LAST_OVER_TIME(storage_wal_size)), tsm = SUM(LAST_OVER_TIME(storage_tsm_files_disk_bytes)), cache_disk = SUM(LAST_OVER_TIME(storage_cache_disk_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL\n| STATS wal = MAX(storage_wal_size), tsm = MAX(storage_tsm_files_disk_bytes), cache_disk = MAX(storage_cache_disk_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "0166e255-f85b-ca18-aca6-d5af7395fc6a": {
+                                        "9bd7da4f-0b8f-2ae4-08e0-e13afa87bdcf": {
                                             "query": {
-                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL\n| STATS wal = SUM(LAST_OVER_TIME(storage_wal_size)), tsm = SUM(LAST_OVER_TIME(storage_tsm_files_disk_bytes)), cache_disk = SUM(LAST_OVER_TIME(storage_cache_disk_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL\n| STATS wal = MAX(storage_wal_size), tsm = MAX(storage_tsm_files_disk_bytes), cache_disk = MAX(storage_cache_disk_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -1436,7 +1436,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "7e7da406-adb3-7a02-7f6d-365ae2de4d6c",
+                                        "layerId": "f5d4ec41-6831-a389-cfea-b4b51e95c738",
                                         "accessors": [
                                             "d4b28cd4-1d48-3aad-91b1-f0859c7ccb4b"
                                         ],
@@ -1474,15 +1474,15 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = SUM(LAST_OVER_TIME(storage_compactions_queued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level\n| SORT time_bucket ASC"
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "7e7da406-adb3-7a02-7f6d-365ae2de4d6c": {
+                                        "f5d4ec41-6831-a389-cfea-b4b51e95c738": {
                                             "query": {
-                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = SUM(LAST_OVER_TIME(storage_compactions_queued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level\n| SORT time_bucket ASC"
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {

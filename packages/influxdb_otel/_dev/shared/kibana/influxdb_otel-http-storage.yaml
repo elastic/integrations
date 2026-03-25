@@ -88,10 +88,11 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-influxdb.otel-*
+      - FROM metrics-influxdb.otel-*
       - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
       - WHERE storage_wal_size IS NOT NULL
-      - STATS wal_bytes = SUM(LAST_OVER_TIME(storage_wal_size))
+      - STATS wal_bytes = MAX(storage_wal_size)
       primary:
         field: wal_bytes
         label: WAL
@@ -122,10 +123,11 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-influxdb.otel-*
+      - FROM metrics-influxdb.otel-*
       - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
       - WHERE storage_compactions_queued IS NOT NULL
-      - STATS queued = SUM(LAST_OVER_TIME(storage_compactions_queued))
+      - STATS queued = MAX(storage_compactions_queued)
       primary:
         field: queued
         label: Queued
@@ -230,11 +232,12 @@ dashboards:
       type: area
       mode: stacked
       query:
-      - TS metrics-influxdb.otel-*
+      - FROM metrics-influxdb.otel-*
       - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
       - WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL
-      - STATS wal = SUM(LAST_OVER_TIME(storage_wal_size)), tsm = SUM(LAST_OVER_TIME(storage_tsm_files_disk_bytes)), cache_disk = 
-        SUM(LAST_OVER_TIME(storage_cache_disk_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - STATS wal = MAX(storage_wal_size), tsm = MAX(storage_tsm_files_disk_bytes), cache_disk =
+        MAX(storage_cache_disk_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
       dimension:
         field: time_bucket
@@ -264,10 +267,11 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-influxdb.otel-*
+      - FROM metrics-influxdb.otel-*
       - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
       - WHERE storage_compactions_queued IS NOT NULL
-      - STATS queued = SUM(LAST_OVER_TIME(storage_compactions_queued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level
+      - STATS queued = MAX(storage_compactions_queued) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level
       - SORT time_bucket ASC
       dimension:
         field: time_bucket
