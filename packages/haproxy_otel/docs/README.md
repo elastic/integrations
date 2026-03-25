@@ -4,10 +4,9 @@ HAProxy is a high-performance TCP/HTTP load balancer and reverse proxy that dist
 
 ## Compatibility
 
-The HAProxy OpenTelemetry assets have been tested with the OpenTelemetry HAProxy receiver (opentelemetry-collector-contrib).
+The HAProxy OpenTelemetry assets have been tested with:
 
-HAProxy tested against:
-
+- OpenTelemetry `haproxyreceiver` v0.144.0 from OpenTelemetry Collector Contrib.
 - HAProxy 3.x
 
 ## Requirements
