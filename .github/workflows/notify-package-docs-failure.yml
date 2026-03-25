@@ -34,7 +34,7 @@ jobs:
           # Find the PR number from the head SHA
           PR_NUMBER=$(gh api "repos/${REPO}/commits/${HEAD_SHA}/pulls" \
             --jq '.[0].number' 2>/dev/null || true)
-          if [ -z "$PR_NUMBER" ]; then
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
             echo "Could not find PR for SHA ${HEAD_SHA}"
             echo "notify=false" >> $GITHUB_OUTPUT
             exit 0
