@@ -1376,13 +1376,13 @@
                 }
             },
             {
-                "panelIndex": "6018844e-bd45-3868-2a71-17107cb9055a",
+                "panelIndex": "b8176198-340d-f54b-d8ad-d4a54c320cdb",
                 "gridData": {
                     "x": 24,
                     "y": 26,
                     "w": 24,
                     "h": 12,
-                    "i": "6018844e-bd45-3868-2a71-17107cb9055a"
+                    "i": "b8176198-340d-f54b-d8ad-d4a54c320cdb"
                 },
                 "type": "lens",
                 "embeddableConfig": {
@@ -1392,7 +1392,7 @@
                         }
                     },
                     "attributes": {
-                        "title": "OS wait duration by wait type (rate)",
+                        "title": "OS wait duration by wait type",
                         "visualizationType": "lnsXY",
                         "type": "lens",
                         "references": [],
@@ -1400,9 +1400,9 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "840badb4-4254-4c7d-aa72-ff8b6d40a738",
+                                        "layerId": "8db10f7b-70c4-fe4f-3e05-b4ca5e5cd12f",
                                         "accessors": [
-                                            "4ff3a8c3-4c71-7b78-8728-3b72de4e597c"
+                                            "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0"
                                         ],
                                         "layerType": "data",
                                         "seriesType": "area",
@@ -1438,21 +1438,21 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_rate = SUM(RATE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_rate_us = wait_rate * 1000000\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "840badb4-4254-4c7d-aa72-ff8b6d40a738": {
+                                        "8db10f7b-70c4-fe4f-3e05-b4ca5e5cd12f": {
                                             "query": {
-                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_rate = SUM(RATE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_rate_us = wait_rate * 1000000\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
-                                                    "fieldName": "wait_rate_us",
-                                                    "columnId": "4ff3a8c3-4c71-7b78-8728-3b72de4e597c",
-                                                    "label": "Wait time (µs/s)",
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
                                                     "customLabel": true,
                                                     "meta": {
                                                         "type": "number",
@@ -1463,7 +1463,7 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     }
@@ -1487,9 +1487,9 @@
                                             ],
                                             "allColumns": [
                                                 {
-                                                    "fieldName": "wait_rate_us",
-                                                    "columnId": "4ff3a8c3-4c71-7b78-8728-3b72de4e597c",
-                                                    "label": "Wait time (µs/s)",
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
                                                     "customLabel": true,
                                                     "meta": {
                                                         "type": "number",
@@ -1500,7 +1500,7 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     }
@@ -1542,13 +1542,13 @@
                 }
             },
             {
-                "panelIndex": "86364e9d-8933-0039-3070-908eaca7cc55",
+                "panelIndex": "24337ca6-6661-586e-55f5-5f936967424d",
                 "gridData": {
                     "x": 0,
                     "y": 38,
                     "w": 24,
                     "h": 12,
-                    "i": "86364e9d-8933-0039-3070-908eaca7cc55"
+                    "i": "24337ca6-6661-586e-55f5-5f936967424d"
                 },
                 "type": "lens",
                 "embeddableConfig": {
@@ -1558,7 +1558,7 @@
                         }
                     },
                     "attributes": {
-                        "title": "Top wait types by duration rate",
+                        "title": "Top wait types by total duration",
                         "visualizationType": "lnsXY",
                         "type": "lens",
                         "references": [],
@@ -1566,9 +1566,9 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "547a8d77-c0dd-2459-5289-933084cb358a",
+                                        "layerId": "f7ceb1d6-d067-cce5-2cff-cdfffbb7d080",
                                         "accessors": [
-                                            "4ff3a8c3-4c71-7b78-8728-3b72de4e597c"
+                                            "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0"
                                         ],
                                         "layerType": "data",
                                         "seriesType": "bar_unstacked",
@@ -1602,21 +1602,21 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_rate = SUM(RATE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_rate_us = wait_rate * 1000000\n| SORT wait_rate_us DESC\n| LIMIT 10"
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT wait_ms DESC\n| LIMIT 10"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "547a8d77-c0dd-2459-5289-933084cb358a": {
+                                        "f7ceb1d6-d067-cce5-2cff-cdfffbb7d080": {
                                             "query": {
-                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_rate = SUM(RATE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_rate_us = wait_rate * 1000000\n| SORT wait_rate_us DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT wait_ms DESC\n| LIMIT 10"
                                             },
                                             "columns": [
                                                 {
-                                                    "fieldName": "wait_rate_us",
-                                                    "columnId": "4ff3a8c3-4c71-7b78-8728-3b72de4e597c",
-                                                    "label": "Wait time (µs/s)",
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
                                                     "customLabel": true,
                                                     "meta": {
                                                         "type": "number",
@@ -1627,7 +1627,7 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     }
@@ -1641,9 +1641,9 @@
                                             ],
                                             "allColumns": [
                                                 {
-                                                    "fieldName": "wait_rate_us",
-                                                    "columnId": "4ff3a8c3-4c71-7b78-8728-3b72de4e597c",
-                                                    "label": "Wait time (µs/s)",
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
                                                     "customLabel": true,
                                                     "meta": {
                                                         "type": "number",
@@ -1654,7 +1654,7 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     }

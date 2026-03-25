@@ -256,7 +256,7 @@ dashboards:
         visible: show
         position: right
 
-  - title: OS wait duration by wait type (rate)
+  - title: OS wait duration by wait type
     size: {w: 24, h: 12}
     esql:
       type: area
@@ -265,26 +265,26 @@ dashboards:
       - TS metrics-sqlserverreceiver.otel-*
       - WHERE data_stream.dataset == "sqlserverreceiver.otel"
       - WHERE metrics.sqlserver.os.wait.duration IS NOT NULL
-      - STATS wait_rate = SUM(RATE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type
+      - STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type
         = COALESCE(attributes.wait.type, wait.type, "unknown")
-      - EVAL wait_rate_us = wait_rate * 1000000
+      - EVAL wait_ms = wait_ms * 1000
       - SORT time_bucket ASC
       dimension:
         field: time_bucket
         data_type: date
       metrics:
-      - field: wait_rate_us
-        label: "Wait time (\u00B5s/s)"
+      - field: wait_ms
+        label: Wait time (ms)
         format:
           type: number
-          decimals: 2
+          decimals: 0
       breakdown:
         field: wait_type
       legend:
         visible: show
         position: right
 
-  - title: Top wait types by duration rate
+  - title: Top wait types by total duration
     size: {w: 24, h: 12}
     esql:
       type: bar
@@ -293,18 +293,18 @@ dashboards:
       - TS metrics-sqlserverreceiver.otel-*
       - WHERE data_stream.dataset == "sqlserverreceiver.otel"
       - WHERE metrics.sqlserver.os.wait.duration IS NOT NULL
-      - STATS wait_rate = SUM(RATE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, "unknown")
-      - EVAL wait_rate_us = wait_rate * 1000000
-      - SORT wait_rate_us DESC
+      - STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, "unknown")
+      - EVAL wait_ms = wait_ms * 1000
+      - SORT wait_ms DESC
       - LIMIT 10
       dimension:
         field: wait_type
       metrics:
-      - field: wait_rate_us
-        label: "Wait time (\u00B5s/s)"
+      - field: wait_ms
+        label: Wait time (ms)
         format:
           type: number
-          decimals: 2
+          decimals: 0
 
   - title: Compilation vs recompilation rate over time
     size: {w: 24, h: 12}

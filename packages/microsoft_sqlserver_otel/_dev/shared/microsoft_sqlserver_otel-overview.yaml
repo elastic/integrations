@@ -263,10 +263,9 @@ dashboards:
       query:
       - TS metrics-sqlserverreceiver.otel-*
       - WHERE data_stream.dataset == "sqlserverreceiver.otel"
-      - WHERE metrics.sqlserver.batch.request.rate IS NOT NULL
       - STATS batch_rate = AVG(metrics.sqlserver.batch.request.rate), conn = 
-        MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.user.connection.count))), ple = 
-        MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.page.life_expectancy))), hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio)
+        MAX(metrics.sqlserver.user.connection.count), ple = 
+        MAX(metrics.sqlserver.page.life_expectancy), hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio)
         BY instance = COALESCE(resource.attributes.service.instance.id, "unknown")
       - SORT batch_rate DESC
       - LIMIT 20

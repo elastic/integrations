@@ -1404,19 +1404,19 @@
                                         "isMetric": true
                                     }
                                 ],
-                                "layerId": "bf9e9a14-2f39-e57c-9aab-58196bb4aa62",
+                                "layerId": "2af68ed5-7711-f881-919b-57303babb23e",
                                 "layerType": "data"
                             },
                             "query": {
-                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.batch.request.rate IS NOT NULL\n| STATS batch_rate = AVG(metrics.sqlserver.batch.request.rate), conn = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.user.connection.count))), ple = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.page.life_expectancy))), hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio) BY instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT batch_rate DESC\n| LIMIT 20"
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| STATS batch_rate = AVG(metrics.sqlserver.batch.request.rate), conn = MAX(metrics.sqlserver.user.connection.count), ple = MAX(metrics.sqlserver.page.life_expectancy), hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio) BY instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT batch_rate DESC\n| LIMIT 20"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "bf9e9a14-2f39-e57c-9aab-58196bb4aa62": {
+                                        "2af68ed5-7711-f881-919b-57303babb23e": {
                                             "query": {
-                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.batch.request.rate IS NOT NULL\n| STATS batch_rate = AVG(metrics.sqlserver.batch.request.rate), conn = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.user.connection.count))), ple = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.page.life_expectancy))), hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio) BY instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT batch_rate DESC\n| LIMIT 20"
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| STATS batch_rate = AVG(metrics.sqlserver.batch.request.rate), conn = MAX(metrics.sqlserver.user.connection.count), ple = MAX(metrics.sqlserver.page.life_expectancy), hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio) BY instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT batch_rate DESC\n| LIMIT 20"
                                             },
                                             "columns": [
                                                 {
