@@ -37,7 +37,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Verify that the state of the NSS Server is healthy.
             - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > NSS Servers.
             - In the State column, confirm that the state of the NSS server is healthy.
-            ![NSS server setup image](../img/nss_server.png?raw=true)
+            ![NSS server setup image](../img/nss_server.png)
     - In the ZIA Admin Portal, add an NSS Feed.
         - Refer to [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
             - **SIEM IP Address**: Enter the IP address of the [Elastic agent](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
@@ -50,7 +50,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
                 - **Tunnel**: 9013
                 - **Web**: 9014
             - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
-            ![NSS Feeds setup image](../img/nss_feeds.png?raw=true)
+            ![NSS Feeds setup image](../img/nss_feeds.png)
 
 ## Set up Cloud NSS Feeds
 
@@ -73,7 +73,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
               - **Web**: 9559
           - Select JSON as feed output type.
           - Add same custom header along with its value on both the side for additional security.
-          ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png?raw=true)
+          ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png)
 3. Repeat step 2 for each log type.
 
 **Note**: Make sure to use the latest version of given response formats for NSS and Cloud NSS Feeds.
@@ -199,7 +199,7 @@ Sample Response:
 - Default port (Cloud NSS Feed): _9559_
 - Add characters **"** and **\\** in **feed escape character** while configuring Web Log.
 
-![Escape feed setup image](../img/escape_feed.png?raw=true)
+![Escape feed setup image](../img/escape_feed.png)
 See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-web-logs)
 
 Zscaler Web Log response format (v11):

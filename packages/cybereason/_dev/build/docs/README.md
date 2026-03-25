@@ -24,7 +24,7 @@ The Cybereason integration collects six types of logs: Logon Session, Malop Conn
 
 - **[Poll Malop](https://api-doc.cybereason.com/en/latest/APIReference/MalopAPI/getMalopsMalware.html#getmalopsmalware)** - This data stream provides comprehensive information about Malops detected by Cybereason's EDR system, enabling security teams to analyze and respond to potential threats effectively.
 
-- **[Suspicions Process]()** - This data stream provides detailed information about processes that are suspected or deemed malicious within the endpoint detection and response (EDR) system.
+- **Suspicions Process** - This data stream provides detailed information about processes that are suspected or deemed malicious within the endpoint detection and response (EDR) system.
 
 **NOTE**: Suspicions Process has the same endpoint as the first three data streams, we have added a filter - `hasSuspicions : true` and some custom fields to get the logs related to suspicions.
 

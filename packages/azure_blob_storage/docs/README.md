@@ -23,4 +23,4 @@ Assuming you have Azure Blob Containers already set up and account credentials a
 This integration includes the ECS Dynamic Template, all fields that follow the ECS Schema will get assigned the correct index field mapping and do not need to be added manually.
 
 ## Ingest Pipelines
-Custom ingest pipelines may be added by adding the name to the pipeline configuration option, creating custom ingest pipelines can be done either through the API or the [Ingest Node Pipeline UI](/app/management/ingest/ingest_pipelines/).
+Custom ingest pipelines may be added by adding the name to the pipeline configuration option, creating custom ingest pipelines can be done either through the API or the [Ingest Node Pipeline UI](docs-content://reference/ingestion-tools/enrich-processor/ingest-pipelines.md).

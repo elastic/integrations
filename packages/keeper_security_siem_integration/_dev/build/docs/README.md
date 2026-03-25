@@ -265,4 +265,4 @@ Currently, no machine learning modules are included with this integration. Custo
 
 ### Change Log
 
-Refer to the [CHANGELOG.md](../../../changelog.yml) for version history and updates.
+Refer to the changelog for version history and updates.

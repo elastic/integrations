@@ -77,7 +77,7 @@ The Threat Map visualization can be added to other dashboards in two ways:
   - **Existing Dashboard:** Select an existing dashboard from the dropdown, then click **Copy and Go to Dashboard**.
   - **New Dashboard:** Create a new dashboard with the visualization.
 
-![Copy to dashboard](../img/copy-to-dashboard.png?raw=true)
+![Copy to dashboard](../img/copy-to-dashboard.png)
 ---
 
 ## Visualizations
@@ -112,7 +112,7 @@ Data in panels can be sorted by clicking on the **Count** column header.
 - Apply a filter using the query bar.
 - Click **Save and Return** to apply changes.
 
-![Visualization-Specific Filters](../img/query-bar.png?raw=true)
+![Visualization-Specific Filters](../img/query-bar.png)
 ---
 
 ## Customization Options
@@ -131,5 +131,5 @@ To customize these options, click on **Edit visualization** from the dropdown in
 
 For additional customization options, see the [Vega Kibana Guide](https://www.elastic.co/guide/en/kibana/current/vega.html#vega-with-a-map).
 
-![Customization options](../img/customization-options.png?raw=true)
+![Customization options](../img/customization-options.png)
 ---

@@ -15,4 +15,4 @@ These are the possible response codes from the server.
 | 500                	| Internal Server Error  	| Returned if an I/O error occurs reading the request.               	|
 
 
-Custom ingest pipelines may be added by adding the name to the pipeline configuration option, creating custom ingest pipelines can be done either through the API or the [Ingest Node Pipeline UI](/app/management/ingest/ingest_pipelines/).
+Custom ingest pipelines may be added by adding the name to the pipeline configuration option, creating custom ingest pipelines can be done either through the API or the [Ingest Node Pipeline UI](docs-content://reference/ingestion-tools/enrich-processor/ingest-pipelines.md).

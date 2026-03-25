@@ -35,9 +35,9 @@ The integration can also collect the push notification configuration and statist
 3. Click on "BitDefender GravityZone" integration from the search results.
 4. Click on **Add BitDefender GravityZone** button to add BitDefender GravityZone integration.
 
-![Example Integration Configuration](../img/bitdefender-integration-configuration-1.png)
+![Example Integration Configuration](.../img/bitdefender-integration-configuration-1.png)
 
-![Example Integration Configuration](../img/bitdefender-integration-configuration-2.png)
+![Example Integration Configuration](.../img/bitdefender-integration-configuration-2.png)
 
 ### Create a BitDefender GravityZone API key that can configure a push notification service
 
@@ -49,21 +49,21 @@ Bear in mind the API key will be associated to the account you create it from. A
 
 Navigate to your account details within the GravityZone portal. If you have sufficient privileges you will see the "API keys" section near the bottom of the page. Click "Add" here.
 
-![Example Configuration 1](../img/bitdefender-gravityzone-api-key-1.png)
+![Example Configuration 1](.../img/bitdefender-gravityzone-api-key-1.png)
 
 Give the API key a description and tick the "Event Push Service API" box at minimum.
 
 NOTE: If you intend to use the API key for other API calls you may need to tick other boxes.
 
-![Example Configuration 2](../img/bitdefender-gravityzone-api-key-2.png)
+![Example Configuration 2](.../img/bitdefender-gravityzone-api-key-2.png)
 
 Click the Key value that is shown in blue.
 
-![Example Configuration 3](../img/bitdefender-gravityzone-api-key-3.png)
+![Example Configuration 3](.../img/bitdefender-gravityzone-api-key-3.png)
 
 Click the clipboard icon to copy the API key to your PC's clipboard.
 
-![Example Configuration 4](../img/bitdefender-gravityzone-api-key-4.png)
+![Example Configuration 4](.../img/bitdefender-gravityzone-api-key-4.png)
 
 ### Creating the push notification configuration via BitDefender GravityZone API
 
@@ -135,11 +135,11 @@ There are two dashboards available as part of the integration,
 
 "[BitDefender GravityZone] Push Notifications", which provides a summary of push notifications received within the search window.
 
-![Push Notifications Dashboard](./img/bitdefender-dashboard-push-notifications.png)
+![Push Notifications Dashboard](../img/bitdefender-dashboard-push-notifications.png)
 
 "[BitDefender GravityZone] Configuration State & Statistics", which provides graphs and other visualisations related push notification service state and statistics available within the search window.
 
-![Configuration State & Statistics Dashboard](./img/bitdefender-dashboard-push-config-and-stats.png)
+![Configuration State & Statistics Dashboard](../img/bitdefender-dashboard-push-config-and-stats.png)
 
 ## Data stream
 

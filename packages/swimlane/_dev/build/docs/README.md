@@ -27,15 +27,15 @@ All fields ingested to this data stream are stored under `turbine.api` as an eve
 
 ### For Turbine Cloud Deployments
 Generate a personal access token for an administrator user.
-![Turbine Cloud Personal Access Token](/img/turbine-cloud-pat.png "Turbine Cloud Personal Access Token")
+![Turbine Cloud Personal Access Token](../img/turbine-cloud-pat.png "Turbine Cloud Personal Access Token")
 
 Configure the settings page with your Turbine Cloud URL, Account Id, and Private Token
-![Turbine Cloud Settings](/img/turbine-cloud-settings.png "Turbine Cloud Settings")
+![Turbine Cloud Settings](../img/turbine-cloud-settings.png "Turbine Cloud Settings")
 
 ### For Turbie Platform Installs (TPI)
 TPI settings can be configured in the administrator dashboard as seen below:
 
-![TPI Audit Log Settings](/img/tpi-audit-log-settings.png "TPI Audit Log Settings")
+![TPI Audit Log Settings](../img/tpi-audit-log-settings.png "TPI Audit Log Settings")
 
 ### For Helm or Kustomize Installs
 The following environment variables will need to be set for Audit logs to be outputted into the container pod logs.
