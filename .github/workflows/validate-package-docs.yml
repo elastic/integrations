@@ -81,19 +81,3 @@ jobs:
           docker run --rm -v "$PWD/.validate:/workspace" -w /workspace \
             ghcr.io/elastic/docs-builder:edge \
             --metadata-only --strict
-
-      - name: Signal failure for notification workflow
-        if: steps.validate.outcome == 'failure'
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          mkdir -p .validate-result
-          echo "$PR_NUMBER" > .validate-result/pr_number
-
-      - name: Upload failure signal
-        if: steps.validate.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: docs-validation-failed
-          path: .validate-result/
-          retention-days: 1

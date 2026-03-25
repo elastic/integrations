@@ -7,6 +7,7 @@ on:
 
 permissions:
   pull-requests: write
+  actions: read
 
 jobs:
   notify:
@@ -14,25 +15,41 @@ jobs:
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Download failure signal
-        id: artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: docs-validation-failed
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ github.token }}
-          path: .validate-result
-        continue-on-error: true
+      - name: Check for validation failure
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # Check if the docs-builder step failed (even though the job succeeded via continue-on-error)
+          FAILED=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" \
+            --jq '[.jobs[].steps[] | select(.name == "Validate with docs-builder" and .conclusion == "failure")] | length')
+          if [ "$FAILED" = "0" ]; then
+            echo "No validation failure detected"
+            echo "notify=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Find the PR number from the head SHA
+          PR_NUMBER=$(gh api "repos/${REPO}/commits/${HEAD_SHA}/pulls" \
+            --jq '.[0].number' 2>/dev/null || true)
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "Could not find PR for SHA ${HEAD_SHA}"
+            echo "notify=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "notify=true" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
-        if: steps.artifact.outcome == 'success'
+        if: steps.check.outputs.notify == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
           REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.check.outputs.pr_number }}
         run: |
-          PR_NUMBER=$(cat .validate-result/pr_number)
-          [ -z "$PR_NUMBER" ] && exit 0
           # Avoid duplicate comments
           EXISTING=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
             --jq '[.[] | select(.body | contains("Package docs validation failed"))] | length')
