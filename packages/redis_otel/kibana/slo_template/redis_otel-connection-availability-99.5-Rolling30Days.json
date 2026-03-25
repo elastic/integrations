@@ -1,0 +1,44 @@
+{
+  "attributes": {
+    "name": "[Redis OTel] Connection availability 99.5% rolling 30 days",
+    "description": "This SLO tracks the proportion of connection attempts that are accepted (not rejected due to maxclients) for Redis via OTel metrics. At least 99.5% of 1-minute time intervals must show a connection success rate of 99.5% or higher over a rolling 30-day period, ensuring clients can connect when needed.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"redisreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "redis.connections.received"},
+            {"name": "B", "aggregation": "min", "field": "redis.connections.received"},
+            {"name": "C", "aggregation": "max", "field": "redis.connections.rejected"},
+            {"name": "D", "aggregation": "min", "field": "redis.connections.rejected"}
+          ],
+          "equation": "(A-B-C+D)/(A-B)",
+          "comparator": "GTE",
+          "threshold": 0.995
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["redis", "otel"],
+    "groupBy": ["resource.attributes.server.address", "resource.attributes.server.port"]
+  },
+  "artifacts": {
+    "dashboards": [
+      {"id": "redis_otel-overview"}
+    ]
+  },
+  "id": "redis_otel-connection-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}
