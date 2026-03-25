@@ -1,7 +1,7 @@
 {
     "attributes": {
         "title": "[HAProxy OTel] Overview",
-        "description": "Top-level health across all proxies — error rates, traffic volume, latency summary, session saturation, server availability.",
+        "description": "Top-level health across all proxies \u2014 error rates, traffic volume, latency summary, session saturation, server availability.",
         "panelsJSON": [
             {
                 "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
@@ -123,7 +123,7 @@
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total))"
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total))"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -131,7 +131,7 @@
                                     "layers": {
                                         "bf791024-2047-3cc5-4ce0-ba2bb558fd5c": {
                                             "query": {
-                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total))"
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total))"
                                             },
                                             "columns": [
                                                 {
@@ -856,7 +856,7 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL\n| STATS requests = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.status_code\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL\n| STATS requests = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.status_code\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -864,7 +864,7 @@
                                     "layers": {
                                         "ade712df-860f-2e75-8082-c7ae7544c958": {
                                             "query": {
-                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL\n| STATS requests = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.status_code\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL\n| STATS requests = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.status_code\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -1598,7 +1598,7 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL\n| STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bytes_in = COALESCE(bytes_in, 0)\n| EVAL bytes_out = COALESCE(bytes_out, 0)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND (haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL)\n| STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bytes_in = COALESCE(bytes_in, 0)\n| EVAL bytes_out = COALESCE(bytes_out, 0)\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -1606,7 +1606,7 @@
                                     "layers": {
                                         "a965cc26-76f7-5e5f-5ecb-69781b634c38": {
                                             "query": {
-                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL\n| STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bytes_in = COALESCE(bytes_in, 0)\n| EVAL bytes_out = COALESCE(bytes_out, 0)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND (haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL)\n| STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bytes_in = COALESCE(bytes_in, 0)\n| EVAL bytes_out = COALESCE(bytes_out, 0)\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {

@@ -62,7 +62,7 @@ dashboards:
       type: metric
       query:
       - TS metrics-haproxyreceiver.otel-*
-      - WHERE haproxy.requests.total IS NOT NULL
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.total IS NOT NULL
       - STATS req_rate = SUM(RATE(haproxy.requests.total))
       primary:
         field: req_rate
@@ -163,7 +163,7 @@ dashboards:
       mode: stacked
       query:
       - TS metrics-haproxyreceiver.otel-*
-      - WHERE haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL
       - STATS requests = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.status_code
       - SORT time_bucket ASC
       dimension:
@@ -288,7 +288,7 @@ dashboards:
       mode: stacked
       query:
       - TS metrics-haproxyreceiver.otel-*
-      - WHERE haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL
+      - WHERE haproxy.service_name == "FRONTEND" AND (haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL)
       - STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20,
         ?_tstart, ?_tend)
       - EVAL bytes_in = COALESCE(bytes_in, 0)
