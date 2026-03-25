@@ -50,11 +50,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "fd6c4189-cbc6-493a-acfb-c9e7b2b7588c",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "9d33c655-9785-483e-b6bc-cb22ba116cea",
+        "id": "625702bb-3e9e-48b3-825a-5c6b6c33f75b",
+        "name": "elastic-agent-42938",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "cloud": {
         "project": {
@@ -65,7 +65,7 @@ An example event for `dns` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.dns",
-        "namespace": "ep",
+        "namespace": "49808",
         "type": "logs"
     },
     "destination": {
@@ -98,9 +98,9 @@ An example event for `dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "625702bb-3e9e-48b3-825a-5c6b6c33f75b",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "event": {
         "action": "dns-query",
@@ -108,10 +108,10 @@ An example event for `dns` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-10-25T04:19:40.300Z",
+        "created": "2026-03-18T10:19:00.183Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2023-10-25T04:19:41Z",
+        "ingested": "2026-03-18T10:19:03Z",
         "kind": "event",
         "outcome": "success"
     },

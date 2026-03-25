@@ -4,6 +4,10 @@
 
 The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
 
+For a demo, refer to the following video (click to view).
+
+[![CrowdStrike integration video](https://play.vidyard.com/VKKWSpg4sDEk1DBXATkyEP.jpg)](https://videos.elastic.co/watch/VKKWSpg4sDEk1DBXATkyEP)
+
 ### Compatibility
 
 This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
@@ -833,6 +837,11 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.location_longitude_as_int |  | long |
 | crowdstrike.alert.logon_domain |  | keyword |
 | crowdstrike.alert.md5 |  | keyword |
+| crowdstrike.alert.mitre_attack.pattern_id |  | keyword |
+| crowdstrike.alert.mitre_attack.tactic |  | keyword |
+| crowdstrike.alert.mitre_attack.tactic_id |  | keyword |
+| crowdstrike.alert.mitre_attack.technique |  | keyword |
+| crowdstrike.alert.mitre_attack.technique_id |  | keyword |
 | crowdstrike.alert.model_anomaly_indicators |  | keyword |
 | crowdstrike.alert.name |  | keyword |
 | crowdstrike.alert.network_accesses.access_timestamp |  | date |
