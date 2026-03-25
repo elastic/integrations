@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the use of system search utilities like grep and find to search for AWS credentials inside a container. Unauthorized access to these sensitive files could lead to further compromise of the container environment or facilitate a container breakout to the underlying cloud environment.",
+        "from": "now-6m",
+        "index": [
+            "logs-cloud_defend.process*"
+        ],
+        "interval": "5m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Cloud Credential Search Detected via Defend for Containers",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and (\n  process.name in (\"grep\", \"egrep\", \"fgrep\", \"find\", \"locate\", \"mlocate\", \"cat\", \"sed\", \"awk\") or\n  (\n    /* Account for tools that execute utilities as a subprocess, in this case the target utility name will appear as a process arg */\n    process.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"busybox\") and\n    process.args in (\n      \"grep\", \"/bin/grep\", \"/usr/bin/grep\", \"/usr/local/bin/grep\",\n      \"egrep\", \"/bin/egrep\", \"/usr/bin/egrep\", \"/usr/local/bin/egrep\",\n      \"fgrep\", \"/bin/fgrep\", \"/usr/bin/fgrep\", \"/usr/local/bin/fgrep\",\n      \"find\", \"/bin/find\", \"/usr/bin/find\", \"/usr/local/bin/find\",\n      \"locate\", \"/bin/locate\", \"/usr/bin/locate\", \"/usr/local/bin/locate\",\n      \"mlocate\", \"/bin/mlocate\", \"/usr/bin/mlocate\", \"/usr/local/bin/mlocate\",\n      \"cat\", \"/bin/cat\", \"/usr/bin/cat\", \"/usr/local/bin/cat\",\n      \"sed\", \"/bin/sed\", \"/usr/bin/sed\", \"/usr/local/bin/sed\",\n      \"awk\", \"/bin/awk\", \"/usr/bin/awk\", \"/usr/local/bin/awk\"\n    ) and \n    /* default exclusion list to not FP on default multi-process commands */\n    not process.args in (\n      \"which\", \"/bin/which\", \"/usr/bin/which\", \"/usr/local/bin/which\",\n      \"man\", \"/bin/man\", \"/usr/bin/man\", \"/usr/local/bin/man\",\n      \"chmod\", \"/bin/chmod\", \"/usr/bin/chmod\", \"/usr/local/bin/chmod\",\n      \"chown\", \"/bin/chown\", \"/usr/bin/chown\", \"/usr/local/bin/chown\"\n    )\n  )\n)\nand\nprocess.args like~ (\n  /* AWS Credentials */\n  \"*aws_access_key_id*\", \"*aws_secret_access_key*\", \"*aws_session_token*\", \"*accesskeyid*\", \"*secretaccesskey*\",\n  \"*access_key*\", \"*.aws/credentials*\",\n\n  /* Azure Credentials */\n  \"*AZURE_CLIENT_ID*\", \"*AZURE_TENANT_ID*\", \"*AZURE_CLIENT_SECRET*\", \"*AZURE_FEDERATED_TOKEN_FILE*\",\n  \"*IDENTITY_ENDPOINT*\", \"*IDENTITY_HEADER*\", \"*MSI_ENDPOINT*\", \"*MSI_SECRET*\",\n  \"*/.azure/*\", \"*/var/run/secrets/azure/*\",\n\n  /* GCP Credentials */\n  \"*/.config/gcloud/*\", \"*application_default_credentials.json*\",\n  \"*type: service_account*\", \"*client_email*\", \"*private_key_id*\", \"*private_key*\",\n  \"*/var/run/secrets/google/*\", \"*GOOGLE_APPLICATION_CREDENTIALS*\"\n) and process.interactive == true and container.id like \"*\" \n",
+        "references": [
+            "https://sysdig.com/blog/threat-detection-aws-cloud-containers/"
+        ],
+        "related_integrations": [
+            {
+                "package": "cloud_defend",
+                "version": "^1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "container.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d0b0f3ed-0b37-44bf-adee-e8cb7de92767",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Elastic Defend for Containers",
+            "Domain: Container",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 103
+    },
+    "id": "d0b0f3ed-0b37-44bf-adee-e8cb7de92767_103",
+    "type": "security-rule"
+}

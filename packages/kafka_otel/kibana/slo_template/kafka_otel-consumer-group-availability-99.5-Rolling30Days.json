@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "[Kafka OTel] Consumer group availability 99.5% rolling 30 days",
+    "description": "This SLO tracks consumer group availability via kafkametricsreceiver OTel metrics, ensuring that 99.5% of 1-minute time intervals have all monitored consumer groups with at least one active member. Groups with zero members are offline and not consuming; this condition warrants investigation to restore consumption.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"kafkametricsreceiver.otel\" AND kafka.consumer_group.members: *",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "kafka.consumer_group.members >= 1"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "B",
+              "aggregation": "doc_count"
+            }
+          ],
+          "equation": "B"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "kafka",
+      "otel"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {"id": "kafka_otel-overview"},
+        {"id": "kafka_otel-consumer-groups"}
+      ]
+    }
+  },
+  "id": "kafka_otel-consumer-group-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

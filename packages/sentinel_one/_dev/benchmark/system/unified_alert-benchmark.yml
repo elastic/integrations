@@ -1,0 +1,24 @@
+---
+description: Benchmark unified alert events ingested.
+input: cel
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+data_stream:
+  name: unified_alert
+  vars:
+    enable_request_tracer: true
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: sentinel_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./unified_alert-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./unified_alert-benchmark/config.yml
+    fields:
+      path: ./unified_alert-benchmark/fields.yml

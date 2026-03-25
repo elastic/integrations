@@ -1,0 +1,411 @@
+---
+dashboards:
+  - name: "[RabbitMQ OTel] Nodes"
+    id: rabbitmq_otel-nodes
+    description: >-
+      Node-level resource monitoring: memory, disk, file descriptors, sockets, Erlang processes,
+      connections, and channels. Requires node-level metrics to be enabled in the receiver configuration.
+
+    filters:
+      - field: "data_stream.dataset"
+        equals: "rabbitmqreceiver.otel"
+
+    controls:
+      - type: options
+        label: "Node"
+        data_view: "metrics-*"
+        field: "resource.attributes.rabbitmq.node.name"
+
+    panels:
+      # Navigation Links
+      - hide_title: true
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: "Overview"
+              dashboard: "rabbitmq_otel-overview"
+            - label: "Queues"
+              dashboard: "rabbitmq_otel-queues"
+            - label: "Nodes"
+              dashboard: "rabbitmq_otel-nodes"
+
+      # Description Markdown
+      - hide_title: true
+        size: {w: 16, h: 12}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [RabbitMQ OTel] Nodes
+
+            Node-level resource monitoring:
+            - Memory and disk utilization (alarms block producers when triggered)
+            - File descriptor and socket usage
+            - Erlang process utilization
+            - Connection and channel activity
+            - Requires node-level metrics enabled in receiver config
+
+      # Nodes Monitored Metric
+      - hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE resource.attributes.rabbitmq.node.name IS NOT NULL
+            | STATS count = COUNT_DISTINCT(resource.attributes.rabbitmq.node.name)
+          primary:
+            field: "count"
+            label: "Nodes"
+            format:
+              type: number
+              decimals: 0
+
+      # Memory Alarm Metric
+      - hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.mem_alarm == 1
+            | STATS count = COUNT_DISTINCT(resource.attributes.rabbitmq.node.name)
+          primary:
+            field: "count"
+            label: "Mem Alarm"
+            format:
+              type: number
+              decimals: 0
+
+      # Disk Alarm Metric
+      - hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.disk_free_alarm == 1
+            | STATS count = COUNT_DISTINCT(resource.attributes.rabbitmq.node.name)
+          primary:
+            field: "count"
+            label: "Disk Alarm"
+            format:
+              type: number
+              decimals: 0
+
+      # FD Utilization % Metric
+      - hide_title: true
+        size: {w: 8, h: 6}
+        position: {x: 40, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.fd_used IS NOT NULL AND rabbitmq.node.fd_total IS NOT NULL AND rabbitmq.node.fd_total > 0
+            | STATS fd_used = MAX(LAST_OVER_TIME(rabbitmq.node.fd_used)), fd_total = MAX(LAST_OVER_TIME(rabbitmq.node.fd_total)) BY resource.attributes.rabbitmq.node.name
+            | EVAL pct = 1.0 * fd_used / fd_total
+            | STATS max_pct = MAX(pct)
+          primary:
+            field: "max_pct"
+            label: "Max FD %"
+            format:
+              type: percent
+              decimals: 1
+
+      # Socket Utilization % Metric
+      - hide_title: true
+        size: {w: 16, h: 6}
+        position: {x: 16, y: 8}
+        esql:
+          type: metric
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.sockets_used IS NOT NULL AND rabbitmq.node.sockets_total IS NOT NULL AND rabbitmq.node.sockets_total > 0
+            | STATS s_used = MAX(LAST_OVER_TIME(rabbitmq.node.sockets_used)), s_total = MAX(LAST_OVER_TIME(rabbitmq.node.sockets_total)) BY resource.attributes.rabbitmq.node.name
+            | EVAL pct = 1.0 * s_used / s_total
+            | STATS max_pct = MAX(pct)
+          primary:
+            field: "max_pct"
+            label: "Max Socket %"
+            format:
+              type: percent
+              decimals: 1
+
+      # Proc Utilization % Metric
+      - hide_title: true
+        size: {w: 16, h: 6}
+        position: {x: 32, y: 8}
+        esql:
+          type: metric
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.proc_used IS NOT NULL AND rabbitmq.node.proc_total IS NOT NULL AND rabbitmq.node.proc_total > 0
+            | STATS p_used = MAX(LAST_OVER_TIME(rabbitmq.node.proc_used)), p_total = MAX(LAST_OVER_TIME(rabbitmq.node.proc_total)) BY resource.attributes.rabbitmq.node.name
+            | EVAL pct = 1.0 * p_used / p_total
+            | STATS max_pct = MAX(pct)
+          primary:
+            field: "max_pct"
+            label: "Max Proc %"
+            format:
+              type: percent
+              decimals: 1
+
+      # Memory Usage by Node Over Time
+      - title: "Memory Usage by Node Over Time"
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 14}
+        esql:
+          type: line
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.mem_used IS NOT NULL
+            | STATS mem_used = MAX(LAST_OVER_TIME(rabbitmq.node.mem_used)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.rabbitmq.node.name
+            | SORT time_bucket ASC
+          dimension:
+            field: "time_bucket"
+            data_type: date
+          metrics:
+            - field: "mem_used"
+              label: "Memory (bytes)"
+              format:
+                type: bytes
+                decimals: 2
+          breakdown:
+            field: "resource.attributes.rabbitmq.node.name"
+            label: "node"
+          legend:
+            visible: show
+            position: right
+
+      # Memory Utilization by Node
+      - title: "Memory Utilization by Node"
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 26}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.mem_used IS NOT NULL AND rabbitmq.node.mem_limit IS NOT NULL AND rabbitmq.node.mem_limit > 0
+            | STATS mem_used = MAX(LAST_OVER_TIME(rabbitmq.node.mem_used)), mem_limit = MAX(LAST_OVER_TIME(rabbitmq.node.mem_limit)) BY resource.attributes.rabbitmq.node.name
+            | EVAL pct = 1.0 * mem_used / mem_limit
+            | SORT pct DESC
+            | LIMIT 10
+          dimension:
+            field: "resource.attributes.rabbitmq.node.name"
+            label: "node"
+          metrics:
+            - field: "pct"
+              label: "Memory %"
+              format:
+                type: percent
+                decimals: 1
+          legend:
+            visible: show
+            position: right
+
+      # Disk Free by Node
+      - title: "Disk Free by Node"
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 26}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.disk_free IS NOT NULL
+            | STATS disk_free = MAX(LAST_OVER_TIME(rabbitmq.node.disk_free)) BY resource.attributes.rabbitmq.node.name
+            | SORT disk_free ASC
+          dimension:
+            field: "resource.attributes.rabbitmq.node.name"
+            label: "node"
+          metrics:
+            - field: "disk_free"
+              label: "Free (bytes)"
+              format:
+                type: bytes
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+
+      # File Descriptor Utilization by Node
+      - title: "File Descriptor Utilization by Node"
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 36}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.fd_used IS NOT NULL AND rabbitmq.node.fd_total IS NOT NULL AND rabbitmq.node.fd_total > 0
+            | STATS fd_used = MAX(LAST_OVER_TIME(rabbitmq.node.fd_used)), fd_total = MAX(LAST_OVER_TIME(rabbitmq.node.fd_total)) BY resource.attributes.rabbitmq.node.name
+            | EVAL pct = 1.0 * fd_used / fd_total
+            | SORT pct DESC
+            | LIMIT 10
+          dimension:
+            field: "resource.attributes.rabbitmq.node.name"
+            label: "node"
+          metrics:
+            - field: "pct"
+              label: "FD %"
+              format:
+                type: percent
+                decimals: 1
+          legend:
+            visible: show
+            position: right
+
+      # Socket Utilization by Node
+      - title: "Socket Utilization by Node"
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 36}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.sockets_used IS NOT NULL AND rabbitmq.node.sockets_total IS NOT NULL AND rabbitmq.node.sockets_total > 0
+            | STATS s_used = MAX(LAST_OVER_TIME(rabbitmq.node.sockets_used)), s_total = MAX(LAST_OVER_TIME(rabbitmq.node.sockets_total)) BY resource.attributes.rabbitmq.node.name
+            | EVAL pct = 1.0 * s_used / s_total
+            | SORT pct DESC
+            | LIMIT 10
+          dimension:
+            field: "resource.attributes.rabbitmq.node.name"
+            label: "node"
+          metrics:
+            - field: "pct"
+              label: "Socket %"
+              format:
+                type: percent
+                decimals: 1
+          legend:
+            visible: show
+            position: right
+
+      # Connection Creation Rate by Node Over Time
+      - title: "Connection Creation Rate by Node Over Time"
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 46}
+        esql:
+          type: line
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.connection.count IS NOT NULL
+            | STATS rate = SUM(RATE(rabbitmq.connection.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.rabbitmq.node.name
+            | SORT time_bucket ASC
+          dimension:
+            field: "time_bucket"
+            data_type: date
+          metrics:
+            - field: "rate"
+              label: "Connections/s"
+              format:
+                type: number
+                decimals: 2
+                suffix: "/s"
+          breakdown:
+            field: "resource.attributes.rabbitmq.node.name"
+            label: "node"
+          legend:
+            visible: show
+            position: right
+
+      # Channel Creation Rate by Node Over Time
+      - title: "Channel Creation Rate by Node Over Time"
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 46}
+        esql:
+          type: line
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.channel.count IS NOT NULL
+            | STATS rate = SUM(RATE(rabbitmq.channel.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.rabbitmq.node.name
+            | SORT time_bucket ASC
+          dimension:
+            field: "time_bucket"
+            data_type: date
+          metrics:
+            - field: "rate"
+              label: "Channels/s"
+              format:
+                type: number
+                decimals: 2
+                suffix: "/s"
+          breakdown:
+            field: "resource.attributes.rabbitmq.node.name"
+            label: "node"
+          legend:
+            visible: show
+            position: right
+
+      # Node Resource Summary Table
+      - title: "Node Resource Summary"
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 56}
+        esql:
+          type: datatable
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.node.mem_used IS NOT NULL
+            | STATS mem_used = MAX(LAST_OVER_TIME(rabbitmq.node.mem_used)), mem_limit = MAX(LAST_OVER_TIME(rabbitmq.node.mem_limit)), mem_alarm = MAX(LAST_OVER_TIME(rabbitmq.node.mem_alarm)), disk_free = MAX(LAST_OVER_TIME(rabbitmq.node.disk_free)), disk_alarm = MAX(LAST_OVER_TIME(rabbitmq.node.disk_free_alarm)), fd_used = MAX(LAST_OVER_TIME(rabbitmq.node.fd_used)), fd_total = MAX(LAST_OVER_TIME(rabbitmq.node.fd_total)), sockets_used = MAX(LAST_OVER_TIME(rabbitmq.node.sockets_used)), sockets_total = MAX(LAST_OVER_TIME(rabbitmq.node.sockets_total)) BY resource.attributes.rabbitmq.node.name
+            | EVAL mem_alarm = COALESCE(mem_alarm, 0), disk_free = COALESCE(disk_free, 0), disk_alarm = COALESCE(disk_alarm, 0), mem_pct = COALESCE(CASE(mem_limit > 0, 1.0 * mem_used / mem_limit), 0.0), fd_pct = COALESCE(CASE(fd_total > 0, 1.0 * fd_used / fd_total), 0.0), sock_pct = COALESCE(CASE(sockets_total > 0, 1.0 * sockets_used / sockets_total), 0.0)
+            | KEEP resource.attributes.rabbitmq.node.name, mem_pct, mem_alarm, disk_free, disk_alarm, fd_pct, sock_pct
+            | RENAME resource.attributes.rabbitmq.node.name AS node
+            | SORT mem_pct DESC NULLS LAST
+            | LIMIT 20
+          dimensions:
+            - field: "node"
+              label: "node"
+          metrics:
+            - field: "mem_pct"
+              label: "Mem %"
+              format:
+                type: percent
+                decimals: 1
+            - field: "mem_alarm"
+              label: "Mem Alarm"
+              format:
+                type: number
+                decimals: 2
+            - field: "disk_free"
+              label: "Disk Free"
+              format:
+                type: bytes
+                decimals: 2
+            - field: "disk_alarm"
+              label: "Disk Alarm"
+              format:
+                type: number
+                decimals: 2
+            - field: "fd_pct"
+              label: "FD %"
+              format:
+                type: percent
+                decimals: 1
+            - field: "sock_pct"
+              label: "Sock %"
+              format:
+                type: percent
+                decimals: 1
+          paging:
+            enabled: true
+            page_size: 10
