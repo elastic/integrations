@@ -1,0 +1,89 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the use of the \"kubectl auth --can-i\" command, which is used to check permissions in Kubernetes clusters. Attackers may use this command to enumerate permissions and discover potential misconfigurations in the cluster, allowing them to gain unauthorized access or escalate privileges.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Kubectl Permission Discovery",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Kubectl Permission Discovery\n\nKubectl is a command-line tool for interacting with Kubernetes clusters, allowing users to manage applications and resources. Adversaries may exploit the \"kubectl auth can-i\" command to probe for permission misconfigurations, potentially leading to unauthorized access or privilege escalation. The detection rule identifies this activity by monitoring specific command executions on Linux systems, flagging potential misuse for further investigation.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the use of the \"kubectl auth can-i\" command, focusing on the process name \"kubectl\" and arguments \"auth\" and \"can-i\".\n- Identify the user account associated with the execution of the command to determine if it aligns with expected administrative activity or if it indicates potential unauthorized access.\n- Check the timing and frequency of the command execution to assess whether it corresponds with routine operations or suggests suspicious behavior.\n- Investigate the source IP address or hostname from which the command was executed to verify if it originates from a known and trusted environment.\n- Examine related logs and events around the time of the alert to identify any subsequent actions that might indicate privilege escalation or unauthorized access attempts.\n- Cross-reference the alert with any recent changes or incidents in the Kubernetes cluster to determine if the command execution is part of a broader security concern.\n\n### False positive analysis\n\n- Routine administrative checks by authorized personnel can trigger the rule. To manage this, create exceptions for specific user accounts or roles that regularly perform these checks as part of their job duties.\n- Automated scripts or monitoring tools that verify permissions as part of their normal operation may cause false positives. Identify these scripts and whitelist their execution paths or associated service accounts.\n- Development and testing environments where developers frequently check permissions might lead to alerts. Consider excluding these environments from the rule or adjusting the risk score for these specific contexts.\n- Scheduled audits or compliance checks that involve permission verification can be mistaken for malicious activity. Document these activities and set up time-based exceptions to prevent unnecessary alerts during known audit periods.\n\n### Response and remediation\n\n- Immediately isolate the affected Kubernetes cluster to prevent further unauthorized access or privilege escalation.\n- Revoke any suspicious or unauthorized credentials or tokens identified during the investigation to prevent further misuse.\n- Conduct a thorough review of the Kubernetes Role-Based Access Control (RBAC) configurations to identify and rectify any permission misconfigurations.\n- Implement stricter access controls and least privilege principles for Kubernetes users and service accounts to minimize the risk of unauthorized access.\n- Monitor for any additional suspicious activity or anomalies in the cluster, focusing on access patterns and command executions.\n- Escalate the incident to the security operations team for further analysis and to determine if additional clusters or systems are affected.\n- Update detection and monitoring systems to enhance visibility and alerting for similar permission discovery attempts in the future.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\nprocess.name == \"kubectl\" and process.args == \"auth\" and process.args == \"can-i\"\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_auth/kubectl_auth_can-i/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "1600f9e2-5be6-4742-8593-1ba50cd94069",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Container",
+            "Domain: Kubernetes",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "1600f9e2-5be6-4742-8593-1ba50cd94069_2",
+    "type": "security-rule"
+}
