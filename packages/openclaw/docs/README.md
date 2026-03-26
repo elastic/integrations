@@ -33,8 +33,8 @@ For a detailed list of exported fields, refer to the [ECS Field Reference](https
 | openclaw.model | Model name | keyword |
 | openclaw.role | Role of the message sender (user or assistant) | keyword |
 | openclaw.session.id | Session ID | keyword |
-| openclaw.text | Text content of the interaction | keyword |
-| openclaw.thinking | Internal thinking process | keyword |
+| openclaw.text | Text content of the interaction | match_only_text |
+| openclaw.thinking | Internal thinking process | match_only_text |
 | openclaw.tool_calls.arguments | Arguments passed to the tool | flattened |
 | openclaw.tool_calls.name | Name of the tool called | keyword |
 | openclaw.usage.input_tokens | Number of input tokens | long |
