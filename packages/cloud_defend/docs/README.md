@@ -25,19 +25,66 @@ Policies are composed of selectors and responses. A given policy must contain at
 
 # Deployment
 
-The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IoC) approach, streamlining the deployment process and enabling easier management.
+The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IaC) approach, streamlining the deployment process and enabling easier management.
 
-Note: You will need to include the following `capabilities` under `securityContext` in your k8s yaml in order for the service to work.
-```
+> **Standalone mode**: When using standalone mode, the agent and integration policy must be configured via `elastic-agent.yaml`. The integration supports **Elasticsearch** as the only output type, with either **basic** (username/password) or **API key** authentication.
+
+The following additions to your DaemonSet spec are required for the integration to function.
+
+**Security context** — required Linux capabilities:
+```yaml
 securityContext:
     runAsUser: 0
-    # The following capabilities are needed for 'Defend for containers' integration (cloud-defend)
-    # If you are using this integration, please uncomment these lines before applying.
     capabilities:
       add:
-        - BPF # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps.
-        - PERFMON # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations.
-        - SYS_RESOURCE # Allow use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
+        - BPF          # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps
+        - PERFMON      # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations
+        - SYS_RESOURCE # allows use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
+```
+
+**Environment variable** — allows the integration to read the list of host processes during startup:
+```yaml
+env:
+  - name: HOSTFS_PROC_PATH
+    value: "/hostfs/proc"
+```
+
+**Volume mounts** (container-level) — required host filesystem paths:
+```yaml
+volumeMounts:
+  - name: proc
+    mountPath: /hostfs/proc
+    readOnly: true
+  - name: sys-kernel-debug
+    mountPath: /sys/kernel/debug
+  - name: boot
+    mountPath: /boot
+    readOnly: true
+  - name: sys-fs-bpf
+    mountPath: /sys/fs/bpf
+  - name: sys-kernel-security
+    mountPath: /sys/kernel/security
+    readOnly: true
+```
+
+**Volumes** (pod-level):
+```yaml
+volumes:
+  - name: proc                  # host process list, used to read host processes during startup
+    hostPath:
+      path: /proc
+  - name: sys-kernel-debug      # used for diagnostics and kprobes / tracepoints
+    hostPath:
+      path: /sys/kernel/debug
+  - name: boot                  # used as a fallback for loading BTF info on some kernels
+    hostPath:
+      path: /boot
+  - name: sys-fs-bpf            # used for BPF maps
+    hostPath:
+      path: /sys/fs/bpf
+  - name: sys-kernel-security   # used for BPF LSM program attachment
+    hostPath:
+      path: /sys/kernel/security
 ```
 
 # Policy example
@@ -260,7 +307,7 @@ The following fields are populated for all events where `event.category: process
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
 | [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Ubuntu 20.04.5' |
 | [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
-| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Linux |
+| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Linux' |
 | [host.os.platform](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'ubuntu' |
 | [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'linux' |
 | [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | '20.04.5' |
@@ -337,86 +384,107 @@ The following fields are populated for all events where `event.category: process
 
 The following fields are populated for all events where `event.category: file`
 
-| Field | Examples |
-| --------- | ----------- |
-| [@timestamp](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-timestamp) | '2023-03-20T16:03:59.520Z' |
-| [agent.id](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-id)  | '7829f26d-c2d1-4eaf-a1ac-cd9cb9e12f75' |
-| [agent.type](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-type) | 'cloud-defend' |
-| [agent.version](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-version) | '8.8.0' |
-| [cloud.account.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-id) | '1234567abc' |
-| [cloud.account.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-name) | 'elastic-dev' |
-| [cloud.availability_zone](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-availability-zone) | us-east-1c |
-| [cloud.project.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-id) | '123456abc' |
-| [cloud.project.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-name) | 'staging' |
-| [cloud.provider](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-provider) | aws |
-| [cloud.region](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-region) | 'us-east-1' |
-| cloud_defend.matched_selectors | ['binModifications'] |
-| cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
-| cloud_defend.package_policy_revision | 2 |
+| Field | Examples                                                                                                                         |
+| --------- |----------------------------------------------------------------------------------------------------------------------------------|
+| [@timestamp](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-timestamp) | '2023-03-20T16:03:59.520Z'                                                                                                       |
+| [agent.id](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-id)  | '7829f26d-c2d1-4eaf-a1ac-cd9cb9e12f75'                                                                                           |
+| [agent.type](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-type) | 'cloud-defend'                                                                                                                   |
+| [agent.version](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-version) | '8.8.0'                                                                                                                          |
+| [cloud.account.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-id) | '1234567abc'                                                                                                                     |
+| [cloud.account.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-name) | 'elastic-dev'                                                                                                                    |
+| [cloud.availability_zone](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-availability-zone) | us-east-1c                                                                                                                       |
+| [cloud.project.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-id) | '123456abc'                                                                                                                      |
+| [cloud.project.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-name) | 'staging'                                                                                                                        |
+| [cloud.provider](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-provider) | aws                                                                                                                              |
+| [cloud.region](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-region) | 'us-east-1'                                                                                                                      |
+| cloud_defend.matched_selectors | ['binModifications']                                                                                                             |
+| cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03                                                                                             |
+| cloud_defend.package_policy_revision | 2                                                                                                                                |
 | cloud_defend.hook_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
-| [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
-| [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
-| [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
-| [data_stream.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-dataset) | 'cloud_defend.process' |
-| [data_stream.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-namespace) | 'default' |
-| [data_stream.type](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-type) | 'logs' |
-| [ecs.version](https://www.elastic.co/guide/en/ecs/current/ecs-ecs.html#field-ecs-version) | 8.7.0 |
-| [event.action](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-action) | One of: 'creation', 'modification', 'deletion', 'rename', 'link', 'open' |
-| [event.agent_id_status](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-agent-id-status) | 'verified' |
-| [event.category](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-category) | 'process' |
-| [event.created](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-created) | '2023-03-20T16:03:59.520Z' |
-| [event.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-dataset) | 'cloud_defend.process' |
-| [event.id](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-id) | '3ee85eee-72d9-4e9d-934f-3787952ca830' |
-| [event.ingested](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-ingested) | '2023-03-20T16:04:12Z' |
-| [event.kind](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-kind) | One of: 'event', 'alert' |
-| [event.module](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-module) | 'cloud_defend' |
-| [event.type](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-type) | One of: 'start', 'end', 'denied' |
-| [file.extension](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-extension) | ts |
-| [file.name](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-name) | script.ts |
-| [file.path](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-path) | /home/workspace/project/script.ts |
-| [group.id](https://www.elastic.co/guide/en/ecs/current/ecs-group.html#field-group-id) | '0' |
-| [host.architecture](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-architecture) | 'amd64' |
-| [host.boot.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-boot-id) | '815a760f-8153-49e1-9d0b-da0d3b2a468c' |
-| [host.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-id) | '1bb9e6a948dfb1c3cd38d1fdc8de4481' |
-| [host.ip](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-ip) | ['127.0.0.1', '172.20.0.2', '172.18.0.6'] |
-| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'kibana-node' |
-| [host.mac](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-mac) | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
-| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'kibana-node.myapp.co' |
-| [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
-| [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5' |
-| [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
-| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-name) | 'Linux |
-| [host.os.platform](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-platform) | 'ubuntu' |
-| [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux' |
-| [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5' |
-| [host.pid_ns_ino](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-pid-ns-ino) | 4026531836 |
-| [orchestrator.cluster.id](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-id) | '12345' |
-| [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
-| [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
-| [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| orchestrator.resource.annotation | ['note:testing'] |
-| orchestrator.resource.label | ['service:webapp'] |
-| [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
-| [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ... |
-| [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
-| [process.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
-| [process.entry_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
-| [process.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-executable) | '/usr/bin/vi' |
-| [process.group_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
-| [process.interactive](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-interactive) | true |
-| [process.name](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-name) | 'vi' |
-| [process.parent.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
-| [process.pid](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-pid) | 1916234 |
-| [process.session_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
-| [process.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
-| [user.id](https://www.elastic.co/guide/en/ecs/current/ecs-user.html#field-user-id) | '0' |
+| [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1                                                                                                                          
+| [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx                                                                                                                            |
+| [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest                                                                                                                           |
+| [data_stream.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-dataset) | 'cloud_defend.file'                                                                                                              |
+| [data_stream.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-namespace) | 'default'                                                                                                                        |
+| [data_stream.type](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-type) | 'logs'                                                                                                                           |
+| [ecs.version](https://www.elastic.co/guide/en/ecs/current/ecs-ecs.html#field-ecs-version) | 8.7.0                                                                                                                            |
+| [event.action](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-action) | One of: 'creation', 'modification', 'deletion', 'rename', 'link', 'open'                                                         |
+| [event.agent_id_status](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-agent-id-status) | 'verified'                                                                                                                       |
+| [event.category](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-category) | 'file'                                                                                                                           |
+| [event.created](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-created) | '2023-03-20T16:03:59.520Z'                                                                                                       |
+| [event.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-dataset) | 'cloud_defend.file'                                                                                                              |
+| [event.id](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-id) | '3ee85eee-72d9-4e9d-934f-3787952ca830'                                                                                           |
+| [event.ingested](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-ingested) | '2023-03-20T16:04:12Z'                                                                                                           |
+| [event.kind](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-kind) | One of: 'event', 'alert'                                                                                                         |
+| [event.module](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-module) | 'cloud_defend'                                                                                                                   |
+| [event.type](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-type) | One of: 'start', 'end', 'denied'                                                                                                 |
+| [file.extension](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-extension) | ts                                                                                                                               |
+| [file.name](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-name) | script.ts                                                                                                                        |
+| [file.path](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-path) | /home/workspace/project/script.ts                                                                                                |
+| [group.id](https://www.elastic.co/guide/en/ecs/current/ecs-group.html#field-group-id) | '0'                                                                                                                              |
+| [host.architecture](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-architecture) | 'amd64'                                                                                                                          |
+| [host.boot.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-boot-id) | '815a760f-8153-49e1-9d0b-da0d3b2a468c'                                                                                           |
+| [host.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-id) | '1bb9e6a948dfb1c3cd38d1fdc8de4481'                                                                                               |
+| [host.ip](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-ip) | ['127.0.0.1', '172.20.0.2', '172.18.0.6']                                                                                        |
+| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'kibana-node'                                                                                                                    |
+| [host.mac](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-mac) | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee']                                                                                       |
+| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'kibana-node.myapp.co'                                                                                                           |
+| [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu'                                                                                                                         |
+| [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5'                                                                                                                 |
+| [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023'                                                                                   |
+| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-name) | 'Linux                                                                                                                           |
+| [host.os.platform](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-platform) | 'ubuntu'                                                                                                                         |
+| [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux'                                                                                                                          |
+| [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5'                                                                                                                        |
+| [host.pid_ns_ino](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-pid-ns-ino) | 4026531836                                                                                                                       |
+| [orchestrator.cluster.id](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-id) | '12345'                                                                                                                          |
+| [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website'                                                                                                                        |
+| [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default                                                                                                                          |
+| [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6'                                                                                                                     |
+| orchestrator.resource.annotation | ['note:testing']                                                                                                                 |
+| orchestrator.resource.label | ['service:webapp']                                                                                                               |
+| [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy                                                                                                                     |
+| [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ...                                                                                                                              |
+| [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod                                                                                                                              |
+| [process.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ=='                                                   |
+| [process.entry_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ=='                                                   |
+| [process.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-executable) | '/usr/bin/vi'                                                                                                                    |
+| [process.group_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ=='                                                   |
+| [process.interactive](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-interactive) | true                                                                                                                             |
+| [process.name](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-name) | 'vi'                                                                                                                             |
+| [process.parent.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ=='                                                   |
+| [process.pid](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-pid) | 1916234                                                                                                                          |
+| [process.session_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ=='                                                   |
+| [process.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0'                                                                                                                              |
+| [user.id](https://www.elastic.co/guide/en/ecs/current/ecs-user.html#field-user-id) | '0'                                                                                                                              |
 
 # Support matrix
 
-| &nbsp; | EKS 1.24-1.27 (AL2022) | GKE 1.24-1.27 (COS) |
+> **Platform requirements**: The integration runs on **Linux only** (x86_64 architecture) and requires **Kubernetes 1.24+** with **containerd** or **CRI-O** as the container runtime interface (CRI).
+
+## Linux kernel requirements
+
+Minimum kernel version: **5.10 LTS**. The following kernel options must be enabled:
+
+| Kernel option | Required value | Purpose |
 | -- | -- | -- |
-| Process event exports | ✅ | ✅ |
-| File event exports | ✅ | ✅ |
-| Drift prevention | ✅ | ✅ |
-| Mount point awareness | ✅ | ✅ |
-| Process blocking| ✅ | ✅ |
+| `CONFIG_BPF_LSM` | `y` | BPF-LSM support |
+| `CONFIG_SECURITY_PATH` | `y` | Security path hooks |
+| `CONFIG_DEBUG_INFO_BTF` | `y` | BTF support |
+| LSM boot parameter | `bpf` must be included in the LSM list | BPF LSM activation |
+
+## Managed Kubernetes
+
+| &nbsp; | EKS (AL2, AL2023) | GKE (COS, Ubuntu) | AKS (AzureLinux3) |
+| -- | -- | -- | -- |
+| Process event exports | ✅ | ✅ | ✅ |
+| File event exports | ✅ | ✅ | ✅ |
+| Drift prevention | ✅ | ✅ | ✅ |
+| Mount point awareness | ✅ | ✅ | ✅ |
+| Process blocking | ✅ | ✅ | ✅ |
+
+> **AWS cloud metadata**: Cloud metadata is supported only for IMDSv1. The integration will work with IMDSv2, but `cloud.*` fields will be empty.
+
+## Self-managed Kubernetes
+
+The integration works on self-managed Kubernetes clusters if the node operating system and kernel comply with the requirements above. Note that cloud metadata (`cloud.*` fields) will not be populated for self-managed deployments.
