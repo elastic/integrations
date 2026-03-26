@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies recursive grep activity on Linux or macOS where the command line suggests hunting for secrets, credentials, keys, tokens, or sensitive paths (for example .env, .git, .aws). Events are aggregated per host, user, parent process, and one-minute window, the rule surfaces activity only when at least three distinct grep command lines match in the same bucket, to reduce noise from one-off searches.",
+        "from": "now-9m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Credential Discovery via Recursive Grep",
+        "note": "## Triage and analysis\n\n### Investigating Potential Credential Discovery via Recursive Grep\n\nAdversaries and insider threats sometimes use `grep -r` (or `--recursive`, `-R`) across directories to find passwords,\nAPI keys, private keys, cloud tokens, or repository and environment files. This rule looks for `grep`/`egrep` process\nstarts with recursive flags and command-line patterns associated with credential and secret discovery, then requires\n**three or more distinct command lines** in the same one-minute bucket per host, user, and parent process.\n\n### Possible investigation steps\n\n- Review **Esql.cmd_values** for the exact patterns searched (paths, regex, file globs).\n- Inspect **Esql.pcmd_values** and **process.parent.name** to see the launch context (interactive shell, script, IDE, CI).\n- Confirm whether the user and host normally run security scans, audits, or developer tooling that legitimately greps for secrets.\n- If suspicious, search the same host for file access, archive exfiltration, or cloud API use in the surrounding timeframe.\n\n### False positive analysis\n\n- Security scanners, secret scanners (e.g. in CI), and compliance scripts may match. Tune by **parent process**, **user**,\n  **working directory**, or organizational allowlists.\n- Legitimate searches in documentation for the word \"password\" can match; the **unique_cmd >= 3** threshold reduces but\n  does not eliminate this.\n\n### Response and remediation\n\n- If unauthorized: contain the host, reset or rotate any credentials that may have been exposed, and review VCS and\n  cloud audit logs for follow-on abuse.\n",
+        "query": "from logs-endpoint.events.process-* metadata _id, _version, _index\n| where host.os.type in (\"linux\", \"macos\")\n  and event.category == \"process\"\n  and process.name in (\"grep\", \"egrep\")\n  and (to_lower(process.command_line) like \"* -r*\" or to_lower(process.command_line) like \"*--recursive*\")\n  and (\n    process.command_line like \"*password*\"\n    or process.command_line like \"*passwd*\"\n    or process.command_line like \"*pwd*\"\n    or process.command_line like \"*secret*\"\n    or process.command_line like \"*token*\"\n    or process.command_line like \"*apikey*\"\n    or process.command_line like \"*api_key*\"\n    or process.command_line like \"*api.key*\"\n    or process.command_line like \"*access_key*\"\n    or process.command_line like \"*private_key*\"\n    or process.command_line like \"*client_secret*\"\n    or process.command_line like \"*credential*\"\n    or process.command_line like \"*auth*\"\n    or process.command_line like \"*bearer*\"\n    or process.command_line like \"*BEGIN*PRIVATE*KEY*\"\n    or process.command_line like \"*ssh-rsa*\"\n    or process.command_line like \"*ghp_*\"\n    or process.command_line like \"*github_pat*\"\n    or process.command_line like \"*xoxb-*\"\n    or process.command_line like \"*hooks.slack.com*\"\n    or process.command_line like \"*discord.com/api/webhooks*\"\n    or process.command_line like \"*/.aws/*\"\n    or process.command_line like \"*/.git/*\"\n    or process.command_line like \"*/.env*\"\n  )\n  and (process.parent.command_line is null or not (to_lower(process.parent.command_line) like \"*shell-snapshots*\" and process.parent.name in (\"bash\", \"sh\", \"zsh\")))\n| eval Esql.time_bucket = date_trunc(1 minute, @timestamp)\n| stats Esql.unique_cmd = count_distinct(process.command_line),\n        Esql.cmd_values = values(process.command_line),\n        Esql.pcmd_values = values(process.parent.command_line)\n  by process.name, host.id, host.name, agent.id, process.parent.name, user.name, Esql.time_bucket\n| where Esql.unique_cmd >= 3\n| keep host.id, host.name, agent.id, user.name, process.parent.name, Esql.*\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/001/",
+            "https://attack.mitre.org/techniques/T1083/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.cmd_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.pcmd_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_bucket",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_cmd",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b8e4c2a1-7f3d-4e9b-8c5a-1d0e6f2a4b8c",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1083",
+                        "name": "File and Directory Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1083/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "b8e4c2a1-7f3d-4e9b-8c5a-1d0e6f2a4b8c_1",
+    "type": "security-rule"
+}
