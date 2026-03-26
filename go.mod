@@ -76,7 +76,7 @@ require (
 	github.com/elastic/go-resource v0.2.0 // indirect
 	github.com/elastic/go-sysinfo v1.15.1 // indirect
 	github.com/elastic/go-windows v1.0.2 // indirect
-	github.com/elastic/gojsonschema v1.2.1 // indirect
+	github.com/elastic/gojsonschema v1.2.2 // indirect
 	github.com/elastic/kbncontent v0.1.4 // indirect
 	github.com/elastic/package-spec/v3 v3.5.8 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.2 // indirect
@@ -186,7 +186,7 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	github.com/yuin/goldmark v1.7.16 // indirect
+	github.com/yuin/goldmark v1.8.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.elastic.co/apm/module/apmgorilla/v2 v2.7.4 // indirect
 	go.elastic.co/apm/module/apmhttp/v2 v2.7.4 // indirect
@@ -251,3 +251,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/elastic/package-spec/v3 => github.com/teresaromero/package-spec/v3 v3.0.0-20260326082034-193981ec8280
