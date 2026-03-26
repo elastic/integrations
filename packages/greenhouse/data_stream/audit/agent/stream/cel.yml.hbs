@@ -82,10 +82,18 @@ program: |
                 "want_more": false,
               }
             : string(resp.Body).contains("Pit_Id") ?
-              // Pit_Id expired — single-object error form clears the cursor
-              {"events": {"error": {
-                "message": "GET /events: Pit_Id expired, will retry without pagination token",
-              }}}
+              // Pit_Id expired — emit placeholder event to persist cursor update
+              // (clearing pit_id/search_after while preserving last_event_time).
+              // The placeholder is dropped by the drop_event processor below.
+              {
+                "events": [{"message": "pit_id_expired"}],
+                "cursor": {
+                  "pit_id": "",
+                  "search_after": "",
+                  "last_event_time": state.?cursor.last_event_time.orValue(after_time),
+                },
+                "want_more": false,
+              }
             :
               // Other error — single-object form: cursor cleared, next run retries
               {"events": {"error": {
@@ -101,6 +109,7 @@ program: |
       )
     )
   )
+drop_event.when.equals.message: "pit_id_expired"
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
