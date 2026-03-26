@@ -1,6 +1,9 @@
 ---
 description: Pipeline for Greenhouse Audit Logs
 processors:
+  - terminate:
+      tag: terminate_agent_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - set:
       field: ecs.version
       value: 8.11.0
@@ -144,12 +147,14 @@ processors:
   - geoip:
       field: source.ip
       target_field: source.geo
+      if: ctx.source?.ip != null
       ignore_missing: true
       tag: geoip_source_geo
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
+      if: ctx.source?.ip != null
       properties:
         - asn
         - organization_name
@@ -253,4 +258,4 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: 'Processor {{{ _ingest.on_failure_processor_tag }}} failed: {{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} failed: {{{ _ingest.on_failure_message }}}'
