@@ -70,7 +70,30 @@
         "description": "Dashboard for managed_device logs from Microsoft Intune.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "microsoft_intune.managed_device"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "microsoft_intune.managed_device"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -523,7 +546,7 @@
                     "i": "7502190f-52b8-4586-a89d-b009b436b0f3",
                     "w": 24,
                     "x": 24,
-                    "y": 27
+                    "y": 39
                 },
                 "panelIndex": "7502190f-52b8-4586-a89d-b009b436b0f3",
                 "title": "Devices by Compliance State",
@@ -733,7 +756,7 @@
                     "i": "780b8ce6-5bce-41e2-9543-83cd94b2811f",
                     "w": 24,
                     "x": 0,
-                    "y": 27
+                    "y": 39
                 },
                 "panelIndex": "780b8ce6-5bce-41e2-9543-83cd94b2811f",
                 "title": "Devices by Ownership",
@@ -958,7 +981,7 @@
                     "i": "96cfe814-b353-4103-83be-b8d7471a74d3",
                     "w": 24,
                     "x": 24,
-                    "y": 42
+                    "y": 54
                 },
                 "panelIndex": "96cfe814-b353-4103-83be-b8d7471a74d3",
                 "title": "Devices by Manufacturer",
@@ -1184,7 +1207,7 @@
                     "i": "72a0d2f2-cbcc-41f9-a91a-e2020d26da2e",
                     "w": 24,
                     "x": 0,
-                    "y": 57
+                    "y": 69
                 },
                 "panelIndex": "72a0d2f2-cbcc-41f9-a91a-e2020d26da2e",
                 "title": "Devices by Model",
@@ -1374,47 +1397,6 @@
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "**Microsoft Intune**\n\n**Overview**\n\nThis dashboard provides a concise overview of managed device inventory data, offering visibility into device posture and distribution across the environment. It highlights the total number of managed devices and presents breakdowns by operating system, compliance state, ownership type, SKU family, manufacturer, and model.\n\nThe dashboard also tracks device records over time to monitor enrollment and activity trends. Detailed tables provide comprehensive device inventory information, including OS version, device state, and last contact time, along with identity and hardware attributes such as device ID, serial number, manufacturer, model, and Wi-Fi MAC address.\n\nAn essential device details view supports quick operational and compliance checks by displaying key fields like device name, user email, OS, and compliance state.\n\n[**Integrations Page**](/app/integrations/detail/microsoft_intune/overview)",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 27,
-                    "i": "markdown-01",
-                    "w": 15,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "markdown-01",
-                "title": "Table of Contents",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
@@ -1549,6 +1531,712 @@
                 "panelIndex": "metric-01",
                 "title": "Total Managed Devices",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "0be10e4e-d1d0-46bf-bc26-a92530920673",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf": {
+                                            "columnOrder": [
+                                                "fe915286-05f4-4d06-8e29-ef685c3c873b",
+                                                "36db7da0-f593-4ef8-b573-7b3840349664"
+                                            ],
+                                            "columns": {
+                                                "36db7da0-f593-4ef8-b573-7b3840349664": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "fe915286-05f4-4d06-8e29-ef685c3c873b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Sku Family",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "36db7da0-f593-4ef8-b573-7b3840349664",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "microsoft_intune.managed_device.properties.sku_family"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "0be10e4e-d1d0-46bf-bc26-a92530920673",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "microsoft_intune.managed_device"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "microsoft_intune.managed_device"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "36db7da0-f593-4ef8-b573-7b3840349664"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "fe915286-05f4-4d06-8e29-ef685c3c873b"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "microsoft_intune.managed_device"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "microsoft_intune.managed_device"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f79c5bf4-fecf-4012-bb24-5099b94d3dde",
+                    "w": 24,
+                    "x": 0,
+                    "y": 54
+                },
+                "panelIndex": "f79c5bf4-fecf-4012-bb24-5099b94d3dde",
+                "title": "Devices by Sku Family",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "db1c0ed1-bdf9-42e2-b62c-b3836523973f",
+                    "w": 24,
+                    "x": 24,
+                    "y": 69
+                },
+                "panelIndex": "db1c0ed1-bdf9-42e2-b62c-b3836523973f",
+                "panelRefName": "panel_db1c0ed1-bdf9-42e2-b62c-b3836523973f",
+                "title": "Device Essential Details [Logs Microsoft Intune]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "5fccbd92-379a-433e-8353-209f64b801b4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 84
+                },
+                "panelIndex": "5fccbd92-379a-433e-8353-209f64b801b4",
+                "panelRefName": "panel_5fccbd92-379a-433e-8353-209f64b801b4",
+                "title": "Device Inventory Details [Logs Microsoft Intune]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "72f8d8ff-3b80-4e65-8445-6a20a97c30d4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 98
+                },
+                "panelIndex": "72f8d8ff-3b80-4e65-8445-6a20a97c30d4",
+                "panelRefName": "panel_72f8d8ff-3b80-4e65-8445-6a20a97c30d4",
+                "title": "Device Identity \u0026 Hardware Details [Logs Microsoft Intune]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-3b806974-b2be-432b-8284-011c5dac07ae",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "62c73a10-b01a-48ed-a2c3-5976ef84761b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "abba7f33-8ee9-46dc-bb88-a3bc76144af9",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3b806974-b2be-432b-8284-011c5dac07ae": {
+                                            "columnOrder": [
+                                                "d7a3b0ab-1ff8-4501-a0a6-257bf095f4e1"
+                                            ],
+                                            "columns": {
+                                                "d7a3b0ab-1ff8-4501-a0a6-257bf095f4e1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unencrypted Device Storage",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "62c73a10-b01a-48ed-a2c3-5976ef84761b",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "microsoft_intune.managed_device"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "microsoft_intune.managed_device"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "microsoft_intune.managed_device.properties.encryption_status_string",
+                                        "index": "abba7f33-8ee9-46dc-bb88-a3bc76144af9",
+                                        "key": "microsoft_intune.managed_device.properties.encryption_status_string",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "False"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "microsoft_intune.managed_device.properties.encryption_status_string": "False"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "3b806974-b2be-432b-8284-011c5dac07ae",
+                                "layerType": "data",
+                                "metricAccessor": "d7a3b0ab-1ff8-4501-a0a6-257bf095f4e1"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "microsoft_intune.managed_device"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "microsoft_intune.managed_device"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "microsoft_intune.managed_device.properties.encryption_status_string",
+                                "index": "logs-*",
+                                "key": "microsoft_intune.managed_device.properties.encryption_status_string",
+                                "negate": false,
+                                "params": {
+                                    "query": "False"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "microsoft_intune.managed_device.properties.encryption_status_string": "False"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "d9eb6ca1-3159-4625-b4ef-825793dbfc78",
+                    "w": 9,
+                    "x": 15,
+                    "y": 12
+                },
+                "panelIndex": "d9eb6ca1-3159-4625-b4ef-825793dbfc78",
+                "title": "Total Managed Devices (copy)",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-bce914d8-c055-435f-bf72-fca31b4461d1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d3f5005a-aa79-4e6d-8bf1-6dafa0def0ff",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "bce914d8-c055-435f-bf72-fca31b4461d1": {
+                                            "columnOrder": [
+                                                "3106f17e-71ce-45e1-9973-a4949937a850",
+                                                "cedb9e8e-bc40-4fb4-bec2-70e78446d6b7"
+                                            ],
+                                            "columns": {
+                                                "3106f17e-71ce-45e1-9973-a4949937a850": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "microsoft_intune.managed_device.properties.last_contact",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "microsoft_intune.managed_device.properties.last_contact"
+                                                },
+                                                "cedb9e8e-bc40-4fb4-bec2-70e78446d6b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "d3f5005a-aa79-4e6d-8bf1-6dafa0def0ff",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "microsoft_intune.managed_device"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "microsoft_intune.managed_device"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "cedb9e8e-bc40-4fb4-bec2-70e78446d6b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "bce914d8-c055-435f-bf72-fca31b4461d1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "3106f17e-71ce-45e1-9973-a4949937a850"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "microsoft_intune.managed_device"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "microsoft_intune.managed_device"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "41f4a375-0e68-40fd-9980-b612c4e02a14",
+                    "w": 24,
+                    "x": 24,
+                    "y": 12
+                },
+                "panelIndex": "41f4a375-0e68-40fd-9980-b612c4e02a14",
+                "title": "Device Last Contact Trend",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Microsoft Intune**\n\n**Overview**\n\nThis dashboard provides a concise overview of managed device inventory data, offering visibility into device posture and distribution across the environment. It highlights the total number of managed devices and unencrypted device storage and presents breakdowns by operating system, compliance state, jailbroken, ownership type, SKU family, manufacturer, and model.\n\nThe dashboard also tracks device records over time to monitor enrollment and activity trends. Detailed tables provide comprehensive device inventory information, including OS version, device state, and last contact time, along with identity and hardware attributes such as device ID, serial number, manufacturer, model, and Wi-Fi MAC address.\n\nAn essential device details view supports quick operational and compliance checks by displaying key fields like device name, user email, OS, and compliance state.\n\n[**Integrations Page**](/app/integrations/detail/microsoft_intune/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 24,
+                    "i": "markdown-01",
+                    "w": 15,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "markdown-01",
+                "title": "Table of Contents",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -1752,9 +2440,9 @@
                 "gridData": {
                     "h": 15,
                     "i": "9e9e723d-ea92-42b1-9ad6-def86414f2c9",
-                    "w": 33,
-                    "x": 15,
-                    "y": 12
+                    "w": 24,
+                    "x": 0,
+                    "y": 24
                 },
                 "panelIndex": "9e9e723d-ea92-42b1-9ad6-def86414f2c9",
                 "title": "Devices by OS",
@@ -1768,17 +2456,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "0be10e4e-d1d0-46bf-bc26-a92530920673",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf": {
                                             "columnOrder": [
@@ -1808,7 +2492,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Sku Family",
+                                                    "label": "JailBroken",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1829,18 +2513,27 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "microsoft_intune.managed_device.properties.sku_family"
+                                                    "sourceField": "microsoft_intune.managed_device.properties.jail_broken"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -1853,7 +2546,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "0be10e4e-d1d0-46bf-bc26-a92530920673",
+                                        "index": "logs-*",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1955,77 +2648,14 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "f79c5bf4-fecf-4012-bb24-5099b94d3dde",
-                    "w": 24,
-                    "x": 0,
-                    "y": 42
-                },
-                "panelIndex": "f79c5bf4-fecf-4012-bb24-5099b94d3dde",
-                "title": "Devices by Sku Family",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "db1c0ed1-bdf9-42e2-b62c-b3836523973f",
+                    "i": "49792aae-dc44-48bf-bb6a-9482d1604c72",
                     "w": 24,
                     "x": 24,
-                    "y": 57
+                    "y": 24
                 },
-                "panelIndex": "db1c0ed1-bdf9-42e2-b62c-b3836523973f",
-                "panelRefName": "panel_db1c0ed1-bdf9-42e2-b62c-b3836523973f",
-                "title": "Device Essential Details [Logs Microsoft Intune]",
-                "type": "search"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "5fccbd92-379a-433e-8353-209f64b801b4",
-                    "w": 48,
-                    "x": 0,
-                    "y": 72
-                },
-                "panelIndex": "5fccbd92-379a-433e-8353-209f64b801b4",
-                "panelRefName": "panel_5fccbd92-379a-433e-8353-209f64b801b4",
-                "title": "Device Inventory Details [Logs Microsoft Intune]",
-                "type": "search"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "72f8d8ff-3b80-4e65-8445-6a20a97c30d4",
-                    "w": 48,
-                    "x": 0,
-                    "y": 86
-                },
-                "panelIndex": "72f8d8ff-3b80-4e65-8445-6a20a97c30d4",
-                "panelRefName": "panel_72f8d8ff-3b80-4e65-8445-6a20a97c30d4",
-                "title": "Device Identity \u0026 Hardware Details [Logs Microsoft Intune]",
-                "type": "search"
+                "panelIndex": "49792aae-dc44-48bf-bb6a-9482d1604c72",
+                "title": "Devices by JailBroken",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
@@ -2033,9 +2663,14 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-02-26T12:43:59.505Z",
+    "created_at": "2026-03-26T09:07:05.260Z",
     "id": "microsoft_intune-adaf931d-1be6-4394-a046-35e1d1010f9e",
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "microsoft_intune-c91d6412-560c-49a5-80c8-eca25bc242dc",
             "name": "db1c0ed1-bdf9-42e2-b62c-b3836523973f:panel_db1c0ed1-bdf9-42e2-b62c-b3836523973f",
@@ -2113,17 +2748,47 @@
         },
         {
             "id": "logs-*",
-            "name": "9e9e723d-ea92-42b1-9ad6-def86414f2c9:indexpattern-datasource-layer-8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "f79c5bf4-fecf-4012-bb24-5099b94d3dde:indexpattern-datasource-layer-8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "f79c5bf4-fecf-4012-bb24-5099b94d3dde:0be10e4e-d1d0-46bf-bc26-a92530920673",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d9eb6ca1-3159-4625-b4ef-825793dbfc78:indexpattern-datasource-layer-3b806974-b2be-432b-8284-011c5dac07ae",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d9eb6ca1-3159-4625-b4ef-825793dbfc78:62c73a10-b01a-48ed-a2c3-5976ef84761b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d9eb6ca1-3159-4625-b4ef-825793dbfc78:abba7f33-8ee9-46dc-bb88-a3bc76144af9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "41f4a375-0e68-40fd-9980-b612c4e02a14:indexpattern-datasource-layer-bce914d8-c055-435f-bf72-fca31b4461d1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "41f4a375-0e68-40fd-9980-b612c4e02a14:d3f5005a-aa79-4e6d-8bf1-6dafa0def0ff",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9e9e723d-ea92-42b1-9ad6-def86414f2c9:indexpattern-datasource-layer-8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "49792aae-dc44-48bf-bb6a-9482d1604c72:indexpattern-datasource-layer-8fd2c4ef-c658-4a14-a8c4-e072bb9cdbcf",
             "type": "index-pattern"
         },
         {
@@ -2139,6 +2804,11 @@
         {
             "id": "logs-*",
             "name": "controlGroup_ctrl-device_registration_state:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],
