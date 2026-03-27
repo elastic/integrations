@@ -6,7 +6,7 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to effici
 
 For a demo, refer to the following video (click to view).
 
-[![CrowdStrike integration video](https://play.vidyard.com/VKKWSpg4sDEk1DBXATkyEP.jpg)](https://videos.elastic.co/watch/VKKWSpg4sDEk1DBXATkyEP)
+[![CrowdStrike integration video](https://play.vidyard.com/vkkwspg4sdek1dbxatkyep.jpg)](https://videos.elastic.co/watch/VKKWSpg4sDEk1DBXATkyEP)
 
 ### Compatibility
 
