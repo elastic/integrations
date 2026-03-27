@@ -184,7 +184,7 @@ Use this flow with Salesforce integration v0.15.0 or higher on any deployment wh
 
 1. **Prepare the JWT client certificate and key.** Generate a private key in PEM format (**PKCS#1** or **PKCS#8**) along with a corresponding X.509 certificate. The certificate is uploaded to the Connected App, while the private key is used by your client to sign JWT assertions. Refer to the [Salesforce documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_key_and_cert.htm) for an example of creating the key and certificate.
 
-2. **Upload the certificate to the Connected App.** In `Use digital signatures` (under `API (Enable OAuth Settings)`), upload the certificate for JWT. Do not upload the private key to Salesforce.
+2. **Upload the certificate to the Connected App.** In `Use digital signatures` (under `API (Enable OAuth Settings)`), upload the X.509 certificate used for JWT. Do not upload the private key to Salesforce.
 
 3. **Note the JWT audience URL** to use (typically `https://login.salesforce.com` or `https://test.salesforce.com` for a sandbox).
 
