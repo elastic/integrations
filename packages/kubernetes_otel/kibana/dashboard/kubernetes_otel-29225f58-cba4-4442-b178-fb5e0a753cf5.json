@@ -152,7 +152,7 @@
             "id": "",
             "params": {
               "fontSize": 12,
-              "markdown": "## ⓘ\n\nCluster metadata isn't enabled by default for most K8s OTel receivers.\n\nCheck the Elastic docs for configuration best-practices.",
+              "markdown": "## ⓘ\n\n?Cluster metadata isn't enabled by default for most K8s OTel receivers.\n\nCheck the Elastic docs for configuration best-practices.",
               "openLinksInNewTab": false
             },
             "title": "",
@@ -219,16 +219,6 @@
                                 "decimals": 2
                               }
                             }
-                          }
-                        },
-                        {
-                          "columnId": "cluster_name",
-                          "customLabel": true,
-                          "fieldName": "cluster_name",
-                          "label": "Cluster name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
                           }
                         },
                         {
@@ -365,11 +355,27 @@
                               }
                             }
                           }
+                        },
+                        {
+                          "columnId": "4195b9a7-e3ac-45b6-9041-32ffb8ab9d55",
+                          "fieldName": "k8s.cluster.name",
+                          "label": "k8s.cluster.name",
+                          "meta": {
+                            "esType": "keyword",
+                            "params": {
+                              "id": "string"
+                            },
+                            "sourceParams": {
+                              "indexPattern": "metrics-*.otel*",
+                              "sourceField": "k8s.cluster.name"
+                            },
+                            "type": "string"
+                          }
                         }
                       ],
                       "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                       "query": {
-                        "esql": "FROM metrics-*.otel*\n| EVAL cluster_name = k8s.cluster.name\n| WHERE cluster_name IS NOT NULL\n| INLINE STATS namespaces = COUNT_DISTINCT(resource.attributes.k8s.namespace.name), pods = COUNT_DISTINCT(resource.attributes.k8s.pod.uid) BY cluster_name\n| WHERE k8s.node.name IS NOT NULL AND LENGTH(TRIM(k8s.node.name)) > 0\n| STATS\n    node_ready = AVG(k8s.node.condition_ready),\n    cpu_usage  = AVG(k8s.node.cpu.usage),\n    alloc_cpu  = AVG(k8s.node.allocatable_cpu),\n    mem_ws     = AVG(k8s.node.memory.working_set),\n    alloc_mem  = AVG(k8s.node.allocatable_memory),\n    fs_usage   = AVG(k8s.node.filesystem.usage),\n    fs_cap     = AVG(k8s.node.filesystem.capacity),\n    namespaces = MAX(namespaces),\n    pods = MAX(pods)\n  BY cluster_name, k8s.node.name\n| EVAL\n    cpu_pct  = ROUND(cpu_usage / alloc_cpu, 2),\n    mem_pct  = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_pct = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| STATS\n    healthy_pct = AVG(node_ready),\n    nodes       = COUNT_DISTINCT(k8s.node.name),\n    cpu_util    = AVG(cpu_pct),\n    mem_util    = AVG(mem_pct),\n    disk_util   = AVG(disk_pct),\n    namespaces  = MAX(namespaces),\n    pods        = MAX(pods)\n  BY cluster_name"
+                        "esql": "FROM metrics-*.otel*\n| WHERE k8s.cluster.name IS NOT NULL\n| INLINE STATS namespaces = COUNT_DISTINCT(resource.attributes.k8s.namespace.name), pods = COUNT_DISTINCT(resource.attributes.k8s.pod.uid) BY k8s.cluster.name\n| WHERE k8s.node.name IS NOT NULL AND LENGTH(TRIM(k8s.node.name)) > 0\n| STATS\n    node_ready = AVG(k8s.node.condition_ready),\n    cpu_usage  = AVG(k8s.node.cpu.usage),\n    alloc_cpu  = AVG(k8s.node.allocatable_cpu),\n    mem_ws     = AVG(k8s.node.memory.working_set),\n    alloc_mem  = AVG(k8s.node.allocatable_memory),\n    fs_usage   = AVG(k8s.node.filesystem.usage),\n    fs_cap     = AVG(k8s.node.filesystem.capacity),\n    namespaces = MAX(namespaces),\n    pods = MAX(pods)\n  BY k8s.cluster.name, k8s.node.name\n| EVAL\n    cpu_pct  = ROUND(cpu_usage / alloc_cpu, 2),\n    mem_pct  = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_pct = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| STATS\n    healthy_pct = AVG(node_ready),\n    nodes       = COUNT_DISTINCT(k8s.node.name),\n    cpu_util    = AVG(cpu_pct),\n    mem_util    = AVG(mem_pct),\n    disk_util   = AVG(disk_pct),\n    namespaces  = MAX(namespaces),\n    pods        = MAX(pods)\n  BY k8s.cluster.name"
                       },
                       "timeField": "@timestamp"
                     }
@@ -379,7 +385,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*.otel*\n| EVAL cluster_name = k8s.cluster.name\n| WHERE cluster_name IS NOT NULL\n| INLINE STATS namespaces = COUNT_DISTINCT(resource.attributes.k8s.namespace.name), pods = COUNT_DISTINCT(resource.attributes.k8s.pod.uid) BY cluster_name\n| WHERE k8s.node.name IS NOT NULL AND LENGTH(TRIM(k8s.node.name)) > 0\n| STATS\n    node_ready = AVG(k8s.node.condition_ready),\n    cpu_usage  = AVG(k8s.node.cpu.usage),\n    alloc_cpu  = AVG(k8s.node.allocatable_cpu),\n    mem_ws     = AVG(k8s.node.memory.working_set),\n    alloc_mem  = AVG(k8s.node.allocatable_memory),\n    fs_usage   = AVG(k8s.node.filesystem.usage),\n    fs_cap     = AVG(k8s.node.filesystem.capacity),\n    namespaces = MAX(namespaces),\n    pods = MAX(pods)\n  BY cluster_name, k8s.node.name\n| EVAL\n    cpu_pct  = ROUND(cpu_usage / alloc_cpu, 2),\n    mem_pct  = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_pct = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| STATS\n    healthy_pct = AVG(node_ready),\n    nodes       = COUNT_DISTINCT(k8s.node.name),\n    cpu_util    = AVG(cpu_pct),\n    mem_util    = AVG(mem_pct),\n    disk_util   = AVG(disk_pct),\n    namespaces  = MAX(namespaces),\n    pods        = MAX(pods)\n  BY cluster_name"
+                "esql": "FROM metrics-*.otel*\n| WHERE k8s.cluster.name IS NOT NULL\n| INLINE STATS namespaces = COUNT_DISTINCT(resource.attributes.k8s.namespace.name), pods = COUNT_DISTINCT(resource.attributes.k8s.pod.uid) BY k8s.cluster.name\n| WHERE k8s.node.name IS NOT NULL AND LENGTH(TRIM(k8s.node.name)) > 0\n| STATS\n    node_ready = AVG(k8s.node.condition_ready),\n    cpu_usage  = AVG(k8s.node.cpu.usage),\n    alloc_cpu  = AVG(k8s.node.allocatable_cpu),\n    mem_ws     = AVG(k8s.node.memory.working_set),\n    alloc_mem  = AVG(k8s.node.allocatable_memory),\n    fs_usage   = AVG(k8s.node.filesystem.usage),\n    fs_cap     = AVG(k8s.node.filesystem.capacity),\n    namespaces = MAX(namespaces),\n    pods = MAX(pods)\n  BY k8s.cluster.name, k8s.node.name\n| EVAL\n    cpu_pct  = ROUND(cpu_usage / alloc_cpu, 2),\n    mem_pct  = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_pct = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| STATS\n    healthy_pct = AVG(node_ready),\n    nodes       = COUNT_DISTINCT(k8s.node.name),\n    cpu_util    = AVG(cpu_pct),\n    mem_util    = AVG(mem_pct),\n    disk_util   = AVG(disk_pct),\n    namespaces  = MAX(namespaces),\n    pods        = MAX(pods)\n  BY k8s.cluster.name"
               },
               "visualization": {
                 "columns": [
@@ -424,10 +430,6 @@
                     }
                   },
                   {
-                    "columnId": "cluster_name",
-                    "oneClickFilter": true
-                  },
-                  {
                     "columnId": "nodes"
                   },
                   {
@@ -450,6 +452,13 @@
                     "columnId": "2c73eec7-9147-4f85-b1f6-7cee989310d6",
                     "isMetric": true,
                     "isTransposed": false
+                  },
+                  {
+                    "columnId": "4195b9a7-e3ac-45b6-9041-32ffb8ab9d55",
+                    "isMetric": false,
+                    "isTransposed": false,
+                    "oneClickFilter": true,
+                    "width": 250
                   }
                 ],
                 "layerId": "aa62b659-7fe8-40f3-9bbf-4b8d2498add2",
@@ -461,6 +470,17 @@
             "version": 2,
             "visualizationType": "lnsDatatable"
           },
+          "drilldowns": [
+            {
+              "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+              "label": "View cluster details",
+              "open_in_new_tab": false,
+              "trigger": "on_apply_filter",
+              "type": "dashboard_drilldown",
+              "use_filters": true,
+              "use_time_range": true
+            }
+          ],
           "enhancements": {
             "dynamicActions": {
               "events": []
@@ -468,7 +488,7 @@
           },
           "filters": [],
           "query": {
-            "esql": "FROM metrics-*.otel*\n| EVAL cluster_name = k8s.cluster.name\n| WHERE cluster_name IS NOT NULL\n| INLINE STATS namespaces = COUNT_DISTINCT(resource.attributes.k8s.namespace.name), pods = COUNT_DISTINCT(resource.attributes.k8s.pod.uid) BY cluster_name\n| WHERE k8s.node.name IS NOT NULL AND LENGTH(TRIM(k8s.node.name)) > 0\n| STATS\n    node_ready = AVG(k8s.node.condition_ready),\n    cpu_usage  = AVG(k8s.node.cpu.usage),\n    alloc_cpu  = AVG(k8s.node.allocatable_cpu),\n    mem_ws     = AVG(k8s.node.memory.working_set),\n    alloc_mem  = AVG(k8s.node.allocatable_memory),\n    fs_usage   = AVG(k8s.node.filesystem.usage),\n    fs_cap     = AVG(k8s.node.filesystem.capacity),\n    namespaces = MAX(namespaces),\n    pods = MAX(pods)\n  BY cluster_name, k8s.node.name\n| EVAL\n    cpu_pct  = ROUND(cpu_usage / alloc_cpu, 2),\n    mem_pct  = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_pct = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| STATS\n    healthy_pct = AVG(node_ready),\n    nodes       = COUNT_DISTINCT(k8s.node.name),\n    cpu_util    = AVG(cpu_pct),\n    mem_util    = AVG(mem_pct),\n    disk_util   = AVG(disk_pct),\n    namespaces  = MAX(namespaces),\n    pods        = MAX(pods)\n  BY cluster_name"
+            "esql": "FROM metrics-*.otel*\n| WHERE k8s.cluster.name IS NOT NULL\n| INLINE STATS namespaces = COUNT_DISTINCT(resource.attributes.k8s.namespace.name), pods = COUNT_DISTINCT(resource.attributes.k8s.pod.uid) BY k8s.cluster.name\n| WHERE k8s.node.name IS NOT NULL AND LENGTH(TRIM(k8s.node.name)) > 0\n| STATS\n    node_ready = AVG(k8s.node.condition_ready),\n    cpu_usage  = AVG(k8s.node.cpu.usage),\n    alloc_cpu  = AVG(k8s.node.allocatable_cpu),\n    mem_ws     = AVG(k8s.node.memory.working_set),\n    alloc_mem  = AVG(k8s.node.allocatable_memory),\n    fs_usage   = AVG(k8s.node.filesystem.usage),\n    fs_cap     = AVG(k8s.node.filesystem.capacity),\n    namespaces = MAX(namespaces),\n    pods = MAX(pods)\n  BY k8s.cluster.name, k8s.node.name\n| EVAL\n    cpu_pct  = ROUND(cpu_usage / alloc_cpu, 2),\n    mem_pct  = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_pct = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| STATS\n    healthy_pct = AVG(node_ready),\n    nodes       = COUNT_DISTINCT(k8s.node.name),\n    cpu_util    = AVG(cpu_pct),\n    mem_util    = AVG(mem_pct),\n    disk_util   = AVG(disk_pct),\n    namespaces  = MAX(namespaces),\n    pods        = MAX(pods)\n  BY k8s.cluster.name"
           },
           "syncColors": false,
           "syncCursor": true,
@@ -1023,7 +1043,6 @@
             "visualizationType": "lnsXY"
           },
           "description": "Number of unhealthy pods per cluster: total unique pods minus pods in Running phase (phase=2).",
-          "drilldowns": [],
           "title": "Top 10 clusters by non-running pods"
         },
         "gridData": {
@@ -1406,7 +1425,6 @@
             "visualizationType": "lnsXY"
           },
           "description": "CPU utilization per cluster: total CPU usage / total allocatable CPU across all nodes.",
-          "drilldowns": [],
           "title": "Top 10 clusters by CPU utilization"
         },
         "gridData": {
@@ -1595,7 +1613,6 @@
             "visualizationType": "lnsXY"
           },
           "description": "Memory utilization per cluster: total memory usage / total allocatable memory across all nodes.",
-          "drilldowns": [],
           "title": "Top 10 clusters by memory working set utilization"
         },
         "gridData": {
@@ -1784,7 +1801,6 @@
             "visualizationType": "lnsXY"
           },
           "description": "Disk usage per cluster: total filesystem usage / total filesystem capacity across all nodes.",
-          "drilldowns": [],
           "title": "Top 10 clusters by disk usage"
         },
         "gridData": {
