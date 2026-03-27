@@ -190,7 +190,7 @@ Use this flow with Salesforce integration v0.15.0 or higher on any deployment wh
 
 4. **Store the private key on each Elastic Agent host.** Place the `.pem` file in a secure directory the agent can read. Examples: Linux: `/etc/elastic-agent/keys/`; Windows: `C:\Program Files\Elastic\Agent\keys\`. Use restrictive permissions so the file is readable only by the Elastic Agent user or service account. If multiple agents run this integration, each host needs the key (or an equivalent way to place it at the configured path).
 
-5. **Configure the integration.** In Fleet, enable `Enable JWT Authentication` and set `Client ID`, `Username`, `JWT audience URL`, and **Private key path (PEM)** to the **absolute path** of the private key on the agent host—for example, `/etc/elastic-agent/keys/salesforce_jwt_private.pem`. In some UIs this field appears as JWT Authentication Client Key Path.
+5. **Configure the integration.** In Fleet, enable `Enable JWT Authentication` and set `Client ID`, `Username`, `JWT audience URL`, and **Private key path (PEM)** to the **absolute path** of the private key on the agent host—for example, `/etc/elastic-agent/keys/salesforce_jwt_private.pem`. In some UIs this field appears as `JWT Authentication Client Key Path`.
 
 6. **Verify.** Confirm the Elastic Agent can read the private key and that the path in the integration settings is correct.
 
