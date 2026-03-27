@@ -182,15 +182,15 @@ JWT Bearer flow (optional, recommended method):
 
 Use this flow with Salesforce integration v0.15.0 or higher on any deployment where Elastic Agent runs (self-managed stack, Elastic Cloud Hosted, Elastic Cloud Enterprise, Elastic Cloud on Kubernetes, or Serverless).
 
-1. **Prepare the JWT client key.** Generate a private key in PEM format (**PKCS#1** or **PKCS#8**) that corresponds to the X.509 certificate you will upload to the Connected App. Refer to the [Salesforce documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_key_and_cert.htm) for an example of creating the private key and certificate.
+1. **Prepare the JWT client certificate and key.** Generate a private key in PEM format (**PKCS#1** or **PKCS#8**) along with a corresponding X.509 certificate. The certificate is uploaded to the Connected App, while the private key is used by your client to sign JWT assertions. Refer to the [Salesforce documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_key_and_cert.htm) for an example of creating the key and certificate.
 
-2. **Upload the certificate to the Connected App.** In `Use digital signatures` (under `API (Enable OAuth Settings)`), upload the certificate for JWT. Do not upload the private key to Salesforce.
+2. **Upload the certificate to the Connected App.** In `Use digital signatures` (under `API (Enable OAuth Settings)`), upload the X.509 certificate used for JWT. Do not upload the private key to Salesforce.
 
 3. **Note the JWT audience URL** to use (typically `https://login.salesforce.com` or `https://test.salesforce.com` for a sandbox).
 
 4. **Store the private key on each Elastic Agent host.** Place the `.pem` file in a secure directory the agent can read. Examples: Linux: `/etc/elastic-agent/keys/`; Windows: `C:\Program Files\Elastic\Agent\keys\`. Use restrictive permissions so the file is readable only by the Elastic Agent user or service account. If multiple agents run this integration, each host needs the key (or an equivalent way to place it at the configured path).
 
-5. **Configure the integration.** In Fleet, enable `Enable JWT Authentication` and set `Client ID`, `Username`, `JWT audience URL`, and **Private key path (PEM)** to the **absolute path** of the private key on the agent host—for example, `/etc/elastic-agent/keys/salesforce_jwt_private.pem`. In some UIs this field appears as JWT Authentication Client Key Path.
+5. **Configure the integration.** In Fleet, enable `Enable JWT Authentication` and set `Client ID`, `Username`, `JWT audience URL`, and **Private key path (PEM)** to the **absolute path** of the private key on the agent host—for example, `/etc/elastic-agent/keys/salesforce_jwt_private.pem`. In some UIs this field appears as `JWT Authentication Client Key Path`.
 
 6. **Verify.** Confirm the Elastic Agent can read the private key and that the path in the integration settings is correct.
 
