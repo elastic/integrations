@@ -7,7 +7,7 @@ This package leverages event logs on Linux, macOS, and Windows. Prior to using t
 
 **Note**: This package filters out data from cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blog:
+The following blog provides additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
 
 ## Installation
