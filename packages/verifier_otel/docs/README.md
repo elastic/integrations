@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Permission Verifier integration uses the OpenTelemetry Collector's Verifier receiver to verify cloud connector based integration permissions and report results to Elasticsearch.
+The Permission Verifier integration uses the OpenTelemetry Collector's Verifier receiver to verify identity federation based integration permissions and report results to Elasticsearch.
 
-This integration is designed for Cloud Connectors to proactively check that all necessary permissions are available for attached integrations.
+This integration is designed for Identity Federations to proactively check that all necessary permissions are available for attached integrations.
 
 ## Supported Providers
 
@@ -17,12 +17,12 @@ This integration is designed for Cloud Connectors to proactively check that all 
 
 ## Configuration
 
-### Cloud Connector Identification
+### Identity Federation Identification
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| Cloud Connector ID | Yes | Unique identifier for the Cloud Connector being verified |
-| Cloud Connector Name | No | Human-readable name of the Cloud Connector |
+| Identity Federation ID | Yes | Unique identifier for the Identity Federation being verified |
+| Identity Federation Name | No | Human-readable name of the Identity Federation |
 | Verification ID | Yes | Unique identifier for this verification session |
 | Verification Type | No | Type of verification: `on_demand` (default) or `scheduled` |
 
@@ -82,7 +82,7 @@ Integration identification uses `policy_template` + `package_name` as the compos
 
 ## Supported Policy Templates
 
-Each `policy_template` is scoped per integration following the least-privilege principle. Only the permissions required by that specific policy template are verified, rather than checking global permissions shared across the entire integration package. This ensures that each Cloud Connector only needs the exact IAM permissions its attached integrations require.
+Each `policy_template` is scoped per integration following the least-privilege principle. Only the permissions required by that specific policy template are verified, rather than checking global permissions shared across the entire integration package. This ensures that each Identity Federation only needs the exact IAM permissions its attached integrations require.
 
 ### AWS Integrations (`package_name: aws`)
 
@@ -136,12 +136,12 @@ The integration emits OTEL logs with the following structure:
 
 | Attribute | Description |
 |-----------|-------------|
-| `cloud_connector.id` | Cloud Connector identifier |
-| `cloud_connector.name` | Cloud Connector name |
-| `cloud_connector.namespace` | Kibana Space the Cloud Connector belongs to (default: `default`) |
+| `identity_federation.id` | Identity Federation identifier |
+| `identity_federation.name` | Identity Federation name |
+| `identity_federation.namespace` | Kibana Space the Identity Federation belongs to (default: `default`) |
 | `data_stream.type` | Always `logs` |
 | `data_stream.dataset` | Always `verifier_otel.verification` |
-| `data_stream.namespace` | Data stream namespace, matches `cloud_connector.namespace` |
+| `data_stream.namespace` | Data stream namespace, matches `identity_federation.namespace` |
 | `verification.id` | Verification session ID |
 | `verification.timestamp` | When verification started |
 | `verification.type` | `on_demand` or `scheduled` |
@@ -180,8 +180,8 @@ The integration emits OTEL logs with the following structure:
 ### AWS Example
 
 ```yaml
-cloud_connector_id: "cc-12345"
-cloud_connector_name: "Production Connector"
+identity_federation_id: "cc-12345"
+identity_federation_name: "Production Connector"
 verification_id: "verify-abc123"
 verification_type: "on_demand"
 
@@ -205,8 +205,8 @@ namespace: "default"
 ### Azure Example
 
 ```yaml
-cloud_connector_id: "cc-67890"
-cloud_connector_name: "Azure Connector"
+identity_federation_id: "cc-67890"
+identity_federation_name: "Azure Connector"
 verification_id: "verify-def456"
 verification_type: "on_demand"
 
@@ -229,8 +229,8 @@ namespace: "default"
 ### GCP Example
 
 ```yaml
-cloud_connector_id: "cc-gcp-01"
-cloud_connector_name: "GCP Connector"
+identity_federation_id: "cc-gcp-01"
+identity_federation_name: "GCP Connector"
 verification_id: "verify-ghi789"
 verification_type: "on_demand"
 
