@@ -182,7 +182,7 @@ JWT Bearer flow (optional, recommended method):
 
 Use this flow with Salesforce integration v0.15.0 or higher on any deployment where Elastic Agent runs (self-managed stack, Elastic Cloud Hosted, Elastic Cloud Enterprise, Elastic Cloud on Kubernetes, or Serverless).
 
-1. **Prepare the JWT client key.** Generate a private key in PEM format (**PKCS#1** or **PKCS#8**) that corresponds to the X.509 certificate you will upload to the Connected App. Refer to the [Salesforce documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_key_and_cert.htm) for an example of creating the private key and certificate.
+1. **Prepare the JWT client certificate and key.** Generate a private key in PEM format (**PKCS#1** or **PKCS#8**) along with a corresponding X.509 certificate. The certificate is uploaded to the Connected App, while the private key is used by your client to sign JWT assertions. Refer to the [Salesforce documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_key_and_cert.htm) for an example of creating the key and certificate.
 
 2. **Upload the certificate to the Connected App.** In `Use digital signatures` (under `API (Enable OAuth Settings)`), upload the certificate for JWT. Do not upload the private key to Salesforce.
 
