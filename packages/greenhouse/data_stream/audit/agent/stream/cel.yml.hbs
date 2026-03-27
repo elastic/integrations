@@ -35,6 +35,21 @@ state:
   event_types: "{{event_types}}"
 {{/if}}
   want_more: false
+{{!--
+API References:
+  https://support.greenhouse.io/hc/en-us/articles/15114161286043-Use-audit-log-with-API
+  https://auth.greenhouse.io/token (OAuth 2.0 Client Credentials, Harvest API V3)
+  https://auditlog.us.greenhouse.io/events
+
+Cursor variable definitions:
+  last_event_time: RFC3339 timestamp of the last event received. Used as the
+    after_time query parameter on subsequent requests to avoid re-fetching events.
+  pit_id: Point-in-Time ID returned by the API for cursor-based pagination.
+    Sent as a Pit-Id request header. Cleared when expired or pagination completes.
+  search_after: Opaque pagination token (format: "integer,string") returned as
+    next_search_after in the paging response. Sent as a Search-After request header.
+    Only set when more pages are available; cleared when pagination completes.
+--}}
 program: |
   state.with(
     state.?cursor.last_event_time.orValue(
@@ -75,6 +90,12 @@ program: |
                 },
                 "want_more": body.?paging.next_search_after.orValue(null) != null,
               })
+            : resp.StatusCode == 401 ?
+              // Token expired — preserve cursor, auth.oauth2 will refresh on next interval
+              {
+                "events": [],
+                "want_more": false,
+              }
             : resp.StatusCode == 429 ?
               // Rate limited — preserve state and retry on next interval
               {
