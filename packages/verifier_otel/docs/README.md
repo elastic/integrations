@@ -56,9 +56,8 @@ Credential fields use a flat, normalized naming convention to stay consistent wi
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `credentials_project_id` | Yes | GCP project ID to scope verification to |
-| `credentials_workload_identity_provider` | No | Full Workload Identity Federation resource name |
-| `credentials_service_account_email` | No | GCP service account email for impersonation |
+| `credentials_workload_identity_provider` | Yes | Full Workload Identity Federation resource name (project number is derived from this) |
+| `credentials_service_account_email` | Yes | GCP service account email for impersonation (project ID is derived from this when set) |
 
 ### Policy Configuration
 
@@ -237,7 +236,6 @@ verification_type: "on_demand"
 provider: "gcp"
 account_type: "single_account"
 
-credentials_project_id: "my-gcp-project-123"
 credentials_workload_identity_provider: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider"
 credentials_service_account_email: "verifier@my-gcp-project-123.iam.gserviceaccount.com"
 
