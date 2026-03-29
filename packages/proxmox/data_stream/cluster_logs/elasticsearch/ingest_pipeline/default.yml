@@ -66,17 +66,17 @@ processors:
       field: event.action
       value: quorum_lost
 
-  # Detect link down
+  # Detect link down (KNET format: "link: N is down" or "link N down")
   - set:
       tag: set_action_link_down
-      if: ctx.event?.original != null && ctx.event.original.toLowerCase().contains('link') && ctx.event.original.toLowerCase().contains('down')
+      if: "ctx.event?.original != null && /link.*\\bis\\b.*\\bdown\\b|link.*\\bdown\\b/.matcher(ctx.event.original.toLowerCase()).find()"
       field: event.action
       value: link_down
 
-  # Detect link up
+  # Detect link up (KNET format: "link: N is up" or "link N up")
   - set:
       tag: set_action_link_up
-      if: ctx.event?.original != null && ctx.event.original.toLowerCase().contains('link') && ctx.event.original.toLowerCase().contains('up')
+      if: "ctx.event?.original != null && /link.*\\bis\\b.*\\bup\\b|link.*\\bup\\b/.matcher(ctx.event.original.toLowerCase()).find()"
       field: event.action
       value: link_up
 

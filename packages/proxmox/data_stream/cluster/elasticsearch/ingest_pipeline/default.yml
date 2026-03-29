@@ -64,13 +64,11 @@ processors:
       if: ctx._temp?.json?.id != null && ctx._temp?.json?.type == 'node' && ctx._temp?.json?.node != null && ctx._temp?.json?.name == null
       field: proxmox.cluster.resource.name
       value: "{{_temp.json.node}}"
-  - convert:
-      tag: convert_resource_vmid
+  - set:
+      tag: set_resource_vmid
       if: ctx._temp?.json?.id != null && ctx._temp?.json?.vmid != null
-      field: _temp.json.vmid
-      target_field: proxmox.cluster.resource.vmid
-      type: long
-      ignore_failure: true
+      field: proxmox.cluster.resource.vmid
+      value: "{{_temp.json.vmid}}"
   - set:
       tag: set_resource_status
       if: ctx._temp?.json?.id != null && ctx._temp?.json?.status != null
@@ -182,13 +180,11 @@ processors:
       target_field: _temp.json.cgroup_mode
       ignore_missing: true
       ignore_failure: true
-  - convert:
-      tag: convert_resource_cgroup_mode
+  - set:
+      tag: set_resource_cgroup_mode
       if: ctx._temp?.json?.id != null && ctx._temp?.json?.cgroup_mode != null
-      field: _temp.json.cgroup_mode
-      target_field: proxmox.cluster.resource.cgroup_mode
-      type: long
-      ignore_failure: true
+      field: proxmox.cluster.resource.cgroup_mode
+      value: "{{_temp.json.cgroup_mode}}"
   - set:
       tag: set_resource_plugintype
       if: ctx._temp?.json?.id != null && ctx._temp?.json?.plugintype != null

@@ -22,7 +22,16 @@ pveum user token add monitor@pve elastic --privsep=0
    - The Proxmox API URL (for example, `https://192.168.1.1:8006`)
    - The API token ID in `USER@REALM!TOKENID` format (for example, `monitor@pve!elastic`)
    - The API token secret (UUID)
-   - The node hostname
+
+Note: Using `--privsep=0` disables privilege separation, meaning the token inherits all permissions of the user. For tighter security, use `--privsep=1` and grant explicit ACLs to the token.
+
+## Collection architecture
+
+The **cluster** data stream collects summary metrics for all resources (nodes, VMs, containers, storage) from the Proxmox API. A single agent on any node in the cluster is sufficient for cluster-wide visibility.
+
+The **node** data stream collects detailed metrics for the local node only. To get node-level metrics for every node in a multi-node cluster, install Elastic Agent on each node.
+
+The **log data streams** (access, firewall, tasks, auth, cluster_logs) read local files and journals, so they also require an agent on each node.
 
 ## Data Streams
 

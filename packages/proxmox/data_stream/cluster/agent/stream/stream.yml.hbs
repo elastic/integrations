@@ -33,15 +33,15 @@ program: |
                   "events":
                     (r1.StatusCode == 200 ?
                       bytes(r1.Body).decode_json().data.map(e, {"message": e.encode_json(), "proxmox_cluster_name": cluster_name})
-                    : [])
+                    : [{"message": {"error": {"message": "cluster/resources: HTTP " + string(r1.StatusCode)}}.encode_json()}])
                     +
                     (r2.StatusCode == 200 ?
                       bytes(r2.Body).decode_json().data.map(e, {"message": e.encode_json(), "proxmox_cluster_name": cluster_name})
-                    : [])
+                    : [{"message": {"error": {"message": "cluster/status: HTTP " + string(r2.StatusCode)}}.encode_json()}])
                     +
                     (r3.StatusCode == 200 ?
                       bytes(r3.Body).decode_json().data.map(e, {"message": e.encode_json(), "proxmox_cluster_name": cluster_name})
-                    : []),
+                    : [{"message": {"error": {"message": "cluster/ha/resources: HTTP " + string(r3.StatusCode)}}.encode_json()}]),
                   "url": state.url,
                   "api_token_id": state.api_token_id,
                   "api_token_secret": state.api_token_secret,

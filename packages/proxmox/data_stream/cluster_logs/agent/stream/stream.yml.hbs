@@ -1,5 +1,5 @@
-{{#each units}}
 include_matches:
+{{#each units}}
   - _SYSTEMD_UNIT={{this}}
 {{/each}}
 {{#if tags}}
@@ -17,13 +17,19 @@ tags:
 {{/if}}
 {{/if}}
 {{#if cluster_name}}
+{{#if processors}}
 processors:
   - add_fields:
       target: proxmox.cluster
       fields:
         name: '{{cluster_name}}'
-{{#if processors}}
 {{processors}}
+{{else}}
+processors:
+  - add_fields:
+      target: proxmox.cluster
+      fields:
+        name: '{{cluster_name}}'
 {{/if}}
 {{else}}
 {{#if processors}}

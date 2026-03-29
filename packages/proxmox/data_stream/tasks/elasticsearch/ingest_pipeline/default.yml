@@ -55,13 +55,14 @@ processors:
       field: proxmox.task.upid
       value: "UPID:{{_temp.node}}:{{_temp.pid}}:{{_temp.pstart}}:{{_temp.starttime_hex}}:{{_temp.task_type}}:{{_temp.vmid}}:{{_temp.user_realm}}:"
 
-  # Parse user@realm
+  # Parse user@realm or user@realm!tokenid
   - grok:
       tag: grok_parse_user
       if: ctx._temp?.user_realm != null
       field: _temp.user_realm
       patterns:
-        - '%{DATA:user.name}@%{GREEDYDATA:_temp.realm}'
+        - '%{DATA:user.name}@%{DATA:proxmox.auth.realm}!%{GREEDYDATA:proxmox.auth.token_name}'
+        - '%{DATA:user.name}@%{GREEDYDATA:proxmox.auth.realm}'
       ignore_failure: true
 
   # Convert hex timestamps to epoch seconds and calculate duration

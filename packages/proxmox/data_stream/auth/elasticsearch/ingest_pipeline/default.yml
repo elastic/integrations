@@ -74,6 +74,11 @@ processors:
       field: event.outcome
       value: failure
 
+  # Drop non-authentication messages (pvedaemon emits many message types)
+  - drop:
+      tag: drop_non_auth
+      if: ctx.event?.outcome == null
+
   # Set event categories
   - append:
       tag: set_event_category_authentication
@@ -131,10 +136,15 @@ processors:
       field: message
       value: "Successful authentication for user {{user.name}}@{{proxmox.auth.realm}}"
   - set:
-      tag: set_message_failure
-      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null
+      tag: set_message_failure_with_ip
+      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null && ctx.source?.ip != null
       field: message
       value: "Failed authentication for user {{user.name}}@{{proxmox.auth.realm}} from {{source.ip}}"
+  - set:
+      tag: set_message_failure_without_ip
+      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null && ctx.source?.ip == null
+      field: message
+      value: "Failed authentication for user {{user.name}}@{{proxmox.auth.realm}}"
 
   # Clean up
   - remove:

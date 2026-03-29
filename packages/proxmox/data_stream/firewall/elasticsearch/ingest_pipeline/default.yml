@@ -109,10 +109,10 @@ processors:
       target_field: network.transport
       ignore_failure: true
   - convert:
-      tag: convert_network_bytes
+      tag: convert_packet_length
       if: ctx._temp?.kv?.LEN != null
       field: _temp.kv.LEN
-      target_field: network.bytes
+      target_field: proxmox.firewall.packet_length
       type: long
       ignore_failure: true
 
@@ -196,10 +196,15 @@ processors:
 
   # Set message from parsed data
   - set:
-      tag: set_message
-      if: ctx.event?.action != null && ctx.source?.ip != null && ctx.destination?.ip != null
+      tag: set_message_with_ports
+      if: ctx.event?.action != null && ctx.source?.ip != null && ctx.destination?.ip != null && ctx.source?.port != null
       field: message
       value: "{{event.action}} {{source.ip}}:{{source.port}} -> {{destination.ip}}:{{destination.port}} {{network.transport}}"
+  - set:
+      tag: set_message_without_ports
+      if: ctx.event?.action != null && ctx.source?.ip != null && ctx.destination?.ip != null && ctx.source?.port == null
+      field: message
+      value: "{{event.action}} {{source.ip}} -> {{destination.ip}} {{network.transport}}"
 
   # Clean up
   - remove:
