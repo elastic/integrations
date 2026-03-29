@@ -202,6 +202,13 @@ processors:
       source: |
         ctx.proxmox.cluster.resource.shared = ctx._temp.json.shared != 0;
 
+  # --- Route: API error events ---
+  - set:
+      tag: set_error_message
+      if: ctx._temp?.json?.error?.message != null
+      field: error.message
+      value: "{{_temp.json.error.message}}"
+
   # --- Route: cluster/status items (type == "cluster") ---
   - script:
       tag: script_cluster_status

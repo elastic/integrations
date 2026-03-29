@@ -22,7 +22,16 @@ pveum user token add monitor@pve elastic --privsep=0
    - The Proxmox API URL (for example, `https://192.168.1.1:8006`)
    - The API token ID in `USER@REALM!TOKENID` format (for example, `monitor@pve!elastic`)
    - The API token secret (UUID)
-   - The node hostname
+
+Note: Using `--privsep=0` disables privilege separation, meaning the token inherits all permissions of the user. For tighter security, use `--privsep=1` and grant explicit ACLs to the token.
+
+## Collection architecture
+
+The **cluster** data stream collects summary metrics for all resources (nodes, VMs, containers, storage) from the Proxmox API. A single agent on any node in the cluster is sufficient for cluster-wide visibility.
+
+The **node** data stream collects detailed metrics for the local node only. To get node-level metrics for every node in a multi-node cluster, install Elastic Agent on each node.
+
+The **log data streams** (access, firewall, tasks, auth, cluster_logs) read local files and journals, so they also require an agent on each node.
 
 ## Data Streams
 
@@ -102,7 +111,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | proxmox.cluster.node.online | Whether the node is online. | boolean |  |  |
 | proxmox.cluster.nodes | Number of nodes in the cluster. | long |  | gauge |
 | proxmox.cluster.quorate | Whether the cluster has quorum. | boolean |  |  |
-| proxmox.cluster.resource.cgroup_mode | Cgroup mode (node only). | long |  | gauge |
+| proxmox.cluster.resource.cgroup_mode | Cgroup mode (node only). | keyword |  |  |
 | proxmox.cluster.resource.content | Storage content types. | keyword |  |  |
 | proxmox.cluster.resource.cpu | CPU usage ratio (0.0 to N). | double |  | gauge |
 | proxmox.cluster.resource.disk | Disk usage in bytes. | long | byte | gauge |
@@ -126,7 +135,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | proxmox.cluster.resource.template | Whether this resource is a template. | boolean |  |  |
 | proxmox.cluster.resource.type | Resource type (node, qemu, lxc, storage). | keyword |  |  |
 | proxmox.cluster.resource.uptime | Uptime in seconds. | long | s | gauge |
-| proxmox.cluster.resource.vmid | VM or container ID. | long |  | gauge |
+| proxmox.cluster.resource.vmid | VM or container ID. | keyword |  |  |
 | proxmox.ha.group | HA group name. | keyword |  |  |
 | proxmox.ha.max_relocate | Maximum relocate attempts. | long |  | gauge |
 | proxmox.ha.max_restart | Maximum restart attempts. | long |  | gauge |
@@ -218,6 +227,8 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | proxmox.cluster.name | Proxmox cluster name. | keyword |  |  |
 | proxmox.node.cpu | CPU usage ratio (0.0 to 1.0). | double |  | gauge |
 | proxmox.node.cpuinfo.cores | Number of CPU cores per socket. | long |  | gauge |
+| proxmox.node.cpuinfo.cpus | Total number of CPU threads (cores \* sockets). | long |  | gauge |
+| proxmox.node.cpuinfo.mhz | CPU frequency in MHz. | double |  | gauge |
 | proxmox.node.cpuinfo.model | CPU model name. | keyword |  |  |
 | proxmox.node.cpuinfo.sockets | Number of CPU sockets. | long |  | gauge |
 | proxmox.node.kversion | Kernel version string. | keyword |  |  |
@@ -409,38 +420,38 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| destination.ip | IP address of the destination. | ip |
-| destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| error.message | Error message. | match_only_text |
-| event.action | The action captured by the event. | keyword |
-| event.category | Event category. | keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.kind | The kind of event. | keyword |
-| event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. | keyword |
-| event.outcome | Event outcome. | keyword |
-| event.type | Event type. | keyword |
-| host.name | Host name. | keyword |
-| message | For log events the message field contains the log message. | match_only_text |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| observer.product | Observer product. | keyword |
-| observer.type | Observer type. | keyword |
-| observer.vendor | Observer vendor. | keyword |
-| proxmox.cluster.name | Proxmox cluster name. | keyword |
-| proxmox.firewall.chain | Firewall chain name (PVEFW-HOST-IN, PVEFW-HOST-OUT, and so on). | keyword |
-| proxmox.firewall.vmid | VM or container ID from the firewall chain. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| source.ip | IP address of the source. | ip |
-| source.port | Port of the source. | long |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| destination.ip | IP address of the destination. | ip |  |
+| destination.port | Port of the destination. | long |  |
+| ecs.version | ECS version this event conforms to. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.action | The action captured by the event. | keyword |  |
+| event.category | Event category. | keyword |  |
+| event.dataset | Event dataset. | constant_keyword |  |
+| event.kind | The kind of event. | keyword |  |
+| event.module | Event module. | constant_keyword |  |
+| event.original | Raw text message of entire event. | keyword |  |
+| event.outcome | Event outcome. | keyword |  |
+| event.type | Event type. | keyword |  |
+| host.name | Host name. | keyword |  |
+| message | For log events the message field contains the log message. | match_only_text |  |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |  |
+| observer.product | Observer product. | keyword |  |
+| observer.type | Observer type. | keyword |  |
+| observer.vendor | Observer vendor. | keyword |  |
+| proxmox.cluster.name | Proxmox cluster name. | keyword |  |
+| proxmox.firewall.chain | Firewall chain name (PVEFW-HOST-IN, PVEFW-HOST-OUT, and so on). | keyword |  |
+| proxmox.firewall.packet_length | IP packet length in bytes. | long | byte |
+| proxmox.firewall.vmid | VM or container ID from the firewall chain. | keyword |  |
+| related.ip | All of the IPs seen on your event. | ip |  |
+| source.ip | IP address of the source. | ip |  |
+| source.port | Port of the source. | long |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Auth Events
@@ -710,6 +721,8 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | observer.product | Observer product. | keyword |  |
 | observer.type | Observer type. | keyword |  |
 | observer.vendor | Observer vendor. | keyword |  |
+| proxmox.auth.realm | Authentication realm (pam, pve, and so on). | keyword |  |
+| proxmox.auth.token_name | API token name, if the task was initiated by a token. | keyword |  |
 | proxmox.cluster.name | Proxmox cluster name. | keyword |  |
 | proxmox.task.duration_seconds | Task duration in seconds. | long | s |
 | proxmox.task.node | Node that ran the task. | keyword |  |
