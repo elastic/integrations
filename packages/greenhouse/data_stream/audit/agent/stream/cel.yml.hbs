@@ -61,7 +61,11 @@ program: |
     // Greenhouse uses non-standard expires_at (ISO-8601) rather than expires_in
     // (RFC 6749 integer seconds), so token refresh is managed here rather than
     // delegating to auth.oauth2 which only understands expires_in.
+    // Note: orValue(default) only substitutes when the field is ABSENT.
+    // If a field is present-but-null, orValue() returns null, not the default.
+    // All null checks below use explicit == null guards for this reason.
     (
+      state.?token.orValue(null) == null ||
       state.?token.orValue("") == "" ||
       state.?token_expires.orValue(null) == null ||
       state.?token_expires.orValue("") == "" ||
@@ -73,12 +77,12 @@ program: |
             "Content-Type": ["application/x-www-form-urlencoded"],
             "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
           },
-          "Body": bytes("grant_type=client_credentials" + (state.?user_id.orValue("") != "" ? "&sub=" + state.user_id : ""))
+          "Body": bytes("grant_type=client_credentials" + (state.?user_id.orValue(null) != null && state.?user_id.orValue("") != "" ? "&sub=" + state.user_id : ""))
         }).do_request().as(token_resp,
           token_resp.StatusCode == 200 ?
             token_resp.Body.decode_json().as(token_body, {
-              "token": token_body.access_token,
-              "token_expires": token_body.expires_at,
+              "token": token_body.?access_token.orValue(""),
+              "token_expires": token_body.?expires_at.orValue(""),
             })
           :
             // Single-object error form: deletes cursor so next run retries cleanly
@@ -109,31 +113,35 @@ program: |
           :
             state.cursor.last_event_time
         ).as(after_time,
-          // Build headers; include pagination tokens if present in cursor
-          {
-            "Authorization": ["Bearer " + auth.token],
-          }.as(base_headers,
-            state.?cursor.pit_id.orValue("") != "" ?
-              base_headers.with({"Pit-Id": [state.cursor.pit_id]})
-            :
-              base_headers
-          ).as(headers_with_pit,
-            state.?cursor.search_after.orValue("") != "" ?
-              headers_with_pit.with({"Search-After": [state.cursor.search_after]})
-            :
-              headers_with_pit
-          ).as(headers,
-            // Only send after_time on the first page of a session (no pit_id).
-            // On subsequent pages the Pit-Id + Search-After headers already
-            // position within the snapshot; re-sending after_time can cause
-            // the API to restart the snapshot and skip events.
-            (state.url.trim_right("/") + "/events?" + {
-              "paging": ["true"],
-              "size":   [string(int(state.batch_size))],
-              ?"after_time": state.?cursor.pit_id.orValue("") == "" ? optional.of([after_time]) : optional.none(),
-              ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
-              ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
-            }.format_query()).as(request_url,
+          // Build headers; include pagination tokens if present and non-null in cursor.
+          // Use explicit null checks since orValue(x) only returns x when the field
+          // is ABSENT; for present-but-null fields it returns null, not x.
+          state.?cursor.pit_id.orValue(null).as(cur_pit_id,
+            state.?cursor.search_after.orValue(null).as(cur_search_after,
+              {
+                "Authorization": ["Bearer " + auth.?token.orValue("")],
+              }.as(base_headers,
+                cur_pit_id != null && cur_pit_id != "" ?
+                  base_headers.with({"Pit-Id": [cur_pit_id]})
+                :
+                  base_headers
+              ).as(headers_with_pit,
+                cur_search_after != null && cur_search_after != "" ?
+                  headers_with_pit.with({"Search-After": [cur_search_after]})
+                :
+                  headers_with_pit
+              ).as(headers,
+                // Only send after_time on the first page of a session (no pit_id).
+                // On subsequent pages the Pit-Id + Search-After headers already
+                // position within the snapshot; re-sending after_time can cause
+                // the API to restart the snapshot and skip events.
+                (state.url.trim_right("/") + "/events?" + {
+                  "paging": ["true"],
+                  "size":   [string(int(state.batch_size))],
+                  ?"after_time": (cur_pit_id == null || cur_pit_id == "") ? optional.of([after_time]) : optional.none(),
+                  ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
+                  ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
+                }.format_query()).as(request_url,
               request("GET", request_url).with({
                 "Header": headers,
               }).do_request().as(resp,
@@ -147,15 +155,28 @@ program: |
                       // filter stays consistent across all pages of the same session.
                       // Only advance last_event_time when pagination is complete so the
                       // next poll interval starts from where we left off.
+                      // The API returns events newest-first. Track the newest event time
+                      // from page 1 (session_max_time) so the cursor advances to the most
+                      // recent event after all pages are consumed, not to the oldest.
+                      // On the first page (cur_pit_id empty), save the first result's time.
+                      // On subsequent pages, preserve the saved session_max_time.
                       "cursor": {
-                        "pit_id": has_more ? body.?paging.pit_id.orValue("") : "",
-                        "search_after": body.?paging.next_search_after.orValue(""),
+                        "pit_id": has_more ?
+                          (body.?paging.pit_id.orValue(null) == null ? "" : body.paging.pit_id)
+                        : "",
+                        "search_after": body.?paging.next_search_after.orValue(null) == null ? "" : body.paging.next_search_after,
+                        "session_max_time": (cur_pit_id == null || cur_pit_id == "") && size(body.?results.orValue([])) > 0 ?
+                          body.results[0].?event_time.orValue(after_time)
+                        :
+                          state.?cursor.session_max_time.orValue(null) == null ? after_time : state.cursor.session_max_time,
                         "last_event_time": has_more ?
                           after_time
                         :
-                          size(body.?results.orValue([])) > 0 ?
-                            body.results[size(body.results) - 1].event_time
-                          : after_time,
+                          state.?cursor.session_max_time.orValue(null) == null ?
+                            (size(body.?results.orValue([])) > 0 ?
+                              (body.results[0].?event_time.orValue(null) == null ? after_time : body.results[0].event_time)
+                            : after_time)
+                          : state.cursor.session_max_time,
                       },
                       "want_more": has_more,
                     })
@@ -189,7 +210,7 @@ program: |
                     "cursor": {
                       "pit_id": "",
                       "search_after": "",
-                      "last_event_time": state.?cursor.last_event_time.orValue(after_time),
+                      "last_event_time": state.?cursor.last_event_time.orValue(null) == null ? after_time : state.cursor.last_event_time,
                     },
                     "want_more": false,
                   }
@@ -207,6 +228,8 @@ program: |
             )
           )
         )
+      )
+    )
     )
   )
 tags:
