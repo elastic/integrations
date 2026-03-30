@@ -162,10 +162,11 @@ program: |
                     "want_more": false,
                   }
                 : resp.StatusCode == 429 ?
-                  // Rate limited — preserve state and retry on next interval
+                  // Rate limited — preserve state and cursor, retry on next interval
                   {
                     "token": auth.token,
                     "token_expires": auth.token_expires,
+                    "cursor": state.?cursor.orValue({}),
                     "events": [],
                     "want_more": false,
                   }
