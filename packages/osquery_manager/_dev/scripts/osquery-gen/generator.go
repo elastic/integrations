@@ -202,6 +202,21 @@ func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef string, 
 		return fmt.Errorf("write %s: %w", ecsSchemaPath, err)
 	}
 
+	metadataJSON, err := json.Marshal(struct {
+		EcsVersion     string `json:"ecs_version"`
+		OsqueryVersion string `json:"osquery_version"`
+	}{
+		EcsVersion:     ecsVersion,
+		OsqueryVersion: osqueryVersion,
+	})
+	if err != nil {
+		return fmt.Errorf("marshal metadata: %w", err)
+	}
+	metadataPath := filepath.Join(outSchemas, "metadata.json")
+	if err := os.WriteFile(metadataPath, metadataJSON, 0644); err != nil {
+		return fmt.Errorf("write %s: %w", metadataPath, err)
+	}
+
 	if runPackageCheck {
 		if err := runElasticPackageCheck(outputRoot, "osquery_manager"); err != nil {
 			return err
