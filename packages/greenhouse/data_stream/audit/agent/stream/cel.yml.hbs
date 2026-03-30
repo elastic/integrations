@@ -101,8 +101,13 @@ program: |
       has(auth.events) ?
         auth
       :
-        state.?cursor.last_event_time.orValue(
-          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        // orValue() only substitutes when the field is absent; if last_event_time
+        // is present but null, orValue() returns null. Use explicit null check.
+        (now - duration(state.initial_interval)).format(time_layout.RFC3339).as(default_time,
+          state.?cursor.last_event_time.orValue(null) == null || state.?cursor.last_event_time.orValue("") == "" ?
+            default_time
+          :
+            state.cursor.last_event_time
         ).as(after_time,
           // Build headers; include pagination tokens if present in cursor
           {
@@ -157,20 +162,19 @@ program: |
                   )
                 : resp.StatusCode == 401 ?
                   // Token rejected — clear token so it is re-fetched on next interval.
-                  // Preserve cursor so pagination position is not lost.
+                  // cursor is preserved automatically by state.with().
                   {
                     "token": "",
                     "token_expires": "",
-                    "cursor": state.?cursor.orValue({}),
                     "events": [],
                     "want_more": false,
                   }
                 : resp.StatusCode == 429 ?
-                  // Rate limited — preserve state and cursor, retry on next interval
+                  // Rate limited — preserve state and retry on next interval.
+                  // cursor is preserved automatically by state.with().
                   {
                     "token": auth.token,
                     "token_expires": auth.token_expires,
-                    "cursor": state.?cursor.orValue({}),
                     "events": [],
                     "want_more": false,
                   }
