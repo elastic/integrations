@@ -5,51 +5,46 @@ on:
     workflows: ["Validate Package Docs"]
     types: [completed]
 
-permissions:
-  pull-requests: write
-  actions: read
-
 jobs:
   notify:
     name: Comment on PR
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      actions: read
     steps:
-      - name: Check for validation failure
-        id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: |
-          # Check if the docs-builder step failed (even though the job succeeded via continue-on-error)
-          FAILED=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" \
-            --jq '[.jobs[].steps[] | select(.name == "Validate with docs-builder" and .conclusion == "failure")] | length')
-          if [ "$FAILED" = "0" ]; then
-            echo "No validation failure detected"
-            echo "notify=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          # Find the PR number from the head SHA
-          PR_NUMBER=$(gh api "repos/${REPO}/commits/${HEAD_SHA}/pulls" \
-            --jq '.[0].number' 2>/dev/null || true)
-          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-            echo "Could not find PR for SHA ${HEAD_SHA}"
-            echo "notify=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-          echo "notify=true" >> $GITHUB_OUTPUT
+      - name: Download failure signal
+        id: artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: docs-validation-failed
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: validate-result
+        continue-on-error: true
 
       - name: Comment on PR
-        if: steps.check.outputs.notify == 'true'
+        if: steps.artifact.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
           REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ steps.check.outputs.pr_number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
+          PR_NUMBER=$(cat validate-result/pr_number 2>/dev/null || true)
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "Could not read PR number from artifact"
+            exit 0
+          fi
+          # Verify the PR number matches the head SHA to prevent
+          # a forked PR from targeting a different PR's comments
+          ACTUAL_PR=$(gh api "repos/${REPO}/commits/${HEAD_SHA}/pulls" \
+            --jq '.[0].number' 2>/dev/null || true)
+          if [ "$PR_NUMBER" != "$ACTUAL_PR" ]; then
+            echo "PR number mismatch: artifact=$PR_NUMBER actual=$ACTUAL_PR"
+            exit 0
+          fi
           # Avoid duplicate comments
           EXISTING=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
             --jq '[.[] | select(.body | contains("Package docs validation failed"))] | length')
