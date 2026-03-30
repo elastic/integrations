@@ -14,19 +14,14 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
-auth.oauth2:
-  client.id: {{client_id}}
-  client.secret: {{client_secret}}
-  token_url: {{token_url}}
-  scopes:
-    - auditlog:events:list
-{{#if user_id}}
-  endpoint_params:
-    sub:
-      - "{{user_id}}"
-{{/if}}
 state:
   initial_interval: {{initial_interval}}
+  token_url: {{token_url}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+{{#if user_id}}
+  user_id: "{{user_id}}"
+{{/if}}
   batch_size: {{batch_size}}
 {{#if performer_ids}}
   performer_ids: "{{performer_ids}}"
@@ -35,11 +30,21 @@ state:
   event_types: "{{event_types}}"
 {{/if}}
   want_more: false
+redact:
+  fields:
+    - client_secret
+    - token
 {{!--
 API References:
   https://support.greenhouse.io/hc/en-us/articles/15114161286043-Use-audit-log-with-API
   https://auth.greenhouse.io/token (OAuth 2.0 Client Credentials, Harvest API V3)
   https://auditlog.us.greenhouse.io/events
+
+State variable definitions:
+  token: Bearer token obtained from the OAuth token endpoint.
+  token_expires: ISO-8601 expiry timestamp from the token response expires_at field.
+    Note: Greenhouse uses non-standard expires_at instead of RFC 6749 expires_in,
+    so token refresh must be managed manually in the CEL program.
 
 Cursor variable definitions:
   last_event_time: RFC3339 timestamp of the last event received. Used as the
@@ -52,82 +57,136 @@ Cursor variable definitions:
 --}}
 program: |
   state.with(
-    state.?cursor.last_event_time.orValue(
-      (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-    ).as(after_time,
-      // Build headers; include pagination tokens if present in cursor
-      {}.as(base_headers,
-        state.?cursor.pit_id.orValue("") != "" ?
-          base_headers.with({"Pit-Id": [state.cursor.pit_id]})
-        :
-          base_headers
-      ).as(headers_with_pit,
-        state.?cursor.search_after.orValue("") != "" ?
-          headers_with_pit.with({"Search-After": [state.cursor.search_after]})
-        :
-          headers_with_pit
-      ).as(headers,
-        (state.url.trim_right("/") + "/events?" + {
-          "paging":    ["true"],
-          "after_time": [after_time],
-          "size":      [string(int(state.batch_size))],
-          ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
-          ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
-        }.format_query()).as(request_url,
-          request("GET", request_url).with({
-            "Header": headers,
-          }).do_request().as(resp,
-            resp.StatusCode == 200 ?
-              resp.Body.decode_json().as(body, {
-                "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
-                "cursor": {
-                  "pit_id": body.?paging.pit_id.orValue(""),
-                  "search_after": body.?paging.next_search_after.orValue(""),
-                  "last_event_time": size(body.?results.orValue([])) > 0 ?
-                    body.results[size(body.results) - 1].event_time
-                  :
-                    after_time,
-                },
-                "want_more": body.?paging.next_search_after.orValue(null) != null,
-              })
-            : resp.StatusCode == 401 ?
-              // Token expired — preserve cursor, auth.oauth2 will refresh on next interval
-              {
-                "events": [],
-                "want_more": false,
-              }
-            : resp.StatusCode == 429 ?
-              // Rate limited — preserve state and retry on next interval
-              {
-                "events": [],
-                "want_more": false,
-              }
-            : string(resp.Body).contains("Pit_Id") ?
-              // Pit_Id expired — emit placeholder event to persist cursor update
-              // (clearing pit_id/search_after while preserving last_event_time).
-              // The placeholder is dropped by the drop_event processor below.
-              {
-                "events": [{"message": "pit_id_expired"}],
-                "cursor": {
-                  "pit_id": "",
-                  "search_after": "",
-                  "last_event_time": state.?cursor.last_event_time.orValue(after_time),
-                },
-                "want_more": false,
-              }
+    // Step 1: Obtain or reuse OAuth access token.
+    // Greenhouse uses non-standard expires_at (ISO-8601) rather than expires_in
+    // (RFC 6749 integer seconds), so token refresh is managed here rather than
+    // delegating to auth.oauth2 which only understands expires_in.
+    (
+      state.?token.orValue("") == "" ||
+      state.?token_expires.orValue("") == "" ||
+      timestamp(state.token_expires) < now
+    ).as(need_token,
+      need_token ?
+        request("POST", state.token_url).with({
+          "Header": {
+            "Content-Type": ["application/x-www-form-urlencoded"],
+            "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
+          },
+          "Body": bytes("grant_type=client_credentials" + (state.?user_id.orValue("") != "" ? "&sub=" + state.user_id : ""))
+        }).do_request().as(token_resp,
+          token_resp.StatusCode == 200 ?
+            token_resp.Body.decode_json().as(token_body, {
+              "token": token_body.access_token,
+              "token_expires": token_body.expires_at,
+            })
+          :
+            // Single-object error form: deletes cursor so next run retries cleanly
+            {"events": {"error": {
+              "message": "POST " + state.token_url + ": " + (
+                size(token_resp.Body) != 0 ?
+                  string(token_resp.Body)
+                :
+                  string(token_resp.Status) + " (" + string(token_resp.StatusCode) + ")"
+              ),
+            }}}
+        )
+      :
+        {
+          "token": state.token,
+          "token_expires": state.token_expires,
+        }
+    ).as(auth,
+      // Step 2: Fetch audit events.
+      has(auth.events) ?
+        auth
+      :
+        state.?cursor.last_event_time.orValue(
+          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        ).as(after_time,
+          // Build headers; include pagination tokens if present in cursor
+          {
+            "Authorization": ["Bearer " + auth.token],
+          }.as(base_headers,
+            state.?cursor.pit_id.orValue("") != "" ?
+              base_headers.with({"Pit-Id": [state.cursor.pit_id]})
             :
-              // Other error — single-object form: cursor cleared, next run retries
-              {"events": {"error": {
-                "message": "GET /events: " + (
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                ),
-              }}}
+              base_headers
+          ).as(headers_with_pit,
+            state.?cursor.search_after.orValue("") != "" ?
+              headers_with_pit.with({"Search-After": [state.cursor.search_after]})
+            :
+              headers_with_pit
+          ).as(headers,
+            (state.url.trim_right("/") + "/events?" + {
+              "paging":     ["true"],
+              "after_time": [after_time],
+              "size":       [string(int(state.batch_size))],
+              ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
+              ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
+            }.format_query()).as(request_url,
+              request("GET", request_url).with({
+                "Header": headers,
+              }).do_request().as(resp,
+                resp.StatusCode == 200 ?
+                  resp.Body.decode_json().as(body, {
+                    "token": auth.token,
+                    "token_expires": auth.token_expires,
+                    "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
+                    "cursor": {
+                      "pit_id": body.?paging.pit_id.orValue(""),
+                      "search_after": body.?paging.next_search_after.orValue(""),
+                      "last_event_time": size(body.?results.orValue([])) > 0 ?
+                        body.results[size(body.results) - 1].event_time
+                      :
+                        after_time,
+                    },
+                    "want_more": body.?paging.next_search_after.orValue(null) != null,
+                  })
+                : resp.StatusCode == 401 ?
+                  // Token rejected — clear it so it is re-fetched on next interval
+                  {
+                    "token": "",
+                    "token_expires": "",
+                    "events": [],
+                    "want_more": false,
+                  }
+                : resp.StatusCode == 429 ?
+                  // Rate limited — preserve state and retry on next interval
+                  {
+                    "token": auth.token,
+                    "token_expires": auth.token_expires,
+                    "events": [],
+                    "want_more": false,
+                  }
+                : string(resp.Body).contains("Pit_Id") ?
+                  // Pit_Id expired — emit placeholder event to persist cursor update
+                  // (clearing pit_id/search_after while preserving last_event_time).
+                  // The placeholder is dropped by the drop_event processor below.
+                  {
+                    "token": auth.token,
+                    "token_expires": auth.token_expires,
+                    "events": [{"message": "pit_id_expired"}],
+                    "cursor": {
+                      "pit_id": "",
+                      "search_after": "",
+                      "last_event_time": state.?cursor.last_event_time.orValue(after_time),
+                    },
+                    "want_more": false,
+                  }
+                :
+                  // Other error — single-object form: cursor cleared, next run retries
+                  {"events": {"error": {
+                    "message": "GET /events: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  }}}
+              )
+            )
           )
         )
-      )
     )
   )
 drop_event.when.equals.message: "pit_id_expired"
