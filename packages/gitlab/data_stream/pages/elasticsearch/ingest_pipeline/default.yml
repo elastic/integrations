@@ -139,54 +139,63 @@ processors:
       tag: set_host_name_from_pages_host
       copy_from: gitlab.pages.host
       ignore_empty_value: true
+  - rename:
+      field: gitlab.pages.in-place
+      tag: rename_in_place
+      target_field: gitlab.pages.in_place
+      ignore_missing: true
   - convert:
       field: gitlab.pages.in-place
       tag: convert_in-place_to_boolean
-      target_field: gitlab.pages.in_place
       type: boolean
       ignore_missing: true
       on_failure:
+        - remove:
+            field: gitlab.pages.in_place
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      field: gitlab.pages.in-place
-      tag: remove_renamed_in_place
+  - rename:
+      field: gitlab.pages.listen_addr.IP
+      tag: rename_listen_addr_IP
+      target_field: gitlab.pages.listen_addr.ip
       ignore_missing: true
   - convert:
-      field: gitlab.pages.listen_addr.IP
-      tag: convert_listen_addr_IP_to_ip
-      target_field: gitlab.pages.listen_addr.ip
+      field: gitlab.pages.listen_addr.ip
+      tag: convert_listen_addr_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.gitlab?.pages?.listen_addr?.IP != ''
+      if: ctx.gitlab?.pages?.listen_addr?.ip != ''
       on_failure:
+        - remove:
+            field: gitlab.pages.listen_addr.ip
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      field: gitlab.pages.listen_addr.IP
-      tag: remove_renamed_listen_addr_ip
-      ignore_missing: true
   - set:
       field: server.ip
       tag: set_server_ip_from_pages_listen_addr_ip
       copy_from: gitlab.pages.listen_addr.ip
       ignore_empty_value: true
-  - convert:
+  - rename:
       field: gitlab.pages.listen_addr.Port
-      tag: convert_listen_addr_Port_to_long
-      type: long
+      tag: rename_listen_addr_Port
       target_field: gitlab.pages.listen_addr.port
       ignore_missing: true
+  - convert:
+      field: gitlab.pages.listen_addr.port
+      tag: convert_listen_addr_port_to_long
+      type: long
+      ignore_missing: true
       on_failure:
+        - remove:
+            field: gitlab.pages.listen_addr.port
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      field: gitlab.pages.listen_addr.Port
-      tag: remove_renamed_listen_addr_port
-      ignore_missing: true
   - set:
       field: server.port
       tag: set_server_port_from_pages_listen_addr_port

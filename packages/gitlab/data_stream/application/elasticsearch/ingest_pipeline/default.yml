@@ -19,7 +19,7 @@ processors:
       tag: remove_message
       if: ctx.event?.original != null
   - drop: 
-      if: ctx.event?.original.startsWith('#')
+      if: ctx.event.original.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - json:
       field: event.original
@@ -118,9 +118,16 @@ processors:
         ctx.gitlab.api.params = keyValuePairs;
   - convert:
       field: gitlab.application.namespace_id
-      tag: convert_application_namespace_id_to_string
-      type: string
+      tag: convert_application_namespace_id_to_long
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.application.namespace_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'   
   - rename:
       field: gitlab.application.meta.user
       target_field: user.name
@@ -177,7 +184,7 @@ processors:
       tag: append_application_meta_gl_user_id_into_related_user
       value: '{{{gitlab.application.meta.gl_user_id}}}'
       allow_duplicates: false
-      if: ctx.gitlab?.application?.meta?.gl_user_id != null
+      if: ctx.gitlab?.application?.meta?.gl_user_id != null && ctx.gitlab.application.meta?.gl_user_id != ''
   - convert:
       field: gitlab.application.meta.organization_id
       tag: convert_organization_id_to_keyword

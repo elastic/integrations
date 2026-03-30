@@ -206,15 +206,10 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 | gitlab.api.redis_write_bytes |  | long |
 | gitlab.api.request_urgency |  | keyword |
 | gitlab.api.route |  | keyword |
-| gitlab.api.severity |  | keyword |
-| gitlab.api.status |  | keyword |
 | gitlab.api.target_duration_s |  | float |
 | gitlab.api.time |  | keyword |
 | gitlab.api.token_id |  | long |
 | gitlab.api.token_type |  | keyword |
-| gitlab.api.ua |  | keyword |
-| gitlab.api.user_id |  | keyword |
-| gitlab.api.username |  | keyword |
 | gitlab.api.view |  | double |
 | gitlab.api.view_duration_s |  | float |
 | gitlab.api.worker_id |  | keyword |
@@ -540,7 +535,7 @@ Collect logs for events happening in GitLab like user creation or project deleti
 | gitlab.application.model |  | keyword |
 | gitlab.application.model_connection_name |  | keyword |
 | gitlab.application.model_id |  | long |
-| gitlab.application.namespace_id |  | keyword |
+| gitlab.application.namespace_id |  | long |
 | gitlab.application.partition_name |  | keyword |
 | gitlab.application.pid |  | long |
 | gitlab.application.project_id |  | long |
@@ -585,9 +580,9 @@ An example event for `application` looks as following:
 {
     "@timestamp": "2024-05-10T17:49:45.825Z",
     "agent": {
-        "ephemeral_id": "59f607f2-6d83-4c74-88df-80c0b580901b",
-        "id": "5b805a0d-baf1-414d-9bb6-40e4aed0f623",
-        "name": "elastic-agent-72571",
+        "ephemeral_id": "37892f1a-d05d-4fe8-be49-3e912fd67f25",
+        "id": "041a68ab-9aab-4226-b8fc-63a6f88b100b",
+        "name": "elastic-agent-85067",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -609,14 +604,14 @@ An example event for `application` looks as following:
     },
     "data_stream": {
         "dataset": "gitlab.application",
-        "namespace": "37250",
+        "namespace": "64995",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5b805a0d-baf1-414d-9bb6-40e4aed0f623",
+        "id": "041a68ab-9aab-4226-b8fc-63a6f88b100b",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -627,7 +622,7 @@ An example event for `application` looks as following:
         ],
         "dataset": "gitlab.application",
         "id": "01HXHSYJJQNY08JV4JF2B69ZDR",
-        "ingested": "2026-01-09T12:01:32Z",
+        "ingested": "2026-03-30T07:10:25Z",
         "kind": "event",
         "original": "{\"severity\":\"INFO\",\"time\":\"2024-05-10T17:49:45.825Z\",\"correlation_id\":\"01HXHSYJJQNY08JV4JF2B69ZDR\",\"meta.caller_id\":\"ProjectCacheWorker\",\"meta.remote_ip\":\"67.43.156.18\",\"meta.feature_category\":\"source_code_management\",\"meta.user\":\"root\",\"meta.user_id\":1,\"meta.project\":\"root/test_1\",\"meta.root_namespace\":\"root\",\"meta.client_id\":\"user/1\",\"meta.root_caller_id\":\"ProjectsController#create\",\"message\":\"Updating statistics for project 1\"}",
         "severity": 1,
@@ -649,23 +644,23 @@ An example event for `application` looks as following:
         }
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-72571",
-        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "hostname": "elastic-agent-85067",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.4"
+            "192.168.241.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "02-73-C7-EA-8B-B8",
-            "42-18-5C-F1-72-DB"
+            "0A-BD-3D-67-90-EA",
+            "2A-EE-2F-3D-C1-04"
         ],
-        "name": "elastic-agent-72571",
+        "name": "elastic-agent-85067",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.12.54-linuxkit",
+            "kernel": "5.15.0-173-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -677,8 +672,8 @@ An example event for `application` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "43",
-            "inode": "191",
+            "device_id": "64768",
+            "inode": "547125",
             "path": "/tmp/service_logs/test-gitlab-application.log"
         },
         "offset": 0
@@ -792,22 +787,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2018-10-17T17:38:22.523Z",
     "agent": {
-        "ephemeral_id": "f50701f0-6e41-49cb-9e04-0d1ff48d5b2c",
-        "id": "463f507b-b31a-4d71-8fcd-212c65ef5e81",
-        "name": "elastic-agent-31544",
+        "ephemeral_id": "1a5bfab6-301c-4979-8a04-e6296dc2a2c9",
+        "id": "9b3816b9-e0ec-44e8-8833-d96b1e4e3d9c",
+        "name": "elastic-agent-99622",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "gitlab.audit",
-        "namespace": "20697",
+        "namespace": "78162",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "463f507b-b31a-4d71-8fcd-212c65ef5e81",
+        "id": "9b3816b9-e0ec-44e8-8833-d96b1e4e3d9c",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -817,7 +812,7 @@ An example event for `audit` looks as following:
             "web"
         ],
         "dataset": "gitlab.audit",
-        "ingested": "2026-01-09T12:02:18Z",
+        "ingested": "2026-03-30T07:12:49Z",
         "kind": "event",
         "original": "{\"severity\": \"INFO\",\"time\": \"2018-10-17T17:38:22.523Z\",\"author_id\": 3,\"entity_id\": 2,\"entity_type\": \"Project\",\"change\": \"visibility\",\"from\": \"Private\",\"to\": \"Public\",\"author_name\": \"John Doe4\",\"target_id\": 2,\"target_type\": \"Project\",\"target_details\": \"namespace2/project2\"}",
         "severity": 1,
@@ -838,23 +833,23 @@ An example event for `audit` looks as following:
         }
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-31544",
-        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "hostname": "elastic-agent-99622",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.4"
+            "192.168.241.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "06-14-84-80-D4-3D",
-            "7A-17-71-CE-BA-0B"
+            "22-99-6D-ED-3E-ED",
+            "CA-65-E6-92-0C-22"
         ],
-        "name": "elastic-agent-31544",
+        "name": "elastic-agent-99622",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.12.54-linuxkit",
+            "kernel": "5.15.0-173-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -866,8 +861,8 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "43",
-            "inode": "200",
+            "device_id": "64768",
+            "inode": "547126",
             "path": "/tmp/service_logs/test-gitlab-audit.log"
         },
         "offset": 507
@@ -1045,9 +1040,9 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2023-04-19T22:14:25.893Z",
     "agent": {
-        "ephemeral_id": "734b6bdd-3ce1-44c0-b801-dfa590ad65f1",
-        "id": "39fbcd96-e68f-42f7-8472-d358848c2e6b",
-        "name": "elastic-agent-50094",
+        "ephemeral_id": "0cc599fd-fe51-44b1-b45b-134cc24e2059",
+        "id": "dd70f9ae-e610-4415-b0e3-9ac90d09dfd7",
+        "name": "elastic-agent-21583",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -1069,14 +1064,14 @@ An example event for `auth` looks as following:
     },
     "data_stream": {
         "dataset": "gitlab.auth",
-        "namespace": "32426",
+        "namespace": "45646",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "39fbcd96-e68f-42f7-8472-d358848c2e6b",
+        "id": "dd70f9ae-e610-4415-b0e3-9ac90d09dfd7",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1087,7 +1082,7 @@ An example event for `auth` looks as following:
         ],
         "dataset": "gitlab.auth",
         "id": "01GYDSAKAN2SPZPAMJNRWW5H8S",
-        "ingested": "2026-01-09T12:03:09Z",
+        "ingested": "2026-03-30T07:13:38Z",
         "kind": "event",
         "original": "{\"severity\": \"ERROR\",\"time\": \"2023-04-19T22:14:25.893Z\",\"correlation_id\": \"01GYDSAKAN2SPZPAMJNRWW5H8S\",\"message\": \"Rack_Attack\",\"env\": \"blocklist\",\"remote_ip\": \"67.43.156.18\",\"request_method\": \"GET\",\"path\": \"/group/project.git/info/refs?service=git-upload-pack\"}",
         "severity": 3,
@@ -1102,23 +1097,23 @@ An example event for `auth` looks as following:
         }
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-50094",
-        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "hostname": "elastic-agent-21583",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.4"
+            "192.168.241.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "12-0F-D2-A0-D2-D8",
-            "AA-41-29-0A-A7-83"
+            "02-16-BC-F2-F4-FB",
+            "E6-42-16-88-F6-06"
         ],
-        "name": "elastic-agent-50094",
+        "name": "elastic-agent-21583",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.12.54-linuxkit",
+            "kernel": "5.15.0-173-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -1135,8 +1130,8 @@ An example event for `auth` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "43",
-            "inode": "209",
+            "device_id": "64768",
+            "inode": "547127",
             "path": "/tmp/service_logs/test-gitlab-auth.log"
         },
         "offset": 0
@@ -1236,22 +1231,22 @@ An example event for `pages` looks as following:
 {
     "@timestamp": "2020-04-22T17:53:12.000Z",
     "agent": {
-        "ephemeral_id": "55fd87b7-407e-4916-8ee5-64354d3b4fba",
-        "id": "a3a51b85-fd3b-4477-854b-edd79133f854",
-        "name": "elastic-agent-74608",
+        "ephemeral_id": "5362c9f9-3691-4e8e-9f46-17ea5b39b3c9",
+        "id": "e62106e8-1ee2-44ac-a51a-02adcbe8e81a",
+        "name": "elastic-agent-33649",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "gitlab.pages",
-        "namespace": "89092",
+        "namespace": "43203",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a3a51b85-fd3b-4477-854b-edd79133f854",
+        "id": "e62106e8-1ee2-44ac-a51a-02adcbe8e81a",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1261,7 +1256,7 @@ An example event for `pages` looks as following:
             "web"
         ],
         "dataset": "gitlab.pages",
-        "ingested": "2026-01-09T12:03:59Z",
+        "ingested": "2026-03-30T07:14:27Z",
         "kind": "event",
         "level": 6,
         "original": "{\"level\": \"info\",\"msg\": \"GitLab Pages Daemon\",\"revision\": \"52b2899\",\"time\": \"2020-04-22T17:53:12Z\",\"version\": \"1.17.0\"}",
@@ -1276,23 +1271,23 @@ An example event for `pages` looks as following:
         }
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-74608",
-        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "hostname": "elastic-agent-33649",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.4"
+            "192.168.241.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "12-F4-80-24-CC-FF",
-            "3E-DB-B2-96-E9-91"
+            "1E-FE-0D-E0-5F-C1",
+            "46-0E-56-98-32-CB"
         ],
-        "name": "elastic-agent-74608",
+        "name": "elastic-agent-33649",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.12.54-linuxkit",
+            "kernel": "5.15.0-173-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -1304,8 +1299,8 @@ An example event for `pages` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "43",
-            "inode": "218",
+            "device_id": "64768",
+            "inode": "547129",
             "path": "/tmp/service_logs/test-gitlab-pages.log"
         },
         "offset": 0
@@ -1505,22 +1500,22 @@ An example event for `production` looks as following:
 {
     "@timestamp": "2024-04-03T20:44:09.068Z",
     "agent": {
-        "ephemeral_id": "514fec7a-f0e8-4def-8596-d68d92cd5ff6",
-        "id": "a4b76d93-69e3-4f9d-8d3e-be8840392008",
-        "name": "elastic-agent-10238",
+        "ephemeral_id": "0f3e52a7-9952-4b9a-ae39-bbc6b56a6ae0",
+        "id": "00918dce-39a5-43c0-9c69-e7dc1acb0fca",
+        "name": "elastic-agent-12116",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "gitlab.production",
-        "namespace": "94708",
+        "namespace": "77253",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a4b76d93-69e3-4f9d-8d3e-be8840392008",
+        "id": "00918dce-39a5-43c0-9c69-e7dc1acb0fca",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1530,7 +1525,7 @@ An example event for `production` looks as following:
         "dataset": "gitlab.production",
         "duration": 24200000,
         "id": "0bb7a10d-8da7-4499-8759-99ebe323f4b1",
-        "ingested": "2026-01-09T12:04:49Z",
+        "ingested": "2026-03-30T07:16:47Z",
         "kind": "event",
         "original": "{\"method\":\"GET\",\"path\":\"/\",\"format\":\"html\",\"controller\":\"RootController\",\"action\":\"index\",\"status\":302,\"location\":\"http://example.org/users/sign_in\",\"time\":\"2024-04-03T20:44:09.068Z\",\"params\":[],\"correlation_id\":\"0bb7a10d-8da7-4499-8759-99ebe323f4b1\",\"meta.caller_id\":\"RootController#index\",\"meta.feature_category\":\"groups_and_projects\",\"meta.client_id\":\"ip/\",\"request_urgency\":\"low\",\"target_duration_s\":5,\"redis_calls\":26,\"redis_duration_s\":0.005135,\"redis_read_bytes\":26,\"redis_write_bytes\":4284,\"redis_feature_flag_calls\":26,\"redis_feature_flag_duration_s\":0.005135,\"redis_feature_flag_read_bytes\":26,\"redis_feature_flag_write_bytes\":4284,\"db_count\":13,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":13,\"db_main_count\":13,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.01,\"db_main_duration_s\":0.01,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.047579,\"mem_objects\":32870,\"mem_bytes\":2376584,\"mem_mallocs\":11255,\"mem_total_bytes\":3691384,\"pid\":857,\"worker_id\":\"puma_master\",\"rate_limiting_gates\":[],\"db_duration_s\":0.00158,\"view_duration_s\":0.0,\"duration_s\":0.0242}",
         "provider": "RootController#index",
@@ -1613,23 +1608,23 @@ An example event for `production` looks as following:
         }
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-10238",
-        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "hostname": "elastic-agent-12116",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.4"
+            "192.168.241.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "5A-CC-CA-D0-05-98",
-            "96-7E-36-FD-BA-4B"
+            "86-B8-23-AE-B7-40",
+            "E6-15-09-BC-BA-B6"
         ],
-        "name": "elastic-agent-10238",
+        "name": "elastic-agent-12116",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.12.54-linuxkit",
+            "kernel": "5.15.0-173-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -1649,8 +1644,8 @@ An example event for `production` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "43",
-            "inode": "227",
+            "device_id": "64768",
+            "inode": "547129",
             "path": "/tmp/service_logs/test-gitlab-production.log"
         },
         "offset": 9793
@@ -1910,22 +1905,22 @@ An example event for `sidekiq` looks as following:
 {
     "@timestamp": "2018-04-03T22:57:22.071Z",
     "agent": {
-        "ephemeral_id": "a391f557-6b06-4646-be31-86369cc6bb64",
-        "id": "8acb1563-5d97-489a-ad59-b6182e811e68",
-        "name": "elastic-agent-60677",
+        "ephemeral_id": "96d55f2a-0c1b-472e-bf08-c056fadccf39",
+        "id": "6222b3fc-41bf-44c8-964a-bd0a376033ba",
+        "name": "elastic-agent-88111",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "gitlab.sidekiq",
-        "namespace": "52106",
+        "namespace": "11880",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8acb1563-5d97-489a-ad59-b6182e811e68",
+        "id": "6222b3fc-41bf-44c8-964a-bd0a376033ba",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1937,7 +1932,7 @@ An example event for `sidekiq` looks as following:
         "dataset": "gitlab.sidekiq",
         "duration": 139000000,
         "end": "2018-04-03T22:57:22.071Z",
-        "ingested": "2026-01-09T12:05:38Z",
+        "ingested": "2026-03-30T07:35:08Z",
         "kind": "event",
         "original": "{\"severity\": \"INFO\",\"time\": \"2018-04-03T22:57:22.071Z\",\"queue\": \"cronjob:update_all_mirrors\",\"args\": [],\"class\": \"UpdateAllMirrorsWorker\",\"retry\": false,\"queue_namespace\": \"cronjob\",\"jid\": \"06aeaa3b0aadacf9981f368e\",\"created_at\": \"2018-04-03T22:57:21.930Z\",\"enqueued_at\": \"2018-04-03T22:57:21.931Z\",\"pid\": 10077,\"worker_id\": \"sidekiq_0\",\"message\": \"UpdateAllMirrorsWorker JID-06aeaa3b0aadacf9981f368e: done: 0.139 sec\",\"job_status\": \"done\",\"duration\": 0.139,\"completed_at\": \"2018-04-03T22:57:22.071Z\",\"db_duration\": 0.05,\"db_duration_s\": 0.0005,\"gitaly_duration\": 0,\"gitaly_calls\": 0}",
         "severity": 6,
@@ -1967,23 +1962,23 @@ An example event for `sidekiq` looks as following:
         }
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-60677",
-        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "hostname": "elastic-agent-88111",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.4"
+            "192.168.241.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "02-E3-87-3E-F8-79",
-            "A2-23-5C-1B-E5-B4"
+            "2A-6B-40-0B-16-64",
+            "D2-6B-78-02-AE-8F"
         ],
-        "name": "elastic-agent-60677",
+        "name": "elastic-agent-88111",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.12.54-linuxkit",
+            "kernel": "5.15.0-173-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -1995,8 +1990,8 @@ An example event for `sidekiq` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "43",
-            "inode": "236",
+            "device_id": "64768",
+            "inode": "547165",
             "path": "/tmp/service_logs/test-gitlab-sidekiq.log"
         },
         "offset": 0
