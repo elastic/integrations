@@ -1,0 +1,172 @@
+---
+# [PostgreSQL OTel] Locks Dashboard
+# Converted from Kibana JSON to kb-yaml-to-lens YAML format
+# Database locks by type, mode, and relation. High exclusive lock counts indicate contention.
+#
+# Data source: metrics-postgresqlreceiver.otel-*
+dashboards:
+  - id: postgresql_otel-locks
+    name: '[PostgreSQL OTel] Locks'
+    description: Database locks by type, mode, and relation. High exclusive lock counts indicate contention.
+    controls:
+      - type: options
+        label: Instance
+        data_view: metrics-*
+        field: resource.attributes.service.instance.id
+    panels:
+      # Navigation links bar
+      - size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: postgresql_otel-overview
+            - label: Connections
+              dashboard: postgresql_otel-connections
+            - label: Workload
+              dashboard: postgresql_otel-workload
+            - label: Query Performance
+              dashboard: postgresql_otel-query-performance
+            - label: I/O Health
+              dashboard: postgresql_otel-io-health
+            - label: Locks
+              dashboard: postgresql_otel-locks
+            - label: Active Queries
+              dashboard: postgresql_otel-active-queries
+
+      # Markdown description
+      - size: {w: 16, h: 14}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [PostgreSQL OTel] Locks
+
+            This dashboard monitors lock contention:
+            - Locks by type (relation, transactionid, etc.)
+            - Locks by mode (AccessShareLock to AccessExclusiveLock)
+            - Locks by relation
+            - High exclusive lock counts indicate contention
+
+      # Total Locks (lnsMetric)
+      - title: Total Locks
+        hide_title: true
+        size: {w: 32, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.database.locks IS NOT NULL
+            | STATS total_locks = SUM(postgresql.database.locks)
+          primary:
+            field: total_locks
+            label: Total Locks
+            format:
+              type: number
+              decimals: 0
+
+      # Locks by Type (lnsXY bar_unstacked)
+      - title: Locks by Type
+        size: {w: 16, h: 10}
+        position: {x: 16, y: 6}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.database.locks IS NOT NULL
+            | STATS locks = SUM(postgresql.database.locks) BY attributes.lock_type
+            | SORT locks DESC
+            | LIMIT 10
+          dimension:
+            field: attributes.lock_type
+            label: Lock Type
+          metrics:
+            - field: locks
+              label: Locks
+              format:
+                type: number
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+
+      # Locks by Mode (lnsXY bar_unstacked)
+      - title: Locks by Mode
+        size: {w: 16, h: 10}
+        position: {x: 32, y: 6}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.database.locks IS NOT NULL
+            | STATS locks = SUM(postgresql.database.locks) BY attributes.mode
+            | SORT locks DESC
+            | LIMIT 10
+          dimension:
+            field: attributes.mode
+            label: Mode
+          metrics:
+            - field: locks
+              label: Locks
+              format:
+                type: number
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+
+      # Locks Over Time by Type (lnsXY area, split by attributes.lock_type)
+      - title: Locks Over Time by Type
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 16}
+        esql:
+          type: area
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.database.locks IS NOT NULL
+            | STATS locks = SUM(postgresql.database.locks) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.lock_type
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: time_bucket
+            data_type: date
+          metrics:
+            - field: locks
+              label: Locks
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.lock_type
+          legend:
+            visible: show
+            position: right
+
+      # Top Relations by Lock Count (lnsDatatable)
+      - title: Top Relations by Lock Count
+        size: {w: 48, h: 15}
+        position: {x: 0, y: 28}
+        esql:
+          type: datatable
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.database.locks IS NOT NULL
+            | STATS locks = SUM(postgresql.database.locks) BY attributes.relation, attributes.lock_type, attributes.mode
+            | SORT locks DESC
+            | LIMIT 50
+          breakdowns:
+            - field: attributes.relation
+              label: Relation
+            - field: attributes.lock_type
+              label: Lock Type
+            - field: attributes.mode
+              label: Mode
+          metrics:
+            - field: locks
+              label: Locks
+              format:
+                type: number
+                decimals: 2

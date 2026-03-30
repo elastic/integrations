@@ -1,0 +1,42 @@
+{
+  "attributes": {
+    "name": "[Redis OTel] Fork duration 99.5% rolling 30 days",
+    "description": "This SLO tracks the duration of the latest fork operation (used for RDB/AOF persistence) for Redis via OTel metrics. At least 99.5% of 1-minute time intervals must show fork duration below 100 milliseconds over a rolling 30-day period, ensuring persistence operations do not block the event loop and cause latency spikes.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"redisreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "redis.latest_fork"}
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 100000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["redis", "otel"],
+    "groupBy": ["resource.attributes.server.address", "resource.attributes.server.port"]
+  },
+  "artifacts": {
+    "dashboards": [
+      {"id": "redis_otel-overview"},
+      {"id": "redis_otel-memory-persistence"}
+    ]
+  },
+  "id": "redis_otel-fork-duration-99.5-Rolling30Days",
+  "type": "slo_template"
+}

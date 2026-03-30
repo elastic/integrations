@@ -4,21 +4,18 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.17.0
+      value: 9.3.0
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
-  - set:
-      field: event.kind
-      tag: set_event_kind
-      value: event
+
+  # parse the event JSON
   - rename:
       field: message
       tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
-      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
@@ -26,17 +23,6 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
   - json:
       field: event.original
       tag: json_event_original
@@ -48,229 +34,475 @@ processors:
       tag: fingerprint_endpoint_activity
       target_field: _id
       ignore_missing: true
+
+  # rename to snake case
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case.
+      if: ctx.json != null
+      source: |
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              newObj[camelToSnake(entry.getKey())] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            if (obj == "") {
+              return null;
+            }
+            return obj;
+          }
+        }
+        ctx.trend_micro_vision_one = ctx.trend_micro_vision_one ?: [:];
+        ctx.trend_micro_vision_one.endpoint_activity = convertToSnakeCase(ctx.json);
+
+  # restructure fields to match previous schema
+
+  # restructure destination
   - rename:
-      field: json.dst
-      tag: rename_dst
+      field: trend_micro_vision_one.endpoint_activity.dst
+      tag: rename_dst_to_destination_address
       target_field: trend_micro_vision_one.endpoint_activity.destination.address
       ignore_missing: true
   - rename:
-      field: json.endpointGuid
-      tag: rename_endpoint_guid
+      field: trend_micro_vision_one.endpoint_activity.dpt
+      tag: rename_dpt_to_destination_port
+      target_field: trend_micro_vision_one.endpoint_activity.destination.port
+      ignore_missing: true
+
+  # restructure endpoint
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.endpoint_guid
+      tag: rename_endpoint_guid_to_endpoint_guid
       target_field: trend_micro_vision_one.endpoint_activity.endpoint.guid
       ignore_missing: true
   - rename:
-      field: json.endpointHostName
-      tag: rename_endpoint_host_name
+      field: trend_micro_vision_one.endpoint_activity.endpoint_host_name
+      tag: rename_endpoint_host_name_to_endpoint_host_name
       target_field: trend_micro_vision_one.endpoint_activity.endpoint.host_name
       ignore_missing: true
   - rename:
-      field: json.eventId
-      tag: rename_event_id
+      field: trend_micro_vision_one.endpoint_activity.endpoint_ip
+      tag: rename_endpoint_ip_to_endpoint_ip
+      target_field: trend_micro_vision_one.endpoint_activity.endpoint.ip
+      ignore_missing: true
+
+  # restructure event
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.event_id
+      tag: rename_event_id_to_event_id
       target_field: trend_micro_vision_one.endpoint_activity.event.id
       ignore_missing: true
   - rename:
-      field: json.hostName
-      tag: rename_host_name
-      target_field: trend_micro_vision_one.endpoint_activity.host_name
+      field: trend_micro_vision_one.endpoint_activity.event_sub_id
+      tag: rename_event_sub_id_to_event_sub_id
+      target_field: trend_micro_vision_one.endpoint_activity.event.sub_id
       ignore_missing: true
   - rename:
-      field: json.logonUser
-      tag: rename_logon_user
-      target_field: trend_micro_vision_one.endpoint_activity.logon_user
+      field: trend_micro_vision_one.endpoint_activity.event_time
+      tag: rename_event_time_to_event_time
+      target_field: trend_micro_vision_one.endpoint_activity.event.time
       ignore_missing: true
   - rename:
-      field: json.objectCmd
-      tag: rename_object_cmd
+      field: trend_micro_vision_one.endpoint_activity.event_time_dt
+      tag: rename_event_time_dt_to_event_time_dt
+      target_field: trend_micro_vision_one.endpoint_activity.event.time_dt
+      ignore_missing: true
+
+  # restructure object
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_cmd
+      tag: rename_object_cmd_to_object_cmd
       target_field: trend_micro_vision_one.endpoint_activity.object.cmd
       ignore_missing: true
   - rename:
-      field: json.objectFileHashSha1
-      tag: rename_object_file_hash_sha1
+      field: trend_micro_vision_one.endpoint_activity.object_file_hash_sha1
+      tag: rename_object_file_hash_sha1_to_object_file_hash_sha1
       target_field: trend_micro_vision_one.endpoint_activity.object.file.hash_sha1
       ignore_missing: true
   - rename:
-      field: json.objectFilePath
-      tag: rename_object_file_path
+      field: trend_micro_vision_one.endpoint_activity.object_file_path
+      tag: rename_object_file_path_to_object_file_path
       target_field: trend_micro_vision_one.endpoint_activity.object.file.path
       ignore_missing: true
   - rename:
-      field: json.objectHostName
-      tag: rename_object_host_name
+      field: trend_micro_vision_one.endpoint_activity.object_host_name
+      tag: rename_object_host_name_to_object_host_name
       target_field: trend_micro_vision_one.endpoint_activity.object.host_name
       ignore_missing: true
   - rename:
-      field: json.objectRegistryData
-      tag: rename_object_registry_data
+      field: trend_micro_vision_one.endpoint_activity.object_integrity_level
+      tag: rename_object_integrity_level_to_object_integrity_level
+      target_field: trend_micro_vision_one.endpoint_activity.object.integrity_level
+      ignore_missing: true
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_ip
+      tag: rename_object_ip_to_object_ip
+      target_field: trend_micro_vision_one.endpoint_activity.object.ip
+      ignore_missing: true
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_ips
+      tag: rename_object_ips_to_object_ips
+      target_field: trend_micro_vision_one.endpoint_activity.object.ips
+      ignore_missing: true
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_port
+      tag: rename_object_port_to_object_port
+      target_field: trend_micro_vision_one.endpoint_activity.object.port
+      ignore_missing: true
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_registry_data
+      tag: rename_object_registry_data_to_object_registry_data
       target_field: trend_micro_vision_one.endpoint_activity.object.registry.data
       ignore_missing: true
   - rename:
-      field: json.objectRegistryKeyHandle
-      tag: rename_object_registry_key_handle
+      field: trend_micro_vision_one.endpoint_activity.object_registry_key_handle
+      tag: rename_object_registry_key_handle_to_object_registry_key_handle
       target_field: trend_micro_vision_one.endpoint_activity.object.registry.key_handle
       ignore_missing: true
   - rename:
-      field: json.objectRegistryValue
-      tag: rename_object_registry_value
+      field: trend_micro_vision_one.endpoint_activity.object_registry_value
+      tag: rename_object_registry_value_to_object_registry_value
       target_field: trend_micro_vision_one.endpoint_activity.object.registry.value
       ignore_missing: true
   - rename:
-      field: json.objectSigner
-      tag: rename_object_signer
+      field: trend_micro_vision_one.endpoint_activity.object_signer
+      tag: rename_object_signer_to_object_signer
       target_field: trend_micro_vision_one.endpoint_activity.object.signer
       ignore_missing: true
   - rename:
-      field: json.objectUser
-      tag: rename_object_user
+      field: trend_micro_vision_one.endpoint_activity.object_signer_valid
+      tag: rename_object_signer_valid_to_object_signer_valid
+      target_field: trend_micro_vision_one.endpoint_activity.object.signer_valid
+      ignore_missing: true
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_sub_true_type
+      tag: rename_object_sub_true_type_to_object_sub_true_type
+      target_field: trend_micro_vision_one.endpoint_activity.object.sub_true_type
+      ignore_missing: true
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_true_type
+      tag: rename_object_true_type_to_object_true_type
+      target_field: trend_micro_vision_one.endpoint_activity.object.true_type
+      ignore_missing: true
+  - rename:
+      field: trend_micro_vision_one.endpoint_activity.object_user
+      tag: rename_object_user_to_object_user
       target_field: trend_micro_vision_one.endpoint_activity.object.user
       ignore_missing: true
+
+  # restructure parent
   - rename:
-      field: json.os
-      tag: rename_os
-      target_field: trend_micro_vision_one.endpoint_activity.os
-      ignore_missing: true
-  - rename:
-      field: json.parentCmd
-      tag: rename_parent_cmd
+      field: trend_micro_vision_one.endpoint_activity.parent_cmd
+      tag: rename_parent_cmd_to_parent_cmd
       target_field: trend_micro_vision_one.endpoint_activity.parent.cmd
       ignore_missing: true
   - rename:
-      field: json.parentFileHashSha1
-      tag: rename_parent_file_hash_sha1
+      field: trend_micro_vision_one.endpoint_activity.parent_file_hash_sha1
+      tag: rename_parent_file_hash_sha1_to_parent_file_hash_sha1
       target_field: trend_micro_vision_one.endpoint_activity.parent.file.hash_sha1
       ignore_missing: true
   - rename:
-      field: json.parentFilePath
-      tag: rename_parent_file_path
+      field: trend_micro_vision_one.endpoint_activity.parent_file_path
+      tag: rename_parent_file_path_to_parent_file_path
       target_field: trend_micro_vision_one.endpoint_activity.parent.file.path
       ignore_missing: true
+
+  # restructure process
   - rename:
-      field: json.processCmd
-      tag: rename_process_cmd
+      field: trend_micro_vision_one.endpoint_activity.process_cmd
+      tag: rename_process_cmd_to_process_cmd
       target_field: trend_micro_vision_one.endpoint_activity.process.cmd
       ignore_missing: true
   - rename:
-      field: json.processFileHashSha1
-      tag: rename_process_file_hash_sha1
+      field: trend_micro_vision_one.endpoint_activity.process_file_hash_sha1
+      tag: rename_process_file_hash_sha1_to_process_file_hash_sha1
       target_field: trend_micro_vision_one.endpoint_activity.process.file.hash_sha1
       ignore_missing: true
   - rename:
-      field: json.processFilePath
-      tag: rename_process_file_path
+      field: trend_micro_vision_one.endpoint_activity.process_file_path
+      tag: rename_process_file_path_to_process_file_path
       target_field: trend_micro_vision_one.endpoint_activity.process.file.path
       ignore_missing: true
+
+  # restructure source
   - rename:
-      field: json.request
-      tag: rename_request
-      target_field: trend_micro_vision_one.endpoint_activity.request
+      field: trend_micro_vision_one.endpoint_activity.spt
+      tag: rename_spt_to_source_port
+      target_field: trend_micro_vision_one.endpoint_activity.source.port
       ignore_missing: true
   - rename:
-      field: json.searchDL
-      tag: rename_search_dl
-      target_field: trend_micro_vision_one.endpoint_activity.search_dl
+      field: trend_micro_vision_one.endpoint_activity.src
+      tag: rename_src_to_source_ip
+      target_field: trend_micro_vision_one.endpoint_activity.source.ip
       ignore_missing: true
   - rename:
-      field: json.srcFileHashSha1
-      tag: rename_src_file_hash_sha1
+      field: trend_micro_vision_one.endpoint_activity.src_file_hash_sha1
+      tag: rename_src_file_hash_sha1_to_source_file_hash_sha1
       target_field: trend_micro_vision_one.endpoint_activity.source_file.hash_sha1
       ignore_missing: true
   - rename:
-      field: json.srcFilePath
-      tag: rename_src_file_path
+      field: trend_micro_vision_one.endpoint_activity.src_file_path
+      tag: rename_src_file_path_to_source_file_path
       target_field: trend_micro_vision_one.endpoint_activity.source_file.path
       ignore_missing: true
-  - rename:
-      field: json.tags
-      tag: rename_tags
-      target_field: trend_micro_vision_one.endpoint_activity.tags
-      ignore_missing: true
-  - rename:
-      field: json.uuid
-      tag: rename_uuid
-      target_field: trend_micro_vision_one.endpoint_activity.uuid
-      ignore_missing: true
-  - rename:
-      field: json.winEventId
-      tag: rename_win_event_id
-      target_field: trend_micro_vision_one.endpoint_activity.win_event_id
-      ignore_missing: true
-  - convert:
-      field: json.dpt
-      tag: convert_dpt
-      target_field: trend_micro_vision_one.endpoint_activity.destination.port
-      type: long
-      ignore_missing: true
+
+  # convert values
+  - script:
+      tag: script_normalize_event_time_to_unix_ms
+      lang: painless
+      description: Normalize eventTime to UNIX_MS format.
+      if: ctx.trend_micro_vision_one?.endpoint_activity?.event?.time != null && ctx.trend_micro_vision_one.endpoint_activity.event.time != ''
+      source: >-
+        def eventTime = Long.parseLong(ctx.trend_micro_vision_one.endpoint_activity.event.time.toString());
+        if (eventTime < 10000000000L) {
+          ctx.trend_micro_vision_one.endpoint_activity.event.time = eventTime * 1000L;
+        }
       on_failure:
         - append:
+            tag: append_error_message_a996b448
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trend_micro_vision_one.endpoint_activity.event.time
+      tag: date_event_time
+      target_field: trend_micro_vision_one.endpoint_activity.event.time
+      formats:
+        - UNIX_MS
+      if: ctx.trend_micro_vision_one?.endpoint_activity?.event?.time != null && ctx.trend_micro_vision_one.endpoint_activity.event.time != ''
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_event_time_757b471a
+            field: trend_micro_vision_one.endpoint_activity.event.time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_6966acd5
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trend_micro_vision_one.endpoint_activity.event.time_dt
+      tag: date_event_time_dt
+      target_field: trend_micro_vision_one.endpoint_activity.event.time_dt
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss[.SSSSSS][.SSS]XXX
+      if: ctx.trend_micro_vision_one?.endpoint_activity?.event?.time_dt != null && ctx.trend_micro_vision_one.endpoint_activity.event.time_dt != ''
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_event_time_dt_a5a24137
+            field: trend_micro_vision_one.endpoint_activity.event.time_dt
+            ignore_missing: true
+        - append:
+            tag: append_error_message_433a08dd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.eventSubId
-      tag: convert_event_sub_id
-      target_field: trend_micro_vision_one.endpoint_activity.event.sub_id
+      field: trend_micro_vision_one.endpoint_activity.destination.port
+      tag: convert_destination_port_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_destination_port_0df907ca
+            field: trend_micro_vision_one.endpoint_activity.destination.port
+            ignore_missing: true
         - append:
+            tag: append_error_message_2901363d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.objectIntegrityLevel
-      tag: convert_object_integrity_level
-      target_field: trend_micro_vision_one.endpoint_activity.object.integrity_level
+      field: trend_micro_vision_one.endpoint_activity.event.sub_id
+      tag: convert_event_sub_id_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_event_sub_id_32ef9b12
+            field: trend_micro_vision_one.endpoint_activity.event.sub_id
+            ignore_missing: true
         - append:
+            tag: append_error_message_2061c210
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.objectPort
-      tag: convert_object_port
-      target_field: trend_micro_vision_one.endpoint_activity.object.port
+      field: trend_micro_vision_one.endpoint_activity.object.integrity_level
+      tag: convert_object_integrity_level_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_object_integrity_level_cd00d134
+            field: trend_micro_vision_one.endpoint_activity.object.integrity_level
+            ignore_missing: true
         - append:
+            tag: append_error_message_d40e4ed1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.objectSubTrueType
-      tag: convert_object_sub_true_type
-      target_field: trend_micro_vision_one.endpoint_activity.object.sub_true_type
+      field: trend_micro_vision_one.endpoint_activity.object.port
+      tag: convert_object_port_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_object_port_bdb42cd8
+            field: trend_micro_vision_one.endpoint_activity.object.port
+            ignore_missing: true
         - append:
+            tag: append_error_message_503225ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.objectTrueType
-      tag: convert_object_true_type
-      target_field: trend_micro_vision_one.endpoint_activity.object.true_type
+      field: trend_micro_vision_one.endpoint_activity.object.sub_true_type
+      tag: convert_object_sub_true_type_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_object_sub_true_type_9cf0f574
+            field: trend_micro_vision_one.endpoint_activity.object.sub_true_type
+            ignore_missing: true
         - append:
+            tag: append_error_message_bc426517
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.spt
-      tag: convert_spt
-      target_field: trend_micro_vision_one.endpoint_activity.source.port
+      field: trend_micro_vision_one.endpoint_activity.object.true_type
+      tag: convert_object_true_type_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_object_true_type_ab28cbac
+            field: trend_micro_vision_one.endpoint_activity.object.true_type
+            ignore_missing: true
         - append:
+            tag: append_error_message_a82eef5a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.endpoint_activity.source.port
+      tag: convert_source_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_source_port_add78ac0
+            field: trend_micro_vision_one.endpoint_activity.source.port
+            ignore_missing: true
+        - append:
+            tag: append_error_message_d38d7220
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.endpoint_activity.destination.address
+      tag: convert_destination_address_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_destination_address_0e2862e8
+            field: trend_micro_vision_one.endpoint_activity.destination.address
+            ignore_missing: true
+        - append:
+            tag: append_error_message_0e2862e8
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.endpoint_activity.source.ip
+      tag: convert_source_ip_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_source_ip_0e2862e8
+            field: trend_micro_vision_one.endpoint_activity.source.ip
+            ignore_missing: true
+        - append:
+            tag: append_error_message_d480252e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.endpoint_activity.object.ip
+      tag: convert_object_ip_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_endpoint_activity_object_ip_e0f8c4b8
+            field: trend_micro_vision_one.endpoint_activity.object.ip
+            ignore_missing: true
+        - append:
+            tag: append_error_message_fe29a088
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.objectSignerValid
-      tag: foreach_objectSignerValid
-      if: ctx.json?.objectSignerValid instanceof List
+      field: trend_micro_vision_one.endpoint_activity.endpoint.ip
+      tag: foreach_endpoint_ip_convert_to_ip
+      if: ctx.trend_micro_vision_one?.endpoint_activity?.endpoint?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_objectSignerValid
+          tag: convert_endpoint_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: trend_micro_vision_one.endpoint_activity.object.ips
+      tag: foreach_object_ips_convert_to_ip
+      if: ctx.trend_micro_vision_one?.endpoint_activity?.object?.ips instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_object_ips_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: trend_micro_vision_one.endpoint_activity.object.signer_valid
+      tag: foreach_object_signer_valid_convert_to_boolean
+      if: ctx.trend_micro_vision_one?.endpoint_activity?.object?.signer_valid instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_object_signer_valid_to_boolean
           type: boolean
           ignore_missing: true
           on_failure:
@@ -279,326 +511,809 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.objectSignerValid
-      tag: rename_objectSignerValid
-      target_field: trend_micro_vision_one.endpoint_activity.object.signer_valid
-      ignore_missing: true
-  - foreach:
-      field: json.endpointIp
-      tag: foreach_endpointIp
-      if: ctx.json?.endpointIp instanceof List
-      processor:
-        convert:
-          field: _ingest._value
-          tag: convert_endpoint_ip
-          type: ip
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.endpointIp
-      tag: rename_endpointIp
-      target_field: trend_micro_vision_one.endpoint_activity.endpoint.ip
-      ignore_missing: true
+  - script:
+      lang: painless
+      description: Resolves numeric codes to human-readable values for event ID, event sub ID, object integrity level, object true type, object sub true type, and Windows event ID.
+      tag: script_resolve_numeric_field_values
+      params:
+        eventId:
+          '1': EVENT_PROCESS
+          '2': EVENT_FILE
+          '3': EVENT_CONNECTIO
+          '4': EVENT_DNS
+          '5': EVENT_REGISTRY
+          '6': EVENT_ACCOUNT
+          '7': EVENT_INTERNET
+          '8': XDR_EVENT_MODIFIED_PROCESS
+          '9': EVENT_WINDOWS_HOOK
+          '10': EVENT_WINDOWS_EVENT
+          '11': EVENT_AMSI
+          '12': EVENT_WMI
+          '13': TELEMETRY_MEMORY
+          '14': TELEMETRY_BM
+        eventSubId:
+          '0': TELEMETRY_NONE
+          '1': XDR_PROCESS_OPEN
+          '2': XDR_PROCESS_CREATE
+          '3': XDR_PROCESS_TERMINATE
+          '4': XDR_PROCESS_LOAD_IMAGE
+          '5': TELEMETRY_PROCESS_EXECUTE
+          '6': TELEMETRY_PROCESS_CONNECT
+          '7': TELEMETRY_PROCESS_TRACME
+          '101': XDR_FILE_CREATE
+          '102': XDR_FILE_OPEN
+          '103': XDR_FILE_DELETE
+          '104': XDR_FILE_SET_SECURITY
+          '105': XDR_FILE_COPY
+          '106': XDR_FILE_MOVE
+          '107': XDR_FILE_CLOSE
+          '108': TELEMETRY_FILE_MODIFY_TIMESTAMP
+          '109': TELEMETRY_FILE_MODIFY
+          '201': XDR_CONNECTION_CONNECT
+          '202': XDR_CONNECTION_LISTEN
+          '203': XDR_CONNECTION_CONNECT_INBOUND
+          '204': XDR_CONNECTION_CONNECT_OUTBOUND
+          '301': XDR_DNS_QUERY
+          '401': XDR_REGISTRY_CREATE
+          '402': XDR_REGISTRY_SET
+          '403': XDR_REGISTRY_DELETE
+          '404': XDR_REGISTRY_RENAME
+          '501': XDR_ACCOUNT_ADD
+          '502': XDR_ACCOUNT_DELETE
+          '503': XDR_ACCOUNT_IMPERSONATE
+          '504': XDR_ACCOUNT_MODIFY
+          '601': XDR_INTERNET_OPEN
+          '602': XDR_INTERNET_CONNECT
+          '603': XDR_INTERNET_DOWNLOAD
+          '701': XDR_MODIFIED_PROCESS_CREATE_REMOTETHREAD
+          '702': XDR_MODIFIED_PROCESS_WRITE_MEMORY
+          '703': TELEMETRY_MODIFIED_PROCESS_WRITE_PROCESS
+          '704': TELEMETRY_MODIFIED_PROCESS_READ_PROCESS
+          '705': TELEMETRY_MODIFIED_PROCESS_WRITE_PROCESS_NAME
+          '801': XDR_WINDOWS_HOOK_SET
+          '901': XDR_AMSI_EXECUTE
+          '1001': TELEMETRY_MEMORY_MODIFY
+          '1002': TELEMETRY_MEMORY_MODIFY_PERMISSION
+          '1003': TELEMETRY_MEMORY_READ
+          '1101': TELEMETRY_BM_INVOKE
+          '1102': TELEMETRY_BM_INVOKE_API
+        objectIntegrityLevel:
+          '0': Untrusted
+          '4096': Low
+          '8192': Medium
+          '12288': High
+          '16384': System
+        objectTrueType:
+          '-1': Uninitialized type
+          '-2': Unknown type
+          '1': Word for Windows
+          '2': Windows PowerPoint
+          '3': Windows Font
+          '4': Excel for Windows
+          '5': COM
+          '6': Windows Icon
+          '7': EXE
+          '8': SUN GKS
+          '9': MSCOMP
+          '10': PCX
+          '11': unix cpio archive
+          '12': PPM image
+          '13': LHA
+          '14': unix ar archive
+          '15': ARC
+          '16': Windows Write
+          '17': Windows Calendar
+          '18': ASCII text
+          '19': ELF
+          '20': TAR
+          '21': TeleDisk Image
+          '22': AutoDesk Animator(FLI or FLC)
+          '23': empty file(size 0)
+          '24': NT/95 shortcut(*.lnk)
+          '25': RAR
+          '26': Microsoft Access(MDB)
+          '27': MAC
+          '28': VBScript
+          '29': Script File Type match
+          '30': Project for Windows
+          '31': Advanced Streaming Format
+          '32': Quick Time Media
+          '33': MPEG
+          '34': Portable Network Graphics
+          '35': Pain Shop Pro
+          '36': Targa Image
+          '37': Macintosh Bitmap
+          '38': Apple Sound
+          '39': Encapsulated Postscript
+          '40': Audio InterChange File Format from Apple/SGI
+          '41': Animated Cursor USELESS since moving to VSDT_RIFF_ANI
+          '42': TerraGen ATMosphere
+          '43': Nullsoft AVS Files
+          '44': SGI Image
+          '45': Cinema 4D
+          '46': BAR CDA Music Track File Format USELESS since moving to VSDT_RIFF_CDA
+          '47': Computer Graphics Metafiles
+          '48': CHL File
+          '49': Corel Presentation Exchange USELESS since moving to VSDT_RIFF_CMX
+          '51': Caligari TrueSpace File
+          '52': Visual C Obj File
+          '53': Macromedia Director Cast
+          '54': Macromedia Director Shockwave Movie
+          '57': Diamondware Dgitized Sound
+          '58': AutoCAD DWG
+          '61': Free Hand Document
+          '65': SoftImage
+          '66': Amiga 8SVX Audio InterChange File Format
+          '68': Interleaf Image
+          '69': GEM Image
+          '70': Imagine 3D Object
+          '71': Uninstall Scripts
+          '72': InterVoice Files
+          '74': LightWave 3D Object
+          '75': Matlab Sound
+          '76': MAUD Sample Format
+          '78': Magick Image File Format
+          '79': Media Catalog
+          '80': Multiple-image Network Graphics
+          '81': Atari Neochrome
+          '83': Gravis Patch Files
+          '84': PalmPilot Image
+          '85': Adobe Font File
+          '86': Shortcut to Microsoft Program
+          '87': Real Audio
+          '90': WaveFront RLA
+          '92': Sculpt 3D/4D Scene
+          '94': Lotus ScreenCam Movie
+          '95': MIDI Sample Sound
+          '96': IRCAM
+          '97': Sonic Foundry File
+          '98': Solitaire Image Recorder
+          '99': SampleVision Sound
+          '100': Sndtool Sound File
+          '101': TerraGen Surface
+          '102': TerraGen Terrain
+          '103': TerraGen World
+          '104': Yamaha tx-16w
+          '106': Convox V8 File
+          '107': Bitmap Image YUV12
+          '109': Webshots Collection
+          '110': Windows Metafile
+          '112': Psion Audio Files
+          '115': Macintosh MacBinary
+          '116': Mail Box (MicroSoft Outlook 4.x or Unix-based)
+          '117': Script User-Defined Type match (Reyer
+          '118': Script Customer-Defined Type match (Reyer
+          '119': Corel Global Macro (aldous
+          '120': Corel PhotoPaint (aldous
+          '121': GNU BZIP2
+          '122': WordPro
+          '123': Windows Installer
+          '124': JP Government file
+          '125': ACE compression file
+          '126': EPOC file
+          '127': Windows Process Memory
+          '128': EPOC sis file (sis)
+          '129': Dalvik VM DEX file (VSAPI 9.700)
+          '200': LAMA file
+          '201': .xz file
+          '202': 7-ZIP file
+          '203': MS Enhanced Metafile format (VSAPI 9.700)
+          '204': Binary Property List
+          '205': UHarc Compressed Archive
+          '206': Hangul Document (Korean) (ATSE 9.740)
+          '207': Microsoft Windows Imaging Format file
+          '208': ALZ .alz file
+          '209': ALZ .egg file
+          '4000': unix core file
+          '4001': Windows Group
+          '4002': JPEG
+          '4003': PKZIP
+          '4004': Audio
+          '4005': JAVA Aplet
+          '4006': PA-RISC executable
+          '4007': PA-RISC demand-load executable
+          '4008': PA-RISC shared executable
+          '4009': PA-RISC dynamic load library
+          '4010': PA-RISC shared library
+          '4011': Compiled LISP
+          '4012': HP-WINDOWS font
+          '4013': MMDF mail box
+          '4014': HP s800 executable
+          '4015': HP s800 shared executable
+          '4016': HP s800 demand-load executable
+          '4017': HP s800 shared library
+          '4018': HP s800 dynamic load library
+          '4019': PA-RISC relocatable object
+          '4020': Microsoft RIFF
+          '4021': Microsoft Paint v1.x
+          '4022': Microsoft Paint v2.x
+          '4023': Creative Lab CMF
+          '4024': TIFF
+          '4025': WordPerfect
+          '4026': Sun Raster(RAS)
+          '4027': Adobe PhotoShop(PSD)
+          '4028': MIDI
+          '4029': MS word/DOS 4.0/5.0
+          '4030': MS Cabinet
+          '4031': MP3
+          '4032': MSFT(TLB
+          '4033': HLP
+          '4034': BND
+          '4035': Trend backup file
+          '4036': Real Media
+          '4037': True Type Collection
+          '4038': Macromedia Flash
+          '4039': Compiled HTML (CHM)
+          '4040': Corel Draw file
+          '4041': IBM AS400 saving file
+          '4042': Lotus Notes Database
+          '4043': Encapsulated Postcript (EPS)
+          '4044': QuarkXPress Document (QXD)
+          '4045': added by Lucy Office12
+          '4046': Microsoft Document Imaging
+          '4047': Macromedia Flash FLV Video
+          '4048': Open Document
+          '4049': Java Archive (JAR) file (VSAPI 9.700)
+          '4050': Android Application Package file (APK) (VSAPI 9.700)
+          '4051': Fat binary file
+          '4052': Mach object file format (Mach-O)
+          '4053': Reserved for VSAPI 9.718 - Binary XML (AndroidManifest.xml) (VSAPI 9.718)
+          '4054': PST Outlook PST File
+          '4055': MS OneNote File
+          '4056': Extensible Archiver (XAR)
+          '4057': Apple Disk Image
+          '4058': Reserved for VSAPI 9.718 - PKCS7 Certificate file
+          '4059': Chrome Extension Format (CRX)
+          '6000': UUENCODE
+          '6001': Adobe Font
+          '6002': BINHEX
+          '6003': Windows Cardfile
+          '6004': Frame Maker
+          '6005': GIF
+          '6006': Netware Loadable Module
+          '6007': Postscript
+          '6008': Microsoft RTF
+          '6010': Mime base 64
+          '6011': Novell system PrinfDef Device Definition
+          '6012': Novell Help Librarian data file
+          '6013': NetWare Unicode Rule Table file
+          '6014': Creative Voice Format(VOC)
+          '6015': Adobe Portable Document Format file
+          '6016': Macors in MS Office compressed by ActiveMime
+          '6017': Aladdin StuffIt Archive
+          '6018': YEncode
+          '6019': Microsoft Shell Link
+          '6020': ICalendar
+          '2000': ARJ
+          '2001': Windows BMP
+          '2002': Windows Clipboard
+          '2003': GNU ZIP
+          '2004': LZW
+          '2005': Compiled Terminfo entry
+          '1000': Fujitsu AMG compressed type
+          '1001': Outlook Item(TNEF)
+          '1002': ZLib format
+          '1003': Office XML
+          '1004': Hancom Office 2014
+          '1005': ISO image
+          '1006': True Type Font
+        objectSubTrueType:
+          '1000': MS Office or Unknown OLE
+          '1001': Winword 2.0
+          '1002': Winword 1.0
+          '1003': Hangul Word Processor (Korean)
+          '1004': Ichitaro (Japan)
+          '1005': JungUm Global (Korean) (ATSE 9.740)
+          '1006': Outlook Item (.msg) (ATSE 9.755)
+          '1007': MS Publisher (.pub) (ATSE 9.862)
+          '4000': MS Office
+          '4001': Hancom Hancell (ATSE 9.740)
+          '4045000': Unknown type (MS Office 2007)
+          '4045001': WORD (MS Office 2007)
+          '4045002': Excel (MS Office 2007)
+          '4045003': PTT (MS Office2007)
+          '4045004': XPS (Office 2007)
+          '1004000': Hwp Standard OWPML Document
+          '1003000': Unknown XML Document
+          '1003001': Word 2003 XML Document
+          '1003002': XML Spreadsheet 2003
+          '1003003': PowerPoint XML Presentation
+          '22000': '.FLI: AutoDesk Animator'
+          '22001': '.FLC: AutoDesk 3D studio'
+          '22002': .FLIC:AutoDesk Animator Pro
+          '16000': Windows Write
+          '16001': Word for DOS
+          '7000': DOS EXE
+          '7001': WIN16 EXE
+          '7002': WIN32 EXE
+          '7003': OS2 EXE
+          '7004': WIN16 DLL
+          '7005': Win32 DLL
+          '7006': Windows VxD
+          '7007': OS/2 2.x VxD
+          '7008': NT/MIPS EXE
+          '7009': PKLITE EXE
+          '7010': LZEXE
+          '7011': DIET EXE
+          '7012': PKZIP EXE
+          '7013': ARJ EXE
+          '7014': LZH EXE
+          '7015': LZH EXE used by ZipMail
+          '7016': ASPACK
+          '7017': UPX EXE
+          '7018': MSIL
+          '7019': ASPACK 2.x
+          '7020': WWPACK
+          '7021': PETITE
+          '7022': PEPACK
+          '7023': MEW 1.1
+          '7024': MEW 0.5
+          '7025': MEW 1.0
+          '7026': AMD64 EXE
+          '7027': AMD64 DLL
+          '7028': ARM EXE
+          '7029': THUNB EXE
+          '7030': Miscellaneous EXE
+          '7031': UPX64
+          '7032': DLL Not Program
+          '5000': DOS COM
+          '5001': PKLITE COM
+          '5002': DIET COM
+          '5003': LZH COM
+          '19000': ELF File
+          '19001': ELF Reloactable File
+          '19002': ELF EXE File
+          '19003': ELF Library File
+          '19004': ELF Coredump file
+          '126000': EPOC Binary File
+          '126001': EPOC EXE File
+          '126002': EPOC Library File
+          '126003': EPOC Compressed file
+          '128000': SIS File
+          '128001': SIS File
+          '6015000': PDF
+          '6015001': PDF
+          '6015002': PDF
+          '6015003': PDF
+          '6015004': PDF
+          '6015005': PDF
+          '1005000': ISO 9660 File
+          '1005001': UDF File
+          '6004000': Frame Maker documentation file
+          '6004001': Frame Maker MIF file
+          '6004002': Frame Maker MML file
+          '6004003': Frame Maker Book file
+          '6004004': Frame Maker dictionary file
+          '6004005': Frame Maker font file
+          '6004006': Frame Maker IPL
+          '6001000': Adobe font metrics
+          '6001001': Adobe font bits
+          '4020000': AVI
+          '4020001': WAV
+          '4020002': BND
+          '4020003': RMI
+          '4020004': RDI
+          '4020005': CDA
+          '4020006': ANI
+          '4020007': CMX
+          '2004000': compressed 16 bits
+          '2004001': packed data
+          '2004002': compacked data
+          '2004003': SCO compressed
+          '28000': Script - VB Script/Javascript
+          '28001': HTML File
+          '28002': PALM Resource Code File
+          '28003': ASP file
+          '28004': General Text File
+          '28005': Action Script
+          '28006': XML Data Package
+          '115000': MACBIN
+          '115001': MACBIN
+          '115002': MACBIN
+          '58000': AutoCAD DWG
+          '58001': AutoCAD R2000
+          '116000': MBX_OUTLOOK4
+          '116001': MBX_Unix
+          '116002': MBX_FOXMAIL
+          '26000': MS Access(MDB)
+          '26001': MS Access 2000/XP
+          '26002': MS Access(MDB)2.0
+          '26003': MS Access 2007
+          '6016000': Outlook MSO File
+          '6016001': Exchange MSO DATA
+          '4048000': Unknown OpenDocument File
+          '4048001': OpenDocument Text File
+          '4048002': OpenDocument Graphic File
+          '4048003': OpenDocument Presentation File
+          '4048004': OpenDocument Spreadsheet File
+          '4048005': OpenDocument Formula File
+          '4048006': OpenDocument Database File
+          '4038000': Uncompressed SWF
+          '4038001': Compressed SWF
+          '4038002': LZMA Compressed SWF
+          '4052000': Unnown Match Object File
+          '4052001': X86 Match Object File
+          '4052002': X64 Match Object File
+          '4055000': ONENOTE_ONE
+          '4055001': ONENOTE_ONETOC2
+          '4055002': ONENOTE_ONE_FSSHTTP
+          '4055003': ONENOTE_ONETOC2_FSSHTTP
+          '8000001': FILESS_REG
+          '8000002': FILESS_WMI
+          '8000003': FILESS_SCHEDULE_TASK
+          '8000004': FILESS_AMSI
+          '8000005': FILESS_MIP3
+          '8000006': FILESS_CMD
+          '8000007': FILESS_MIP3_X86_64
+        winEventId:
+          '3': The BITS service created a new job
+          '11': WMI operation new Trigger
+          '12': WMI operation created operational
+          '21': 'Remote Desktop Services: Session logon succeeded'
+          '25': 'Remote Desktop Services: Session reconnection succeeded'
+          '100': Task started
+          '104': The system audit log was cleared
+          '106': Task registered
+          '110': Task triggered by user
+          '119': Scheduled Task is triggered at logon
+          '129': Created task process
+          '151': DomainModuleLoad_V1
+          '152': ModuleLoad_V2
+          '154': AssemblyLoad_V1
+          '200': Action started
+          '201': Action completed
+          '300': Microsoft Office Alerts
+          '1001': RegisterRawInputDevices is invoked
+          '1003': Multiple GetAsyncKeyState are invoked
+          '1034': TcpConnectTcbFailure
+          '1074': System has initiated shutdown/restart
+          '1102': The audit log was cleared
+          '1149': 'Remote Desktop Services: User authentication succeeded'
+          '2004': A rule has been added to the Windows Firewall exception list
+          '4104': Powershell Script Block Logging
+          '4624': An account was successfully logged on
+          '4625': An account failed to log on
+          '4634': An account was logged off
+          '4648': A logon was attempted using explicit credentials
+          '4661': A handle to an object was requested
+          '4663': An attempt was made to access an object
+          '4670': Permissions on an object were changed
+          '4672': Special privileges assigned to new logon
+          '4695': Unprotection of auditable protected data was attempted.
+          '4697': A service was installed in the system
+          '4698': A scheduled task was created
+          '4699': A scheduled task was deleted
+          '4700': A scheduled task was enabled
+          '4701': A scheduled task was disabled
+          '4702': A scheduled task was updated
+          '4703': A user right was adjusted
+          '4720': A user account was created
+          '4722': A user account was enabled
+          '4723': An attempt was made to change an account's password
+          '4724': An attempt was made to reset an account's password
+          '4738': A user account was changed
+          '4740': A user account was locked out
+          '4768': A Kerberos authentication ticket (TGT) was requested
+          '4769': A Kerberos service ticket was requested
+          '4778': A session was reconnected to a Window Station
+          '4779': A session was disconnected from a Window Station
+          '5140': A network share object was accessed
+          '5156': The Windows Filtering Platform has permitted a connection.
+          '5379': Credential Manager credentials were read.
+          '5381': Vault credentials were read.
+          '5827': NetLogon Connection Denied (machine account)
+          '5828': NetLogon Connection Denied (trust account)
+          '5829': NetLogon Connection Allowed
+          '5830': NetLogon Connection Allowed by Group Policy (machine account)
+          '5831': NetLogon Connection Allowed by Group Policy (trust account)
+          '5857': WMI operation started operational
+          '5859': WMI operation ESS(Event SubSystem) started
+          '5860': WMI operation temporary ESS started
+          '5861': WMI operation ESS to consumer binding
+          '7040': The start type of a service has been changed
+          '7045': A service was installed in the system
+          '8225': VSS (Volume Shadow Copy Service) operation
+      if: ctx.trend_micro_vision_one?.endpoint_activity != null
+      source: |-
+        def eventId = ctx.trend_micro_vision_one.endpoint_activity.event?.id;
+        if (eventId != null && params.eventId.containsKey(eventId.toString())) {
+          ctx.trend_micro_vision_one.endpoint_activity.event.id_value = params.eventId[eventId.toString()];
+        }
+        def eventSubId = ctx.trend_micro_vision_one.endpoint_activity.event?.sub_id;
+        if (eventSubId != null && params.eventSubId.containsKey(eventSubId.toString())) {
+          ctx.trend_micro_vision_one.endpoint_activity.event.sub_id_value = params.eventSubId[eventSubId.toString()];
+        }
+        def objectIntegrityLevel = ctx.trend_micro_vision_one.endpoint_activity.object?.integrity_level;
+        if (objectIntegrityLevel != null && params.objectIntegrityLevel.containsKey(objectIntegrityLevel.toString())) {
+          ctx.trend_micro_vision_one.endpoint_activity.object.integrity_level_value = params.objectIntegrityLevel[objectIntegrityLevel.toString()];
+        }
+        def objectTrueType = ctx.trend_micro_vision_one.endpoint_activity.object?.true_type;
+        if (objectTrueType != null && params.objectTrueType.containsKey(objectTrueType.toString())) {
+          ctx.trend_micro_vision_one.endpoint_activity.object.true_type_value = params.objectTrueType[objectTrueType.toString()];
+        }
+        def objectSubTrueType = ctx.trend_micro_vision_one.endpoint_activity.object?.sub_true_type;
+        if (objectSubTrueType != null && params.objectSubTrueType.containsKey(objectSubTrueType.toString())) {
+          ctx.trend_micro_vision_one.endpoint_activity.object.sub_true_type_value = params.objectSubTrueType[objectSubTrueType.toString()];
+        }
+        def winEventId = ctx.trend_micro_vision_one.endpoint_activity.win_event_id;
+        if (winEventId != null && params.winEventId.containsKey(winEventId.toString())) {
+          ctx.trend_micro_vision_one.endpoint_activity.win_event_id_value = params.winEventId[winEventId.toString()];
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_2f2b55cf
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_time_dt
+      copy_from: trend_micro_vision_one.endpoint_activity.event.time_dt
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: event.id
+      tag: set_event_id_from_event_id
+      copy_from: trend_micro_vision_one.endpoint_activity.event.id
+      ignore_empty_value: true
   - convert:
-      field: json.objectIp
-      tag: convert_object_ip
-      target_field: trend_micro_vision_one.endpoint_activity.object.ip
-      type: ip
+      field: trend_micro_vision_one.endpoint_activity.win_event_id
+      tag: convert_win_event_id_to_string
+      target_field: event.code
+      type: string
       ignore_missing: true
-      if: ctx.json?.objectIp != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.objectIps
-      tag: foreach_objectIps
-      if: ctx.json?.objectIps instanceof List
-      processor:
-        convert:
-          field: _ingest._value
-          tag: convert_object_ips
-          type: ip
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.objectIps
-      tag: rename_objectIps
-      target_field: trend_micro_vision_one.endpoint_activity.object.ips
-      ignore_missing: true
-  - convert:
-      field: json.src
-      tag: convert_src
-      target_field: trend_micro_vision_one.endpoint_activity.source.ip
-      type: ip
-      ignore_missing: true
-      if: ctx.json?.src != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.eventTime
-      tag: date_event_time
-      target_field: trend_micro_vision_one.endpoint_activity.event.time
-      formats:
-        - UNIX_MS
-        - UNIX
-      if: ctx.json?.eventTime != null && ctx.json.eventTime != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.eventTimeDT
-      tag: date_event_time_dt
-      target_field: trend_micro_vision_one.endpoint_activity.event.time_dt
-      formats:
-        - ISO8601
-        - yyyy-MM-dd'T'HH:mm:ss[.SSSSSS][.SSS]XXX
-      if: ctx.json?.eventTimeDT != null && ctx.json.eventTimeDT != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # destination.*
   - set:
       field: destination.address
-      tag: set_destination_address
+      tag: set_destination_address_from_destination_address
       copy_from: trend_micro_vision_one.endpoint_activity.destination.address
       ignore_empty_value: true
   - set:
+      field: destination.ip
+      tag: set_destination_ip_from_destination_address
+      copy_from: trend_micro_vision_one.endpoint_activity.destination.address
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      ignore_missing: true
+  - set:
       field: destination.port
-      tag: set_destination_port
+      tag: set_destination_port_from_destination_port
       copy_from: trend_micro_vision_one.endpoint_activity.destination.port
       ignore_empty_value: true
+
+  # host.*
   - set:
       field: host.hostname
-      tag: set_host_hostname
+      tag: set_host_hostname_from_endpoint_host_name
       copy_from: trend_micro_vision_one.endpoint_activity.endpoint.host_name
       ignore_empty_value: true
   - foreach:
       field: trend_micro_vision_one.endpoint_activity.endpoint.ip
-      tag: foreach_endpoint_activity_endpoint_ip
+      tag: foreach_endpoint_ip_append_into_host_ip
       if: ctx.trend_micro_vision_one?.endpoint_activity?.endpoint?.ip instanceof List
       processor:
         append:
           field: host.ip
-          tag: append_host_ip
+          tag: append_endpoint_ip_into_host_ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
-      field: event.id
-      tag: set_event_id
-      copy_from: trend_micro_vision_one.endpoint_activity.event.id
-      ignore_empty_value: true
-  - set:
-      field: '@timestamp'
-      tag: set_timestamp
-      copy_from: trend_micro_vision_one.endpoint_activity.event.time_dt
-      ignore_empty_value: true
-  - set:
       field: host.name
-      tag: set_host_name
+      tag: set_host_name_from_host_name
       copy_from: trend_micro_vision_one.endpoint_activity.host_name
       ignore_empty_value: true
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_from_os
+      copy_from: trend_micro_vision_one.endpoint_activity.os
+      ignore_empty_value: true
+
+  # source.*
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip
+      copy_from: trend_micro_vision_one.endpoint_activity.source.ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
+  - set:
+      field: source.port
+      tag: set_source_port_from_source_port
+      copy_from: trend_micro_vision_one.endpoint_activity.source.port
+      ignore_empty_value: true
+
+  # user.*
   - foreach:
       field: trend_micro_vision_one.endpoint_activity.logon_user
-      tag: foreach_logon_user
+      tag: foreach_logon_user_append_into_user_name
       if: ctx.trend_micro_vision_one?.endpoint_activity?.logon_user instanceof List
       processor:
         append:
           field: user.name
-          tag: append_user_name
+          tag: append_logon_user_into_user_name
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
+      field: user.target.name
+      tag: set_user_target_name_from_object_user
+      copy_from: trend_micro_vision_one.endpoint_activity.object.user
+      ignore_empty_value: true
+
+  # process.*
+  - set:
       field: process.command_line
-      tag: set_process_command_line
+      tag: set_process_command_line_from_process_cmd
       copy_from: trend_micro_vision_one.endpoint_activity.process.cmd
       ignore_empty_value: true
   - set:
-      field: file.hash.sha1
-      tag: set_file_hash_sha1
-      copy_from: trend_micro_vision_one.endpoint_activity.object.file.hash_sha1
-      ignore_empty_value: true
-  - set:
-      field: file.path
-      tag: set_file_path
-      copy_from: trend_micro_vision_one.endpoint_activity.object.file.path
-      ignore_empty_value: true
-  - set:
-      field: registry.path
-      tag: set_registry_path
-      copy_from: trend_micro_vision_one.endpoint_activity.object.registry.key_handle
-      ignore_empty_value: true
-  - set:
-      field: registry.value
-      tag: set_registry_value
-      copy_from: trend_micro_vision_one.endpoint_activity.object.registry.value
-      ignore_empty_value: true
-  - set:
-      field: user.target.name
-      tag: set_user_target_name
-      copy_from: trend_micro_vision_one.endpoint_activity.object.user
-      ignore_empty_value: true
-  - set:
-      field: host.os.name
-      tag: set_host_os_name
-      copy_from: trend_micro_vision_one.endpoint_activity.os
-      ignore_empty_value: true
-  - set:
-      field: process.parent.command_line
-      tag: set_process_parent_command_line
-      copy_from: trend_micro_vision_one.endpoint_activity.parent.cmd
-      ignore_empty_value: true
-  - set:
-      field: process.parent.hash.sha1
-      tag: set_process_parent_hash_sha1
-      copy_from: trend_micro_vision_one.endpoint_activity.parent.file.hash_sha1
-      ignore_empty_value: true
-  - set:
-      field: process.parent.executable
-      tag: set_process_parent_executable
-      copy_from: trend_micro_vision_one.endpoint_activity.parent.file.path
-      ignore_empty_value: true
-  - set:
       field: process.hash.sha1
-      tag: set_process_hash_sha1
+      tag: set_process_hash_sha1_from_process_file_hash_sha1
       copy_from: trend_micro_vision_one.endpoint_activity.process.file.hash_sha1
       ignore_empty_value: true
   - set:
       field: process.executable
-      tag: set_process_executable
+      tag: set_process_executable_from_process_file_path
       copy_from: trend_micro_vision_one.endpoint_activity.process.file.path
       ignore_empty_value: true
   - set:
+      field: process.parent.command_line
+      tag: set_process_parent_command_line_from_parent_cmd
+      copy_from: trend_micro_vision_one.endpoint_activity.parent.cmd
+      ignore_empty_value: true
+  - set:
+      field: process.parent.hash.sha1
+      tag: set_process_parent_hash_sha1_from_parent_file_hash_sha1
+      copy_from: trend_micro_vision_one.endpoint_activity.parent.file.hash_sha1
+      ignore_empty_value: true
+  - set:
+      field: process.parent.executable
+      tag: set_process_parent_executable_from_parent_file_path
+      copy_from: trend_micro_vision_one.endpoint_activity.parent.file.path
+      ignore_empty_value: true
+
+  # file.*
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_object_file_hash_sha1
+      copy_from: trend_micro_vision_one.endpoint_activity.object.file.hash_sha1
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_object_file_path
+      copy_from: trend_micro_vision_one.endpoint_activity.object.file.path
+      ignore_empty_value: true
+
+  # url.*
+  - set:
       field: url.original
-      tag: set_url_original
+      tag: set_url_original_from_request
       copy_from: trend_micro_vision_one.endpoint_activity.request
       ignore_empty_value: true
+
+  # registry.*
   - set:
-      field: source.ip
-      tag: set_source_ip
-      copy_from: trend_micro_vision_one.endpoint_activity.source.ip
+      field: registry.path
+      tag: set_registry_path_from_object_registry_key_handle
+      copy_from: trend_micro_vision_one.endpoint_activity.object.registry.key_handle
       ignore_empty_value: true
   - set:
-      field: source.port
-      tag: set_source_port
-      copy_from: trend_micro_vision_one.endpoint_activity.source.port
+      field: registry.value
+      tag: set_registry_value_from_object_registry_value
+      copy_from: trend_micro_vision_one.endpoint_activity.object.registry.value
       ignore_empty_value: true
-  - convert:
-      field: trend_micro_vision_one.endpoint_activity.win_event_id
-      tag: convert_event_code
-      target_field: event.code
-      type: string
-      ignore_missing: true
+
+  # related.*
   - foreach:
-      field: host.ip
-      tag: foreach_host_ip
-      if: ctx.host?.ip instanceof List
+      field: trend_micro_vision_one.endpoint_activity.endpoint.ip
+      tag: foreach_endpoint_ip_append_into_related_ip
+      if: ctx.trend_micro_vision_one?.endpoint_activity?.endpoint?.ip instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_related_ip_from_host_ip
+          tag: append_endpoint_ip_into_related_ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: trend_micro_vision_one.endpoint_activity.object.ips
-      tag: foreach_endpoint_acitivity_objectIps
+      tag: foreach_object_ips_append_into_related_ip
       if: ctx.trend_micro_vision_one?.endpoint_activity?.object?.ips instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_related_ip_from_object_ips
+          tag: append_object_ips_into_related_ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: related.ip
-      tag: append_related_ip_source
+      tag: append_source_ip_into_related_ip
       value: '{{{trend_micro_vision_one.endpoint_activity.source.ip}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.source?.ip != null
   - append:
       field: related.ip
-      tag: append_related_ip_destination
+      tag: append_destination_address_into_related_ip
       value: '{{{trend_micro_vision_one.endpoint_activity.destination.address}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.destination?.address != null
   - append:
       field: related.ip
-      tag: append_related_ip_object
+      tag: append_object_ip_into_related_ip
       value: '{{{trend_micro_vision_one.endpoint_activity.object.ip}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.object?.ip != null
   - foreach:
       field: trend_micro_vision_one.endpoint_activity.logon_user
-      tag: foreach_endpoint_activity_logon_user
+      tag: foreach_logon_user_append_into_related_user
       if: ctx.trend_micro_vision_one?.endpoint_activity?.logon_user instanceof List
       processor:
         append:
           field: related.user
-          tag: append_related_user
+          tag: append_logon_user_into_related_user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: related.user
-      tag: append_related_user_object
+      tag: append_object_user_into_related_user
       value: '{{{trend_micro_vision_one.endpoint_activity.object.user}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.object?.user != null
   - append:
       field: related.hash
-      tag: append_related_hash_object_file
+      tag: append_object_file_hash_sha1_into_related_hash
       value: '{{{trend_micro_vision_one.endpoint_activity.object.file.hash_sha1}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.object?.file?.hash_sha1 != null
   - append:
       field: related.hash
-      tag: append_related_hash_process_file
+      tag: append_process_file_hash_sha1_into_related_hash
       value: '{{{trend_micro_vision_one.endpoint_activity.process.file.hash_sha1}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.process?.file?.hash_sha1 != null
   - append:
       field: related.hash
-      tag: append_related_hash_parent_file
+      tag: append_parent_file_hash_sha1_into_related_hash
       value: '{{{trend_micro_vision_one.endpoint_activity.parent.file.hash_sha1}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.parent?.file?.hash_sha1 != null
   - append:
       field: related.hash
-      tag: append_related_hash_source_file
+      tag: append_source_file_hash_sha1_into_related_hash
       value: '{{{trend_micro_vision_one.endpoint_activity.source_file.hash_sha1}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.source_file?.hash_sha1 != null
   - append:
       field: related.hosts
-      tag: append_related_hosts_host_name
+      tag: append_host_name_into_related_hosts
       value: '{{{trend_micro_vision_one.endpoint_activity.host_name}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.host_name != null
   - append:
       field: related.hosts
-      tag: append_related_hosts_endpoint
+      tag: append_endpoint_host_name_into_related_hosts
       value: '{{{trend_micro_vision_one.endpoint_activity.endpoint.host_name}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.endpoint?.host_name != null
   - append:
       field: related.hosts
-      tag: append_related_hosts_object
+      tag: append_object_host_name_into_related_hosts
       value: '{{{trend_micro_vision_one.endpoint_activity.object.host_name}}}'
       allow_duplicates: false
       if: ctx.trend_micro_vision_one?.endpoint_activity?.object?.host_name != null
+
+  # cleanup
   - remove:
       field:
         - trend_micro_vision_one.endpoint_activity.destination.address
@@ -664,13 +1379,14 @@ processors:
       if: ctx.error?.message != null
   - append:
       field: tags
+      tag: append_preserve_original_event_into_tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: |-
+      value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
@@ -680,5 +1396,6 @@ on_failure:
       value: pipeline_error
   - append:
       field: tags
+      tag: append_preserve_original_event_into_tags
       value: preserve_original_event
       allow_duplicates: false
