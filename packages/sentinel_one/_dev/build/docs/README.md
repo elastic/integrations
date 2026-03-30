@@ -6,7 +6,7 @@ The [SentinelOne](https://www.sentinelone.com/) integration collects and parses 
 
 For a demo, refer to the following video (click to view).
 
-[![SentinelOne integration video](https://play.vidyard.com/gQovyr6REJoU4eotQsnTTB.jpg)](https://videos.elastic.co/watch/gQovyr6REJoU4eotQsnTTB)
+[![SentinelOne integration video](https://play.vidyard.com/gqovyr6rejou4eotqsnttb.jpg)](https://videos.elastic.co/watch/gQovyr6REJoU4eotQsnTTB)
 
 ### Compatibility
 
