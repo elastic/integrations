@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the execution of suspicious shell commands via the Python interpreter. Attackers may use Python to execute shell commands to gain access to the system or to perform other malicious activities, such as credential access, data exfiltration, or lateral movement.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Python Shell Command Execution",
+        "query": "FROM logs-endpoint.events.process-* METADATA _id, _version, _index\n\n| WHERE host.os.type in (\"linux\", \"macos\") and event.type == \"start\" and TO_LOWER(process.parent.name) like \"python*\" and\n  process.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"busybox\") and\n  KQL(\"\"\"event.action:\"exec\" and process.args:(\"-c\" or \"-cl\" or \"-lc\")\"\"\")\n\n// truncate timestamp to 1-minute window\n| EVAL Esql.time_window_date_trunc = DATE_TRUNC(1 minutes, @timestamp)\n\n| EVAL Esql.process_command_line_patterns = CASE(\n  process.command_line like \"*grep*\", \"grep\",\n  process.command_line like \"*find*\", \"find\",\n  process.command_line like \"*curl*\", \"curl\",\n  process.command_line like \"*env *\", \"environment_enumeration\",\n  process.command_line like \"*wget*\", \"wget\",\n  process.command_line like \"*whoami*\" or process.command_line like \"*uname*\" or process.command_line like \"*hostname*\", \"discovery\", \"other\"\n)\n\n| KEEP\n    @timestamp,\n    _id,\n    _index,\n    _version,\n    Esql.process_command_line_patterns,\n    Esql.time_window_date_trunc,\n    host.os.type,\n    event.type,\n    event.action,\n    process.parent.name,\n    process.working_directory,\n    process.parent.working_directory,\n    process.name,\n    process.executable,\n    process.command_line,\n    process.parent.executable,\n    process.parent.entity_id,\n    agent.id,\n    host.name,\n    event.dataset,\n    data_stream.namespace\n\n| STATS\n  Esql.process_command_line_count_distinct = COUNT_DISTINCT(process.command_line),\n  Esql.patterns_count_distinct = COUNT_DISTINCT(Esql.process_command_line_patterns),\n  Esql.process_command_line_values = VALUES(process.command_line),\n  Esql.host_name_values = values(host.name),\n  Esql.agent_id_values = values(agent.id),\n  Esql.event_dataset_values = values(event.dataset),\n  Esql.data_stream_namespace_values = values(data_stream.namespace)\n  BY process.parent.entity_id, agent.id, host.name, Esql.time_window_date_trunc\n\n| SORT Esql.process_command_line_count_distinct DESC\n| WHERE Esql.process_command_line_count_distinct >= 5 AND Esql.patterns_count_distinct >= 4\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.agent_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.data_stream_namespace_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_dataset_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.patterns_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_window_date_trunc",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b42e4b88-fc4a-417b-a45e-4d4a3db9fd41",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "esql",
+        "version": 1
+    },
+    "id": "b42e4b88-fc4a-417b-a45e-4d4a3db9fd41_1",
+    "type": "security-rule"
+}
