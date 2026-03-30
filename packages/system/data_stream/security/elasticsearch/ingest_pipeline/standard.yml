@@ -4432,6 +4432,29 @@ processors:
         ctx.winlog?.event_data?.OldTargetUserName != null &&
         ctx.winlog.event_data.OldTargetUserName != "-"
 
+  - set:
+      description: >-
+        Map registry key path from ObjectName for registry audit events only.
+        4657 is registry-specific; other IDs are generic object access — match when ObjectType is Key
+        or ObjectName uses the NT object-manager registry prefix (\REGISTRY\), so file/AD objects are not mapped.
+      field: registry.path
+      copy_from: winlog.event_data.ObjectName
+      if: |-
+        ctx.winlog?.event_data?.ObjectName != null &&
+        (
+          ["4657"].contains(ctx.event?.code) ||
+          (
+            ["4656","4658","4660","4661","4662","4663"].contains(ctx.event?.code) &&
+            (
+              ctx.winlog?.event_data?.ObjectType == "Key" ||
+              (
+                ctx.winlog.event_data.ObjectName instanceof String &&
+                ctx.winlog.event_data.ObjectName.toUpperCase().startsWith("\\REGISTRY\\")
+              )
+            )
+          )
+        )
+
   - gsub:
       description: Normalize separators in the SidList value.
       field: winlog.event_data.SidList

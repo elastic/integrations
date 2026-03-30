@@ -56,6 +56,7 @@ program: |-
               ]
             },
             "sort": [{"field": "lastUpdate", "direction": "AscNullFirst"}],
+            ?"after": state.?cursor.end_cursor,
           },
         }.encode_json(),
       }
@@ -75,6 +76,10 @@ program: |-
                   nodes[size(nodes) - 1].lastUpdate 
                 :
                   state.?cursor.last_timestamp.orValue(timeframe.startTime),
+                ?"end_cursor": body.data.assets.pageInfo.hasNextPage ?
+                  optional.of(body.data.assets.pageInfo.endCursor)
+                :
+                  optional.none(),
               },
               "want_more": body.data.assets.pageInfo.hasNextPage,
             }
@@ -90,8 +95,8 @@ state:
   initial_interval: {{initial_interval}}
   preserve_original_event: {{preserve_original_event}}
   query: >-
-    query getAssets($first: Int, $filter: AssetExpressionsParams, $sort: [AssetSortParams!]) {
-      assets(first: $first, filter: $filter, sort: $sort) {
+    query getAssets($first: Int, $after: String, $filter: AssetExpressionsParams, $sort: [AssetSortParams!]) {
+      assets(first: $first, after: $after, filter: $filter, sort: $sort) {
         nodes {
           id
           name
@@ -131,6 +136,7 @@ state:
         }
         pageInfo {
           hasNextPage
+          endCursor
         }
       }
     }
