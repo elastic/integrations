@@ -118,10 +118,14 @@ program: |
             :
               headers_with_pit
           ).as(headers,
+            // Only send after_time on the first page of a session (no pit_id).
+            // On subsequent pages the Pit-Id + Search-After headers already
+            // position within the snapshot; re-sending after_time can cause
+            // the API to restart the snapshot and skip events.
             (state.url.trim_right("/") + "/events?" + {
-              "paging":     ["true"],
-              "after_time": [after_time],
-              "size":       [string(int(state.batch_size))],
+              "paging": ["true"],
+              "size":   [string(int(state.batch_size))],
+              ?"after_time": state.?cursor.pit_id.orValue("") == "" ? optional.of([after_time]) : optional.none(),
               ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
               ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
             }.format_query()).as(request_url,
