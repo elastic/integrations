@@ -1961,7 +1961,7 @@
                       ],
                       "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                       "query": {
-                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.job.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC\n| LIMIT 100"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.job.name IS NOT NULL\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC\n| LIMIT 100"
                       },
                       "timeField": "@timestamp"
                     }
