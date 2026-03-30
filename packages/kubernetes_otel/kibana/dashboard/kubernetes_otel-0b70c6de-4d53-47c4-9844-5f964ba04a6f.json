@@ -111,24 +111,25 @@
           "attributes": {
             "references": [],
             "state": {
-              "adHocDataViews": {},
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
               "datasourceStates": {
                 "textBased": {
                   "layers": {
                     "c069c5ac-dcdc-f1b8-1f4e-2539b0f16301": {
-                      "allColumns": [
-                        {
-                          "columnId": "9f004cfb-3448-bdfe-58ee-2c77580a9c20",
-                          "customLabel": true,
-                          "fieldName": "count",
-                          "inMetricDimension": true,
-                          "label": "Deployments",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "9f004cfb-3448-bdfe-58ee-2c77580a9c20",
@@ -145,9 +146,17 @@
                       "query": {
                         "esql": "FROM metrics-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.available IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.deployment.name)\n"
                       },
-                      "timeField": "@timestamp"
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
                     }
-                  }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ]
                 }
               },
               "filters": [],
@@ -189,25 +198,26 @@
           "attributes": {
             "references": [],
             "state": {
-              "adHocDataViews": {},
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
               "datasourceStates": {
                 "textBased": {
                   "indexPatternRefs": [],
                   "layers": {
                     "f5b1d7b4-0818-809d-e59d-829dcd9c8c7b": {
-                      "allColumns": [
-                        {
-                          "columnId": "04502b61-dc7e-1c36-d570-d3e1b897a44d",
-                          "customLabel": true,
-                          "fieldName": "total_restarts",
-                          "inMetricDimension": true,
-                          "label": "Container restarts",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "04502b61-dc7e-1c36-d570-d3e1b897a44d",
@@ -224,7 +234,8 @@
                       "query": {
                         "esql": "FROM metrics-*\n| WHERE k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts) BY k8s.pod.uid, k8s.container.name\n| STATS total_restarts = SUM(max_restarts)\n"
                       },
-                      "timeField": "@timestamp"
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
                     }
                   }
                 }
@@ -301,41 +312,25 @@
           "attributes": {
             "references": [],
             "state": {
-              "adHocDataViews": {},
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
               "datasourceStates": {
                 "textBased": {
                   "layers": {
                     "fdfad702-0d8c-6690-f73b-71e4e64101a4": {
-                      "allColumns": [
-                        {
-                          "columnId": "58394d5d-f244-ac4d-0efc-444da7cb5700",
-                          "customLabel": true,
-                          "fieldName": "desired",
-                          "inMetricDimension": true,
-                          "label": "Desired",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "1d07e96c-590b-03f1-4108-cbe912c2ac4a",
-                          "customLabel": true,
-                          "fieldName": "available",
-                          "inMetricDimension": true,
-                          "label": "Available",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "24258928-91bb-7193-d4df-0329829a7575",
-                          "customLabel": false,
-                          "fieldName": "timestamp",
-                          "label": "timestamp"
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "58394d5d-f244-ac4d-0efc-444da7cb5700",
@@ -369,9 +364,17 @@
                       "query": {
                         "esql": "TS metrics-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND (k8s.deployment.available IS NOT NULL OR k8s.deployment.desired IS NOT NULL)\n| STATS\n    available = SUM(k8s.deployment.available),\n    desired = SUM(k8s.deployment.desired)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, available, desired\n"
                       },
-                      "timeField": "@timestamp"
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
                     }
-                  }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ]
                 }
               },
               "filters": [],
@@ -429,52 +432,25 @@
           "attributes": {
             "references": [],
             "state": {
-              "adHocDataViews": {},
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
               "datasourceStates": {
                 "textBased": {
                   "layers": {
                     "9d698809-25fc-7d1d-9030-db07c457d87b": {
-                      "allColumns": [
-                        {
-                          "columnId": "014ea010-d756-94db-97ff-f77ab7e7788f",
-                          "customLabel": true,
-                          "fieldName": "Desired scheduled",
-                          "inMetricDimension": true,
-                          "label": "Desired scheduled",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "cc602dc1-bbd6-334b-b4f0-87b9fa141ed1",
-                          "customLabel": true,
-                          "fieldName": "Current scheduled",
-                          "inMetricDimension": true,
-                          "label": "Current scheduled",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "3b77cf63-db0d-00a4-1a3e-eb05af4e63d0",
-                          "customLabel": true,
-                          "fieldName": "Ready",
-                          "inMetricDimension": true,
-                          "label": "Ready",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "24258928-91bb-7193-d4df-0329829a7575",
-                          "customLabel": false,
-                          "fieldName": "timestamp",
-                          "label": "timestamp"
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "014ea010-d756-94db-97ff-f77ab7e7788f",
@@ -519,9 +495,17 @@
                       "query": {
                         "esql": "TS metrics-*\n| WHERE k8s.daemonset.name IS NOT NULL\n  AND (k8s.daemonset.current_scheduled_nodes IS NOT NULL OR k8s.daemonset.desired_scheduled_nodes IS NOT NULL)\n| STATS\n    `Current scheduled` = SUM(k8s.daemonset.current_scheduled_nodes),\n    `Desired scheduled` = SUM(k8s.daemonset.desired_scheduled_nodes),\n    Ready = SUM(k8s.daemonset.ready_nodes)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, `Desired scheduled`, `Current scheduled`, Ready\n"
                       },
-                      "timeField": "@timestamp"
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
                     }
-                  }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ]
                 }
               },
               "filters": [],
@@ -745,76 +729,6 @@
                   ],
                   "layers": {
                     "2bc4e7dc-d6e6-470e-b5ea-c6c962d95588": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.deployment.name",
-                          "fieldName": "k8s.deployment.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "available",
-                          "customLabel": true,
-                          "fieldName": "available",
-                          "inMetricDimension": true,
-                          "label": "Available replicas",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "desired",
-                          "customLabel": true,
-                          "fieldName": "desired",
-                          "inMetricDimension": true,
-                          "label": "Desired replicas",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "fieldName": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.cluster.name",
-                          "fieldName": "k8s.cluster.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "restarts",
-                          "customLabel": false,
-                          "fieldName": "restarts",
-                          "inMetricDimension": true,
-                          "label": "restarts",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "availability",
-                          "customLabel": false,
-                          "fieldName": "availability",
-                          "inMetricDimension": true,
-                          "label": "availability",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "k8s.deployment.name",
@@ -1076,87 +990,6 @@
                   ],
                   "layers": {
                     "2de5cfb7-f53e-413e-9eef-7700c321f1e0": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "fieldName": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.daemonset.name",
-                          "fieldName": "k8s.daemonset.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.cluster.name",
-                          "fieldName": "k8s.cluster.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "current",
-                          "customLabel": false,
-                          "fieldName": "current",
-                          "inMetricDimension": true,
-                          "label": "current",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "desired",
-                          "customLabel": false,
-                          "fieldName": "desired",
-                          "inMetricDimension": true,
-                          "label": "desired",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "ready",
-                          "customLabel": false,
-                          "fieldName": "ready",
-                          "inMetricDimension": true,
-                          "label": "ready",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "misscheduled",
-                          "customLabel": false,
-                          "fieldName": "misscheduled",
-                          "inMetricDimension": true,
-                          "label": "misscheduled",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "availability",
-                          "customLabel": false,
-                          "fieldName": "availability",
-                          "inMetricDimension": true,
-                          "label": "availability",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "k8s.daemonset.name",
@@ -1410,105 +1243,6 @@
                   ],
                   "layers": {
                     "eb8d585c-d830-4baf-87fb-fec3369996b6": {
-                      "allColumns": [
-                        {
-                          "columnId": "current",
-                          "customLabel": false,
-                          "fieldName": "current",
-                          "inMetricDimension": true,
-                          "label": "current",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "desired",
-                          "customLabel": false,
-                          "fieldName": "desired",
-                          "inMetricDimension": true,
-                          "label": "desired",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "ready",
-                          "customLabel": false,
-                          "fieldName": "ready",
-                          "inMetricDimension": true,
-                          "label": "ready",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "updated",
-                          "customLabel": false,
-                          "fieldName": "updated",
-                          "inMetricDimension": true,
-                          "label": "updated",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.statefulset.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.statefulset.name",
-                          "label": "k8s.statefulset.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "availability",
-                          "customLabel": false,
-                          "fieldName": "availability",
-                          "inMetricDimension": true,
-                          "label": "availability",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "not_ready",
-                          "customLabel": false,
-                          "fieldName": "not_ready",
-                          "inMetricDimension": true,
-                          "label": "not_ready",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "not_updated",
-                          "customLabel": false,
-                          "fieldName": "not_updated",
-                          "inMetricDimension": true,
-                          "label": "not_updated",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "current",
@@ -1775,94 +1509,6 @@
                   ],
                   "layers": {
                     "70b6e48d-80db-4ee4-88a6-fd3676937521": {
-                      "allColumns": [
-                        {
-                          "columnId": "active",
-                          "customLabel": false,
-                          "fieldName": "active",
-                          "inMetricDimension": true,
-                          "label": "active",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "successful",
-                          "customLabel": false,
-                          "fieldName": "successful",
-                          "inMetricDimension": true,
-                          "label": "successful",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "failed",
-                          "customLabel": false,
-                          "fieldName": "failed",
-                          "inMetricDimension": true,
-                          "label": "failed",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "desired",
-                          "customLabel": false,
-                          "fieldName": "desired",
-                          "inMetricDimension": true,
-                          "label": "desired",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.job.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.job.name",
-                          "label": "k8s.job.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "completion",
-                          "customLabel": false,
-                          "fieldName": "completion",
-                          "inMetricDimension": true,
-                          "label": "completion",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "remaining",
-                          "customLabel": false,
-                          "fieldName": "remaining",
-                          "inMetricDimension": true,
-                          "label": "remaining",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "active",
@@ -2095,72 +1741,6 @@
                   ],
                   "layers": {
                     "bdc1e70e-2126-4713-a7e7-537fd05d3f6b": {
-                      "allColumns": [
-                        {
-                          "columnId": "available",
-                          "customLabel": false,
-                          "fieldName": "available",
-                          "inMetricDimension": true,
-                          "label": "available",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "desired",
-                          "customLabel": false,
-                          "fieldName": "desired",
-                          "inMetricDimension": true,
-                          "label": "desired",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.replicaset.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.replicaset.name",
-                          "label": "k8s.replicaset.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "availability",
-                          "customLabel": false,
-                          "fieldName": "availability",
-                          "inMetricDimension": true,
-                          "label": "availability",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "not_available",
-                          "customLabel": false,
-                          "fieldName": "not_available",
-                          "inMetricDimension": true,
-                          "label": "not_available",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "available",

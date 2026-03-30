@@ -152,154 +152,6 @@
                   ],
                   "layers": {
                     "e1c39e8c-449e-4922-a824-654b1561c24b": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "fieldName": "k8s.namespace.name",
-                          "inMetricDimension": true,
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "k8s.cluster.name",
-                          "fieldName": "k8s.cluster.name",
-                          "inMetricDimension": true,
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "pods",
-                          "customLabel": true,
-                          "fieldName": "pods",
-                          "inMetricDimension": true,
-                          "label": "Pods",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "deployments",
-                          "customLabel": true,
-                          "fieldName": "deployments",
-                          "inMetricDimension": true,
-                          "label": "Deployments",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "columnId": "cpu_usage",
-                          "customLabel": true,
-                          "fieldName": "cpu_usage",
-                          "inMetricDimension": true,
-                          "label": "CPU usage",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          },
-                          "params": {
-                            "format": {
-                              "id": "number",
-                              "params": {
-                                "decimals": 4
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "columnId": "cpu_limit_util",
-                          "customLabel": true,
-                          "fieldName": "cpu_limit_util",
-                          "inMetricDimension": true,
-                          "label": "CPU limit utilization",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          },
-                          "params": {
-                            "format": {
-                              "id": "percent",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "columnId": "mem_ws",
-                          "customLabel": true,
-                          "fieldName": "mem_ws",
-                          "inMetricDimension": true,
-                          "label": "Memory working set",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          },
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "columnId": "mem_limit_util",
-                          "customLabel": true,
-                          "fieldName": "mem_limit_util",
-                          "inMetricDimension": true,
-                          "label": "Memory working set limit utilization",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          },
-                          "params": {
-                            "format": {
-                              "id": "percent",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "columnId": "disk_util",
-                          "customLabel": true,
-                          "fieldName": "disk_util",
-                          "inMetricDimension": true,
-                          "label": "Disk utilization",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          },
-                          "params": {
-                            "format": {
-                              "id": "percent",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "columnId": "restarts",
-                          "customLabel": true,
-                          "fieldName": "restarts",
-                          "inMetricDimension": true,
-                          "label": "Container restarts",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "k8s.cluster.name",
@@ -608,25 +460,26 @@
           "attributes": {
             "references": [],
             "state": {
-              "adHocDataViews": {},
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
               "datasourceStates": {
                 "textBased": {
                   "indexPatternRefs": [],
                   "layers": {
                     "06037ef5-9469-3df3-d949-3cbe256bb491": {
-                      "allColumns": [
-                        {
-                          "columnId": "905904d6-e2d6-64c6-5bf7-31239e6af30f",
-                          "customLabel": true,
-                          "fieldName": "ns_count",
-                          "inMetricDimension": true,
-                          "label": "Namespaces",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "905904d6-e2d6-64c6-5bf7-31239e6af30f",
@@ -643,7 +496,8 @@
                       "query": {
                         "esql": "FROM metrics-*\n| WHERE k8s.namespace.name IS NOT NULL\n| STATS ns_count = COUNT_DISTINCT(k8s.namespace.name)\n"
                       },
-                      "timeField": "@timestamp"
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
                     }
                   }
                 }
@@ -712,39 +566,6 @@
                   ],
                   "layers": {
                     "98f64168-18b2-4dcb-bd3b-f2f7e9c3b5b7": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "@timestamp",
-                          "customLabel": false,
-                          "fieldName": "@timestamp",
-                          "label": "@timestamp",
-                          "meta": {
-                            "esType": "date",
-                            "type": "date"
-                          }
-                        },
-                        {
-                          "columnId": "cpu_usage",
-                          "customLabel": false,
-                          "fieldName": "cpu_usage",
-                          "inMetricDimension": true,
-                          "label": "cpu_usage",
-                          "meta": {
-                            "esType": "double",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "k8s.namespace.name",
@@ -918,39 +739,6 @@
                   ],
                   "layers": {
                     "2910daaf-6daa-46ab-8bfa-227a4984b43c": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "@timestamp",
-                          "customLabel": false,
-                          "fieldName": "@timestamp",
-                          "label": "@timestamp",
-                          "meta": {
-                            "esType": "date",
-                            "type": "date"
-                          }
-                        },
-                        {
-                          "columnId": "mem_ws",
-                          "customLabel": false,
-                          "fieldName": "mem_ws",
-                          "inMetricDimension": true,
-                          "label": "mem_ws",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "@timestamp",
@@ -1129,39 +917,6 @@
                   ],
                   "layers": {
                     "90e98e6c-6156-4db8-9fc1-53005cd13b97": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "@timestamp",
-                          "customLabel": false,
-                          "fieldName": "@timestamp",
-                          "label": "@timestamp",
-                          "meta": {
-                            "esType": "date",
-                            "type": "date"
-                          }
-                        },
-                        {
-                          "columnId": "restarts",
-                          "customLabel": false,
-                          "fieldName": "restarts",
-                          "inMetricDimension": true,
-                          "label": "restarts",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "@timestamp",
@@ -1332,39 +1087,6 @@
                   ],
                   "layers": {
                     "3a1a7f7c-9b4f-435a-b3c2-5709e343b36b": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "@timestamp",
-                          "customLabel": false,
-                          "fieldName": "@timestamp",
-                          "label": "@timestamp",
-                          "meta": {
-                            "esType": "date",
-                            "type": "date"
-                          }
-                        },
-                        {
-                          "columnId": "oom_events",
-                          "customLabel": false,
-                          "fieldName": "oom_events",
-                          "inMetricDimension": true,
-                          "label": "oom_events",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "@timestamp",
@@ -1535,39 +1257,6 @@
                   ],
                   "layers": {
                     "1d4990f1-0e10-4905-805e-ecb11fded582": {
-                      "allColumns": [
-                        {
-                          "columnId": "k8s.namespace.name",
-                          "customLabel": false,
-                          "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
-                          "meta": {
-                            "esType": "keyword",
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "@timestamp",
-                          "customLabel": false,
-                          "fieldName": "@timestamp",
-                          "label": "@timestamp",
-                          "meta": {
-                            "esType": "date",
-                            "type": "date"
-                          }
-                        },
-                        {
-                          "columnId": "non_running_pods",
-                          "customLabel": false,
-                          "fieldName": "non_running_pods",
-                          "inMetricDimension": true,
-                          "label": "non_running_pods",
-                          "meta": {
-                            "esType": "long",
-                            "type": "number"
-                          }
-                        }
-                      ],
                       "columns": [
                         {
                           "columnId": "@timestamp",
