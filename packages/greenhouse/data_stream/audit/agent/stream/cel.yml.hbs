@@ -152,10 +152,12 @@ program: |
                     })
                   )
                 : resp.StatusCode == 401 ?
-                  // Token rejected — clear it so it is re-fetched on next interval
+                  // Token rejected — clear token so it is re-fetched on next interval.
+                  // Preserve cursor so pagination position is not lost.
                   {
                     "token": "",
                     "token_expires": "",
+                    "cursor": state.?cursor.orValue({}),
                     "events": [],
                     "want_more": false,
                   }
