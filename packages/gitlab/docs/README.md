@@ -230,22 +230,22 @@ An example event for `api` looks as following:
 {
     "@timestamp": "2024-04-29T17:06:12.231Z",
     "agent": {
-        "ephemeral_id": "1c9959dc-7de5-446a-9949-b36c029d164e",
-        "id": "87113eae-3fa0-4bb5-a315-962199be1576",
-        "name": "elastic-agent-43222",
+        "ephemeral_id": "f0e9557d-9155-4d37-87b7-76055ffa39bc",
+        "id": "f9f8a814-dfcd-43c7-a86e-af6adaf2287e",
+        "name": "elastic-agent-20638",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "gitlab.api",
-        "namespace": "50315",
+        "namespace": "40136",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "87113eae-3fa0-4bb5-a315-962199be1576",
+        "id": "f9f8a814-dfcd-43c7-a86e-af6adaf2287e",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -256,7 +256,7 @@ An example event for `api` looks as following:
         ],
         "dataset": "gitlab.api",
         "duration": 19690,
-        "ingested": "2026-01-09T11:59:40Z",
+        "ingested": "2026-03-30T12:12:59Z",
         "kind": "event",
         "original": "{\"time\":\"2024-04-29T17:06:12.231Z\",\"severity\":\"INFO\",\"duration_s\":0.01969,\"db_duration_s\":0.0,\"view_duration_s\":0.01969,\"status\":200,\"method\":\"GET\",\"path\":\"/api/v4/geo/proxy\",\"params\":[],\"host\":\"localhost\",\"remote_ip\":\"127.0.0.1\",\"ua\":\"Go-http-client/1.1\",\"route\":\"/api/:version/geo/proxy\",\"db_count\":0,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":0,\"db_main_count\":0,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.0,\"db_main_duration_s\":0.0,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.063617,\"mem_objects\":13367,\"mem_bytes\":1633512,\"mem_mallocs\":7711,\"mem_total_bytes\":2168192,\"pid\":1067,\"worker_id\":\"puma_4\",\"rate_limiting_gates\":[],\"correlation_id\":\"7ff5f562-f16f-4a93-b2ac-f771c81b0495\",\"meta.caller_id\":\"GET /api/:version/geo/proxy\",\"meta.remote_ip\":\"127.0.0.1\",\"meta.feature_category\":\"geo_replication\",\"meta.client_id\":\"ip/127.0.0.1\",\"request_urgency\":\"low\",\"target_duration_s\":5}",
         "provider": "GET /api/:version/geo/proxy",
@@ -334,23 +334,23 @@ An example event for `api` looks as following:
         }
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-43222",
-        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "hostname": "elastic-agent-20638",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.4"
+            "192.168.241.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "5E-1E-E7-0F-25-14",
-            "9A-ED-F8-CA-9C-D8"
+            "2A-FE-08-2F-FD-10",
+            "56-3D-E0-9C-4A-D5"
         ],
-        "name": "elastic-agent-43222",
+        "name": "localhost",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.12.54-linuxkit",
+            "kernel": "5.15.0-173-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -370,8 +370,8 @@ An example event for `api` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "43",
-            "inode": "182",
+            "device_id": "64768",
+            "inode": "547212",
             "path": "/tmp/service_logs/test-gitlab-api.log"
         },
         "level": "INFO",
@@ -379,6 +379,14 @@ An example event for `api` looks as following:
     },
     "process": {
         "pid": 1067
+    },
+    "related": {
+        "hosts": [
+            "localhost"
+        ],
+        "ip": [
+            "127.0.0.1"
+        ]
     },
     "source": {
         "ip": [
@@ -580,9 +588,9 @@ An example event for `application` looks as following:
 {
     "@timestamp": "2024-05-10T17:49:45.825Z",
     "agent": {
-        "ephemeral_id": "37892f1a-d05d-4fe8-be49-3e912fd67f25",
-        "id": "041a68ab-9aab-4226-b8fc-63a6f88b100b",
-        "name": "elastic-agent-85067",
+        "ephemeral_id": "d2dacbe2-37af-48c0-b96c-892305410acc",
+        "id": "5679c8bf-c89d-48bc-a56d-7ec9f73f55ab",
+        "name": "elastic-agent-55053",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -604,14 +612,14 @@ An example event for `application` looks as following:
     },
     "data_stream": {
         "dataset": "gitlab.application",
-        "namespace": "64995",
+        "namespace": "27604",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "041a68ab-9aab-4226-b8fc-63a6f88b100b",
+        "id": "5679c8bf-c89d-48bc-a56d-7ec9f73f55ab",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -622,7 +630,7 @@ An example event for `application` looks as following:
         ],
         "dataset": "gitlab.application",
         "id": "01HXHSYJJQNY08JV4JF2B69ZDR",
-        "ingested": "2026-03-30T07:10:25Z",
+        "ingested": "2026-03-30T12:07:58Z",
         "kind": "event",
         "original": "{\"severity\":\"INFO\",\"time\":\"2024-05-10T17:49:45.825Z\",\"correlation_id\":\"01HXHSYJJQNY08JV4JF2B69ZDR\",\"meta.caller_id\":\"ProjectCacheWorker\",\"meta.remote_ip\":\"67.43.156.18\",\"meta.feature_category\":\"source_code_management\",\"meta.user\":\"root\",\"meta.user_id\":1,\"meta.project\":\"root/test_1\",\"meta.root_namespace\":\"root\",\"meta.client_id\":\"user/1\",\"meta.root_caller_id\":\"ProjectsController#create\",\"message\":\"Updating statistics for project 1\"}",
         "severity": 1,
@@ -646,17 +654,17 @@ An example event for `application` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-85067",
+        "hostname": "elastic-agent-55053",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
             "192.168.241.2",
             "192.168.240.7"
         ],
         "mac": [
-            "0A-BD-3D-67-90-EA",
-            "2A-EE-2F-3D-C1-04"
+            "4E-27-BA-F0-7C-5B",
+            "92-BC-63-B6-25-20"
         ],
-        "name": "elastic-agent-85067",
+        "name": "elastic-agent-55053",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -673,7 +681,7 @@ An example event for `application` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "547125",
+            "inode": "555864",
             "path": "/tmp/service_logs/test-gitlab-application.log"
         },
         "offset": 0

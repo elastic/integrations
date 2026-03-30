@@ -106,7 +106,7 @@ processors:
   - script:
       tag: kv_params
       lang: painless
-      if: ctx.gitlab?.api?.params != null
+      if: ctx.gitlab?.application?.params != null
       source: |
         def keyValuePairs = [];
         for (item in ctx.gitlab.api.params) {
@@ -115,7 +115,7 @@ processors:
           def keyValueObject = [key: value];
           keyValuePairs.add(keyValueObject)
         }
-        ctx.gitlab.api.params = keyValuePairs;
+        ctx.gitlab.application.params = keyValuePairs;
   - convert:
       field: gitlab.application.namespace_id
       tag: convert_application_namespace_id_to_long
