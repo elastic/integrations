@@ -1,0 +1,55 @@
+---
+description: >
+  Shape aidmaster lookup documents for LOOKUP JOIN. Rename crowdstrike to crowdstrike.info.host,
+  copy ECS host.* into crowdstrike.info.host.* so no data is lost, then keep only host.id and crowdstrike.info.
+processors:
+  - rename:
+      field: crowdstrike
+      target_field: crowdstrike.info.host
+      ignore_missing: true
+  # Copy ECS host.* into crowdstrike.info.host.* so we retain them when we drop host.*
+  - rename:
+      field: host.hostname
+      target_field: crowdstrike.info.host.hostname
+      ignore_missing: true
+  - rename:
+      field: host.name
+      target_field: crowdstrike.info.host.name
+      ignore_missing: true
+  - rename:
+      field: host.domain
+      target_field: crowdstrike.info.host.domain
+      ignore_missing: true
+  - rename:
+      field: host.ip
+      target_field: crowdstrike.info.host.ip
+      ignore_missing: true
+  - rename:
+      field: host.os.type
+      target_field: crowdstrike.info.host.os_type
+      ignore_missing: true
+  - rename:
+      field: host.os.version
+      target_field: crowdstrike.info.host.os_version
+      ignore_missing: true
+  - rename:
+      field: host.geo.city_name
+      target_field: crowdstrike.info.host.geo_city_name
+      ignore_missing: true
+  - rename:
+      field: host.geo.continent_name
+      target_field: crowdstrike.info.host.geo_continent_name
+      ignore_missing: true
+  - rename:
+      field: host.geo.country_name
+      target_field: crowdstrike.info.host.geo_country_name
+      ignore_missing: true
+  - rename:
+      field: host.geo.timezone
+      target_field: crowdstrike.info.host.geo_timezone
+      ignore_missing: true
+  - remove:
+      keep:
+        - host.id
+        - crowdstrike.info
+      ignore_missing: true
