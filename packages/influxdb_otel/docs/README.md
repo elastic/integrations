@@ -1,14 +1,10 @@
 # InfluxDB OpenTelemetry Assets
 
-InfluxDB is an open-source time series database built for high-write-throughput workloads such as infrastructure monitoring, application metrics, IoT sensor data, and real-time analytics. These assets provide dashboards, alert rules, and SLO templates for monitoring InfluxDB instances via OpenTelemetry metrics, covering the HTTP API, storage engine, query controller, task scheduler, and Go runtime.
+InfluxDB is an open-source time series database built for high-write-throughput workloads such as infrastructure monitoring, application metrics, IoT sensor data, and real-time analytics. These assets provide dashboards, alert rules, and SLO templates for monitoring InfluxDB instances using OpenTelemetry metrics, covering the HTTP API, storage engine, query controller, task scheduler, and Go runtime.
 
 ## Compatibility
 
-The InfluxDB OpenTelemetry assets have been tested with metrics scraped from InfluxDB instances exposing Prometheus-format metrics at `/metrics`.
-
-InfluxDB versions tested against:
-
-- InfluxDB 2.x
+The InfluxDB OpenTelemetry assets have been tested with InfluxDB 2.x and OpenTelemetry Collector v0.145.0, using metrics scraped from InfluxDB instances exposing Prometheus-format metrics at `/metrics`.
 
 ## Requirements
 
