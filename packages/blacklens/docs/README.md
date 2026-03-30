@@ -143,7 +143,7 @@ An example event for `alerts` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind |  | constant_keyword |
+| event.kind |  | keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | observer.product |  | constant_keyword |
