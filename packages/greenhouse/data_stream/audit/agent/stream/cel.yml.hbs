@@ -128,24 +128,28 @@ program: |
                 "Header": headers,
               }).do_request().as(resp,
                 resp.StatusCode == 200 ?
-                  resp.Body.decode_json().as(body, {
-                    "token": auth.token,
-                    "token_expires": auth.token_expires,
-                    "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
-                    // Only preserve pit_id and search_after while actively paginating.
-                    // Clearing them when pagination is complete ensures each new poll
-                    // interval starts a fresh query rather than re-using a stale pit_id.
-                    "cursor": {
-                      "pit_id": body.?paging.next_search_after.orValue(null) != null ?
-                        body.?paging.pit_id.orValue("") : "",
-                      "search_after": body.?paging.next_search_after.orValue(""),
-                      "last_event_time": size(body.?results.orValue([])) > 0 ?
-                        body.results[size(body.results) - 1].event_time
-                      :
-                        after_time,
-                    },
-                    "want_more": body.?paging.next_search_after.orValue(null) != null,
-                  })
+                  resp.Body.decode_json().as(body,
+                    (body.?paging.next_search_after.orValue(null) != null).as(has_more, {
+                      "token": auth.token,
+                      "token_expires": auth.token_expires,
+                      "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
+                      // Keep after_time (last_event_time) unchanged while paginating so the
+                      // filter stays consistent across all pages of the same session.
+                      // Only advance last_event_time when pagination is complete so the
+                      // next poll interval starts from where we left off.
+                      "cursor": {
+                        "pit_id": has_more ? body.?paging.pit_id.orValue("") : "",
+                        "search_after": body.?paging.next_search_after.orValue(""),
+                        "last_event_time": has_more ?
+                          after_time
+                        :
+                          size(body.?results.orValue([])) > 0 ?
+                            body.results[size(body.results) - 1].event_time
+                          : after_time,
+                      },
+                      "want_more": has_more,
+                    })
+                  )
                 : resp.StatusCode == 401 ?
                   // Token rejected — clear it so it is re-fetched on next interval
                   {
