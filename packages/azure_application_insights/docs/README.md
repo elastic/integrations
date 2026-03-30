@@ -8,7 +8,17 @@ The Application Insights Integration allows users to retrieve application insigh
 
 `Application ID`:: (_[]string_) ID of the application. This is Application ID from the API Access settings blade in the Azure portal.
 
-`Api Key`:: (_[]string_) The API key which will be generated. See [Azure Monitor Log Analytics API Overview](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/api/overview) for more information.
+`Authentication Type`:: (_string_) Optional. The authentication method to use. Accepted values: `api_key` or `client_secret`. Defaults to `client_secret` if not set.
+
+NOTE: API Key authentication is deprecated. Users currently authenticating via API Key are encouraged to migrate to Client Secret authentication. Client Secret authentication uses Microsoft Entra ID and provides more robust security through short-lived tokens.
+
+`Api Key`:: (_string_) Optional. The API key used for authentication when `auth_type` is set to `api_key`. See [Azure Monitor Log Analytics API Overview](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/api/overview) for more information.
+
+`Client ID`:: (_string_) Optional. The client (application) ID of the Entra ID application. Required when `auth_type` is `client_secret`.
+
+`Client Secret`:: (_string_) Optional. The client secret of the Entra ID application. Required when `auth_type` is `client_secret`.
+
+`Tenant ID`:: (_string_) Optional. The tenant (directory) ID of the Entra ID tenant. Required when `auth_type` is `client_secret`.
 
 
 The integration contains the following data streams:

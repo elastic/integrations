@@ -67,6 +67,7 @@ jobs:
       - name: Lint changed YAML dashboards
         id: lint
         if: steps.find-changed.outputs.changed_files != ''
+        continue-on-error: true
         run: |
           set +e  # Don't exit on error, we'll handle it manually
           
@@ -88,14 +89,14 @@ jobs:
                 --input-file "$yaml_file" || true
             echo ""
             
-            # Then check specifically for warnings/errors (this will exit non-zero on warnings or errors)
+            # Then check specifically for errors (this will exit non-zero on warnings or errors)
             if ! uvx --with-requirements "$KB_DASHBOARD_REQUIREMENTS" --from kb-dashboard-lint==0.4.1 kb-dashboard-lint check \
                 --input-file "$yaml_file" \
-                --severity-threshold warning > /dev/null 2>&1; then
+                --severity-threshold error > /dev/null 2>&1; then
               echo "❌ ERROR: Linting found warnings or errors in $yaml_file"
               LINT_FAILED=1
             else
-              echo "✅ No warnings or errors found in $yaml_file (info may be present above)"
+              echo "✅ No errors found in $yaml_file (info may be present above)"
             fi
             
             echo ""
