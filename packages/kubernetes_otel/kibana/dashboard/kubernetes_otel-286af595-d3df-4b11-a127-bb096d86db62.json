@@ -3243,20 +3243,16 @@
                     "aa4a147e-2995-414f-a07d-44b301dfb01d": {
                       "columns": [
                         {
-                          "columnId": "pod",
-                          "customLabel": true,
-                          "fieldName": "pod",
-                          "label": "Pod",
+                          "columnId": "k8s.pod.name",
+                          "fieldName": "k8s.pod.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "node",
-                          "customLabel": true,
-                          "fieldName": "node",
-                          "label": "Node",
+                          "columnId": "k8s.node.name",
+                          "fieldName": "k8s.node.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -3344,7 +3340,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL AND k8s.pod.name IS NOT NULL AND k8s.node.name IS NOT NULL\n  | STATS\n      phase = MAX(k8s.pod.phase),\n      cpu_usage = AVG(k8s.pod.cpu.usage),\n      mem_ws = AVG(k8s.pod.memory.working_set),\n      mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n      restarts = MAX(k8s.container.restarts)\n    BY pod = k8s.pod.name, node = k8s.node.name\n  | KEEP pod, node, phase, cpu_usage, mem_ws, mem_limit_util, restarts\n  | SORT cpu_usage DESC"
+                        "esql": "FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL AND k8s.pod.name IS NOT NULL AND k8s.node.name IS NOT NULL\n  | STATS\n      phase = MAX(k8s.pod.phase),\n      cpu_usage = AVG(k8s.pod.cpu.usage),\n      mem_ws = AVG(k8s.pod.memory.working_set),\n      mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n      restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.name, k8s.node.name\n  | KEEP k8s.pod.name, k8s.node.name, phase, cpu_usage, mem_ws, mem_limit_util, restarts\n  | SORT cpu_usage DESC"
                       },
                       "timeField": "@timestamp"
                     }
@@ -3354,16 +3350,16 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL AND k8s.pod.name IS NOT NULL AND k8s.node.name IS NOT NULL\n  | STATS\n      phase = MAX(k8s.pod.phase),\n      cpu_usage = AVG(k8s.pod.cpu.usage),\n      mem_ws = AVG(k8s.pod.memory.working_set),\n      mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n      restarts = MAX(k8s.container.restarts)\n    BY pod = k8s.pod.name, node = k8s.node.name\n  | KEEP pod, node, phase, cpu_usage, mem_ws, mem_limit_util, restarts\n  | SORT cpu_usage DESC"
+                "esql": "FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL AND k8s.pod.name IS NOT NULL AND k8s.node.name IS NOT NULL\n  | STATS\n      phase = MAX(k8s.pod.phase),\n      cpu_usage = AVG(k8s.pod.cpu.usage),\n      mem_ws = AVG(k8s.pod.memory.working_set),\n      mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n      restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.name, k8s.node.name\n  | KEEP k8s.pod.name, k8s.node.name, phase, cpu_usage, mem_ws, mem_limit_util, restarts\n  | SORT cpu_usage DESC"
               },
               "visualization": {
                 "columns": [
                   {
-                    "columnId": "pod",
+                    "columnId": "k8s.pod.name",
                     "oneClickFilter": true
                   },
                   {
-                    "columnId": "node",
+                    "columnId": "k8s.node.name",
                     "oneClickFilter": true
                   },
                   {
@@ -3558,7 +3554,7 @@
     "title": "[OTEL][Kubernetes] Namespace Detail"
   },
   "coreMigrationVersion": "8.8.0",
-  "created_at": "2026-03-27T14:01:14.613Z",
+  "created_at": "2026-03-27T21:16:35.709Z",
   "id": "kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
   "references": [
     {

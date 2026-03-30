@@ -147,6 +147,14 @@
                           "meta": {
                             "esType": "double",
                             "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
                           }
                         },
                         {
@@ -230,7 +238,7 @@
                         },
                         {
                           "columnId": "3e678304-98a9-4b76-97d4-3640efc3ef1d",
-                          "fieldName": "node",
+                          "fieldName": "k8s.node.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -245,9 +253,8 @@
                           }
                         },
                         {
-                          "columnId": "node",
-                          "fieldName": "node",
-                          "label": "node",
+                          "columnId": "k8s.node.name",
+                          "fieldName": "k8s.node.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -310,6 +317,14 @@
                           "meta": {
                             "esType": "double",
                             "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
                           }
                         },
                         {
@@ -390,9 +405,7 @@
                         },
                         {
                           "columnId": "cf31709a-a867-4082-8996-277cef210af4",
-                          "customLabel": true,
                           "fieldName": "k8s.pod.name",
-                          "label": "Pod",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -400,9 +413,7 @@
                         },
                         {
                           "columnId": "f19047d1-84a9-4e5e-bae1-20a6812ce47c",
-                          "customLabel": true,
                           "fieldName": "k8s.namespace.name",
-                          "label": "Namespace",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -410,9 +421,7 @@
                         },
                         {
                           "columnId": "3e678304-98a9-4b76-97d4-3640efc3ef1d",
-                          "customLabel": true,
-                          "fieldName": "node",
-                          "label": "Node",
+                          "fieldName": "k8s.node.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -420,9 +429,7 @@
                         },
                         {
                           "columnId": "b9ef2922-2bd1-404b-8443-97c3a5e02092",
-                          "customLabel": true,
                           "fieldName": "k8s.cluster.name",
-                          "label": "Cluster",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -431,7 +438,7 @@
                       ],
                       "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                       "query": {
-                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS\n    cpu_usage     = AVG(k8s.pod.cpu.usage),\n    memory_ws     = AVG(k8s.pod.memory.working_set),\n    phase         = MAX(k8s.pod.phase),\n    restarts      = MAX(k8s.container.restarts),\n    node          = MAX(k8s.node.name),\n    mem_limit     = MAX(k8s.container.memory_limit)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      mem_limit IS NOT NULL AND mem_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(mem_limit), 4),\n      NULL)\n| SORT phase DESC, k8s.pod.name ASC\n| LIMIT 100"
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS\n    cpu_usage     = AVG(k8s.pod.cpu.usage),\n    memory_ws     = AVG(k8s.pod.memory.working_set),\n    phase         = MAX(k8s.pod.phase),\n    restarts      = MAX(k8s.container.restarts),\n    k8s.node.name = MAX(k8s.node.name),\n    mem_limit     = MAX(k8s.container.memory_limit)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      mem_limit IS NOT NULL AND mem_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(mem_limit), 4),\n      NULL)\n| SORT cpu_usage DESC, k8s.pod.name ASC\n| LIMIT 100"
                       },
                       "timeField": "@timestamp"
                     }
@@ -441,7 +448,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS\n    cpu_usage     = AVG(k8s.pod.cpu.usage),\n    memory_ws     = AVG(k8s.pod.memory.working_set),\n    phase         = MAX(k8s.pod.phase),\n    restarts      = MAX(k8s.container.restarts),\n    node          = MAX(k8s.node.name),\n    mem_limit     = MAX(k8s.container.memory_limit)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      mem_limit IS NOT NULL AND mem_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(mem_limit), 4),\n      NULL)\n| SORT phase DESC, k8s.pod.name ASC\n| LIMIT 100"
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS\n    cpu_usage     = AVG(k8s.pod.cpu.usage),\n    memory_ws     = AVG(k8s.pod.memory.working_set),\n    phase         = MAX(k8s.pod.phase),\n    restarts      = MAX(k8s.container.restarts),\n    k8s.node.name = MAX(k8s.node.name),\n    mem_limit     = MAX(k8s.container.memory_limit)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      mem_limit IS NOT NULL AND mem_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(mem_limit), 4),\n      NULL)\n| SORT cpu_usage DESC, k8s.pod.name ASC\n| LIMIT 100"
               },
               "visualization": {
                 "columns": [
@@ -578,6 +585,15 @@
           },
           "drilldowns": [
             {
+              "dashboardRefName": "dashboard_drilldown_kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
+              "label": "1. View pod details",
+              "open_in_new_tab": false,
+              "trigger": "on_apply_filter",
+              "type": "dashboard_drilldown",
+              "use_filters": true,
+              "use_time_range": true
+            },
+            {
               "dashboardRefName": "dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
               "label": "2. View namespace details",
               "open_in_new_tab": false,
@@ -597,7 +613,7 @@
             },
             {
               "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
-              "label": "1. View cluster details",
+              "label": "4. View cluster details",
               "open_in_new_tab": false,
               "trigger": "on_apply_filter",
               "type": "dashboard_drilldown",
@@ -1677,7 +1693,7 @@
     "title": "[OTEL][Kubernetes] Pods"
   },
   "coreMigrationVersion": "8.8.0",
-  "created_at": "2026-03-27T14:01:14.613Z",
+  "created_at": "2026-03-27T21:16:35.709Z",
   "id": "kubernetes_otel-aa37d8f8-56ca-4452-96ad-456b5154e23d",
   "references": [
     {
@@ -1686,7 +1702,7 @@
       "type": "dashboard"
     },
     {
-      "id": "kubernetes_otel-29225f58-cba4-4442-b178-fb5e0a753cf5",
+      "id": "kubernetes_otel-fe68e0e9-0506-4ad7-96be-070cf7592a7e",
       "name": "v2-pods-alt-nav:link_4979a9fc-9783-4caa-8cd8-01fd938777e5_dashboard",
       "type": "dashboard"
     },
@@ -1708,6 +1724,11 @@
     {
       "id": "kubernetes_otel-aa37d8f8-56ca-4452-96ad-456b5154e23d",
       "name": "v2-pods-alt-nav:link_0329effc-a4cf-409f-86fd-ed6f907bb5be_dashboard",
+      "type": "dashboard"
+    },
+    {
+      "id": "kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
+      "name": "37c11d30-5003-4f4b-ba20-06cdad3441c7:dashboard_drilldown_kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
       "type": "dashboard"
     },
     {

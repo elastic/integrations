@@ -748,9 +748,7 @@
                       "allColumns": [
                         {
                           "columnId": "k8s.deployment.name",
-                          "customLabel": true,
                           "fieldName": "k8s.deployment.name",
-                          "label": "Deployment",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -780,19 +778,15 @@
                         },
                         {
                           "columnId": "k8s.namespace.name",
-                          "customLabel": true,
                           "fieldName": "k8s.namespace.name",
-                          "label": "Namespace",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "cluster",
-                          "customLabel": true,
-                          "fieldName": "cluster",
-                          "label": "Cluster",
+                          "columnId": "k8s.cluster.name",
+                          "fieldName": "k8s.cluster.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -824,9 +818,7 @@
                       "columns": [
                         {
                           "columnId": "k8s.deployment.name",
-                          "customLabel": true,
                           "fieldName": "k8s.deployment.name",
-                          "label": "Deployment",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -856,19 +848,15 @@
                         },
                         {
                           "columnId": "k8s.namespace.name",
-                          "customLabel": true,
                           "fieldName": "k8s.namespace.name",
-                          "label": "Namespace",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "cluster",
-                          "customLabel": true,
-                          "fieldName": "cluster",
-                          "label": "Cluster",
+                          "columnId": "k8s.cluster.name",
+                          "fieldName": "k8s.cluster.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -907,7 +895,7 @@
                       ],
                       "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                       "query": {
-                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    cluster   = MAX(k8s.cluster.name),\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    restarts  = MAX(k8s.container.restarts)\n  BY k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT k8s.deployment.name ASC\n| LIMIT 100"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.deployment.name IS NOT NULL\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    restarts  = MAX(k8s.container.restarts)\n  BY k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT k8s.deployment.name ASC\n| LIMIT 100"
                       },
                       "timeField": "@timestamp"
                     }
@@ -917,12 +905,12 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    cluster   = MAX(k8s.cluster.name),\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    restarts  = MAX(k8s.container.restarts)\n  BY k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT k8s.deployment.name ASC\n| LIMIT 100"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.deployment.name IS NOT NULL\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    restarts  = MAX(k8s.container.restarts)\n  BY k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT k8s.deployment.name ASC\n| LIMIT 100"
               },
               "visualization": {
                 "columns": [
                   {
-                    "columnId": "cluster",
+                    "columnId": "k8s.cluster.name",
                     "oneClickFilter": true
                   },
                   {
@@ -1091,9 +1079,7 @@
                       "allColumns": [
                         {
                           "columnId": "k8s.namespace.name",
-                          "customLabel": true,
                           "fieldName": "k8s.namespace.name",
-                          "label": "Namespace",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -1101,19 +1087,15 @@
                         },
                         {
                           "columnId": "k8s.daemonset.name",
-                          "customLabel": false,
                           "fieldName": "k8s.daemonset.name",
-                          "label": "k8s.daemonset.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "cluster",
-                          "customLabel": false,
-                          "fieldName": "cluster",
-                          "label": "cluster",
+                          "columnId": "k8s.cluster.name",
+                          "fieldName": "k8s.cluster.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -1178,9 +1160,7 @@
                       "columns": [
                         {
                           "columnId": "k8s.daemonset.name",
-                          "customLabel": true,
                           "fieldName": "k8s.daemonset.name",
-                          "label": "Daemonset",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -1188,19 +1168,15 @@
                         },
                         {
                           "columnId": "k8s.namespace.name",
-                          "customLabel": true,
                           "fieldName": "k8s.namespace.name",
-                          "label": "Namespace",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "cluster",
-                          "customLabel": true,
-                          "fieldName": "cluster",
-                          "label": "Cluster",
+                          "columnId": "k8s.cluster.name",
+                          "fieldName": "k8s.cluster.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -1272,7 +1248,7 @@
                       ],
                       "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                       "query": {
-                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    cluster      = MAX(k8s.cluster.name),\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT misscheduled DESC\n| LIMIT 100"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.name IS NOT NULL\n| STATS\n    k8s.cluster.name      = MAX(k8s.cluster.name),\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT misscheduled DESC\n| LIMIT 100"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1282,12 +1258,12 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    cluster      = MAX(k8s.cluster.name),\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT misscheduled DESC\n| LIMIT 100"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.name IS NOT NULL\n| STATS\n    k8s.cluster.name      = MAX(k8s.cluster.name),\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT misscheduled DESC\n| LIMIT 100"
               },
               "visualization": {
                 "columns": [
                   {
-                    "columnId": "cluster",
+                    "columnId": "k8s.cluster.name",
                     "oneClickFilter": true
                   },
                   {
@@ -1642,7 +1618,7 @@
                       ],
                       "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                       "query": {
-                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT not_ready DESC, availability ASC, not_updated DESC, k8s.statefulset.name ASC\n| LIMIT 100"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.name IS NOT NULL\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT not_ready DESC, availability ASC, not_updated DESC, k8s.statefulset.name ASC\n| LIMIT 100"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1652,7 +1628,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT not_ready DESC, availability ASC, not_updated DESC, k8s.statefulset.name ASC\n| LIMIT 100"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.name IS NOT NULL\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT not_ready DESC, availability ASC, not_updated DESC, k8s.statefulset.name ASC\n| LIMIT 100"
               },
               "visualization": {
                 "columns": [
@@ -1995,7 +1971,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.job.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC\n| LIMIT 100"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.job.name IS NOT NULL\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC\n| LIMIT 100"
               },
               "visualization": {
                 "columns": [
@@ -2210,9 +2186,7 @@
                         },
                         {
                           "columnId": "k8s.replicaset.name",
-                          "customLabel": true,
                           "fieldName": "k8s.replicaset.name",
-                          "label": "ReplicaSet",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -2220,9 +2194,16 @@
                         },
                         {
                           "columnId": "k8s.namespace.name",
-                          "customLabel": true,
                           "fieldName": "k8s.namespace.name",
                           "label": "Namespace",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "k8s.cluster.name",
+                          "fieldName": "k8s.cluster.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -2261,7 +2242,7 @@
                       ],
                       "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                       "query": {
-                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
                       },
                       "timeField": "@timestamp"
                     }
@@ -2271,7 +2252,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
               },
               "visualization": {
                 "columns": [
@@ -2287,6 +2268,10 @@
                   },
                   {
                     "columnId": "k8s.replicaset.name",
+                    "oneClickFilter": true
+                  },
+                  {
+                    "columnId": "k8s.cluster.name",
                     "oneClickFilter": true
                   },
                   {
@@ -2384,6 +2369,15 @@
               "type": "dashboard_drilldown",
               "use_filters": true,
               "use_time_range": true
+            },
+            {
+              "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+              "label": "3. View cluster details",
+              "open_in_new_tab": false,
+              "trigger": "on_apply_filter",
+              "type": "dashboard_drilldown",
+              "use_filters": true,
+              "use_time_range": true
             }
           ],
           "title": "Replicasets"
@@ -2427,7 +2421,7 @@
     "title": "[OTEL][Kubernetes] Workloads"
   },
   "coreMigrationVersion": "8.8.0",
-  "created_at": "2026-03-27T14:01:14.613Z",
+  "created_at": "2026-03-27T21:16:35.709Z",
   "id": "kubernetes_otel-0b70c6de-4d53-47c4-9844-5f964ba04a6f",
   "references": [
     {
@@ -2436,7 +2430,7 @@
       "type": "dashboard"
     },
     {
-      "id": "kubernetes_otel-29225f58-cba4-4442-b178-fb5e0a753cf5",
+      "id": "kubernetes_otel-fe68e0e9-0506-4ad7-96be-070cf7592a7e",
       "name": "v2-workloads-alt-nav:link_3e8cdff4-c474-44c3-a6a6-e95f8242a344_dashboard",
       "type": "dashboard"
     },

@@ -154,22 +154,18 @@
                     "e1c39e8c-449e-4922-a824-654b1561c24b": {
                       "allColumns": [
                         {
-                          "columnId": "namespace",
-                          "customLabel": true,
-                          "fieldName": "namespace",
+                          "columnId": "k8s.namespace.name",
+                          "fieldName": "k8s.namespace.name",
                           "inMetricDimension": true,
-                          "label": "Namespace",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "cluster",
-                          "customLabel": true,
-                          "fieldName": "cluster",
+                          "columnId": "k8s.cluster.name",
+                          "fieldName": "k8s.cluster.name",
                           "inMetricDimension": true,
-                          "label": "Cluster",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -306,11 +302,9 @@
                       ],
                       "columns": [
                         {
-                          "columnId": "cluster",
-                          "customLabel": true,
-                          "fieldName": "cluster",
+                          "columnId": "k8s.cluster.name",
+                          "fieldName": "k8s.cluster.name",
                           "inMetricDimension": true,
-                          "label": "Cluster",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -446,9 +440,7 @@
                         },
                         {
                           "columnId": "42fa1747-9978-4bb3-9003-474a55c912ba",
-                          "customLabel": true,
-                          "fieldName": "namespace",
-                          "label": "Namespace",
+                          "fieldName": "k8s.namespace.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -457,7 +449,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "  FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL\n  | STATS\n      cluster = MAX(k8s.cluster.name),\n      pods = COUNT_DISTINCT(k8s.pod.name),\n      deployments = COUNT_DISTINCT(k8s.deployment.name),\n      cpu_usage = MAX(k8s.pod.cpu.usage),\n      cpu_limit = MAX(k8s.container.cpu_limit),\n      mem_ws = MAX(k8s.pod.memory.working_set),\n      mem_limit = MAX(k8s.container.memory_limit),\n      vol_avail = MAX(k8s.volume.available),\n      vol_cap = MAX(k8s.volume.capacity),\n      restarts = MAX(k8s.container.restarts)\n    BY namespace = k8s.namespace.name\n  | EVAL\n      cpu_limit_util = ROUND(cpu_usage / cpu_limit, 4),\n      mem_limit_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4),\n      disk_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | KEEP namespace, cluster, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util,\n  disk_util, restarts\n  | SORT restarts DESC"
+                        "esql": "  FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL\n  | STATS\n      k8s.cluster.name = MAX(k8s.cluster.name),\n      pods = COUNT_DISTINCT(k8s.pod.name),\n      deployments = COUNT_DISTINCT(k8s.deployment.name),\n      cpu_usage = MAX(k8s.pod.cpu.usage),\n      cpu_limit = MAX(k8s.container.cpu_limit),\n      mem_ws = MAX(k8s.pod.memory.working_set),\n      mem_limit = MAX(k8s.container.memory_limit),\n      vol_avail = MAX(k8s.volume.available),\n      vol_cap = MAX(k8s.volume.capacity),\n      restarts = MAX(k8s.container.restarts)\n    BY k8s.namespace.name\n  | EVAL\n      cpu_limit_util = ROUND(cpu_usage / cpu_limit, 4),\n      mem_limit_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4),\n      disk_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | KEEP k8s.namespace.name, k8s.cluster.name, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util,\n  disk_util, restarts\n  | SORT restarts DESC"
                       },
                       "timeField": "@timestamp"
                     }
@@ -467,12 +459,13 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "  FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL\n  | STATS\n      cluster = MAX(k8s.cluster.name),\n      pods = COUNT_DISTINCT(k8s.pod.name),\n      deployments = COUNT_DISTINCT(k8s.deployment.name),\n      cpu_usage = MAX(k8s.pod.cpu.usage),\n      cpu_limit = MAX(k8s.container.cpu_limit),\n      mem_ws = MAX(k8s.pod.memory.working_set),\n      mem_limit = MAX(k8s.container.memory_limit),\n      vol_avail = MAX(k8s.volume.available),\n      vol_cap = MAX(k8s.volume.capacity),\n      restarts = MAX(k8s.container.restarts)\n    BY namespace = k8s.namespace.name\n  | EVAL\n      cpu_limit_util = ROUND(cpu_usage / cpu_limit, 4),\n      mem_limit_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4),\n      disk_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | KEEP namespace, cluster, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util,\n  disk_util, restarts\n  | SORT restarts DESC"
+                "esql": "  FROM metrics-*\n  | WHERE k8s.namespace.name IS NOT NULL\n  | STATS\n      k8s.cluster.name = MAX(k8s.cluster.name),\n      pods = COUNT_DISTINCT(k8s.pod.name),\n      deployments = COUNT_DISTINCT(k8s.deployment.name),\n      cpu_usage = MAX(k8s.pod.cpu.usage),\n      cpu_limit = MAX(k8s.container.cpu_limit),\n      mem_ws = MAX(k8s.pod.memory.working_set),\n      mem_limit = MAX(k8s.container.memory_limit),\n      vol_avail = MAX(k8s.volume.available),\n      vol_cap = MAX(k8s.volume.capacity),\n      restarts = MAX(k8s.container.restarts)\n    BY k8s.namespace.name\n  | EVAL\n      cpu_limit_util = ROUND(cpu_usage / cpu_limit, 4),\n      mem_limit_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4),\n      disk_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | KEEP k8s.namespace.name, k8s.cluster.name, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util,\n  disk_util, restarts\n  | SORT restarts DESC"
               },
               "visualization": {
                 "columns": [
                   {
-                    "columnId": "cluster"
+                    "columnId": "k8s.cluster.name",
+                    "oneClickFilter": true
                   },
                   {
                     "columnId": "pods"
@@ -581,7 +574,16 @@
           "drilldowns": [
             {
               "dashboardRefName": "dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
-              "label": "View namespace details",
+              "label": "1. View namespace details",
+              "open_in_new_tab": false,
+              "trigger": "on_apply_filter",
+              "type": "dashboard_drilldown",
+              "use_filters": true,
+              "use_time_range": true
+            },
+            {
+              "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+              "label": "2. View cluster details",
               "open_in_new_tab": false,
               "trigger": "on_apply_filter",
               "type": "dashboard_drilldown",
@@ -1722,7 +1724,7 @@
     "title": "[OTEL][Kubernetes] Namespaces"
   },
   "coreMigrationVersion": "8.8.0",
-  "created_at": "2026-03-27T14:01:14.613Z",
+  "created_at": "2026-03-27T21:16:35.709Z",
   "id": "kubernetes_otel-c0765efe-f172-42c4-a2ea-f4552b6f42dc",
   "references": [
     {
@@ -1731,7 +1733,7 @@
       "type": "dashboard"
     },
     {
-      "id": "kubernetes_otel-29225f58-cba4-4442-b178-fb5e0a753cf5",
+      "id": "kubernetes_otel-fe68e0e9-0506-4ad7-96be-070cf7592a7e",
       "name": "v2-ns-nav:link_e3add908-6c32-496d-9715-08c59082f3c9_dashboard",
       "type": "dashboard"
     },
@@ -1758,6 +1760,11 @@
     {
       "id": "kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
       "name": "e20403f7-7875-4e9a-ba5c-a7898601506a:dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
+      "type": "dashboard"
+    },
+    {
+      "id": "kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+      "name": "e20403f7-7875-4e9a-ba5c-a7898601506a:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
       "type": "dashboard"
     },
     {

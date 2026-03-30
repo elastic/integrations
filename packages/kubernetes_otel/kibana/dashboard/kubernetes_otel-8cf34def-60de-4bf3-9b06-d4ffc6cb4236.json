@@ -3096,19 +3096,15 @@
                         },
                         {
                           "columnId": "k8s.pod.name",
-                          "customLabel": true,
                           "fieldName": "k8s.pod.name",
-                          "label": "Pod",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "node",
-                          "customLabel": false,
-                          "fieldName": "node",
-                          "label": "node",
+                          "columnId": "k8s.node.name",
+                          "fieldName": "k8s.node.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -3116,9 +3112,7 @@
                         },
                         {
                           "columnId": "k8s.namespace.name",
-                          "customLabel": false,
                           "fieldName": "k8s.namespace.name",
-                          "label": "k8s.namespace.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -3215,9 +3209,7 @@
                         },
                         {
                           "columnId": "k8s.pod.name",
-                          "customLabel": true,
                           "fieldName": "k8s.pod.name",
-                          "label": "Pod",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -3225,19 +3217,15 @@
                         },
                         {
                           "columnId": "k8s.namespace.name",
-                          "customLabel": true,
                           "fieldName": "k8s.namespace.name",
-                          "label": "Namespace",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
                           }
                         },
                         {
-                          "columnId": "node",
-                          "customLabel": true,
-                          "fieldName": "node",
-                          "label": "Node",
+                          "columnId": "k8s.node.name",
+                          "fieldName": "k8s.node.name",
                           "meta": {
                             "esType": "keyword",
                             "type": "string"
@@ -3265,7 +3253,7 @@
                       ],
                       "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                       "query": {
-                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    phase          = MAX(k8s.pod.phase),\n    cpu_usage      = AVG(k8s.pod.cpu.usage),\n    memory_ws      = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    node           = MAX(k8s.node.name)\n  BY k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0)\n| SORT restarts desc\n| LIMIT 100"
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    phase          = MAX(k8s.pod.phase),\n    cpu_usage      = AVG(k8s.pod.cpu.usage),\n    memory_ws      = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    k8s.node.name  = MAX(k8s.node.name)\n  BY k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0)\n| SORT restarts desc\n| LIMIT 100"
                       },
                       "timeField": "@timestamp"
                     }
@@ -3275,7 +3263,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    phase          = MAX(k8s.pod.phase),\n    cpu_usage      = AVG(k8s.pod.cpu.usage),\n    memory_ws      = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    node           = MAX(k8s.node.name)\n  BY k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0)\n| SORT restarts desc\n| LIMIT 100"
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.cluster.name IS NOT NULL\n| STATS\n    phase          = MAX(k8s.pod.phase),\n    cpu_usage      = AVG(k8s.pod.cpu.usage),\n    memory_ws      = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts       = MAX(k8s.container.restarts),\n    k8s.node.name  = MAX(k8s.node.name)\n  BY k8s.namespace.name, k8s.pod.name\n| EVAL\n    restarts = COALESCE(restarts, 0)\n| SORT restarts desc\n| LIMIT 100"
               },
               "visualization": {
                 "columns": [
@@ -3292,7 +3280,7 @@
                     "columnId": "mem_limit_util"
                   },
                   {
-                    "columnId": "node",
+                    "columnId": "k8s.node.name",
                     "oneClickFilter": true
                   },
                   {
@@ -3430,7 +3418,7 @@
     "title": "[OTEL][Kubernetes] Deployment Detail"
   },
   "coreMigrationVersion": "8.8.0",
-  "created_at": "2026-03-27T14:01:14.613Z",
+  "created_at": "2026-03-27T21:16:35.709Z",
   "id": "kubernetes_otel-8cf34def-60de-4bf3-9b06-d4ffc6cb4236",
   "references": [
     {
