@@ -6,7 +6,7 @@ This integration collects logs and metrics from [Kafka](https://kafka.apache.org
 
 The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
 
-The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2 ,3.6.0, 4.0.0. If you are on any earlier 9.1.x release, you must upgrade to 9.1.3 for Kafka 4.0.0 support.
+The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2 ,3.6.0, 4.0.0, 4.2.0. If you are on any earlier 9.1.x release, you must upgrade to 9.1.3 for Kafka 4.0.0 support.
 
 The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `producer`, `raft`, `replica_manager`, `topic` metricsets require Jolokia to fetch JMX metrics. Refer to the `How do I deploy this integration?` section below for more information.
 
@@ -666,6 +666,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| kafka.controller.controller_event_manager.avg_idle_ratio | The idle ratio measures the proportion of time the controller thread is not actively processing an event. | double |  | gauge |
 | kafka.controller.controller_event_manager.event_queue_processing_time_ms.max | Maximum time in milliseconds to process events from the event queue. | double | ms | gauge |
 | kafka.controller.controller_event_manager.event_queue_processing_time_ms.min | Minimum time in milliseconds to process events from the event queue. | double | ms | gauge |
 | kafka.controller.controller_event_manager.event_queue_processing_time_ms.p95 | 95th percentile of time in milliseconds to process events from the event queue. | double | ms | gauge |
