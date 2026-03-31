@@ -1,4 +1,3 @@
-config_version: 2
 interval: {{interval}}
 resource.tracer:
   enabled: {{enable_request_tracer}}
@@ -33,203 +32,161 @@ state:
 redact:
   fields:
     - client_secret
-    - token
+    - auth_token
 {{!--
-API References:
-  https://support.greenhouse.io/hc/en-us/articles/15114161286043-Use-audit-log-with-API
-  https://auth.greenhouse.io/token (OAuth 2.0 Client Credentials, Harvest API V3)
-  https://auditlog.us.greenhouse.io/events
+Greenhouse Audit Log API (Harvest V3 OAuth)
 
-State variable definitions:
-  token: Bearer token obtained from the OAuth token endpoint.
-  token_expires: ISO-8601 expiry timestamp from the token response expires_at field.
-    Note: Greenhouse uses non-standard expires_at instead of RFC 6749 expires_in,
-    so token refresh must be managed manually in the CEL program.
+Endpoints:
+  POST https://auth.greenhouse.io/token
+    - HTTP Basic auth with client_id:client_secret
+    - Body: grant_type=client_credentials[&sub=<user_id>]
+    - Response: {access_token, expires_at (ISO-8601), token_type}
+    - Note: expires_at is non-standard (RFC 6749 uses expires_in),
+      so auth.oauth2 cannot manage token refresh — it is done here.
 
-Cursor variable definitions:
-  last_event_time: RFC3339 timestamp of the last event received. Used as the
-    after_time query parameter on subsequent requests to avoid re-fetching events.
-  pit_id: Point-in-Time ID returned by the API for cursor-based pagination.
-    Sent as a Pit-Id request header. Cleared when expired or pagination completes.
-  search_after: Opaque pagination token (format: "integer,string") returned as
-    next_search_after in the paging response. Sent as a Search-After request header.
-    Only set when more pages are available; cleared when pagination completes.
+  GET https://auditlog.us.greenhouse.io/events
+    - Query: paging=true, after_time, performer_ids, event_types
+    - Headers: Authorization (Bearer), Size (page size 100-500),
+      Pit-Id + Search-After (for page 2+)
+    - Response: {paging: {pit_id, next_search_after}, results: [...]}
+    - next_search_after is null on the last page.
+
+State:
+  auth_token — shallow-replaced object holding token and expires.
+    Cleared to {} on 401 so the fields are absent, not sentinel-valued.
+
+Cursor:
+  last_event_time — newest event_time seen; drives after_time on next poll.
+  pit_id, search_after — pagination state; cleared between poll intervals.
 --}}
-program: |
+program: |-
   state.with(
-    // Step 1: Obtain or reuse OAuth access token.
-    // Greenhouse uses non-standard expires_at (ISO-8601) rather than expires_in
-    // (RFC 6749 integer seconds), so token refresh is managed here rather than
-    // delegating to auth.oauth2 which only understands expires_in.
-    // Note: orValue(default) only substitutes when the field is ABSENT.
-    // If a field is present-but-null, orValue() returns null, not the default.
-    // All null checks below use explicit == null guards for this reason.
     (
-      state.?token.orValue(null) == null ||
-      state.?token.orValue("") == "" ||
-      state.?token_expires.orValue(null) == null ||
-      state.?token_expires.orValue("") == "" ||
-      timestamp(state.token_expires) < now
+      !state.?auth_token.token.hasValue() || !state.?auth_token.expires.hasValue() ||
+      timestamp(state.auth_token.expires) < now
     ).as(need_token,
       need_token ?
-        request("POST", state.token_url).with({
-          "Header": {
-            "Content-Type": ["application/x-www-form-urlencoded"],
-            "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
-          },
-          "Body": bytes("grant_type=client_credentials" + (state.?user_id.orValue(null) != null && state.?user_id.orValue("") != "" ? "&sub=" + state.user_id : ""))
-        }).do_request().as(token_resp,
-          token_resp.StatusCode == 200 ?
-            token_resp.Body.decode_json().as(token_body, {
-              "token": token_body.?access_token.orValue(""),
-              "token_expires": token_body.?expires_at.orValue(""),
-            })
+        request("POST", state.token_url).with(
+          {
+            "Header": {
+              "Content-Type": ["application/x-www-form-urlencoded"],
+              "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
+            },
+            "Body": bytes(
+              {
+                "grant_type": ["client_credentials"],
+                ?"sub": state.?user_id.optFlatMap(v,
+                  (v != "") ? optional.of([v]) : optional.none()
+                ),
+              }.format_query()
+            ),
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(tok,
+              {
+                "auth_token": {
+                  "token": tok.access_token,
+                  "expires": tok.expires_at,
+                },
+              }
+            )
           :
-            // Single-object error form: deletes cursor so next run retries cleanly
-            {"events": {"error": {
-              "message": "POST " + state.token_url + ": " + (
-                size(token_resp.Body) != 0 ?
-                  string(token_resp.Body)
-                :
-                  string(token_resp.Status) + " (" + string(token_resp.StatusCode) + ")"
-              ),
-            }}}
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST " + state.token_url + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                },
+              },
+            }
         )
       :
         {
-          "token": state.token,
-          "token_expires": state.token_expires,
+          "auth_token": state.auth_token,
         }
     ).as(auth,
-      // Step 2: Fetch audit events.
       has(auth.events) ?
         auth
       :
-        // orValue() only substitutes when the field is absent; if last_event_time
-        // is present but null, orValue() returns null. Use explicit null check.
-        (now - duration(state.initial_interval)).format(time_layout.RFC3339).as(default_time,
-          state.?cursor.last_event_time.orValue(null) == null || state.?cursor.last_event_time.orValue("") == "" ?
-            default_time
-          :
+        (
+          (state.?cursor.last_event_time.orValue("") != "") ?
             state.cursor.last_event_time
+          :
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
         ).as(after_time,
-          // Build headers; include pagination tokens if present and non-null in cursor.
-          // Use explicit null checks since orValue(x) only returns x when the field
-          // is ABSENT; for present-but-null fields it returns null, not x.
-          state.?cursor.pit_id.orValue(null).as(cur_pit_id,
-            state.?cursor.search_after.orValue(null).as(cur_search_after,
-              {
-                "Authorization": ["Bearer " + auth.?token.orValue("")],
-              }.as(base_headers,
-                cur_pit_id != null && cur_pit_id != "" ?
-                  base_headers.with({"Pit-Id": [cur_pit_id]})
-                :
-                  base_headers
-              ).as(headers_with_pit,
-                cur_search_after != null && cur_search_after != "" ?
-                  headers_with_pit.with({"Search-After": [cur_search_after]})
-                :
-                  headers_with_pit
-              ).as(headers,
-                // Only send after_time on the first page of a session (no pit_id).
-                // On subsequent pages the Pit-Id + Search-After headers already
-                // position within the snapshot; re-sending after_time can cause
-                // the API to restart the snapshot and skip events.
-                (state.url.trim_right("/") + "/events?" + {
-                  "paging": ["true"],
-                  "size":   [string(int(state.batch_size))],
-                  ?"after_time": (cur_pit_id == null || cur_pit_id == "") ? optional.of([after_time]) : optional.none(),
-                  ?"performer_ids": has(state.performer_ids) && state.performer_ids != "" ? optional.of([state.performer_ids]) : optional.none(),
-                  ?"event_types": has(state.event_types) && state.event_types != "" ? optional.of([state.event_types]) : optional.none(),
-                }.format_query()).as(request_url,
-              request("GET", request_url).with({
-                "Header": headers,
-              }).do_request().as(resp,
-                resp.StatusCode == 200 ?
+          (
+            // Only send after_time on the first page (no pit_id). Pages 2+
+            // navigate within the existing snapshot via Pit-Id + Search-After.
+            state.url.trim_right("/") + "/events?" + {
+              "paging": ["true"],
+              ?"after_time": (state.?cursor.pit_id.orValue("") == "") ?
+                optional.of([after_time])
+              :
+                optional.none(),
+              ?"performer_ids": state.?performer_ids.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+              ?"event_types": state.?event_types.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+            }.format_query()
+          ).as(url,
+            {
+              "Authorization": ["Bearer " + auth.auth_token.token],
+              "Size": [string(int(state.batch_size))],
+              ?"Pit-Id": state.?cursor.pit_id.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+              ?"Search-After": state.?cursor.search_after.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+            }.as(headers,
+              request("GET", url).with({"Header": headers}).do_request().as(resp,
+                (resp.StatusCode == 200) ?
                   resp.Body.decode_json().as(body,
-                    (body.?paging.next_search_after.orValue(null) != null).as(has_more, {
-                      "token": auth.token,
-                      "token_expires": auth.token_expires,
-                      "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
-                      // Keep after_time (last_event_time) unchanged while paginating so the
-                      // filter stays consistent across all pages of the same session.
-                      // Only advance last_event_time when pagination is complete so the
-                      // next poll interval starts from where we left off.
-                      // The API returns events newest-first. Track the newest event time
-                      // from page 1 (session_max_time) so the cursor advances to the most
-                      // recent event after all pages are consumed, not to the oldest.
-                      // On the first page (cur_pit_id empty), save the first result's time.
-                      // On subsequent pages, preserve the saved session_max_time.
-                      "cursor": {
-                        "pit_id": has_more ?
-                          (body.?paging.pit_id.orValue(null) == null ? "" : body.paging.pit_id)
-                        : "",
-                        "search_after": body.?paging.next_search_after.orValue(null) == null ? "" : body.paging.next_search_after,
-                        "session_max_time": (cur_pit_id == null || cur_pit_id == "") && size(body.?results.orValue([])) > 0 ?
-                          body.results[0].?event_time.orValue(after_time)
-                        :
-                          state.?cursor.session_max_time.orValue(null) == null ? after_time : state.cursor.session_max_time,
-                        "last_event_time": has_more ?
-                          after_time
-                        :
-                          state.?cursor.session_max_time.orValue(null) == null ?
-                            (size(body.?results.orValue([])) > 0 ?
-                              (body.results[0].?event_time.orValue(null) == null ? after_time : body.results[0].event_time)
-                            : after_time)
-                          : state.cursor.session_max_time,
-                      },
-                      "want_more": has_more,
-                    })
+                    (body.?paging.next_search_after.orValue(null) != null).as(has_more,
+                      {
+                        "auth_token": auth.auth_token,
+                        "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
+                        "cursor": {
+                          "last_event_time": (size(body.?results.orValue([])) > 0) ?
+                            body.results[0].event_time
+                          :
+                            after_time,
+                          "pit_id": has_more ? string(body.paging.pit_id) : "",
+                          "search_after": has_more ? string(body.paging.next_search_after) : "",
+                        },
+                        "want_more": has_more,
+                      }
+                    )
                   )
-                : resp.StatusCode == 401 ?
-                  // Token rejected — clear token so it is re-fetched on next interval.
-                  // cursor is preserved automatically by state.with().
+                : (resp.StatusCode == 401) ?
                   {
-                    "token": "",
-                    "token_expires": "",
+                    "auth_token": {},
                     "events": [],
                     "want_more": false,
                   }
-                : resp.StatusCode == 429 ?
-                  // Rate limited — preserve state and retry on next interval.
-                  // cursor is preserved automatically by state.with().
+                : (resp.StatusCode == 429) ?
                   {
-                    "token": auth.token,
-                    "token_expires": auth.token_expires,
                     "events": [],
-                    "want_more": false,
-                  }
-                : string(resp.Body).contains("Pit_Id") ?
-                  // Pit_Id expired — emit placeholder event to persist cursor update
-                  // (clearing pit_id/search_after while preserving last_event_time).
-                  // The placeholder is dropped by the drop_event processor below.
-                  {
-                    "token": auth.token,
-                    "token_expires": auth.token_expires,
-                    "events": [{"message": "pit_id_expired"}],
-                    "cursor": {
-                      "pit_id": "",
-                      "search_after": "",
-                      "last_event_time": state.?cursor.last_event_time.orValue(null) == null ? after_time : state.cursor.last_event_time,
-                    },
                     "want_more": false,
                   }
                 :
-                  // Other error — single-object form: cursor cleared, next run retries
-                  {"events": {"error": {
-                    "message": "GET /events: " + (
-                      size(resp.Body) != 0 ?
-                        string(resp.Body)
-                      :
-                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                    ),
-                  }}}
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET /events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                      },
+                    },
+                  }
               )
             )
           )
         )
-      )
-    )
     )
   )
 tags:
@@ -242,8 +199,7 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-processors:
-- drop_event.when.equals.message: "pit_id_expired"
 {{#if processors}}
+processors:
 {{processors}}
 {{/if}}
