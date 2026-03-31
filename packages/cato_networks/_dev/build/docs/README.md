@@ -90,9 +90,14 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Rate Limiting
 
-The Cato Networks API has rate limits. If you encounter rate limiting errors:
-- Increase the interval between API requests.
-- Contact Cato Networks support to understand your API rate limits.
+- The Cato Networks AuditFeed API enforces rate limiting of **5 requests per minute** (approximately 0.083 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
+
+- If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
+
+## Limitation:
+- The Cato Networks API rate limit quota is shared across all integration instances that use the same API credentials, which may impact data collection when running multiple instances simultaneously.
+
+- The Cato Networks AuditFeed API contains certain fields with inconsistent data types across different events. These type conflicts can cause indexing failures in Elasticsearch, resulting in discrepancies between the document count stored in Elasticsearch and the total number of events returned by the API. Users may observe that not all events from the API response are successfully indexed due to these type mapping conflicts.
 
 ## Performance and scaling
 

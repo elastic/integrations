@@ -7,14 +7,47 @@ streams:
     description: Collect audit logs from Cato Networks via API.
     template_path: cel.yml.hbs
     vars:
+      - name: initial_interval
+        type: text
+        title: Initial interval
+        description: >-
+          How far back to pull the logs from Cato Networks API. Supported units for this parameter are h/m. The maximum allowed value is 2160h (90 days) or 129600m. Any value exceeding this limit will automatically be capped to the maximum allowed duration.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
       - name: interval
         type: text
         title: Interval
-        description: Duration between requests to the Cato Networks API. Supported units for this parameter are h/m/s.\n[NOTE] It is recommended to use interval value less than 90days to avoid any data loss.
+        description: >-
+          Duration between requests to the Cato Networks API. Supported units for this parameter are h/m/s. It is recommended to use interval value less than 2160h (90days) to avoid any data loss.
         default: 5m
         multi: false
         required: true
         show_user: true
+      - name: account_ids
+        type: text
+        title: Account IDs
+        description: Account IDs of Cato Networks to collect data from.
+        multi: true
+        required: true
+        show_user: true
+      - name: resource_rate_limit_limit
+        type: text
+        title: Resource Rate Limit
+        description: Maximum request rate per second. The Cato Networks API has a limit of 5 requests per minute (~0.083 req/sec).
+        default: '0.080'
+        show_user: false
+        multi: false
+        required: true
+      - name: resource_rate_limit_burst
+        type: integer
+        title: Resource Rate Limit Burst
+        default: 1
+        description: In requests. The maximum number of requests that can be immediately made following an idle period.
+        show_user: false
+        multi: false
+        required: true
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout

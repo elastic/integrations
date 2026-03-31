@@ -14,9 +14,15 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
 state:
-  account_id: {{account_id}}
+  account_ids:
+  {{#each account_ids as |account_id|}}
+    - !!str {{account_id}}
+  {{/each}}
   api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
   query: >-
     query AuditFeed($timeFrame: TimeFrame! $accountIDs: [ID!] $marker: String) {
       auditFeed(timeFrame: $timeFrame accountIDs: $accountIDs marker: $marker) {
@@ -34,64 +40,91 @@ redact:
   fields:
     - api_key
 program: |
-  state.with(
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "timeframe": (duration(state.initial_interval) > duration("2160h")) ? // Check if Duration is greater than 90Days
+            // set to 90Days(2160h) and converted to minutes
+            string(int(duration("2160h")) / int(duration("1m")))
+          :
+            string(int(duration(state.initial_interval)) / int(duration("1m"))),
+        }
+      )
+  ).as(state,
+    state.with(
       request(
         "POST",
         state.url.trim_right("/") + "/api/v1/graphql2"
-      ).with({
-        "Header": {
-          "Content-Type": ["application/json"],
-          "x-api-key": [state.api_key]
-        },
-        "Body": {
-          "query": state.query,
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/json"],
+            "x-api-key": [state.api_key],
+          },
+          "Body": {
+            "query": state.query,
             "variables": {
-              "timeFrame": "last.P90D", // last.P90D = Past 90 Days (API gives error if timeframe is older than 90 days)
-              "accountIDs": [state.account_id],
+              "timeFrame": "last.PT" + state.timeframe + "M", // timeframe value in minutes
+              "accountIDs": state.account_ids,
               ?"marker": state.?cursor.marker,
-            }
-        }.encode_json(),
-      }).do_request().as(resp, resp.StatusCode == 200 ?
+            },
+          }.encode_json(),
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
         bytes(resp.Body).decode_json().as(body,
           // in case of rate limit and wrong API key, StatusCode will be 200 and auditFeed will be null
-          body.?data.auditFeed.orValue(null) != null ?
+          (body.?data.auditFeed.orValue(null) != null) ?
             {
-              "events": body.data.auditFeed.accounts[0].records.map(record, {
-                "message": record.fieldsMap.encode_json(),
-              }),
+              "events": (body.data.auditFeed.?accounts.orValue(null) != null) ?
+                body.data.auditFeed.accounts.map(account, (account.?records.orValue(null) != null) ?
+                  account.records.map(record,
+                    {
+                      "message": record.fieldsMap.encode_json(),
+                    }
+                  )
+                :
+                  []
+                ).flatten()
+              :
+                [],
               "cursor": {
-                ?"marker": optional.of(body.?data.auditFeed.marker)
+                ?"marker": optional.of(body.?data.auditFeed.marker),
               },
+              "timeframe": state.timeframe,
               "want_more": body.?data.auditFeed.hasMore.orValue(false),
             }
           :
             {
               "events": {
                 "error": {
-                  "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + body.errors[0].message
-                }
+                  "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + body.errors[0].message,
+                },
               },
               "want_more": false,
             }
-          )
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                ),
-              },
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
             },
-            "want_more": false,
-          }
+          },
+          "want_more": false,
+        }
       )
     )
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
