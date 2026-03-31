@@ -138,8 +138,16 @@ processors:
       ignore_missing: true
   - convert:
       field: gitlab.application.user_id
-      type: string
+      tag: convert_application_user_id_to_long
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.application.user_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: gitlab.application.meta.user_id
       target_field: user.id

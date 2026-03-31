@@ -556,7 +556,7 @@ Collect logs for events happening in GitLab like user creation or project deleti
 | gitlab.application.time |  | date |
 | gitlab.application.to_state |  | keyword |
 | gitlab.application.user_admin |  | boolean |
-| gitlab.application.user_id |  | keyword |
+| gitlab.application.user_id |  | long |
 | gitlab.application.worker_id |  | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -588,9 +588,9 @@ An example event for `application` looks as following:
 {
     "@timestamp": "2024-05-10T17:49:45.825Z",
     "agent": {
-        "ephemeral_id": "d2dacbe2-37af-48c0-b96c-892305410acc",
-        "id": "5679c8bf-c89d-48bc-a56d-7ec9f73f55ab",
-        "name": "elastic-agent-55053",
+        "ephemeral_id": "81eaa642-e005-47c4-a0ba-a520c4107322",
+        "id": "aea61476-76a6-4bea-8069-596da60fa919",
+        "name": "elastic-agent-29703",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -612,14 +612,14 @@ An example event for `application` looks as following:
     },
     "data_stream": {
         "dataset": "gitlab.application",
-        "namespace": "27604",
+        "namespace": "33978",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5679c8bf-c89d-48bc-a56d-7ec9f73f55ab",
+        "id": "aea61476-76a6-4bea-8069-596da60fa919",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -630,7 +630,7 @@ An example event for `application` looks as following:
         ],
         "dataset": "gitlab.application",
         "id": "01HXHSYJJQNY08JV4JF2B69ZDR",
-        "ingested": "2026-03-30T12:07:58Z",
+        "ingested": "2026-03-31T05:58:59Z",
         "kind": "event",
         "original": "{\"severity\":\"INFO\",\"time\":\"2024-05-10T17:49:45.825Z\",\"correlation_id\":\"01HXHSYJJQNY08JV4JF2B69ZDR\",\"meta.caller_id\":\"ProjectCacheWorker\",\"meta.remote_ip\":\"67.43.156.18\",\"meta.feature_category\":\"source_code_management\",\"meta.user\":\"root\",\"meta.user_id\":1,\"meta.project\":\"root/test_1\",\"meta.root_namespace\":\"root\",\"meta.client_id\":\"user/1\",\"meta.root_caller_id\":\"ProjectsController#create\",\"message\":\"Updating statistics for project 1\"}",
         "severity": 1,
@@ -654,17 +654,17 @@ An example event for `application` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-55053",
+        "hostname": "elastic-agent-29703",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
             "192.168.241.2",
             "192.168.240.7"
         ],
         "mac": [
-            "4E-27-BA-F0-7C-5B",
-            "92-BC-63-B6-25-20"
+            "96-31-7B-A5-EF-9A",
+            "A2-25-2E-2B-26-E3"
         ],
-        "name": "elastic-agent-55053",
+        "name": "elastic-agent-29703",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -681,7 +681,7 @@ An example event for `application` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "555864",
+            "inode": "561421",
             "path": "/tmp/service_logs/test-gitlab-application.log"
         },
         "offset": 0
