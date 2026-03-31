@@ -1,25 +1,24 @@
-# SAP Privileges
+# macOS Privileges
 
-The SAP Privileges integration collects and parses privilege-related events
-from [SAP Privileges](https://github.com/SAP/macOS-enterprise-privileges) for macOS.
-SAP Privileges is a free macOS application designed for modern enterprise environments that gives users temporary
+The macOS Privileges integration collects and parses privilege-related events from [macOS Privileges](https://github.com/SAP/macOS-enterprise-privileges).
+macOS Privileges is a free macOS application designed for modern enterprise environments that gives users temporary
 administrator privileges when needed without granting permanent admin rights.
 
 ## Overview
 
 ### Compatibility
 
-This module has been tested against SAP Privileges Version 2.x and should work with all versions.
+This module has been tested against macOS Privileges Version 2.x and should work with all versions.
 
 ### How it works
 
-The integration collects privilege-related events from SAP Privileges and parses them into structured logs. It monitors
+The integration collects privilege-related events from macOS Privileges and parses them into structured logs. It monitors
 privilege escalation events and privilege expiration events to provide visibility into administrator privilege usage
 across macOS devices in enterprise environments.
 
 ## What data does this integration collect?
 
-The SAP Privileges integration collects log data from SAP Privileges application on macOS devices. The integration
+The macOS Privileges integration collects log data from macOS Privileges application on macOS devices. The integration
 supports the following use cases:
 
 - Monitor privilege escalation events
@@ -28,8 +27,8 @@ supports the following use cases:
 ## What do I need to use this integration?
 
 - Elastic Agent must be installed on your macOS devices or as a centralised syslog server on a platform of your choice. 
-- SAP Privileges application must be installed and configured to send logs to your syslog server if the Agent is used as a syslog server.
-- Appropriate permissions to configure SAP Privileges and deploy configuration profiles via MDM or locally.
+- macOS Privileges application must be installed and configured to send logs to your syslog server if the Agent is used as a syslog server.
+- Appropriate permissions to configure macOS Privileges and deploy configuration profiles via MDM or locally.
 
 For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
@@ -37,11 +36,11 @@ For more details, check the Elastic Agent [installation instructions](docs-conte
 
 ### Onboard and configure
 
-1. **Install and configure SAP Privileges**:
-    - Install SAP Privileges on your macOS devices
-    - Configure SAP Privileges to send logs to your Elastic stack
+1. **Install and configure macOS Privileges**:
+    - Install macOS Privileges on your macOS devices
+    - Configure macOS Privileges to send logs to your Elastic stack
 
-2. **Configure SAP Privileges to send logs**:
+2. **Configure macOS Privileges to send logs**:
    Product specific manual can be
    found [here](https://github.com/SAP/macOS-enterprise-privileges/wiki/Managing-Privileges#SyslogOptions):
 
@@ -83,11 +82,11 @@ For more details, check the Elastic Agent [installation instructions](docs-conte
 
 3. **Enable the integration in Elastic**:
     - In Kibana navigate to **Management** > **Integrations**
-    - In the search top bar, type **SAP Privileges**
-    - Select the **SAP Privileges** integration and add it
+    - In the search top bar, type **macOS Privileges**
+    - Select the **macOS Privileges** integration and add it
     - Add all the required integration configuration parameters:
-        - Set the correct host and port to match your SAP Privileges configuration
-        - Choose TCP or UDP based on your SAP Privileges setup
+        - Set the correct host and port to match your macOS Privileges configuration
+        - Choose TCP or UDP based on your macOS Privileges setup
     - Save the integration
 
 ### Validation
@@ -95,23 +94,23 @@ For more details, check the Elastic Agent [installation instructions](docs-conte
 To test whether the integration is working correctly:
 
 1. Check that logs are appearing in Kibana under **Discover**
-2. Verify that the **SAP Privileges** integration shows data in the **Integrations** view
+2. Verify that the **macOS Privileges** integration shows data in the **Integrations** view
 3. Look for privilege-related events in the logs
 
 ## Troubleshooting
 
 ### Common issues
 
-- **No logs appearing**: Verify that SAP Privileges is configured to send logs to the correct syslog server and port
+- **No logs appearing**: Verify that macOS Privileges is configured to send logs to the correct syslog server and port
 - **Connection issues**: Check network connectivity between macOS devices and your syslog server
 - **Permission issues**: Ensure the Elastic Agent has appropriate permissions to read logs
 
 For additional troubleshooting, refer to
-the [SAP Privileges documentation](https://github.com/SAP/macOS-enterprise-privileges/wiki).
+the [macOS Privileges documentation](https://github.com/SAP/macOS-enterprise-privileges/wiki).
 
 ## Performance and scaling
 
-The SAP Privileges integration is designed to be lightweight and has minimal impact on system performance. For optimal
+The macOS Privileges integration is designed to be lightweight and has minimal impact on system performance. For optimal
 performance:
 
 - Ensure your syslog server is properly sized to handle the log volume from all macOS devices
