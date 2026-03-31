@@ -6,6 +6,11 @@ Auth0 offers integrations that push log events via log streams to Elasticsearch 
 
 The package collects log events either sent via log stream webhooks, or by API request to the Auth0 v2 API.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Enabling the integration in Elastic
 
 1. In Kibana go to **Management > Integrations**
