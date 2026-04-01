@@ -132,17 +132,17 @@ processors:
   # Set message from parsed data
   - set:
       tag: set_message_success
-      if: ctx.event?.outcome == 'success' && ctx.user?.name != null
+      if: ctx.event?.outcome == 'success' && ctx.user?.name != null && ctx.proxmox?.auth?.realm != null
       field: message
       value: "Successful authentication for user {{user.name}}@{{proxmox.auth.realm}}"
   - set:
       tag: set_message_failure_with_ip
-      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null && ctx.source?.ip != null
+      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null && ctx.proxmox?.auth?.realm != null && ctx.source?.ip != null
       field: message
       value: "Failed authentication for user {{user.name}}@{{proxmox.auth.realm}} from {{source.ip}}"
   - set:
       tag: set_message_failure_without_ip
-      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null && ctx.source?.ip == null
+      if: ctx.event?.outcome == 'failure' && ctx.user?.name != null && ctx.proxmox?.auth?.realm != null && ctx.source?.ip == null
       field: message
       value: "Failed authentication for user {{user.name}}@{{proxmox.auth.realm}}"
 
