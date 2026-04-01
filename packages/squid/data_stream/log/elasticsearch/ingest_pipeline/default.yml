@@ -55,18 +55,21 @@ processors:
   - script:
       tag: remove_empty_fields
       lang: painless
+      ignore_failure: true
       source: >-
         ctx._tmp?.values().removeIf(value -> value == "-");
 
   - script:
       tag: compute_timestamp
       lang: painless
+      ignore_failure: true
       if: ctx._tmp?.time_s instanceof Number && ctx._tmp?.time_ms instanceof Number
       source: >-
         ctx["@timestamp"] = new Date(ctx._tmp.time_s * 1000 + ctx._tmp.time_ms);
   - script:
       tag: compute_elapsed
       lang: painless
+      ignore_failure: true
       if: ctx._tmp?.elapsed instanceof Number
       source: >-
         ctx.event["duration"] = ctx._tmp.elapsed * 1000000;
