@@ -1,0 +1,101 @@
+# Test that the agent data stream recovers from SentinelOne API errors
+# (authentication failure and service unavailability) and eventually collects
+# agent documents.
+#
+# The mock cycles through three responses for /web/api/v2.1/agents:
+#   1st call → 401 {"errors":[{"code":4010010,"detail":"Authentication failed."}]}
+#   2nd call → 503 {"errors":[{"code":5030010,"detail":"Service is temporarily unavailable."}]}
+#   3rd call → 200 with 2 agent documents
+#
+# The httpjson input logs error responses but does not create indexed documents
+# for non-2xx status codes. The observable outcome is that agent documents
+# arrive after the transient failures.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock SentinelOne API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for 2 agent documents. The first two polls return errors; httpjson
+# retries on each subsequent interval until the mock returns 200.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify the documents have the sentinel_one.agent namespace set.
+exec jq '[.hits.hits[]._source | select(.sentinel_one.agent != null)] | length' got_docs.json
+stdout '^2$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down s1-mock
+
+-- test_config.yaml --
+input: httpjson
+vars:
+  url: http://s1-mock:8080
+  api_token: test-api-token
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    preserve_original_event: true
+    enable_request_tracer: false
+-- s1-mock/docker-compose.yml --
+version: '2.3'
+services:
+  s1-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: s1-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- s1-mock/config.yml --
+rules:
+  # Agents endpoint: first call returns 401 (authentication failed), second
+  # call returns 503 (service unavailable), third call returns 200 with 2
+  # agents. The mock cycles through responses in order.
+  - path: /web/api/v2.1/agents
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"errors":[{"code":4010010,"detail":"Authentication failed.","title":"Authentication Failed"}],"data":null,"pagination":null}
+      - status_code: 503
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"errors":[{"code":5030010,"detail":"Service is temporarily unavailable.","title":"Service Unavailable"}],"data":null,"pagination":null}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"id":"agent-001","uuid":"uuid-001","computerName":"DESKTOP-001","agentVersion":"22.2.5.2","osName":"Windows 10","osType":"windows","networkStatus":"connected","infected":false,"activeThreats":0,"isActive":true,"isDecommissioned":false,"siteId":"site-001","siteName":"Default","groupId":"group-001","machineType":"desktop","createdAt":"2024-01-15T10:00:00.000Z","updatedAt":"2024-01-15T10:01:00.000Z"},{"id":"agent-002","uuid":"uuid-002","computerName":"LAPTOP-002","agentVersion":"22.2.5.2","osName":"Windows 11","osType":"windows","networkStatus":"connected","infected":false,"activeThreats":0,"isActive":true,"isDecommissioned":false,"siteId":"site-001","siteName":"Default","groupId":"group-001","machineType":"laptop","createdAt":"2024-01-15T09:00:00.000Z","updatedAt":"2024-01-15T09:30:00.000Z"}],"pagination":{"nextCursor":null,"totalItems":2}}
