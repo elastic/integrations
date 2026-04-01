@@ -57,7 +57,8 @@ func findPackagePaths(dir string) ([]string, error) {
 
 	version, err := citools.PackageVersionGoMod(goModPath, elasticPackageModulePath)
 	if err != nil {
-		return nil, fmt.Errorf("error reading elastic-package version from go.mod: %w", err)
+		fmt.Printf("could not determine elastic-package version from go.mod (%v), using recursive walk to find packages\n", err)
+		return walkPackagePaths(dir)
 	}
 
 	minVersion := semver.MustParse(elasticPackageFindMinVersion)
