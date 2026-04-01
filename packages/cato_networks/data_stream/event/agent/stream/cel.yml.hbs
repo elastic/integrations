@@ -14,8 +14,13 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
 state:
-  account_id: {{account_id}}
+  account_ids:
+  {{#each account_ids as |account_id|}}
+    - !!str {{account_id}}
+  {{/each}}
   api_key: {{api_key}}
   max_page_limit: 3000
   query: >-
@@ -48,7 +53,7 @@ program: |
         "Body": {
           "query": state.query,
           "variables": {
-            "accountIDs": [state.account_id],
+            "accountIDs": state.account_ids,
             ?"marker": state.?cursor.marker,
           },
         }.encode_json(),
@@ -59,11 +64,18 @@ program: |
           // in case of rate limit and wrong API key, StatusCode will be 200 and eventsFeed will be null
           (body.?data.eventsFeed.orValue(null) != null) ?
             {
-              "events": body.data.eventsFeed.accounts[0].records.map(record,
-                {
-                  "message": record.fieldsMap.encode_json(),
-                }
-              ),
+              "events": (body.data.eventsFeed.?accounts.orValue(null) != null) ?
+                body.data.eventsFeed.accounts.map(account, (account.?records.orValue(null) != null) ?
+                  account.records.map(record,
+                    {
+                      "message": record.fieldsMap.encode_json(),
+                    }
+                  )
+                :
+                  []
+                ).flatten()
+              :
+                [],
               "cursor": {
                 ?"marker": body.?data.eventsFeed.marker,
               },

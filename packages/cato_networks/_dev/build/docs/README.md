@@ -90,9 +90,16 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Rate Limiting
 
-The Cato Networks API has rate limits. If you encounter rate limiting errors:
-- Increase the interval between API requests.
-- Contact Cato Networks support to understand your API rate limits.
+- The Cato Networks EventsFeed API enforces rate limiting of **100 requests per minute** (approximately 1.66 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
+
+- If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
+
+**Note**: The EventsFeed API operates with a time-based data retrieval mechanism. On the initial API call, no data will be returned as it establishes a baseline marker. Subsequent requests will retrieve events that occurred between the current request and the previous one. Due to this behavior, data ingestion begins only after the first interval has elapsed, so it is expected to have a delay equal to the configured interval before seeing the first events in Elasticsearch.
+
+## Limitation:
+- The Cato Networks API rate limit quota is shared across all integration instances that use the same API credentials, which may impact data collection when running multiple instances simultaneously.
+- The Cato Networks EventsFeed API uses a marker-based pagination with a **3-day expiration period**. If the Elastic Agent or Elasticsearch instance experiences downtime exceeding 3 days, the marker becomes invalid and any events generated during this outage will be permanently lost and cannot be recovered.
+
 
 ## Performance and scaling
 

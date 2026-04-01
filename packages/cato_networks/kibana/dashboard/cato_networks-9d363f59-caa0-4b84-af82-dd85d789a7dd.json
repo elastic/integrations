@@ -157,7 +157,30 @@
         "description": "Dashboard for event logs from Cato Networks",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cato_networks.event"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cato_networks.event"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -2707,20 +2730,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-2baea493-07cc-4352-a1b8-3222a4c6a71d",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "695edbfe-71fc-4a6b-a885-6436348d97e8",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "2baea493-07cc-4352-a1b8-3222a4c6a71d": {
                                             "columnOrder": [
+                                                "9fe5ab73-a5bd-4d1c-9963-480bd7dcf349",
                                                 "810850c5-65eb-4739-883f-1b8273293220",
                                                 "72402c4a-b833-468f-b84a-6f088970a358"
                                             ],
@@ -2755,18 +2775,55 @@
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
+                                                },
+                                                "9fe5ab73-a5bd-4d1c-9963-480bd7dcf349": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host Risk Level",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": null,
+                                                        "orderBy": {
+                                                            "columnId": "72402c4a-b833-468f-b84a-6f088970a358",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.risk.static_level"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -2779,7 +2836,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "695edbfe-71fc-4a6b-a885-6436348d97e8",
+                                        "index": "logs-*",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2828,6 +2885,7 @@
                                         "position": "top",
                                         "seriesType": "line",
                                         "showGridlines": false,
+                                        "splitAccessor": "9fe5ab73-a5bd-4d1c-9963-480bd7dcf349",
                                         "xAccessor": "810850c5-65eb-4739-883f-1b8273293220"
                                     }
                                 ],
@@ -2889,7 +2947,7 @@
                     "y": 0
                 },
                 "panelIndex": "b97245d9-642c-4d83-a1f4-53bcf5f01a27",
-                "title": "Events over Time",
+                "title": "Events by Risk Level over Time",
                 "type": "lens"
             },
             {
@@ -3585,9 +3643,14 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-03-11T09:21:03.327Z",
+    "created_at": "2026-03-31T08:54:58.293Z",
     "id": "cato_networks-9d363f59-caa0-4b84-af82-dd85d789a7dd",
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "a5cf6e14-6055-4451-9599-8ab380016961:indexpattern-datasource-layer-6d732d9f-697d-489a-987c-7bc39516bbdf",
@@ -3670,11 +3733,6 @@
         },
         {
             "id": "logs-*",
-            "name": "b97245d9-642c-4d83-a1f4-53bcf5f01a27:695edbfe-71fc-4a6b-a885-6436348d97e8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "8438df96-ccc7-4252-82fe-e385f0b65ba1:indexpattern-datasource-layer-3a361b54-9675-41c5-b32d-cd80eeeb8f37",
             "type": "index-pattern"
         },
@@ -3751,6 +3809,11 @@
         {
             "id": "logs-*",
             "name": "controlGroup_22e0e2a7-ef59-497c-89c5-733e98aef6a2:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],
