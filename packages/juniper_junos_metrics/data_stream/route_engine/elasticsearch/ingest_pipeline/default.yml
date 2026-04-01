@@ -58,6 +58,7 @@ processors:
   - script:
       tag: script_flatten_junos_json
       lang: painless
+      ignore_failure: true
       description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields.
       source: |
         def raw = ctx._temp?.raw;
@@ -146,6 +147,7 @@ processors:
   - script:
       tag: script_extract_per_core_cpu
       lang: painless
+      ignore_failure: true
       source: |
         def re = ctx._temp?.re;
         if (re == null) return;
@@ -176,6 +178,7 @@ processors:
   - script:
       tag: script_parse_memory
       lang: painless
+      ignore_failure: true
       if: ctx._temp?.re?.get('memory-dram-size') != null
       source: |
         def raw = ctx._temp.re.get('memory-dram-size').toString().trim();
@@ -194,6 +197,7 @@ processors:
   - script:
       tag: script_parse_memory_installed
       lang: painless
+      ignore_failure: true
       if: ctx._temp?.re?.get('memory-installed-size') != null
       source: |
         def raw = ctx._temp.re.get('memory-installed-size').toString().trim();
@@ -243,6 +247,7 @@ processors:
   - script:
       tag: script_parse_uptime
       lang: painless
+      ignore_failure: true
       source: |
         def attrs = ctx._temp?.re?.get('up-time_attrs');
         if (attrs != null && attrs.containsKey('junos:seconds')) {
@@ -258,6 +263,7 @@ processors:
   - script:
       tag: script_compute_uptime_days
       lang: painless
+      ignore_failure: true
       if: ctx.juniper?.junos?.route_engine?.uptime != null
       source: |
         double secs = ((Number) ctx.juniper.junos.route_engine.uptime).doubleValue();
@@ -267,6 +273,7 @@ processors:
   - script:
       tag: script_parse_temperature
       lang: painless
+      ignore_failure: true
       source: |
         def re = ctx._temp?.re;
         if (re == null) return;
@@ -306,6 +313,7 @@ processors:
   - script:
       tag: script_parse_start_time
       lang: painless
+      ignore_failure: true
       source: |
         def attrs = ctx._temp?.re?.get('start-time_attrs');
         if (attrs != null && attrs.containsKey('junos:seconds')) {
@@ -329,6 +337,7 @@ processors:
   - script:
       tag: script_compute_cpu_utilization
       lang: painless
+      ignore_failure: true
       if: ctx.juniper?.junos?.route_engine?.cpu?.idle != null
       source: |
         double idle = ctx.juniper.junos.route_engine.cpu.idle;
@@ -340,6 +349,7 @@ processors:
   - script:
       tag: script_compute_memory_utilization
       lang: painless
+      ignore_failure: true
       if: ctx.juniper?.junos?.route_engine?.memory?.buffer_utilization != null
       source: |
         double buf = ctx.juniper.junos.route_engine.memory.buffer_utilization;

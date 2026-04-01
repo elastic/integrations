@@ -58,6 +58,7 @@ processors:
   - script:
       tag: script_flatten_junos_json
       lang: painless
+      ignore_failure: true
       description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields, including nested peer object.
       source: |
         def raw = ctx._temp?.raw;
@@ -169,6 +170,7 @@ processors:
   - script:
       tag: script_parse_elapsed_time
       lang: painless
+      ignore_failure: true
       source: |
         def attrs = ctx._temp?.bgp?.peer?.get('elapsed-time_attrs');
         if (attrs != null && attrs.containsKey('junos:seconds')) {
@@ -185,6 +187,7 @@ processors:
   - script:
       tag: script_extract_bgp_rib
       lang: painless
+      ignore_failure: true
       source: |
         def raw = ctx._temp?.raw;
         if (raw == null) return;

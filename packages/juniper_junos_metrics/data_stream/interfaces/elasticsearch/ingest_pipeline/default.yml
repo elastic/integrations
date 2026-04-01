@@ -59,6 +59,7 @@ processors:
   - script:
       tag: script_flatten_junos_json
       lang: painless
+      ignore_failure: true
       description: Unwrap the JunOS [{"data":"value"}] array pattern into flat fields.
       source: |
         def unwrap(Map src) {
@@ -152,6 +153,7 @@ processors:
   - script:
       tag: script_extract_traffic_stats
       lang: painless
+      ignore_failure: true
       source: |
         def ts = ctx._temp?.iface?.get('traffic-statistics');
         if (ts == null || !(ts instanceof Map)) return;
@@ -179,6 +181,7 @@ processors:
   - script:
       tag: script_extract_error_stats
       lang: painless
+      ignore_failure: true
       source: |
         def iface = ctx._temp?.iface;
         if (iface == null) return;
@@ -205,6 +208,7 @@ processors:
   - script:
       tag: script_parse_interface_flapped
       lang: painless
+      ignore_failure: true
       source: |
         def attrs = ctx._temp?.iface?.get('interface-flapped_attrs');
         if (attrs != null && attrs.containsKey('junos:seconds')) {
@@ -261,6 +265,7 @@ processors:
   - script:
       tag: script_extract_extended_stats
       lang: painless
+      ignore_failure: true
       source: |
         def iface = ctx._temp?.iface;
         if (iface == null) return;
