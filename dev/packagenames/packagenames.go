@@ -37,6 +37,64 @@ func Check() error {
 	return nil
 }
 
+func checkPackageNames(dir string) error {
+	paths, err := findPackagePaths(dir)
+	if err != nil {
+		return fmt.Errorf("error finding packages: %w", err)
+	}
+	return checkDuplicateNames(paths)
+}
+
+func findPackagePaths(dir string) ([]string, error) {
+	binaryPath, found := elasticPackageBinaryPath()
+	if !found {
+		return walkPackagePaths(dir)
+	}
+
+	version, err := citools.PackageVersionGoMod(goModPath, elasticPackageModulePath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading elastic-package version from go.mod: %w", err)
+	}
+
+	minVersion := semver.MustParse(elasticPackageFindMinVersion)
+	if !version.LessThan(minVersion) {
+		return elasticPackageFind(binaryPath, dir)
+	}
+	return walkPackagePaths(dir)
+}
+
+func elasticPackageBinaryPath() (string, bool) {
+	if workspace := os.Getenv("WORKSPACE"); workspace != "" {
+		ciPath := filepath.Join(workspace, elasticPackageCIPath)
+		if _, err := os.Stat(ciPath); err == nil {
+			return ciPath, true
+		}
+	}
+	if path, err := exec.LookPath(elasticPackageBinaryName); err == nil {
+		return path, true
+	}
+	return "", false
+}
+
+func elasticPackageFind(binaryPath, dir string) ([]string, error) {
+	cmd := exec.Command(binaryPath, "-C", dir, "find")
+	cmd.Stderr = os.Stderr
+	stdout, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("error running elastic-package find: %w", err)
+	}
+
+	var paths []string
+	scanner := bufio.NewScanner(strings.NewReader(string(stdout)))
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line != "" {
+			paths = append(paths, line)
+		}
+	}
+	return paths, scanner.Err()
+}
+
 func walkPackagePaths(dir string) ([]string, error) {
 	var paths []string
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
@@ -63,56 +121,6 @@ func walkPackagePaths(dir string) ([]string, error) {
 	return paths, err
 }
 
-func elasticPackageBinaryPath() (string, bool) {
-	if workspace := os.Getenv("WORKSPACE"); workspace != "" {
-		ciPath := filepath.Join(workspace, elasticPackageCIPath)
-		if _, err := os.Stat(ciPath); err == nil {
-			return ciPath, true
-		}
-	}
-	if path, err := exec.LookPath(elasticPackageBinaryName); err == nil {
-		return path, true
-	}
-	return "", false
-}
-
-func findPackagePaths(dir string) ([]string, error) {
-	binaryPath, found := elasticPackageBinaryPath()
-	if !found {
-		return walkPackagePaths(dir)
-	}
-
-	version, err := citools.PackageVersionGoMod(goModPath, elasticPackageModulePath)
-	if err != nil {
-		return nil, fmt.Errorf("error reading elastic-package version from go.mod: %w", err)
-	}
-
-	minVersion := semver.MustParse(elasticPackageFindMinVersion)
-	if !version.LessThan(minVersion) {
-		return elasticPackageFind(binaryPath, dir)
-	}
-	return walkPackagePaths(dir)
-}
-
-func elasticPackageFind(binaryPath, dir string) ([]string, error) {
-	cmd := exec.Command(binaryPath, "-C", dir, "find")
-	cmd.Stderr = os.Stderr
-	stdout, err := cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("error running elastic-package find: %w", err)
-	}
-
-	var paths []string
-	scanner := bufio.NewScanner(strings.NewReader(string(stdout)))
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line != "" {
-			paths = append(paths, line)
-		}
-	}
-	return paths, scanner.Err()
-}
-
 func checkDuplicateNames(paths []string) error {
 	seen := make(map[string][]string)
 	for _, path := range paths {
@@ -135,12 +143,4 @@ func checkDuplicateNames(paths []string) error {
 		return fmt.Errorf("found duplicate package names:\n%s", strings.Join(duplicates, "\n"))
 	}
 	return nil
-}
-
-func checkPackageNames(dir string) error {
-	paths, err := findPackagePaths(dir)
-	if err != nil {
-		return fmt.Errorf("error finding packages: %w", err)
-	}
-	return checkDuplicateNames(paths)
 }
