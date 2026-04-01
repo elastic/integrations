@@ -25,6 +25,8 @@ const (
 	elasticPackageModulePath     = "github.com/elastic/elastic-package"
 	elasticPackageFindMinVersion = "0.118.0"
 	goModPath                    = "go.mod"
+	elasticPackageBinaryName     = "elastic-package"
+	elasticPackageCIPath         = "build/elastic-package"
 )
 
 // Check validates that no two packages share the same name under the default packages directory.
@@ -61,7 +63,25 @@ func walkPackagePaths(dir string) ([]string, error) {
 	return paths, err
 }
 
+func elasticPackageBinaryPath() (string, bool) {
+	if workspace := os.Getenv("WORKSPACE"); workspace != "" {
+		ciPath := filepath.Join(workspace, elasticPackageCIPath)
+		if _, err := os.Stat(ciPath); err == nil {
+			return ciPath, true
+		}
+	}
+	if path, err := exec.LookPath(elasticPackageBinaryName); err == nil {
+		return path, true
+	}
+	return "", false
+}
+
 func findPackagePaths(dir string) ([]string, error) {
+	binaryPath, found := elasticPackageBinaryPath()
+	if !found {
+		return walkPackagePaths(dir)
+	}
+
 	version, err := citools.PackageVersionGoMod(goModPath, elasticPackageModulePath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading elastic-package version from go.mod: %w", err)
@@ -69,13 +89,13 @@ func findPackagePaths(dir string) ([]string, error) {
 
 	minVersion := semver.MustParse(elasticPackageFindMinVersion)
 	if !version.LessThan(minVersion) {
-		return elasticPackageFind(dir)
+		return elasticPackageFind(binaryPath, dir)
 	}
 	return walkPackagePaths(dir)
 }
 
-func elasticPackageFind(dir string) ([]string, error) {
-	cmd := exec.Command("elastic-package", "-C", dir, "find")
+func elasticPackageFind(binaryPath, dir string) ([]string, error) {
+	cmd := exec.Command(binaryPath, "-C", dir, "find")
 	cmd.Stderr = os.Stderr
 	stdout, err := cmd.Output()
 	if err != nil {
