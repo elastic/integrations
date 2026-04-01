@@ -1,64 +1,1942 @@
 {
-  "attributes": {
-    "title": "[WebSphere OTel] Servlet Performance",
-    "description": "Deep dive into servlet request processing: throughput, latency, errors, and per-URI breakdown across WebSphere applications.",
-    "panelsJSON": "[{\"panelIndex\": \"91144e9b-fac7-b44d-0b1d-8339201b83cb\", \"gridData\": {\"x\": 0, \"y\": 0, \"w\": 48, \"h\": 2, \"i\": \"91144e9b-fac7-b44d-0b1d-8339201b83cb\"}, \"type\": \"links\", \"embeddableConfig\": {\"title\": \"Navigation\", \"enhancements\": {}, \"attributes\": {\"layout\": \"horizontal\", \"links\": [{\"id\": \"3af4ba12-6f83-488a-bdc9-0c7216a22d73\", \"order\": 0, \"label\": \"Overview\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard\"}, {\"id\": \"c8a20405-9d18-30a0-d755-c2fbfc88cdff\", \"order\": 1, \"label\": \"Servlet Performance\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_c8a20405-9d18-30a0-d755-c2fbfc88cdff_dashboard\"}, {\"id\": \"7c41725f-ae54-61d8-81f0-221b4aee3bd3\", \"order\": 2, \"label\": \"Resource Pools\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_7c41725f-ae54-61d8-81f0-221b4aee3bd3_dashboard\"}, {\"id\": \"52dd63cc-aa15-d7a0-ba02-deda61930715\", \"order\": 3, \"label\": \"JVM Health\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_52dd63cc-aa15-d7a0-ba02-deda61930715_dashboard\"}]}}}, {\"panelIndex\": \"0563dba8-e018-01bf-7e3c-91932750954e\", \"gridData\": {\"x\": 0, \"y\": 2, \"w\": 16, \"h\": 12, \"i\": \"0563dba8-e018-01bf-7e3c-91932750954e\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## [WebSphere OTel] Servlet Performance\\n\\nDetailed analysis of servlet request processing:\\n- Request throughput by application and servlet\\n- Error rates and error distribution\\n- Concurrent request pressure\\n- Per-URI request breakdown\\n- JAX-WS web service metrics\\n\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"3dd56616-6b3b-f638-8f6a-92e91ca47666\", \"gridData\": {\"x\": 16, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"3dd56616-6b3b-f638-8f6a-92e91ca47666\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Total Request Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"a24eaa80-ef11-8356-e392-c2772f330e9f\", \"layerType\": \"data\", \"metricAccessor\": \"5bbaafc4-8939-4914-e3d1-43041d7d7431\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"a24eaa80-ef11-8356-e392-c2772f330e9f\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total))\"}, \"columns\": [{\"fieldName\": \"request_rate\", \"columnId\": \"5bbaafc4-8939-4914-e3d1-43041d7d7431\", \"label\": \"Total Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"request_rate\", \"columnId\": \"5bbaafc4-8939-4914-e3d1-43041d7d7431\", \"label\": \"Total Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"24be33bd-b8f3-79a6-2809-378afaa3c5c6\", \"gridData\": {\"x\": 24, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"24be33bd-b8f3-79a6-2809-378afaa3c5c6\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Total Error Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"bd17e342-fd92-d3c7-9edc-7ea6e820c42d\", \"layerType\": \"data\", \"metricAccessor\": \"97461059-6083-b36e-aea9-668c22159fa4\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"bd17e342-fd92-d3c7-9edc-7ea6e820c42d\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total))\"}, \"columns\": [{\"fieldName\": \"error_rate\", \"columnId\": \"97461059-6083-b36e-aea9-668c22159fa4\", \"label\": \"Total Errors/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"error_rate\", \"columnId\": \"97461059-6083-b36e-aea9-668c22159fa4\", \"label\": \"Total Errors/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"c38e8c71-43c1-64dc-d212-ac9907d0d5ff\", \"gridData\": {\"x\": 32, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"c38e8c71-43c1-64dc-d212-ac9907d0d5ff\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Concurrent Requests\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"225574e1-7fab-6a91-2ef3-bca7c70b9a2e\", \"layerType\": \"data\", \"metricAccessor\": \"db96c4a6-5c27-d1a0-0dda-26e2a5938056\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"225574e1-7fab-6a91-2ef3-bca7c70b9a2e\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests))\"}, \"columns\": [{\"fieldName\": \"concurrent\", \"columnId\": \"db96c4a6-5c27-d1a0-0dda-26e2a5938056\", \"label\": \"Concurrent Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"allColumns\": [{\"fieldName\": \"concurrent\", \"columnId\": \"db96c4a6-5c27-d1a0-0dda-26e2a5938056\", \"label\": \"Concurrent Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"5861ee0a-b44e-9f18-6d5b-56e51a4cab6f\", \"gridData\": {\"x\": 40, \"y\": 2, \"w\": 8, \"h\": 6, \"i\": \"5861ee0a-b44e-9f18-6d5b-56e51a4cab6f\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"Loaded Servlets\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"fec8fbd6-fc31-3ebd-d0dc-840794bc4a19\", \"layerType\": \"data\", \"metricAccessor\": \"bb1dd568-e14f-8392-6d45-7ddb5f15d134\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_loaded_total IS NOT NULL\\n| STATS loaded = SUM(RATE(metrics.was_servlet_loaded_total))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"fec8fbd6-fc31-3ebd-d0dc-840794bc4a19\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_loaded_total IS NOT NULL\\n| STATS loaded = SUM(RATE(metrics.was_servlet_loaded_total))\"}, \"columns\": [{\"fieldName\": \"loaded\", \"columnId\": \"bb1dd568-e14f-8392-6d45-7ddb5f15d134\", \"label\": \"Servlets Loaded/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"allColumns\": [{\"fieldName\": \"loaded\", \"columnId\": \"bb1dd568-e14f-8392-6d45-7ddb5f15d134\", \"label\": \"Servlets Loaded/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"ed789694-e4e7-e863-3b97-25f00bed080e\", \"gridData\": {\"x\": 16, \"y\": 8, \"w\": 16, \"h\": 6, \"i\": \"ed789694-e4e7-e863-3b97-25f00bed080e\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"JAX-WS Request Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"a65865d2-b4b7-2688-824a-635ea0f7b453\", \"layerType\": \"data\", \"metricAccessor\": \"5bcd0158-807f-b081-213b-89103acb9ee3\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\\n| STATS jaxws_rate = SUM(RATE(metrics.was_jaxws_requestsReceived_total))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"a65865d2-b4b7-2688-824a-635ea0f7b453\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\\n| STATS jaxws_rate = SUM(RATE(metrics.was_jaxws_requestsReceived_total))\"}, \"columns\": [{\"fieldName\": \"jaxws_rate\", \"columnId\": \"5bcd0158-807f-b081-213b-89103acb9ee3\", \"label\": \"JAX-WS Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"jaxws_rate\", \"columnId\": \"5bcd0158-807f-b081-213b-89103acb9ee3\", \"label\": \"JAX-WS Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"e3a3b3bf-0a35-a112-d5bf-2557b5a00a90\", \"gridData\": {\"x\": 32, \"y\": 8, \"w\": 16, \"h\": 6, \"i\": \"e3a3b3bf-0a35-a112-d5bf-2557b5a00a90\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"attributes\": {\"title\": \"JAX-WS Successful Rate\", \"visualizationType\": \"lnsMetric\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layerId\": \"2b16ad06-7e34-4f0d-2891-a56790b1b557\", \"layerType\": \"data\", \"metricAccessor\": \"0c372fdc-45b7-5f8e-2a33-7285262c8a5f\", \"showBar\": false, \"applyColorTo\": \"background\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_jaxws_requestsSuccessful_total IS NOT NULL\\n| STATS jaxws_ok = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total))\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"2b16ad06-7e34-4f0d-2891-a56790b1b557\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_jaxws_requestsSuccessful_total IS NOT NULL\\n| STATS jaxws_ok = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total))\"}, \"columns\": [{\"fieldName\": \"jaxws_ok\", \"columnId\": \"0c372fdc-45b7-5f8e-2a33-7285262c8a5f\", \"label\": \"JAX-WS OK/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"allColumns\": [{\"fieldName\": \"jaxws_ok\", \"columnId\": \"0c372fdc-45b7-5f8e-2a33-7285262c8a5f\", \"label\": \"JAX-WS OK/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2, \"suffix\": \"/s\"}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"98dd998b-7197-65f6-2395-6f3b86cdb1e8\", \"gridData\": {\"x\": 0, \"y\": 14, \"w\": 48, \"h\": 3, \"i\": \"98dd998b-7197-65f6-2395-6f3b86cdb1e8\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## Request Analysis\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"0001e055-6a39-2ddf-71b9-294d722cd69f\", \"gridData\": {\"x\": 0, \"y\": 17, \"w\": 24, \"h\": 12, \"i\": \"0001e055-6a39-2ddf-71b9-294d722cd69f\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Servlet Request Rate by Application\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"2e9c2ec2-4b5a-7a06-5f84-d93b9490d6ee\", \"accessors\": [\"bf07f27c-6c3d-6a53-34de-4abb575a6c6e\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"2e9c2ec2-4b5a-7a06-5f84-d93b9490d6ee\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"request_rate\", \"columnId\": \"bf07f27c-6c3d-6a53-34de-4abb575a6c6e\", \"label\": \"Requests/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.appname\", \"columnId\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"label\": \"attributes.appname\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"request_rate\", \"columnId\": \"bf07f27c-6c3d-6a53-34de-4abb575a6c6e\", \"label\": \"Requests/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.appname\", \"columnId\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"label\": \"attributes.appname\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"8500a707-cf18-2a5f-3661-db93fb9cf1b2\", \"gridData\": {\"x\": 24, \"y\": 17, \"w\": 24, \"h\": 12, \"i\": \"8500a707-cf18-2a5f-3661-db93fb9cf1b2\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Servlet Error Rate by Application\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"b138b511-f468-3d78-3a1a-3c336ae2f1ae\", \"accessors\": [\"d7d8b2b9-12ce-62f9-a018-c720e5ba9983\"], \"layerType\": \"data\", \"seriesType\": \"area\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"area\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"b138b511-f468-3d78-3a1a-3c336ae2f1ae\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"error_rate\", \"columnId\": \"d7d8b2b9-12ce-62f9-a018-c720e5ba9983\", \"label\": \"Errors/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.appname\", \"columnId\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"label\": \"attributes.appname\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"error_rate\", \"columnId\": \"d7d8b2b9-12ce-62f9-a018-c720e5ba9983\", \"label\": \"Errors/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.appname\", \"columnId\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"label\": \"attributes.appname\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"5044f207-b020-2a34-3c1b-cb304d03187a\", \"gridData\": {\"x\": 0, \"y\": 29, \"w\": 24, \"h\": 12, \"i\": \"5044f207-b020-2a34-3c1b-cb304d03187a\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Concurrent Requests Over Time\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"6c0827df-7e08-88b0-c8f1-49a916ac4fcc\", \"accessors\": [\"2a5b14fc-cf79-c565-4ed1-59521973066c\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"isVisible\": true, \"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"6c0827df-7e08-88b0-c8f1-49a916ac4fcc\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"concurrent\", \"columnId\": \"2a5b14fc-cf79-c565-4ed1-59521973066c\", \"label\": \"Concurrent\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.appname\", \"columnId\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"label\": \"attributes.appname\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"concurrent\", \"columnId\": \"2a5b14fc-cf79-c565-4ed1-59521973066c\", \"label\": \"Concurrent\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"attributes.appname\", \"columnId\": \"b927531e-a7c6-950c-f85c-755863fdf7bb\", \"label\": \"attributes.appname\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"df6e20ef-3263-a651-7f46-ce13d1024800\", \"gridData\": {\"x\": 24, \"y\": 29, \"w\": 24, \"h\": 12, \"i\": \"df6e20ef-3263-a651-7f46-ce13d1024800\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"JAX-WS Requests Over Time\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"ef79e968-c548-f9b2-5f80-65cd2282e3eb\", \"accessors\": [\"299c53c6-718c-e2bb-7de7-836928b6cd16\", \"a059f382-f933-38f1-6540-508bf7f93073\"], \"layerType\": \"data\", \"seriesType\": \"bar_stacked\", \"xAccessor\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"position\": \"top\", \"showGridlines\": false, \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"bar_stacked\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\\n| STATS received = SUM(RATE(metrics.was_jaxws_requestsReceived_total)), successful = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\\n| SORT time_bucket ASC\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"ef79e968-c548-f9b2-5f80-65cd2282e3eb\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\\n| STATS received = SUM(RATE(metrics.was_jaxws_requestsReceived_total)), successful = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\\n| SORT time_bucket ASC\"}, \"columns\": [{\"fieldName\": \"received\", \"columnId\": \"299c53c6-718c-e2bb-7de7-836928b6cd16\", \"label\": \"Received/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"successful\", \"columnId\": \"a059f382-f933-38f1-6540-508bf7f93073\", \"label\": \"Successful/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}], \"allColumns\": [{\"fieldName\": \"received\", \"columnId\": \"299c53c6-718c-e2bb-7de7-836928b6cd16\", \"label\": \"Received/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"successful\", \"columnId\": \"a059f382-f933-38f1-6540-508bf7f93073\", \"label\": \"Successful/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"time_bucket\", \"columnId\": \"42a876a0-15e3-395a-0a00-b1577942ad2f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"3269c47a-ec54-5695-3410-d279133a6604\", \"gridData\": {\"x\": 0, \"y\": 41, \"w\": 48, \"h\": 3, \"i\": \"3269c47a-ec54-5695-3410-d279133a6604\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"hidePanelTitles\": true, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## Servlet Detail\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"6e9d1143-931e-1b34-17e8-24a0209ecf7b\", \"gridData\": {\"x\": 0, \"y\": 44, \"w\": 24, \"h\": 15, \"i\": \"6e9d1143-931e-1b34-17e8-24a0209ecf7b\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Top Servlets by Request Rate\", \"visualizationType\": \"lnsDatatable\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"columns\": [{\"columnId\": \"54593f6c-0eee-30e1-fbc0-c00c9c04b20f\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"fd1712ae-f92d-bc62-71d9-4b69662e13ad\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"e1651f16-377b-d9b2-1939-3c6d990f4abc\", \"isTransposed\": false, \"isMetric\": true}, {\"columnId\": \"0e84dbbd-deea-922b-ff57-ff954d2140e6\", \"isTransposed\": false, \"isMetric\": true}], \"layerId\": \"b3b4cd07-073c-52ce-415b-038a82361f43\", \"layerType\": \"data\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)), error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY attributes.appname, attributes.servlet\\n| EVAL error_pct = CASE(request_rate > 0, error_rate / request_rate, 0)\\n| SORT request_rate DESC\\n| LIMIT 20\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"b3b4cd07-073c-52ce-415b-038a82361f43\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)), error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY attributes.appname, attributes.servlet\\n| EVAL error_pct = CASE(request_rate > 0, error_rate / request_rate, 0)\\n| SORT request_rate DESC\\n| LIMIT 20\"}, \"columns\": [{\"fieldName\": \"attributes.appname\", \"columnId\": \"54593f6c-0eee-30e1-fbc0-c00c9c04b20f\", \"label\": \"Application\", \"customLabel\": true}, {\"fieldName\": \"attributes.servlet\", \"columnId\": \"fd1712ae-f92d-bc62-71d9-4b69662e13ad\", \"label\": \"Servlet\", \"customLabel\": true}, {\"fieldName\": \"request_rate\", \"columnId\": \"e1651f16-377b-d9b2-1939-3c6d990f4abc\", \"label\": \"Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"error_pct\", \"columnId\": \"0e84dbbd-deea-922b-ff57-ff954d2140e6\", \"label\": \"Error %\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"percent\", \"params\": {\"decimals\": 2}}}}], \"allColumns\": [{\"fieldName\": \"attributes.appname\", \"columnId\": \"54593f6c-0eee-30e1-fbc0-c00c9c04b20f\", \"label\": \"Application\", \"customLabel\": true}, {\"fieldName\": \"attributes.servlet\", \"columnId\": \"fd1712ae-f92d-bc62-71d9-4b69662e13ad\", \"label\": \"Servlet\", \"customLabel\": true}, {\"fieldName\": \"request_rate\", \"columnId\": \"e1651f16-377b-d9b2-1939-3c6d990f4abc\", \"label\": \"Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}, {\"fieldName\": \"error_pct\", \"columnId\": \"0e84dbbd-deea-922b-ff57-ff954d2140e6\", \"label\": \"Error %\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"percent\", \"params\": {\"decimals\": 2}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"49f0a41d-e029-c184-55b5-5547bdeb821a\", \"gridData\": {\"x\": 24, \"y\": 44, \"w\": 24, \"h\": 15, \"i\": \"49f0a41d-e029-c184-55b5-5547bdeb821a\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Top URIs by Request Rate\", \"visualizationType\": \"lnsDatatable\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"columns\": [{\"columnId\": \"54593f6c-0eee-30e1-fbc0-c00c9c04b20f\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"9b2f1b67-62aa-8ad3-aae5-52be8c5b7c83\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"e1651f16-377b-d9b2-1939-3c6d990f4abc\", \"isTransposed\": false, \"isMetric\": true}], \"layerId\": \"09da2331-3823-63d0-dc4a-a7a8f47d2758\", \"layerType\": \"data\"}, \"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_uri_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_uri_requests_total)) BY attributes.appname, attributes.uri\\n| SORT request_rate DESC\\n| LIMIT 20\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"09da2331-3823-63d0-dc4a-a7a8f47d2758\": {\"query\": {\"esql\": \"TS metrics-websphere.otel-default\\n| WHERE metrics.was_servlet_uri_requests_total IS NOT NULL\\n| STATS request_rate = SUM(RATE(metrics.was_servlet_uri_requests_total)) BY attributes.appname, attributes.uri\\n| SORT request_rate DESC\\n| LIMIT 20\"}, \"columns\": [{\"fieldName\": \"attributes.appname\", \"columnId\": \"54593f6c-0eee-30e1-fbc0-c00c9c04b20f\", \"label\": \"Application\", \"customLabel\": true}, {\"fieldName\": \"attributes.uri\", \"columnId\": \"9b2f1b67-62aa-8ad3-aae5-52be8c5b7c83\", \"label\": \"URI\", \"customLabel\": true}, {\"fieldName\": \"request_rate\", \"columnId\": \"e1651f16-377b-d9b2-1939-3c6d990f4abc\", \"label\": \"Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"allColumns\": [{\"fieldName\": \"attributes.appname\", \"columnId\": \"54593f6c-0eee-30e1-fbc0-c00c9c04b20f\", \"label\": \"Application\", \"customLabel\": true}, {\"fieldName\": \"attributes.uri\", \"columnId\": \"9b2f1b67-62aa-8ad3-aae5-52be8c5b7c83\", \"label\": \"URI\", \"customLabel\": true}, {\"fieldName\": \"request_rate\", \"columnId\": \"e1651f16-377b-d9b2-1939-3c6d990f4abc\", \"label\": \"Req/s\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}]",
-    "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"syncCursor\":true,\"syncTooltips\":false,\"hidePanelTitles\":false}",
-    "kibanaSavedObjectMeta": {
-      "searchSourceJSON": "{\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"disabled\":false,\"negate\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"data_stream.dataset\",\"field\":\"data_stream.dataset\",\"params\":{\"query\":\"websphere.otel\"}},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"websphere.otel\"}}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+    "attributes": {
+        "title": "[WebSphere OTel] Servlet Performance",
+        "description": "Deep dive into servlet request processing: throughput, latency, errors, and per-URI breakdown across WebSphere applications.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "c8a20405-9d18-30a0-d755-c2fbfc88cdff",
+                                "order": 1,
+                                "label": "Servlet Performance",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_c8a20405-9d18-30a0-d755-c2fbfc88cdff_dashboard"
+                            },
+                            {
+                                "id": "7c41725f-ae54-61d8-81f0-221b4aee3bd3",
+                                "order": 2,
+                                "label": "Resource Pools",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_7c41725f-ae54-61d8-81f0-221b4aee3bd3_dashboard"
+                            },
+                            {
+                                "id": "52dd63cc-aa15-d7a0-ba02-deda61930715",
+                                "order": 3,
+                                "label": "JVM Health",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_52dd63cc-aa15-d7a0-ba02-deda61930715_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [WebSphere OTel] Servlet Performance\n\nDetailed analysis of servlet request processing:\n- Request throughput by application and servlet\n- Error rates and error distribution\n- Concurrent request pressure\n- Per-URI request breakdown\n- JAX-WS web service metrics\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "3dd56616-6b3b-f638-8f6a-92e91ca47666",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "3dd56616-6b3b-f638-8f6a-92e91ca47666"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Request Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "a24eaa80-ef11-8356-e392-c2772f330e9f",
+                                "layerType": "data",
+                                "metricAccessor": "5bbaafc4-8939-4914-e3d1-43041d7d7431",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a24eaa80-ef11-8356-e392-c2772f330e9f": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "5bbaafc4-8939-4914-e3d1-43041d7d7431",
+                                                    "label": "Total Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "5bbaafc4-8939-4914-e3d1-43041d7d7431",
+                                                    "label": "Total Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "24be33bd-b8f3-79a6-2809-378afaa3c5c6",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "24be33bd-b8f3-79a6-2809-378afaa3c5c6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Error Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "bd17e342-fd92-d3c7-9edc-7ea6e820c42d",
+                                "layerType": "data",
+                                "metricAccessor": "97461059-6083-b36e-aea9-668c22159fa4",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bd17e342-fd92-d3c7-9edc-7ea6e820c42d": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "error_rate",
+                                                    "columnId": "97461059-6083-b36e-aea9-668c22159fa4",
+                                                    "label": "Total Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "error_rate",
+                                                    "columnId": "97461059-6083-b36e-aea9-668c22159fa4",
+                                                    "label": "Total Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c38e8c71-43c1-64dc-d212-ac9907d0d5ff",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "c38e8c71-43c1-64dc-d212-ac9907d0d5ff"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Concurrent Requests",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "225574e1-7fab-6a91-2ef3-bca7c70b9a2e",
+                                "layerType": "data",
+                                "metricAccessor": "db96c4a6-5c27-d1a0-0dda-26e2a5938056",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "225574e1-7fab-6a91-2ef3-bca7c70b9a2e": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "concurrent",
+                                                    "columnId": "db96c4a6-5c27-d1a0-0dda-26e2a5938056",
+                                                    "label": "Concurrent Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "concurrent",
+                                                    "columnId": "db96c4a6-5c27-d1a0-0dda-26e2a5938056",
+                                                    "label": "Concurrent Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5861ee0a-b44e-9f18-6d5b-56e51a4cab6f",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "5861ee0a-b44e-9f18-6d5b-56e51a4cab6f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Loaded Servlets",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "fec8fbd6-fc31-3ebd-d0dc-840794bc4a19",
+                                "layerType": "data",
+                                "metricAccessor": "bb1dd568-e14f-8392-6d45-7ddb5f15d134",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_loaded_total IS NOT NULL\n| STATS loaded = SUM(RATE(metrics.was_servlet_loaded_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "fec8fbd6-fc31-3ebd-d0dc-840794bc4a19": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_loaded_total IS NOT NULL\n| STATS loaded = SUM(RATE(metrics.was_servlet_loaded_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "loaded",
+                                                    "columnId": "bb1dd568-e14f-8392-6d45-7ddb5f15d134",
+                                                    "label": "Servlets Loaded/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "loaded",
+                                                    "columnId": "bb1dd568-e14f-8392-6d45-7ddb5f15d134",
+                                                    "label": "Servlets Loaded/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "ed789694-e4e7-e863-3b97-25f00bed080e",
+                "gridData": {
+                    "x": 16,
+                    "y": 8,
+                    "w": 16,
+                    "h": 6,
+                    "i": "ed789694-e4e7-e863-3b97-25f00bed080e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "JAX-WS Request Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "a65865d2-b4b7-2688-824a-635ea0f7b453",
+                                "layerType": "data",
+                                "metricAccessor": "5bcd0158-807f-b081-213b-89103acb9ee3",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\n| STATS jaxws_rate = SUM(RATE(metrics.was_jaxws_requestsReceived_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a65865d2-b4b7-2688-824a-635ea0f7b453": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\n| STATS jaxws_rate = SUM(RATE(metrics.was_jaxws_requestsReceived_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "jaxws_rate",
+                                                    "columnId": "5bcd0158-807f-b081-213b-89103acb9ee3",
+                                                    "label": "JAX-WS Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "jaxws_rate",
+                                                    "columnId": "5bcd0158-807f-b081-213b-89103acb9ee3",
+                                                    "label": "JAX-WS Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e3a3b3bf-0a35-a112-d5bf-2557b5a00a90",
+                "gridData": {
+                    "x": 32,
+                    "y": 8,
+                    "w": 16,
+                    "h": 6,
+                    "i": "e3a3b3bf-0a35-a112-d5bf-2557b5a00a90"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "JAX-WS Successful Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "2b16ad06-7e34-4f0d-2891-a56790b1b557",
+                                "layerType": "data",
+                                "metricAccessor": "0c372fdc-45b7-5f8e-2a33-7285262c8a5f",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_jaxws_requestsSuccessful_total IS NOT NULL\n| STATS jaxws_ok = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "2b16ad06-7e34-4f0d-2891-a56790b1b557": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_jaxws_requestsSuccessful_total IS NOT NULL\n| STATS jaxws_ok = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "jaxws_ok",
+                                                    "columnId": "0c372fdc-45b7-5f8e-2a33-7285262c8a5f",
+                                                    "label": "JAX-WS OK/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "jaxws_ok",
+                                                    "columnId": "0c372fdc-45b7-5f8e-2a33-7285262c8a5f",
+                                                    "label": "JAX-WS OK/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "98dd998b-7197-65f6-2395-6f3b86cdb1e8",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 3,
+                    "i": "98dd998b-7197-65f6-2395-6f3b86cdb1e8"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Request Analysis"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "0001e055-6a39-2ddf-71b9-294d722cd69f",
+                "gridData": {
+                    "x": 0,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "0001e055-6a39-2ddf-71b9-294d722cd69f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Servlet Request Rate by Application",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "2e9c2ec2-4b5a-7a06-5f84-d93b9490d6ee",
+                                        "accessors": [
+                                            "bf07f27c-6c3d-6a53-34de-4abb575a6c6e"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "2e9c2ec2-4b5a-7a06-5f84-d93b9490d6ee": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "bf07f27c-6c3d-6a53-34de-4abb575a6c6e",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                                    "label": "attributes.appname",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "bf07f27c-6c3d-6a53-34de-4abb575a6c6e",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                                    "label": "attributes.appname",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "8500a707-cf18-2a5f-3661-db93fb9cf1b2",
+                "gridData": {
+                    "x": 24,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "8500a707-cf18-2a5f-3661-db93fb9cf1b2"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Servlet Error Rate by Application",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "b138b511-f468-3d78-3a1a-3c336ae2f1ae",
+                                        "accessors": [
+                                            "d7d8b2b9-12ce-62f9-a018-c720e5ba9983"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b138b511-f468-3d78-3a1a-3c336ae2f1ae": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_errors_total IS NOT NULL\n| STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "error_rate",
+                                                    "columnId": "d7d8b2b9-12ce-62f9-a018-c720e5ba9983",
+                                                    "label": "Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                                    "label": "attributes.appname",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "error_rate",
+                                                    "columnId": "d7d8b2b9-12ce-62f9-a018-c720e5ba9983",
+                                                    "label": "Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                                    "label": "attributes.appname",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5044f207-b020-2a34-3c1b-cb304d03187a",
+                "gridData": {
+                    "x": 0,
+                    "y": 29,
+                    "w": 24,
+                    "h": 12,
+                    "i": "5044f207-b020-2a34-3c1b-cb304d03187a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Concurrent Requests Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "6c0827df-7e08-88b0-c8f1-49a916ac4fcc",
+                                        "accessors": [
+                                            "2a5b14fc-cf79-c565-4ed1-59521973066c"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "6c0827df-7e08-88b0-c8f1-49a916ac4fcc": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_concurrent_requests IS NOT NULL\n| STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "concurrent",
+                                                    "columnId": "2a5b14fc-cf79-c565-4ed1-59521973066c",
+                                                    "label": "Concurrent",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                                    "label": "attributes.appname",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "concurrent",
+                                                    "columnId": "2a5b14fc-cf79-c565-4ed1-59521973066c",
+                                                    "label": "Concurrent",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "b927531e-a7c6-950c-f85c-755863fdf7bb",
+                                                    "label": "attributes.appname",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "df6e20ef-3263-a651-7f46-ce13d1024800",
+                "gridData": {
+                    "x": 24,
+                    "y": 29,
+                    "w": 24,
+                    "h": 12,
+                    "i": "df6e20ef-3263-a651-7f46-ce13d1024800"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "JAX-WS Requests Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ef79e968-c548-f9b2-5f80-65cd2282e3eb",
+                                        "accessors": [
+                                            "299c53c6-718c-e2bb-7de7-836928b6cd16",
+                                            "a059f382-f933-38f1-6540-508bf7f93073"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\n| STATS received = SUM(RATE(metrics.was_jaxws_requestsReceived_total)), successful = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ef79e968-c548-f9b2-5f80-65cd2282e3eb": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL\n| STATS received = SUM(RATE(metrics.was_jaxws_requestsReceived_total)), successful = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "received",
+                                                    "columnId": "299c53c6-718c-e2bb-7de7-836928b6cd16",
+                                                    "label": "Received/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "successful",
+                                                    "columnId": "a059f382-f933-38f1-6540-508bf7f93073",
+                                                    "label": "Successful/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "received",
+                                                    "columnId": "299c53c6-718c-e2bb-7de7-836928b6cd16",
+                                                    "label": "Received/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "successful",
+                                                    "columnId": "a059f382-f933-38f1-6540-508bf7f93073",
+                                                    "label": "Successful/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3269c47a-ec54-5695-3410-d279133a6604",
+                "gridData": {
+                    "x": 0,
+                    "y": 41,
+                    "w": 48,
+                    "h": 3,
+                    "i": "3269c47a-ec54-5695-3410-d279133a6604"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Servlet Detail"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "6e9d1143-931e-1b34-17e8-24a0209ecf7b",
+                "gridData": {
+                    "x": 0,
+                    "y": 44,
+                    "w": 24,
+                    "h": 15,
+                    "i": "6e9d1143-931e-1b34-17e8-24a0209ecf7b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top Servlets by Request Rate",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "54593f6c-0eee-30e1-fbc0-c00c9c04b20f",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "fd1712ae-f92d-bc62-71d9-4b69662e13ad",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "e1651f16-377b-d9b2-1939-3c6d990f4abc",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "0e84dbbd-deea-922b-ff57-ff954d2140e6",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "b3b4cd07-073c-52ce-415b-038a82361f43",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)), error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY attributes.appname, attributes.servlet\n| EVAL error_pct = CASE(request_rate > 0, error_rate / request_rate, 0)\n| SORT request_rate DESC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b3b4cd07-073c-52ce-415b-038a82361f43": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)), error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY attributes.appname, attributes.servlet\n| EVAL error_pct = CASE(request_rate > 0, error_rate / request_rate, 0)\n| SORT request_rate DESC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "54593f6c-0eee-30e1-fbc0-c00c9c04b20f",
+                                                    "label": "Application",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.servlet",
+                                                    "columnId": "fd1712ae-f92d-bc62-71d9-4b69662e13ad",
+                                                    "label": "Servlet",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "e1651f16-377b-d9b2-1939-3c6d990f4abc",
+                                                    "label": "Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "0e84dbbd-deea-922b-ff57-ff954d2140e6",
+                                                    "label": "Error %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "54593f6c-0eee-30e1-fbc0-c00c9c04b20f",
+                                                    "label": "Application",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.servlet",
+                                                    "columnId": "fd1712ae-f92d-bc62-71d9-4b69662e13ad",
+                                                    "label": "Servlet",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "e1651f16-377b-d9b2-1939-3c6d990f4abc",
+                                                    "label": "Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "0e84dbbd-deea-922b-ff57-ff954d2140e6",
+                                                    "label": "Error %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "49f0a41d-e029-c184-55b5-5547bdeb821a",
+                "gridData": {
+                    "x": 24,
+                    "y": 44,
+                    "w": 24,
+                    "h": 15,
+                    "i": "49f0a41d-e029-c184-55b5-5547bdeb821a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top URIs by Request Rate",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "54593f6c-0eee-30e1-fbc0-c00c9c04b20f",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "9b2f1b67-62aa-8ad3-aae5-52be8c5b7c83",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "e1651f16-377b-d9b2-1939-3c6d990f4abc",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "09da2331-3823-63d0-dc4a-a7a8f47d2758",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_uri_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_uri_requests_total)) BY attributes.appname, attributes.uri\n| SORT request_rate DESC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "09da2331-3823-63d0-dc4a-a7a8f47d2758": {
+                                            "query": {
+                                                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_servlet_uri_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(metrics.was_servlet_uri_requests_total)) BY attributes.appname, attributes.uri\n| SORT request_rate DESC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "54593f6c-0eee-30e1-fbc0-c00c9c04b20f",
+                                                    "label": "Application",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.uri",
+                                                    "columnId": "9b2f1b67-62aa-8ad3-aae5-52be8c5b7c83",
+                                                    "label": "URI",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "e1651f16-377b-d9b2-1939-3c6d990f4abc",
+                                                    "label": "Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.appname",
+                                                    "columnId": "54593f6c-0eee-30e1-fbc0-c00c9c04b20f",
+                                                    "label": "Application",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.uri",
+                                                    "columnId": "9b2f1b67-62aa-8ad3-aae5-52be8c5b7c83",
+                                                    "label": "URI",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "e1651f16-377b-d9b2-1939-3c6d990f4abc",
+                                                    "label": "Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "websphere.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "websphere.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "fe98772b-264a-3eea-cada-9bdcfb1bffa9": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "fe98772b-264a-3eea-cada-9bdcfb1bffa9",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "7d7fbeff-31ee-44ad-a5d5-bbff5044fd67": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "7d7fbeff-31ee-44ad-a5d5-bbff5044fd67",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "attributes.appname",
+                        "title": "Application",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
     },
-    "timeRestore": true,
-    "timeFrom": "now-1h",
-    "timeTo": "now",
-    "version": 1,
-    "controlGroupInput": {
-      "chainingSystem": "HIERARCHICAL",
-      "controlStyle": "oneLine",
-      "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-      "panelsJSON": "{\"fe98772b-264a-3eea-cada-9bdcfb1bffa9\":{\"grow\":false,\"order\":0,\"width\":\"medium\",\"type\":\"optionsListControl\",\"explicitInput\":{\"id\":\"fe98772b-264a-3eea-cada-9bdcfb1bffa9\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"host.name\",\"title\":\"Host\",\"searchTechnique\":\"prefix\",\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}},\"7d7fbeff-31ee-44ad-a5d5-bbff5044fd67\":{\"grow\":false,\"order\":1,\"width\":\"medium\",\"type\":\"optionsListControl\",\"explicitInput\":{\"id\":\"7d7fbeff-31ee-44ad-a5d5-bbff5044fd67\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"attributes.appname\",\"title\":\"Application\",\"searchTechnique\":\"prefix\",\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}}}",
-      "showApplySelections": false
-    }
-  },
-  "coreMigrationVersion": "8.8.0",
-  "created_at": "2023-10-01T00:00:00Z",
-  "created_by": "admin",
-  "id": "websphere_otel-servlet-performance",
-  "managed": false,
-  "references": [
-    {
-      "type": "dashboard",
-      "id": "websphere_otel-overview",
-      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
-    },
-    {
-      "type": "dashboard",
-      "id": "websphere_otel-servlet-performance",
-      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_c8a20405-9d18-30a0-d755-c2fbfc88cdff_dashboard"
-    },
-    {
-      "type": "dashboard",
-      "id": "websphere_otel-resource-pools",
-      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_7c41725f-ae54-61d8-81f0-221b4aee3bd3_dashboard"
-    },
-    {
-      "type": "dashboard",
-      "id": "websphere_otel-jvm",
-      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_52dd63cc-aa15-d7a0-ba02-deda61930715_dashboard"
-    },
-    {
-      "type": "index-pattern",
-      "id": "metrics-*",
-      "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
-    },
-    {
-      "type": "index-pattern",
-      "id": "metrics-*",
-      "name": "controlGroup_7d7fbeff-31ee-44ad-a5d5-bbff5044fd67:optionsListDataView"
-    }
-  ],
-  "type": "dashboard",
-  "typeMigrationVersion": "10.2.0",
-  "updated_at": "2023-10-01T00:00:00Z",
-  "updated_by": "admin",
-  "version": "1"
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "websphere_otel-servlet-performance",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "websphere_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "websphere_otel-servlet-performance",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_c8a20405-9d18-30a0-d755-c2fbfc88cdff_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "websphere_otel-resource-pools",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_7c41725f-ae54-61d8-81f0-221b4aee3bd3_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "websphere_otel-jvm",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_52dd63cc-aa15-d7a0-ba02-deda61930715_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_7d7fbeff-31ee-44ad-a5d5-bbff5044fd67:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
 }
