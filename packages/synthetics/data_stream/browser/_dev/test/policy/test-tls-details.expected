@@ -1,0 +1,39 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: synthetics
+      name: test-tls-details-synthetics
+      streams:
+        - __ui: null
+          data_stream:
+            dataset: synthetics.browser
+          enabled: true
+          max_attempts: 2
+          name: Test Browser Monitor
+          run_from.geo.name: Fleet managed
+          run_from.id: fleet_managed
+          schedule: '"@every 3m"'
+          throttling: 5d/3u/20l
+          timeout: 30s
+          tls_details: true
+          type: browser
+      type: synthetics/browser
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - synthetics-synthetics.browser-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                    - read
+secret_references: []
