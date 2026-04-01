@@ -43,7 +43,6 @@ Credential fields use a flat, normalized naming convention to stay consistent wi
 |-------|----------|-------------|
 | `credentials_role_arn` | Yes | ARN of the IAM role to assume in the customer's AWS account |
 | `credentials_external_id` | Yes | External ID to prevent confused deputy attacks |
-| `default_region` | No | Default AWS region for API calls (default: `us-east-1`) |
 
 #### Azure Credentials
 
@@ -198,7 +197,6 @@ receivers:
         credentials:
           role_arn: "arn:aws:iam::123456789012:role/ElasticAgentRole"
           external_id: "elastic-external-id-from-setup"
-          default_region: "us-east-1"
     policies:
       - policy_id: "policy-aws-security"
         policy_name: "AWS Security Monitoring"
