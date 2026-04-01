@@ -16,8 +16,8 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+
 	"github.com/elastic/integrations/dev/citools"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -26,22 +26,6 @@ const (
 	elasticPackageFindMinVersion = "0.118.0"
 	goModPath                    = "go.mod"
 )
-
-var validTypes = []string{"integration", "input", "content"}
-
-type packageManifest struct {
-	FormatVersion string `yaml:"format_version"`
-	Name          string `yaml:"name"`
-	Type          string `yaml:"type"`
-	Version       string `yaml:"version"`
-}
-
-func (m *packageManifest) isValid() bool {
-	if m.FormatVersion == "" || m.Name == "" || m.Type == "" || m.Version == "" {
-		return false
-	}
-	return slices.Contains(validTypes, m.Type)
-}
 
 // Check validates that no two packages share the same name under the default packages directory.
 func Check() error {
@@ -75,18 +59,6 @@ func walkPackagePaths(dir string) ([]string, error) {
 		return filepath.SkipDir
 	})
 	return paths, err
-}
-
-func readManifest(path string) (*packageManifest, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var m packageManifest
-	if err := yaml.Unmarshal(data, &m); err != nil {
-		return nil, fmt.Errorf("error parsing manifest: %w", err)
-	}
-	return &m, nil
 }
 
 func findPackagePaths(dir string) ([]string, error) {
