@@ -6,6 +6,7 @@ package packagenames
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -27,6 +28,7 @@ const (
 	goModPath                    = "go.mod"
 	elasticPackageBinaryName     = "elastic-package"
 	elasticPackageCIPath         = "build/elastic-package"
+	manifestFileName             = "manifest.yml"
 )
 
 // Check validates that no two packages share the same name under the default packages directory.
@@ -85,7 +87,7 @@ func elasticPackageFind(binaryPath, dir string) ([]string, error) {
 	}
 
 	var paths []string
-	scanner := bufio.NewScanner(strings.NewReader(string(stdout)))
+	scanner := bufio.NewScanner(bytes.NewReader(stdout))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" {
@@ -104,7 +106,7 @@ func walkPackagePaths(dir string) ([]string, error) {
 		if !d.IsDir() {
 			return nil
 		}
-		manifestPath := filepath.Join(path, "manifest.yml")
+		manifestPath := filepath.Join(path, manifestFileName)
 		manifest, err := readManifest(manifestPath)
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
@@ -124,7 +126,7 @@ func walkPackagePaths(dir string) ([]string, error) {
 func checkDuplicateNames(paths []string) error {
 	seen := make(map[string][]string)
 	for _, path := range paths {
-		manifest, err := readManifest(filepath.Join(path, "manifest.yml"))
+		manifest, err := readManifest(filepath.Join(path, manifestFileName))
 		if err != nil {
 			return fmt.Errorf("error reading manifest in %s: %w", path, err)
 		}
