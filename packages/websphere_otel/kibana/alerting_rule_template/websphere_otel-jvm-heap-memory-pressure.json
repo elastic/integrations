@@ -1,0 +1,40 @@
+{
+    "id": "websphere_otel-jvm-heap-memory-pressure",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[WebSphere OTel] JVM heap memory pressure",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "websphere"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.jvm_memory_used_bytes IS NOT NULL\n| STATS\n    used = MAX(LAST_OVER_TIME(metrics.jvm_memory_used_bytes)),\n    mem_max = MAX(LAST_OVER_TIME(metrics.jvm_memory_max_bytes))\n  BY host.name\n| WHERE mem_max > 0\n| EVAL heap_pct = ROUND(used / mem_max * 100.0, 2)\n// Threshold: alert when JVM memory utilization exceeds 85%\n// Sustained high memory usage may lead to OutOfMemoryErrors\n// Adjust threshold based on GC behavior and JVM tuning\n| WHERE heap_pct > 85.0\n| SORT heap_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        }
+    }
+}

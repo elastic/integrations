@@ -1,0 +1,64 @@
+{
+  "attributes": {
+    "name": "[WebSphere OTel] Average servlet response time 99.5% rolling 30 days",
+    "description": "Tracks the average servlet response time across WebSphere Application Server instances, ensuring that 99.5% of 1-minute time intervals have average per-request latency below 2 seconds over a rolling 30-day period. A breach indicates sustained latency degradation affecting end-user experience with hosted applications.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"websphere.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "was_servlet_response_time_seconds_total"
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "was_servlet_response_time_seconds_total"
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "was_servlet_requests_total"
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "was_servlet_requests_total"
+            }
+          ],
+          "equation": "(A-B)/(C-D)",
+          "comparator": "LT",
+          "threshold": 2
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "websphere",
+      "otel"
+    ],
+    "groupBy": "resource.attributes.service.instance.id",
+    "artifacts": {
+      "dashboards": [
+        {"id": "websphere_otel-overview"},
+        {"id": "websphere_otel-servlet-performance"}
+      ]
+    }
+  },
+  "id": "websphere_otel-avg-servlet-response-time-99.5-Rolling30Days",
+  "type": "slo_template"
+}

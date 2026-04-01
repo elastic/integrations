@@ -1,0 +1,380 @@
+dashboards:
+  - id: websphere_otel-overview
+    name: '[WebSphere OTel] Overview'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      High-level view of WebSphere Application Server health covering servlet
+      throughput, thread and connection pool saturation, JVM resource utilisation,
+      and transaction health.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+    filters:
+      - field: data_stream.dataset
+        equals: websphere.otel
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: websphere_otel-overview
+            - label: Servlet Performance
+              dashboard: websphere_otel-servlet-performance
+            - label: Resource Pools
+              dashboard: websphere_otel-resource-pools
+            - label: JVM Health
+              dashboard: websphere_otel-jvm
+
+      # ─── Overview Panel + KPIs ──────────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [WebSphere OTel] Overview
+
+            High-level health of WebSphere Application Server instances:
+            - Servlet request throughput and error rates
+            - Thread pool utilisation and hung thread detection
+            - Connection pool health and saturation
+            - JVM CPU and memory utilisation
+            - Transaction processing health
+
+      - title: Servlet Request Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_requests_total IS NOT NULL
+            - STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total))
+          primary:
+            field: request_rate
+            label: Servlet Req/s
+            format:
+              type: number
+              decimals: 1
+              suffix: "/s"
+
+      - title: Servlet Error Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_errors_total IS NOT NULL
+            - STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total))
+          primary:
+            field: error_rate
+            label: Servlet Errors/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: WebContainer Active Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_threadpool_active_threads IS NOT NULL
+            - WHERE attributes.pool == "WebContainer"
+            - STATS active = MAX(LAST_OVER_TIME(metrics.was_threadpool_active_threads))
+          primary:
+            field: active
+            label: WebContainer Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Hung Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_threadpool_concurrentHung_threads IS NOT NULL
+            - STATS hung = SUM(LAST_OVER_TIME(metrics.was_threadpool_concurrentHung_threads))
+          primary:
+            field: hung
+            label: Hung Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Max Connection Pool Utilisation
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_utilization IS NOT NULL
+            - STATS utilization = MAX(LAST_OVER_TIME(metrics.was_connectionpool_utilization))
+          primary:
+            field: utilization
+            label: Max Pool Util %
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+
+      - title: Active Transactions
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_transactionmanager_active_transactions IS NOT NULL
+            - STATS active_txn = SUM(LAST_OVER_TIME(metrics.was_transactionmanager_active_transactions))
+          primary:
+            field: active_txn
+            label: Active Transactions
+            format:
+              type: number
+              decimals: 0
+
+      - title: Process CPU
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.process_cpu_utilization IS NOT NULL
+            - STATS cpu = AVG(metrics.process_cpu_utilization)
+          primary:
+            field: cpu
+            label: Process CPU
+            format:
+              type: percent
+              decimals: 1
+
+      - title: JVM Memory Used
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.jvm_memory_used_bytes IS NOT NULL
+            - STATS mem_used = MAX(LAST_OVER_TIME(metrics.jvm_memory_used_bytes))
+          primary:
+            field: mem_used
+            label: JVM Memory Used
+            format:
+              type: bytes
+
+      # ─── Performance Trends ─────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Performance Trends'
+
+      - title: Servlet Request Rate Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_requests_total IS NOT NULL
+            - STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: request_rate
+              label: Requests/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.appname
+          legend:
+            visible: show
+            position: right
+
+      - title: Servlet Error Rate Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_errors_total IS NOT NULL
+            - STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: error_rate
+              label: Errors/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.appname
+          legend:
+            visible: show
+            position: right
+
+      - title: Thread Pool Active Threads Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_threadpool_active_threads IS NOT NULL
+            - STATS active = MAX(LAST_OVER_TIME(metrics.was_threadpool_active_threads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.pool
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: active
+              label: Active Threads
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.pool
+          legend:
+            visible: show
+            position: right
+
+      - title: Connection Pool Utilisation Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_utilization IS NOT NULL
+            - STATS utilization = MAX(LAST_OVER_TIME(metrics.was_connectionpool_utilization)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.jndiname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: utilization
+              label: Utilisation %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          breakdown:
+            field: attributes.jndiname
+          legend:
+            visible: show
+            position: right
+
+      - title: JVM Memory Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.jvm_memory_used_bytes IS NOT NULL
+            - STATS used = MAX(LAST_OVER_TIME(metrics.jvm_memory_used_bytes)), mem_max = MAX(LAST_OVER_TIME(metrics.jvm_memory_max_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: used
+              label: Used
+              format:
+                type: bytes
+            - field: mem_max
+              label: Max
+              format:
+                type: bytes
+          color:
+            assignments:
+              - value: "Used"
+                color: '#54b399'
+              - value: "Max"
+                color: '#cc5642'
+
+      - title: CPU Utilisation Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.process_cpu_utilization IS NOT NULL
+            - STATS process_cpu = AVG(metrics.process_cpu_utilization), system_cpu = AVG(metrics.system_cpu_utilization) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: process_cpu
+              label: Process CPU
+              format:
+                type: percent
+                decimals: 1
+            - field: system_cpu
+              label: System CPU
+              format:
+                type: percent
+                decimals: 1
+
+      # ─── Top Servlets ──────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Top Servlets'
+
+      - title: Servlets by Request Rate
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_requests_total IS NOT NULL
+            - STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)), error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY attributes.appname, attributes.servlet
+            - EVAL error_pct = CASE(request_rate > 0, error_rate / request_rate, 0)
+            - SORT request_rate DESC
+            - LIMIT 20
+          breakdowns:
+            - field: attributes.appname
+              label: Application
+            - field: attributes.servlet
+              label: Servlet
+          metrics:
+            - field: request_rate
+              label: Requests/s
+              format:
+                type: number
+                decimals: 2
+            - field: error_rate
+              label: Errors/s
+              format:
+                type: number
+                decimals: 3
+            - field: error_pct
+              label: Error %
+              format:
+                type: percent
+                decimals: 2

@@ -1,0 +1,40 @@
+{
+    "id": "websphere_otel-connection-pool-high-utilization",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[WebSphere OTel] Connection pool high utilization",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "websphere"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_connectionpool_utilization IS NOT NULL\n| STATS\n    utilization = MAX(AVG_OVER_TIME(metrics.was_connectionpool_utilization))\n  BY host.name, attributes.jndiname\n// Threshold: alert when average pool utilization exceeds 85%\n// Sustained high utilization risks connection exhaustion\n// Adjust based on pool sizing and traffic patterns\n| WHERE utilization > 85.0\n| SORT utilization DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.jndiname",
+            "termSize": 10
+        }
+    }
+}

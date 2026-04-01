@@ -1,0 +1,40 @@
+{
+    "id": "websphere_otel-connection-pool-faults",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[WebSphere OTel] Connection pool faults",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "websphere"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-websphere.otel-default\n| WHERE metrics.was_connectionpool_fault_total IS NOT NULL\n| STATS\n    fault_rate = SUM(RATE(metrics.was_connectionpool_fault_total))\n  BY host.name, attributes.jndiname\n// Any connection pool faults indicate timeout failures\n// A non-zero fault rate means threads are failing to obtain connections\n| WHERE fault_rate > 0\n| SORT fault_rate DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.jndiname",
+            "termSize": 10
+        }
+    }
+}
