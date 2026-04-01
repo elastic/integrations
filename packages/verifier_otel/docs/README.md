@@ -56,7 +56,7 @@ Credential fields use a flat, normalized naming convention to stay consistent wi
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `credentials_workload_identity_provider` | Yes | Full Workload Identity Federation resource name (project number is derived from this) |
+| `credentials_audience` | Yes | Full WIF resource name used as the STS audience (project number is derived from this when `credentials_service_account_email` is not set) |
 | `credentials_service_account_email` | Yes | GCP service account email for impersonation (project ID is derived from this when set) |
 
 ### Policy Configuration
@@ -293,7 +293,7 @@ receivers:
     providers:
       gcp:
         credentials:
-          workload_identity_provider: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider"
+          audience: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider"
           service_account_email: "verifier@my-gcp-project-123.iam.gserviceaccount.com"
     policies:
       - policy_id: "policy-gcp-audit"
