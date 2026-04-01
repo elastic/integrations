@@ -43,34 +43,27 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-21T10:00:00.000Z",
     "event": {
-        "ingested": "2026-02-21T10:00:01.000Z",
-        "kind": "metric",
         "dataset": "proxmox.cluster",
+        "kind": "metric",
         "module": "proxmox"
     },
     "proxmox": {
         "cluster": {
             "resource": {
-                "type": "qemu",
-                "id": "qemu/100",
-                "name": "k8s-cp1",
+                "cpu": 0.0523,
+                "maxcpu": 48,
+                "type": "node",
+                "uptime": 1209600,
                 "node": "lab",
-                "vmid": 100,
-                "status": "running",
-                "cpu": 0.0234,
-                "maxcpu": 4,
-                "mem": 4294967296,
-                "maxmem": 8589934592,
-                "disk": 0,
-                "maxdisk": 34359738368,
-                "netin": 123456789,
-                "netout": 987654321,
-                "diskread": 555555555,
-                "diskwrite": 444444444,
-                "uptime": 86400,
-                "template": false
+                "disk": 18253611008,
+                "mem": 17179869184,
+                "maxdisk": 107374182400,
+                "name": "lab",
+                "cgroup_mode": "2",
+                "id": "node/lab",
+                "maxmem": 270582939648,
+                "status": "online"
             }
         }
     }
@@ -151,27 +144,20 @@ An example event for `node` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-21T10:00:00.000Z",
     "event": {
-        "ingested": "2026-02-21T10:00:01.000Z",
-        "kind": "metric",
         "dataset": "proxmox.node",
+        "kind": "metric",
         "module": "proxmox"
     },
     "proxmox": {
         "node": {
-            "cpu": 0.0523,
+            "pveversion": "8.3.2",
             "wait": 0.001,
-            "loadavg": {
-                "1m": 0.45,
-                "5m": 0.38,
-                "15m": 0.35
-            },
             "memory": {
-                "total": 67108864000,
-                "used": 8589934592,
-                "free": 58518929408,
-                "available": 58518929408
+                "available": 253403070464,
+                "total": 270582939648,
+                "used": 17179869184,
+                "free": 253403070464
             },
             "swap": {
                 "total": 8589934592,
@@ -179,17 +165,24 @@ An example event for `node` looks as following:
                 "free": 8589934592
             },
             "rootfs": {
+                "avail": 89120571392,
                 "total": 107374182400,
-                "used": 5368709120,
-                "avail": 102005473280
+                "used": 18253611008
             },
-            "uptime": 604800,
-            "pveversion": "pve-manager/9.1.4/aab1f6c6c1afdb1a",
-            "kversion": "Linux 6.17.4-2-pve #1 SMP PREEMPT_DYNAMIC PMX 6.17.4-2 (2026-01-15T12:00:00Z)",
+            "cpu": 0.0523,
+            "loadavg": {
+                "5m": 0.38,
+                "15m": 0.35,
+                "1m": 0.45
+            },
+            "uptime": 1209600,
+            "kversion": "Linux 6.8.12-5-pve",
             "cpuinfo": {
                 "model": "AMD EPYC 7543 32-Core Processor",
-                "cores": 8,
-                "sockets": 1
+                "cores": 24,
+                "sockets": 2,
+                "cpus": 48,
+                "mhz": 2794.748
             }
         }
     }
@@ -258,61 +251,58 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-21T10:05:20.000Z",
+    "observer": {
+        "product": "Proxmox VE",
+        "type": "virtualization",
+        "vendor": "Proxmox"
+    },
+    "@timestamp": "2026-02-15T14:30:01.000Z",
+    "related": {
+        "user": [
+            "root"
+        ],
+        "ip": [
+            "192.168.2.17"
+        ]
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "version": "1.1",
+        "response": {
+            "body": {
+                "bytes": 4523
+            },
+            "status_code": 200
+        }
+    },
+    "source": {
+        "ip": "192.168.2.17"
+    },
     "event": {
-        "ingested": "2026-02-21T10:05:21.000Z",
-        "kind": "event",
+        "action": "get",
         "category": [
             "web"
         ],
         "type": [
             "access"
         ],
-        "outcome": "success",
-        "dataset": "proxmox.access",
-        "module": "proxmox"
+        "kind": "event",
+        "outcome": "success"
     },
-    "source": {
-        "ip": "172.30.1.101"
-    },
+    "message": "GET /api2/json/cluster/resources 200",
     "user": {
-        "name": "csi"
+        "name": "root"
     },
     "proxmox": {
         "auth": {
-            "realm": "pve",
-            "token_id": "csi-token"
+            "realm": "pam"
         }
     },
-    "http": {
-        "request": {
-            "method": "GET"
-        },
-        "response": {
-            "status_code": 200,
-            "body": {
-                "bytes": 147
-            }
-        },
-        "version": "1.1"
-    },
     "url": {
-        "path": "/api2/json/nodes/lab/storage/hdd_kubernetes/status"
-    },
-    "related": {
-        "ip": [
-            "172.30.1.101"
-        ],
-        "user": [
-            "csi"
-        ]
-    },
-    "observer": {
-        "vendor": "Proxmox",
-        "product": "Proxmox VE",
-        "type": "virtualization"
-    },
-    "message": "GET /api2/json/nodes/lab/storage/hdd_kubernetes/status 200"
+        "path": "/api2/json/cluster/resources"
+    }
 }
 ```
 
@@ -366,10 +356,29 @@ An example event for `firewall` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-07-01T00:42:13.000+02:00",
+    "observer": {
+        "product": "Proxmox VE",
+        "type": "firewall",
+        "vendor": "Proxmox"
+    },
+    "@timestamp": "2026-02-15T10:15:01.000Z",
+    "related": {
+        "ip": [
+            "172.30.0.1",
+            "172.30.255.255"
+        ]
+    },
+    "destination": {
+        "port": 138,
+        "ip": "172.30.255.255"
+    },
+    "source": {
+        "port": 138,
+        "ip": "172.30.0.1"
+    },
     "event": {
-        "ingested": "2026-02-21T10:05:21.000Z",
         "kind": "event",
+        "action": "drop",
         "category": [
             "network"
         ],
@@ -377,40 +386,18 @@ An example event for `firewall` looks as following:
             "connection",
             "denied"
         ],
-        "action": "drop",
-        "outcome": "failure",
-        "dataset": "proxmox.firewall",
-        "module": "proxmox"
+        "outcome": "failure"
     },
-    "source": {
-        "ip": "192.168.1.2",
-        "port": 23658
-    },
-    "destination": {
-        "ip": "192.168.1.56",
-        "port": 443
-    },
-    "network": {
-        "transport": "tcp",
-        "bytes": 60
-    },
+    "message": "drop 172.30.0.1:138 -> 172.30.255.255:138 udp",
     "proxmox": {
         "firewall": {
+            "packet_length": 78,
             "chain": "PVEFW-HOST-OUT"
         }
     },
-    "related": {
-        "ip": [
-            "192.168.1.2",
-            "192.168.1.56"
-        ]
-    },
-    "observer": {
-        "vendor": "Proxmox",
-        "product": "Proxmox VE",
-        "type": "firewall"
-    },
-    "message": "drop 192.168.1.2:23658 -> 192.168.1.56:443 tcp"
+    "network": {
+        "transport": "udp"
+    }
 }
 ```
 
@@ -462,39 +449,35 @@ An example event for `auth` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-21T10:05:20.000Z",
-    "event": {
-        "ingested": "2026-02-21T10:05:21.000Z",
-        "kind": "event",
-        "category": [
-            "authentication"
-        ],
-        "type": [
-            "info"
-        ],
-        "outcome": "success",
-        "dataset": "proxmox.auth",
-        "module": "proxmox"
-    },
-    "user": {
-        "name": "root"
-    },
-    "proxmox": {
-        "auth": {
-            "realm": "pam"
-        }
+    "observer": {
+        "product": "Proxmox VE",
+        "type": "virtualization",
+        "vendor": "Proxmox"
     },
     "related": {
         "user": [
             "root"
         ]
     },
-    "observer": {
-        "vendor": "Proxmox",
-        "product": "Proxmox VE",
-        "type": "virtualization"
+    "event": {
+        "category": [
+            "authentication"
+        ],
+        "type": [
+            "start"
+        ],
+        "kind": "event",
+        "outcome": "success"
     },
-    "message": "Successful authentication for user root@pam"
+    "message": "Successful authentication for user root@pam",
+    "proxmox": {
+        "auth": {
+            "realm": "pam"
+        }
+    },
+    "user": {
+        "name": "root"
+    }
 }
 ```
 
@@ -562,32 +545,29 @@ An example event for `cluster` looks as following:
 
 ```json
 {
+    "observer": {
+        "product": "Proxmox VE",
+        "type": "virtualization",
+        "vendor": "Proxmox"
+    },
     "event": {
-        "ingested": "2026-02-21T10:00:00.000Z",
         "kind": "event",
+        "action": "membership_change",
         "category": [
             "configuration"
         ],
         "type": [
             "info"
         ],
-        "action": "membership_change",
-        "outcome": "unknown",
-        "dataset": "proxmox.cluster_logs",
-        "module": "proxmox"
+        "outcome": "unknown"
     },
+    "message": "Members[3]: 1 2 3",
     "proxmox": {
         "corosync": {
             "subsystem": "QUORUM",
             "members": 3
         }
-    },
-    "observer": {
-        "vendor": "Proxmox",
-        "product": "Proxmox VE",
-        "type": "virtualization"
-    },
-    "message": "Members[3]: 1 2 3"
+    }
 }
 ```
 
@@ -652,44 +632,45 @@ An example event for `tasks` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-10T19:32:11.000Z",
-    "event": {
-        "ingested": "2026-02-21T10:00:00.000Z",
-        "kind": "event",
-        "category": [
-            "process"
-        ],
-        "type": [
-            "info"
-        ],
-        "action": "vzdump",
-        "outcome": "success",
-        "duration": 230000000000,
-        "dataset": "proxmox.tasks",
-        "module": "proxmox"
+    "observer": {
+        "product": "Proxmox VE",
+        "type": "virtualization",
+        "vendor": "Proxmox"
     },
-    "proxmox": {
-        "task": {
-            "node": "lab",
-            "type": "vzdump",
-            "vmid": "100",
-            "upid": "UPID:lab:000AE992:00A21BA7:618C1D55:vzdump:100:root@pam:"
-        }
-    },
-    "user": {
-        "name": "root"
-    },
+    "@timestamp": "2026-03-15T20:18:56.000Z",
     "related": {
         "user": [
             "root"
         ]
     },
-    "observer": {
-        "vendor": "Proxmox",
-        "product": "Proxmox VE",
-        "type": "virtualization"
+    "event": {
+        "duration": 1000000000,
+        "kind": "event",
+        "action": "resize",
+        "category": [
+            "process"
+        ],
+        "type": [
+            "end"
+        ],
+        "outcome": "success"
     },
-    "message": "Task vzdump on VM 100 completed with status OK"
+    "message": "Task resize on VM 306 completed with status OK",
+    "proxmox": {
+        "auth": {
+            "realm": "pam"
+        },
+        "task": {
+            "upid": "UPID:lab:002C12FB:073B86AD:69B7142F:resize:306:root@pam:",
+            "duration_seconds": 1,
+            "node": "lab",
+            "type": "resize",
+            "vmid": "306"
+        }
+    },
+    "user": {
+        "name": "root"
+    }
 }
 ```
 

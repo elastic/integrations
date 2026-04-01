@@ -34,8 +34,16 @@ processors:
   # Parse JSON message from CEL input
   - json:
       tag: json_parse_message
+      if: ctx.message != null
       field: message
       target_field: _temp.json
+
+  # CEL error events have error.message set but no message field
+  - set:
+      tag: set_error_event_kind
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
 
   # CPU and load
   - convert:
@@ -144,21 +152,23 @@ processors:
       target_field: proxmox.node.uptime
       type: long
       ignore_failure: true
-  - set:
-      tag: set_pveversion
+  - dissect:
+      tag: dissect_pveversion
       if: ctx._temp?.json?.pveversion != null
-      field: proxmox.node.pveversion
-      value: "{{_temp.json.pveversion}}"
-  - set:
-      tag: set_kversion
+      field: _temp.json.pveversion
+      pattern: "%{_temp.pve_prefix}/%{proxmox.node.pveversion}/%{_temp.pve_hash}"
+      ignore_failure: true
+  - dissect:
+      tag: dissect_kversion
       if: ctx._temp?.json?.kversion != null
-      field: proxmox.node.kversion
-      value: "{{_temp.json.kversion}}"
+      field: _temp.json.kversion
+      pattern: "%{proxmox.node.kversion} #%{_temp.kversion_rest}"
+      ignore_failure: true
 
   # CPU info
   - set:
       tag: set_cpuinfo_model
-      if: ctx._temp?.json?.cpuinfo?.model != null
+      if: ctx._temp?.json?.cpuinfo?.model != null && ctx._temp.json.cpuinfo.model != 'null'
       field: proxmox.node.cpuinfo.model
       value: "{{_temp.json.cpuinfo.model}}"
   - convert:
