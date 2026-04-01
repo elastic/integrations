@@ -31,7 +31,7 @@ This integration is designed for Identity Federations to proactively check that 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `provider` | Yes | Cloud provider type (`aws`, `azure`, `gcp`, `okta`) |
-| `account_type` | No | Whether the target is a `single_account` (default) or `organization` (management account). Affects which permissions are verified since assuming a role behaves differently for single accounts vs organization management accounts. |
+| `account_type` | No | Whether the target is a `single-account` (default) or `organization-account` (management account). Affects which permissions are verified since assuming a role behaves differently for single accounts vs organization management accounts. |
 
 ### Credentials
 
@@ -167,7 +167,7 @@ Set by Fleet (via auto-injected `transform` processor):
 | `provider.account` | Provider account identifier |
 | `provider.region` | Provider region |
 | `provider.project_id` | GCP project ID (when applicable) |
-| `account_type` | `single_account` or `organization` |
+| `account_type` | `single-account` or `organization-account` |
 | `permission.action` | Permission being checked (for example, `cloudtrail:LookupEvents`) |
 | `permission.category` | Permission category (for example, `data_access`) |
 | `permission.status` | Result: `granted`, `denied`, `error`, or `skipped` |
@@ -192,7 +192,7 @@ receivers:
     identity_federation_name: "Production Connector"
     verification_id: "verify-abc123"
     verification_type: "on_demand"
-    account_type: "single_account"
+    account_type: "single-account"
     providers:
       aws:
         credentials:
@@ -241,7 +241,7 @@ receivers:
     identity_federation_name: "Azure Connector"
     verification_id: "verify-def456"
     verification_type: "on_demand"
-    account_type: "single_account"
+    account_type: "single-account"
     providers:
       azure:
         credentials:
@@ -289,7 +289,7 @@ receivers:
     identity_federation_name: "GCP Connector"
     verification_id: "verify-ghi789"
     verification_type: "on_demand"
-    account_type: "single_account"
+    account_type: "single-account"
     providers:
       gcp:
         credentials:

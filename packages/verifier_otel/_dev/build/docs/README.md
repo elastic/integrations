@@ -31,7 +31,7 @@ This integration is designed for Identity Federations to proactively check that 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `provider` | Yes | Cloud provider type (`aws`, `azure`, `gcp`, `okta`) |
-| `account_type` | No | Whether the target is a `single_account` (default) or `organization` (management account). Affects which permissions are verified since assuming a role behaves differently for single accounts vs organization management accounts. |
+| `account_type` | No | Whether the target is a `single-account` (default) or `organization-account` (management account). Affects which permissions are verified since assuming a role behaves differently for single accounts vs organization management accounts. |
 
 ### Credentials
 
@@ -162,7 +162,7 @@ The integration emits OTEL logs with the following structure:
 | `provider.account` | Provider account identifier |
 | `provider.region` | Provider region |
 | `provider.project_id` | GCP project ID (when applicable) |
-| `account_type` | `single_account` or `organization` |
+| `account_type` | `single-account` or `organization-account` |
 | `permission.action` | Permission being checked (for example, `cloudtrail:LookupEvents`) |
 | `permission.category` | Permission category (for example, `data_access`) |
 | `permission.status` | Result: `granted`, `denied`, `error`, or `skipped` |
@@ -185,7 +185,7 @@ verification_id: "verify-abc123"
 verification_type: "on_demand"
 
 provider: "aws"
-account_type: "single_account"
+account_type: "single-account"
 
 credentials_role_arn: "arn:aws:iam::123456789012:role/ElasticAgentRole"
 credentials_external_id: "elastic-external-id-from-setup"
@@ -210,7 +210,7 @@ verification_id: "verify-def456"
 verification_type: "on_demand"
 
 provider: "azure"
-account_type: "single_account"
+account_type: "single-account"
 
 credentials_tenant_id: "00000000-0000-0000-0000-000000000000"
 credentials_client_id: "11111111-1111-1111-1111-111111111111"
@@ -234,7 +234,7 @@ verification_id: "verify-ghi789"
 verification_type: "on_demand"
 
 provider: "gcp"
-account_type: "single_account"
+account_type: "single-account"
 
 credentials_workload_identity_provider: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider"
 credentials_service_account_email: "verifier@my-gcp-project-123.iam.gserviceaccount.com"
