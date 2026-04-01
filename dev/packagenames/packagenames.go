@@ -27,7 +27,6 @@ const (
 	elasticPackageFindMinVersion = "0.118.0"
 	goModPath                    = "go.mod"
 	elasticPackageBinaryName     = "elastic-package"
-	elasticPackageCIPath         = "build/elastic-package"
 	manifestFileName             = "manifest.yml"
 )
 
@@ -48,6 +47,8 @@ func checkPackageNames(dir string) error {
 }
 
 func findPackagePaths(dir string) ([]string, error) {
+	// Assumption, the elastic-package binary found in PATH or via ELASTIC_PACKAGE_BIN is the same version as the one used in go.mod, if it exists.
+	// If the binary is not found or the version is less than 0.118.0, we will fall back to a recursive walk to find packages.
 	binaryPath, found := elasticPackageBinaryPath()
 	if !found {
 		fmt.Println("elastic-package binary not found, using recursive walk to find packages")
@@ -60,22 +61,24 @@ func findPackagePaths(dir string) ([]string, error) {
 	}
 
 	minVersion := semver.MustParse(elasticPackageFindMinVersion)
-	if !version.LessThan(minVersion) {
-		fmt.Printf("elastic-package %s >= %s, using \"elastic-package find\" to find packages\n", version, elasticPackageFindMinVersion)
-		return elasticPackageFind(binaryPath, dir)
+	if version.LessThan(minVersion) {
+		fmt.Printf("elastic-package %s < %s, using recursive walk to find packages\n", version, elasticPackageFindMinVersion)
+		return walkPackagePaths(dir)
 	}
-	fmt.Printf("elastic-package %s < %s, using recursive walk to find packages\n", version, elasticPackageFindMinVersion)
-	return walkPackagePaths(dir)
+	fmt.Printf("elastic-package %s >= %s, using \"elastic-package find\" to find packages\n", version, elasticPackageFindMinVersion)
+	return elasticPackageFind(binaryPath, dir)
 }
 
 func elasticPackageBinaryPath() (string, bool) {
-	if workspace := os.Getenv("WORKSPACE"); workspace != "" {
-		ciPath := filepath.Join(workspace, elasticPackageCIPath)
+	if ciPath := os.Getenv("ELASTIC_PACKAGE_BIN"); ciPath != "" {
+		fmt.Println("ELASTIC_PACKAGE_BIN environment variable found, checking for elastic-package binary in CI path")
 		if _, err := os.Stat(ciPath); err == nil {
+			fmt.Println("elastic-package binary found in ELASTIC_PACKAGE_BIN path:", ciPath)
 			return ciPath, true
 		}
 	}
 	if path, err := exec.LookPath(elasticPackageBinaryName); err == nil {
+		fmt.Println("elastic-package binary found in PATH:", path)
 		return path, true
 	}
 	return "", false
