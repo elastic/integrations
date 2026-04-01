@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-backend-no-active-servers",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] Backend has no active servers",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-haproxyreceiver.otel-*\n// Scope to backend aggregates (not frontends or individual servers)\n| WHERE haproxy.service_name == \"BACKEND\"\n// Exclude stats backend \u2014 it has no upstream servers by design\n| WHERE haproxy.proxy_name != \"stats\"\n// Aggregate minimum active count per backend over the time window\n| STATS min_active = MIN(haproxy.active) BY haproxy.proxy_name, haproxy.addr\n// Alert when any backend has zero active servers\n| WHERE min_active < 1\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

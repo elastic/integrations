@@ -1,5 +1,5 @@
 ---
-description: "Pipeline for s3 server access logs"
+description: "Pipeline for S3 server access logs"
 
 processors:
   - set:
@@ -33,14 +33,16 @@ processors:
           (?:-|%{NUMBER:aws.s3access.object_size:long}) (?:-|%{NUMBER:aws.s3access.total_time:long}) (?:-|%{NUMBER:aws.s3access.turn_around_time:long})
           (?:-|\"-\"|\"%{DATA:aws.s3access.referrer}\") (?:-|\"(-|%{DATA:aws.s3access.user_agent})\") (?:-|%{S3KEY:aws.s3access.version_id})
           (?:-|%{S3ID:aws.s3access.host_id}) (?:-|%{S3VERSION:aws.s3access.signature_version}) (?:-|%{S3KEY:aws.s3access.cipher_suite})
-          (?:-|%{WORD:aws.s3access.authentication_type}) (?:-|%{S3ID:aws.s3access.host_header}) (?:-|%{S3VERSION:aws.s3access.tls_version})(?: (?:-|%{S3REQUESTER:aws.s3access.access_point_arn}))?(?: (?:-|%{WORD:aws.s3access.aclrequired}))?
+          (?:-|%{WORD:aws.s3access.authentication_type}) (?:-|%{S3ID:aws.s3access.host_header}) (?:-|%{S3VERSION:aws.s3access.tls_version})(?: (?:-|%{S3REQUESTER:aws.s3access.access_point_arn}))?(?: (?:-|%{S3ACLREQUIRED:aws.s3access.aclrequired}))?(?: (?:-|%{S3REGION:aws.s3access.source_region}))?(?: %{S3REGION:aws.s3access.source_region})?
       pattern_definitions:
         S3REQUESTER: "[a-zA-Z0-9\\/_\\.\\-%:@]+"
         S3REQUESTID: "[a-zA-Z0-9]+"
         S3OPERATION: "%{WORD}.%{WORD}.%{WORD}"
         S3KEY: "[a-zA-Z0-9\\/\\_\\!\\-\\.\\*\\'\\(\\)\\%\\+]+"
-        S3ID: "[a-zA-Z0-9\\/_\\.\\-%+=]+"
+        S3ID: "[a-zA-Z0-9\\/_\\.\\-%+=:]+"
         S3VERSION: "[a-zA-Z0-9.]+"
+        S3ACLREQUIRED: "(-|Yes)"
+        S3REGION: "[a-zA-Z][a-zA-Z0-9-]*"
   - grok:
       field: aws.s3access.host_header
       ignore_missing: true
@@ -73,6 +75,7 @@ processors:
       field: _temp_.url
       target_field: url
       keep_original: true
+      ignore_failure: true
       if: ctx._temp_?.url != null
   - append:
       field: related.user
@@ -186,6 +189,10 @@ processors:
   - set:
       field: aws.s3access.aclrequired
       value: '{{aws.s3access.aclrequired}}'
+      ignore_empty_value: true
+  - set:
+      field: aws.s3access.source_region
+      value: '{{aws.s3access.source_region}}'
       ignore_empty_value: true
   - set:
       field: cloud.provider

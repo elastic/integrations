@@ -1,0 +1,36 @@
+{
+  "id": "activemq_otel-store-utilization-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[ActiveMQ OTel] Persistent store utilization high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "activemq",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-activemq.otel-*\n// Store utilization is a gauge (0–1 ratio)\n| WHERE activemq.store.utilization IS NOT NULL\n| STATS max_util = MAX(AVG_OVER_TIME(activemq.store.utilization)) BY activemq.broker.name, host.name\n// Alert when persistent store exceeds 90%; broker may halt accepting new persistent messages\n| WHERE max_util > 0.90\n| SORT max_util DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "activemq.broker.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
