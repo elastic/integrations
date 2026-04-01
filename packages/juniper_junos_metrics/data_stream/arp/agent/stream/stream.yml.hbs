@@ -45,11 +45,11 @@ program: |
           ).as(body,
           "arp-table-information" in body && size(body["arp-table-information"]) > 0 &&
           "arp-table-entry" in body["arp-table-information"][0] ?
-            body["arp-table-information"][0]["arp-table-entry"].map(e, {
+            body["arp-table-information"][0]["arp-table-entry"].filter(e, "ip-address" in e && size(e["ip-address"]) > 0).map(e, {
               "message": e.encode_json(),
               "_observer_name": device_name,
               "_observer_type": "{{observer_type}}",
-              "juniper.junos.arp.ip_address": "ip-address" in e && size(e["ip-address"]) > 0 ? string(e["ip-address"][0]["data"]) : "0.0.0.0",
+              "juniper.junos.arp.ip_address": string(e["ip-address"][0]["data"]),
               "juniper.junos.arp.interface": "interface-name" in e && size(e["interface-name"]) > 0 ? string(e["interface-name"][0]["data"]) : "unknown",
               "juniper.junos.arp.entry_count": "arp-entry-count" in body["arp-table-information"][0] && size(body["arp-table-information"][0]["arp-entry-count"]) > 0 ? int(body["arp-table-information"][0]["arp-entry-count"][0]["data"]) : 0,
             }).as(events, {"events": events, "cursor": {"device_hostname": device_name}})
