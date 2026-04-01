@@ -1,0 +1,44 @@
+source:
+  index:
+    - "logs-freeipa.directory_access-*"
+  query:
+    bool:
+      filter:
+        - term:
+            freeipa.directory.operation: CONNECTION
+
+dest:
+  index: "logs-freeipa_latest.dest_connection-1"
+  aliases:
+    - alias: "logs-freeipa_latest.connection"
+      move_on_creation: true
+
+latest:
+  unique_key:
+    - freeipa.directory.connection_id
+    - observer.hostname
+  sort: "@timestamp"
+
+description: >-
+  Maintains a latest-state index mapping connection_id to source.ip,
+  destination.ip, and SSL status. Enables enrichment of BIND, SRCH, and
+  RESULT events with the originating client IP.
+
+frequency: 30s
+
+sync:
+  time:
+    field: event.ingested
+    delay: 60s
+
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 7d
+
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.0
+
+settings:
+  unattended: true

@@ -1,0 +1,28 @@
+{
+    "id": "freeipa-ca-connection-failures",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[FreeIPA] CA Subsystem Connection Failures",
+        "tags": ["FreeIPA", "Certificate Authority"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when the Dogtag CA cannot connect to its LDAP backend.\n// CA connection failures cause silent cert renewal failures which\n// can lead to expired IPA server certificates weeks later.\nFROM logs-freeipa.ca_audit-*\n| WHERE freeipa.ca.info IS NOT NULL AND freeipa.ca.info LIKE \"*Connection refused*\"\n| STATS failure_count = COUNT(*) BY freeipa.ca.server_host\n| WHERE failure_count >= 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

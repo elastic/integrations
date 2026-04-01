@@ -1,0 +1,28 @@
+{
+    "id": "freeipa-api-error-spike",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[FreeIPA] IPA API Error Spike",
+        "tags": ["FreeIPA", "IPA API"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when the IPA API error rate exceeds a threshold.\n// A spike in API errors may indicate backend issues (LDAP unreachable,\n// plugin failure, schema conflict after upgrade).\n// Adjust the error count threshold in the final WHERE clause as needed.\nFROM logs-freeipa.ipa_api-*\n| WHERE event.outcome == \"failure\"\n| STATS error_count = COUNT(*), errors = COUNT_DISTINCT(freeipa.api.result) BY freeipa.api.result\n| WHERE error_count >= 10"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 2
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
