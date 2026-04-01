@@ -50,6 +50,7 @@ func checkPackageNames(dir string) error {
 func findPackagePaths(dir string) ([]string, error) {
 	binaryPath, found := elasticPackageBinaryPath()
 	if !found {
+		fmt.Println("elastic-package binary not found, using recursive walk to find packages")
 		return walkPackagePaths(dir)
 	}
 
@@ -60,8 +61,10 @@ func findPackagePaths(dir string) ([]string, error) {
 
 	minVersion := semver.MustParse(elasticPackageFindMinVersion)
 	if !version.LessThan(minVersion) {
+		fmt.Printf("elastic-package %s >= %s, using \"elastic-package find\" to find packages\n", version, elasticPackageFindMinVersion)
 		return elasticPackageFind(binaryPath, dir)
 	}
+	fmt.Printf("elastic-package %s < %s, using recursive walk to find packages\n", version, elasticPackageFindMinVersion)
 	return walkPackagePaths(dir)
 }
 
