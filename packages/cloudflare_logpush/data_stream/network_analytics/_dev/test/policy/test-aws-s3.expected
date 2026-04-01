@@ -1,0 +1,55 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: cloudflare_logpush
+      name: test-aws-s3-cloudflare_logpush
+      streams:
+        - access_key_id: ${SECRET_0}
+          bucket_arn: arn:aws:s3:::cloudflare-logpush-test
+          bucket_list_prefix: network_analytics_logs
+          data_stream:
+            dataset: cloudflare_logpush.network_analytics
+          fields:
+            _conf:
+                enable_deduplication: true
+          fields_under_root: true
+          ignore_older: 48h
+          number_of_workers: 5
+          processors:
+            - decode_json_fields:
+                fields:
+                    - message
+                max_depth: 10
+                overwrite_keys: true
+                process_array: true
+                target: ""
+          publisher_pipeline.disable_host: true
+          secret_access_key: ${SECRET_1}
+          session_token: ${SECRET_2}
+          tags:
+            - collect_s3_logs
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+      type: aws-s3
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-cloudflare_logpush.network_analytics-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}
+    - {}
