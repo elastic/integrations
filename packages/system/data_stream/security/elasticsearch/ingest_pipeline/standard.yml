@@ -1213,13 +1213,20 @@ processors:
         if (ctx.winlog?.event_data == null) {
           return;
         }
-        if (ctx.winlog.event_data.NewUacValue == null || ctx.winlog.event_data.NewUacValue == "-") {
+        Long newUacValue;
+        try {
+          newUacValue = Long.decode(ctx.winlog.event_data.NewUacValue.trim());
+        } catch (Exception e) {
           return;
         }
-        Long newUacValue = Long.decode(ctx.winlog.event_data.NewUacValue);
         ArrayList uacResult = new ArrayList();
         for (entry in params.entrySet()) {
-          Long flag = Long.decode(entry.getKey());
+          Long flag;
+          try {
+            flag = Long.decode(entry.getKey());
+          } catch (Exception e) {
+            continue;
+          }
           if ((newUacValue.longValue() & flag.longValue()) == flag.longValue()) {
             uacResult.add(entry.getValue());
           }
