@@ -1,0 +1,92 @@
+format_version: "3.4.0"
+name: zabbix
+title: Zabbix
+version: "0.0.1"
+description: Collect metrics and logs from Zabbix monitoring servers via the JSON-RPC API and server log files.
+type: integration
+categories:
+  - monitoring
+  - infrastructure
+conditions:
+  kibana:
+    version: "^8.16.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/logo.svg
+    title: Zabbix
+    size: 64x64
+    type: image/svg+xml
+screenshots:
+  - src: /img/zabbix-server-health.png
+    title: Server Health Dashboard
+    size: 1440x1405
+    type: image/png
+  - src: /img/zabbix-hosts.png
+    title: Hosts Dashboard
+    size: 1440x1433
+    type: image/png
+  - src: /img/zabbix-problems.png
+    title: Problems Dashboard
+    size: 1440x1433
+    type: image/png
+  - src: /img/zabbix-audit.png
+    title: Audit Log Dashboard
+    size: 1440x1433
+    type: image/png
+policy_templates:
+  - name: zabbix
+    title: Zabbix
+    description: Collect metrics and logs from Zabbix monitoring servers via the JSON-RPC API and server log files.
+    inputs:
+      - type: cel
+        title: Collect Zabbix metrics and events via API
+        description: Collect Zabbix metrics and events via API.
+        vars:
+          - name: zabbix_url
+            type: text
+            title: Zabbix URL
+            description: "Base URL of the Zabbix frontend (for example, https://zabbix.example.com)."
+            required: true
+            show_user: true
+          - name: api_token
+            type: password
+            title: API Token
+            description: "Zabbix API token for authentication."
+            required: true
+            show_user: true
+            secret: true
+          - name: ssl_verification
+            type: bool
+            title: Verify SSL Certificate
+            description: "Verify SSL certificate when connecting to the Zabbix API."
+            required: false
+            show_user: true
+            default: false
+          - name: timeout
+            type: text
+            title: Request Timeout
+            description: "Timeout for API requests (e.g. 30s, 1m)."
+            required: false
+            show_user: false
+            default: "60s"
+          - name: suppress_health_degradation
+            type: bool
+            title: Suppress Health Degradation
+            description: "Suppress agent health degradation when the Zabbix API is unreachable."
+            required: false
+            show_user: false
+            default: false
+          - name: ssl.certificate_authorities
+            type: text
+            title: Custom CA Certificates
+            description: "A list of root certificates for server verification. If empty, the host's default root CAs are used."
+            required: false
+            show_user: false
+            multi: true
+      - type: logfile
+        title: Collect Zabbix server logs from file
+        description: Collect Zabbix server logs from file.
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: community

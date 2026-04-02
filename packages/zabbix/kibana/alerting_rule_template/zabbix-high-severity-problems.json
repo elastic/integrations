@@ -1,0 +1,35 @@
+{
+    "id": "zabbix-high-severity-problems",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Zabbix] High Severity Unacknowledged Problems (30m)",
+        "tags": [
+            "Zabbix"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert on high/disaster severity problems unacknowledged for 30+ minutes.\n// Uses event.ingested as the time field to see recently collected docs,\n// then filters on @timestamp (problem creation) being older than 30 minutes.\nFROM logs-zabbix.problem-*\n| WHERE zabbix.problem.severity IN (\"high\", \"disaster\")\n  AND zabbix.problem.acknowledged == false\n  AND zabbix.problem.suppressed == false\n  AND `@timestamp` < NOW() - 30 minutes\n| STATS problem_count = COUNT(*) BY zabbix.problem.name, zabbix.problem.severity\n| WHERE problem_count >= 1"
+            },
+            "groupBy": "row",
+            "timeField": "event.ingested",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

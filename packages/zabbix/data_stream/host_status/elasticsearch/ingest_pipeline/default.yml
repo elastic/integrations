@@ -1,0 +1,225 @@
+---
+description: Pipeline for processing Zabbix host_status metrics from host.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      ignore_failure: true
+  - remove:
+      tag: remove_raw_message
+      field: message
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.host_status
+
+  - rename:
+      tag: rename_hostid
+      field: _json.hostid
+      target_field: zabbix.host.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_host
+      field: _json.host
+      target_field: zabbix.host.host
+      ignore_missing: true
+
+  - rename:
+      tag: rename_host_name
+      field: _json.name
+      target_field: zabbix.host.name
+      ignore_missing: true
+
+  # Map status to human-readable string: 0=enabled, 1=disabled
+  - set:
+      tag: set_status_enabled
+      field: zabbix.host.status
+      value: enabled
+      if: ctx._json?.status == '0'
+
+  - set:
+      tag: set_status_disabled
+      field: zabbix.host.status
+      value: disabled
+      if: ctx._json?.status == '1'
+
+  # Map monitored_by to keyword: 0=server, 1=proxy, 2=proxy_group
+  - script:
+      tag: map_monitored_by
+      lang: painless
+      if: ctx._json?.monitored_by != null
+      source: >-
+        def m = Integer.parseInt(ctx._json.monitored_by.toString());
+        def labels = ['server', 'proxy', 'proxy_group'];
+        if (m >= 0 && m < labels.size()) {
+          if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+          if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+          ctx.zabbix.host.monitored_by = labels[m];
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map monitored_by: {{_ingest.on_failure_message}}"
+
+  # Map maintenance_status to keyword: 0=off, 1=on
+  - set:
+      tag: set_maintenance_status_off
+      field: zabbix.host.maintenance.status
+      value: "off"
+      if: ctx._json?.maintenance_status == '0'
+
+  - set:
+      tag: set_maintenance_status_on
+      field: zabbix.host.maintenance.status
+      value: "on"
+      if: ctx._json?.maintenance_status == '1'
+
+  # Map maintenance_type to keyword: 0=with_data, 1=without_data
+  - set:
+      tag: set_maintenance_type_with_data
+      field: zabbix.host.maintenance.type
+      value: with_data
+      if: ctx._json?.maintenance_type == '0' && ctx._json?.maintenance_status == '1'
+
+  - set:
+      tag: set_maintenance_type_without_data
+      field: zabbix.host.maintenance.type
+      value: without_data
+      if: ctx._json?.maintenance_type == '1' && ctx._json?.maintenance_status == '1'
+
+  # Map active_available to keyword: 0=unknown, 1=available, 2=unavailable
+  - script:
+      tag: map_active_available
+      lang: painless
+      if: ctx._json?.active_available != null
+      source: >-
+        def a = Integer.parseInt(ctx._json.active_available.toString());
+        def labels = ['unknown', 'available', 'unavailable'];
+        if (a >= 0 && a < labels.size()) {
+          if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+          if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+          ctx.zabbix.host.active_available = labels[a];
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map active_available: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_proxyid
+      field: _json.proxyid
+      target_field: zabbix.host.proxy.id
+      ignore_missing: true
+
+  # Extract primary interface fields from interfaces array
+  - script:
+      tag: extract_interface
+      lang: painless
+      if: ctx._json?.interfaces != null && ctx._json.interfaces instanceof List && ctx._json.interfaces.size() > 0
+      source: >-
+        def iface = ctx._json.interfaces[0];
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+        def ifaceMap = new HashMap();
+        if (iface.ip != null) ifaceMap.put('ip', iface.ip);
+        if (iface.port != null) ifaceMap.put('port', iface.port);
+        if (iface.type != null) {
+          def t = Integer.parseInt(iface.type.toString());
+          def types = new HashMap();
+          types.put(1, 'agent');
+          types.put(2, 'snmp');
+          types.put(3, 'ipmi');
+          types.put(4, 'jmx');
+          ifaceMap.put('type', types.containsKey(t) ? types.get(t) : iface.type.toString());
+        }
+        if (iface.available != null) {
+          def a = Integer.parseInt(iface.available.toString());
+          def avail = ['unknown', 'available', 'unavailable'];
+          ifaceMap.put('available', (a >= 0 && a < avail.size()) ? avail[a] : iface.available.toString());
+        }
+        ctx.zabbix.host.put('interface', ifaceMap);
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to extract interface: {{_ingest.on_failure_message}}"
+
+  # Extract host group names as keyword array
+  - script:
+      tag: extract_groups
+      lang: painless
+      if: ctx._json?.hostgroups != null && ctx._json.hostgroups instanceof List
+      source: >-
+        def names = new ArrayList();
+        for (def g : ctx._json.hostgroups) {
+          if (g.name != null) names.add(g.name);
+        }
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+        ctx.zabbix.host.groups = names;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to extract groups: {{_ingest.on_failure_message}}"
+
+  # Flatten tags into key-value map for flattened field type
+  - script:
+      tag: flatten_tags
+      lang: painless
+      if: ctx._json?.tags != null && ctx._json.tags instanceof List
+      source: >-
+        def tagMap = new HashMap();
+        for (def t : ctx._json.tags) {
+          if (t.tag != null) {
+            tagMap.put(t.tag, t.value != null ? t.value : '');
+          }
+        }
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+        ctx.zabbix.host.tags = tagMap;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to flatten tags: {{_ingest.on_failure_message}}"
+
+  # Cleanup source fields
+  - remove:
+      tag: cleanup_source_fields
+      field:
+        - message
+      ignore_missing: true
+
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

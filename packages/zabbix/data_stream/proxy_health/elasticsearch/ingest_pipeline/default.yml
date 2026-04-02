@@ -1,0 +1,152 @@
+---
+description: Pipeline for processing Zabbix proxy_health metrics from proxy.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      ignore_failure: true
+  - remove:
+      tag: remove_raw_message
+      field: message
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.proxy_health
+
+  - rename:
+      tag: rename_proxyid
+      field: _json.proxyid
+      target_field: zabbix.proxy.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_name
+      field: _json.name
+      target_field: zabbix.proxy.name
+      ignore_missing: true
+
+  - script:
+      tag: map_operating_mode
+      lang: painless
+      if: ctx._json?.operating_mode != null
+      source: >-
+        def m = Integer.parseInt(ctx._json.operating_mode.toString());
+        def labels = new HashMap();
+        labels.put(0, 'active');
+        labels.put(1, 'passive');
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.proxy == null) ctx.zabbix.proxy = new HashMap();
+        ctx.zabbix.proxy.operating_mode = labels.containsKey(m) ? labels.get(m) : 'unknown_' + m;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map operating_mode: {{_ingest.on_failure_message}}"
+
+  # Set @timestamp from last_access (unix epoch seconds)
+  - date:
+      tag: date_last_access
+      field: _json.last_access
+      formats:
+        - UNIX
+      if: ctx._json?.last_access != null && ctx._json?.last_access != '0'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse last_access: {{_ingest.on_failure_message}}"
+
+  - date:
+      tag: convert_last_access
+      field: _json.last_access
+      target_field: zabbix.proxy.last_access
+      formats:
+        - UNIX
+      if: ctx._json?.last_access != null && ctx._json?.last_access != '0'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to convert last_access: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_version
+      field: _json.version
+      target_field: zabbix.proxy.version
+      ignore_missing: true
+
+  - script:
+      tag: map_compatibility
+      lang: painless
+      if: ctx._json?.compatibility != null
+      source: >-
+        def c = Integer.parseInt(ctx._json.compatibility.toString());
+        def labels = new HashMap();
+        labels.put(0, 'undefined');
+        labels.put(1, 'current');
+        labels.put(2, 'outdated');
+        labels.put(3, 'unsupported');
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.proxy == null) ctx.zabbix.proxy = new HashMap();
+        ctx.zabbix.proxy.compatibility = labels.containsKey(c) ? labels.get(c) : 'unknown_' + c;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map compatibility: {{_ingest.on_failure_message}}"
+
+  - script:
+      tag: map_state
+      lang: painless
+      if: ctx._json?.state != null
+      source: >-
+        def s = Integer.parseInt(ctx._json.state.toString());
+        def labels = new HashMap();
+        labels.put(0, 'unknown');
+        labels.put(1, 'online');
+        labels.put(2, 'offline');
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.proxy == null) ctx.zabbix.proxy = new HashMap();
+        ctx.zabbix.proxy.state = labels.containsKey(s) ? labels.get(s) : 'unknown_' + s;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map state: {{_ingest.on_failure_message}}"
+
+  # Cleanup source fields
+  - remove:
+      tag: cleanup_source_fields
+      field:
+        - message
+      ignore_missing: true
+
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

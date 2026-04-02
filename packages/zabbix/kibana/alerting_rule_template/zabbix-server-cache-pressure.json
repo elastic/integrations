@@ -1,0 +1,35 @@
+{
+    "id": "zabbix-server-cache-pressure",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Zabbix] Server Cache Pressure",
+        "tags": [
+            "Zabbix"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when any Zabbix server cache exceeds 90% utilization.\n// High cache usage can cause performance degradation and data loss.\n// Adjust the threshold in the WHERE clause as needed.\nFROM metrics-zabbix.server_health-*\n| STATS config_cache = MAX(zabbix.server.cache.config.pused),\n        value_cache = MAX(zabbix.server.cache.value.pused),\n        history_cache = MAX(zabbix.server.cache.history.pused),\n        trend_cache = MAX(zabbix.server.cache.trend.pused),\n        index_cache = MAX(zabbix.server.cache.index.pused)\n  BY host.name\n| WHERE config_cache > 90 OR value_cache > 90 OR history_cache > 90 OR trend_cache > 90 OR index_cache > 90"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">"
+        },
+        "alertDelay": {
+            "active": 2
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

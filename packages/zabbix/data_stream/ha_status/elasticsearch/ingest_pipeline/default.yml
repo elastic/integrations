@@ -1,0 +1,130 @@
+---
+description: Pipeline for processing Zabbix ha_status metrics from hanode.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      ignore_failure: true
+  - remove:
+      tag: remove_raw_message
+      field: message
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.ha_status
+
+  # Set @timestamp from lastaccess (unix epoch seconds)
+  - date:
+      tag: date_lastaccess
+      field: _json.lastaccess
+      formats:
+        - UNIX
+      if: ctx._json?.lastaccess != null && ctx._json?.lastaccess != '0'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse lastaccess: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_ha_nodeid
+      field: _json.ha_nodeid
+      target_field: zabbix.ha.nodeid
+      ignore_missing: true
+
+  - rename:
+      tag: rename_name
+      field: _json.name
+      target_field: zabbix.ha.name
+      ignore_missing: true
+
+  - rename:
+      tag: rename_address
+      field: _json.address
+      target_field: zabbix.ha.address
+      ignore_missing: true
+
+  - set:
+      tag: default_ha_name
+      field: zabbix.ha.name
+      copy_from: zabbix.ha.nodeid
+      if: ctx.zabbix?.ha?.name != null && ctx.zabbix.ha.name == ''
+      override: true
+
+  - rename:
+      tag: rename_port
+      field: _json.port
+      target_field: zabbix.ha.port
+      ignore_missing: true
+
+  # Store lastaccess as a date field
+  - date:
+      tag: date_lastaccess_field
+      field: _json.lastaccess
+      target_field: zabbix.ha.lastaccess
+      formats:
+        - UNIX
+      if: ctx._json?.lastaccess != null && ctx._json?.lastaccess != '0'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse lastaccess for field: {{_ingest.on_failure_message}}"
+
+  # Map status: 0=standby, 1=stopped, 2=unavailable, 3=active
+  - script:
+      tag: map_ha_status
+      lang: painless
+      if: ctx._json?.status != null
+      source: >-
+        def s = Integer.parseInt(ctx._json.status.toString());
+        def labels = ['standby', 'stopped', 'unavailable', 'active'];
+        if (s >= 0 && s < labels.size()) {
+          if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+          if (ctx.zabbix.ha == null) ctx.zabbix.ha = new HashMap();
+          ctx.zabbix.ha.status = labels[s];
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map HA status: {{_ingest.on_failure_message}}"
+
+  # Cleanup source fields
+  - remove:
+      tag: cleanup_source_fields
+      field:
+        - message
+      ignore_missing: true
+
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

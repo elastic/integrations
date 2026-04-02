@@ -1,0 +1,261 @@
+---
+description: Pipeline for processing Zabbix problem events from problem.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      ignore_failure: true
+  - remove:
+      tag: remove_raw_message
+      field: message
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - host
+
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
+  - set:
+      tag: set_event_type_error
+      field: event.type
+      value:
+        - error
+      if: ctx._json?.severity != null && (ctx._json.severity == '4' || ctx._json.severity == '5')
+      override: true
+
+  - set:
+      tag: set_event_action
+      field: event.action
+      value: problem_detected
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.problem
+
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Zabbix
+
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Zabbix Server
+
+  # Set @timestamp from clock (unix epoch seconds)
+  - date:
+      tag: date_clock
+      field: _json.clock
+      formats:
+        - UNIX
+      if: ctx._json?.clock != null && ctx._json?.clock != '0'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse clock: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_eventid
+      field: _json.eventid
+      target_field: zabbix.problem.eventid
+      ignore_missing: true
+
+  - rename:
+      tag: rename_objectid
+      field: _json.objectid
+      target_field: zabbix.problem.objectid
+      ignore_missing: true
+
+  - script:
+      tag: map_source
+      lang: painless
+      if: ctx._json?.source != null
+      source: >-
+        def s = Integer.parseInt(ctx._json.source.toString());
+        def labels = new HashMap();
+        labels.put(0, 'triggers');
+        labels.put(3, 'internal');
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
+        ctx.zabbix.problem.source = labels.containsKey(s) ? labels.get(s) : 'unknown_' + s;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map source: {{_ingest.on_failure_message}}"
+
+  - script:
+      tag: map_object
+      lang: painless
+      if: ctx._json?.object != null
+      source: >-
+        def o = Integer.parseInt(ctx._json.object.toString());
+        def labels = new HashMap();
+        labels.put(0, 'trigger');
+        labels.put(4, 'item');
+        labels.put(5, 'lld_rule');
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
+        ctx.zabbix.problem.object = labels.containsKey(o) ? labels.get(o) : 'unknown_' + o;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map object: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_problem_name
+      field: _json.name
+      target_field: zabbix.problem.name
+      ignore_missing: true
+
+  # Map severity: 0=not classified, 1=info, 2=warning, 3=average, 4=high, 5=disaster
+  - convert:
+      tag: convert_severity
+      field: _json.severity
+      target_field: zabbix.problem.severity_number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to convert severity: {{_ingest.on_failure_message}}"
+
+  - script:
+      tag: map_severity
+      lang: painless
+      if: ctx._json?.severity != null
+      source: >-
+        def sev = Integer.parseInt(ctx._json.severity.toString());
+        def labels = ['not classified', 'information', 'warning', 'average', 'high', 'disaster'];
+        if (sev >= 0 && sev < labels.size()) {
+          ctx.event.severity = sev;
+          if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+          if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
+          ctx.zabbix.problem.severity = labels[sev];
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map severity: {{_ingest.on_failure_message}}"
+
+  # Map acknowledged to event.outcome
+  - set:
+      tag: set_outcome_acknowledged
+      field: event.outcome
+      value: success
+      if: ctx._json?.acknowledged == '1'
+
+  - set:
+      tag: set_outcome_unacknowledged
+      field: event.outcome
+      value: failure
+      if: ctx._json?.acknowledged == '0'
+
+  - script:
+      tag: convert_acknowledged
+      lang: painless
+      if: ctx._json?.acknowledged != null
+      source: >-
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
+        ctx.zabbix.problem.acknowledged = ctx._json.acknowledged.toString().equals('1');
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to convert acknowledged: {{_ingest.on_failure_message}}"
+
+  - script:
+      tag: convert_suppressed
+      lang: painless
+      if: ctx._json?.suppressed != null
+      source: >-
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
+        ctx.zabbix.problem.suppressed = ctx._json.suppressed.toString().equals('1');
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to convert suppressed: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_tags
+      field: _json.tags
+      target_field: zabbix.problem.tags
+      ignore_missing: true
+
+  - rename:
+      tag: rename_acknowledges
+      field: _json.acknowledges
+      target_field: zabbix.problem.acknowledges
+      ignore_missing: true
+
+  - rename:
+      tag: rename_opdata
+      field: _json.opdata
+      target_field: zabbix.problem.opdata
+      ignore_missing: true
+
+  - rename:
+      tag: rename_r_eventid
+      field: _json.r_eventid
+      target_field: zabbix.problem.r_eventid
+      ignore_missing: true
+
+  - rename:
+      tag: rename_cause_eventid
+      field: _json.cause_eventid
+      target_field: zabbix.problem.cause_eventid
+      ignore_missing: true
+
+  - rename:
+      tag: rename_urls
+      field: _json.urls
+      target_field: zabbix.problem.urls
+      ignore_missing: true
+
+  # Set message from problem name
+  - set:
+      tag: set_message
+      field: message
+      copy_from: zabbix.problem.name
+      ignore_empty_value: true
+
+  # Cleanup temp fields
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

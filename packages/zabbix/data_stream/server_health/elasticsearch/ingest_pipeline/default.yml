@@ -1,0 +1,208 @@
+---
+description: Pipeline for processing Zabbix server_health metrics from item.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      ignore_failure: true
+  - remove:
+      tag: remove_raw_message
+      field:
+        - message
+        - poll_time
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.server_health
+
+  # Use ingest time for @timestamp (not lastclock) to avoid TSDB dedup
+  # of static-value items like zabbix[version] whose lastclock never changes
+
+  - rename:
+      tag: rename_key
+      field: _json.key_
+      target_field: zabbix.server.item.key
+      ignore_missing: true
+
+  - rename:
+      tag: rename_name
+      field: _json.name
+      target_field: zabbix.server.item.name
+      ignore_missing: true
+
+  # Parse item key and map to structured fields
+  - script:
+      tag: map_item_key_to_fields
+      lang: painless
+      if: ctx.zabbix?.server?.item?.key != null && ctx._json?.lastvalue != null
+      source: >-
+        String key = ctx.zabbix.server.item.key;
+        String val = ctx._json.lastvalue;
+        if (!key.startsWith('zabbix[') || !key.endsWith(']')) { return; }
+        String inner = key.substring(7, key.length() - 1);
+        String[] parts = inner.splitOnToken(',');
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.server == null) ctx.zabbix.server = new HashMap();
+
+        if (parts.length == 1) {
+          String p = parts[0];
+          if (p.equals('queue')) {
+            if (ctx.zabbix.server.queue == null) ctx.zabbix.server.queue = new HashMap();
+            ctx.zabbix.server.queue.total = Long.parseLong(val);
+          } else if (p.equals('preprocessing_queue')) {
+            ctx.zabbix.server.preprocessing_queue = Long.parseLong(val);
+          } else if (p.equals('discovery_queue')) {
+            ctx.zabbix.server.discovery_queue = Long.parseLong(val);
+          } else if (p.equals('lld_queue')) {
+            ctx.zabbix.server.lld_queue = Long.parseLong(val);
+          } else if (p.equals('connector_queue')) {
+            ctx.zabbix.server.connector_queue = Long.parseLong(val);
+          } else if (p.equals('triggers')) {
+            ctx.zabbix.server.triggers = Long.parseLong(val);
+          } else if (p.equals('uptime')) {
+            ctx.zabbix.server.uptime = Long.parseLong(val);
+          } else if (p.equals('version')) {
+            ctx.zabbix.server.version = val;
+          }
+        } else if (parts.length == 2) {
+          String p0 = parts[0];
+          String p1 = parts[1];
+          if (p0.equals('queue') && p1.equals('10m')) {
+            if (ctx.zabbix.server.queue == null) ctx.zabbix.server.queue = new HashMap();
+            ctx.zabbix.server.queue.over_10m = Long.parseLong(val);
+          } else if (p0.equals('wcache') && p1.equals('values')) {
+            if (ctx.zabbix.server.vps == null) ctx.zabbix.server.vps = new HashMap();
+            ctx.zabbix.server.vps.total = Double.parseDouble(val);
+          } else if (p0.equals('vps') && p1.equals('written')) {
+            if (ctx.zabbix.server.vps == null) ctx.zabbix.server.vps = new HashMap();
+            ctx.zabbix.server.vps.written = Double.parseDouble(val);
+          }
+        } else if (parts.length == 3) {
+          String p0 = parts[0];
+          String p1 = parts[1];
+          String p2 = parts[2];
+          if (p0.equals('rcache') && p1.equals('buffer') && p2.equals('pused')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.config == null) ctx.zabbix.server.cache.config = new HashMap();
+            ctx.zabbix.server.cache.config.pused = Double.parseDouble(val);
+          } else if (p0.equals('vcache') && p1.equals('buffer') && p2.equals('pused')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.value == null) ctx.zabbix.server.cache.value = new HashMap();
+            ctx.zabbix.server.cache.value.pused = Double.parseDouble(val);
+          } else if (p0.equals('vcache') && p1.equals('cache')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.value == null) ctx.zabbix.server.cache.value = new HashMap();
+            if (p2.equals('hits')) {
+              ctx.zabbix.server.cache.value.hits = Double.parseDouble(val);
+            } else if (p2.equals('misses')) {
+              ctx.zabbix.server.cache.value.misses = Double.parseDouble(val);
+            } else if (p2.equals('mode')) {
+              ctx.zabbix.server.cache.value.mode = Long.parseLong(val);
+            }
+          } else if (p0.equals('wcache') && p1.equals('history') && p2.equals('pused')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.history == null) ctx.zabbix.server.cache.history = new HashMap();
+            ctx.zabbix.server.cache.history.pused = Double.parseDouble(val);
+          } else if (p0.equals('wcache') && p1.equals('trend') && p2.equals('pused')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.trend == null) ctx.zabbix.server.cache.trend = new HashMap();
+            ctx.zabbix.server.cache.trend.pused = Double.parseDouble(val);
+          } else if (p0.equals('wcache') && p1.equals('index') && p2.equals('pused')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.index == null) ctx.zabbix.server.cache.index = new HashMap();
+            ctx.zabbix.server.cache.index.pused = Double.parseDouble(val);
+          } else if (p0.equals('vmware') && p1.equals('buffer') && p2.equals('pused')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.vmware == null) ctx.zabbix.server.cache.vmware = new HashMap();
+            ctx.zabbix.server.cache.vmware.pused = Double.parseDouble(val);
+          } else if (p0.equals('tcache') && p1.equals('cache') && p2.equals('pitems')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.trend_function == null) ctx.zabbix.server.cache.trend_function = new HashMap();
+            ctx.zabbix.server.cache.trend_function.pitems = Double.parseDouble(val);
+          } else if (p0.equals('tcache') && p1.equals('cache') && p2.equals('pmisses')) {
+            if (ctx.zabbix.server.cache == null) ctx.zabbix.server.cache = new HashMap();
+            if (ctx.zabbix.server.cache.trend_function == null) ctx.zabbix.server.cache.trend_function = new HashMap();
+            ctx.zabbix.server.cache.trend_function.pmisses = Double.parseDouble(val);
+          } else if (p0.equals('wcache') && p1.equals('values')) {
+            if (ctx.zabbix.server.vps == null) ctx.zabbix.server.vps = new HashMap();
+            if (p2.equals('float')) {
+              ctx.zabbix.server.vps.put('float', Double.parseDouble(val));
+            } else if (p2.equals('uint')) {
+              ctx.zabbix.server.vps.put('uint', Double.parseDouble(val));
+            } else if (p2.equals('str')) {
+              ctx.zabbix.server.vps.str = Double.parseDouble(val);
+            } else if (p2.equals('log')) {
+              ctx.zabbix.server.vps.log = Double.parseDouble(val);
+            } else if (p2.equals('text')) {
+              ctx.zabbix.server.vps.text = Double.parseDouble(val);
+            } else if (p2.equals('not supported')) {
+              ctx.zabbix.server.vps.not_supported = Double.parseDouble(val);
+            }
+          } else if (p0.equals('host') && p1.equals('agent') && p2.equals('available')) {
+            if (ctx.zabbix.server.host == null) ctx.zabbix.server.host = new HashMap();
+            if (ctx.zabbix.server.host.agent == null) ctx.zabbix.server.host.agent = new HashMap();
+            ctx.zabbix.server.host.agent.available = Long.parseLong(val);
+          }
+        } else if (parts.length == 4) {
+          String p0 = parts[0];
+          String p1 = parts[1];
+          String p2 = parts[2];
+          String p3 = parts[3];
+          if (p0.equals('process') && p2.equals('avg') && p3.equals('busy')) {
+            if (ctx.zabbix.server.process == null) ctx.zabbix.server.process = new HashMap();
+            ctx.zabbix.server.process.name = p1;
+            ctx.zabbix.server.process.busy = Double.parseDouble(val);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map item key to fields: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_lastvalue_raw
+      field: _json.lastvalue
+      target_field: zabbix.server.item.lastvalue
+      ignore_missing: true
+
+  # Cleanup source fields
+  - remove:
+      tag: cleanup_source_fields
+      field:
+        - message
+      ignore_missing: true
+
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

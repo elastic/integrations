@@ -1,0 +1,79 @@
+{{#if suppress_health_degradation}}suppress_health_degradation: {{suppress_health_degradation}}{{/if}}
+interval: {{period}}
+resource.url: '{{zabbix_url}}/api_jsonrpc.php'
+resource.timeout: {{timeout}}
+resource.ssl:
+  verification_mode: '{{#if ssl_verification}}full{{else}}none{{/if}}'
+{{#if ssl.certificate_authorities}}
+  certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+state:
+  api_token: '{{api_token}}'
+  initial_interval: 24h
+redact:
+  fields:
+    - resource.url
+    - state.api_token
+program: |
+  (
+    state.?cursor.last_clock.orValue(string(int(now - duration(state.initial_interval)))).as(time_from,
+      request("POST", state.url).with({
+        "Header": {
+          "Content-Type": ["application/json-rpc"],
+          "Authorization": ["Bearer " + state.api_token]
+        },
+        "Body": bytes({
+          "jsonrpc": "2.0",
+          "method": "auditlog.get",
+          "params": {
+            "output": "extend",
+            "sortfield": "clock",
+            "sortorder": "ASC",
+            "time_from": time_from
+          },
+          "id": 1
+        }.encode_json())
+      }).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body,
+            has(body.result) && body.result.size() > 0 ?
+              {
+                "events": body.result.map(entry, {"message": entry.encode_json()}),
+                "cursor": {"last_clock": body.result[body.result.size() - 1].clock},
+                "api_token": state.api_token,
+                "url": state.url,
+                "initial_interval": state.initial_interval
+              }
+            :
+              {
+                "events": [],
+                "cursor": state.?cursor.orValue({}),
+                "api_token": state.api_token,
+                "url": state.url,
+                "initial_interval": state.initial_interval
+              }
+          )
+        :
+          {
+            "events": [],
+            "cursor": state.?cursor.orValue({}),
+            "api_token": state.api_token,
+            "url": state.url,
+            "initial_interval": state.initial_interval
+          }
+      )
+    )
+  )
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,280 @@
+---
+description: Pipeline for processing Zabbix audit log events from auditlog.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      ignore_failure: true
+  - remove:
+      tag: remove_raw_message
+      field: message
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - configuration
+
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - change
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.audit
+
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Zabbix
+
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Zabbix Server
+
+  # Set @timestamp from clock (unix epoch seconds)
+  - date:
+      tag: date_clock
+      field: _json.clock
+      formats:
+        - UNIX
+      if: ctx._json?.clock != null && ctx._json?.clock != '0'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse clock: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_auditid
+      field: _json.auditid
+      target_field: zabbix.audit.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_userid
+      field: _json.userid
+      target_field: zabbix.audit.user_id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_username
+      field: _json.username
+      target_field: user.name
+      ignore_missing: true
+
+  # Map action to event.action: 0=add, 1=update, 2=delete, 4=logout, 7=execute, 8=login, 9=failed_login, 10=history_clear
+  - script:
+      tag: map_action
+      lang: painless
+      if: ctx._json?.action != null
+      source: >-
+        def a = Integer.parseInt(ctx._json.action.toString());
+        def actions = new HashMap();
+        actions.put(0, 'add');
+        actions.put(1, 'update');
+        actions.put(2, 'delete');
+        actions.put(4, 'logout');
+        actions.put(7, 'execute');
+        actions.put(8, 'login');
+        actions.put(9, 'failed_login');
+        actions.put(10, 'history_clear');
+        if (actions.containsKey(a)) {
+          ctx.event.action = actions.get(a);
+        } else {
+          ctx.event.action = 'unknown_' + a;
+        }
+        if (a == 9) {
+          ctx.event.outcome = 'failure';
+        } else {
+          ctx.event.outcome = 'success';
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to map action: {{_ingest.on_failure_message}}"
+
+  - convert:
+      tag: convert_action
+      field: _json.action
+      target_field: zabbix.audit.action_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to convert action: {{_ingest.on_failure_message}}"
+
+  - convert:
+      tag: convert_resourcetype
+      field: _json.resourcetype
+      target_field: zabbix.audit.resource_type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to convert resourcetype: {{_ingest.on_failure_message}}"
+
+  - script:
+      tag: map_resource_type
+      lang: painless
+      if: ctx.zabbix?.audit?.resource_type != null
+      source: >-
+        def rt = (int) ctx.zabbix.audit.resource_type;
+        def labels = new HashMap();
+        labels.put(0, 'user');
+        labels.put(4, 'host');
+        labels.put(5, 'host_group');
+        labels.put(6, 'item');
+        labels.put(7, 'trigger');
+        labels.put(11, 'user_group');
+        labels.put(13, 'template');
+        labels.put(14, 'host_group');
+        labels.put(15, 'action');
+        labels.put(16, 'graph');
+        labels.put(18, 'dashboard');
+        labels.put(23, 'maintenance');
+        labels.put(25, 'script');
+        labels.put(29, 'discovery_rule');
+        labels.put(33, 'host_prototype');
+        labels.put(34, 'web_scenario');
+        labels.put(37, 'sla');
+        labels.put(40, 'proxy');
+        labels.put(44, 'media_type');
+        labels.put(45, 'token');
+        labels.put(46, 'service');
+        labels.put(27, 'maintenance');
+        labels.put(3, 'media');
+        labels.put(19, 'map');
+        labels.put(26, 'screen');
+        labels.put(28, 'regexp');
+        labels.put(35, 'module');
+        labels.put(38, 'ha_node');
+        labels.put(47, 'scheduled_report');
+        labels.put(48, 'auth_token');
+        labels.put(49, 'template_group');
+        if (labels.containsKey(rt)) {
+          ctx.zabbix.audit.resource_type_name = labels.get(rt);
+        } else {
+          ctx.zabbix.audit.resource_type_name = 'type_' + rt;
+        }
+      ignore_failure: true
+
+  - rename:
+      tag: rename_resourceid
+      field: _json.resourceid
+      target_field: zabbix.audit.resource_id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_resource_cuid
+      field: _json.resource_cuid
+      target_field: zabbix.audit.resource_cuid
+      ignore_missing: true
+
+  - rename:
+      tag: rename_resourcename
+      field: _json.resourcename
+      target_field: zabbix.audit.resource_name
+      ignore_missing: true
+
+  - rename:
+      tag: rename_recordsetid
+      field: _json.recordsetid
+      target_field: zabbix.audit.recordset_id
+      ignore_missing: true
+
+  # Parse details JSON string into an object for the flattened field type
+  - json:
+      tag: parse_details_json
+      field: _json.details
+      target_field: zabbix.audit.details
+      if: ctx._json?.details != null && ctx._json.details instanceof String && ctx._json.details != ''
+      ignore_failure: true
+  - remove:
+      tag: remove_raw_details
+      field: _json.details
+      ignore_missing: true
+
+  # Map ip to source.ip
+  - rename:
+      tag: rename_ip_to_source
+      field: _json.ip
+      target_field: source.ip
+      if: ctx._json?.ip != null && ctx._json?.ip != ''
+      ignore_missing: true
+
+  # Set user.id from audit user_id
+  - set:
+      tag: set_user_id
+      field: user.id
+      copy_from: zabbix.audit.user_id
+      ignore_empty_value: true
+
+  # Append to related.user
+  - append:
+      tag: append_related_user
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null && ctx.user.name != ''
+
+  # Append to related.ip
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+
+  # Cleanup raw message (already parsed into structured fields)
+  # Note: message is re-set below from audit context
+  - remove:
+      tag: cleanup_raw_message
+      field: message
+      ignore_missing: true
+
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+  # Build a human-readable message (after cleanup so it doesn't get removed)
+  - set:
+      tag: set_message
+      field: message
+      value: "{{event.action}} {{zabbix.audit.resource_type_name}} {{zabbix.audit.resource_name}}"
+      if: ctx.event?.action != null && ctx.zabbix?.audit?.resource_type_name != null
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

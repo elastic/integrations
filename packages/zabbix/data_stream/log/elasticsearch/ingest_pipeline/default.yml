@@ -1,0 +1,116 @@
+---
+description: Pipeline for processing Zabbix server log lines from zabbix_server.log.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.log
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - process
+
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Zabbix
+
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Zabbix Server
+
+  # Preserve original message
+  - set:
+      tag: set_event_original
+      field: event.original
+      copy_from: message
+      if: ctx.message != null
+
+  # Grok the log line format: <spaces><PID>:<YYYYMMDD>:<HHMMSS.mmm> <message>
+  - grok:
+      tag: grok_log_line
+      field: message
+      patterns:
+        - '%{SPACE}%{INT:process.pid}:%{YEAR:_temp.year}%{MONTHNUM:_temp.month}%{MONTHDAY:_temp.day}:%{HOUR:_temp.hour}%{MINUTE:_temp.minute}%{SECOND:_temp.second}\.%{INT:_temp.ms} %{GREEDYDATA:message}'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to grok log line: {{_ingest.on_failure_message}}"
+
+  # Build timestamp and parse it
+  - set:
+      tag: set_temp_timestamp
+      field: _temp.timestamp
+      value: "{{_temp.year}}-{{_temp.month}}-{{_temp.day}}T{{_temp.hour}}:{{_temp.minute}}:{{_temp.second}}.{{_temp.ms}}"
+      if: ctx._temp?.year != null
+
+  - date:
+      tag: date_log_timestamp
+      field: _temp.timestamp
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS"
+      if: ctx._temp?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse log timestamp: {{_ingest.on_failure_message}}"
+
+  # Convert PID to long
+  - convert:
+      tag: convert_pid
+      field: process.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to convert PID: {{_ingest.on_failure_message}}"
+
+  # Detect slow queries and extract duration
+  - grok:
+      tag: grok_slow_query
+      field: message
+      patterns:
+        - 'slow query: %{NUMBER:zabbix.log.slow_query.duration:double} sec'
+      if: ctx.message != null && ctx.message.contains('slow query:')
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to extract slow query duration: {{_ingest.on_failure_message}}"
+
+  - set:
+      tag: set_slow_query_flag
+      field: zabbix.log.slow_query.detected
+      value: true
+      if: ctx.zabbix?.log?.slow_query?.duration != null
+
+  # Cleanup temp fields
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

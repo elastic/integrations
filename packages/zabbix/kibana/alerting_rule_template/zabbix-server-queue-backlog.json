@@ -1,0 +1,35 @@
+{
+    "id": "zabbix-server-queue-backlog",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Zabbix] Server Queue Backlog",
+        "tags": [
+            "Zabbix"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when the Zabbix server item processing queue exceeds a threshold.\n// A growing queue indicates the server cannot keep up with incoming data.\n// Adjust the threshold in the WHERE clause as needed.\nFROM metrics-zabbix.server_health-*\n| WHERE zabbix.server.queue.total IS NOT NULL\n| STATS max_queue = MAX(zabbix.server.queue.total), max_over_10m = MAX(zabbix.server.queue.over_10m) BY host.name\n| WHERE max_queue > 500 OR max_over_10m > 50"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

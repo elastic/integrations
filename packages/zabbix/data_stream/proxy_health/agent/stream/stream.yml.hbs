@@ -1,0 +1,67 @@
+{{#if suppress_health_degradation}}suppress_health_degradation: {{suppress_health_degradation}}{{/if}}
+interval: {{period}}
+resource.url: '{{zabbix_url}}/api_jsonrpc.php'
+resource.timeout: {{timeout}}
+resource.ssl:
+  verification_mode: '{{#if ssl_verification}}full{{else}}none{{/if}}'
+{{#if ssl.certificate_authorities}}
+  certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+state:
+  api_token: '{{api_token}}'
+redact:
+  fields:
+    - resource.url
+    - state.api_token
+program: |
+  (
+    request("POST", state.url).with({
+      "Header": {
+        "Content-Type": ["application/json-rpc"],
+        "Authorization": ["Bearer " + state.api_token]
+      },
+      "Body": bytes({
+        "jsonrpc": "2.0",
+        "method": "proxy.get",
+        "params": {
+          "output": "extend"
+        },
+        "id": 1
+      }.encode_json())
+    }).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body,
+          has(body.result) ?
+            {
+              "events": body.result.map(proxy, {"message": proxy.encode_json()}),
+              "api_token": state.api_token,
+              "url": state.url
+            }
+          :
+            {
+              "events": [],
+              "api_token": state.api_token,
+              "url": state.url
+            }
+        )
+      :
+        {
+          "events": [],
+          "api_token": state.api_token,
+          "url": state.url
+        }
+    )
+  )
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

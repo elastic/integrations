@@ -1,0 +1,44 @@
+title: Zabbix HA node status metrics
+type: metrics
+streams:
+  - input: cel
+    vars:
+      - name: period
+        type: text
+        title: Collection Interval
+        description: How often to poll the Zabbix API for HA node status.
+        required: true
+        show_user: true
+        default: 60s
+      - name: timeout
+        type: text
+        title: Request Timeout
+        description: Timeout for HTTP requests to the Zabbix API.
+        required: false
+        show_user: false
+        default: 30s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - zabbix-ha-status
+      - name: suppress_health_degradation
+        type: bool
+        title: Suppress Health Degradation
+        description: "When enabled, failures collecting this data stream will not mark the agent as degraded."
+        required: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+    title: Zabbix HA node status metrics
+    description: Collect high-availability node status from the Zabbix API
+    template_path: stream.yml.hbs
+elasticsearch:
+  index_mode: time_series
