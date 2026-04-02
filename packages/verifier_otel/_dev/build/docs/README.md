@@ -43,7 +43,6 @@ Credential fields use a flat, normalized naming convention to stay consistent wi
 |-------|----------|-------------|
 | `credentials_role_arn` | Yes | ARN of the IAM role to assume in the customer's AWS account |
 | `credentials_external_id` | Yes | External ID to prevent confused deputy attacks |
-| `default_region` | No | Default AWS region for API calls (default: `us-east-1`) |
 
 #### Azure Credentials
 
@@ -56,7 +55,7 @@ Credential fields use a flat, normalized naming convention to stay consistent wi
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `credentials_workload_identity_provider` | Yes | Full Workload Identity Federation resource name (project number is derived from this) |
+| `credentials_audience` | Yes | Full WIF resource name used as the STS audience (project number is derived from this when `credentials_service_account_email` is not set) |
 | `credentials_service_account_email` | Yes | GCP service account email for impersonation (project ID is derived from this when set) |
 
 ### Policy Configuration
@@ -77,7 +76,6 @@ Integration identification uses `policy_template` + `package_name` as the compos
 | `package_title` | No | Human-readable title of the integration package (for example, `AWS`, `Azure`) |
 | `package_version` | No | Semantic version of the integration package (for example, `2.17.0`). Different versions can require different permissions. When empty, the latest permission set is used. |
 | `package_policy_id` | No | Unique identifier for the package policy instance |
-| `namespace` | No | Namespace for the integration (default: `default`) |
 
 ## Supported Policy Templates
 
@@ -133,19 +131,25 @@ The integration emits OTEL logs with the following structure:
 
 ### Resource Attributes
 
+Set by the receiver:
+
 | Attribute | Description |
 |-----------|-------------|
 | `identity_federation.id` | Identity Federation identifier |
 | `identity_federation.name` | Identity Federation name |
-| `identity_federation.namespace` | Kibana Space the Identity Federation belongs to (default: `default`) |
-| `data_stream.type` | Always `logs` |
-| `data_stream.dataset` | Always `verifier_otel.verification` |
-| `data_stream.namespace` | Data stream namespace, matches `identity_federation.namespace` |
 | `verification.id` | Verification session ID |
 | `verification.timestamp` | When verification started |
 | `verification.type` | `on_demand` or `scheduled` |
 | `service.name` | Always `permission-verifier` |
 | `service.version` | Service version (for example, `1.0.0`) |
+
+Set by Fleet (via auto-injected `transform` processor):
+
+| Attribute | Description |
+|-----------|-------------|
+| `data_stream.type` | Always `logs` |
+| `data_stream.dataset` | Derived from the policy template name |
+| `data_stream.namespace` | Kibana Space the Identity Federation belongs to |
 
 ### Log Record Attributes
 
@@ -176,77 +180,150 @@ The integration emits OTEL logs with the following structure:
 
 ## Example Configurations
 
+The examples below show complete OTel pipeline configurations. When managed by Fleet, the `resource/verifier` processor block is injected automatically and `${var:namespace}` is resolved to the Kibana Space. For standalone testing, define the processor explicitly with a literal namespace value.
+
 ### AWS Example
 
 ```yaml
-identity_federation_id: "cc-12345"
-identity_federation_name: "Production Connector"
-verification_id: "verify-abc123"
-verification_type: "on_demand"
+receivers:
+  verifier:
+    identity_federation_id: "cc-12345"
+    identity_federation_name: "Production Connector"
+    verification_id: "verify-abc123"
+    verification_type: "on_demand"
+    account_type: "single-account"
+    providers:
+      aws:
+        credentials:
+          role_arn: "arn:aws:iam::123456789012:role/ElasticAgentRole"
+          external_id: "elastic-external-id-from-setup"
+    policies:
+      - policy_id: "policy-aws-security"
+        policy_name: "AWS Security Monitoring"
+        integrations:
+          - policy_template: "cloudtrail"
+            package_name: "aws"
+            package_title: "AWS"
+            package_version: "2.17.0"
 
-provider: "aws"
-account_type: "single-account"
+processors:
+  resource/verifier:
+    attributes:
+      - action: insert
+        key: data_stream.type
+        value: logs
+      - action: insert
+        key: data_stream.dataset
+        value: verifier_otel.verification
+      - action: insert
+        key: data_stream.namespace
+        value: ${var:namespace}
+      - action: insert
+        key: identity_federation.namespace
+        value: ${var:namespace}
 
-credentials_role_arn: "arn:aws:iam::123456789012:role/ElasticAgentRole"
-credentials_external_id: "elastic-external-id-from-setup"
-default_region: "us-east-1"
-
-policy_id: "policy-aws-security"
-policy_name: "AWS Security Monitoring"
-
-policy_template: "cloudtrail"
-package_name: "aws"
-package_title: "AWS"
-package_version: "2.17.0"
-namespace: "default"
+service:
+  pipelines:
+    logs:
+      receivers: [verifier]
+      processors: [resource/verifier]
+      exporters: [elasticsearch/otel]
 ```
 
 ### Azure Example
 
 ```yaml
-identity_federation_id: "cc-67890"
-identity_federation_name: "Azure Connector"
-verification_id: "verify-def456"
-verification_type: "on_demand"
+receivers:
+  verifier:
+    identity_federation_id: "cc-67890"
+    identity_federation_name: "Azure Connector"
+    verification_id: "verify-def456"
+    verification_type: "on_demand"
+    account_type: "single-account"
+    providers:
+      azure:
+        credentials:
+          tenant_id: "00000000-0000-0000-0000-000000000000"
+          client_id: "11111111-1111-1111-1111-111111111111"
+    policies:
+      - policy_id: "policy-azure-monitoring"
+        policy_name: "Azure Activity Monitoring"
+        integrations:
+          - policy_template: "activitylogs"
+            package_name: "azure"
+            package_title: "Azure"
+            package_version: "1.5.0"
 
-provider: "azure"
-account_type: "single-account"
+processors:
+  resource/verifier:
+    attributes:
+      - action: insert
+        key: data_stream.type
+        value: logs
+      - action: insert
+        key: data_stream.dataset
+        value: verifier_otel.verification
+      - action: insert
+        key: data_stream.namespace
+        value: ${var:namespace}
+      - action: insert
+        key: identity_federation.namespace
+        value: ${var:namespace}
 
-credentials_tenant_id: "00000000-0000-0000-0000-000000000000"
-credentials_client_id: "11111111-1111-1111-1111-111111111111"
-
-policy_id: "policy-azure-monitoring"
-policy_name: "Azure Activity Monitoring"
-
-policy_template: "activitylogs"
-package_name: "azure"
-package_title: "Azure"
-package_version: "1.5.0"
-namespace: "default"
+service:
+  pipelines:
+    logs:
+      receivers: [verifier]
+      processors: [resource/verifier]
+      exporters: [elasticsearch/otel]
 ```
 
 ### GCP Example
 
 ```yaml
-identity_federation_id: "cc-gcp-01"
-identity_federation_name: "GCP Connector"
-verification_id: "verify-ghi789"
-verification_type: "on_demand"
+receivers:
+  verifier:
+    identity_federation_id: "cc-gcp-01"
+    identity_federation_name: "GCP Connector"
+    verification_id: "verify-ghi789"
+    verification_type: "on_demand"
+    account_type: "single-account"
+    providers:
+      gcp:
+        credentials:
+          audience: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider"
+          service_account_email: "verifier@my-gcp-project-123.iam.gserviceaccount.com"
+    policies:
+      - policy_id: "policy-gcp-audit"
+        policy_name: "GCP Audit Monitoring"
+        integrations:
+          - policy_template: "audit"
+            package_name: "gcp"
+            package_title: "GCP"
+            package_version: "1.2.0"
 
-provider: "gcp"
-account_type: "single-account"
+processors:
+  resource/verifier:
+    attributes:
+      - action: insert
+        key: data_stream.type
+        value: logs
+      - action: insert
+        key: data_stream.dataset
+        value: verifier_otel.verification
+      - action: insert
+        key: data_stream.namespace
+        value: ${var:namespace}
+      - action: insert
+        key: identity_federation.namespace
+        value: ${var:namespace}
 
-credentials_workload_identity_provider: "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider"
-credentials_service_account_email: "verifier@my-gcp-project-123.iam.gserviceaccount.com"
-
-policy_id: "policy-gcp-audit"
-policy_name: "GCP Audit Monitoring"
-
-policy_template: "audit"
-package_name: "gcp"
-package_title: "GCP"
-package_version: "1.2.0"
-namespace: "default"
+service:
+  pipelines:
+    logs:
+      receivers: [verifier]
+      processors: [resource/verifier]
+      exporters: [elasticsearch/otel]
 ```
 
 ## Related
