@@ -73,14 +73,11 @@ func findPackagePaths(dir string) ([]string, error) {
 func elasticPackageBinaryPath() (string, bool) {
 	// ELASTIC_PACKAGE_BIN is set by CI and points to the elastic-package binary.
 	if ciPath := os.Getenv("ELASTIC_PACKAGE_BIN"); ciPath != "" {
-		fmt.Println("ELASTIC_PACKAGE_BIN environment variable found, checking for elastic-package binary in CI path")
 		if _, err := os.Stat(ciPath); err == nil {
-			fmt.Println("elastic-package binary found in ELASTIC_PACKAGE_BIN path:", ciPath)
 			return ciPath, true
 		}
 	}
 	if path, err := exec.LookPath(elasticPackageBinaryName); err == nil {
-		fmt.Println("elastic-package binary found in PATH:", path)
 		return path, true
 	}
 	return "", false
