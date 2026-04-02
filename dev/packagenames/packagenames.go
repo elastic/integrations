@@ -71,6 +71,7 @@ func findPackagePaths(dir string) ([]string, error) {
 }
 
 func elasticPackageBinaryPath() (string, bool) {
+	// ELASTIC_PACKAGE_BIN is set by CI and points to the elastic-package binary.
 	if ciPath := os.Getenv("ELASTIC_PACKAGE_BIN"); ciPath != "" {
 		fmt.Println("ELASTIC_PACKAGE_BIN environment variable found, checking for elastic-package binary in CI path")
 		if _, err := os.Stat(ciPath); err == nil {
@@ -115,16 +116,16 @@ func walkPackagePaths(dir string) ([]string, error) {
 		}
 		manifestPath := filepath.Join(path, manifestFileName)
 		manifest, err := readManifest(manifestPath)
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		} else if err != nil {
 			return fmt.Errorf("error reading manifest %s: %w", manifestPath, err)
 		}
 		if !manifest.isValid() {
 			return nil
 		}
 		paths = append(paths, path)
+		// No need to look deeper, we already found a package.
 		return filepath.SkipDir
 	})
 	return paths, err
