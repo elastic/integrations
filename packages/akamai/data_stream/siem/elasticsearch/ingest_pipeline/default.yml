@@ -127,65 +127,64 @@ processors:
       field: json.httpMessage.responseHeaders
       ignore_missing: true
   - remove:
-      tag: remove_http_message_response_headers_empty_placeholder
+      tag: remove_http_message_response_headers_non_kv
       field: json.httpMessage.responseHeaders
-      if: ctx.json.httpMessage?.responseHeaders == "{p}"
-  - script:
-      lang: painless
-      tag: script_drop_non_kv_response_headers
-      if: ctx.json?.httpMessage?.responseHeaders != null
-      source: |
-        def rh = ctx.json.httpMessage.responseHeaders;
-        if (rh instanceof String) {
-          def s = (String) rh;
-          if (s.indexOf(':') < 0) {
-            ctx.json.httpMessage.remove('responseHeaders');
-          }
-        }
+      if: ctx.json?.httpMessage?.responseHeaders instanceof String && ctx.json.httpMessage.responseHeaders.contains(":") == false
+  - set:
+      tag: copy_response_headers_for_kv
+      if: ctx.json?.httpMessage?.responseHeaders != null && ctx.json.httpMessage.responseHeaders != ""
+      field: _tmp.akamai_response_headers_kv
+      copy_from: json.httpMessage.responseHeaders
   - gsub:
-      tag: gsub_http_message_response_headers_unfold
-      field: json.httpMessage.responseHeaders
+      tag: gsub_tmp_response_headers_obs_fold
+      description: >
+        On a temp copy only: replace RFC 7230 obs-fold (CRLF + space/tab) with a single SP so
+        each physical line is a valid Name: value for KV. json.httpMessage.responseHeaders is unchanged.
+      field: _tmp.akamai_response_headers_kv
       pattern: '\r\n[\t ]+'
       replacement: ' '
       ignore_missing: true
   - kv:
-      if: ctx.json?.httpMessage?.responseHeaders != ""
       tag: kv_httpMessage_responseHeaders
-      field: json.httpMessage.responseHeaders
+      field: _tmp.akamai_response_headers_kv
       target_field: akamai.siem.response.headers
       field_split: '\r\n'
       value_split: ':\s*'
       ignore_missing: true
+      if: ctx._tmp?.akamai_response_headers_kv != null && ctx._tmp.akamai_response_headers_kv != ""
+      trim_key: ' '
+      trim_value: ' '
   - urldecode:
       tag: urldecode_httpMessage_requestHeaders
       field: json.httpMessage.requestHeaders
       ignore_missing: true
-  - script:
-      lang: painless
-      tag: script_drop_non_kv_request_headers
-      if: ctx.json?.httpMessage?.requestHeaders != null
-      source: |
-        def rh = ctx.json.httpMessage.requestHeaders;
-        if (rh instanceof String) {
-          def s = (String) rh;
-          if (s.indexOf(':') < 0) {
-            ctx.json.httpMessage.remove('requestHeaders');
-          }
-        }
-  - gsub:
-      tag: gsub_http_message_request_headers_unfold
+  - remove:
+      tag: remove_http_message_request_headers_non_kv
       field: json.httpMessage.requestHeaders
+      if: ctx.json?.httpMessage?.requestHeaders instanceof String && ctx.json.httpMessage.requestHeaders.contains(":") == false
+  - set:
+      tag: copy_request_headers_for_kv
+      if: ctx.json?.httpMessage?.requestHeaders != null && ctx.json.httpMessage.requestHeaders != ""
+      field: _tmp.akamai_request_headers_kv
+      copy_from: json.httpMessage.requestHeaders
+  - gsub:
+      tag: gsub_tmp_request_headers_obs_fold
+      description: >
+        Obs-fold to SP on temp copy only (see gsub_tmp_response_headers_obs_fold).
+      field: _tmp.akamai_request_headers_kv
       pattern: '\r\n[\t ]+'
       replacement: ' '
       ignore_missing: true
   - kv:
-      if: ctx.json?.httpMessage?.requestHeaders != ""
       tag: kv_httpMessage_requestHeaders
-      field: json.httpMessage.requestHeaders
+      field: _tmp.akamai_request_headers_kv
       target_field: akamai.siem.request.headers
       field_split: '\r\n'
       value_split: ':\s*'
       ignore_missing: true
+      if: ctx._tmp?.akamai_request_headers_kv != null && ctx._tmp.akamai_request_headers_kv != ""
+      trim_key: ' '
+      trim_value: ' '
   - script:
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.
