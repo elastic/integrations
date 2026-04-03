@@ -130,28 +130,23 @@ processors:
       tag: remove_http_message_response_headers_non_kv
       field: json.httpMessage.responseHeaders
       if: ctx.json?.httpMessage?.responseHeaders instanceof String && ctx.json.httpMessage.responseHeaders.contains(":") == false
-  - set:
-      tag: copy_response_headers_for_kv
-      if: ctx.json?.httpMessage?.responseHeaders != null && ctx.json.httpMessage.responseHeaders != ""
-      field: _tmp.akamai_response_headers_kv
-      copy_from: json.httpMessage.responseHeaders
   - gsub:
-      tag: gsub_tmp_response_headers_obs_fold
+      tag: gsub_http_message_response_headers_obs_fold
       description: >
-        On a temp copy only: replace RFC 7230 obs-fold (CRLF + space/tab) with a single SP so
-        each physical line is a valid Name: value for KV. json.httpMessage.responseHeaders is unchanged.
-      field: _tmp.akamai_response_headers_kv
+        Replace RFC 7230 obs-fold (CRLF + space/tab) with a single SP so each line is a valid
+        Name: value for KV. The json subtree is removed later in the pipeline.
+      field: json.httpMessage.responseHeaders
       pattern: '\r\n[\t ]+'
       replacement: ' '
       ignore_missing: true
   - kv:
       tag: kv_httpMessage_responseHeaders
-      field: _tmp.akamai_response_headers_kv
+      field: json.httpMessage.responseHeaders
       target_field: akamai.siem.response.headers
       field_split: '\r\n'
       value_split: ':\s*'
       ignore_missing: true
-      if: ctx._tmp?.akamai_response_headers_kv != null && ctx._tmp.akamai_response_headers_kv != ""
+      if: ctx.json?.httpMessage?.responseHeaders != null && ctx.json.httpMessage.responseHeaders != ""
       trim_key: ' '
       trim_value: ' '
   - urldecode:
@@ -162,27 +157,22 @@ processors:
       tag: remove_http_message_request_headers_non_kv
       field: json.httpMessage.requestHeaders
       if: ctx.json?.httpMessage?.requestHeaders instanceof String && ctx.json.httpMessage.requestHeaders.contains(":") == false
-  - set:
-      tag: copy_request_headers_for_kv
-      if: ctx.json?.httpMessage?.requestHeaders != null && ctx.json.httpMessage.requestHeaders != ""
-      field: _tmp.akamai_request_headers_kv
-      copy_from: json.httpMessage.requestHeaders
   - gsub:
-      tag: gsub_tmp_request_headers_obs_fold
+      tag: gsub_http_message_request_headers_obs_fold
       description: >
-        Obs-fold to SP on temp copy only (see gsub_tmp_response_headers_obs_fold).
-      field: _tmp.akamai_request_headers_kv
+        Obs-fold to SP before KV (see gsub_http_message_response_headers_obs_fold).
+      field: json.httpMessage.requestHeaders
       pattern: '\r\n[\t ]+'
       replacement: ' '
       ignore_missing: true
   - kv:
       tag: kv_httpMessage_requestHeaders
-      field: _tmp.akamai_request_headers_kv
+      field: json.httpMessage.requestHeaders
       target_field: akamai.siem.request.headers
       field_split: '\r\n'
       value_split: ':\s*'
       ignore_missing: true
-      if: ctx._tmp?.akamai_request_headers_kv != null && ctx._tmp.akamai_request_headers_kv != ""
+      if: ctx.json?.httpMessage?.requestHeaders != null && ctx.json.httpMessage.requestHeaders != ""
       trim_key: ' '
       trim_value: ' '
   - script:
