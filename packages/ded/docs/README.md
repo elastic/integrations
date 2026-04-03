@@ -6,7 +6,7 @@ This package leverages event logs. Prior to using this integration, you must hav
 
 **Note**: In versions 2.1.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blog:
+The following blog provides additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Detect data exfiltration activity with Kibana’s new integration](https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration)
 
 ## Installation
@@ -22,10 +22,10 @@ For more detailed information refer to the following blog:
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see **Data Exfiltration Detection**. If you do not see this card, events must be ingested from a source that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10), such as Elastic Defend. When you select the card, you will see pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. If you are using Elastic Defend to collect events, file events are in `logs-endpoint.events.file-*` and network events in `logs-endpoint.events.network-*`. If you are only collecting file or network events, select only the relevant jobs at this step.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana. 
     1. You have started the above anomaly detection jobs.
-    1. You have **read** access to `.ml-anomalies-shared` index or are assigned the `machine_learning_user` role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
+    1. You have **read** access to `.ml-anomalies-shared` data stream/index or are assigned the `machine_learning_user` role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
     1. After enabling the jobs, go to **Management > Stack Management > Kibana > Data Views**.  Click on **Create data view** with the following settings:
         - Name: `.ml-anomalies-shared`
-        - Index pattern : `.ml-anomalies-shared`
+        - Index pattern : `.ml-anomalies-shared*`
         - Select **Show Advanced settings** enable **Allow hidden and system indices**
         - Custom data view ID: `.ml-anomalies-shared`
 

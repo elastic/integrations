@@ -46,6 +46,24 @@ processors:
       tag: remove_error_message_empty
       if: ctx.error?.message != null && ctx.error.message instanceof String && (ctx.error.message.contains('error in field ') || ctx.error.message.contains('strconv.Parse'))
       ignore_missing: true
+  # Normalize CEF extension field names that contain hyphens to the
+  # camelCase form used by the rest of this pipeline. This used to happen
+  # the agent-side before decode_cef accepted hyphens (elastic/beats#40348).
+  - rename:
+      field: cef.extensions.PanOSX-Forwarded-ForIP
+      tag: rename_cef_PanOSX-Forwarded-ForIP
+      target_field: cef.extensions.PanOSXForwardedForIP
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.PanOSX-Forwarded-For
+      tag: rename_cef_PanOSX-Forwarded-For
+      target_field: cef.extensions.PanOSXForwardedFor
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.PanOSSplit-tunnelconfiguration
+      tag: rename_cef_PanOSSplit-tunnelconfiguration
+      target_field: cef.extensions.PanOSSplitTunnelconfiguration
+      ignore_missing: true
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -3802,9 +3820,23 @@ processors:
       tag: rename_extension_requestUrl
       target_field: prisma_access.event.request.url
       ignore_missing: true
+  # For wildfire events, the CEF request field contains a filename, not a
+  # URL. Map it to file.name instead of url.full.
+  - append:
+      field: file.name
+      tag: set_file_name_from_request_url_for_wildfire
+      value: "{{{prisma_access.event.request.url}}}"
+      allow_duplicates: false
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus') && ctx.prisma_access?.event?.request?.url != null
+  - set:
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name_for_wildfire
+      copy_from: prisma_access.event.request.url
+      ignore_empty_value: true
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus')
   - uri_parts:
       field: prisma_access.event.request.url
-      if: ctx.prisma_access?.event?.request?.url != null && ctx.prisma_access.event.request.url != ''
+      if: ctx.prisma_access?.event?.request?.url != null && ctx.prisma_access.event.request.url != '' && !(ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus'))
       tag: uri_parts_processor
       ignore_failure: true
   - set:
@@ -3812,6 +3844,7 @@ processors:
       tag: set_http_request_url_from_event_request_url
       copy_from: prisma_access.event.request.url
       ignore_empty_value: true
+      if: "!(ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus'))"
   - convert:
       field: cef.extensions.PanOSRootCNLength
       tag: convert_extension_PanOSRootCNLength_to_long
