@@ -1,0 +1,304 @@
+# HAProxy OTel — Frontend dashboard
+# Index: metrics-haproxyreceiver.otel-*
+
+dashboards:
+- id: haproxy_otel-frontend
+  name: '[HAProxy OTel] Frontend'
+  description: Per-frontend request rates, connection rates, session utilisation, bytes throughput, request errors, denied requests, and 
+    status code distribution.
+  filters:
+  - field: data_stream.dataset
+    equals: haproxyreceiver.otel
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  controls:
+  - type: options
+    label: Proxy (Frontend)
+    data_view: metrics-*
+    field: haproxy.proxy_name
+  - type: options
+    label: HAProxy Instance
+    data_view: metrics-*
+    field: haproxy.addr
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: haproxy_otel-overview
+      - label: Frontend
+        dashboard: haproxy_otel-frontend
+      - label: Backend
+        dashboard: haproxy_otel-backend
+      - label: Server
+        dashboard: haproxy_otel-server
+
+  - hide_title: true
+    size: {w: 12, h: 8}
+    markdown:
+      content: |
+        ## [HAProxy OTel] Frontend
+
+        Per-frontend metrics for client-facing listeners:
+        - Request and connection rates
+        - Session utilisation and bytes throughput
+        - Request errors and denied requests
+        - HTTP status code distribution
+
+  - title: Request Rate
+    hide_title: true
+    size: {w: 18, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.total IS NOT NULL
+      - STATS req_rate = SUM(RATE(haproxy.requests.total))
+      primary:
+        field: req_rate
+        label: req/s
+        format:
+          type: number
+          decimals: 1
+          suffix: "/s"
+
+  - title: Connection Rate
+    hide_title: true
+    size: {w: 18, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.connections.rate IS NOT NULL
+      - STATS conn_rate = AVG(haproxy.connections.rate)
+      primary:
+        field: conn_rate
+        label: conn/s
+        format:
+          type: number
+          decimals: 1
+          suffix: "/s"
+
+  - title: Request Errors
+    hide_title: true
+    size: {w: 18, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.errors IS NOT NULL
+      - STATS err_rate = SUM(RATE(haproxy.requests.errors))
+      primary:
+        field: err_rate
+        label: errors/s
+        format:
+          type: number
+          decimals: 2
+          suffix: "/s"
+
+  - title: Denied Requests
+    hide_title: true
+    size: {w: 18, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.denied IS NOT NULL
+      - STATS denied = SUM(RATE(haproxy.requests.denied))
+      primary:
+        field: denied
+        label: denied/s
+        format:
+          type: number
+          decimals: 2
+          suffix: "/s"
+
+  - title: Request Rate by Frontend Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.total IS NOT NULL
+      - STATS req_rate = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: req_rate
+        label: Requests/s
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: haproxy.proxy_name
+      legend:
+        visible: show
+        position: right
+
+  - title: Connection Rate by Frontend Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.connections.rate IS NOT NULL
+      - STATS conn_rate = AVG(haproxy.connections.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: conn_rate
+        label: Connections/s
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: haproxy.proxy_name
+      legend:
+        visible: show
+        position: right
+
+  - title: Status Code Distribution
+    size: {w: 24, h: 12}
+    esql:
+      type: pie
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL
+      - STATS requests = SUM(RATE(haproxy.requests.total)) BY attributes.status_code
+      - SORT requests DESC
+      - LIMIT 6
+      metrics:
+      - field: requests
+      breakdowns:
+      - field: attributes.status_code
+        label: Status Code
+      appearance:
+        donut: medium
+      legend:
+        visible: show
+      color:
+        palette: eui_amsterdam_color_blind
+        assignments:
+        - value: "2xx"
+          color: '#54B399'
+        - value: "3xx"
+          color: '#6DCCB1'
+        - value: "4xx"
+          color: '#D6BF57'
+        - value: "5xx"
+          color: '#E7664C'
+
+  - title: Bytes Throughput by Frontend
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND (haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL)
+      - STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20,
+        ?_tstart, ?_tend), haproxy.proxy_name
+      - EVAL bytes_in = COALESCE(bytes_in, 0)
+      - EVAL bytes_out = COALESCE(bytes_out, 0)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: bytes_in
+        label: Bytes in/s
+        format:
+          type: bytes
+      - field: bytes_out
+        label: Bytes out/s
+        format:
+          type: bytes
+      breakdown:
+        field: haproxy.proxy_name
+      legend:
+        visible: show
+        position: right
+
+  - title: Request Errors by Frontend Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND" AND haproxy.requests.errors IS NOT NULL
+      - STATS err_rate = SUM(RATE(haproxy.requests.errors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: err_rate
+        label: Errors/s
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: haproxy.proxy_name
+      legend:
+        visible: show
+        position: right
+
+  - title: Frontend Summary Table
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-haproxyreceiver.otel-*
+      - WHERE haproxy.service_name == "FRONTEND"
+      - STATS req_rate = SUM(RATE(haproxy.requests.total)), conn_rate = AVG(haproxy.connections.rate), err_rate = 
+        SUM(RATE(haproxy.requests.errors)), denied_rate = SUM(RATE(haproxy.requests.denied)), sessions = 
+        SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY haproxy.proxy_name, haproxy.addr
+      - SORT req_rate DESC
+      - LIMIT 50
+      breakdowns:
+      - field: haproxy.proxy_name
+        label: Proxy
+      - field: haproxy.addr
+        label: Instance
+      metrics:
+      - field: req_rate
+        label: Req/s
+        format:
+          type: number
+          decimals: 1
+      - field: conn_rate
+        label: Conn/s
+        format:
+          type: number
+          decimals: 1
+      - field: err_rate
+        label: Errors/s
+        format:
+          type: number
+          decimals: 2
+      - field: denied_rate
+        label: Denied/s
+        format:
+          type: number
+          decimals: 2
+      - field: sessions
+        label: Sessions
+        format:
+          type: number
+          decimals: 0
+      paging:
+        enabled: true
+        page_size: 10
