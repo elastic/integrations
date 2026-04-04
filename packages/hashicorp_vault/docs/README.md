@@ -594,6 +594,7 @@ The `metrics` data stream collects telemetry data from Hashicorp Vault. These me
 | labels.auth_method | Authorization engine type. | keyword |  |
 | labels.cluster | The cluster name from which the metric originated; set in the configuration file, or automatically generated when a cluster is created. | keyword |  |
 | labels.cluster_address | Address of the Vault cluster from which the metric originated. | keyword |  |
+| labels.code |  | keyword |  |
 | labels.creation_ttl | Time-to-live value assigned to a token or lease at creation. This value is rounded up to the next-highest bucket; the available buckets are 1m, 10m, 20m, 1h, 2h, 1d, 2d, 7d, and 30d. Any longer TTL is assigned the value +Inf. | keyword |  |
 | labels.expiring |  | keyword |  |
 | labels.gauge |  | keyword |  |
@@ -606,6 +607,7 @@ The `metrics` data stream collects telemetry data from Hashicorp Vault. These me
 | labels.policy |  | keyword |  |
 | labels.quantile |  | keyword |  |
 | labels.queue_id |  | keyword |  |
+| labels.seal_wrapper_name |  | keyword |  |
 | labels.term |  | keyword |  |
 | labels.token_type | Identifies whether the token is a batch token or a service token. | keyword |  |
 | labels.type |  | keyword |  |
