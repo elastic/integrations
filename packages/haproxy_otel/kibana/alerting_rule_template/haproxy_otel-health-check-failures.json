@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-health-check-failures",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] Server health check failures",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-haproxyreceiver.otel-*\n// Failed checks (while server UP) \u2014 server-level counter only\n| WHERE haproxy.failed_checks IS NOT NULL\n| WHERE haproxy.service_name != \"FRONTEND\" AND haproxy.service_name != \"BACKEND\"\n| STATS fail_increase = SUM(INCREASE(haproxy.failed_checks))\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n| WHERE fail_increase > 0\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT fail_increase DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
