@@ -1,0 +1,42 @@
+config_version: 2
+interval: {{interval}}
+resource.url: "https://epr.elastic.co"
+state:
+  mode: "{{mode}}"
+  events_per_interval: {{events_per_interval}}
+  spike_events: {{spike_events}}
+  spike_every_seconds: {{spike_every_seconds}}
+  cursor:
+    counter: 0
+    interval_count: 0
+program: |
+  state.with(
+    (has(state.batch_remaining) && state.batch_remaining > 0).as(is_continuation,
+      int(is_continuation ?
+        state.batch_remaining
+      :
+        (state.mode == "spike" && int(state.cursor.interval_count) % int(state.spike_every_seconds) == 0 ?
+          state.spike_events
+        :
+          state.events_per_interval
+        )
+      ).as(remaining, {
+        "events": [{
+          "counter": {
+            "value": int(state.cursor.counter)
+          }
+        }],
+        "cursor": {
+          "counter": int(state.cursor.counter) + 1,
+          "interval_count": !is_continuation ?
+            int(state.cursor.interval_count) + 1
+          :
+            int(state.cursor.interval_count)
+        },
+        "batch_remaining": remaining - 1,
+        "want_more": remaining > 1
+      })
+    )
+  )
+tags:
+  - agentless-hello-world
