@@ -1,71 +1,34 @@
 # Agentless Hello World
 
-This is a sample integration designed to exercise the Agentless infrastructure. It periodically fetches data from `https://epr.elastic.co` every minute to demonstrate basic agentless functionality.
+This is a sample integration designed to exercise the Agentless infrastructure. It periodically fetches data from `https://epr.elastic.co` every 20 seconds to demonstrate basic agentless functionality.
 
 ## Overview
 
 The Agentless Hello World integration is a minimal example that:
 - Fetches data from the Elastic Package Registry (EPR) endpoint
-- Runs every 1 minute
+- Runs every 20 seconds
 - Requires no user configuration
 
 It also includes an optional **Mock counter metrics** data stream for generating synthetic metric data at a configurable rate, useful for testing rate limiting and ingestion throughput.
 
 ## Configuration
 
-### Generic logs (enabled by default)
-
-This data stream requires no configuration from the user. All settings are pre-configured:
+This integration requires no configuration from the user. All settings are pre-configured:
 - **Endpoint**: `https://epr.elastic.co`
-- **Interval**: 1 minute
+- **Interval**: 20 seconds
 - **Deployment mode**: Agentless by default
 
 ### Mock counter metrics (disabled by default)
 
-This data stream generates mock counter metrics entirely within the agent. No external endpoint is called. Enable it and configure the following settings:
+Generates mock counter metrics entirely within the agent. No external endpoint is called. Each event contains an incrementing `counter.value` integer that persists across agent restarts. Two modes are available:
 
-- **Interval**: Time between each batch of events (default: `1s`)
-- **Mode**: Rate pattern, either `Constant` or `Spike` (default: `Constant`)
-- **Events per interval**: Number of events to generate per interval (default: `10`). In spike mode this is the baseline rate between spikes.
-
-#### Constant mode
-
-Produces a steady stream of events at the configured rate.
-
-```
-events_per_interval: 10, interval: 1s → 10 events/sec, steady
-```
-
-#### Spike mode
-
-Same as constant mode, but periodically produces a burst of events. Two additional settings become available under advanced options:
-
-- **Spike events per interval**: Number of events during a spike burst (default: `100`)
-- **Spike every N seconds**: How often a spike occurs (default: `60`)
-
-```
-events_per_interval: 10, spike_events: 100, spike_every_seconds: 30
-
- 100 |              █                 █
-     |              █                 █
-  10 |██████████████████████████████████████████
-     +--------+--------+--------+--------+------> time
-     0s      10s      20s      30s      40s
-```
-
-Each event contains a `counter.value` field with an incrementing integer that persists across agent restarts.
+- **Constant** — produces events at a steady rate.
+- **Spike** — same as constant, but with periodic bursts. Spike settings are available under advanced options.
 
 ## Data Collection
 
-### Generic logs
-
-Makes HTTP GET requests to `https://epr.elastic.co` and stores:
+The integration makes HTTP GET requests to `https://epr.elastic.co` and stores:
 - **status_code**: HTTP Status Code for the response.
-
-### Mock counter metrics
-
-Generates synthetic events containing:
-- **counter.value**: An incrementing integer (1, 2, 3, ...).
 
 ## Requirements
 
