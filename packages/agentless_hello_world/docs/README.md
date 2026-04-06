@@ -18,7 +18,7 @@ This integration requires no configuration from the user. All settings are pre-c
 - **Interval**: 20 seconds
 - **Deployment mode**: Agentless by default
 
-### Mock counter metrics (disabled by default)
+### Mock counter metrics (turned off by default)
 
 Generates mock counter metrics entirely within the agent. No external endpoint is called. Each event contains an incrementing `counter.value` integer that persists across agent restarts. Two modes are available:
 
