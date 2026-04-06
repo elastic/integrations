@@ -1,0 +1,138 @@
+- name: event.modified
+  type: date
+  description: Timestamp when the GDACS event was last modified.
+- name: geo.country_iso_code
+  type: keyword
+  description: ISO 3166-1 alpha-2 country code of the primary affected country.
+- name: geo.country_name
+  type: keyword
+  description: Name of the primary affected country.
+- name: geo.location
+  type: geo_point
+  description: Centroid coordinates of the event or affected area.
+- name: geo.name
+  type: keyword
+  description: Human-readable name of the event location.
+- name: gdacs
+  type: group
+  description: >-
+    Fields specific to the Global Disaster Alert and Coordination System (GDACS).
+  fields:
+    - name: event_id
+      type: keyword
+      description: GDACS numeric event identifier.
+    - name: episode_id
+      type: keyword
+      description: GDACS episode identifier within an event.
+    - name: event_type
+      type: keyword
+      description: >-
+        GDACS event type code: EQ (Earthquake), TC (Tropical Cyclone),
+        FL (Flood), VO (Volcano), DR (Drought), WF (Wildfire).
+    - name: event_type_name
+      type: keyword
+      description: Human-readable name for the GDACS event type.
+    - name: event_name
+      type: keyword
+      description: GDACS internal event name.
+    - name: name
+      type: keyword
+      description: Human-readable event name (e.g. "Earthquake in Myanmar").
+    - name: description
+      type: text
+      description: Short text description of the event.
+    - name: html_description
+      type: text
+      description: HTML-formatted description with alert level and date range.
+    - name: glide
+      type: keyword
+      description: >-
+        GLobal IDEntifier (GLIDE) number for the disaster
+        (e.g. DR-2023-000204-BRA).
+    - name: country
+      type: keyword
+      description: Comma-separated country names from the event.
+    - name: iso3
+      type: keyword
+      description: Primary ISO 3166-1 alpha-3 country code.
+    - name: alert_level
+      type: keyword
+      description: Overall alert level (Red, Orange, Green).
+    - name: alert_score
+      type: double
+      description: Numeric alert score.
+    - name: episode_alert_level
+      type: keyword
+      description: Alert level for the current episode.
+    - name: episode_alert_score
+      type: double
+      description: Numeric alert score for the current episode.
+    - name: is_current
+      type: boolean
+      description: Whether the event is currently active.
+    - name: is_temporary
+      type: boolean
+      description: Whether the event is a temporary/preliminary alert.
+    - name: source
+      type: keyword
+      description: Data source (e.g. NEIC, GDO, JRC).
+    - name: source_id
+      type: keyword
+      description: Source-specific event identifier.
+    - name: class
+      type: keyword
+      description: >-
+        GeoJSON feature class: Point_Centroid (epicenter) or Poly_area
+        (affected area polygon).
+    - name: polygon_label
+      type: keyword
+      description: Label for the geometry type (Centroid, Affected Area).
+    - name: icon
+      type: keyword
+      description: URL to the GDACS map icon for this event.
+    - name: severity
+      type: group
+      description: Severity data for the event.
+      fields:
+        - name: value
+          type: double
+          description: >-
+            Numeric severity value. Units vary by event type
+            (magnitude for EQ, km2 for DR, km/h for TC, etc.).
+        - name: text
+          type: keyword
+          description: Human-readable severity description.
+        - name: unit
+          type: keyword
+          description: Unit of measure for the severity value.
+    - name: url
+      type: group
+      description: GDACS API and report URLs for this event.
+      fields:
+        - name: report
+          type: keyword
+          description: URL to the GDACS report page.
+        - name: details
+          type: keyword
+          description: URL to the GDACS event data API endpoint.
+        - name: geometry
+          type: keyword
+          description: URL to the GDACS geometry/polygon API endpoint.
+    - name: affected_countries
+      type: object
+      object_type: keyword
+      description: >-
+        Array of affected country objects with iso2, iso3, and countryname fields.
+    - name: affected_country_names
+      type: keyword
+      description: List of affected country names.
+    - name: affected_country_iso2
+      type: keyword
+      description: List of affected country ISO 3166-1 alpha-2 codes.
+    - name: affected_country_iso3
+      type: keyword
+      description: List of affected country ISO 3166-1 alpha-3 codes.
+    - name: affected_area
+      type: geo_shape
+      description: >-
+        GeoJSON polygon or multipolygon representing the affected area of the disaster.

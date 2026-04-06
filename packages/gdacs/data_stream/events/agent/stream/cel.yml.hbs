@@ -1,0 +1,114 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+resource.timeout: 120s
+
+state:
+  event_types: '{{event_types}}'
+  alert_levels: '{{alert_levels}}'
+  page_size: {{page_size}}
+  lookback_hours: {{lookback_hours}}
+{{#if country}}
+  country: '{{country}}'
+{{/if}}
+
+program: |
+  request(
+    "GET",
+    state.url.trim_right("/") + "/events/geteventlist/SEARCH?" + {
+      "eventlist": [state.event_types],
+      "alertlevel": [state.alert_levels],
+      "pageSize": [string(state.page_size)],
+      "pageNumber": [string(state.?cursor.page_number.orValue(1))],
+      "fromDate": [state.?cursor.from_date.orValue(
+        (now - duration(string(state.lookback_hours) + "h")).format("01/02/2006")
+      )],
+      "toDate": [state.?cursor.to_date.orValue(now.format("01/02/2006"))],
+  {{#if country}}
+      "country": [state.country],
+  {{/if}}
+    }.format_query()
+  ).do_request().as(resp, resp.StatusCode != 200 ?
+    state.with({
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET search: " + (
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+          ),
+        },
+      },
+      "want_more": false,
+    })
+  :
+    resp.Body.decode_json().as(body,
+      (has(body.features) && size(body.features) > 0) ?
+        state.with({
+          "events": body.features.map(f, {"message":
+            (has(f.properties.url) && has(f.properties.url.geometry) && f.properties.url.geometry != "") ?
+              request(
+                "GET",
+                f.properties.url.geometry
+              ).do_request().as(polyResp, polyResp.StatusCode == 200 ?
+                polyResp.Body.decode_json().as(polyBody,
+                  has(polyBody.features) && size(polyBody.features) > 0 ?
+                    // Find first non-centroid feature with polygon geometry.
+                    polyBody.features.filter(pf,
+                      has(pf.properties) && has(pf.properties.Class) &&
+                      pf.properties.Class != "Point_Centroid" &&
+                      has(pf.geometry) && has(pf.geometry.type) &&
+                      (pf.geometry.type == "Polygon" || pf.geometry.type == "MultiPolygon")
+                    ).as(polys, size(polys) > 0 ?
+                      f.with({
+                        "polygon_geometry": polys[0].geometry,
+                        "polygon_class": polys[0].properties.Class,
+                        "polygon_label": polys[0].properties.?polygonlabel.orValue(""),
+                      }).encode_json()
+                    :
+                      f.encode_json()
+                    )
+                  :
+                    f.encode_json()
+                )
+              :
+                f.encode_json()
+              )
+            :
+              f.encode_json()
+          }),
+          "cursor": {
+            "page_number": int(state.?cursor.page_number.orValue(1)) + 1,
+            "from_date": state.?cursor.from_date.orValue(
+              (now - duration(string(state.lookback_hours) + "h")).format("01/02/2006")
+            ),
+            "to_date": state.?cursor.to_date.orValue(now.format("01/02/2006")),
+          },
+          "want_more": size(body.features) >= state.page_size,
+        })
+      :
+        state.with({
+          "events": [],
+          "want_more": false,
+          "cursor": {
+            "last_poll_date": now.format("01/02/2006"),
+          },
+        })
+    )
+  )
+
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

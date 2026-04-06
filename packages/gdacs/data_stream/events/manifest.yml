@@ -1,0 +1,73 @@
+title: "GDACS Events"
+type: logs
+streams:
+  - input: cel
+    title: "GDACS Events via CEL"
+    description: |-
+      Polls the GDACS Search API for natural disaster events, fetches detailed
+      geometry polygons for each event, and indexes them to this data stream.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: GDACS API Base URL
+        description: "Base URL for the GDACS API."
+        default: "https://www.gdacs.org/gdacsapi/api"
+        required: true
+        show_user: false
+      - name: interval
+        type: text
+        title: Poll Interval
+        description: "How often to poll the GDACS API. Examples: 1h, 30m, 6h."
+        default: "1h"
+        required: true
+      - name: lookback_hours
+        type: integer
+        title: Lookback Window (hours)
+        description: "Hours of history to fetch on first run (168 = 7 days)."
+        default: 168
+        required: true
+      - name: event_types
+        type: text
+        title: Event Types
+        description: "Semicolon-separated GDACS event codes: EQ, TC, FL, VO, DR, WF."
+        default: "EQ;TC;FL;VO;DR;WF"
+        required: true
+      - name: alert_levels
+        type: text
+        title: Alert Levels
+        description: "Semicolon-separated alert levels: red, orange, green."
+        default: "red;orange;green"
+        required: true
+      - name: country
+        type: text
+        title: Country Filter (ISO3)
+        description: >-
+          Optional ISO3 country code to filter events (e.g. USA, BRA, MMR).
+          Leave empty to receive events for all countries.
+        required: false
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: "Number of events per API page (max 100)."
+        default: 100
+        required: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        default:
+          - forwarded
+          - gdacs-events
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true

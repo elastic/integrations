@@ -1,0 +1,465 @@
+---
+description: "Normalizes GDACS GeoJSON features to ECS + gdacs.* fields."
+processors:
+  #
+  # ── Parse raw JSON message into document fields ──
+  #
+  - json:
+      tag: json_parse_message
+      field: message
+      add_to_root: true
+      add_to_root_conflict_strategy: replace
+  #
+  # ── Flatten properties.* into gdacs.* ──
+  #
+  - rename:
+      tag: rename_eventid
+      field: properties.eventid
+      target_field: gdacs.event_id
+      ignore_missing: true
+  - rename:
+      tag: rename_episodeid
+      field: properties.episodeid
+      target_field: gdacs.episode_id
+      ignore_missing: true
+  - rename:
+      tag: rename_eventtype
+      field: properties.eventtype
+      target_field: gdacs.event_type
+      ignore_missing: true
+  - rename:
+      tag: rename_eventname
+      field: properties.eventname
+      target_field: gdacs.event_name
+      ignore_missing: true
+  - rename:
+      tag: rename_name
+      field: properties.name
+      target_field: gdacs.name
+      ignore_missing: true
+  - rename:
+      tag: rename_description
+      field: properties.description
+      target_field: gdacs.description
+      ignore_missing: true
+  - rename:
+      tag: rename_htmldescription
+      field: properties.htmldescription
+      target_field: gdacs.html_description
+      ignore_missing: true
+  - rename:
+      tag: rename_glide
+      field: properties.glide
+      target_field: gdacs.glide
+      ignore_missing: true
+  - rename:
+      tag: rename_country
+      field: properties.country
+      target_field: gdacs.country
+      ignore_missing: true
+  - rename:
+      tag: rename_iso3
+      field: properties.iso3
+      target_field: gdacs.iso3
+      ignore_missing: true
+  - rename:
+      tag: rename_alertlevel
+      field: properties.alertlevel
+      target_field: gdacs.alert_level
+      ignore_missing: true
+  - rename:
+      tag: rename_alertscore
+      field: properties.alertscore
+      target_field: gdacs.alert_score
+      ignore_missing: true
+  - rename:
+      tag: rename_episodealertlevel
+      field: properties.episodealertlevel
+      target_field: gdacs.episode_alert_level
+      ignore_missing: true
+  - rename:
+      tag: rename_episodealertscore
+      field: properties.episodealertscore
+      target_field: gdacs.episode_alert_score
+      ignore_missing: true
+  - rename:
+      tag: rename_iscurrent
+      field: properties.iscurrent
+      target_field: gdacs.is_current
+      ignore_missing: true
+  - rename:
+      tag: rename_istemporary
+      field: properties.istemporary
+      target_field: gdacs.is_temporary
+      ignore_missing: true
+  - rename:
+      tag: rename_source
+      field: properties.source
+      target_field: gdacs.source
+      ignore_missing: true
+  - rename:
+      tag: rename_sourceid
+      field: properties.sourceid
+      target_field: gdacs.source_id
+      ignore_missing: true
+  - rename:
+      tag: rename_class
+      field: properties.Class
+      target_field: gdacs.class
+      ignore_missing: true
+  - rename:
+      tag: rename_polygonlabel
+      field: properties.polygonlabel
+      target_field: gdacs.polygon_label
+      ignore_missing: true
+  - rename:
+      tag: rename_icon
+      field: properties.icon
+      target_field: gdacs.icon
+      ignore_missing: true
+  - rename:
+      tag: rename_url_report
+      field: properties.url.report
+      target_field: gdacs.url.report
+      ignore_missing: true
+  - rename:
+      tag: rename_url_details
+      field: properties.url.details
+      target_field: gdacs.url.details
+      ignore_missing: true
+  - rename:
+      tag: rename_url_geometry
+      field: properties.url.geometry
+      target_field: gdacs.url.geometry
+      ignore_missing: true
+  - rename:
+      tag: rename_severitydata
+      field: properties.severitydata
+      target_field: gdacs.severity_raw
+      ignore_missing: true
+  - rename:
+      tag: rename_affectedcountries
+      field: properties.affectedcountries
+      target_field: gdacs.affected_countries
+      ignore_missing: true
+
+  #
+  # ── Severity sub-fields ──
+  #
+  - rename:
+      tag: rename_severity_value
+      field: gdacs.severity_raw.severity
+      target_field: gdacs.severity.value
+      ignore_missing: true
+  - rename:
+      tag: rename_severity_text
+      field: gdacs.severity_raw.severitytext
+      target_field: gdacs.severity.text
+      ignore_missing: true
+  - rename:
+      tag: rename_severity_unit
+      field: gdacs.severity_raw.severityunit
+      target_field: gdacs.severity.unit
+      ignore_missing: true
+  - remove:
+      tag: remove_severity_raw
+      field: gdacs.severity_raw
+      ignore_missing: true
+
+  #
+  # ── Timestamps ──
+  #
+  - date:
+      tag: date_fromdate
+      field: properties.fromdate
+      target_field: event.start
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - ISO8601
+      ignore_failure: true
+  - date:
+      tag: date_todate
+      field: properties.todate
+      target_field: event.end
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - ISO8601
+      ignore_failure: true
+  - date:
+      tag: date_datemodified
+      field: properties.datemodified
+      target_field: event.modified
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - ISO8601
+      ignore_failure: true
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      copy_from: event.start
+      ignore_empty_value: true
+
+  #
+  # ── Boolean coercion ──
+  #
+  - script:
+      tag: coerce_booleans
+      lang: painless
+      description: "Coerce GDACS string booleans to native booleans."
+      source: |
+        if (ctx.gdacs?.is_current != null) {
+          def val = ctx.gdacs.is_current.toString().toLowerCase();
+          ctx.gdacs.is_current = (val == "true" || val == "1");
+        }
+        if (ctx.gdacs?.is_temporary != null) {
+          def val = ctx.gdacs.is_temporary.toString().toLowerCase();
+          ctx.gdacs.is_temporary = (val == "true" || val == "1");
+        }
+
+  #
+  # ── Geometry handling ──
+  # Extract geo.location (point) and gdacs.affected_area (shape) from GeoJSON.
+  #
+  - script:
+      tag: extract_geometry
+      lang: painless
+      description: "Extract centroid geo_point and optional polygon geo_shape."
+      source: |
+        if (ctx.geo == null) { ctx.geo = new HashMap(); }
+
+        // Extract centroid from the event-level Point geometry.
+        def geom = ctx.geometry;
+        if (geom != null) {
+          String geomType = geom.type;
+          if (geomType == "Point" && geom.coordinates != null && geom.coordinates.size() >= 2) {
+            ctx.geo.location = ['lon': geom.coordinates[0], 'lat': geom.coordinates[1]];
+          }
+        }
+
+        // Extract affected area from the enriched polygon geometry.
+        def polyGeom = ctx.polygon_geometry;
+        if (polyGeom != null) {
+          String polyType = polyGeom.type;
+          if (polyType == "Polygon" || polyType == "MultiPolygon") {
+            if (ctx.gdacs == null) { ctx.gdacs = new HashMap(); }
+            ctx.gdacs.affected_area = polyGeom;
+
+            // Update class and polygon_label from enrichment if present.
+            if (ctx.polygon_class != null) { ctx.gdacs.class = ctx.polygon_class; }
+            if (ctx.polygon_label != null && ctx.polygon_label != "") { ctx.gdacs.polygon_label = ctx.polygon_label; }
+          }
+        }
+
+  #
+  # ── Affected countries ──
+  #
+  - script:
+      tag: flatten_affected_countries
+      lang: painless
+      description: "Extract affected country names and ISO codes into arrays."
+      source: |
+        def countries = ctx.gdacs?.affected_countries;
+        if (countries == null || countries.size() == 0) { return; }
+
+        def names = new ArrayList();
+        def iso2_codes = new ArrayList();
+        def iso3_codes = new ArrayList();
+
+        for (def c : countries) {
+          if (c.countryname != null) { names.add(c.countryname); }
+          if (c.iso2 != null) { iso2_codes.add(c.iso2); }
+          if (c.iso3 != null) { iso3_codes.add(c.iso3); }
+        }
+
+        ctx.gdacs.affected_country_names = names;
+        ctx.gdacs.affected_country_iso2 = iso2_codes;
+        ctx.gdacs.affected_country_iso3 = iso3_codes;
+
+        if (ctx.geo == null) { ctx.geo = new HashMap(); }
+        if (iso2_codes.size() > 0) {
+          ctx.geo.country_iso_code = iso2_codes[0];
+        }
+        if (names.size() > 0) {
+          ctx.geo.country_name = names[0];
+        }
+
+  #
+  # ── Numeric coercion ──
+  #
+  - convert:
+      tag: convert_severity_value
+      field: gdacs.severity.value
+      type: double
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      tag: convert_alert_score
+      field: gdacs.alert_score
+      type: double
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      tag: convert_episode_alert_score
+      field: gdacs.episode_alert_score
+      type: double
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      tag: convert_event_id
+      field: gdacs.event_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      tag: convert_episode_id
+      field: gdacs.episode_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  #
+  # ── Map event type codes to human-readable names ──
+  #
+  - script:
+      tag: map_event_type_name
+      lang: painless
+      description: "Map GDACS event type code to human-readable name."
+      source: |
+        def typeMap = [
+          'EQ': 'Earthquake',
+          'TC': 'Tropical Cyclone',
+          'FL': 'Flood',
+          'VO': 'Volcano',
+          'DR': 'Drought',
+          'WF': 'Wildfire'
+        ];
+        def code = ctx.gdacs?.event_type;
+        if (code != null && typeMap.containsKey(code)) {
+          ctx.gdacs.event_type_name = typeMap[code];
+        }
+
+  #
+  # ── Map alert level to ECS event.severity ──
+  #
+  - script:
+      tag: map_alert_severity
+      lang: painless
+      description: "Map GDACS alert level to numeric event.severity."
+      source: |
+        def level = ctx.gdacs?.alert_level;
+        if (level == null) { return; }
+        level = level.toLowerCase();
+        if (level == "red") {
+          ctx.event.severity = 3;
+          ctx.event.risk_score = 90.0;
+        } else if (level == "orange") {
+          ctx.event.severity = 2;
+          ctx.event.risk_score = 60.0;
+        } else if (level == "green") {
+          ctx.event.severity = 1;
+          ctx.event.risk_score = 30.0;
+        }
+
+  #
+  # ── ECS static fields ──
+  #
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: alert
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: gdacs.events
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: gdacs
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - threat
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - indicator
+  - set:
+      tag: set_event_provider
+      field: event.provider
+      value: gdacs
+
+  #
+  # ── Composite event.id ──
+  #
+  - set:
+      tag: set_event_id
+      field: event.id
+      value: "{{{gdacs.event_id}}}-{{{gdacs.episode_id}}}"
+      ignore_failure: true
+  - fingerprint:
+      tag: fingerprint_event_id
+      fields:
+        - event.id
+      target_field: _id
+      ignore_missing: true
+
+  #
+  # ── ECS mapped fields ──
+  #
+  - set:
+      tag: set_event_url
+      field: event.url
+      copy_from: gdacs.url.report
+      ignore_empty_value: true
+  - set:
+      tag: set_event_reference
+      field: event.reference
+      copy_from: gdacs.url.details
+      ignore_empty_value: true
+  - set:
+      tag: set_message
+      field: message
+      value: "{{{gdacs.description}}}"
+      ignore_failure: true
+  - set:
+      tag: set_geo_name
+      field: geo.name
+      copy_from: gdacs.name
+      ignore_empty_value: true
+
+  #
+  # ── Cleanup ──
+  #
+  - remove:
+      tag: remove_raw_fields
+      field:
+        - properties
+        - geometry
+        - bbox
+        - type
+        - polygon_geometry
+        - polygon_class
+        - polygon_label
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{ _ingest.on_failure_processor_type }}
+        with tag {{ _ingest.on_failure_processor_tag }}
+        in pipeline {{ _ingest.on_failure_pipeline }}
+        failed with reason: {{ _ingest.on_failure_message }}
