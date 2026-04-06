@@ -596,7 +596,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.os_version
       tag: rename_os_version
@@ -871,6 +871,13 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.json?.time != null && ctx.json.time != ''
+  # Fallback for @timestamp mapping
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_time
+      copy_from: cato_networks.event.time
+      ignore_empty_value: true
+      if: ctx['@timestamp'] == null || ctx.cato_networks?.event?.time_str == null
   - date:
       field: json.time_str
       tag: date_time_str
@@ -926,6 +933,7 @@ processors:
       field: cato_networks.event.user_agent
       tag: user_agent_parse_user_agent
       ignore_missing: true
+      if: ctx.cato_networks?.event?.user_agent != null
       target_field: user_agent
   - rename:
       field: json.user_reference_id
