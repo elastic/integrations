@@ -1367,11 +1367,7 @@ processors:
         "2500010001": "FortiGate-casb-access-bypass"
         "2500010002": "FortiGate-casb-access-monitor"
       source: |
-        def logid = ctx.event.code;
-        if (params.containsKey(logid)) {
-          if (ctx.fortinet == null) { ctx.fortinet = new HashMap(); }
-          if (ctx.fortinet.firewall == null) { ctx.fortinet.firewall = new HashMap(); }
-          if (ctx.event.action == null) {
-            ctx.event.action = params[logid];
-          }
+        def action = params[ctx.event.code];
+        if (action != null) {
+          ctx.event.action = action;
         }
