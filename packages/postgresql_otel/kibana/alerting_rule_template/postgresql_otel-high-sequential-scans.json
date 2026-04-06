@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-high-sequential-scans",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] High sequential scans",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Sequential scans on large tables suggest missing indexes; table-level metric (production)\n| WHERE postgresql.sequential_scans IS NOT NULL\n| EVAL seq_scans_val = TO_DOUBLE(postgresql.sequential_scans)\n| WHERE seq_scans_val > 0\n| STATS seq_scan_count = SUM(seq_scans_val) BY service.instance.id, postgresql.database.name\n// Threshold: > 1000 scans in window; adjust for table count and workload\n| WHERE seq_scan_count > 1000"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

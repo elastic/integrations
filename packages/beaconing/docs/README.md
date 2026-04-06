@@ -7,7 +7,7 @@ This package leverages event logs on Linux, macOS, and Windows. Prior to using t
 
 **Note**: This package filters out data from cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blog:
+The following blog provides additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
 
 ## Installation
@@ -23,7 +23,7 @@ For more detailed information refer to the following blog:
 
     _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
     ![Dashboard Error](../img/dashboard-error-beaconing.png)
-1. **Enable detection rules**: You can also enable detection rules to alert on beaconing activity in your environment, based on events flagged by this package. These rules are available as part of the Detection Engine, and can be found using the tag `Use Case: C2 Beaconing Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
+1. **Enable detection rules**: Prebuilt detection rules corresponding to this package are available from version **8.11.3** and above. You can enable detection rules to alert on beaconing activity in your environment, based on events flagged by this package. These rules are available as part of the Detection Engine, and can be found using the tag `Use Case: C2 Beaconing Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ![Data Exfiltration Detection Rules](../img/beaconingrules.png)
 *In Security > Rules, filtering with the “Use Case: C2 Beaconing Detection” tag*

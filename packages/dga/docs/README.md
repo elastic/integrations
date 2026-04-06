@@ -6,7 +6,7 @@ This package leverages event logs on Linux, macOS, and Windows. Prior to using t
 
 **Note**: In versions 2.0.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blogs:
+The following blogs provide additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Detect domain generation algorithm (DGA) activity with new Kibana integration](https://www.elastic.co/security-labs/detect-domain-generation-algorithm-activity-with-new-kibana-integration)
 - [Combining supervised and unsupervised machine learning for DGA detection](https://www.elastic.co/blog/supervised-and-unsupervised-machine-learning-for-dga-detection)
 

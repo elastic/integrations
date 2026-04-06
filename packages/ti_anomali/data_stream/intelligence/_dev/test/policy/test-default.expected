@@ -1,0 +1,115 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_anomali
+      name: test-default-ti_anomali
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_anomali.intelligence
+          fields:
+            _conf:
+                ioc_duration_before_deletion: 90d
+          fields_under_root: true
+          interval: 5m
+          program: |-
+            state.with(
+              request(
+                "GET",
+                state.url.trim_right("/") + "/api/v2/intelligence/?" + {
+                  "order_by": ["update_id"],
+                  "modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
+                  ?"modified_ts__gt": (state.?cursor.last_update_id.orValue(null) == null) ? optional.of([(now - duration(state.initial_interval)).format(time_layout.RFC3339)]) : optional.none(),
+                  "limit": [string(state.page_size)],
+                  ?"update_id__gt": state.?cursor.last_update_id.optMap(id, [string(int(id))]),
+                  ?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
+                  ?"q": (state.?query.orValue("") != "") ? optional.of([state.query]) : optional.none(),
+                }.format_query()
+              ).with(
+                {
+                  "Header": {
+                    "Authorization": ["apikey " + state.username + ":" + state.api_key],
+                  },
+                }
+              ).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    {
+                      "events": body.objects.map(obj,
+                        {
+                          "json": obj,
+                          ?"event": state.?preserve_original_event.orValue(false) ?
+                            optional.of({"original": obj.encode_json()})
+                          :
+                            optional.none(),
+                        }
+                      ),
+                      "want_more": body.meta.next != null,
+                      "cursor": (has(state.cursor) ? state.cursor : {}).with(
+                        {
+                          ?"last_update_id": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),
+                        }
+                      ),
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.trim_right("/") + "/api/v2/intelligence/: " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://api.threatstream.com
+          state:
+            api_key: ${SECRET_0}
+            delay: 1m
+            initial_interval: 2160h
+            page_size: 1000
+            preserve_original_event: false
+            remote_api_true: false
+            username: test_username
+            want_more: false
+          tags:
+            - forwarded
+            - anomali-intelligence
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_anomali.intelligence-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

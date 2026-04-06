@@ -6,6 +6,7 @@ processors:
       tag: grok_appfw_feature
       field: citrix.extended.message
       patterns:
+        - '^%{IP:source.ip:ip} %{NUMBER:citrix_adc.log.transaction_id}-%{DATA:citrix_adc.log.ppe} - %{NOTSPACE:citrix_adc.log.profile}(?: %{NOTSPACE:url.original})?(?: %{GREEDYDATA:citrix_adc.log.message})?$'
         - '^XML%{SPACE}Mismatched%{SPACE}content-type%{SPACE}in%{SPACE}HTTP%{SPACE}header%{SPACE}detected%{SPACE}=%{SPACE}\"%{GREEDYDATA:citrix_adc.log.content_type_mismatch}\"\.$'
         - '^Disallow%{SPACE}Deny%{SPACE}URL%{SPACE}for%{SPACE}rule%{SPACE}pattern%{SPACE}=%{SPACE}\"%{GREEDYDATA:citrix_adc.log.url}\"\.$'
         - '^Unknown%{SPACE}content-type%{SPACE}header%{SPACE}value%{SPACE}=%{SPACE}\"%{GREEDYDATA:citrix_adc.log.unknown_content_type}\"\.$'
@@ -28,6 +29,12 @@ processors:
         - '^gRPC%{SPACE}Validation%{SPACE}relaxation%{SPACE}rule%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.rule}%{SPACE}hit%{SPACE}at%{SPACE}url%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.url}$'
         - '%{GREEDYDATA:citrix_adc.log.message}'
       ignore_failure: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
   - set:
       field: http.request.referrer
       tag: set_http_request_referrer_from_referer_header

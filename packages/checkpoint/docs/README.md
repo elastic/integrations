@@ -488,6 +488,7 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.packet_capture_name |  | keyword |
 | checkpoint.packet_capture_time |  | keyword |
 | checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
+| checkpoint.packets | Raw packets field value when present in vendor logs and not converted to numeric packet counts. | keyword |
 | checkpoint.packets_data_is_sampled | Indicates whether the packets data is sampled (true when the original log contained "(sample only)" prefix). | boolean |
 | checkpoint.packets_dropped.destination.ip | Destination IP address of the dropped packet. | ip |
 | checkpoint.packets_dropped.destination.port | Destination port of the dropped packet. | long |
@@ -975,7 +976,7 @@ To collect logs via TCP, select **Collect logs via TCP** and configure the follo
 To enable encrypted connections, configure the following SSL settings:
 
 **SSL Settings:**
-- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Enable SSL - Toggle to enable SSL/TLS encryption
 - Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
 - Certificate Key - Path to the private key file (`.key`)
 - Certificate Authorities - Path to CA certificate file for client certificate validation (optional)

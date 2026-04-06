@@ -46,6 +46,10 @@ Without this permission, the following device fields will return `null` values e
 
 **Note:** An active Microsoft Intune license is also required for the tenant for these properties to be populated.
 
+To collect these fields, enable the **Intune Managed Device Properties** toggle in the integration settings. When enabled, the integration requests the additional fields from the Graph API automatically.
+
+When the toggle is enabled, do not set `select.devices` in **Custom Options** as the two settings will conflict. Other Custom Options settings are unaffected. Users who need a fully custom device field list should use Custom Options directly with the toggle disabled.
+
 For more details on how to set up the necessary App Registration, permission granting, and secret configuration, refer to this [guide](https://learn.microsoft.com/en-us/graph/auth-v2-service).
 
 ### Enable the integration in Elastic

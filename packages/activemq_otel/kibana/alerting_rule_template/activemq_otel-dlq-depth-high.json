@@ -1,0 +1,36 @@
+{
+  "id": "activemq_otel-dlq-depth-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[ActiveMQ OTel] Dead letter queue depth high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "activemq",
+      "errors"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-activemq.otel-*\n// activemq.message.current is gauge; destination name in activemq.destination.name\n| WHERE activemq.message.current IS NOT NULL AND activemq.destination.name == \"ActiveMQ.DLQ\"\n| STATS dlq_depth = MAX(LAST_OVER_TIME(activemq.message.current)) BY activemq.broker.name, activemq.destination.name\n// Alert when DLQ accumulates significant messages; adjust threshold for your tolerance\n| WHERE dlq_depth > 100\n| SORT dlq_depth DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "activemq.broker.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
