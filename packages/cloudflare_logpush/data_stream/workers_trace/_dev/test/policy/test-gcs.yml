@@ -1,0 +1,23 @@
+input: gcs
+vars:
+  project_id: my-project
+  service_account_file: /tmp/service_account.json
+data_stream:
+  vars:
+    number_of_workers: 5
+    poll: true
+    poll_interval: 30s
+    buckets: |
+      - name: workers_trace_logs
+        number_of_workers: 5
+        poll: true
+        poll_interval: 15s
+    processors: |
+      - decode_json_fields:
+          fields: ["message"]
+          process_array: true
+          max_depth: 10
+          target: ""
+          overwrite_keys: true
+    tags: 
+      - forwarded
