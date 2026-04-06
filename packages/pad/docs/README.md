@@ -88,10 +88,10 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
 
 To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
 
-| Transform name                             | Purpose                                                            | Source index  | Destination index                              | Alias                                  | Supported Platform |
-|--------------------------------------------|--------------------------------------------------------------------|---------------|------------------------------------------------|--------------------------------------- | ------------------ |
-| pad.pivot_transform_okta_sessions_ea | 	Collects user session information for Okta events                 | logs-*        | 	ml_okta_multiple_user_sessions_pad_ea-[version] | ml_okta_multiple_user_sessions_pad_ea.all | Okta               |
-| pad.pivot_transform_win_privilege_list_ea | 	Collects special privileges assigned to a user for Windows events | logs-*        | 	ml_windows_privilege_type_pad_ea-[version]      | ml_windows_privilege_type_pad_ea.all      | Windows            |
+| Transform name                            | Purpose                                                           | Source index | Destination index                               | Alias                                     | Supported Platform |
+|-------------------------------------------|-------------------------------------------------------------------|--------------|-------------------------------------------------|-------------------------------------------|--------------------|
+| pad.pivot_transform_okta_sessions_ea      | Collects user session information for Okta events                 | logs-*       | ml_okta_multiple_user_sessions_pad_ea-[version] | ml_okta_multiple_user_sessions_pad_ea.all | Okta               |
+| pad.pivot_transform_win_privilege_list_ea | Collects special privileges assigned to a user for Windows events | logs-*       | ml_windows_privilege_type_pad_ea-[version]      | ml_windows_privilege_type_pad_ea.all      | Windows            |
 
 When querying the destination indices for Okta and Windows logs, we advise using the alias for the destination index (`ml_okta_multiple_user_sessions_pad_ea.all` and `ml_windows_privilege_type_pad_ea.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 
@@ -112,29 +112,29 @@ To customize filters in the Privileged Access Detection transform, follow the be
 
 ### Anomaly Detection Jobs
 
-| Job                                                        | Description                                                                                    | Supported Platform   |
-|------------------------------------------------------------|------------------------------------------------------------------------------------------------|----------------------|
-| pad_windows_high_count_special_logon_events_ea                | Detects unusually high special logon events initiated by a user.                               | Windows              |
-| pad_windows_high_count_special_privilege_use_events_ea        | Detects unusually high special privilege use events initiated by a user.                       | Windows              |
-| pad_windows_high_count_group_management_events_ea             | Detects unusually high security group management events initiated by a user.                   | Windows              |
-| pad_windows_high_count_user_account_management_events_ea      | Detects unusually high security user account management events initiated by a user.            | Windows              |
-| pad_windows_rare_privilege_assigned_to_user_ea                | Detects an unusual privilege type assigned to a user.                                          | Windows              |
-| pad_windows_rare_group_name_by_user_ea                        | Detects an unusual group name accessed by a user.                                              | Windows              |
-| pad_windows_rare_device_by_user_ea                            | Detects an unusual device accessed by a user.                                                  | Windows              |
-| pad_windows_rare_source_ip_by_user_ea                         | Detects an unusual source IP address accessed by a user.                                       | Windows              |
-| pad_windows_rare_region_name_by_user_ea                       | Detects an unusual region name for a user.                                                     | Windows              |
-| pad_linux_high_count_privileged_process_events_by_user_ea     | Detects a spike in privileged commands executed by a user.                                     | Linux                |
-| pad_linux_rare_process_executed_by_user_ea                    | Detects a rare process executed by a user.                                                     | Linux                |
-| pad_linux_high_median_process_command_line_entropy_by_user_ea | Detects process command lines executed by a user with an abnormally high median entropy value. | Linux                |
-| pad_okta_spike_in_group_membership_changes_ea                 | Detects spike in group membership change events by a user.                                     | Okta Integration     |
-| pad_okta_spike_in_user_lifecycle_management_changes_ea        | Detects spike in user lifecycle management change events by a user.                            | Okta Integration     |
-| pad_okta_spike_in_group_privilege_changes_ea                  | Detects spike in group privilege change events by a user.                                      | Okta Integration     |
-| pad_okta_spike_in_group_application_assignment_changes_ea      | Detects spike in group application assignment change events by a user.                         | Okta Integration     |
-| pad_okta_spike_in_group_lifecycle_changes_ea                  | Detects spike in group lifecycle change events by a user.                                      | Okta Integration     |
-| pad_okta_high_sum_concurrent_sessions_by_user_ea              | Detects an unusual sum of active sessions started by a user.                                   | Okta Integration     |
-| pad_okta_rare_source_ip_by_user_ea                            | Detects an unusual source IP address accessed by a user.                                       | Okta Integration     |
-| pad_okta_rare_region_name_by_user_ea                          | Detects an unusual region name for a user.                                                     | Okta Integration     |
-| pad_okta_rare_host_name_by_user_ea                            | Detects an unusual host name for a user.                                                       | Okta Integration     |
+| Job                                                           | Description                                                                                    | Supported Platform | Filter Field                        |
+|---------------------------------------------------------------|------------------------------------------------------------------------------------------------|--------------------|-------------------------------------|
+| pad_windows_high_count_special_logon_events_ea                | Detects unusually high special logon events initiated by a user.                               | Windows            | `host.os.type: windows`               |
+| pad_windows_high_count_special_privilege_use_events_ea        | Detects unusually high special privilege use events initiated by a user.                       | Windows            | `host.os.type: windows`               |
+| pad_windows_high_count_group_management_events_ea             | Detects unusually high security group management events initiated by a user.                   | Windows            | `host.os.type: windows`               |
+| pad_windows_high_count_user_account_management_events_ea      | Detects unusually high security user account management events initiated by a user.            | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_privilege_assigned_to_user_ea                | Detects an unusual privilege type assigned to a user.                                          | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_group_name_by_user_ea                        | Detects an unusual group name accessed by a user.                                              | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_device_by_user_ea                            | Detects an unusual device accessed by a user.                                                  | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_source_ip_by_user_ea                         | Detects an unusual source IP address accessed by a user.                                       | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_region_name_by_user_ea                       | Detects an unusual region name for a user.                                                     | Windows            | `host.os.type: windows`               |
+| pad_linux_high_count_privileged_process_events_by_user_ea     | Detects a spike in privileged commands executed by a user.                                     | Linux              | `host.os.type: linux`                 |
+| pad_linux_rare_process_executed_by_user_ea                    | Detects a rare process executed by a user.                                                     | Linux              | `host.os.type: linux`                 |
+| pad_linux_high_median_process_command_line_entropy_by_user_ea | Detects process command lines executed by a user with an abnormally high median entropy value. | Linux              | `host.os.type: linux`                 |
+| pad_okta_spike_in_group_membership_changes_ea                 | Detects spike in group membership change events by a user.                                     | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_user_lifecycle_management_changes_ea        | Detects spike in user lifecycle management change events by a user.                            | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_group_privilege_changes_ea                  | Detects spike in group privilege change events by a user.                                      | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_group_application_assignment_changes_ea     | Detects spike in group application assignment change events by a user.                         | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_group_lifecycle_changes_ea                  | Detects spike in group lifecycle change events by a user.                                      | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_high_sum_concurrent_sessions_by_user_ea              | Detects an unusual sum of active sessions started by a user.                                   | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_rare_source_ip_by_user_ea                            | Detects an unusual source IP address accessed by a user.                                       | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_rare_region_name_by_user_ea                          | Detects an unusual region name for a user.                                                     | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_rare_host_name_by_user_ea                            | Detects an unusual host name for a user.                                                       | Okta Integration   | `data_stream.dataset: okta.system`    |
 
 ## Customize ML jobs for Privileged Access Detection
 

@@ -50,6 +50,16 @@ You can also enable detection rules to alert on Lateral Movement activity in you
 ![Data Exfiltration Detection Rules](../img/lmdrules.png)
 *In Security > Rules, filtering with the "Use Case: Lateral Movement Detection" tag*
 
+## Transform
+
+To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
+
+| Transform name         | Purpose                                                | Source index | Destination index | Alias | Supported Platform | Event Category |
+|------------------------|--------------------------------------------------------|--------------|-------------------|-------|--------------------|----------------|
+| lmd.pivot_transform_ea | Collects RDP session information from your environment | logs-*       | ml-rdp-lmd_ea     |       | Windows            | process        |
+
+When querying the destination index (`ml-rdp-lmd_ea`) for RDP session logs, we advise using the destination index directly. In the event that the underlying package is upgraded, it will aid in maintaining the previous findings.
+
 ## Dashboard
 
 After the anomaly detectors and the data views for the dashboard are configured, the **Lateral Movement Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the lateral movement detection package.
@@ -136,19 +146,19 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
 
-| Job                                                   | Description                                                                                     | Supported Platform    |
-|-------------------------------------------------------|-------------------------------------------------------------------------------------------------| --------------------- |
-| lmd_high_count_remote_file_transfer_ea                   | Detects unusually high file transfers to a remote host in the network.                          | Linux, macOS, Windows |
-| lmd_high_file_size_remote_file_transfer_ea               | Detects unusually high size of files shared with a remote host in the network.                  | Linux, macOS, Windows |
-| lmd_rare_file_extension_remote_transfer_ea               | Detects rare file extensions shared with a remote host in the network.                          | macOS, Windows        |
-| lmd_rare_file_path_remote_transfer_ea                    | Detects unusual folders and directories on which a file is transferred (by a host).             | macOS, Windows        |
-| lmd_high_mean_rdp_session_duration_ea                    | Detects unusually high mean of RDP session duration.                                            | Windows               |
-| lmd_high_var_rdp_session_duration_ea                     | Detects unusually high variance in RDP session duration.                                        | Windows               |
-| lmd_high_sum_rdp_number_of_processes_ea                  | Detects unusually high number of processes started in a single RDP session.                     | Windows               |
-| lmd_unusual_time_weekday_rdp_session_start_ea            | Detects an RDP session started at an unusual time or weekday.                                     | Windows               |
-| lmd_high_rdp_distinct_count_source_ip_for_destination_ea | Detects a high count of source IPs making an RDP connection with a single destination IP.       | Windows               |
-| lmd_high_rdp_distinct_count_destination_ip_for_source_ea | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               |
-| lmd_high_mean_rdp_process_args_ea                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               |
+| Job                                                      | Description                                                                                     | Supported Platform    | Filter Field                |
+|----------------------------------------------------------|-------------------------------------------------------------------------------------------------|-----------------------|-----------------------------|
+| lmd_high_count_remote_file_transfer_ea                   | Detects unusually high file transfers to a remote host in the network.                          | Linux, macOS, Windows | `event.category: file`      |
+| lmd_high_file_size_remote_file_transfer_ea               | Detects unusually high size of files shared with a remote host in the network.                  | Linux, macOS, Windows | `event.category: file`      |
+| lmd_rare_file_extension_remote_transfer_ea               | Detects rare file extensions shared with a remote host in the network.                          | macOS, Windows        | `event.category: file`      |
+| lmd_rare_file_path_remote_transfer_ea                    | Detects unusual folders and directories on which a file is transferred (by a host).             | macOS, Windows        | `event.category: file`      |
+| lmd_high_mean_rdp_session_duration_ea                    | Detects unusually high mean of RDP session duration.                                            | Windows               | `session.start_time` exists |
+| lmd_high_var_rdp_session_duration_ea                     | Detects unusually high variance in RDP session duration.                                        | Windows               | `session.start_time` exists |
+| lmd_high_sum_rdp_number_of_processes_ea                  | Detects unusually high number of processes started in a single RDP session.                     | Windows               | `session.start_time` exists |
+| lmd_unusual_time_weekday_rdp_session_start_ea            | Detects an RDP session started at an unusual time or weekday.                                   | Windows               | `session.start_time` exists |
+| lmd_high_rdp_distinct_count_source_ip_for_destination_ea | Detects a high count of source IPs making an RDP connection with a single destination IP.       | Windows               | `session.start_time` exists |
+| lmd_high_rdp_distinct_count_destination_ip_for_source_ea | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               | `session.start_time` exists |
+| lmd_high_mean_rdp_process_args_ea                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               | `session.start_time` exists |
 
 ## Customize ML jobs for Lateral Movement Detection
 

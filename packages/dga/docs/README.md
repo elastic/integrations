@@ -2,7 +2,7 @@
 
 The Domain Generation Algorithm (DGA) Detection package contains assets to detect DGA activity in your network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
-This package leverages event logs on Linux, macOS, and Windows. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
+This package supports data from Elastic Endpoint via Elastic Defend or Packetbeat on Linux, macOS, and Windows, although Elastic Defend is recommended. Prior to using this integration, Elastic Defend should be installed through Elastic Agent (or Packetbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
 **Note**: In versions 2.0.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
@@ -86,9 +86,9 @@ You can also enable detection rules to alert on DGA activity in your environment
 
 ## Anomaly Detection Jobs
 
-| Job | Description |
-|---|---|
-| dga_high_sum_probability_ea | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.| 
+| Job                         | Description                                                                                                                                                                                                                                    | Supported Platform    | Network Protocol |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------|------------------|
+| dga_high_sum_probability_ea | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity. | Linux, macOS, Windows | dns              |
 
 ## Customize ML jobs for Domain Generation Algorithm Detection 
 

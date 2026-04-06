@@ -43,9 +43,9 @@ You can also enable detection rules to alert on Data Exfiltration activity in yo
 
 To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
 
-| Transform name      | Purpose                                     | Source index | Destination index        | Alias              |
-| ------------------- | ------------------------------------------- | ------------ | ------------------------ | ------------------ |
-| ded.pivot_transform_ea | Collects network logs from your environment | logs-*       | ml_network_ded_ea-[version] | ml_network_ded_ea.all |
+| Transform name         | Purpose                                     | Source index | Destination index           | Alias                 | Supported Platform | Event Category |
+|------------------------|---------------------------------------------|--------------|-----------------------------|-----------------------|--------------------|----------------|
+| ded.pivot_transform_ea | Collects network logs from your environment | logs-*       | ml_network_ded_ea-[version] | ml_network_ded_ea.all | Linux, Windows     | network        |
 
 **Note**: The transform applies only to network data and does not currently support macOS network logs.
 
@@ -72,15 +72,15 @@ After the data view for the dashboard is configured, the **Data Exfiltration Det
 
 ### Anomaly Detection Jobs
 
-| Job                                                  | Description                                                                                                        | Supported Platform | Event Category |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------ | ----- |
-| ded_high_sent_bytes_destination_geo_country_iso_code_ea | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     | network |
-| ded_high_sent_bytes_destination_ip_ea                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     | network |
-| ded_high_sent_bytes_destination_port_ea                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows     | network |
-| ded_high_sent_bytes_destination_region_name_ea          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows     | network |
-| ded_high_bytes_written_to_external_device_ea            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            | file |
-| ded_rare_process_writing_to_external_device_ea          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            | file |
-| ded_high_bytes_written_to_external_device_airdrop_ea    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              | file |
+| Job                                                     | Description                                                                                                        | Supported Platform | Event Category |
+|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|--------------------|----------------|
+| ded_high_sent_bytes_destination_geo_country_iso_code_ea | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     | network        |
+| ded_high_sent_bytes_destination_ip_ea                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     | network        |
+| ded_high_sent_bytes_destination_port_ea                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows     | network        |
+| ded_high_sent_bytes_destination_region_name_ea          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows     | network        |
+| ded_high_bytes_written_to_external_device_ea            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            | file           |
+| ded_rare_process_writing_to_external_device_ea          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            | file           |
+| ded_high_bytes_written_to_external_device_airdrop_ea    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              | file           |
 
 ## Customize ML jobs for Data Exfiltration Detection 
 
