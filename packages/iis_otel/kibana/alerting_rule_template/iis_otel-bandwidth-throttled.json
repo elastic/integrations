@@ -1,0 +1,37 @@
+{
+  "id": "iis_otel-bandwidth-throttled",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[IIS OTel] Bandwidth throttling detected",
+    "ruleTypeId": ".es-query",
+    "tags": ["observability", "iis"],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-iisreceiver.otel-*\n| WHERE iis.network.blocked IS NOT NULL\n| STATS blocked_increase = SUM(INCREASE(iis.network.blocked)) BY host.name\n| WHERE blocked_increase > 0\n| SORT blocked_increase DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

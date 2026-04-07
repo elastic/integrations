@@ -18,7 +18,7 @@ The new Message Trace experience includes an updated PowerShell cmdlet, `Get-Mes
 
 To collect message trace logs from Microsoft's Graph API, you need to:
 - Create an Entra app and record the Directory ID (tenant ID) and Application ID (client ID).
-- Add the `ExchangeMessageTrace.Read.All` permission and grant admin consent for it.
+- Add the `ExchangeMessageTrace.Read.All` permission of type `Application` and grant admin consent for it.
 - Create a client secret and record it.
 - Create a service principal for Microsoft's internal Message Trace app in the tenant.
 
