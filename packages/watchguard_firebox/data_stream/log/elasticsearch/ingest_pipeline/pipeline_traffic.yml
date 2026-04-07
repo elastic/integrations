@@ -492,6 +492,13 @@ processors:
       value: '{{{watchguard_firebox.log.domain}}}'
       allow_duplicates: false
       if: ctx.watchguard_firebox?.log?.domain != null
+  - grok:
+      field: watchguard_firebox.log.duration
+      tag: grok_parse_duration_value
+      patterns:
+        - '%{NUMBER:watchguard_firebox.log.duration}'
+      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: watchguard_firebox.log.duration
       tag: convert_duration_to_long
@@ -1145,7 +1152,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - community_id:
       tag: src_dst_community_id
-      if: 'ctx.watchguard_firebox.log.source_port != 0 && ctx.watchguard_firebox.log.destination_port != 0'
+      if: >-
+        ctx.watchguard_firebox?.log?.source_ip != null
+        && ctx.watchguard_firebox.log.destination_ip != null
+        && ctx.watchguard_firebox.log.source_port != null
+        && ctx.watchguard_firebox.log.source_port != 0
+        && ctx.watchguard_firebox.log.destination_port != null
+        && ctx.watchguard_firebox.log.destination_port != 0
       source_ip: watchguard_firebox.log.source_ip
       source_port: watchguard_firebox.log.source_port
       destination_ip: watchguard_firebox.log.destination_ip
