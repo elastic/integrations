@@ -1,101 +1,130 @@
-{{- generatedHeader }}
-{{/*
-This template can be used as a starting point for writing documentation for your new integration. For each section, fill in the details
-described in the comments.
+# NVIDIA GPU OpenTelemetry Assets
 
-Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
-*/}}
-# NVIDIA GPU OpenTelemetry Assets Integration for Elastic
+NVIDIA Data Center GPU Manager (DCGM) is NVIDIA's telemetry and health management framework for monitoring GPU performance, temperature, memory, power, and hardware errors in data center environments.
 
-## Overview
-{{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
-The NVIDIA GPU OpenTelemetry Assets integration for Elastic enables collection of ...
-This integration facilitates ...
+This content pack provides dashboards, alert rules, and SLO templates for NVIDIA GPU metrics collected via the OpenTelemetry Collector's Prometheus receiver scraping the DCGM exporter. The assets cover GPU thermal health, compute and memory utilization, power consumption, clock frequencies, framebuffer memory, and XID hardware errors.
 
-### Compatibility
-{{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
-This integration is compatible with ...
+## Compatibility
 
-### How it works
-{{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or recieving data from a network or file.*/}}
+The NVIDIA GPU OpenTelemetry assets have been tested with the OpenTelemetry Collector Contrib Prometheus receiver v0.146.1, scraping metrics from the NVIDIA DCGM exporter.
 
-## What data does this integration collect?
-{{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available */}}
-The NVIDIA GPU OpenTelemetry Assets integration collects log messages of the following types:
-* ...
+DCGM exporter tested against:
 
-### Supported use cases
-{{/* Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. */}}
+- DCGM exporter v3.3.9
 
-## What do I need to use this integration?
-{{/* List any vendor-specific prerequisites needed before starting to install the integration. */}}
+## Requirements
 
-## How do I deploy this integration?
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage
+the Elastic Stack on your own hardware.
 
-### Agent-based deployment
+## Setup
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+### Prerequisites
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+The NVIDIA DCGM exporter must be running and exposing a Prometheus `/metrics` endpoint. In Kubernetes environments, dcgm-exporter is typically deployed as a DaemonSet on GPU nodes.
 
-{{/* If agentless is available for this integration, we'll want to include that here as well.
-### Agentless deployment
+Verify that the DCGM exporter is accessible:
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+```bash
+curl http://<DCGM_EXPORTER_HOST>:9400/metrics
+```
 
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html) 
-*/}}
+You should see Prometheus-formatted metrics with names starting with `DCGM_FI_`.
 
-### Onboard / configure
-{{/* List the steps that will need to be followed in order to completely set up a working integration.
-For integrations that support multiple input types, be sure to add steps for all inputs.
-*/}}
+### Configuration
 
-### Validation
-{{/* How can the user test whether the integration is working? Including example commands or test files if applicable */}}
+Configure the OpenTelemetry Collector (or EDOT Collector) to scrape DCGM metrics and export them to Elasticsearch.
 
-## Troubleshooting
+Placeholders used in the configuration below:
 
-For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
-{{/*
-Add any vendor specific troubleshooting here.
+- `<DCGM_EXPORTER_HOST>` — Hostname or IP of the DCGM exporter (e.g. `localhost`)
+- `<DCGM_EXPORTER_PORT>` — Port of the DCGM exporter (e.g. `9400`)
+- `<ES_ENDPOINT>` — Your Elasticsearch endpoint (e.g. `https://my-cluster.es.io:443`)
+- `${env:ES_API_KEY}` — Elasticsearch API key, set via the `ES_API_KEY` environment variable
 
-Are there common issues or “gotchas” for deploying this integration? If so, how can they be resolved?
-If applicable, links to the third-party software’s troubleshooting documentation.
-*/}}
+```yaml
+receivers:
+  prometheus/nvidia_gpu:
+    config:
+      scrape_configs:
+        - job_name: nvidia_gpu
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: http
+          static_configs:
+            - targets:
+                - <DCGM_EXPORTER_HOST>:<DCGM_EXPORTER_PORT>
 
-## Scaling
+processors:
+  resourcedetection/system:
+    detectors: [system]
+    system:
+      hostname_sources: [os]
+  resource/nvidia_gpu:
+    attributes:
+      - key: data_stream.dataset
+        value: nvidia_gpu
+        action: upsert
 
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
-{{/* Add any vendor specific scaling information here */}}
+exporters:
+  elasticsearch/otel:
+    endpoint: <ES_ENDPOINT>
+    api_key: ${env:ES_API_KEY}
+    mapping:
+      mode: otel
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus/nvidia_gpu]
+      processors: [resourcedetection/system, resource/nvidia_gpu]
+      exporters: [elasticsearch/otel]
+```
 
 ## Reference
-{{/* Repeat for each data stream of the current type
-### {Data stream name}
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}.
+### Metrics
 
-For each data_stream_name, include an optional summary of the datastream, the exported fields reference table and the sample event.
+Refer to the NVIDIA DCGM exporter documentation for the full list of available metrics. The key metrics used by the generated assets are:
 
-The fields template function will be replaced by a generated list of all fields from the `fields/` directory of the data stream when building the integration.
+| Metric | Type | Description |
+|--------|------|-------------|
+| `DCGM_FI_DEV_GPU_TEMP` | Gauge | GPU core temperature in degrees Celsius |
+| `DCGM_FI_DEV_MEMORY_TEMP` | Gauge | GPU memory temperature in degrees Celsius |
+| `DCGM_FI_DEV_GPU_UTIL` | Gauge | GPU compute utilization percentage |
+| `DCGM_FI_DEV_MEM_COPY_UTIL` | Gauge | Memory bandwidth utilization percentage |
+| `DCGM_FI_DEV_POWER_USAGE` | Gauge | Current power draw in watts |
+| `DCGM_FI_DEV_FB_USED` | Gauge | Used framebuffer memory in MiB |
+| `DCGM_FI_DEV_FB_FREE` | Gauge | Free framebuffer memory in MiB |
+| `DCGM_FI_DEV_SM_CLOCK` | Gauge | Streaming Multiprocessor clock frequency in MHz |
+| `DCGM_FI_DEV_MEM_CLOCK` | Gauge | Memory clock frequency in MHz |
+| `DCGM_FI_DEV_ENC_UTIL` | Gauge | Hardware encoder utilization percentage |
+| `DCGM_FI_DEV_DEC_UTIL` | Gauge | Hardware decoder utilization percentage |
+| `DCGM_FI_DEV_XID_ERRORS` | Gauge | XID error value (0 = no error) |
+| `DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION` | Counter | Total energy consumed since boot in millijoules |
+| `DCGM_FI_DEV_PCIE_REPLAY_COUNTER` | Counter | PCIe packet retransmission count |
+| `DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL` | Counter | Total NVLink data transferred in bytes |
 
-#### {data stream name} fields
+## Dashboards
 
-To include a generated list of fields from the `fields/` directory, uncomment and use:
-{{ fields "data_stream_name" }}
+| Dashboard | Description |
+|-----------|-------------|
+| **[NVIDIA GPU OTel] Overview** | Fleet-level overview of GPU health covering temperature, utilization, memory, power, clocks, errors, and a per-GPU inventory table. |
 
-The event template function will be replace by a sample event, taken from `sample_event.json`, when building this integration.
+## Alert rules
 
-To include a sample event from `sample_event.json`, uncomment and use:
-{{ event "data_stream_name" }}
+| Alert | Trigger | Severity |
+|-------|---------|----------|
+| **[NVIDIA GPU OTel] GPU temperature critical** | GPU temperature exceeds 83°C for 3 consecutive checks | Critical |
+| **[NVIDIA GPU OTel] XID errors detected** | Non-zero XID errors reported by any GPU | Critical |
+| **[NVIDIA GPU OTel] Framebuffer memory utilization high** | Framebuffer memory usage exceeds 90% for 3 consecutive checks | High |
+| **[NVIDIA GPU OTel] GPU utilization saturated** | Average GPU utilization exceeds 95% for 3 consecutive checks over 15 minutes | Medium |
+| **[NVIDIA GPU OTel] GPU idle during expected workload** | GPU utilization stays below 1% for 30 minutes (6 consecutive checks) | Warning |
+| **[NVIDIA GPU OTel] Clock frequency throttled under load** | SM clock drops below 70% of observed maximum while GPU utilization is above 50% | Medium |
 
-*/}}
+## SLO templates
 
-### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
-{{ inputDocs }}
-
-### API usage
-{{/* For integrations that use APIs to collect data, document all the APIs that are used, and link to relevent information */}}
-These APIs are used with this integration:
-* ...
+| SLO | Target | Window | Description |
+|-----|--------|--------|-------------|
+| **[NVIDIA GPU OTel] GPU temperature below threshold 99.5% rolling 30 days** | 99.5% | 30-day rolling | Tracks that GPU core temperature remains below the 83°C thermal throttling threshold across 5-minute time intervals. |
