@@ -1,0 +1,103 @@
+name: "Sweeper: httpjson and CEL Pagination and Cursor Integrity"
+on:
+  schedule:
+    - cron: "0 9 * * 5"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
+    with:
+      title-prefix: "[httpjson-pagination]"
+      severity-threshold: "high"
+      additional-instructions: |
+        You are auditing httpjson and CEL input configurations in the elastic/integrations
+        repository for pagination and cursor bugs. Produce findings that would impress a
+        senior engineer: a small number of thoroughly investigated cases where a real
+        integration running against a real API would produce duplicate events, miss events,
+        hammer the API indefinitely, or silently stop collecting after the first poll. One
+        confirmed failure traced to a specific runtime behavior is worth more than a list of
+        configurations that look structurally incomplete.
+
+        ## What these inputs guarantee
+
+        HTTP-based integrations configure their inputs using agent stream templates at
+        `packages/<pkg>/data_stream/<stream>/agent/stream/*.yml.hbs`. The integration makes
+        three guarantees: events are collected exactly once with no gaps or duplicates,
+        pagination terminates when all available data has been fetched, and the cursor
+        accurately represents the last successfully processed position so the next poll
+        starts from the right place.
+
+        ## How to investigate
+
+        Pick 3-5 integrations that use pagination and read their full agent stream template.
+        Before looking for bugs, understand the intended polling flow: how does it page
+        through results, what does the cursor represent, and when does it advance? Then
+        reason about where that flow breaks.
+
+        **Cursor type drift through JSON serialization.** If the cursor is a large integer —
+        a Unix timestamp in milliseconds, a sequence number, a large event ID — trace what
+        happens when it is written to the cursor store and read back. The httpjson input
+        serializes cursor state to JSON. A 64-bit integer read back without explicit type
+        handling becomes a `float64`. The value `1700000000000` formatted as float64 renders
+        as `1.7e+12` when interpolated into a URL parameter. Most APIs reject this or
+        misinterpret it, silently breaking pagination after the first poll. Read the cursor
+        definition and the URL construction to confirm the integer survives the round-trip.
+
+        **Pagination that never terminates.** In `httpjson` chain configurations, pagination
+        continues until a `terminate` processor fires. Read the termination condition and ask:
+        is there a response the API can legitimately return — an empty page, a page with
+        fewer items than the page size, a missing next-page token — that does not trigger
+        the condition? If so, the integration requests the same last page indefinitely.
+
+        **Cursor not advanced on empty response.** When the API returns no new events, the
+        cursor should advance to now so the next poll starts from the current time. If the
+        cursor is not advanced on empty response, every subsequent poll re-requests the same
+        window, generating redundant API calls and potentially re-indexing old events.
+
+        **Rate limit headers exposed but not wired.** If `manifest.yml` exposes
+        `rate_limit.limit` and `rate_limit.reset` variables to users, check whether the
+        agent stream template actually wires them into the `httpjson` `rate_limit` config
+        block. An integration that advertises rate limit support but ignores the API's
+        rate limit headers will get rate-limited or banned despite users believing they
+        have configured it correctly.
+
+        For any candidate finding, check the git history of the template:
+        `git log --oneline -p -- packages/<pkg>/data_stream/<stream>/agent/stream/`
+
+        Cursor type handling and termination conditions are the areas most often changed
+        when an integration is updated for a new API version. A recent change that simplified
+        a cursor definition or modified a termination condition may have introduced the bug.
+
+        These patterns are starting points. If you understand a template's polling flow well
+        enough to find a correctness failure not described here, file it.
+
+        ## The reproduction is the argument
+
+        When you think you have found something, trace the complete runtime execution before
+        filing. What is the exact cursor value after the first successful poll? What does
+        JSON serialization do to it? What URL does the next request construct? What does the
+        API receive? What does it return, and what does the integration do next?
+
+        For termination failures, show the exact API response that should terminate
+        pagination and explain precisely why the `terminate` condition does not fire for it.
+        For empty-response cursor failures, show the cursor state before and after the empty
+        response is processed.
+
+        "This config looks incomplete" is not a reproduction. A step-by-step trace of the
+        runtime behavior that ends in a concrete incorrect outcome is.
+
+        ## Output
+
+        File a single issue containing:
+        - Each confirmed bug: the template file, the exact runtime failure traced step by
+          step, and the correct fix
+        - Configurations you investigated and found correct, with why
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
