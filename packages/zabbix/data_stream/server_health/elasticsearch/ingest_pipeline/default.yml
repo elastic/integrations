@@ -60,9 +60,10 @@ processors:
       source: >-
         String key = ctx.zabbix.server.item.key;
         String val = ctx._json.lastvalue;
+        if (val == null || val.isEmpty()) { return; }
         if (ctx.zabbix == null) ctx.zabbix = new HashMap();
         if (ctx.zabbix.server == null) ctx.zabbix.server = new HashMap();
-        if (key.equals('system.uptime') && val != null && !val.isEmpty()) {
+        if (key.equals('system.uptime')) {
           ctx.zabbix.server.uptime = Long.parseLong(val);
           return;
         }
