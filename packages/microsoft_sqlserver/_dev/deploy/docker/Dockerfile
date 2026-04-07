@@ -1,5 +1,5 @@
-ARG IMAGE=${IMAGE:-mcr.microsoft.com/mssql/server:2019-latest}
-FROM ${IMAGE}
+ARG MSSQL_VERSION=${MSSQL_VERSION:-2025-latest}
+FROM mcr.microsoft.com/mssql/server:${MSSQL_VERSION}
 
 ENV ACCEPT_EULA='Y'
 ENV SA_PASSWORD='1234_asdf'
