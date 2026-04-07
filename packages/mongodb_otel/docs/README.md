@@ -99,6 +99,8 @@ Refer to the OpenTelemetry MongoDB receiver's [documentation](https://github.com
 
 ## SLO templates
 
+SLO templates are available in Stack `9.4.0` and later. On Stack `9.3.x`, the package can still be installed, but the SLO templates are not shown in the Assets UI.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[MongoDB OTel] Average operation latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Average per-operation latency below 200 ms for 99.5% of 1-minute intervals to maintain responsive database performance. |
