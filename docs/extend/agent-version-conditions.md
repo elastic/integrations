@@ -32,7 +32,7 @@ conditions:
 Use this approach when **all** inputs in the package rely on agent capabilities introduced in a specific version.
 
 ::::{note}
-`conditions.agent.version` requires `format_version: 3.6.0` or later in the package manifest and Kibana 9.4 or later.
+`conditions.agent.version` requires Kibana 9.4 or later.
 ::::
 
 
