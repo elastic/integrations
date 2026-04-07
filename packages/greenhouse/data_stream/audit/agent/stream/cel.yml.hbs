@@ -173,6 +173,19 @@ program: |-
                     "events": [],
                     "want_more": false,
                   }
+                : string(resp.Body).contains("Pit_Id") ?
+                  // Pit_Id expired — clear pagination tokens so the next poll
+                  // starts a fresh snapshot from last_event_time.
+                  {
+                    "auth_token": auth.auth_token,
+                    "events": [],
+                    "cursor": {
+                      "last_event_time": after_time,
+                      "pit_id": "",
+                      "search_after": "",
+                    },
+                    "want_more": false,
+                  }
                 :
                   {
                     "events": {
