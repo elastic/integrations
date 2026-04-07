@@ -1,7 +1,14 @@
-version: '2.3'
 services:
   microsoft_sqlserver:
     user: root
+    # SQL Server 2025 has a strict CPU-topology assertion in sosnumap.cpp:
+    #   NUMA_nodes × cores_per_node == total_logical_processors
+    # On Intel hybrid CPUs (P-cores with HT + E-cores without HT) the full
+    # host topology is non-uniform and triggers a fatal crash in SQL Server 2025.
+    # Pinning to 4 logical CPUs (first 2 P-cores, both HT threads each) presents
+    # a uniform 1 NUMA × 2 cores × 2 threads = 4 topology that satisfies the assertion.
+    # SQL Server 2019 has no such assertion and works without this restriction.
+    cpuset: "0-3"
     build:
       context: .
       args:

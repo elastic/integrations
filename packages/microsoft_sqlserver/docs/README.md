@@ -2,13 +2,15 @@
 
 The Microsoft SQL Server integration package allows you to search, observe, and visualize the SQL Server audit logs, as well as performance and transaction log metrics, through Elasticsearch.
 
+This integration supports **SQL Server 2019, 2022, and 2025**. Where newer versions expose additional DMVs or columns, the integration uses version-safe dynamic SQL (`EXEC sp_executesql` guarded by `OBJECT_ID` or `SERVERPROPERTY('ProductMajorVersion')` checks) so the same configuration runs on all supported versions without errors. Fields that are only available on newer versions are documented individually.
+
 ## Data streams
 
 The Microsoft SQL Server integration collects two types of data streams: logs and metrics.
 
 **Log** data streams provide records of events happening in Microsoft SQL Server:
 
-* `audit`: Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
+* `audit`: Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver16).
 * `logs`: Error logs created by the Microsoft SQL server for troubleshooting and system events.
 
 Other log sources, such as files, are not supported.
@@ -32,17 +34,20 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 Before you can start sending data to Elastic, make sure you have the necessary Microsoft SQL Server permissions.
 
-If you browse Microsoft Developer Network (MSDN) for the following tables, you will find a "Permissions" section that defines the permission needed for each table (for example, [the "Permissions" section on the `sys.dm_db_log_space_usage`](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-space-usage-transact-sql?view=sql-server-ver15#permissions) page).
+If you browse Microsoft Developer Network (MSDN) for the following tables, you will find a "Permissions" section that defines the permission needed for each table (for example, [the "Permissions" section on the `sys.dm_db_log_space_usage`](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-space-usage-transact-sql?view=sql-server-ver16#permissions) page).
 
 1. `transaction_log`:
     - [sys.databases](https://learn.microsoft.com/en-us/sql/relational-databases/system-compatibility-views/sys-sysdatabases-transact-sql?view=sql-server-ver16)
     - [sys.dm_db_log_space_usage](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-space-usage-transact-sql?view=sql-server-ver16)
     - [sys.dm_db_log_stats (DB_ID)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-stats-transact-sql?view=sql-server-ver16) (Available on SQL Server (MSSQL) 2016 (13.x) SP 2 and later)
+    - [sys.dm_tran_persistent_version_store_stats](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-tran-persistent-version-store-stats?view=sql-server-ver16) (**SQL Server 2022+ only** — Accelerated Database Recovery PVS health metrics; returns no data on earlier versions)
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
 3. `availability_groups`:
     - [sys.availability_groups](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-availability-groups-transact-sql?view=sql-server-ver16)
     - [sys.dm_hadr_availability_group_states](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-hadr-availability-group-states-transact-sql)
+    - [sys.availability_replicas](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-availability-replicas-transact-sql?view=sql-server-ver16)
+    - [sys.dm_hadr_availability_replica_states](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-hadr-availability-replica-states-transact-sql)
 
 Please make sure the user has the permissions to system as well as user-defined databases. For the particular user used in the integration, the following requirements are met:
 
@@ -95,10 +100,32 @@ As part of the input configuration, you need to provide the user name, password 
 
 There are several levels of auditing for SQL Server, depending on government or standards requirements for your installation. The SQL Server Audit feature enables you to audit server-level and database-level groups of events and individual events.
 
-For more information on the different audit levels, refer to [SQL Server Audit Action Groups and Actions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-action-groups-and-actions?view=sql-server-ver15).
-Then to enable auditing for SQL Server, refer to these [instructions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-server-audit-specification?view=sql-server-ver15).
+For more information on the different audit levels, refer to [SQL Server Audit Action Groups and Actions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-action-groups-and-actions?view=sql-server-ver16).
+Then to enable auditing for SQL Server, refer to these [instructions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-server-audit-specification?view=sql-server-ver16).
 
 >Note: For the integration package to be able to read and send audit events the event target must be configured to be Windows event log.
+
+**SQL Server 2022+ audit fields** — automatically extracted from the audit payload when present:
+
+| Field | Notes |
+|---|---|
+| `sqlserver.audit.obo_middle_tier_app_id` | OAuth On-Behalf-Of middle-tier application ID. NULL when not an OAuth delegated flow. |
+| `sqlserver.audit.obo_middle_tier_app_name` | OAuth On-Behalf-Of middle-tier application display name. |
+| `sqlserver.audit.external_policy_permissions_checked` | Azure Purview external authorization policy decision. NULL when not configured. |
+
+**SQL Server 2022+ audit action groups** recognized by the ingest pipeline:
+
+| Action ID | Action Group | Notes |
+|---|---|---|
+| `LDGR` | `LEDGER_OPERATION_GROUP` | CREATE/ALTER/DROP ledger tables and VERIFY LEDGER operations. |
+| `EXPO` | `EXTERNAL_POLICY_OPERATION_GROUP` | Azure Purview external policy check operations. |
+
+**SQL Server 2025+ audit action groups**:
+
+| Action ID | Action Group | Notes |
+|---|---|---|
+| `VECT` | `VECTOR_OPERATION_GROUP` | Vector index CRUD operations. |
+| `ERRE` | `EXTERNAL_REST_ENDPOINT_GROUP` | Calls to `sp_invoke_external_rest_endpoint` and native AI functions. |
 
 #### Audit events
 
@@ -121,13 +148,32 @@ MSSQL supports a limited set of regular expressions. For more details, refer to 
 
 The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_into_a_single_event).
 
-Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15).
+Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16).
+
+**SQL Server 2022+ performance counters** (new counters are included in the static query list; they return no data on SQL Server 2019 and earlier):
+
+| Field | Counter Name | Object | Notes |
+|---|---|---|---|
+| `mssql.metrics.dop_feedback_adjustments_per_sec` | `DOP Feedback adjustments/sec` | SQL Statistics | IQP adaptive Degree of Parallelism feedback |
+| `mssql.metrics.ce_feedback_adjustments_per_sec` | `CE Feedback adjustments/sec` | SQL Statistics | IQP Cardinality Estimation feedback |
+| `mssql.metrics.memory_grant_feedback_adjustments_per_sec` | `Memory Grant Feedback adjustments/sec` | SQL Statistics | IQP memory grant loop |
+| `mssql.metrics.optimized_plan_forcing_forced_plans_per_sec` | `Optimized Plan Forcing: Forced Plans/sec` | Query Store | Query Store plan forcing |
+| `mssql.metrics.optimized_plan_forcing_skipped_plans_per_sec` | `Optimized Plan Forcing: Skipped Plans/sec` | Query Store | Query Store plan forcing |
+
+**SQL Server 2025+ performance counters**:
+
+| Field | Counter Name | Notes |
+|---|---|---|
+| `mssql.metrics.vector_index_operations_per_sec` | `Vector index operations/sec` | Vector search workloads |
+| `mssql.metrics.external_model_invocations_per_sec` | `External model invocations/sec` | Native AI/ML function calls |
 
 #### Transaction log metrics
 
 The system-level database `transaction_log` metrics for SQL Server instances are collected by default. Metrics for user-level databases can be collected by specifying a list of user databases or by enabling the `Fetch from all databases` toggle to collect metrics from all databases on the server.
 
-Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15).
+On **SQL Server 2022 and later**, additional Accelerated Database Recovery (ADR) Persistent Version Store (PVS) metrics are collected from `sys.dm_tran_persistent_version_store_stats`. These fields (`mssql.metrics.pvs_*`) are absent on SQL Server 2019 and earlier — no errors occur, they simply do not appear in events.
+
+Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver16).
 
 #### Fetch from all databases
 
@@ -145,6 +191,18 @@ Collects metrics related to Always On Availability Groups, including replica sta
 
 - `sys.availability_groups`
 - `sys.dm_hadr_availability_group_states`
+- `sys.availability_replicas`
+- `sys.dm_hadr_availability_replica_states`
+
+**SQL Server 2022+ fields** collected via version-safe dynamic SQL (NULL on SQL Server 2019):
+
+| Field | Notes |
+|---|---|
+| `mssql.metrics.is_contained` | 1 = Contained Availability Group (own system databases/logins). SQL Server 2022+ only. |
+| `mssql.metrics.basic_availability_group` | 1 = Basic AG (Standard Edition, single DB, no readable secondary). SQL Server 2016+. |
+| `mssql.metrics.is_distributed` | 1 = Distributed Availability Group spanning two WSFC clusters. SQL Server 2016+. |
+
+Per-replica state fields (`role`, `connected_state`, `replica_synchronization_health`, `last_connect_error_*`) are collected from `sys.dm_hadr_availability_replica_states` on all supported versions.
 
 **Note:** Always On Availability Groups must be enabled on your SQL Server instance for this dataset to collect metrics. This feature is available in SQL Server Enterprise and Standard editions (with limitations in Standard).
 
@@ -191,10 +249,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | sqlserver.audit.database_principal_name | Current user. | keyword |
 | sqlserver.audit.duration_milliseconds | Duration of the operation in milliseconds. | long |
 | sqlserver.audit.event_time | Date/time when the auditable action is fired. | date |
+| sqlserver.audit.external_policy_permissions_checked | Information related to the external authorization policy permission check performed during the audit event, such as Azure Purview external policy decisions. NULL when external policy is not configured. Available on SQL Server 2022 (16.x) and later. | keyword |
 | sqlserver.audit.host_name | SQL Server host name. | keyword |
 | sqlserver.audit.is_column_permission | Flag indicating a column level permission | boolean |
 | sqlserver.audit.object_id | "The primary ID of the entity on which the audit occurred. This ID can be one of server objects, databases, database objects or schema objects." | keyword |
 | sqlserver.audit.object_name | "The name of the entity on which the audit occurred. This can be server objects, databases, database objects, schema objects or TSQL statement (if any)." | keyword |
+| sqlserver.audit.obo_middle_tier_app_id | Application ID of the middle-tier application acting on behalf of a principal (OAuth delegated access). NULL when the action is not performed via OAuth On-Behalf-Of flow. Available on SQL Server 2022 (16.x) and later. | keyword |
+| sqlserver.audit.obo_middle_tier_app_name | Display name of the middle-tier application acting on behalf of a principal (OAuth delegated access). NULL when the action is not performed via OAuth On-Behalf-Of flow. Available on SQL Server 2022 (16.x) and later. | keyword |
 | sqlserver.audit.permission_bitmask | When applicable shows the permissions that were granted, denied or revoked. | keyword |
 | sqlserver.audit.response_rows | Number of rows returned. | long |
 | sqlserver.audit.schema_name | The schema context in which the action occurred. | keyword |
@@ -500,18 +561,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.buffer_database_pages | Indicates the number of pages in the buffer pool with database content. | long | gauge |
 | mssql.metrics.buffer_page_life_expectancy | Indicates the number of seconds a page will stay in the buffer pool without references (in seconds). | long | gauge |
 | mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long | gauge |
+| mssql.metrics.ce_feedback_adjustments_per_sec | Number of times per second the Cardinality Estimation (CE) Feedback mechanism corrected a plan's row estimates. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
 | mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
 | mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
+| mssql.metrics.dop_feedback_adjustments_per_sec | Number of times per second the Degree of Parallelism (DOP) Feedback mechanism adjusted query parallelism. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
+| mssql.metrics.external_model_invocations_per_sec | Number of external AI model invocations per second via sp_invoke_external_rest_endpoint or native AI/ML functions. Available on SQL Server 2025 and later; absent (no data) on earlier versions. | float | gauge |
 | mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |
 | mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
 | mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
 | mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
+| mssql.metrics.memory_grant_feedback_adjustments_per_sec | Number of times per second the Memory Grant Feedback mechanism revised a query's memory grant to avoid spills or excessive memory waits. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
 | mssql.metrics.memory_grants_pending | This is generated from the default pattern given for Dynamic Counter Name variable. This counter tells us how many processes are waiting for the memory to be assigned to them so they can get started. | long |  |
+| mssql.metrics.optimized_plan_forcing_forced_plans_per_sec | Number of query plans per second that were successfully forced via Query Store Optimized Plan Forcing. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
+| mssql.metrics.optimized_plan_forcing_skipped_plans_per_sec | Number of query plans per second that were skipped by Query Store Optimized Plan Forcing (e.g., because forcing was not safe or applicable). Available on SQL Server 2022 (16.x) and later. | float | gauge |
 | mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
 | mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
 | mssql.metrics.server_name | Name of the mssql server. | keyword |  |
 | mssql.metrics.transactions | Total number of transactions | long | gauge |
 | mssql.metrics.user_connections | Total number of user connections. | long | gauge |
+| mssql.metrics.vector_index_operations_per_sec | Number of vector index operations (inserts, updates, deletes, and scans) per second. Available on SQL Server 2025 and later; absent (no data) on earlier versions. | float | gauge |
 | mssql.query | The SQL queries executed. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
@@ -633,6 +701,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.log_since_last_checkpoint | Log size in bytes since last checkpoint log sequence number (LSN). | long | byte | gauge |
 | mssql.metrics.log_since_last_log_backup | Log file size since last backup in bytes. | long | byte | gauge |
 | mssql.metrics.log_space_in_bytes_since_last_backup | The amount of space used since the last log backup in bytes. | long | byte | gauge |
+| mssql.metrics.pvs_aborted_version_count | Number of row versions belonging to aborted (rolled-back) transactions that are still held in the PVS waiting for cleanup. A large and growing value indicates ADR cleanup is falling behind. Available on SQL Server 2022 (16.x) and later. | long |  | gauge |
+| mssql.metrics.pvs_cleanup_version_count | Cumulative number of row versions that have been successfully cleaned up from the PVS since the last SQL Server restart. Available on SQL Server 2022 (16.x) and later. | long |  | counter |
+| mssql.metrics.pvs_off_row_page_skipped_low_water_mark | Number of off-row PVS pages skipped during cleanup because they are still referenced by the oldest active transaction (low-water mark). Available on SQL Server 2022 (16.x) and later. | long |  | gauge |
+| mssql.metrics.pvs_oldest_aborted_transaction_id | ID of the earliest active transaction still holding row versions in the PVS (maps to pvs_earliest_active_transaction_id in sys.dm_tran_persistent_version_store_stats). Useful for diagnosing long-running cleanup delays. Available on SQL Server 2022 (16.x) and later. | long |  |  |
+| mssql.metrics.pvs_pages_allocated | Number of 8-KB pages currently allocated to the Persistent Version Store (PVS) for Accelerated Database Recovery (ADR). Available on SQL Server 2022 (16.x) and later. | long | byte | gauge |
+| mssql.metrics.pvs_pages_used_pct | Percentage of the PVS space that is currently in use relative to the total allocated PVS pages. Available on SQL Server 2022 (16.x) and later. | float | percent | gauge |
 | mssql.metrics.query_id | Autogenerated ID representing the mssql query that is executed to fetch the results. | keyword |  |  |
 | mssql.metrics.server_name | Name of the mssql server. | keyword |  |  |
 | mssql.metrics.total_log_size | Total log size. | long | byte | counter |
@@ -744,10 +818,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| mssql.metrics.basic_availability_group | Indicates whether the availability group is a Basic Availability Group (1 = basic, 0 = advanced). Basic AGs are available in SQL Server 2016+ Standard Edition and do not support readable secondaries or multiple databases per group. Available on SQL Server 2016 and later. | long | gauge |
+| mssql.metrics.connected_state | Whether the secondary replica is currently connected to the primary replica (0 = DISCONNECTED, 1 = CONNECTED). | long | gauge |
+| mssql.metrics.connected_state_desc | Text description of the replica connected state (DISCONNECTED or CONNECTED). | keyword |  |
 | mssql.metrics.group_id | Unique identifier (GUID) of the availability group. | keyword |  |
+| mssql.metrics.is_contained | Indicates whether the availability group is a Contained Availability Group (1 = contained, 0 = not contained, NULL on SQL Server 2019 and earlier). Contained AGs include their own system databases and logins, simplifying failover to a new primary. Available on SQL Server 2022 (16.x) and later; NULL on earlier versions. | long | gauge |
+| mssql.metrics.is_distributed | Indicates whether the availability group is a Distributed Availability Group (1 = distributed, 0 = standard). Distributed AGs span two separate WSFC clusters. Available on SQL Server 2016 and later. | long | gauge |
+| mssql.metrics.last_connect_error_description | Description of the last connection error for the replica. NULL if no error. | keyword |  |
+| mssql.metrics.last_connect_error_number | Number of the last connection error for the replica. NULL if no error. | long |  |
+| mssql.metrics.last_connect_error_timestamp | Timestamp of the last connection error for the replica. NULL if no error. | date |  |
 | mssql.metrics.name | Availability group name. | keyword |  |
+| mssql.metrics.operational_state | Current operational state of the replica (0 = PENDING_FAILOVER, 1 = PENDING, 2 = ONLINE, 3 = OFFLINE, 4 = FAILED, 5 = FAILED_NO_QUORUM, NULL = not local). | long | gauge |
+| mssql.metrics.operational_state_desc | Text description of the replica operational state. | keyword |  |
 | mssql.metrics.primary_recovery_health | Primary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on secondary replicas). | long | gauge |
 | mssql.metrics.primary_replica | Server name of the current primary replica. | keyword |  |
+| mssql.metrics.replica_server_name | Server name of the availability replica. | keyword |  |
+| mssql.metrics.replica_synchronization_health | Synchronization health of the replica (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY). | long | gauge |
+| mssql.metrics.replica_synchronization_health_desc | Text description of the replica synchronization health. | keyword |  |
+| mssql.metrics.role | Current role of the replica (1 = PRIMARY, 2 = SECONDARY, NULL = not a local replica). | long | gauge |
+| mssql.metrics.role_desc | Text description of the replica role (PRIMARY, SECONDARY, or RESOLVING). | keyword |  |
 | mssql.metrics.secondary_recovery_health | Secondary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on primary replicas). | long | gauge |
 | mssql.metrics.server_name | SQL Server instance name where metrics were collected. | keyword |  |
 | mssql.metrics.synchronization_health | AG synchronization health status (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY). | long | gauge |

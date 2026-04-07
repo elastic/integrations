@@ -2,13 +2,15 @@
 
 The Microsoft SQL Server integration package allows you to search, observe, and visualize the SQL Server audit logs, as well as performance and transaction log metrics, through Elasticsearch.
 
+This integration supports **SQL Server 2019, 2022, and 2025**. Where newer versions expose additional DMVs or columns, the integration uses version-safe dynamic SQL (`EXEC sp_executesql` guarded by `OBJECT_ID` or `SERVERPROPERTY('ProductMajorVersion')` checks) so the same configuration runs on all supported versions without errors. Fields that are only available on newer versions are documented individually.
+
 ## Data streams
 
 The Microsoft SQL Server integration collects two types of data streams: logs and metrics.
 
 **Log** data streams provide records of events happening in Microsoft SQL Server:
 
-* `audit`: Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
+* `audit`: Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver16).
 * `logs`: Error logs created by the Microsoft SQL server for troubleshooting and system events.
 
 Other log sources, such as files, are not supported.
@@ -32,17 +34,20 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 Before you can start sending data to Elastic, make sure you have the necessary Microsoft SQL Server permissions.
 
-If you browse Microsoft Developer Network (MSDN) for the following tables, you will find a "Permissions" section that defines the permission needed for each table (for example, [the "Permissions" section on the `sys.dm_db_log_space_usage`](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-space-usage-transact-sql?view=sql-server-ver15#permissions) page).
+If you browse Microsoft Developer Network (MSDN) for the following tables, you will find a "Permissions" section that defines the permission needed for each table (for example, [the "Permissions" section on the `sys.dm_db_log_space_usage`](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-space-usage-transact-sql?view=sql-server-ver16#permissions) page).
 
 1. `transaction_log`:
     - [sys.databases](https://learn.microsoft.com/en-us/sql/relational-databases/system-compatibility-views/sys-sysdatabases-transact-sql?view=sql-server-ver16)
     - [sys.dm_db_log_space_usage](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-space-usage-transact-sql?view=sql-server-ver16)
     - [sys.dm_db_log_stats (DB_ID)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-stats-transact-sql?view=sql-server-ver16) (Available on SQL Server (MSSQL) 2016 (13.x) SP 2 and later)
+    - [sys.dm_tran_persistent_version_store_stats](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-tran-persistent-version-store-stats?view=sql-server-ver16) (**SQL Server 2022+ only** — Accelerated Database Recovery PVS health metrics; returns no data on earlier versions)
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
 3. `availability_groups`:
     - [sys.availability_groups](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-availability-groups-transact-sql?view=sql-server-ver16)
     - [sys.dm_hadr_availability_group_states](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-hadr-availability-group-states-transact-sql)
+    - [sys.availability_replicas](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-availability-replicas-transact-sql?view=sql-server-ver16)
+    - [sys.dm_hadr_availability_replica_states](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-hadr-availability-replica-states-transact-sql)
 
 Please make sure the user has the permissions to system as well as user-defined databases. For the particular user used in the integration, the following requirements are met:
 
@@ -95,10 +100,32 @@ As part of the input configuration, you need to provide the user name, password 
 
 There are several levels of auditing for SQL Server, depending on government or standards requirements for your installation. The SQL Server Audit feature enables you to audit server-level and database-level groups of events and individual events.
 
-For more information on the different audit levels, refer to [SQL Server Audit Action Groups and Actions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-action-groups-and-actions?view=sql-server-ver15).
-Then to enable auditing for SQL Server, refer to these [instructions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-server-audit-specification?view=sql-server-ver15).
+For more information on the different audit levels, refer to [SQL Server Audit Action Groups and Actions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-action-groups-and-actions?view=sql-server-ver16).
+Then to enable auditing for SQL Server, refer to these [instructions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-server-audit-specification?view=sql-server-ver16).
 
 >Note: For the integration package to be able to read and send audit events the event target must be configured to be Windows event log.
+
+**SQL Server 2022+ audit fields** — automatically extracted from the audit payload when present:
+
+| Field | Notes |
+|---|---|
+| `sqlserver.audit.obo_middle_tier_app_id` | OAuth On-Behalf-Of middle-tier application ID. NULL when not an OAuth delegated flow. |
+| `sqlserver.audit.obo_middle_tier_app_name` | OAuth On-Behalf-Of middle-tier application display name. |
+| `sqlserver.audit.external_policy_permissions_checked` | Azure Purview external authorization policy decision. NULL when not configured. |
+
+**SQL Server 2022+ audit action groups** recognized by the ingest pipeline:
+
+| Action ID | Action Group | Notes |
+|---|---|---|
+| `LDGR` | `LEDGER_OPERATION_GROUP` | CREATE/ALTER/DROP ledger tables and VERIFY LEDGER operations. |
+| `EXPO` | `EXTERNAL_POLICY_OPERATION_GROUP` | Azure Purview external policy check operations. |
+
+**SQL Server 2025+ audit action groups**:
+
+| Action ID | Action Group | Notes |
+|---|---|---|
+| `VECT` | `VECTOR_OPERATION_GROUP` | Vector index CRUD operations. |
+| `ERRE` | `EXTERNAL_REST_ENDPOINT_GROUP` | Calls to `sp_invoke_external_rest_endpoint` and native AI functions. |
 
 #### Audit events
 
@@ -121,13 +148,32 @@ MSSQL supports a limited set of regular expressions. For more details, refer to 
 
 The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_into_a_single_event).
 
-Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15).
+Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16).
+
+**SQL Server 2022+ performance counters** (new counters are included in the static query list; they return no data on SQL Server 2019 and earlier):
+
+| Field | Counter Name | Object | Notes |
+|---|---|---|---|
+| `mssql.metrics.dop_feedback_adjustments_per_sec` | `DOP Feedback adjustments/sec` | SQL Statistics | IQP adaptive Degree of Parallelism feedback |
+| `mssql.metrics.ce_feedback_adjustments_per_sec` | `CE Feedback adjustments/sec` | SQL Statistics | IQP Cardinality Estimation feedback |
+| `mssql.metrics.memory_grant_feedback_adjustments_per_sec` | `Memory Grant Feedback adjustments/sec` | SQL Statistics | IQP memory grant loop |
+| `mssql.metrics.optimized_plan_forcing_forced_plans_per_sec` | `Optimized Plan Forcing: Forced Plans/sec` | Query Store | Query Store plan forcing |
+| `mssql.metrics.optimized_plan_forcing_skipped_plans_per_sec` | `Optimized Plan Forcing: Skipped Plans/sec` | Query Store | Query Store plan forcing |
+
+**SQL Server 2025+ performance counters**:
+
+| Field | Counter Name | Notes |
+|---|---|---|
+| `mssql.metrics.vector_index_operations_per_sec` | `Vector index operations/sec` | Vector search workloads |
+| `mssql.metrics.external_model_invocations_per_sec` | `External model invocations/sec` | Native AI/ML function calls |
 
 #### Transaction log metrics
 
 The system-level database `transaction_log` metrics for SQL Server instances are collected by default. Metrics for user-level databases can be collected by specifying a list of user databases or by enabling the `Fetch from all databases` toggle to collect metrics from all databases on the server.
 
-Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15).
+On **SQL Server 2022 and later**, additional Accelerated Database Recovery (ADR) Persistent Version Store (PVS) metrics are collected from `sys.dm_tran_persistent_version_store_stats`. These fields (`mssql.metrics.pvs_*`) are absent on SQL Server 2019 and earlier — no errors occur, they simply do not appear in events.
+
+Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver16).
 
 #### Fetch from all databases
 
@@ -145,6 +191,18 @@ Collects metrics related to Always On Availability Groups, including replica sta
 
 - `sys.availability_groups`
 - `sys.dm_hadr_availability_group_states`
+- `sys.availability_replicas`
+- `sys.dm_hadr_availability_replica_states`
+
+**SQL Server 2022+ fields** collected via version-safe dynamic SQL (NULL on SQL Server 2019):
+
+| Field | Notes |
+|---|---|
+| `mssql.metrics.is_contained` | 1 = Contained Availability Group (own system databases/logins). SQL Server 2022+ only. |
+| `mssql.metrics.basic_availability_group` | 1 = Basic AG (Standard Edition, single DB, no readable secondary). SQL Server 2016+. |
+| `mssql.metrics.is_distributed` | 1 = Distributed Availability Group spanning two WSFC clusters. SQL Server 2016+. |
+
+Per-replica state fields (`role`, `connected_state`, `replica_synchronization_health`, `last_connect_error_*`) are collected from `sys.dm_hadr_availability_replica_states` on all supported versions.
 
 **Note:** Always On Availability Groups must be enabled on your SQL Server instance for this dataset to collect metrics. This feature is available in SQL Server Enterprise and Standard editions (with limitations in Standard).
 

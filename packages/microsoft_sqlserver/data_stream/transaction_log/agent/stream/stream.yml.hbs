@@ -16,6 +16,27 @@ sql_queries:
   response_format: table
 - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_in_bytes As total_log_size_bytes, l.used_log_space_in_bytes As used_log_space_bytes, l.used_log_space_in_percent As used_log_space_pct, l.log_space_in_bytes_since_last_backup from sys.dm_db_log_space_usage l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID();"
   response_format: table
+# SQL Server 2022+ Accelerated Database Recovery (ADR) Persistent Version Store (PVS) stats.
+# sys.dm_tran_persistent_version_store_stats does not exist on SQL Server 2019 and earlier.
+# Version check (ProductMajorVersion >= 16) is used instead of OBJECT_ID because DMVs
+# are not guaranteed to appear in sys.objects on all platforms.
+- query: >-
+    IF CONVERT(INT, SERVERPROPERTY('ProductMajorVersion')) >= 16
+    BEGIN
+      EXEC sp_executesql N'SELECT
+        @@servername AS server_name,
+        @@servicename AS instance_name,
+        DB_NAME() AS database_name,
+        pvs_pages_allocated AS pvs_pages_allocated,
+        pvs_pages_used_percent AS pvs_pages_used_pct,
+        aborted_version_count AS pvs_aborted_version_count,
+        cleanup_version_count AS pvs_cleanup_version_count,
+        pvs_off_row_page_skipped_low_water_mark AS pvs_off_row_page_skipped_low_water_mark,
+        pvs_earliest_active_transaction_id AS pvs_oldest_aborted_transaction_id
+      FROM sys.dm_tran_persistent_version_store_stats
+      WHERE database_id = DB_ID()';
+    END
+  response_format: table
 {{else}}
   {{#if databases}}
     {{#each databases as |database_name i|}}
@@ -24,6 +45,24 @@ sql_queries:
       - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_mb, l.active_log_size_mb,l.log_backup_time,l.log_since_last_log_backup_mb,l.log_since_last_checkpoint_mb,l.log_recovery_size_mb from sys.dm_db_log_stats(DB_ID('{{database_name}}')) l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
         response_format: table
       - query: "USE [{{database_name}}]; SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_in_bytes As total_log_size_bytes, l.used_log_space_in_bytes As used_log_space_bytes, l.used_log_space_in_percent As used_log_space_pct, l.log_space_in_bytes_since_last_backup from sys.dm_db_log_space_usage l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
+        response_format: table
+      # SQL Server 2022+ ADR PVS stats per named database (safe on 2019 — skipped by version check)
+      - query: >-
+          IF CONVERT(INT, SERVERPROPERTY('ProductMajorVersion')) >= 16
+          BEGIN
+            EXEC sp_executesql
+              N'SELECT @@servername AS server_name, @@servicename AS instance_name,
+                  @dbname AS database_name,
+                  pvs_pages_allocated AS pvs_pages_allocated,
+                  pvs_pages_used_percent AS pvs_pages_used_pct,
+                  aborted_version_count AS pvs_aborted_version_count,
+                  cleanup_version_count AS pvs_cleanup_version_count,
+                  pvs_off_row_page_skipped_low_water_mark AS pvs_off_row_page_skipped_low_water_mark,
+                  pvs_earliest_active_transaction_id AS pvs_oldest_aborted_transaction_id
+                FROM sys.dm_tran_persistent_version_store_stats
+                WHERE database_id = DB_ID(@dbname)',
+              N'@dbname sysname', @dbname = N'{{database_name}}';
+          END
         response_format: table
     {{/each}}
   {{/if}}

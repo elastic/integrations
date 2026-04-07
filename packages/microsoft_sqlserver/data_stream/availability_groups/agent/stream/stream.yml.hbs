@@ -6,19 +6,48 @@ raw_data.enabled: true
 merge_results: false
 driver: "mssql"
 sql_queries:
-  # Availability groups metrics
+  # Availability groups metrics (compatible with SQL Server 2019+)
+  # is_contained (SQL Server 2022+) and basic_availability_group (SQL Server 2016+) are
+  # fetched via dynamic SQL so the query is safe to run on older versions.
+  - query: >-
+      DECLARE @version INT = CONVERT(INT, SERVERPROPERTY('ProductMajorVersion'));
+      DECLARE @sql NVARCHAR(MAX) = N'SELECT
+          @@servername AS server_name,
+          ag.name,
+          CONVERT(NVARCHAR(36), ag.group_id) AS group_id,
+          ags.primary_replica,
+          ags.synchronization_health,
+          ags.synchronization_health_desc,
+          ags.primary_recovery_health,
+          ags.secondary_recovery_health,
+          CAST(ag.basic_availability_group AS INT) AS basic_availability_group,
+          CAST(ag.is_distributed AS INT) AS is_distributed'
+        + CASE WHEN @version >= 16
+               THEN N', CAST(ag.is_contained AS INT) AS is_contained'
+               ELSE N', NULL AS is_contained' END
+        + N' FROM sys.dm_hadr_availability_group_states ags
+             JOIN sys.availability_groups ag ON ags.group_id = ag.group_id;';
+      EXEC sp_executesql @sql;
+    response_format: table
+  # Per-replica state metrics — available on all SQL Server versions that support AG
   - query: "SELECT
-    @@servername AS server_name,
-    ag.name,
-    CONVERT(NVARCHAR(36), ag.group_id) AS group_id,
-    ags.primary_replica,
-    ags.synchronization_health,
-    ags.synchronization_health_desc,
-    ags.primary_recovery_health,
-    ags.secondary_recovery_health
-FROM sys.dm_hadr_availability_group_states ags
-JOIN sys.availability_groups ag 
-    ON ags.group_id = ag.group_id;"
+      @@servername AS server_name,
+      CONVERT(NVARCHAR(36), rs.group_id) AS group_id,
+      ar.replica_server_name,
+      rs.role,
+      rs.role_desc,
+      rs.operational_state,
+      rs.operational_state_desc,
+      rs.connected_state,
+      rs.connected_state_desc,
+      rs.synchronization_health AS replica_synchronization_health,
+      rs.synchronization_health_desc AS replica_synchronization_health_desc,
+      rs.last_connect_error_number,
+      rs.last_connect_error_description,
+      rs.last_connect_error_timestamp
+    FROM sys.dm_hadr_availability_replica_states rs
+    JOIN sys.availability_replicas ar
+        ON rs.replica_id = ar.replica_id;"
     response_format: table
 {{#if processors}}
 processors:

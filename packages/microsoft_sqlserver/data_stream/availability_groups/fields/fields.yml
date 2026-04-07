@@ -39,6 +39,72 @@
           type: long
           metric_type: gauge
           description: Secondary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on primary replicas).
+        - name: basic_availability_group
+          type: long
+          metric_type: gauge
+          description: >
+            Indicates whether the availability group is a Basic Availability Group (1 = basic, 0 = advanced).
+            Basic AGs are available in SQL Server 2016+ Standard Edition and do not support readable secondaries
+            or multiple databases per group. Available on SQL Server 2016 and later.
+        - name: is_distributed
+          type: long
+          metric_type: gauge
+          description: >
+            Indicates whether the availability group is a Distributed Availability Group (1 = distributed, 0 = standard).
+            Distributed AGs span two separate WSFC clusters. Available on SQL Server 2016 and later.
+        - name: is_contained
+          type: long
+          metric_type: gauge
+          description: >
+            Indicates whether the availability group is a Contained Availability Group (1 = contained, 0 = not contained, NULL on SQL Server 2019 and earlier).
+            Contained AGs include their own system databases and logins, simplifying failover to a new primary.
+            Available on SQL Server 2022 (16.x) and later; NULL on earlier versions.
+        # Per-replica state fields (from sys.dm_hadr_availability_replica_states)
+        - name: replica_server_name
+          type: keyword
+          dimension: true
+          description: Server name of the availability replica.
+        - name: role
+          type: long
+          metric_type: gauge
+          description: Current role of the replica (1 = PRIMARY, 2 = SECONDARY, NULL = not a local replica).
+        - name: role_desc
+          type: keyword
+          description: Text description of the replica role (PRIMARY, SECONDARY, or RESOLVING).
+        - name: operational_state
+          type: long
+          metric_type: gauge
+          description: >
+            Current operational state of the replica
+            (0 = PENDING_FAILOVER, 1 = PENDING, 2 = ONLINE, 3 = OFFLINE, 4 = FAILED, 5 = FAILED_NO_QUORUM, NULL = not local).
+        - name: operational_state_desc
+          type: keyword
+          description: Text description of the replica operational state.
+        - name: connected_state
+          type: long
+          metric_type: gauge
+          description: Whether the secondary replica is currently connected to the primary replica (0 = DISCONNECTED, 1 = CONNECTED).
+        - name: connected_state_desc
+          type: keyword
+          description: Text description of the replica connected state (DISCONNECTED or CONNECTED).
+        - name: replica_synchronization_health
+          type: long
+          metric_type: gauge
+          description: >
+            Synchronization health of the replica
+            (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY).
+        - name: replica_synchronization_health_desc
+          type: keyword
+          description: Text description of the replica synchronization health.
+        - name: last_connect_error_number
+          type: long
+          description: Number of the last connection error for the replica. NULL if no error.
+        - name: last_connect_error_description
+          type: keyword
+          description: Description of the last connection error for the replica. NULL if no error.
+        - name: last_connect_error_timestamp
+          type: date
+          description: Timestamp of the last connection error for the replica. NULL if no error.
     - name: query
       type: keyword
       description: The SQL queries executed.
