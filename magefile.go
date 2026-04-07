@@ -20,6 +20,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/packagenames"
 	"github.com/elastic/integrations/dev/testsreporter"
@@ -47,7 +48,7 @@ func Check() error {
 	mg.Deps(format)
 	mg.Deps(ModTidy)
 	mg.Deps(goTest)
-	// mg.Deps(codeowners.Check)
+	mg.Deps(codeowners.Check)
 	mg.Deps(packagenames.Check)
 	return nil
 }
