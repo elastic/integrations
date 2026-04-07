@@ -98,7 +98,7 @@ and package fields.
 
 ##### Integration title
 
-The correct spelling makes better impression on users, so the scripts uses `title` property in the module fields
+The correct spelling makes better impression on users, so the scripts use `title` property in the module fields
 as the proper form. Remember to adjust this value if working on the migration from Beats.
 
 ##### Release type
