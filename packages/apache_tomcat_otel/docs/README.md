@@ -8,7 +8,7 @@ These assets provide dashboards, alert rules, and SLO templates for monitoring A
 
 The Apache Tomcat OpenTelemetry assets have been tested with:
 - OpenTelemetry `prometheusreceiver` v0.144.0 from OpenTelemetry Collector Contrib.
-- IApache Tomcat/9.0.115
+- Apache Tomcat/9.0.115
 
 ## Requirements
 
