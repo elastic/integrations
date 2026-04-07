@@ -50,7 +50,7 @@ POST chargeback_conf_lookup/_update/config
     "conf_query_weight": 20,
     "conf_storage_weight": 40,
     "conf_start_date": "2024-01-01T00:00:00.000Z",
-    "conf_end_date": "2024-12-31T23:59:59.999Z"
+    "conf_end_date": "2024-12-31T23:tie"
   }
 }
 ```
@@ -119,12 +119,6 @@ Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdow
 
 ![Cost and Consumption breakdown](../img/chargeback.png)
 
-### Upgrading from 0.3.0
-
-From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). The dashboard queries accept both the new and the previous field names, so you do not need to change existing documents in the lookup indices for panels to work. New data from the updated transforms uses the new names over time.
-
-If you built your own ES|QL, dashboards, or automation against the lookup indices, update those to the new field names when convenient.
-
 ## Deployment Groups
 
 The integration supports organizing deployments into logical groups using the `chargeback_group` tag on ESS Billing deployments. This enables cost allocation and filtering by teams, projects, or any organizational structure.
@@ -147,6 +141,8 @@ This integration includes 3 pre-configured alert rule templates that can be inst
 1. **Transform Health Monitoring** - Monitors the health of all Chargeback transforms and alerts when they encounter issues or failures
 2. **New Chargeback Group Detected** - Notifies when a new `chargeback_group` tag is added to a deployment
 3. **Deployment with Chargeback Group Missing Usage Data** - Detects when a deployment has a chargeback group assigned but is not sending usage/consumption data
+
+The templates ship as Kibana alerting rule assets with the package and need **Kibana 9.2.0 or newer**, the same minimum as the integration’s Kibana version condition (see **Requirements** below).
 
 **Important:** For alert rules 2 and 3, ensure that the Chargeback transforms are running before setting them up. These alerting rules query the lookup indices created by the transforms (`billing_cluster_cost_lookup`, `cluster_deployment_contribution_lookup`, etc.). If the transforms are not started, the alerts will not function correctly.
 
