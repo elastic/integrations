@@ -63,7 +63,7 @@ program: |-
   state.with(
     (
       !state.?auth_token.token.hasValue() || !state.?auth_token.expires.hasValue() ||
-      timestamp(state.auth_token.expires) < now
+      timestamp(state.auth_token.expires) < now-duration("30s")
     ).as(need_token,
       need_token ?
         request("POST", state.token_url).with(
