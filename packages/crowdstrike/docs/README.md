@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
+The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator, including Identity Protection data collected over GraphQL. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
 
 For a demo, refer to the following video (click to view).
 
@@ -24,7 +24,10 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 
     Data from either method is indexed into the `falcon` dataset in Elasticsearch.
 
-2. **CrowdStrike REST API** — The integration uses the REST API to pull alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
+2. **CrowdStrike REST API** — Pulls alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
+
+    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).:
+    - **Security assessments** (`identity_protection_assessment`) — Discovers domains, then ingests per-domain security assessment results.
 
     :::{note}
     GovCloud CID users must enable the GovCloud option in the integration configuration to query the `/devices/queries/devices/v1` endpoint instead of the unsupported `/devices/combined/devices/v1` endpoint.
@@ -39,6 +42,8 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 - **Alerts** (alert dataset)
 - **Hosts** (host dataset)
 - **Vulnerability** (vulnerability dataset)
+- **Identity Protection (GraphQL)**:
+    - **Security assessments** (identity_protection_assessment dataset)
 
 ## What do I need to use this integration?
 
@@ -119,6 +124,7 @@ The following parameters from your CrowdStrike instance are required:
     | Alert         | read:alert    |
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
+    | Identity protection assessment | read:Identity Protection Assessment, write:Identity Protection GraphQL |
 
 ### Collect data using CrowdStrike Falcon Data Replicator (FDR)
 
@@ -3620,4 +3626,110 @@ An example event for `vulnerability` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+
+
+
+### Identity Protection Assessments
+
+This is the `identity_protection_assessment` dataset.
+
+#### Example
+
+An example event for `identity_protection_assessment` looks as following:
+
+```json
+{
+    "@timestamp": "2026-03-30T06:26:15.399Z",
+    "agent": {
+        "ephemeral_id": "5d66de3b-d6cc-4820-bf5f-633c10546bda",
+        "id": "92640700-ed00-4e12-abee-59bca816dc74",
+        "name": "elastic-agent-75330",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "crowdstrike": {
+        "idp": {
+            "domain": "DOMAIN_A",
+            "security_assessment": {
+                "assessment_factors": [
+                    {
+                        "likelihood": "LOW",
+                        "risk_factor_type": "STALE_ACCOUNT",
+                        "severity": "LOW"
+                    }
+                ],
+                "overall_score": 0.25,
+                "overall_score_level": "LOW"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "crowdstrike.identity_protection_assessment",
+        "namespace": "94692",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "92640700-ed00-4e12-abee-59bca816dc74",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "identity_protection_assessment",
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
+        "dataset": "crowdstrike.identity_protection_assessment",
+        "ingested": "2026-03-30T06:26:18Z",
+        "kind": "event",
+        "original": "{\"domain\":\"DOMAIN_A\",\"security_assessment\":{\"assessmentFactors\":[{\"likelihood\":\"LOW\",\"riskFactorType\":\"STALE_ACCOUNT\",\"severity\":\"LOW\"}],\"overallScore\":0.25,\"overallScoreLevel\":\"LOW\"}}",
+        "risk_score": 0.25,
+        "risk_score_norm": 25,
+        "severity": 21,
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hosts": [
+            "DOMAIN_A"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "crowdstrike-identity-protection-assessment"
+    ],
+    "user": {
+        "domain": "DOMAIN_A"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| crowdstrike.idp.domain | Assessed identity domain. | keyword |
+| crowdstrike.idp.security_assessment.assessment_factors.likelihood |  | keyword |
+| crowdstrike.idp.security_assessment.assessment_factors.risk_factor_type |  | keyword |
+| crowdstrike.idp.security_assessment.assessment_factors.severity |  | keyword |
+| crowdstrike.idp.security_assessment.overall_score | Falcon Identity Protection overall score (0-1). | double |
+| crowdstrike.idp.security_assessment.overall_score_level | Qualitative level (e.g. LOW, MEDIUM, HIGH). | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
 

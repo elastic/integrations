@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
+The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator, including Identity Protection data collected over GraphQL. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
 
 For a demo, refer to the following video (click to view).
 
@@ -24,7 +24,10 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 
     Data from either method is indexed into the `falcon` dataset in Elasticsearch.
 
-2. **CrowdStrike REST API** — The integration uses the REST API to pull alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
+2. **CrowdStrike REST API** — Pulls alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
+
+    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).:
+    - **Security assessments** (`identity_protection_assessment`) — Discovers domains, then ingests per-domain security assessment results.
 
     :::{note}
     GovCloud CID users must enable the GovCloud option in the integration configuration to query the `/devices/queries/devices/v1` endpoint instead of the unsupported `/devices/combined/devices/v1` endpoint.
@@ -39,6 +42,8 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 - **Alerts** (alert dataset)
 - **Hosts** (host dataset)
 - **Vulnerability** (vulnerability dataset)
+- **Identity Protection (GraphQL)**:
+    - **Security assessments** (identity_protection_assessment dataset)
 
 ## What do I need to use this integration?
 
@@ -119,6 +124,7 @@ The following parameters from your CrowdStrike instance are required:
     | Alert         | read:alert    |
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
+    | Identity protection assessment | read:Identity Protection Assessment, write:Identity Protection GraphQL |
 
 ### Collect data using CrowdStrike Falcon Data Replicator (FDR)
 
@@ -387,3 +393,14 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
+
+
+### Identity Protection Assessments
+
+This is the `identity_protection_assessment` dataset.
+
+#### Example
+
+{{event "identity_protection_assessment"}}
+
+{{fields "identity_protection_assessment"}}

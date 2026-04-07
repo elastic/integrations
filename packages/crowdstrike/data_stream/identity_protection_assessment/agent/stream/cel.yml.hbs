@@ -25,8 +25,17 @@ auth.oauth2:
 state:
   initial_interval: {{initial_interval}}
   min_remaining_points: 100
-  graphql_domains_query: "{ domains }"
-  graphql_assessment_query: "query GetAssessment($domain: String!) { securityAssessment(domain: $domain) { overallScore overallScoreLevel assessmentFactors { riskFactorType likelihood severity } } }"
+{{#if data_sources}}
+  domains_query: "query GetDomains($dataSources: [DataSource!]) { domains(dataSources: $dataSources) }"
+  domains_variables:
+    dataSources:
+{{#each data_sources as |ds|}}
+      - {{ds}}
+{{/each}}
+{{else}}
+  domains_query: "{ domains }"
+{{/if}}
+  assessment_query: "query GetAssessment($domain: String!) { securityAssessment(domain: $domain) { overallScore overallScoreLevel assessmentFactors { riskFactorType likelihood severity } } }"
 redact:
   fields: ~
 program: |-
@@ -38,7 +47,12 @@ program: |-
       post_request(
         state.url.trim_right("/") + "/identity-protection/combined/graphql/v1",
         "application/json",
-        {"query": string(state.graphql_domains_query)}.encode_json()
+        (
+          (has(state.domains_variables) && size(state.domains_variables.?dataSources.orValue([])) > 0) ?
+            {"query": string(state.domains_query), "variables": state.domains_variables}
+          :
+            {"query": string(state.domains_query)}
+        ).encode_json()
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           (size(body.?errors.orValue([])) > 0) ?
@@ -47,8 +61,8 @@ program: |-
                 "events": body.errors.map(error,
                   {
                     "error": {
-                      "code": string(error.?code.orValue("graphql")),
-                      "id": string(error.?code.orValue("graphql")),
+                      "code": string(error.?code.orValue("")),
+                      "id": string(error.?code.orValue("")),
                       "message": string(error.?message.orValue("")),
                     },
                   }
@@ -90,21 +104,23 @@ program: |-
             ).drop(["worklist", "next", "last_remaining"])
         )
       :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "POST:" + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
+        state.with(
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST:" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
             },
-          },
-          "want_more": false,
-        }
+            "want_more": false,
+          }
+        )
       )
   ).as(state,
     (!has(state.worklist) || size(state.worklist) == 0) ?
@@ -128,7 +144,7 @@ program: |-
         state.url.trim_right("/") + "/identity-protection/combined/graphql/v1",
         "application/json",
         {
-          "query": string(state.graphql_assessment_query),
+          "query": string(state.assessment_query),
           "variables": {
             "domain": string(state.worklist[int(state.next)]),
           },

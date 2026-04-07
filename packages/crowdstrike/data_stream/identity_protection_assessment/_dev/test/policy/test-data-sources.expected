@@ -4,7 +4,7 @@ inputs:
       meta:
         package:
             name: crowdstrike
-      name: test-default-crowdstrike
+      name: test-data-sources-crowdstrike
       streams:
         - auth.oauth2:
             client.id: test_client_id
@@ -196,7 +196,16 @@ inputs:
           resource.url: http://host.tld
           state:
             assessment_query: 'query GetAssessment($domain: String!) { securityAssessment(domain: $domain) { overallScore overallScoreLevel assessmentFactors { riskFactorType likelihood severity } } }'
-            domains_query: '{ domains }'
+            domains_query: 'query GetDomains($dataSources: [DataSource!]) { domains(dataSources: $dataSources) }'
+            domains_variables:
+                dataSources:
+                    - SNIFFER
+                    - ACTIVE_DIRECTORY
+                    - ADFS
+                    - OKTA
+                    - AZURE
+                    - PING_IDENTITY
+                    - AWS
             initial_interval: 24h
             min_remaining_points: 100
           tags:

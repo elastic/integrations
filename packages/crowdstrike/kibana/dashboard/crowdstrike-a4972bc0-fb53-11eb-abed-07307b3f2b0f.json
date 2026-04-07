@@ -55,6 +55,439 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
+                                    "name": "logs-crowdstrike.fdr-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-crowdstrike.fdr-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-crowdstrike.fdr-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "1585e4bb-8b6a-4f00-af88-8675fece3076": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "event_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "event_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Events",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "crowdstrike.info.host.hostname",
+                                                    "customLabel": true,
+                                                    "fieldName": "crowdstrike.info.host.hostname",
+                                                    "label": "Hostname",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
+                                            "query": {
+                                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname\n| SORT event_count DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname\n| SORT event_count DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "event_count"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "1585e4bb-8b6a-4f00-af88-8675fece3076",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "xAccessor": "crowdstrike.info.host.hostname"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "See which hosts generate the most FDR activity.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "palette": null,
+                    "query": {
+                        "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname\n| SORT event_count DESC\n| LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "timeRange": {
+                        "from": "now-24h/h",
+                        "to": "now"
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "b0586ba5-5d73-4f36-80c3-621b28b78951",
+                    "w": 24,
+                    "x": 0,
+                    "y": 67
+                },
+                "panelIndex": "b0586ba5-5d73-4f36-80c3-621b28b78951",
+                "title": "Top 10 hostnames",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
+                                    "name": "logs-crowdstrike.fdr-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-crowdstrike.fdr-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-crowdstrike.fdr-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "5981d285-44d6-4090-8453-6ca95b7b6ec2": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "event_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "event_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Events",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "crowdstrike.info.host.hostname",
+                                                    "customLabel": false,
+                                                    "fieldName": "crowdstrike.info.host.hostname",
+                                                    "label": "crowdstrike.info.host.hostname",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bucket(@timestamp, 1 hour)",
+                                                    "customLabel": true,
+                                                    "fieldName": "bucket(@timestamp, 1 hour)",
+                                                    "label": "@timestamp per 1 hour",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
+                                            "query": {
+                                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.host.hostname IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.host.hostname IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "event_count"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "5981d285-44d6-4090-8453-6ca95b7b6ec2",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "splitAccessor": "crowdstrike.info.host.hostname",
+                                        "xAccessor": "bucket(@timestamp, 1 hour)"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "event_count over bucket(@timestamp, 1 hour)",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Compare activity over time for a few busy hosts.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.host.hostname IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "timeRange": {
+                        "from": "now-24h/h",
+                        "to": "now"
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "0de2f6a8-95d8-4561-9655-10af58bdd932",
+                    "w": 24,
+                    "x": 24,
+                    "y": 67
+                },
+                "panelIndex": "0de2f6a8-95d8-4561-9655-10af58bdd932",
+                "title": "Event rate over time by hostname",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "vertical",
+                        "links": [
+                            {
+                                "destinationRefName": "link_125fcd1e-6762-4b35-8139-07c466b1ae01_dashboard",
+                                "id": "125fcd1e-6762-4b35-8139-07c466b1ae01",
+                                "label": "Overview",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_bb41f3e2-3935-49b1-b9ed-98c3887aaecf_dashboard",
+                                "id": "bb41f3e2-3935-49b1-b9ed-98c3887aaecf",
+                                "label": "FDR",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_f9f3436f-bb93-47f8-adba-aad60940806a_dashboard",
+                                "id": "f9f3436f-bb93-47f8-adba-aad60940806a",
+                                "label": "Falcon",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_4645097a-12b1-4a60-9bfd-61834800f4fc_dashboard",
+                                "id": "4645097a-12b1-4a60-9bfd-61834800f4fc",
+                                "label": "Alert",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_bf1394d2-032b-46eb-a711-35e5606e5026_dashboard",
+                                "id": "bf1394d2-032b-46eb-a711-35e5606e5026",
+                                "label": "Host",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 4,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_db1c2afb-e2ae-4daf-91f3-c21e8d6f0970_dashboard",
+                                "id": "db1c2afb-e2ae-4daf-91f3-c21e8d6f0970",
+                                "label": "Vulnerability",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 5,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_d9c26338-9123-488a-b014-dfd87b0653a4_dashboard",
+                                "id": "d9c26338-9123-488a-b014-dfd87b0653a4",
+                                "label": "Identity Protection Assessments",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 6,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "7c620970-898d-48c5-a779-114a739d7def",
+                    "w": 8,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "7c620970-898d-48c5-a779-114a739d7def",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -76,7 +509,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## **Crowdstrike**\n\n### Navigation\n\n[Overview](/app/dashboards#/view/crowdstrike-e64e8fe0-8210-11ee-bae0-937af575b750) \n\n**FDR**  \n\n[Falcon](/app/dashboards#/view/crowdstrike-ad80a080-821b-11ee-bae0-937af575b750) \n\n[Alert](/app/dashboards#/view/crowdstrike-d8070b00-99b3-11ee-bf4d-afbc95e0486c)\n\n[Host](/app/dashboards#/view/crowdstrike-2921b7f0-99b5-11ee-bf4d-afbc95e0486c)\n\n[Vulnerability](/app/dashboards#/view/crowdstrike-63da2573-4e68-4e7d-a06b-6858edb60fd5)\n\n### Overview\n\nThis dashboards shows statistics specific to Alerts and their different alert types that is received from Crowdstrike FDR.\n\n",
+                            "markdown": "## FDR Overview\n\nThis dashboards shows statistics specific to Alerts and their different alert types that is received from CrowdStrike FDR.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -85,14 +518,14 @@
                     }
                 },
                 "gridData": {
-                    "h": 57,
+                    "h": 10,
                     "i": "4d55749a-c4b7-42ad-8e6f-5363c97aae61",
-                    "w": 7,
-                    "x": 0,
+                    "w": 40,
+                    "x": 8,
                     "y": 0
                 },
                 "panelIndex": "4d55749a-c4b7-42ad-8e6f-5363c97aae61",
-                "title": "Table of Contents",
+                "title": "",
                 "type": "visualization"
             },
             {
@@ -198,9 +631,9 @@
                 "gridData": {
                     "h": 14,
                     "i": "e48dfc31-ef5f-4696-904c-c5320e8dcac9",
-                    "w": 21,
-                    "x": 7,
-                    "y": 0
+                    "w": 24,
+                    "x": 0,
+                    "y": 10
                 },
                 "panelIndex": "e48dfc31-ef5f-4696-904c-c5320e8dcac9",
                 "title": "Top Users",
@@ -305,9 +738,9 @@
                 "gridData": {
                     "h": 14,
                     "i": "355965cd-eb00-4357-bdd8-1640627d1191",
-                    "w": 20,
-                    "x": 28,
-                    "y": 0
+                    "w": 24,
+                    "x": 24,
+                    "y": 10
                 },
                 "panelIndex": "355965cd-eb00-4357-bdd8-1640627d1191",
                 "title": "Top Related Files",
@@ -447,9 +880,9 @@
                 "gridData": {
                     "h": 19,
                     "i": "0325f703-a3cc-4a43-b621-974baae08c00",
-                    "w": 20,
-                    "x": 7,
-                    "y": 14
+                    "w": 24,
+                    "x": 0,
+                    "y": 24
                 },
                 "panelIndex": "0325f703-a3cc-4a43-b621-974baae08c00",
                 "title": "Events over time, By Event Kind",
@@ -607,9 +1040,9 @@
                 "gridData": {
                     "h": 19,
                     "i": "7564f2a4-7167-4d71-8ce2-ece32f217487",
-                    "w": 10,
-                    "x": 27,
-                    "y": 14
+                    "w": 12,
+                    "x": 24,
+                    "y": 24
                 },
                 "panelIndex": "7564f2a4-7167-4d71-8ce2-ece32f217487",
                 "title": "Top Event Types",
@@ -766,9 +1199,9 @@
                 "gridData": {
                     "h": 19,
                     "i": "32c13eb0-f12d-44d8-8ec4-ea778840fabf",
-                    "w": 11,
-                    "x": 37,
-                    "y": 14
+                    "w": 12,
+                    "x": 36,
+                    "y": 24
                 },
                 "panelIndex": "32c13eb0-f12d-44d8-8ec4-ea778840fabf",
                 "title": "Top Alert Types",
@@ -1072,7 +1505,7 @@
                     "isLayerTOCOpen": true,
                     "mapBuffer": {
                         "maxLat": 85.05113,
-                        "maxLon": 360,
+                        "maxLon": 540,
                         "minLat": -85.05113,
                         "minLon": -360
                     },
@@ -1086,343 +1519,13 @@
                 "gridData": {
                     "h": 24,
                     "i": "26961648-cc31-4ed6-a378-698523307b21",
-                    "w": 41,
-                    "x": 7,
-                    "y": 33
+                    "w": 48,
+                    "x": 0,
+                    "y": 43
                 },
                 "panelIndex": "26961648-cc31-4ed6-a378-698523307b21",
                 "title": "Agents and connections",
                 "type": "map"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
-                                    "name": "logs-crowdstrike.fdr-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-crowdstrike.fdr-*",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-crowdstrike.fdr-*"
-                                        }
-                                    ],
-                                    "layers": {
-                                        "1585e4bb-8b6a-4f00-af88-8675fece3076": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "event_count",
-                                                    "customLabel": true,
-                                                    "fieldName": "event_count",
-                                                    "inMetricDimension": true,
-                                                    "label": "Events",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "crowdstrike.info.host.hostname",
-                                                    "customLabel": true,
-                                                    "fieldName": "crowdstrike.info.host.hostname",
-                                                    "label": "Hostname",
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
-                                            "query": {
-                                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname\n| SORT event_count DESC\n| LIMIT 10"
-                                            },
-                                            "timeField": "@timestamp"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "needsRefresh": false,
-                            "query": {
-                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname\n| SORT event_count DESC\n| LIMIT 10"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "event_count"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "1585e4bb-8b6a-4f00-af88-8675fece3076",
-                                        "layerType": "data",
-                                        "seriesType": "bar_horizontal_stacked",
-                                        "xAccessor": "crowdstrike.info.host.hostname"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right",
-                                    "shouldTruncate": false
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Bar vertical stacked",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "See which hosts generate the most FDR activity.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "palette": null,
-                    "query": {
-                        "esql": "FROM logs-crowdstrike.fdr-*\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname\n| SORT event_count DESC\n| LIMIT 10"
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false,
-                    "timeRange": {
-                        "from": "now-24h/h",
-                        "to": "now"
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "b0586ba5-5d73-4f36-80c3-621b28b78951",
-                    "w": 24,
-                    "x": 0,
-                    "y": 57
-                },
-                "panelIndex": "b0586ba5-5d73-4f36-80c3-621b28b78951",
-                "title": "Top 10 hostnames",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
-                                    "name": "logs-crowdstrike.fdr-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-crowdstrike.fdr-*",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-crowdstrike.fdr-*"
-                                        }
-                                    ],
-                                    "layers": {
-                                        "5981d285-44d6-4090-8453-6ca95b7b6ec2": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "event_count",
-                                                    "customLabel": true,
-                                                    "fieldName": "event_count",
-                                                    "inMetricDimension": true,
-                                                    "label": "Events",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "crowdstrike.info.host.hostname",
-                                                    "customLabel": false,
-                                                    "fieldName": "crowdstrike.info.host.hostname",
-                                                    "label": "crowdstrike.info.host.hostname",
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "bucket(@timestamp, 1 hour)",
-                                                    "customLabel": true,
-                                                    "fieldName": "bucket(@timestamp, 1 hour)",
-                                                    "label": "@timestamp per 1 hour",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "9b953f535fcb2bc8ed2fc9028d58ed7c8556ac56d35bbbbc0beb32462db50466",
-                                            "query": {
-                                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.host.hostname IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
-                                            },
-                                            "timeField": "@timestamp"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "needsRefresh": false,
-                            "query": {
-                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.host.hostname IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "event_count"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "5981d285-44d6-4090-8453-6ca95b7b6ec2",
-                                        "layerType": "data",
-                                        "seriesType": "bar_horizontal_stacked",
-                                        "splitAccessor": "crowdstrike.info.host.hostname",
-                                        "xAccessor": "bucket(@timestamp, 1 hour)"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right",
-                                    "shouldTruncate": false
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "event_count over bucket(@timestamp, 1 hour)",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Compare activity over time for a few busy hosts.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*sample*\" OR aws.s3.object.key LIKE \"*sample*\"\n| LOOKUP JOIN logs-crowdstrike_lookup.dest_aidmaster-1 ON host.id\n| STATS event_count = COUNT(*) BY crowdstrike.info.host.hostname, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.host.hostname IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false,
-                    "timeRange": {
-                        "from": "now-24h/h",
-                        "to": "now"
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "0de2f6a8-95d8-4561-9655-10af58bdd932",
-                    "w": 24,
-                    "x": 24,
-                    "y": 57
-                },
-                "panelIndex": "0de2f6a8-95d8-4561-9655-10af58bdd932",
-                "title": "Event rate over time by hostname",
-                "type": "lens"
             }
         ],
         "timeRestore": false,
@@ -1430,13 +1533,48 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-03-20T08:57:11.155Z",
+    "created_at": "2026-04-07T04:26:39.010Z",
     "id": "crowdstrike-a4972bc0-fb53-11eb-abed-07307b3f2b0f",
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "crowdstrike-e64e8fe0-8210-11ee-bae0-937af575b750",
+            "name": "7c620970-898d-48c5-a779-114a739d7def:link_125fcd1e-6762-4b35-8139-07c466b1ae01_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-a4972bc0-fb53-11eb-abed-07307b3f2b0f",
+            "name": "7c620970-898d-48c5-a779-114a739d7def:link_bb41f3e2-3935-49b1-b9ed-98c3887aaecf_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-ad80a080-821b-11ee-bae0-937af575b750",
+            "name": "7c620970-898d-48c5-a779-114a739d7def:link_f9f3436f-bb93-47f8-adba-aad60940806a_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-d8070b00-99b3-11ee-bf4d-afbc95e0486c",
+            "name": "7c620970-898d-48c5-a779-114a739d7def:link_4645097a-12b1-4a60-9bfd-61834800f4fc_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-2921b7f0-99b5-11ee-bf4d-afbc95e0486c",
+            "name": "7c620970-898d-48c5-a779-114a739d7def:link_bf1394d2-032b-46eb-a711-35e5606e5026_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-63da2573-4e68-4e7d-a06b-6858edb60fd5",
+            "name": "7c620970-898d-48c5-a779-114a739d7def:link_db1c2afb-e2ae-4daf-91f3-c21e8d6f0970_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-e4db436d-8012-412a-8268-6d629ccd78b7",
+            "name": "7c620970-898d-48c5-a779-114a739d7def:link_d9c26338-9123-488a-b014-dfd87b0653a4_dashboard",
+            "type": "dashboard"
         },
         {
             "id": "logs-*",
