@@ -1,16 +1,179 @@
-- name: pulse_secure.session.id
-  type: keyword
-  description: >
-    test
-
-- name: pulse_secure.realm
-  type: keyword
-  description: >
-    test
-
-- name: pulse_secure.role
-  type: keyword
-  description: >-
-    test
-- name: pulse_secure.session.id_short
-  type: keyword
+- name: pulse_secure
+  type: group
+  fields:
+    - name: namespace
+      type: keyword
+      description: |
+        Namespace prefix found ahead of the actor block, such as Default Network or Root.
+    - name: realm
+      type: keyword
+      description: |
+        Realm or sign-in context taken from the Pulse actor block.
+    - name: role
+      type: keyword
+      description: |
+        Raw role list from the Pulse actor block.
+    - name: transport_mode
+      type: keyword
+      description: |
+        VPN transport mode reported by Pulse, such as SSL or ESP.
+    - name: auth_server
+      type: group
+      fields:
+        - name: primary
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: |
+                Primary authentication server name.
+            - name: type
+              type: keyword
+              description: |
+                Primary authentication server type.
+        - name: secondary
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: |
+                Secondary authentication server name.
+            - name: type
+              type: keyword
+              description: |
+                Secondary authentication server type.
+            - name: user
+              type: keyword
+              description: |
+                Secondary authentication username reported by Pulse.
+    - name: bandwidth
+      type: group
+      fields:
+        - name: consumed
+          type: long
+          description: |
+            Total bandwidth consumed by the deleted session in bytes.
+        - name: read
+          type: long
+          description: |
+            Bytes read on the Pulse connection.
+        - name: read_chunks
+          type: long
+          description: |
+            Number of read chunks reported for the Pulse connection.
+        - name: written
+          type: long
+          description: |
+            Bytes written on the Pulse connection.
+        - name: written_chunks
+          type: long
+          description: |
+            Number of write chunks reported for the Pulse connection.
+    - name: client
+      type: group
+      fields:
+        - name: version
+          type: keyword
+          description: |
+            Pulse client version mentioned in access or posture enforcement messages.
+    - name: connection
+      type: group
+      fields:
+        - name: reason_code
+          type: long
+          description: |
+            Numeric reason code emitted when a client connection finishes.
+        - name: target
+          type: keyword
+          description: |
+            Raw connection target reported by Pulse when a connection closes.
+    - name: host_checker
+      type: group
+      fields:
+        - name: policy
+          type: keyword
+          description: |
+            Host Checker policy name.
+        - name: status
+          type: keyword
+          description: |
+            Host Checker result status.
+        - name: passed_policies
+          type: keyword
+          description: |
+            Host Checker policies that passed.
+        - name: failed_policies
+          type: keyword
+          description: |
+            Host Checker policies that failed.
+        - name: failed_reasons
+          type: keyword
+          description: |
+            Reasons reported for Host Checker failures.
+    - name: integrity
+      type: group
+      fields:
+        - name: matched_files
+          type: long
+          description: |
+            Number of files that matched the integrity baseline.
+        - name: new_files
+          type: long
+          description: |
+            Number of newly detected files during the integrity scan.
+        - name: mismatched_files
+          type: long
+          description: |
+            Number of files that mismatched the integrity baseline.
+    - name: restriction
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: |
+            Restriction type evaluated by Pulse during authentication.
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Full Pulse session identifier.
+        - name: id_short
+          type: keyword
+          description: |
+            Short Pulse session identifier from the actor block.
+        - name: last_access
+          type: keyword
+          description: |
+            Last access time reported when the session timed out.
+    - name: syslog
+      type: group
+      fields:
+        - name: facility
+          type: keyword
+          description: |
+            Syslog facility configured on the Pulse appliance.
+        - name: filter
+          type: keyword
+          description: |
+            Syslog filter configured on the Pulse appliance.
+        - name: interface
+          type: keyword
+          description: |
+            Interface referenced by the Pulse syslog configuration event.
+        - name: type
+          type: keyword
+          description: |
+            Syslog transport type referenced by the Pulse syslog configuration event.
+    - name: web_request
+      type: group
+      fields:
+        - name: bytes_received
+          type: long
+          description: |
+            Bytes received during the Pulse web request.
+        - name: bytes_sent
+          type: long
+          description: |
+            Bytes sent during the Pulse web request.
