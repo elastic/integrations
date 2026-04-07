@@ -16,7 +16,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "System Service Discovery through built-in Windows Utilities",
-        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (\n  ((process.name: \"net.exe\" or process.pe.original_file_name == \"net.exe\" or (process.name : \"net1.exe\" and \n    not process.parent.name : \"net.exe\")) and process.args : (\"start\", \"use\") and process.args_count == 2) or\n  ((process.name: \"sc.exe\" or process.pe.original_file_name == \"sc.exe\") and process.args: (\"query\", \"q*\")) or\n  ((process.name: \"tasklist.exe\" or process.pe.original_file_name == \"tasklist.exe\") and process.args: \"/svc\") or\n  (process.name : \"psservice.exe\" or process.pe.original_file_name == \"psservice.exe\")\n  ) and not user.id : \"S-1-5-18\"\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.parent.executable != null and\n  (\n  ((process.name: \"net.exe\" or process.pe.original_file_name == \"net.exe\" or (process.name : \"net1.exe\" and \n    not process.parent.name : \"net.exe\")) and process.args : (\"start\", \"use\") and process.args_count == 2 and\n    not process.parent.args : (\"*.bat\", \"*netlogon*\", \"\\\\\\\\*\")) or\n  ((process.name: \"sc.exe\" or process.pe.original_file_name == \"sc.exe\") and process.args: (\"query\", \"q*\") and not process.parent.args : \"*.bat\") or\n  ((process.name: \"tasklist.exe\" or process.pe.original_file_name == \"tasklist.exe\") and process.args: \"/svc\" and not process.command_line : \"*\\\\Windows\\\\TEMP\\\\nessus_task_list*\") or\n  (process.name : \"psservice.exe\" or process.pe.original_file_name == \"psservice.exe\")\n  ) and\n  not user.id in (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and\n  not process.parent.executable in\n                       (\"C:\\\\Program Files\\\\AzureConnectedMachineAgent\\\\himds.exe\",\n                        \"C:\\\\Program Files\\\\AzureConnectedMachineAgent\\\\azcmagent.exe\",\n                        \"C:\\\\Program Files\\\\Varian\\\\DICOMServices\\\\VMS.DICOMServices.ServiceFW.GenericControlledServiceHost.exe\",\n                        \"C:\\\\Senior\\\\HCM\\\\jdk-11.0.2\\\\bin\\\\java.exe\",\n                        \"D:\\\\biomerieux\\\\programs\\\\ServiceMonitor\\\\bin\\\\MylaServiceMonitor.exe\",\n                        \"C:\\\\ViewPowerPro\\\\openJDK\\\\bin\\\\javaw.exe\",\n                        \"C:\\\\ServiceNow MID Server mid-server-autosports-prod\\\\agent\\\\jre\\\\bin\\\\java.exe\") and\n  not process.command_line in (\"sc  queryex SCardSvr\",\n                               \"sc  query \\\"Axway_Integrator\\\" \",\n                               \"sc  query \\\"Delta enteliVAULT PostgreSQL\\\" \",\n                               \"sc  query \\\"WERMA-WIN-Connector\\\" \",\n                               \"sc  query _EWSSynchronizationServer_JDE \",\n                               \"sc query SchneiderUPSMySQL\")\n",
         "related_integrations": [
             {
                 "package": "windows",
@@ -54,7 +54,22 @@
             },
             {
                 "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
                 "type": "keyword"
             },
             {
@@ -99,6 +114,16 @@
                         "id": "T1007",
                         "name": "System Service Discovery",
                         "reference": "https://attack.mitre.org/techniques/T1007/"
+                    },
+                    {
+                        "id": "T1057",
+                        "name": "Process Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1057/"
+                    },
+                    {
+                        "id": "T1135",
+                        "name": "Network Share Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1135/"
                     }
                 ]
             }
