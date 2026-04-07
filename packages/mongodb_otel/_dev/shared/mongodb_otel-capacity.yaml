@@ -24,9 +24,9 @@ dashboards:
   - type: options
     label: Server
     data_view: metrics-*
-    field: resource.attributes.server.address
+    field: attributes.mongodb.instance
   panels:
-  - title: Navigation
+  - hide_title: true
     size: {w: 48, h: 2}
     links:
       layout: horizontal
@@ -228,7 +228,7 @@ dashboards:
             storage_bytes = MAX(LAST_OVER_TIME(metrics.mongodb.storage.size)),
             data_bytes = MAX(LAST_OVER_TIME(metrics.mongodb.data.size)),
             index_bytes = MAX(LAST_OVER_TIME(metrics.mongodb.index.size))
-          BY database = resource.attributes.database
+          BY database = attributes.db.namespace
         | SORT storage_bytes DESC NULLS LAST
         | LIMIT 20
       breakdowns:
