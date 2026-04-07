@@ -5,7 +5,16 @@ processors:
       tag: parse_message_json
       field: message
       target_field: _json
-      ignore_failure: true
+      on_failure:
+        - set:
+            tag: set_event_original_on_failure
+            field: event.original
+            copy_from: message
+            ignore_failure: true
+        - append:
+            tag: append_error_message_json_parse
+            field: error.message
+            value: "Failed to parse message as JSON [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
   - remove:
       tag: remove_raw_message
       field: message
@@ -32,7 +41,7 @@ processors:
       field: event.type
       value:
         - error
-      if: ctx._json?.severity != null && (ctx._json.severity == '4' || ctx._json.severity == '5')
+      if: ctx._json?.severity != null && (ctx._json.severity == '3' || ctx._json.severity == '4' || ctx._json.severity == '5')
       override: true
 
   - set:
@@ -69,8 +78,9 @@ processors:
       if: ctx._json?.clock != null && ctx._json?.clock != '0'
       on_failure:
         - append:
+            tag: append_error_clock
             field: error.message
-            value: "Failed to parse clock: {{_ingest.on_failure_message}}"
+            value: "Failed to parse clock [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   - rename:
       tag: rename_eventid
@@ -84,40 +94,34 @@ processors:
       target_field: zabbix.problem.objectid
       ignore_missing: true
 
-  - script:
-      tag: map_source
-      lang: painless
-      if: ctx._json?.source != null
-      source: >-
-        def s = Integer.parseInt(ctx._json.source.toString());
-        def labels = new HashMap();
-        labels.put(0, 'triggers');
-        labels.put(3, 'internal');
-        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
-        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
-        ctx.zabbix.problem.source = labels.containsKey(s) ? labels.get(s) : 'unknown_' + s;
-      on_failure:
-        - append:
-            field: error.message
-            value: "Failed to map source: {{_ingest.on_failure_message}}"
+  # Map source: 0=triggers, 3=internal
+  - set:
+      tag: set_source_triggers
+      field: zabbix.problem.source
+      value: triggers
+      if: ctx._json?.source == '0'
+  - set:
+      tag: set_source_internal
+      field: zabbix.problem.source
+      value: internal
+      if: ctx._json?.source == '3'
 
-  - script:
-      tag: map_object
-      lang: painless
-      if: ctx._json?.object != null
-      source: >-
-        def o = Integer.parseInt(ctx._json.object.toString());
-        def labels = new HashMap();
-        labels.put(0, 'trigger');
-        labels.put(4, 'item');
-        labels.put(5, 'lld_rule');
-        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
-        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
-        ctx.zabbix.problem.object = labels.containsKey(o) ? labels.get(o) : 'unknown_' + o;
-      on_failure:
-        - append:
-            field: error.message
-            value: "Failed to map object: {{_ingest.on_failure_message}}"
+  # Map object: 0=trigger, 4=item, 5=lld_rule
+  - set:
+      tag: set_object_trigger
+      field: zabbix.problem.object
+      value: trigger
+      if: ctx._json?.object == '0'
+  - set:
+      tag: set_object_item
+      field: zabbix.problem.object
+      value: item
+      if: ctx._json?.object == '4'
+  - set:
+      tag: set_object_lld_rule
+      field: zabbix.problem.object
+      value: lld_rule
+      if: ctx._json?.object == '5'
 
   - rename:
       tag: rename_problem_name
@@ -134,26 +138,71 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_convert_severity
             field: error.message
-            value: "Failed to convert severity: {{_ingest.on_failure_message}}"
+            value: "Failed to convert severity [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
-  - script:
-      tag: map_severity
-      lang: painless
-      if: ctx._json?.severity != null
-      source: >-
-        def sev = Integer.parseInt(ctx._json.severity.toString());
-        def labels = ['not classified', 'information', 'warning', 'average', 'high', 'disaster'];
-        if (sev >= 0 && sev < labels.size()) {
-          ctx.event.severity = sev;
-          if (ctx.zabbix == null) ctx.zabbix = new HashMap();
-          if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
-          ctx.zabbix.problem.severity = labels[sev];
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: "Failed to map severity: {{_ingest.on_failure_message}}"
+  # Map severity: 0=not classified, 1=information, 2=warning, 3=average, 4=high, 5=disaster
+  - set:
+      tag: set_severity_not_classified
+      field: zabbix.problem.severity
+      value: not classified
+      if: ctx._json?.severity == '0'
+  - set:
+      tag: set_event_severity_0
+      field: event.severity
+      value: 0
+      if: ctx._json?.severity == '0'
+  - set:
+      tag: set_severity_information
+      field: zabbix.problem.severity
+      value: information
+      if: ctx._json?.severity == '1'
+  - set:
+      tag: set_event_severity_1
+      field: event.severity
+      value: 1
+      if: ctx._json?.severity == '1'
+  - set:
+      tag: set_severity_warning
+      field: zabbix.problem.severity
+      value: warning
+      if: ctx._json?.severity == '2'
+  - set:
+      tag: set_event_severity_2
+      field: event.severity
+      value: 2
+      if: ctx._json?.severity == '2'
+  - set:
+      tag: set_severity_average
+      field: zabbix.problem.severity
+      value: average
+      if: ctx._json?.severity == '3'
+  - set:
+      tag: set_event_severity_3
+      field: event.severity
+      value: 3
+      if: ctx._json?.severity == '3'
+  - set:
+      tag: set_severity_high
+      field: zabbix.problem.severity
+      value: high
+      if: ctx._json?.severity == '4'
+  - set:
+      tag: set_event_severity_4
+      field: event.severity
+      value: 4
+      if: ctx._json?.severity == '4'
+  - set:
+      tag: set_severity_disaster
+      field: zabbix.problem.severity
+      value: disaster
+      if: ctx._json?.severity == '5'
+  - set:
+      tag: set_event_severity_5
+      field: event.severity
+      value: 5
+      if: ctx._json?.severity == '5'
 
   # Map acknowledged to event.outcome
   - set:
@@ -168,31 +217,29 @@ processors:
       value: failure
       if: ctx._json?.acknowledged == '0'
 
-  - script:
-      tag: convert_acknowledged
-      lang: painless
-      if: ctx._json?.acknowledged != null
-      source: >-
-        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
-        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
-        ctx.zabbix.problem.acknowledged = ctx._json.acknowledged.toString().equals('1');
-      on_failure:
-        - append:
-            field: error.message
-            value: "Failed to convert acknowledged: {{_ingest.on_failure_message}}"
+  # Convert acknowledged string to boolean
+  - set:
+      tag: set_acknowledged_true
+      field: zabbix.problem.acknowledged
+      value: true
+      if: ctx._json?.acknowledged == '1'
+  - set:
+      tag: set_acknowledged_false
+      field: zabbix.problem.acknowledged
+      value: false
+      if: ctx._json?.acknowledged != null && ctx._json?.acknowledged != '1'
 
-  - script:
-      tag: convert_suppressed
-      lang: painless
-      if: ctx._json?.suppressed != null
-      source: >-
-        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
-        if (ctx.zabbix.problem == null) ctx.zabbix.problem = new HashMap();
-        ctx.zabbix.problem.suppressed = ctx._json.suppressed.toString().equals('1');
-      on_failure:
-        - append:
-            field: error.message
-            value: "Failed to convert suppressed: {{_ingest.on_failure_message}}"
+  # Convert suppressed string to boolean
+  - set:
+      tag: set_suppressed_true
+      field: zabbix.problem.suppressed
+      value: true
+      if: ctx._json?.suppressed == '1'
+  - set:
+      tag: set_suppressed_false
+      field: zabbix.problem.suppressed
+      value: false
+      if: ctx._json?.suppressed != null && ctx._json?.suppressed != '1'
 
   - rename:
       tag: rename_tags
@@ -217,6 +264,19 @@ processors:
       field: _json.r_eventid
       target_field: zabbix.problem.r_eventid
       ignore_missing: true
+
+  - date:
+      tag: date_r_clock
+      field: _json.r_clock
+      target_field: zabbix.problem.r_clock
+      formats:
+        - UNIX
+      if: ctx._json?.r_clock != null && ctx._json?.r_clock != '0'
+      on_failure:
+        - append:
+            tag: append_error_r_clock
+            field: error.message
+            value: "Failed to parse r_clock [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   - rename:
       tag: rename_cause_eventid
@@ -250,9 +310,11 @@ processors:
 
 on_failure:
   - set:
+      tag: set_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_pipeline_error
       field: error.message
       value: >-
         Processor {{_ingest.on_failure_processor_type}}

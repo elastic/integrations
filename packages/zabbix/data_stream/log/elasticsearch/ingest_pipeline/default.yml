@@ -7,11 +7,6 @@ processors:
       value: event
 
   - set:
-      tag: set_event_module
-      field: event.module
-      value: zabbix
-
-  - set:
       tag: set_event_dataset
       field: event.dataset
       value: zabbix.log
@@ -21,6 +16,12 @@ processors:
       field: event.category
       value:
         - process
+
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - info
 
   - set:
       tag: set_observer_vendor
@@ -47,8 +48,9 @@ processors:
         - '%{SPACE}%{INT:process.pid}:%{YEAR:_temp.year}%{MONTHNUM:_temp.month}%{MONTHDAY:_temp.day}:%{HOUR:_temp.hour}%{MINUTE:_temp.minute}%{SECOND:_temp.second}\.%{INT:_temp.ms} %{GREEDYDATA:message}'
       on_failure:
         - append:
+            tag: append_error_grok
             field: error.message
-            value: "Failed to grok log line: {{_ingest.on_failure_message}}"
+            value: "Failed to grok log line [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   # Build timestamp and parse it
   - set:
@@ -65,8 +67,9 @@ processors:
       if: ctx._temp?.timestamp != null
       on_failure:
         - append:
+            tag: append_error_timestamp
             field: error.message
-            value: "Failed to parse log timestamp: {{_ingest.on_failure_message}}"
+            value: "Failed to parse log timestamp [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   # Convert PID to long
   - convert:
@@ -76,8 +79,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_convert_pid
             field: error.message
-            value: "Failed to convert PID: {{_ingest.on_failure_message}}"
+            value: "Failed to convert PID [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   # Detect slow queries and extract duration
   - grok:
@@ -88,8 +92,9 @@ processors:
       if: ctx.message != null && ctx.message.contains('slow query:')
       on_failure:
         - append:
+            tag: append_error_slow_query
             field: error.message
-            value: "Failed to extract slow query duration: {{_ingest.on_failure_message}}"
+            value: "Failed to extract slow query duration [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   - set:
       tag: set_slow_query_flag
@@ -105,9 +110,11 @@ processors:
 
 on_failure:
   - set:
+      tag: set_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_pipeline_error
       field: error.message
       value: >-
         Processor {{_ingest.on_failure_processor_type}}

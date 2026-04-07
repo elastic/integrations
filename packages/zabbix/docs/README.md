@@ -31,6 +31,8 @@ To create an API token:
 6. Click **Add** and copy the generated token value. This is shown only once.
 7. Paste the token into the **API Token** field when configuring this integration in Fleet.
 
+When configuring this integration in Fleet, the **Zabbix URL** field (`zabbix_url`) must point to the base URL of your Zabbix frontend, including the JSON-RPC endpoint path. For example: `http://zabbix.example.com/api_jsonrpc.php`.
+
 For the **log** data stream, the Elastic Agent must run on the Zabbix server host and have filesystem access to the server log file (typically `/var/log/zabbix/zabbix_server.log`). This data stream does not use the API.
 
 ## Data Streams
@@ -43,49 +45,21 @@ An example event for `server_health` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-04-01T19:26:12.745Z",
     "event": {
-        "agent_id_status": "verified",
-        "ingested": "2026-04-01T19:26:22Z",
-        "kind": "metric"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "opennebula-node2",
-        "id": "d8ca343398cc42babf9a8ed1bd5d3c2f",
-        "ip": [
-            "172.16.100.1",
-            "172.30.0.92",
-            "fe80::8cf4:9bff:fe15:7173",
-            "fe80::be24:11ff:fe86:e78"
-        ],
-        "mac": [
-            "4A-14-E3-EF-26-B2",
-            "8E-F4-9B-15-71-73",
-            "BC-24-11-86-0E-78"
-        ],
-        "name": "opennebula-node2",
-        "os": {
-            "codename": "bookworm",
-            "family": "debian",
-            "kernel": "6.1.0-44-cloud-amd64",
-            "name": "Debian GNU/Linux",
-            "platform": "debian",
-            "type": "linux",
-            "version": "12 (bookworm)"
-        }
+        "dataset": "zabbix.server_health",
+        "kind": "metric",
+        "module": "zabbix"
     },
     "zabbix": {
         "server": {
             "item": {
-                "key": "zabbix[process,connector worker,avg,busy]",
-                "lastvalue": "0",
-                "name": "Utilization of connector worker internal processes, in %"
+                "name": "Utilization of history syncer internal processes, in %",
+                "key": "zabbix[process,history syncer,avg,busy]",
+                "lastvalue": "0.21163125370354693"
             },
             "process": {
-                "busy": 0.0,
-                "name": "connector worker"
+                "name": "history syncer",
+                "busy": 0.21163125370354693
             }
         }
     }
@@ -127,6 +101,10 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | zabbix.server.item.lastvalue | Raw last value of the item as returned by the Zabbix API. | keyword |  |  |
 | zabbix.server.item.name | Human-readable name of the internal item. | keyword |  |  |
 | zabbix.server.lld_queue | Number of low-level discovery rules waiting in the LLD queue. | long |  | gauge |
+| zabbix.server.preprocessing.throughput.direct | Number of items preprocessed directly per second (bypassing the queue). | double |  | gauge |
+| zabbix.server.preprocessing.throughput.queued | Number of items preprocessed through the queue per second. | double |  | gauge |
+| zabbix.server.preprocessing.vps.direct | Number of values preprocessed directly per second. | double |  | gauge |
+| zabbix.server.preprocessing.vps.queued | Number of values preprocessed through the queue per second. | double |  | gauge |
 | zabbix.server.preprocessing_queue | Number of values currently waiting in the preprocessing queue. | long |  | gauge |
 | zabbix.server.process.busy | Average percentage of time the process type spent in busy state. | double | percent | gauge |
 | zabbix.server.process.name | Name of the Zabbix server internal process type. | keyword |  |  |
@@ -153,79 +131,44 @@ An example event for `host_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-04-01T19:26:12.563Z",
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2026-04-01T19:26:18Z",
-        "kind": "metric"
-    },
     "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "opennebula-lab",
-        "id": "d8ca343398cc42babf9a8ed1bd5d3c2f",
-        "ip": [
-            "172.16.100.1",
-            "172.30.0.90",
-            "fe80::8cf4:9bff:fe15:7173",
-            "fe80::be24:11ff:feb8:a58",
-            "fe80::fc00:acff:fe10:6402",
-            "fe80::fc00:acff:fe10:6403",
-            "fe80::fc00:acff:fe10:6406",
-            "fe80::fc00:acff:fe10:6407",
-            "fe80::fc00:acff:fe10:6408",
-            "fe80::fc00:acff:fe10:6409",
-            "fe80::fc00:acff:fe10:640a",
-            "fe80::fc00:acff:fe10:640c",
-            "fe80::fc00:acff:fe10:640d"
-        ],
-        "mac": [
-            "4A-14-E3-EF-26-B2",
-            "8E-F4-9B-15-71-73",
-            "BC-24-11-B8-0A-58",
-            "FE-00-AC-10-64-02",
-            "FE-00-AC-10-64-03",
-            "FE-00-AC-10-64-06",
-            "FE-00-AC-10-64-07",
-            "FE-00-AC-10-64-08",
-            "FE-00-AC-10-64-09",
-            "FE-00-AC-10-64-0A",
-            "FE-00-AC-10-64-0C",
-            "FE-00-AC-10-64-0D"
-        ],
-        "name": "opennebula-lab",
-        "os": {
-            "codename": "bookworm",
-            "family": "debian",
-            "kernel": "6.1.0-43-cloud-amd64",
-            "name": "Debian GNU/Linux",
-            "platform": "debian",
-            "type": "linux",
-            "version": "12 (bookworm)"
-        }
+        "name": "test-audit-host"
     },
     "zabbix": {
         "host": {
-            "active_available": "unknown",
-            "groups": "Linux servers",
-            "host": "test-unreachable",
+            "proxy": {
+                "id": "0"
+            },
+            "monitored_by": "server",
+            "host": "test-audit-host",
+            "name": "test-audit-host",
+            "groups": [
+                "Linux servers"
+            ],
             "id": "10680",
+            "active_available": "unknown",
             "interface": {
                 "available": "unknown",
-                "ip": "192.168.99.99",
+                "type": "agent",
                 "port": "10050",
-                "type": "agent"
+                "ip": "192.168.1.100"
             },
             "maintenance": {
                 "status": "off"
             },
-            "monitored_by": "server",
-            "name": "test-unreachable",
-            "proxy": {
-                "id": "0"
-            },
-            "status": "enabled"
+            "status": "enabled",
+            "tags": {}
         }
+    },
+    "related": {
+        "hosts": [
+            "test-audit-host"
+        ]
+    },
+    "event": {
+        "dataset": "zabbix.host_status",
+        "kind": "metric",
+        "module": "zabbix"
     }
 }
 ```
@@ -248,6 +191,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | event.kind | The kind of event. | keyword |
 | event.module | Event module. | constant_keyword |
 | host.name | Name of the host. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. | keyword |
 | zabbix.host.active_available | Availability of the active agent on this host, one of available, unavailable, or unknown. | keyword |
 | zabbix.host.groups | List of host group names this host belongs to. | keyword |
 | zabbix.host.host | Technical name of the host used internally by Zabbix. | keyword |
@@ -279,108 +223,56 @@ An example event for `problem` looks as following:
     },
     "zabbix": {
         "problem": {
-            "severity": "warning",
-            "eventid": "103",
+            "severity": "average",
+            "eventid": "18",
             "acknowledged": false,
-            "opdata": "Current value: 602",
+            "opdata": "",
             "source": "triggers",
             "tags": [
                 {
-                    "tag": "scope",
-                    "value": "availability"
+                    "value": "os",
+                    "tag": "class"
                 },
                 {
-                    "tag": "component",
-                    "value": "proxy"
+                    "value": "system",
+                    "tag": "component"
                 },
                 {
-                    "tag": "proxy-name",
-                    "value": "lab-proxy-01"
+                    "value": "availability",
+                    "tag": "scope"
                 },
                 {
-                    "tag": "class",
-                    "value": "software"
-                },
-                {
-                    "tag": "target",
-                    "value": "server"
-                },
-                {
-                    "tag": "target",
-                    "value": "zabbix"
+                    "value": "linux",
+                    "tag": "target"
                 }
             ],
             "urls": [],
             "r_eventid": "0",
-            "severity_number": 2,
-            "name": "Zabbix server: Proxy [lab-proxy-01]: Zabbix proxy last seen more than 600 seconds ago",
+            "severity_number": 3,
+            "name": "Linux: Zabbix agent is not available (for 3m)",
             "suppressed": false,
             "acknowledges": [],
             "cause_eventid": "0",
-            "objectid": "25307",
+            "objectid": "22391",
             "object": "trigger"
         }
     },
-    "@timestamp": "2026-04-01T19:09:16.000Z",
-    "host": {
-        "hostname": "opennebula-lab",
-        "os": {
-            "kernel": "6.1.0-43-cloud-amd64",
-            "codename": "bookworm",
-            "name": "Debian GNU/Linux",
-            "type": "linux",
-            "family": "debian",
-            "version": "12 (bookworm)",
-            "platform": "debian"
-        },
-        "containerized": false,
-        "ip": [
-            "172.30.0.90",
-            "fe80::be24:11ff:feb8:a58",
-            "172.16.100.1",
-            "fe80::8cf4:9bff:fe15:7173",
-            "fe80::fc00:acff:fe10:6402",
-            "fe80::fc00:acff:fe10:6406",
-            "fe80::fc00:acff:fe10:6409",
-            "fe80::fc00:acff:fe10:6403",
-            "fe80::fc00:acff:fe10:6407",
-            "fe80::fc00:acff:fe10:6408",
-            "fe80::fc00:acff:fe10:640d",
-            "fe80::fc00:acff:fe10:640c",
-            "fe80::fc00:acff:fe10:640a"
-        ],
-        "name": "opennebula-lab",
-        "id": "d8ca343398cc42babf9a8ed1bd5d3c2f",
-        "mac": [
-            "4A-14-E3-EF-26-B2",
-            "8E-F4-9B-15-71-73",
-            "BC-24-11-B8-0A-58",
-            "FE-00-AC-10-64-02",
-            "FE-00-AC-10-64-03",
-            "FE-00-AC-10-64-06",
-            "FE-00-AC-10-64-07",
-            "FE-00-AC-10-64-08",
-            "FE-00-AC-10-64-09",
-            "FE-00-AC-10-64-0A",
-            "FE-00-AC-10-64-0C",
-            "FE-00-AC-10-64-0D"
-        ],
-        "architecture": "x86_64"
-    },
+    "@timestamp": "2026-03-14T10:49:26.000Z",
     "event": {
-        "severity": 2,
-        "agent_id_status": "verified",
-        "ingested": "2026-04-01T19:10:18Z",
+        "severity": 3,
         "kind": "event",
+        "module": "zabbix",
         "action": "problem_detected",
         "category": [
             "host"
         ],
         "type": [
-            "info"
+            "error"
         ],
+        "dataset": "zabbix.problem",
         "outcome": "failure"
-    }
+    },
+    "message": "Linux: Zabbix agent is not available (for 3m)"
 }
 ```
 
@@ -437,66 +329,24 @@ An example event for `proxy_health` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-04-01T19:26:12.560Z",
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2026-04-01T19:26:18Z",
-        "kind": "metric"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "opennebula-lab",
-        "id": "d8ca343398cc42babf9a8ed1bd5d3c2f",
-        "ip": [
-            "172.16.100.1",
-            "172.30.0.90",
-            "fe80::8cf4:9bff:fe15:7173",
-            "fe80::be24:11ff:feb8:a58",
-            "fe80::fc00:acff:fe10:6402",
-            "fe80::fc00:acff:fe10:6403",
-            "fe80::fc00:acff:fe10:6406",
-            "fe80::fc00:acff:fe10:6407",
-            "fe80::fc00:acff:fe10:6408",
-            "fe80::fc00:acff:fe10:6409",
-            "fe80::fc00:acff:fe10:640a",
-            "fe80::fc00:acff:fe10:640c",
-            "fe80::fc00:acff:fe10:640d"
-        ],
-        "mac": [
-            "4A-14-E3-EF-26-B2",
-            "8E-F4-9B-15-71-73",
-            "BC-24-11-B8-0A-58",
-            "FE-00-AC-10-64-02",
-            "FE-00-AC-10-64-03",
-            "FE-00-AC-10-64-06",
-            "FE-00-AC-10-64-07",
-            "FE-00-AC-10-64-08",
-            "FE-00-AC-10-64-09",
-            "FE-00-AC-10-64-0A",
-            "FE-00-AC-10-64-0C",
-            "FE-00-AC-10-64-0D"
-        ],
-        "name": "opennebula-lab",
-        "os": {
-            "codename": "bookworm",
-            "family": "debian",
-            "kernel": "6.1.0-43-cloud-amd64",
-            "name": "Debian GNU/Linux",
-            "platform": "debian",
-            "type": "linux",
-            "version": "12 (bookworm)"
-        }
-    },
     "zabbix": {
         "proxy": {
-            "compatibility": "current",
-            "id": "1",
-            "name": "lab-proxy-01",
+            "last_access": "2024-03-14T14:04:42.000Z",
+            "address": "192.168.1.10",
+            "port": "10051",
+            "name": "proxy-dc1",
             "operating_mode": "active",
+            "id": "10001",
             "state": "online",
-            "version": "70022"
+            "version": "7.0.24",
+            "compatibility": "current"
         }
+    },
+    "@timestamp": "2024-03-14T14:04:42.000Z",
+    "event": {
+        "dataset": "zabbix.proxy_health",
+        "kind": "metric",
+        "module": "zabbix"
     }
 }
 ```
@@ -537,66 +387,21 @@ An example event for `ha_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-04-01T19:26:10.000Z",
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2026-04-01T19:26:18Z",
-        "kind": "metric"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "opennebula-lab",
-        "id": "d8ca343398cc42babf9a8ed1bd5d3c2f",
-        "ip": [
-            "172.16.100.1",
-            "172.30.0.90",
-            "fe80::8cf4:9bff:fe15:7173",
-            "fe80::be24:11ff:feb8:a58",
-            "fe80::fc00:acff:fe10:6402",
-            "fe80::fc00:acff:fe10:6403",
-            "fe80::fc00:acff:fe10:6406",
-            "fe80::fc00:acff:fe10:6407",
-            "fe80::fc00:acff:fe10:6408",
-            "fe80::fc00:acff:fe10:6409",
-            "fe80::fc00:acff:fe10:640a",
-            "fe80::fc00:acff:fe10:640c",
-            "fe80::fc00:acff:fe10:640d"
-        ],
-        "mac": [
-            "4A-14-E3-EF-26-B2",
-            "8E-F4-9B-15-71-73",
-            "BC-24-11-B8-0A-58",
-            "FE-00-AC-10-64-02",
-            "FE-00-AC-10-64-03",
-            "FE-00-AC-10-64-06",
-            "FE-00-AC-10-64-07",
-            "FE-00-AC-10-64-08",
-            "FE-00-AC-10-64-09",
-            "FE-00-AC-10-64-0A",
-            "FE-00-AC-10-64-0C",
-            "FE-00-AC-10-64-0D"
-        ],
-        "name": "opennebula-lab",
-        "os": {
-            "codename": "bookworm",
-            "family": "debian",
-            "kernel": "6.1.0-43-cloud-amd64",
-            "name": "Debian GNU/Linux",
-            "platform": "debian",
-            "type": "linux",
-            "version": "12 (bookworm)"
-        }
-    },
     "zabbix": {
         "ha": {
+            "lastaccess": "2026-03-14T12:24:46.000Z",
             "address": "localhost",
-            "lastaccess": "2026-04-01T19:26:10.000Z",
-            "name": "cmmswbbax0001ipws8yn4068f",
-            "nodeid": "cmmswbbax0001ipws8yn4068f",
-            "port": 10051,
+            "port": "10051",
+            "name": "cmmq7d3zg00016zp837hqd44s",
+            "nodeid": "cmmq7d3zg00016zp837hqd44s",
             "status": "active"
         }
+    },
+    "@timestamp": "2026-03-14T12:24:46.000Z",
+    "event": {
+        "dataset": "zabbix.ha_status",
+        "kind": "metric",
+        "module": "zabbix"
     }
 }
 ```
@@ -634,93 +439,62 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "zabbix": {
-        "audit": {
-            "resource_cuid": "0",
-            "resource_type_name": "user",
-            "user_id": "1",
-            "action_code": 8,
-            "resource_type": 0,
-            "resource_id": "1",
-            "recordset_id": "cmngfjms00000uxwsqx9mtvsc",
-            "id": "cmngfjms00001uxwsrbhycy0i",
-            "resource_name": ""
-        }
-    },
-    "source": {
-        "ip": "172.30.0.1"
-    },
     "observer": {
         "product": "Zabbix Server",
         "vendor": "Zabbix"
     },
-    "@timestamp": "2026-04-01T19:19:32.000Z",
+    "zabbix": {
+        "audit": {
+            "resource_cuid": "0",
+            "resource_type_name": "host_group",
+            "user_id": "1",
+            "action_code": 1,
+            "resource_type": 14,
+            "resource_id": "2",
+            "recordset_id": "cmmq8uzaj00020wp9uuaac9ue",
+            "details": {
+                "hostgroup.hosts[677].hostid": [
+                    "add",
+                    "10680"
+                ],
+                "hostgroup.hosts[677].hostgroupid": [
+                    "add",
+                    "677"
+                ],
+                "hostgroup.hosts[677]": [
+                    "add"
+                ]
+            },
+            "id": "cmmq8uzak00030wp9m31buxgh",
+            "resource_name": "Linux servers"
+        }
+    },
+    "@timestamp": "2026-03-14T11:30:24.000Z",
     "related": {
-        "ip": [
-            "172.30.0.1"
-        ],
         "user": [
             "Admin"
+        ],
+        "ip": [
+            "172.18.2.1"
         ]
     },
-    "host": {
-        "hostname": "opennebula-lab",
-        "os": {
-            "kernel": "6.1.0-43-cloud-amd64",
-            "codename": "bookworm",
-            "name": "Debian GNU/Linux",
-            "family": "debian",
-            "type": "linux",
-            "version": "12 (bookworm)",
-            "platform": "debian"
-        },
-        "containerized": false,
-        "ip": [
-            "172.30.0.90",
-            "fe80::be24:11ff:feb8:a58",
-            "172.16.100.1",
-            "fe80::8cf4:9bff:fe15:7173",
-            "fe80::fc00:acff:fe10:6402",
-            "fe80::fc00:acff:fe10:6406",
-            "fe80::fc00:acff:fe10:6409",
-            "fe80::fc00:acff:fe10:6403",
-            "fe80::fc00:acff:fe10:6407",
-            "fe80::fc00:acff:fe10:6408",
-            "fe80::fc00:acff:fe10:640d",
-            "fe80::fc00:acff:fe10:640c",
-            "fe80::fc00:acff:fe10:640a"
-        ],
-        "name": "opennebula-lab",
-        "id": "d8ca343398cc42babf9a8ed1bd5d3c2f",
-        "mac": [
-            "4A-14-E3-EF-26-B2",
-            "8E-F4-9B-15-71-73",
-            "BC-24-11-B8-0A-58",
-            "FE-00-AC-10-64-02",
-            "FE-00-AC-10-64-03",
-            "FE-00-AC-10-64-06",
-            "FE-00-AC-10-64-07",
-            "FE-00-AC-10-64-08",
-            "FE-00-AC-10-64-09",
-            "FE-00-AC-10-64-0A",
-            "FE-00-AC-10-64-0C",
-            "FE-00-AC-10-64-0D"
-        ],
-        "architecture": "x86_64"
+    "source": {
+        "ip": "172.18.2.1"
     },
     "event": {
-        "agent_id_status": "verified",
-        "ingested": "2026-04-01T19:20:18Z",
         "kind": "event",
-        "action": "login",
+        "module": "zabbix",
+        "action": "update",
         "category": [
             "configuration"
         ],
         "type": [
             "change"
         ],
+        "dataset": "zabbix.audit",
         "outcome": "success"
     },
+    "message": "update host_group Linux servers",
     "user": {
         "name": "Admin",
         "id": "1"
@@ -794,6 +568,10 @@ An example event for `log` looks as following:
         "category": [
             "process"
         ],
+        "type": [
+            "info"
+        ],
+        "dataset": "zabbix.log",
         "kind": "event"
     }
 }

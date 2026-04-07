@@ -5,7 +5,16 @@ processors:
       tag: parse_message_json
       field: message
       target_field: _json
-      ignore_failure: true
+      on_failure:
+        - set:
+            tag: set_event_original_on_failure
+            field: event.original
+            copy_from: message
+            ignore_failure: true
+        - append:
+            tag: append_error_message_json_parse
+            field: error.message
+            value: "Failed to parse message as JSON [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
   - remove:
       tag: remove_raw_message
       field:
@@ -51,11 +60,15 @@ processors:
       source: >-
         String key = ctx.zabbix.server.item.key;
         String val = ctx._json.lastvalue;
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.server == null) ctx.zabbix.server = new HashMap();
+        if (key.equals('system.uptime') && val != null && !val.isEmpty()) {
+          ctx.zabbix.server.uptime = Long.parseLong(val);
+          return;
+        }
         if (!key.startsWith('zabbix[') || !key.endsWith(']')) { return; }
         String inner = key.substring(7, key.length() - 1);
         String[] parts = inner.splitOnToken(',');
-        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
-        if (ctx.zabbix.server == null) ctx.zabbix.server = new HashMap();
 
         if (parts.length == 1) {
           String p = parts[0];
@@ -76,6 +89,22 @@ processors:
             ctx.zabbix.server.uptime = Long.parseLong(val);
           } else if (p.equals('version')) {
             ctx.zabbix.server.version = val;
+          } else if (p.equals('preprocessing_throughput_direct')) {
+            if (ctx.zabbix.server.preprocessing == null) ctx.zabbix.server.preprocessing = new HashMap();
+            if (ctx.zabbix.server.preprocessing.throughput == null) ctx.zabbix.server.preprocessing.throughput = new HashMap();
+            ctx.zabbix.server.preprocessing.throughput.direct = Double.parseDouble(val);
+          } else if (p.equals('preprocessing_throughput_queued')) {
+            if (ctx.zabbix.server.preprocessing == null) ctx.zabbix.server.preprocessing = new HashMap();
+            if (ctx.zabbix.server.preprocessing.throughput == null) ctx.zabbix.server.preprocessing.throughput = new HashMap();
+            ctx.zabbix.server.preprocessing.throughput.queued = Double.parseDouble(val);
+          } else if (p.equals('preprocessing_vps_direct')) {
+            if (ctx.zabbix.server.preprocessing == null) ctx.zabbix.server.preprocessing = new HashMap();
+            if (ctx.zabbix.server.preprocessing.vps == null) ctx.zabbix.server.preprocessing.vps = new HashMap();
+            ctx.zabbix.server.preprocessing.vps.direct = Double.parseDouble(val);
+          } else if (p.equals('preprocessing_vps_queued')) {
+            if (ctx.zabbix.server.preprocessing == null) ctx.zabbix.server.preprocessing = new HashMap();
+            if (ctx.zabbix.server.preprocessing.vps == null) ctx.zabbix.server.preprocessing.vps = new HashMap();
+            ctx.zabbix.server.preprocessing.vps.queued = Double.parseDouble(val);
           }
         } else if (parts.length == 2) {
           String p0 = parts[0];
@@ -169,14 +198,21 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_map_item_key
             field: error.message
-            value: "Failed to map item key to fields: {{_ingest.on_failure_message}}"
+            value: "Failed to map item key to fields [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   - rename:
       tag: rename_lastvalue_raw
       field: _json.lastvalue
       target_field: zabbix.server.item.lastvalue
       ignore_missing: true
+
+  # Drop error events to prevent TSDB corruption — CEL errors lack required
+  # metric fields and will pollute the time series index
+  - drop:
+      tag: drop_error_events
+      if: ctx.error?.message != null || ctx.event?.kind == 'pipeline_error'
 
   # Cleanup source fields
   - remove:
@@ -197,9 +233,11 @@ processors:
 
 on_failure:
   - set:
+      tag: set_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_pipeline_error
       field: error.message
       value: >-
         Processor {{_ingest.on_failure_processor_type}}

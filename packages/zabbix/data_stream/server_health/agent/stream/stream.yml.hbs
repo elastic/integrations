@@ -37,7 +37,13 @@ program: |
     }).do_request().as(resp,
       resp.StatusCode == 200 ?
         bytes(resp.Body).decode_json().as(body,
-          has(body.result) ?
+          has(body.error) ?
+            {
+              "events": [{"message": "Zabbix API error: " + body.error.encode_json()}],
+              "api_token": state.api_token,
+              "url": state.url
+            }
+          : has(body.result) ?
             {
               "events": body.result.map(item, {"message": item.encode_json(), "poll_time": now}),
               "api_token": state.api_token,
@@ -52,7 +58,7 @@ program: |
         )
       :
         {
-          "events": [],
+          "events": [{"message": "Zabbix API request failed with HTTP status " + string(resp.StatusCode)}],
           "api_token": state.api_token,
           "url": state.url
         }

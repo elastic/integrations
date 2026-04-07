@@ -32,30 +32,44 @@ program: |
           "selectAcknowledges": "extend",
           "recent": true,
           "sortfield": "eventid",
-          "sortorder": "DESC",
-          "limit": 100
+          "sortorder": "ASC",
+          "limit": 500
         },
         "id": 1
       }.encode_json())
     }).do_request().as(resp,
       resp.StatusCode == 200 ?
         bytes(resp.Body).decode_json().as(body,
-          has(body.result) ?
+          has(body.error) ?
             {
-              "events": body.result.map(problem, {"message": problem.encode_json()}),
+              "events": [{"message": "Zabbix API error: " + body.error.encode_json()}],
+              "cursor": state.?cursor.orValue({}),
               "api_token": state.api_token,
               "url": state.url
             }
+          : has(body.result) && body.result.size() > 0 ?
+            body.result.filter(p,
+              !has(state.cursor) || !has(state.cursor.seen) || !state.cursor.seen.contains(p.eventid)
+            ).as(new_problems,
+              {
+                "events": new_problems.map(problem, {"message": problem.encode_json()}),
+                "cursor": {"seen": body.result.map(p, p.eventid)},
+                "api_token": state.api_token,
+                "url": state.url
+              }
+            )
           :
             {
               "events": [],
+              "cursor": {"seen": []},
               "api_token": state.api_token,
               "url": state.url
             }
         )
       :
         {
-          "events": [],
+          "events": [{"message": "Zabbix API request failed with HTTP status " + string(resp.StatusCode)}],
+          "cursor": state.?cursor.orValue({}),
           "api_token": state.api_token,
           "url": state.url
         }

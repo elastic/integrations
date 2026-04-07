@@ -5,7 +5,16 @@ processors:
       tag: parse_message_json
       field: message
       target_field: _json
-      ignore_failure: true
+      on_failure:
+        - set:
+            tag: set_event_original_on_failure
+            field: event.original
+            copy_from: message
+            ignore_failure: true
+        - append:
+            tag: append_error_message_json_parse
+            field: error.message
+            value: "Failed to parse message as JSON [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
   - remove:
       tag: remove_raw_message
       field: message
@@ -57,8 +66,9 @@ processors:
       if: ctx._json?.clock != null && ctx._json?.clock != '0'
       on_failure:
         - append:
+            tag: append_error_clock
             field: error.message
-            value: "Failed to parse clock: {{_ingest.on_failure_message}}"
+            value: "Failed to parse clock [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   - rename:
       tag: rename_auditid
@@ -79,35 +89,58 @@ processors:
       ignore_missing: true
 
   # Map action to event.action: 0=add, 1=update, 2=delete, 4=logout, 7=execute, 8=login, 9=failed_login, 10=history_clear
-  - script:
-      tag: map_action
-      lang: painless
-      if: ctx._json?.action != null
-      source: >-
-        def a = Integer.parseInt(ctx._json.action.toString());
-        def actions = new HashMap();
-        actions.put(0, 'add');
-        actions.put(1, 'update');
-        actions.put(2, 'delete');
-        actions.put(4, 'logout');
-        actions.put(7, 'execute');
-        actions.put(8, 'login');
-        actions.put(9, 'failed_login');
-        actions.put(10, 'history_clear');
-        if (actions.containsKey(a)) {
-          ctx.event.action = actions.get(a);
-        } else {
-          ctx.event.action = 'unknown_' + a;
-        }
-        if (a == 9) {
-          ctx.event.outcome = 'failure';
-        } else {
-          ctx.event.outcome = 'success';
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: "Failed to map action: {{_ingest.on_failure_message}}"
+  - set:
+      tag: set_action_add
+      field: event.action
+      value: add
+      if: ctx._json?.action == '0'
+  - set:
+      tag: set_action_update
+      field: event.action
+      value: update
+      if: ctx._json?.action == '1'
+  - set:
+      tag: set_action_delete
+      field: event.action
+      value: delete
+      if: ctx._json?.action == '2'
+  - set:
+      tag: set_action_logout
+      field: event.action
+      value: logout
+      if: ctx._json?.action == '4'
+  - set:
+      tag: set_action_execute
+      field: event.action
+      value: execute
+      if: ctx._json?.action == '7'
+  - set:
+      tag: set_action_login
+      field: event.action
+      value: login
+      if: ctx._json?.action == '8'
+  - set:
+      tag: set_action_failed_login
+      field: event.action
+      value: failed_login
+      if: ctx._json?.action == '9'
+  - set:
+      tag: set_action_history_clear
+      field: event.action
+      value: history_clear
+      if: ctx._json?.action == '10'
+
+  # Set event.outcome: failure for failed_login (action 9), success for all others
+  - set:
+      tag: set_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx._json?.action == '9'
+  - set:
+      tag: set_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx._json?.action != null && ctx._json?.action != '9'
 
   - convert:
       tag: convert_action
@@ -117,8 +150,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_convert_action
             field: error.message
-            value: "Failed to convert action: {{_ingest.on_failure_message}}"
+            value: "Failed to convert action [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
   - convert:
       tag: convert_resourcetype
@@ -128,53 +162,256 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_convert_resourcetype
             field: error.message
-            value: "Failed to convert resourcetype: {{_ingest.on_failure_message}}"
+            value: "Failed to convert resourcetype [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
 
-  - script:
-      tag: map_resource_type
-      lang: painless
-      if: ctx.zabbix?.audit?.resource_type != null
-      source: >-
-        def rt = (int) ctx.zabbix.audit.resource_type;
-        def labels = new HashMap();
-        labels.put(0, 'user');
-        labels.put(4, 'host');
-        labels.put(5, 'host_group');
-        labels.put(6, 'item');
-        labels.put(7, 'trigger');
-        labels.put(11, 'user_group');
-        labels.put(13, 'template');
-        labels.put(14, 'host_group');
-        labels.put(15, 'action');
-        labels.put(16, 'graph');
-        labels.put(18, 'dashboard');
-        labels.put(23, 'maintenance');
-        labels.put(25, 'script');
-        labels.put(29, 'discovery_rule');
-        labels.put(33, 'host_prototype');
-        labels.put(34, 'web_scenario');
-        labels.put(37, 'sla');
-        labels.put(40, 'proxy');
-        labels.put(44, 'media_type');
-        labels.put(45, 'token');
-        labels.put(46, 'service');
-        labels.put(27, 'maintenance');
-        labels.put(3, 'media');
-        labels.put(19, 'map');
-        labels.put(26, 'screen');
-        labels.put(28, 'regexp');
-        labels.put(35, 'module');
-        labels.put(38, 'ha_node');
-        labels.put(47, 'scheduled_report');
-        labels.put(48, 'auth_token');
-        labels.put(49, 'template_group');
-        if (labels.containsKey(rt)) {
-          ctx.zabbix.audit.resource_type_name = labels.get(rt);
-        } else {
-          ctx.zabbix.audit.resource_type_name = 'type_' + rt;
-        }
-      ignore_failure: true
+  # Map resource type code to human-readable label
+  - set:
+      tag: set_resource_type_user
+      field: zabbix.audit.resource_type_name
+      value: user
+      if: ctx._json?.resourcetype == '0'
+  - set:
+      tag: set_resource_type_zabbix_config
+      field: zabbix.audit.resource_type_name
+      value: zabbix_config
+      if: ctx._json?.resourcetype == '1'
+  - set:
+      tag: set_resource_type_media_type_2
+      field: zabbix.audit.resource_type_name
+      value: media_type
+      if: ctx._json?.resourcetype == '2'
+  - set:
+      tag: set_resource_type_media
+      field: zabbix.audit.resource_type_name
+      value: media
+      if: ctx._json?.resourcetype == '3'
+  - set:
+      tag: set_resource_type_host
+      field: zabbix.audit.resource_type_name
+      value: host
+      if: ctx._json?.resourcetype == '4'
+  - set:
+      tag: set_resource_type_host_group
+      field: zabbix.audit.resource_type_name
+      value: host_group
+      if: ctx._json?.resourcetype == '5'
+  - set:
+      tag: set_resource_type_item
+      field: zabbix.audit.resource_type_name
+      value: item
+      if: ctx._json?.resourcetype == '6'
+  - set:
+      tag: set_resource_type_trigger
+      field: zabbix.audit.resource_type_name
+      value: trigger
+      if: ctx._json?.resourcetype == '7'
+  - set:
+      tag: set_resource_type_graph_8
+      field: zabbix.audit.resource_type_name
+      value: graph
+      if: ctx._json?.resourcetype == '8'
+  - set:
+      tag: set_resource_type_graph_element
+      field: zabbix.audit.resource_type_name
+      value: graph_element
+      if: ctx._json?.resourcetype == '9'
+  - set:
+      tag: set_resource_type_user_group
+      field: zabbix.audit.resource_type_name
+      value: user_group
+      if: ctx._json?.resourcetype == '11'
+  - set:
+      tag: set_resource_type_application
+      field: zabbix.audit.resource_type_name
+      value: application
+      if: ctx._json?.resourcetype == '12'
+  - set:
+      tag: set_resource_type_template
+      field: zabbix.audit.resource_type_name
+      value: template
+      if: ctx._json?.resourcetype == '13'
+  - set:
+      tag: set_resource_type_host_group_14
+      field: zabbix.audit.resource_type_name
+      value: host_group
+      if: ctx._json?.resourcetype == '14'
+  - set:
+      tag: set_resource_type_action
+      field: zabbix.audit.resource_type_name
+      value: action
+      if: ctx._json?.resourcetype == '15'
+  - set:
+      tag: set_resource_type_graph
+      field: zabbix.audit.resource_type_name
+      value: graph
+      if: ctx._json?.resourcetype == '16'
+  - set:
+      tag: set_resource_type_value_map
+      field: zabbix.audit.resource_type_name
+      value: value_map
+      if: ctx._json?.resourcetype == '17'
+  - set:
+      tag: set_resource_type_dashboard
+      field: zabbix.audit.resource_type_name
+      value: dashboard
+      if: ctx._json?.resourcetype == '18'
+  - set:
+      tag: set_resource_type_map
+      field: zabbix.audit.resource_type_name
+      value: map
+      if: ctx._json?.resourcetype == '19'
+  - set:
+      tag: set_resource_type_screen_20
+      field: zabbix.audit.resource_type_name
+      value: screen
+      if: ctx._json?.resourcetype == '20'
+  - set:
+      tag: set_resource_type_slideshow
+      field: zabbix.audit.resource_type_name
+      value: slideshow
+      if: ctx._json?.resourcetype == '21'
+  - set:
+      tag: set_resource_type_icon_map
+      field: zabbix.audit.resource_type_name
+      value: icon_map
+      if: ctx._json?.resourcetype == '22'
+  - set:
+      tag: set_resource_type_maintenance
+      field: zabbix.audit.resource_type_name
+      value: maintenance
+      if: ctx._json?.resourcetype == '23'
+  - set:
+      tag: set_resource_type_image
+      field: zabbix.audit.resource_type_name
+      value: image
+      if: ctx._json?.resourcetype == '24'
+  - set:
+      tag: set_resource_type_script
+      field: zabbix.audit.resource_type_name
+      value: script
+      if: ctx._json?.resourcetype == '25'
+  - set:
+      tag: set_resource_type_scenario
+      field: zabbix.audit.resource_type_name
+      value: scenario
+      if: ctx._json?.resourcetype == '26'
+  - set:
+      tag: set_resource_type_maintenance_27
+      field: zabbix.audit.resource_type_name
+      value: maintenance
+      if: ctx._json?.resourcetype == '27'
+  - set:
+      tag: set_resource_type_regexp
+      field: zabbix.audit.resource_type_name
+      value: regexp
+      if: ctx._json?.resourcetype == '28'
+  - set:
+      tag: set_resource_type_discovery_rule
+      field: zabbix.audit.resource_type_name
+      value: discovery_rule
+      if: ctx._json?.resourcetype == '29'
+  - set:
+      tag: set_resource_type_macro
+      field: zabbix.audit.resource_type_name
+      value: macro
+      if: ctx._json?.resourcetype == '30'
+  - set:
+      tag: set_resource_type_host_macro
+      field: zabbix.audit.resource_type_name
+      value: host_macro
+      if: ctx._json?.resourcetype == '31'
+  - set:
+      tag: set_resource_type_template_link
+      field: zabbix.audit.resource_type_name
+      value: template_link
+      if: ctx._json?.resourcetype == '32'
+  - set:
+      tag: set_resource_type_host_prototype
+      field: zabbix.audit.resource_type_name
+      value: host_prototype
+      if: ctx._json?.resourcetype == '33'
+  - set:
+      tag: set_resource_type_web_scenario
+      field: zabbix.audit.resource_type_name
+      value: web_scenario
+      if: ctx._json?.resourcetype == '34'
+  - set:
+      tag: set_resource_type_module
+      field: zabbix.audit.resource_type_name
+      value: module
+      if: ctx._json?.resourcetype == '35'
+  - set:
+      tag: set_resource_type_settings
+      field: zabbix.audit.resource_type_name
+      value: settings
+      if: ctx._json?.resourcetype == '36'
+  - set:
+      tag: set_resource_type_sla
+      field: zabbix.audit.resource_type_name
+      value: sla
+      if: ctx._json?.resourcetype == '37'
+  - set:
+      tag: set_resource_type_ha_node
+      field: zabbix.audit.resource_type_name
+      value: ha_node
+      if: ctx._json?.resourcetype == '38'
+  - set:
+      tag: set_resource_type_connector
+      field: zabbix.audit.resource_type_name
+      value: connector
+      if: ctx._json?.resourcetype == '39'
+  - set:
+      tag: set_resource_type_proxy
+      field: zabbix.audit.resource_type_name
+      value: proxy
+      if: ctx._json?.resourcetype == '40'
+  - set:
+      tag: set_resource_type_proxy_group
+      field: zabbix.audit.resource_type_name
+      value: proxy_group
+      if: ctx._json?.resourcetype == '41'
+  - set:
+      tag: set_resource_type_autoregistration
+      field: zabbix.audit.resource_type_name
+      value: autoregistration
+      if: ctx._json?.resourcetype == '42'
+  - set:
+      tag: set_resource_type_template_dashboard
+      field: zabbix.audit.resource_type_name
+      value: template_dashboard
+      if: ctx._json?.resourcetype == '43'
+  - set:
+      tag: set_resource_type_media_type
+      field: zabbix.audit.resource_type_name
+      value: media_type
+      if: ctx._json?.resourcetype == '44'
+  - set:
+      tag: set_resource_type_token
+      field: zabbix.audit.resource_type_name
+      value: token
+      if: ctx._json?.resourcetype == '45'
+  - set:
+      tag: set_resource_type_service
+      field: zabbix.audit.resource_type_name
+      value: service
+      if: ctx._json?.resourcetype == '46'
+  - set:
+      tag: set_resource_type_scheduled_report
+      field: zabbix.audit.resource_type_name
+      value: scheduled_report
+      if: ctx._json?.resourcetype == '47'
+  - set:
+      tag: set_resource_type_auth_token
+      field: zabbix.audit.resource_type_name
+      value: auth_token
+      if: ctx._json?.resourcetype == '48'
+  - set:
+      tag: set_resource_type_template_group
+      field: zabbix.audit.resource_type_name
+      value: template_group
+      if: ctx._json?.resourcetype == '49'
 
   - rename:
       tag: rename_resourceid
@@ -206,7 +443,11 @@ processors:
       field: _json.details
       target_field: zabbix.audit.details
       if: ctx._json?.details != null && ctx._json.details instanceof String && ctx._json.details != ''
-      ignore_failure: true
+      on_failure:
+        - append:
+            tag: append_error_parse_details
+            field: error.message
+            value: "Failed to parse audit details JSON [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
   - remove:
       tag: remove_raw_details
       field: _json.details
@@ -269,9 +510,11 @@ processors:
 
 on_failure:
   - set:
+      tag: set_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_pipeline_error
       field: error.message
       value: >-
         Processor {{_ingest.on_failure_processor_type}}

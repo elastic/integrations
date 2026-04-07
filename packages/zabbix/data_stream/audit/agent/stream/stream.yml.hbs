@@ -39,7 +39,15 @@ program: |
       }).do_request().as(resp,
         resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body,
-            has(body.result) && body.result.size() > 0 ?
+            has(body.error) ?
+              {
+                "events": [{"message": "Zabbix API error: " + body.error.encode_json()}],
+                "cursor": state.?cursor.orValue({}),
+                "api_token": state.api_token,
+                "url": state.url,
+                "initial_interval": state.initial_interval
+              }
+            : has(body.result) && body.result.size() > 0 ?
               {
                 "events": body.result.map(entry, {"message": entry.encode_json()}),
                 "cursor": {"last_clock": body.result[body.result.size() - 1].clock},
@@ -58,7 +66,7 @@ program: |
           )
         :
           {
-            "events": [],
+            "events": [{"message": "Zabbix API request failed with HTTP status " + string(resp.StatusCode)}],
             "cursor": state.?cursor.orValue({}),
             "api_token": state.api_token,
             "url": state.url,

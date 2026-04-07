@@ -31,6 +31,8 @@ To create an API token:
 6. Click **Add** and copy the generated token value. This is shown only once.
 7. Paste the token into the **API Token** field when configuring this integration in Fleet.
 
+When configuring this integration in Fleet, the **Zabbix URL** field (`zabbix_url`) must point to the base URL of your Zabbix frontend, including the JSON-RPC endpoint path. For example: `http://zabbix.example.com/api_jsonrpc.php`.
+
 For the **log** data stream, the Elastic Agent must run on the Zabbix server host and have filesystem access to the server log file (typically `/var/log/zabbix/zabbix_server.log`). This data stream does not use the API.
 
 ## Data Streams
