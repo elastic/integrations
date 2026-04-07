@@ -50,7 +50,7 @@ POST chargeback_conf_lookup/_update/config
     "conf_query_weight": 20,
     "conf_storage_weight": 40,
     "conf_start_date": "2024-01-01T00:00:00.000Z",
-    "conf_end_date": "2024-12-31T23:tie"
+    "conf_end_date": "2024-12-31T23:59:59.999Z"
   }
 }
 ```
@@ -118,6 +118,12 @@ Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdow
 - ECU consumption vs. monetary cost comparison
 
 ![Cost and Consumption breakdown](../img/chargeback.png)
+
+### Upgrading from 0.3.0
+
+From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). The dashboard queries accept both the new and the previous field names, so you do not need to change existing documents in the lookup indices for panels to work. New data from the updated transforms uses the new names over time.
+
+If you built your own ES|QL, dashboards, or automation against the lookup indices, update those to the new field names when convenient.
 
 ## Deployment Groups
 
