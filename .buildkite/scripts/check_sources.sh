@@ -6,7 +6,6 @@ set -euo pipefail
 
 add_bin_path
 with_mage
-use_elastic_package
 
 echo "--- Run mage check"
 mage -v check
@@ -29,6 +28,7 @@ fi
 
 if [[ "$run_links_command" == "true" ]] ; then
     # links command require at least v0.113.0
+    use_elastic_package
     ${ELASTIC_PACKAGE_BIN} links check
 else
     echo "Skip elastic-package links. Unsupported for this elastic-package version."
