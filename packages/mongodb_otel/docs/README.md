@@ -40,6 +40,7 @@ All metrics consumed by the dashboards, alerts, and SLOs are enabled by default 
 | Placeholder | Description | Example |
 |-------------|-------------|---------|
 | `<MONGODB_ENDPOINT>` | MongoDB server address and port | `localhost:27017` |
+| `<MONGODB_INSTANCE>` | Label shown in the dashboard **Server** control | `mongodb:27017` |
 | `<MONGODB_USER>` | MongoDB username for the collector | `otel_monitor` |
 | `<ES_ENDPOINT>` | Elasticsearch ingest endpoint | `https://my-deployment.es.us-central1.gcp.cloud.es.io:443` |
 | `${env:MONGODB_PASSWORD}` | MongoDB password (use an environment variable) | — |
@@ -52,6 +53,14 @@ receivers:
     username: <MONGODB_USER>
     password: ${env:MONGODB_PASSWORD}
     collection_interval: 1m
+    direct_connection: true
+
+processors:
+  attributes/mongodb:
+    actions:
+      - key: mongodb.instance
+        value: <MONGODB_INSTANCE>
+        action: upsert
 
 exporters:
   elasticsearch/otel:
@@ -63,10 +72,13 @@ service:
   pipelines:
     metrics/mongodb:
       receivers: [mongodb]
+      processors: [attributes/mongodb]
       exporters: [elasticsearch/otel]
 ```
 
-Note: For standalone instances, add `direct_connection: true` under the receiver. For unauthenticated local MongoDB instances, omit `username` and `password`. For production, configure TLS and use environment variables for secrets.
+The `attributes/mongodb` processor adds the `mongodb.instance` attribute used by the dashboard **Server** control. Set `<MONGODB_INSTANCE>` to the same host:port you use in `<MONGODB_ENDPOINT>`.
+
+Note: `direct_connection: true` is required for standalone MongoDB instances; for replica sets, remove it and list all hosts. For unauthenticated local MongoDB, omit `username` and `password`. For production, configure Elasticsearch authentication and TLS as described in the [Elasticsearch exporter documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter).
 
 For the full list of settings exposed for the receiver, refer to the [configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mongodbreceiver#configuration) section.
 
@@ -88,7 +100,7 @@ Refer to the OpenTelemetry MongoDB receiver's [documentation](https://github.com
 
 | Alert | Trigger | Severity |
 |-------|---------|----------|
-| **[MongoDB OTel] Connection exhaustion** | Available connections drop below 10 for any database/server. | Critical |
+| **[MongoDB OTel] Connection exhaustion** | Available connections drop below 10 for a server, using the lowest value observed across its database namespaces. | Critical |
 | **[MongoDB OTel] Cursor timeouts** | Any increase in cursor timeout count per server. | High |
 | **[MongoDB OTel] Global lock contention** | Global lock held more than 500 ms/sec on average per server. | High |
 | **[MongoDB OTel] High cache miss rate** | WiredTiger cache miss rate exceeds 5% per server. | High |
