@@ -13,16 +13,16 @@ telemetrygen logs \
   --otlp-insecure \
   --otlp-endpoint otelcol:4317 \
   --logs 10000 \
-  --otlp-attributes='service.name="telemetrygen"' &
+  --otlp-attributes='service.name="telemetrygen.logs"' &
 
 telemetrygen metrics \
   --otlp-insecure \
   --otlp-endpoint otelcol:4317 \
   --metrics 10000 \
-  --otlp-attributes='service.name="telemetrygen"' &
+  --otlp-attributes='service.name="telemetrygen.metrics"' &
 
 exec telemetrygen traces \
   --otlp-insecure \
   --otlp-endpoint otelcol:4317 \
   --traces 10000 \
-  --otlp-attributes='service.name="telemetrygen"'
+  --otlp-attributes='service.name="telemetrygen.traces"'
