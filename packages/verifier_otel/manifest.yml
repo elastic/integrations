@@ -1,10 +1,10 @@
 format_version: 3.5.0
 name: verifier_otel
 title: "Permission Verifier"
-version: 0.0.0
+version: 0.0.1
 source:
   license: "Elastic-2.0"
-description: "Verify cloud connector based integration permissions and report results to Elasticsearch using the Verifier receiver of the OTel Collector."
+description: "Verify identity federation based integration permissions and report results to Elasticsearch using the Verifier receiver of the OTel Collector."
 type: input
 categories:
   - monitoring
@@ -25,7 +25,7 @@ policy_templates:
   - name: verifierreceiver
     type: logs
     title: Permission Verifier
-    description: Verify cloud connector based integration permissions and report status.
+    description: Verify identity federation based integration permissions and report status.
     input: otelcol
     template_path: input.yml.hbs
     deployment_modes:
@@ -37,17 +37,17 @@ policy_templates:
         division: engineering
         team: cloud-services
     vars:
-      - name: cloud_connector_id
+      - name: identity_federation_id
         type: text
-        title: Cloud Connector ID
-        description: Unique identifier for the Cloud Connector being verified.
+        title: Identity Federation ID
+        description: Unique identifier for the Identity Federation being verified.
         multi: false
         required: true
         show_user: true
-      - name: cloud_connector_name
+      - name: identity_federation_name
         type: text
-        title: Cloud Connector Name
-        description: Human-readable name of the Cloud Connector.
+        title: Identity Federation Name
+        description: Human-readable name of the Identity Federation.
         multi: false
         required: false
         show_user: true
@@ -85,12 +85,12 @@ policy_templates:
         multi: false
         required: false
         show_user: true
-        default: single_account
+        default: single-account
         options:
-          - value: single_account
+          - value: single-account
             text: Single Account
-          - value: organization
-            text: Organization (Management Account)
+          - value: organization-account
+            text: Organization Account (Management Account)
       # --- AWS credentials ---
       - name: credentials_role_arn
         type: text
@@ -107,41 +107,28 @@ policy_templates:
         required: false
         show_user: true
         secret: true
-      - name: default_region
-        type: text
-        title: Default Region
-        description: The default AWS region to use for API calls.
-        multi: false
-        required: false
-        show_user: true
-        default: us-east-1
       # --- Azure credentials ---
       - name: credentials_tenant_id
-        type: text
+        type: password
         title: Azure Tenant ID
         description: The Azure AD tenant ID.
         multi: false
         required: false
         show_user: true
+        secret: true
       - name: credentials_client_id
-        type: text
+        type: password
         title: Client ID
         description: "The client (application) ID for Azure or Okta authentication."
         multi: false
         required: false
         show_user: true
+        secret: true
       # --- GCP credentials ---
-      - name: credentials_project_id
+      - name: credentials_audience
         type: text
-        title: GCP Project ID
-        description: The GCP project ID to scope verification to.
-        multi: false
-        required: false
-        show_user: true
-      - name: credentials_workload_identity_provider
-        type: text
-        title: GCP Workload Identity Provider
-        description: "Full WIF resource name (for example, //iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider)."
+        title: GCP Audience
+        description: "Full WIF resource name used as the STS audience (for example, //iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider)."
         multi: false
         required: false
         show_user: true
@@ -201,14 +188,6 @@ policy_templates:
         multi: false
         required: false
         show_user: true
-      - name: namespace
-        type: text
-        title: Namespace
-        description: "Namespace for the integration (for example, default)."
-        multi: false
-        required: false
-        show_user: false
-        default: default
 owner:
   github: elastic/cloud-services
   type: elastic

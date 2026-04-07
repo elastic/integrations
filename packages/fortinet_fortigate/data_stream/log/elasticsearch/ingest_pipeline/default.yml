@@ -47,23 +47,32 @@ processors:
           def tokens = ["", ""];
           def startPosition = 0;
           def isInQuotes = false;
-          char quote = (char)"\"";
+          def inEscape = false;
           for (def currentPosition = 0; currentPosition < input.length(); currentPosition++) {
-              if (input.charAt(currentPosition) == quote) {
-                  isInQuotes = !isInQuotes;
+            def c = input.charAt(currentPosition);
+            if (inEscape) {
+              inEscape = false;
+              continue;
+            }
+            if (c == (char)'\\') {
+              inEscape = true;
+              continue;
+            }
+            if (c == (char)'"') {
+              isInQuotes = !isInQuotes;
+            }
+            else if (c == (char)sep && !isInQuotes) {
+              def token = input.substring(startPosition, currentPosition).trim();
+              if (!token.equals("")) {
+                tokens[0] = token;
               }
-              else if (input.charAt(currentPosition) == (char)sep && !isInQuotes) {
-                  def token = input.substring(startPosition, currentPosition).trim();
-                  if (!token.equals("")) {
-                    tokens[0] = token;
-                  }
-                  startPosition = currentPosition + 1;
-                  break;
-              }
+              startPosition = currentPosition + 1;
+              break;
+            }
           }
           def lastToken = input.substring(startPosition);
           if (!lastToken.equals(sep) && !lastToken.equals("")) {
-              tokens[1] = lastToken.trim();
+            tokens[1] = lastToken.trim();
           }
           return tokens;
         }
@@ -72,18 +81,18 @@ processors:
           def cur = input;
           def last = cur;
           while (cur.length() > 0) {
-              def res = splitOnceByToken(cur, sep);
-              last = cur;
-              cur = res[1].trim();
-              def token = res[0].trim();
-              if (token.length() > 0) {
-                  tokens.add(token);
-              } else {
-                  if (cur.length() > 0) {
-                    tokens.add(cur);
-                  }
-                  break;
+            def res = splitOnceByToken(cur, sep);
+            last = cur;
+            cur = res[1].trim();
+            def token = res[0].trim();
+            if (token.length() > 0) {
+              tokens.add(token);
+            } else {
+              if (cur.length() > 0) {
+                tokens.add(cur);
               }
+              break;
+            }
           }
 
           return tokens;
