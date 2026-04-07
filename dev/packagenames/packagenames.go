@@ -5,29 +5,17 @@
 package packagenames
 
 import (
-	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io/fs"
-	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
-
-	"github.com/Masterminds/semver/v3"
-
-	"github.com/elastic/integrations/dev/citools"
 )
 
 const (
-	packagesDir                  = "packages"
-	elasticPackageModulePath     = "github.com/elastic/elastic-package"
-	elasticPackageFindMinVersion = "0.118.0"
-	goModPath                    = "go.mod"
-	elasticPackageBinaryName     = "elastic-package"
-	manifestFileName             = "manifest.yml"
+	packagesDir      = "packages"
+	manifestFileName = "manifest.yml"
 )
 
 // Check validates that no two packages share the same name under the default packages directory.
@@ -39,67 +27,11 @@ func Check() error {
 }
 
 func checkPackageNames(dir string) error {
-	paths, err := findPackagePaths(dir)
+	paths, err := walkPackagePaths(dir)
 	if err != nil {
 		return fmt.Errorf("error finding packages: %w", err)
 	}
 	return checkDuplicateNames(paths)
-}
-
-func findPackagePaths(dir string) ([]string, error) {
-	// Assumption, the elastic-package binary found in PATH or via ELASTIC_PACKAGE_BIN is the same version as the one used in go.mod, if it exists.
-	// If the binary is not found or the version is less than 0.118.0, we will fall back to a recursive walk to find packages.
-	binaryPath, found := elasticPackageBinaryPath()
-	if !found {
-		fmt.Println("elastic-package binary not found, using recursive walk to find packages")
-		return walkPackagePaths(dir)
-	}
-
-	version, err := citools.PackageVersionGoMod(goModPath, elasticPackageModulePath)
-	if err != nil {
-		fmt.Printf("could not determine elastic-package version from go.mod (%v), using recursive walk to find packages\n", err)
-		return walkPackagePaths(dir)
-	}
-
-	minVersion := semver.MustParse(elasticPackageFindMinVersion)
-	if version.LessThan(minVersion) {
-		fmt.Printf("elastic-package %s < %s, using recursive walk to find packages\n", version, elasticPackageFindMinVersion)
-		return walkPackagePaths(dir)
-	}
-	fmt.Printf("elastic-package %s >= %s, using \"elastic-package find\" to find packages\n", version, elasticPackageFindMinVersion)
-	return elasticPackageFind(binaryPath, dir)
-}
-
-func elasticPackageBinaryPath() (string, bool) {
-	// ELASTIC_PACKAGE_BIN is set by CI and points to the elastic-package binary.
-	if ciPath := os.Getenv("ELASTIC_PACKAGE_BIN"); ciPath != "" {
-		if _, err := os.Stat(ciPath); err == nil {
-			return ciPath, true
-		}
-	}
-	if path, err := exec.LookPath(elasticPackageBinaryName); err == nil {
-		return path, true
-	}
-	return "", false
-}
-
-func elasticPackageFind(binaryPath, dir string) ([]string, error) {
-	cmd := exec.Command(binaryPath, "-C", dir, "find")
-	cmd.Stderr = os.Stderr
-	stdout, err := cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("error running elastic-package find: %w", err)
-	}
-
-	var paths []string
-	scanner := bufio.NewScanner(bytes.NewReader(stdout))
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line != "" {
-			paths = append(paths, line)
-		}
-	}
-	return paths, scanner.Err()
 }
 
 func walkPackagePaths(dir string) ([]string, error) {
