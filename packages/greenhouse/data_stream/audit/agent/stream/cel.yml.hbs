@@ -157,7 +157,7 @@ program: |-
                         "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
                         "cursor": {
                           "last_event_time": (size(body.?results.orValue([])) > 0) ?
-                            body.results[0].event_time
+                            max(state.?cursor.last_event_time.orValue(""), body.results[0].event_time)
                           :
                             after_time,
                           "pit_id": has_more ? string(body.paging.pit_id) : "",
