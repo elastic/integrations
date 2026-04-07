@@ -1,6 +1,14 @@
 ---
-description: Pipeline for processing Dataminr Pulse alerts with ECS mapping and request logging
+description: Pipeline for processing Dataminr Pulse alerts with ECS mapping
 processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  - drop:
+      tag: drop_placeholder
+      if: ctx.message == 'retry'
+
   # Set ECS version and initial event fields
   - set:
       field: ecs.version
@@ -33,687 +41,10 @@ processors:
       tag: json_event_original
       target_field: json
 
-  # Compute is_main: the document whose entity type matches the first discovered entity's category
-  - script:
-      lang: painless
-      tag: compute_is_main
-      if: ctx.json?.entityType != null && ctx.json?.log_type == null
-      source: |
-        def entityType = ctx.json.entityType;
-        if (entityType.equals('no-entities') || entityType.equals('no-intelAgents')) {
-          if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
-          ctx.dataminr_pulse.is_main = 'yes';
-          return;
-        }
-        String firstType = null;
-        String firstName = null;
-        if (ctx.json.intelAgents instanceof List && ctx.json.intelAgents.size() > 0) {
-          def agent = ctx.json.intelAgents[0];
-          if (agent.discoveredEntities instanceof List && agent.discoveredEntities.size() > 0) {
-            def first = agent.discoveredEntities[0];
-            firstType = first.type;
-            firstName = first.containsKey('name') ? first.name : null;
-          }
-        }
-        if (firstType == null) {
-          if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
-          ctx.dataminr_pulse.is_main = 'yes';
-          return;
-        }
-        String firstCategory;
-        if (firstType.equals('vulnerability') || firstType.equals('threatActor') || firstType.equals('malware')) {
-          firstCategory = firstType;
-        } else if (firstType.equals('ipAddress') || firstType.equals('url')) {
-          firstCategory = 'url-ipAddress';
-        } else {
-          firstCategory = 'consolidated';
-        }
-        if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
-        if (entityType.equals('vulnerability') || entityType.equals('threatActor') || entityType.equals('malware')) {
-          if (entityType.equals(firstCategory)) {
-            def currentName = ctx.json.discovered_entity != null && ctx.json.discovered_entity.containsKey('name') ? ctx.json.discovered_entity.name : null;
-            ctx.dataminr_pulse.is_main = (currentName != null && currentName.equals(firstName)) ? 'yes' : 'no';
-          } else {
-            ctx.dataminr_pulse.is_main = 'no';
-          }
-        } else {
-          ctx.dataminr_pulse.is_main = entityType.equals(firstCategory) ? 'yes' : 'no';
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: >-
-              Processor {{{_ingest.on_failure_processor_type}}}
-              with tag '{{{_ingest.on_failure_processor_tag}}}'
-              in pipeline {{{_ingest.pipeline}}}
-              failed with message: {{{_ingest.on_failure_message}}}
-
-  # Handle log documents (auth or alert-fetch)
-  - set:
-      field: _temp.is_log
-      value: true
-      if: ctx.json?.log_type != null
-
-  # Process auth logs
-  - set:
-      field: event.kind
-      value: event
-      if: ctx.json?.log_type == 'auth'
-      override: true
-  - set:
-      field: event.category
-      value: []
-      if: ctx.json?.log_type == 'auth'
-      override: true
-  - append:
-      field: event.category
-      value: authentication
-      allow_duplicates: false
-      if: ctx.json?.log_type == 'auth'
-  - set:
-      field: event.type
-      value: []
-      if: ctx.json?.log_type == 'auth'
-      override: true
-  - append:
-      field: event.type
-      value: info
-      allow_duplicates: false
-      if: ctx.json?.log_type == 'auth'
-
-  # Process alert-fetch logs
-  - set:
-      field: event.kind
-      value: event
-      if: ctx.json?.log_type == 'alert-fetch'
-      override: true
-  - set:
-      field: event.category
-      value: []
-      if: ctx.json?.log_type == 'alert-fetch'
-      override: true
-  - append:
-      field: event.category
-      value: web
-      allow_duplicates: false
-      if: ctx.json?.log_type == 'alert-fetch'
-  - set:
-      field: event.type
-      value: []
-      if: ctx.json?.log_type == 'alert-fetch'
-      override: true
-  - append:
-      field: event.type
-      value: access
-      allow_duplicates: false
-      if: ctx.json?.log_type == 'alert-fetch' && ctx.json?.status == 'success'
-  - append:
-      field: event.type
-      value: error
-      allow_duplicates: false
-      if: ctx.json?.log_type == 'alert-fetch' && ctx.json?.status == 'failed'
-  - set:
-      field: event.outcome
-      value: success
-      if: ctx.json?.log_type == 'alert-fetch' && ctx.json?.status == 'success'
-  - set:
-      field: event.outcome
-      value: failure
-      if: ctx.json?.log_type == 'alert-fetch' && ctx.json?.status == 'failed'
-
-  # Map log fields to dataminr_pulse.log for all logs
-  - rename:
-      field: json
-      target_field: dataminr_pulse.log
-      tag: rename_json_to_log
-      if: ctx._temp?.is_log == true
-      ignore_missing: true
-
-  # Remove cursor_used from log object as it's an alert-level field
-  - remove:
-      field: dataminr_pulse.log.cursor_used
-      tag: remove_cursor_from_log
-      ignore_missing: true
-      if: ctx._temp?.is_log == true
-
-  # Map error message for logs (use message field, not error.message to avoid pipeline_error flag)
-  - set:
-      field: message
-      copy_from: dataminr_pulse.log.error_message
-      ignore_empty_value: true
-      if: ctx.dataminr_pulse?.log?.error_message != null
-
-  # Map fetch_timestamp for logs
-  - date:
-      field: dataminr_pulse.log.fetch_timestamp
-      tag: date_log_fetch_timestamp
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-      if: ctx.dataminr_pulse?.log?.fetch_timestamp != null
-      on_failure:
-        - append:
-            field: error.message
-            value: >-
-              Processor {{{_ingest.on_failure_processor_type}}}
-              with tag '{{{_ingest.on_failure_processor_tag}}}'
-              in pipeline {{{_ingest.pipeline}}}
-              failed with message: {{{_ingest.on_failure_message}}}
-
-  # Convert expires_at from epoch millis to date
-  - date:
-      field: dataminr_pulse.log.expires_at
-      tag: date_log_expires_at
-      target_field: dataminr_pulse.log.expires_at
-      formats:
-        - epoch_millis
-      if: ctx.dataminr_pulse?.log?.expires_at != null
-      on_failure:
-        - append:
-            field: error.message
-            value: >-
-              Processor {{{_ingest.on_failure_processor_type}}}
-              with tag '{{{_ingest.on_failure_processor_tag}}}'
-              in pipeline {{{_ingest.pipeline}}}
-              failed with message: {{{_ingest.on_failure_message}}}
-
-  # Custom pipeline for logs
   - pipeline:
       name: logs-dataminr_pulse.alerts@custom
-      if: ctx._temp?.is_log == true
       ignore_missing_pipeline: true
       ignore_failure: true
-
-  #  Process alert documents
-
-  # Store entityType for tracking document type
-  - set:
-      field: dataminr_pulse.entity_type
-      tag: set_entity_type_field
-      copy_from: json.entityType
-      ignore_empty_value: true
-      if: ctx.json?.entityType != null
-
-  # Extract all entity types from intelAgents in a single pass
-  - script:
-      lang: painless
-      tag: extract_all_entities
-      if: ctx.json?.intelAgents != null && ctx.dataminr_pulse?.entity_type != null
-      source: |
-        def threatActorNames = [];
-        def threatActorAliases = [];
-        def threatActorCountries = [];
-        def vulnerabilityNames = [];
-        def malwareList = [];
-        def platformsSet = new LinkedHashSet();
-        def urlList = [];
-        def ipList = [];
-        if (ctx.json.intelAgents instanceof List) {
-          for (intelAgent in ctx.json.intelAgents) {
-            if (intelAgent.discoveredEntities != null && intelAgent.discoveredEntities instanceof List) {
-              for (entity in intelAgent.discoveredEntities) {
-                if (entity.type == 'threatActor' && entity.name != null && entity.name != '') {
-                  if (!threatActorNames.contains(entity.name)) {
-                    threatActorNames.add(entity.name);
-                  }
-                  if (entity.aliases != null && entity.aliases instanceof List) {
-                    for (alias in entity.aliases) {
-                      if (!threatActorAliases.contains(alias)) {
-                        threatActorAliases.add(alias);
-                      }
-                    }
-                  }
-                  if (entity.countryOfOrigin != null) {
-                    if (entity.countryOfOrigin instanceof List) {
-                      for (country in entity.countryOfOrigin) {
-                        if (!threatActorCountries.contains(country)) {
-                          threatActorCountries.add(country);
-                        }
-                      }
-                    } else if (entity.countryOfOrigin instanceof String) {
-                      if (!threatActorCountries.contains(entity.countryOfOrigin)) {
-                        threatActorCountries.add(entity.countryOfOrigin);
-                      }
-                    }
-                  }
-                } else if (entity.type == 'vulnerability') {
-                  def vulnName = null;
-                  if (entity.cve != null && entity.cve != '') {
-                    vulnName = entity.cve;
-                  } else if (entity.name != null && entity.name != '') {
-                    vulnName = entity.name;
-                  } else if (entity.id != null && entity.id != '') {
-                    vulnName = entity.id;
-                  }
-                  if (vulnName != null && !vulnerabilityNames.contains(vulnName)) {
-                    vulnerabilityNames.add(vulnName);
-                  }
-                } else if (entity.type == 'malware' && entity.name != null && entity.name != '') {
-                  if (!malwareList.contains(entity.name)) {
-                    malwareList.add(entity.name);
-                  }
-                  if (entity.affectedOperatingSystems != null && entity.affectedOperatingSystems instanceof List) {
-                    for (os in entity.affectedOperatingSystems) {
-                      def normalizedOS = os;
-                      if (os == 'win') {
-                        normalizedOS = 'Windows';
-                      } else if (os == 'elf') {
-                        normalizedOS = 'Linux';
-                      }
-                      platformsSet.add(normalizedOS);
-                    }
-                  }
-                } else if (entity.type == 'url' && entity.name != null && entity.name != '') {
-                  def refangedUrl = entity.name.replace('[.]', '.');
-                  if (!urlList.contains(refangedUrl)) {
-                    urlList.add(refangedUrl);
-                  }
-                } else if (entity.type == 'ipAddress' && entity.ip != null && entity.ip != '') {
-                  def refangedIp = entity.ip.replace('[.]', '.');
-                  if (!ipList.contains(refangedIp)) {
-                    ipList.add(refangedIp);
-                  }
-                }
-              }
-            }
-          }
-        }
-        if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
-        if (threatActorNames.size() > 0) {
-          if (ctx.dataminr_pulse.threatactor == null) { ctx.dataminr_pulse.threatactor = [:]; }
-          ctx.dataminr_pulse.threatactor.name = threatActorNames;
-          if (threatActorAliases.size() > 0) {
-            ctx.dataminr_pulse.threatactor.alias = threatActorAliases;
-          }
-          if (threatActorCountries.size() > 0) {
-            ctx.dataminr_pulse.threatactor.country_of_origin = threatActorCountries;
-          }
-        }
-        if (vulnerabilityNames.size() > 0) {
-          if (ctx.dataminr_pulse.vulnerability == null) { ctx.dataminr_pulse.vulnerability = [:]; }
-          ctx.dataminr_pulse.vulnerability.name = vulnerabilityNames;
-        }
-        if (malwareList.size() > 0) {
-          ctx.dataminr_pulse.malware = malwareList;
-        }
-        if (platformsSet.size() > 0) {
-          ctx.dataminr_pulse.platforms = new ArrayList(platformsSet);
-        }
-        if (urlList.size() > 0) {
-          ctx.dataminr_pulse.url = urlList;
-        }
-        if (ipList.size() > 0) {
-          ctx.dataminr_pulse.ip = ipList;
-          if (ctx.related == null) { ctx.related = [:]; }
-          if (ctx.related.ip == null) { ctx.related.ip = []; }
-          for (ip in ipList) {
-            if (!ctx.related.ip.contains(ip)) { ctx.related.ip.add(ip); }
-          }
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: >-
-              Processor {{{_ingest.on_failure_processor_type}}}
-              with tag '{{{_ingest.on_failure_processor_tag}}}'
-              in pipeline {{{_ingest.pipeline}}}
-              failed with message: {{{_ingest.on_failure_message}}}
-
-  # URL-IP address handling
-  - script:
-      lang: painless
-      tag: build_threat_enrichments_for_url_ip
-      if: ctx.dataminr_pulse?.entity_type == 'url-ipAddress' && ctx.json?.intelAgents != null
-      source: |
-        def enrichments = [];
-        
-        if (ctx.json.intelAgents instanceof List) {
-          for (intelAgent in ctx.json.intelAgents) {
-            if (intelAgent.discoveredEntities != null && intelAgent.discoveredEntities instanceof List) {
-              for (entity in intelAgent.discoveredEntities) {
-        
-                // Handle URL entities
-                if (entity.type == 'url' && entity.name != null && entity.name != '') {
-                  def enrichment = [:];
-                  enrichment.indicator = [:];
-                  enrichment.indicator.type = 'url';
-                  enrichment.indicator.name = entity.name; // defanged original
-        
-                  def refangedUrl = entity.name.replace('[.]', '.');
-                  if (enrichment.indicator.url == null) { enrichment.indicator.url = [:]; }
-                  enrichment.indicator.url.original = refangedUrl;
-        
-                  enrichments.add(enrichment);
-                }
-        
-                // Handle IP entities
-                if (entity.type == 'ipAddress' && entity.ip != null && entity.ip != '') {
-                  def enrichment = [:];
-                  enrichment.indicator = [:];
-                  enrichment.indicator.name = entity.ip; // defanged original
-        
-                  def refangedIp = entity.ip.replace('[.]', '.');
-                  enrichment.indicator.ip = refangedIp;
-        
-                  // Detect IPv4 vs IPv6
-                  if (refangedIp.contains(':')) {
-                    enrichment.indicator.type = 'ipv6-addr';
-                  } else {
-                    enrichment.indicator.type = 'ipv4-addr';
-                  }
-        
-                  // Add ports if available
-                  if (entity.ports != null && entity.ports instanceof List && entity.ports.size() > 0) {
-                    enrichment.indicator.port = entity.ports;
-                  }
-        
-                  enrichments.add(enrichment);
-                }
-              }
-            }
-          }
-        }
-        
-        if (enrichments.size() > 0) {
-          if (ctx.threat == null) { ctx.threat = [:]; }
-          ctx.threat.enrichments = enrichments;
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: >-
-              Processor {{{_ingest.on_failure_processor_type}}}
-              with tag '{{{_ingest.on_failure_processor_tag}}}'
-              in pipeline {{{_ingest.pipeline}}}
-              failed with message: {{{_ingest.on_failure_message}}}
-
-  - remove:
-      field: event.category
-      if: ctx.dataminr_pulse?.entity_type == 'url-ipAddress'
-      ignore_missing: true
-
-  - append:
-      field: event.category
-      value: threat
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.entity_type == 'url-ipAddress'
-
-  - remove:
-      field: event.type
-      if: ctx.dataminr_pulse?.entity_type == 'url-ipAddress'
-      ignore_missing: true
-
-  - append:
-      field: event.type
-      value: indicator
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.entity_type == 'url-ipAddress'
-
-  # Generate base fingerprint from alert ID and timestamp
-  - fingerprint:
-      fields:
-        - json.alertId
-        - json.alertTimestamp
-      tag: fingerprint_alert_base
-      target_field: _temp.base_fingerprint
-      ignore_missing: true
-      if: ctx.json?.alertId != null
-
-  # For alerts WITH discovered_entity, add entity info to make it unique
-  - fingerprint:
-      fields:
-        - _temp.base_fingerprint
-        - json.discovered_entity.type
-        - json.discovered_entity.ip
-        - json.discovered_entity.name
-      tag: fingerprint_with_entity
-      target_field: _id
-      ignore_missing: true
-      if: ctx.json?.discovered_entity != null
-  
-  # For alerts WITHOUT discovered_entity, add entityType to make fingerprint unique per split
-  - fingerprint:
-      fields:
-        - _temp.base_fingerprint
-        - json.entityType
-      tag: fingerprint_without_entity
-      target_field: _id
-      ignore_missing: true
-      if: ctx.json?.discovered_entity == null && ctx._temp?.base_fingerprint != null
-
-  # Remove entityType from json after fingerprint generation
-  - remove:
-      field:
-        - json.entityType
-      tag: remove_entity_metadata_fields
-      ignore_missing: true
-
-  # Map discovered_entity to dataminr_pulse namespace (single object, not array)
-  - rename:
-      field: json.discovered_entity
-      tag: rename_discovered_entity
-      target_field: dataminr_pulse.discovered_entity
-      ignore_missing: true
-      if: ctx.json?.discovered_entity != null
-
-  # Map simplified discovered_entity type and value from connector-provided flat fields
-  - set:
-      field: dataminr_pulse.discovered_entity.type
-      tag: set_discovered_entity_type
-      copy_from: json.discoveredentity_type
-      ignore_empty_value: true
-      if: ctx.json?.discoveredentity_type != null
-
-  - set:
-      field: dataminr_pulse.discovered_entity.value
-      tag: set_discovered_entity_value
-      copy_from: json.discoveredentity_value
-      ignore_empty_value: true
-      if: ctx.json?.discoveredentity_value != null
-
-  - remove:
-      field:
-        - json.discoveredentity_type
-        - json.discoveredentity_value
-      tag: remove_discovered_entity_flat_fields
-      ignore_missing: true
-
-  # Rename camelCase sub-fields from API to snake_case
-  - rename:
-      field: dataminr_pulse.discovered_entity.geoIpMapping
-      target_field: dataminr_pulse.discovered_entity.geo_ip_mapping
-      tag: rename_geo_ip_mapping
-      ignore_missing: true
-  - rename:
-      field: dataminr_pulse.discovered_entity.CAL
-      target_field: dataminr_pulse.discovered_entity.cyber_asset_lifecycle
-      tag: rename_cal
-      ignore_missing: true
-  - rename:
-      field: dataminr_pulse.discovered_entity.cyber_asset_lifecycle.impactFactors
-      target_field: dataminr_pulse.discovered_entity.cyber_asset_lifecycle.impact_factors
-      tag: rename_impact_factors
-      ignore_missing: true
-  - rename:
-      field: dataminr_pulse.discovered_entity.knownExploitedDate
-      target_field: dataminr_pulse.discovered_entity.known_exploited_date
-      tag: rename_known_exploited_date
-      ignore_missing: true
-  - rename:
-      field: dataminr_pulse.discovered_entity.affectedOperatingSystems
-      target_field: dataminr_pulse.discovered_entity.affected_operating_systems
-      tag: rename_affected_operating_systems
-      ignore_missing: true
-  - rename:
-      field: dataminr_pulse.discovered_entity.countryOfOrigin
-      target_field: dataminr_pulse.discovered_entity.country_of_origin
-      tag: rename_country_of_origin
-      ignore_missing: true
-
-  # Vulnerability ECS Mapping
-
-  - set:
-      field: vulnerability.id
-      copy_from: dataminr_pulse.discovered_entity.name
-      ignore_empty_value: true
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'vulnerability'
-
-  - convert:
-      field: dataminr_pulse.discovered_entity.cvss
-      target_field: vulnerability.score.base
-      type: float
-      ignore_missing: true
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'vulnerability'
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Failed to convert cvss to float: {{{_ingest.on_failure_message}}}'
-
-  - set:
-      field: vulnerability.description
-      copy_from: dataminr_pulse.discovered_entity.summary
-      ignore_empty_value: true
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'vulnerability'
-
-  - remove:
-      field: event.category
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'vulnerability'
-      ignore_missing: true
-
-  - append:
-      field: event.category
-      value: vulnerability
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'vulnerability'
-
-  - remove:
-      field: event.type
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'vulnerability'
-      ignore_missing: true
-
-  - append:
-      field: event.type
-      value: info
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'vulnerability'
-
-  # Threat Actor ECS Mapping
-
-  - set:
-      field: threat.group.name
-      copy_from: dataminr_pulse.discovered_entity.name
-      ignore_empty_value: true
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor'
-
-  - foreach:
-      field: dataminr_pulse.discovered_entity.aliases
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor' && ctx.dataminr_pulse?.discovered_entity?.aliases instanceof List
-      processor:
-        append:
-          field: threat.group.alias
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-
-  - set:
-      field: threat.indicator.geo.country_iso_code
-      copy_from: dataminr_pulse.threatactor.country_of_origin
-      ignore_empty_value: true
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor' && ctx.dataminr_pulse?.threatactor?.country_of_origin != null
-
-  - set:
-      field: threat.framework
-      value: "MITRE ATT&CK"
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor'
-
-  - remove:
-      field: event.category
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor'
-      ignore_missing: true
-
-  - append:
-      field: event.category
-      value: threat
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor'
-
-  - remove:
-      field: event.type
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor'
-      ignore_missing: true
-
-  - append:
-      field: event.type
-      value: indicator
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'threatActor'
-
-  # Malware ECS mapping
-  - set:
-      field: threat.software.name
-      copy_from: dataminr_pulse.discovered_entity.name
-      ignore_empty_value: true
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'malware'
-
-  - set:
-      field: threat.software.type
-      value: "Malware"
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'malware'
-
-  # Normalize and map platforms for malware
-  - script:
-      lang: painless
-      tag: normalize_malware_platforms
-      if: ctx.dataminr_pulse?.discovered_entity?.affected_operating_systems != null && ctx.dataminr_pulse?.entity_type == 'malware'
-      source: |
-        def platforms = ctx.dataminr_pulse.discovered_entity.affected_operating_systems;
-        if (platforms instanceof List && platforms.size() > 0) {
-          def normalizedPlatforms = [];
-          for (os in platforms) {
-            if (os == 'win') {
-              normalizedPlatforms.add('Windows');
-            } else if (os == 'elf') {
-              normalizedPlatforms.add('Linux');
-            } else {
-              normalizedPlatforms.add(os);
-            }
-          }
-          if (normalizedPlatforms.size() > 0) {
-            if (ctx.threat == null) { ctx.threat = [:]; }
-            if (ctx.threat.software == null) { ctx.threat.software = [:]; }
-            ctx.threat.software.platforms = normalizedPlatforms;
-          }
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: >-
-              Processor {{{_ingest.on_failure_processor_type}}}
-              with tag '{{{_ingest.on_failure_processor_tag}}}'
-              in pipeline {{{_ingest.pipeline}}}
-              failed with message: {{{_ingest.on_failure_message}}}
-
-  - remove:
-      field: event.category
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'malware'
-      ignore_missing: true
-
-  - append:
-      field: event.category
-      value: malware
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'malware'
-
-  - remove:
-      field: event.type
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'malware'
-      ignore_missing: true
-
-  - append:
-      field: event.type
-      value: info
-      allow_duplicates: false
-      if: ctx.dataminr_pulse?.discovered_entity?.type == 'malware'
-
 
   # Map base alert fields
   - set:
@@ -721,7 +52,6 @@ processors:
       tag: set_event_id
       copy_from: json.alertId
       ignore_empty_value: true
-      if: ctx._temp?.is_log != true
 
   # Map alertTimestamp to @timestamp
   - date:
@@ -731,7 +61,7 @@ processors:
       formats:
         - ISO8601
         - epoch_millis
-      if: ctx._temp?.is_log != true && ctx.json?.alertTimestamp != null && ctx.json.alertTimestamp != ''
+      if: ctx.json?.alertTimestamp != null && ctx.json.alertTimestamp != ''
       on_failure:
         - append:
             field: error.message
@@ -743,7 +73,6 @@ processors:
       tag: set_event_url
       copy_from: json.dataminrAlertUrl
       ignore_empty_value: true
-      if: ctx._temp?.is_log != true
 
   # Map alertType.name to event.severity and store type
   - script:
@@ -785,7 +114,6 @@ processors:
       tag: set_message_from_headline
       copy_from: json.headline
       ignore_empty_value: true
-      if: ctx._temp?.is_log != true
   
   - date:
       field: json.publicPost.timestamp
@@ -978,6 +306,165 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
+  # Single-pass extraction of all entity types from intelAgents,
+  # plus ECS mapping for the first entity of each type.
+  - script:
+      lang: painless
+      tag: extract_entities_and_map_ecs
+      if: ctx.json?.intelAgents instanceof List
+      source: |
+        def threatActorNames = [];
+        def threatActorAliases = [];
+        def threatActorCountries = [];
+        def vulnerabilityNames = [];
+        def malwareList = [];
+        def platformsSet = new LinkedHashSet();
+        def urlList = [];
+        def ipList = [];
+        def enrichments = [];
+        def firstVulnCvss = null;
+        def firstVulnDescription = null;
+
+        for (intelAgent in ctx.json.intelAgents) {
+          if (!(intelAgent.discoveredEntities instanceof List)) { continue; }
+          for (entity in intelAgent.discoveredEntities) {
+            if (entity.type == 'threatActor' && entity.name != null && entity.name != '') {
+              if (!threatActorNames.contains(entity.name)) {
+                threatActorNames.add(entity.name);
+              }
+              if (entity.aliases instanceof List) {
+                for (alias in entity.aliases) {
+                  if (!threatActorAliases.contains(alias)) {
+                    threatActorAliases.add(alias);
+                  }
+                }
+              }
+              if (entity.countryOfOrigin != null) {
+                def countries = entity.countryOfOrigin instanceof List ? entity.countryOfOrigin : [entity.countryOfOrigin];
+                for (country in countries) {
+                  if (country instanceof String && !threatActorCountries.contains(country)) {
+                    threatActorCountries.add(country);
+                  }
+                }
+              }
+            } else if (entity.type == 'vulnerability') {
+              def vulnName = entity.cve != null && entity.cve != '' ? entity.cve
+                           : entity.name != null && entity.name != '' ? entity.name
+                           : entity.id != null && entity.id != '' ? entity.id
+                           : null;
+              if (vulnName != null && !vulnerabilityNames.contains(vulnName)) {
+                vulnerabilityNames.add(vulnName);
+              }
+              if (firstVulnCvss == null && entity.cvss != null) {
+                firstVulnCvss = entity.cvss;
+              }
+              if (firstVulnDescription == null && entity.summary != null && entity.summary != '') {
+                firstVulnDescription = entity.summary;
+              }
+            } else if (entity.type == 'malware' && entity.name != null && entity.name != '') {
+              if (!malwareList.contains(entity.name)) {
+                malwareList.add(entity.name);
+              }
+              if (entity.affectedOperatingSystems instanceof List) {
+                for (os in entity.affectedOperatingSystems) {
+                  platformsSet.add(os == 'win' ? 'Windows' : os == 'elf' ? 'Linux' : os);
+                }
+              }
+            } else if (entity.type == 'url' && entity.name != null && entity.name != '') {
+              def refanged = entity.name.replace('[.]', '.');
+              if (!urlList.contains(refanged)) {
+                urlList.add(refanged);
+              }
+              def e = [:];
+              e.indicator = [:];
+              e.indicator.type = 'url';
+              e.indicator.name = entity.name;
+              e.indicator.url = ['original': refanged];
+              enrichments.add(e);
+            } else if (entity.type == 'ipAddress' && entity.ip != null && entity.ip != '') {
+              def refanged = entity.ip.replace('[.]', '.');
+              if (!ipList.contains(refanged)) {
+                ipList.add(refanged);
+              }
+              def e = [:];
+              e.indicator = [:];
+              e.indicator.name = entity.ip;
+              e.indicator.ip = refanged;
+              e.indicator.type = refanged.contains(':') ? 'ipv6-addr' : 'ipv4-addr';
+              if (entity.ports instanceof List && entity.ports.size() > 0) {
+                e.indicator.port = entity.ports;
+              }
+              enrichments.add(e);
+            }
+          }
+        }
+
+        if (ctx.dataminr_pulse == null) { ctx.dataminr_pulse = [:]; }
+
+        if (threatActorNames.size() > 0) {
+          ctx.dataminr_pulse.threatactor = [:];
+          ctx.dataminr_pulse.threatactor.name = threatActorNames;
+          if (threatActorAliases.size() > 0) { ctx.dataminr_pulse.threatactor.alias = threatActorAliases; }
+          if (threatActorCountries.size() > 0) { ctx.dataminr_pulse.threatactor.country_of_origin = threatActorCountries; }
+          if (ctx.threat == null) { ctx.threat = [:]; }
+          ctx.threat.group = [:];
+          ctx.threat.group.name = threatActorNames[0];
+          if (threatActorAliases.size() > 0) { ctx.threat.group.alias = threatActorAliases; }
+          if (threatActorCountries.size() > 0) {
+            ctx.threat.indicator = [:];
+            ctx.threat.indicator.geo = [:];
+            ctx.threat.indicator.geo.country_iso_code = threatActorCountries;
+          }
+          ctx.threat.framework = 'MITRE ATT&CK';
+        }
+
+        if (vulnerabilityNames.size() > 0) {
+          ctx.dataminr_pulse.vulnerability = [:];
+          ctx.dataminr_pulse.vulnerability.name = vulnerabilityNames;
+          ctx.vulnerability = [:];
+          ctx.vulnerability.id = vulnerabilityNames[0];
+          if (firstVulnCvss != null) {
+            ctx.vulnerability.score = [:];
+            ctx.vulnerability.score.base = firstVulnCvss;
+          }
+          if (firstVulnDescription != null) {
+            ctx.vulnerability.description = firstVulnDescription;
+          }
+        }
+
+        if (malwareList.size() > 0) {
+          ctx.dataminr_pulse.malware = malwareList;
+          if (ctx.threat == null) { ctx.threat = [:]; }
+          ctx.threat.software = [:];
+          ctx.threat.software.name = malwareList[0];
+          ctx.threat.software.type = 'Malware';
+          if (platformsSet.size() > 0) {
+            ctx.dataminr_pulse.platforms = new ArrayList(platformsSet);
+            ctx.threat.software.platforms = new ArrayList(platformsSet);
+          }
+        }
+
+        if (urlList.size() > 0) { ctx.dataminr_pulse.url = urlList; }
+
+        if (ipList.size() > 0) {
+          ctx.dataminr_pulse.ip = ipList;
+          if (ctx.related == null) { ctx.related = [:]; }
+          ctx.related.ip = ipList;
+        }
+
+        if (enrichments.size() > 0) {
+          if (ctx.threat == null) { ctx.threat = [:]; }
+          ctx.threat.enrichments = enrichments;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              in pipeline {{{_ingest.pipeline}}}
+              failed with message: {{{_ingest.on_failure_message}}}
+
   # Map metadata.cyber.hashValues to file.hash fields
   - script:
       lang: painless
@@ -1022,12 +509,15 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  # Preserve intelAgents under vendor namespace
-  - rename:
-      field: json.intelAgents
-      target_field: dataminr_pulse.intel_agents_raw
+
+  - fingerprint:
+      fields:
+        - json.alertId
+      tag: fingerprint_alert
+      target_field: _id
       ignore_missing: true
-      tag: rename_intel_agents_raw
+      if: ctx.json?.alertId != null
+
   - remove:
       field: event.original
       tag: remove_event_original
@@ -1039,7 +529,6 @@ processors:
   - remove:
       field:
         - json
-        - _temp
       tag: remove_temp_fields
       ignore_missing: true
 
@@ -1063,22 +552,6 @@ processors:
         }
         drop(ctx);
 
-  # Remove unwanted fields from discovered_entity
-  - remove:
-      field:
-        - dataminr_pulse.discovered_entity.cvss
-        - dataminr_pulse.discovered_entity.epssScore
-        - dataminr_pulse.discovered_entity.exploitable
-        - dataminr_pulse.discovered_entity.exploitPocLinks
-        - dataminr_pulse.discovered_entity.known_exploited_date
-        - dataminr_pulse.discovered_entity.name
-        - dataminr_pulse.discovered_entity.products
-        - dataminr_pulse.discovered_entity.publishedDate
-        - dataminr_pulse.discovered_entity.type
-        - dataminr_pulse.entity_type
-        - dataminr_pulse.intel_agents_raw
-      tag: remove_unwanted_fields
-      ignore_missing: true
   - set:
       field: event.kind
       value: pipeline_error
