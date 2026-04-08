@@ -1,11 +1,12 @@
 description: Aggregates daily total ECU usage per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
 source:
   index:
-    - "monitoring-indices"
-    - "*:monitoring-indices" # Dependency: ES Integration added, but not neceserily installed. Need the output of the transform only.
+    # Wildcard matches default monitoring-indices and custom pivot destinations named monitoring-indices* (Elasticsearch integration).
+    - "monitoring-indices*"
+    - "*:monitoring-indices*" # Same pattern on all remote clusters (CCS).
 dest:
   index: cluster_deployment_contribution_lookup
-  pipeline: 0.3.1-usage
+  pipeline: 0.3.2-usage
 frequency: 60m
 sync:
   time:
@@ -42,4 +43,4 @@ _meta:
   run_as_kibana_system: false
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.3.1
+  fleet_transform_version: 0.3.2

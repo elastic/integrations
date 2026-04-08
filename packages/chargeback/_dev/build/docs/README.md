@@ -184,7 +184,7 @@ To use this integration, the following prerequisites must be met:
 
 **Data Flow:**
 1. ESS Billing data is collected into `metrics-ess_billing.billing-*`
-2. Elasticsearch usage data is collected into `metrics-elasticsearch.stack_monitoring.*` (or `monitoring-indices` for Stack Monitoring)
+2. Elasticsearch usage data is collected into `metrics-elasticsearch.stack_monitoring.*`, or—when using the Elasticsearch integration index pivot—into indices whose names match `monitoring-indices*` (the default destination is `monitoring-indices`).
 3. Chargeback transforms process and correlate this data
 4. Dashboard queries the resulting lookup indices using ES|QL
 
