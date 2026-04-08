@@ -1,0 +1,284 @@
+# MongoDB OTel dashboards — metrics-mongodbreceiver.otel-default
+# Data stream: metrics-mongodbreceiver.otel-default
+# Filter: data_stream.dataset == "mongodbreceiver.otel"
+
+dashboards:
+  # ─── Capacity ─────────────────────────────────────────────────────────
+- id: mongodb_otel-capacity
+  name: '[MongoDB OTel] Capacity'
+  description: Connection utilization, memory usage, storage, and resource saturation signals.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    layout_algorithm: blocked
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: mongodbreceiver.otel
+  controls:
+  - type: options
+    label: Server
+    data_view: metrics-*
+    field: attributes.mongodb.instance
+  panels:
+  - hide_title: true
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: mongodb_otel-overview
+      - label: Operations
+        dashboard: mongodb_otel-operations
+      - label: Capacity
+        dashboard: mongodb_otel-capacity
+  - hide_title: true
+    size: {w: 48, h: 12}
+    markdown:
+      content: |
+        ## [MongoDB OTel] Capacity
+
+        This dashboard monitors MongoDB resource utilization:
+        - Current and available connection counts by server
+        - Connection utilization based on current vs available connections
+        - Memory usage (resident, virtual)
+        - Storage, data, and index sizes by database
+        - Cursor and session counts
+  - title: Current Connections
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.connection.count IS NOT NULL
+        | WHERE attributes.type == "current"
+        | STATS current_per_server = MAX(LAST_OVER_TIME(metrics.mongodb.connection.count))
+          BY resource.attributes.server.address
+        | STATS current = SUM(current_per_server)
+      primary:
+        field: current
+        label: Current Connections
+        format:
+          type: number
+          decimals: 0
+  - title: Available Connections
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.connection.count IS NOT NULL
+        | WHERE attributes.type == "available"
+        | STATS avail_per_server = MAX(LAST_OVER_TIME(metrics.mongodb.connection.count))
+          BY resource.attributes.server.address
+        | STATS avail = SUM(avail_per_server)
+      primary:
+        field: avail
+        label: Available Connections
+        format:
+          type: number
+          decimals: 0
+  - title: Resident Memory
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.memory.usage IS NOT NULL
+        | WHERE attributes.type == "resident"
+        | STATS resident = MAX(LAST_OVER_TIME(metrics.mongodb.memory.usage))
+      primary:
+        field: resident
+        label: Resident Memory
+        format:
+          type: bytes
+  - title: Open Cursors
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.cursor.count IS NOT NULL
+        | STATS cursors = MAX(LAST_OVER_TIME(metrics.mongodb.cursor.count))
+      primary:
+        field: cursors
+        label: Open Cursors
+        format:
+          type: number
+          decimals: 0
+  - title: Current Connection Utilization
+    size: {w: 24, h: 10}
+    esql:
+      type: gauge
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.connection.count IS NOT NULL
+        | STATS current_per_server = MAX(LAST_OVER_TIME(metrics.mongodb.connection.count)) WHERE attributes.type == "current",
+               avail_per_server = MAX(LAST_OVER_TIME(metrics.mongodb.connection.count)) WHERE attributes.type == "available"
+          BY resource.attributes.server.address
+        | STATS current = SUM(current_per_server), avail = SUM(avail_per_server)
+        | EVAL util = CASE((current + avail) > 0, current / (current + avail), 0),
+               gauge_min = 0.0, gauge_max = 1.0, gauge_goal = 0.7
+        | STATS ratio = MAX(util), gauge_min = MAX(gauge_min), gauge_max = MAX(gauge_max), gauge_goal = MAX(gauge_goal)
+      metric:
+        field: ratio
+        label: Utilization
+        format:
+          type: percent
+          decimals: 1
+      minimum:
+        field: gauge_min
+      maximum:
+        field: gauge_max
+      goal:
+        field: gauge_goal
+      appearance:
+        shape: arc
+        ticks_position: auto
+      color:
+        range_type: number
+        range_min: 0
+        range_max: 1
+        thresholds:
+        - color: "#54b399"
+          up_to: 0.7
+        - color: "#d6bf57"
+          up_to: 0.85
+        - color: "#cc5642"
+          up_to: 1
+  - title: Connection Count by Type
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.connection.count IS NOT NULL
+        | STATS conn_per_server = MAX(LAST_OVER_TIME(metrics.mongodb.connection.count))
+          BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+             attributes.type,
+             resource.attributes.server.address
+        | STATS conn = SUM(conn_per_server)
+          BY time_bucket, attributes.type
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: conn
+        label: Connections
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: attributes.type
+      legend:
+        visible: show
+        position: right
+  - title: Memory Usage
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.memory.usage IS NOT NULL
+        | STATS mem = MAX(LAST_OVER_TIME(metrics.mongodb.memory.usage))
+          BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+             attributes.type
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: mem
+        label: Bytes
+        format:
+          type: bytes
+      breakdown:
+        field: attributes.type
+      legend:
+        visible: show
+        position: right
+  - title: Storage by Database
+    size: {w: 48, h: 12}
+    esql:
+      type: datatable
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.storage.size IS NOT NULL
+           OR metrics.mongodb.data.size IS NOT NULL
+           OR metrics.mongodb.index.size IS NOT NULL
+        | STATS
+            storage_bytes = MAX(LAST_OVER_TIME(metrics.mongodb.storage.size)),
+            data_bytes = MAX(LAST_OVER_TIME(metrics.mongodb.data.size)),
+            index_bytes = MAX(LAST_OVER_TIME(metrics.mongodb.index.size))
+          BY database = attributes.db.namespace
+        | SORT storage_bytes DESC NULLS LAST
+        | LIMIT 20
+      breakdowns:
+      - field: database
+        label: Database
+      metrics:
+      - field: storage_bytes
+        label: Storage
+        format:
+          type: bytes
+      - field: data_bytes
+        label: Data
+        format:
+          type: bytes
+      - field: index_bytes
+        label: Index
+        format:
+          type: bytes
+  - title: Cursor and Session Count
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | FORK (
+            WHERE metrics.mongodb.cursor.count IS NOT NULL
+            | STATS val = MAX(LAST_OVER_TIME(metrics.mongodb.cursor.count))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL metric = "cursors"
+          )
+          (
+            WHERE metrics.mongodb.session.count IS NOT NULL
+            | STATS val = MAX(LAST_OVER_TIME(metrics.mongodb.session.count))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL metric = "sessions"
+          )
+        | STATS val = MAX(val) BY time_bucket, metric
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: val
+        label: Count
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: metric
+      legend:
+        visible: show
+        position: right

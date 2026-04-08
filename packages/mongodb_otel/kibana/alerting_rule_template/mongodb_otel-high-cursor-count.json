@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-high-cursor-count",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] High cursor count",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.cursor.count IS NOT NULL\n// Current open cursor count (gauge)\n| STATS cursors = MAX(LAST_OVER_TIME(metrics.mongodb.cursor.count)) BY resource.attributes.server.address\n// Alert when cursor count exceeds threshold (possible cursor leak; adjust 1000 for your workload)\n| WHERE cursors > 1000\n| SORT cursors DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
