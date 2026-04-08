@@ -1,0 +1,39 @@
+{
+  "id": "rabbitmq_otel-high-ready-queue-depth",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[RabbitMQ OTel] High ready queue depth",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "rabbitmq"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-rabbitmqreceiver.otel-default\n// Filter to ready messages (waiting for delivery)\n| WHERE attributes.state == \"ready\"\n  AND metrics.rabbitmq.message.current IS NOT NULL\n// Get max ready count per queue in the time window\n| STATS ready_count = MAX(metrics.rabbitmq.message.current)\n  BY resource.attributes.rabbitmq.queue.name,\n     resource.attributes.rabbitmq.vhost.name,\n     resource.attributes.rabbitmq.node.name\n// Alert threshold: adjust 1000 to tune for expected backlog size\n| WHERE ready_count > 1000\n| SORT ready_count DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.rabbitmq.queue.name",
+      "termSize": 20
+    }
+  }
+}

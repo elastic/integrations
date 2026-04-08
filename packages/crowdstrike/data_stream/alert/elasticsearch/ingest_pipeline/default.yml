@@ -2643,20 +2643,146 @@ processors:
       value: '{{{crowdstrike.alert.technique_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.technique_id != null
-  - set:
-      field: threat.framework
-      value: CrowdStrike Falcon Detections Framework
-      tag: set_threat_framework_cs
-      description: For Crowdstrike Falcon Detection tactics and/or that are prefixed with "CS"
-      if: >-
-        (ctx.crowdstrike?.alert?.tactic_id != null && ctx.crowdstrike.alert.tactic_id.startsWith("CS"))
-        || (ctx.crowdstrike?.alert?.technique_id != null && ctx.crowdstrike.alert.technique_id.startsWith("CS"))
-        || (ctx.crowdstrike?.alert?.tactic != null && ['malware','exploit','post-exploit','machine learning','custom intelligence','falcon overwatch','falcon intel','ai powered ioa','insecure security posture'].contains(ctx.crowdstrike.alert.tactic.toLowerCase()))
-  - set:
-      field: threat.framework
-      value: MITRE ATT&CK
-      tag: set_threat_framework_mitre
-      if: ctx.crowdstrike?.alert?.tactic_id != null && ctx.crowdstrike.alert.tactic_id.startsWith("TA")
+  - rename:
+      field: json.mitre_attack
+      tag: rename_mitre_attack
+      target_field: crowdstrike.alert.mitre_attack
+      ignore_missing: true
+  - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_50e8fec3
+      field: crowdstrike.alert.mitre_attack
+      if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
+      processor:
+        append:
+          field: threat.tactic.name
+          tag: append_threat_tactic_name
+          value: '{{{_ingest._value.tactic}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_a75d3917
+      field: crowdstrike.alert.mitre_attack
+      if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
+      processor:
+        append:
+          field: threat.tactic.id
+          tag: append_threat_tactic_id
+          value: '{{{_ingest._value.tactic_id}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_c9b5d563
+      field: crowdstrike.alert.mitre_attack
+      if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
+      processor:
+        append:
+          field: threat.technique.name
+          tag: append_threat_technique_name
+          value: '{{{_ingest._value.technique}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_6a5df41b
+      field: crowdstrike.alert.mitre_attack
+      if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
+      processor:
+        append:
+          field: threat.technique.id
+          tag: append_threat_technique_id
+          value: '{{{_ingest._value.technique_id}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_crowdstrike_alert_mitre_attack_5448da51
+      field: crowdstrike.alert.mitre_attack
+      if: ctx.crowdstrike?.alert?.mitre_attack instanceof List
+      processor:
+        convert:
+          field: _ingest._value.pattern_id
+          tag: convert_mitre_attack_pattern_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.pattern_id
+                tag: remove_ingest_value_pattern_id
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set threat.framework from threat.* fields using prefix matching and preference order.
+      lang: painless
+      tag: script_threat_framework
+      if: ctx.threat != null
+      params:
+        framework_preference:
+          - MITRE ATT&CK
+          - CrowdStrike Falcon Detections Framework
+        framework_cs: 'CrowdStrike Falcon Detections Framework'
+        framework_ma: 'MITRE ATT&CK'
+        falcon_tactic_names:
+          - malware
+          - exploit
+          - post-exploit
+          - machine learning
+          - custom intelligence
+          - falcon overwatch
+          - falcon intel
+          - ai powered ioa
+          - insecure security posture
+      source: |
+        def tid = ctx.threat.tactic?.id;
+        def nid = ctx.threat.technique?.id;
+        def tname = ctx.threat.tactic?.name;
+        if ((tid == null || tid.isEmpty()) && (nid == null || nid.isEmpty()) && (tname == null || tname.isEmpty())) {
+          return;
+        }
+        Set frameworks = new HashSet();
+        // Handling tactics prefixed with "CS" or "TA".
+        if (tid != null && !tid.isEmpty()) {
+          for (String t: tid) {
+            if (t.startsWith("CS")) {
+              frameworks.add(params.framework_cs);
+            }
+            else if (t.startsWith("TA")) {
+              frameworks.add(params.framework_ma);
+            }
+          }
+        }
+        // Handling techniques prefixed with "CS".
+        if (nid != null && !nid.isEmpty()) {
+          for (String t: nid) {
+            if (t.startsWith("CS")) {
+              frameworks.add(params.framework_cs);
+            }
+          }
+        }
+        // Handling falcon specific tactics.
+        if (tname != null && !tname.isEmpty()) {
+          for (String t: tname) {
+            if (params.falcon_tactic_names.contains(t.toLowerCase())) {
+              frameworks.add(params.framework_cs);
+            }
+          }
+        }
+        if (frameworks.isEmpty()) {
+          return;
+        }
+        if (frameworks.size() == 1) {
+          ctx.threat.framework = frameworks.iterator().next();
+          return;
+        }
+
+        for (def preferred : params.framework_preference) {
+          if (frameworks.contains(preferred)) {
+            ctx.threat.framework = preferred;
+            return;
+          }
+        }
+
+        // fallback when new frameworks are added and not yet in preference list
+        ctx.threat.framework = frameworks.iterator().next();
+      on_failure:
+        - append:
+            tag: append_error_message_f73582d4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.template_instance_id
       tag: rename_template_instance_id

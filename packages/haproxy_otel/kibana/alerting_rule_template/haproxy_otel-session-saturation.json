@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-session-saturation",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] Session saturation approaching limit",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-haproxyreceiver.otel-*\n// Session count and limit at frontend/backend/server level\n| WHERE haproxy.sessions.count IS NOT NULL AND haproxy.sessions.limit IS NOT NULL\n| WHERE haproxy.sessions.limit > 0\n| STATS\n    max_sessions = MAX(haproxy.sessions.count),\n    max_limit = MAX(haproxy.sessions.limit)\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n| EVAL utilisation_pct = ROUND(max_sessions * 100.0 / max_limit, 1)\n// Alert when utilisation exceeds 80% \u2014 adjust for capacity planning\n| WHERE utilisation_pct > 80\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT utilisation_pct DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id": "cockroachdb_otel-storage-capacity-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Storage capacity usage high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND capacity IS NOT NULL\n  AND capacity > 0\n  AND capacity_used IS NOT NULL\n// Used should not exceed 60% of total; adjust ratio if needed\n| EVAL usage_ratio = capacity_used / capacity\n| WHERE usage_ratio > 0.6\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS usage_pct = ROUND(MAX(usage_ratio) * 100.0, 1), used_gb = ROUND(MAX(capacity_used) / 1073741824.0, 1), total_gb = ROUND(MAX(capacity) / 1073741824.0, 1)\n  BY attributes.node_id, attributes.store, host.name\n| SORT usage_pct DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.node_id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

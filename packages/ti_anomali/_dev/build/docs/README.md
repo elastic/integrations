@@ -81,6 +81,10 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 2. In the search bar, type **ti_anomali**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
+#### ES|QL panels and result limits
+
+Some dashboard panels use [ES|QL](https://www.elastic.co/docs/reference/query-languages/esql) queries. ES|QL returns at most 10,000 rows per query (1,000 by default, refer to [ES|QL set size limits](https://www.elastic.co/docs/reference/query-languages/esql/limitations#esql-max-rows) for details). These panels include `LIMIT 10000` to request the maximum allowed, but if more rows match the query filters, results are silently truncated. Because the queries aggregate (`stats`) *after* the `LIMIT`, counts may be lower than the true total when more than 10,000 rows match.
+
 #### Transforms healthy
 
 1. In the top search bar in Kibana, search for **Transforms**.

@@ -25,19 +25,66 @@ Policies are composed of selectors and responses. A given policy must contain at
 
 # Deployment
 
-The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IoC) approach, streamlining the deployment process and enabling easier management.
+The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IaC) approach, streamlining the deployment process and enabling easier management.
 
-Note: You will need to include the following `capabilities` under `securityContext` in your k8s yaml in order for the service to work.
-```
+> **Standalone mode**: When using standalone mode, the agent and integration policy must be configured via `elastic-agent.yaml`. The integration supports **Elasticsearch** as the only output type, with either **basic** (username/password) or **API key** authentication.
+
+The following additions to your DaemonSet spec are required for the integration to function.
+
+**Security context** — required Linux capabilities:
+```yaml
 securityContext:
     runAsUser: 0
-    # The following capabilities are needed for 'Defend for containers' integration (cloud-defend)
-    # If you are using this integration, please uncomment these lines before applying.
     capabilities:
       add:
-        - BPF # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps.
-        - PERFMON # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations.
-        - SYS_RESOURCE # Allow use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
+        - BPF          # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps
+        - PERFMON      # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations
+        - SYS_RESOURCE # allows use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
+```
+
+**Environment variable** — allows the integration to read the list of host processes during startup:
+```yaml
+env:
+  - name: HOSTFS_PROC_PATH
+    value: "/hostfs/proc"
+```
+
+**Volume mounts** (container-level) — required host filesystem paths:
+```yaml
+volumeMounts:
+  - name: proc
+    mountPath: /hostfs/proc
+    readOnly: true
+  - name: sys-kernel-debug
+    mountPath: /sys/kernel/debug
+  - name: boot
+    mountPath: /boot
+    readOnly: true
+  - name: sys-fs-bpf
+    mountPath: /sys/fs/bpf
+  - name: sys-kernel-security
+    mountPath: /sys/kernel/security
+    readOnly: true
+```
+
+**Volumes** (pod-level):
+```yaml
+volumes:
+  - name: proc                  # host process list, used to read host processes during startup
+    hostPath:
+      path: /proc
+  - name: sys-kernel-debug      # used for diagnostics and kprobes / tracepoints
+    hostPath:
+      path: /sys/kernel/debug
+  - name: boot                  # used as a fallback for loading BTF info on some kernels
+    hostPath:
+      path: /boot
+  - name: sys-fs-bpf            # used for BPF maps
+    hostPath:
+      path: /sys/fs/bpf
+  - name: sys-kernel-security   # used for BPF LSM program attachment
+    hostPath:
+      path: /sys/kernel/security
 ```
 
 # Policy example
@@ -260,7 +307,7 @@ The following fields are populated for all events where `event.category: process
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
 | [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Ubuntu 20.04.5' |
 | [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
-| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Linux |
+| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Linux' |
 | [host.os.platform](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'ubuntu' |
 | [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'linux' |
 | [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | '20.04.5' |
@@ -357,15 +404,15 @@ The following fields are populated for all events where `event.category: file`
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
-| [data_stream.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-dataset) | 'cloud_defend.process' |
+| [data_stream.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-dataset) | 'cloud_defend.file' |
 | [data_stream.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-namespace) | 'default' |
 | [data_stream.type](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-type) | 'logs' |
 | [ecs.version](https://www.elastic.co/guide/en/ecs/current/ecs-ecs.html#field-ecs-version) | 8.7.0 |
 | [event.action](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-action) | One of: 'creation', 'modification', 'deletion', 'rename', 'link', 'open' |
 | [event.agent_id_status](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-agent-id-status) | 'verified' |
-| [event.category](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-category) | 'process' |
+| [event.category](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-category) | 'file' |
 | [event.created](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-created) | '2023-03-20T16:03:59.520Z' |
-| [event.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-dataset) | 'cloud_defend.process' |
+| [event.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-dataset) | 'cloud_defend.file' |
 | [event.id](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-id) | '3ee85eee-72d9-4e9d-934f-3787952ca830' |
 | [event.ingested](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-ingested) | '2023-03-20T16:04:12Z' |
 | [event.kind](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-kind) | One of: 'event', 'alert' |
@@ -385,7 +432,7 @@ The following fields are populated for all events where `event.category: file`
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
 | [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5' |
 | [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
-| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-name) | 'Linux |
+| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-name) | 'Linux' |
 | [host.os.platform](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-platform) | 'ubuntu' |
 | [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux' |
 | [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5' |
@@ -413,10 +460,31 @@ The following fields are populated for all events where `event.category: file`
 
 # Support matrix
 
-| &nbsp; | EKS 1.24-1.27 (AL2022) | GKE 1.24-1.27 (COS) |
+> **Platform requirements**: The integration runs on **Linux only** (x86_64 architecture) and requires **Kubernetes 1.24+** with **containerd** or **CRI-O** as the container runtime interface (CRI).
+
+## Linux kernel requirements
+
+Minimum kernel version: **5.10 LTS**. The following kernel options must be enabled:
+
+| Kernel option | Required value | Purpose |
 | -- | -- | -- |
-| Process event exports | ✅ | ✅ |
-| File event exports | ✅ | ✅ |
-| Drift prevention | ✅ | ✅ |
-| Mount point awareness | ✅ | ✅ |
-| Process blocking| ✅ | ✅ |
+| `CONFIG_BPF_LSM` | `y` | BPF-LSM support |
+| `CONFIG_SECURITY_PATH` | `y` | Security path hooks |
+| `CONFIG_DEBUG_INFO_BTF` | `y` | BTF support |
+| LSM boot parameter | `bpf` must be included in the LSM list | BPF LSM activation |
+
+## Managed Kubernetes
+
+| &nbsp; | EKS (AL2, AL2023) | GKE (COS, Ubuntu) | AKS (AzureLinux3) |
+| -- | -- | -- | -- |
+| Process event exports | ✅ | ✅ | ✅ |
+| File event exports | ✅ | ✅ | ✅ |
+| Drift prevention | ✅ | ✅ | ✅ |
+| Mount point awareness | ✅ | ✅ | ✅ |
+| Process blocking | ✅ | ✅ | ✅ |
+
+> **AWS cloud metadata**: Cloud metadata is supported only for IMDSv1. The integration will work with IMDSv2, but `cloud.*` fields will be empty.
+
+## Self-managed Kubernetes
+
+The integration works on self-managed Kubernetes clusters if the node operating system and kernel comply with the requirements above. Note that cloud metadata (`cloud.*` fields) will not be populated for self-managed deployments.
