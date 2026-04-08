@@ -4,5 +4,6 @@ FROM ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.145.
 FROM alpine:3.21
 COPY --from=telemetrygen /telemetrygen /usr/local/bin/telemetrygen
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod u+x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
