@@ -1,6 +1,6 @@
 name: azure_application_insights
 title: Azure Application Insights Metrics Overview
-version: "1.9.1"
+version: "1.10.0"
 description: Collect application insights metrics from Azure Monitor with Elastic Agent.
 type: integration
 icons:
@@ -20,7 +20,7 @@ categories:
   - observability
 conditions:
   kibana:
-    version: "^8.13.0 || ^9.0.0"
+    version: "~8.19.14 || ~9.2.8 || ^9.3.3"
   elastic:
     subscription: "basic"
 vars:
@@ -30,12 +30,47 @@ vars:
     multi: false
     required: true
     show_user: true
+  - name: auth_type
+    type: select
+    title: Authentication Type
+    description: The authentication type to use. Either "api_key" or "client_secret". The "client_secret" option is available from Elastic 8.19.14+, 9.2.8+, and 9.3.3+.
+    options:
+      - value: api_key
+        text: API Key
+      - value: client_secret
+        text: Client Secret
+    default: client_secret
+    multi: false
+    required: false
+    show_user: true
   - name: api_key
     type: password
     title: Api Key
     secret: true
     multi: false
-    required: true
+    required: false
+    show_user: true
+  - name: client_id
+    type: text
+    title: Client ID
+    description: The client ID for Entra ID authentication.
+    multi: false
+    required: false
+    show_user: true
+  - name: client_secret
+    type: password
+    title: Client Secret
+    description: The client secret for Entra ID authentication.
+    secret: true
+    multi: false
+    required: false
+    show_user: true
+  - name: tenant_id
+    type: text
+    title: Tenant ID
+    description: The tenant ID for Entra ID authentication.
+    multi: false
+    required: false
     show_user: true
 policy_templates:
   - name: app_insights

@@ -1,0 +1,40 @@
+{
+    "id": "zookeeper_otel-pending-syncs-buildup",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[ZooKeeper OTel] Pending syncs buildup on leader",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "zookeeper"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.sync.pending IS NOT NULL\n  AND resource.attributes.server.state == \"leader\"\n// Average pending syncs on the leader over the time window\n| STATS avg_pending = AVG(metrics.zookeeper.sync.pending) BY host.name\n// A healthy leader should have zero pending syncs\n// Sustained buildup means the ZAB protocol is struggling to replicate\n// This is an early warning before followers become unsynced\n// Adjust threshold based on ensemble size and write volume\n| WHERE avg_pending > 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        }
+    }
+}

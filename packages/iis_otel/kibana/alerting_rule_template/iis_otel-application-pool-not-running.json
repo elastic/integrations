@@ -1,0 +1,37 @@
+{
+  "id": "iis_otel-application-pool-not-running",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[IIS OTel] Application pool not running",
+    "ruleTypeId": ".es-query",
+    "tags": ["observability", "iis"],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE `iis.application_pool.state` IS NOT NULL\n| WHERE `iis.application_pool.state` != 3\n| STATS last_state = MAX(`iis.application_pool.state`) BY iis.application_pool, host.name\n| SORT last_state ASC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "iis.application_pool",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

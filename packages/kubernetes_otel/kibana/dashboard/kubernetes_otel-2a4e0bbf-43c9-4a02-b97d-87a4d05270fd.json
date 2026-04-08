@@ -1,0 +1,2860 @@
+{
+  "attributes": {
+    "description": "Single-pod deep dive with memory decomposition, OOM risk thresholds, per-container resource breakdown, and network I/O.",
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "filter": [
+          {
+            "meta": {
+              "disabled": false,
+              "field": "data_stream.dataset",
+              "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+              "key": "data_stream.dataset",
+              "params": [
+                "kubeletstatsreceiver.otel",
+                "k8sclusterreceiver.otel"
+              ],
+              "type": "phrases"
+            },
+            "query": {
+              "bool": {
+                "minimum_should_match": 1,
+                "should": [
+                  {
+                    "match_phrase": {
+                      "data_stream.dataset": "kubeletstatsreceiver.otel"
+                    }
+                  },
+                  {
+                    "match_phrase": {
+                      "data_stream.dataset": "k8sclusterreceiver.otel"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "query": {
+          "language": "kuery",
+          "query": ""
+        }
+      }
+    },
+    "optionsJSON": {
+      "autoApplyFilters": true,
+      "hidePanelBorders": false,
+      "hidePanelTitles": false,
+      "syncColors": false,
+      "syncCursor": true,
+      "syncTooltips": false,
+      "useMargins": true
+    },
+    "panelsJSON": [
+      {
+        "embeddableConfig": {
+          "description": "",
+          "hide_title": true,
+          "layout": "horizontal",
+          "links": [
+            {
+              "destinationRefName": "link_0976cf30-f018-4cc5-8a4f-d6171e75d93f_dashboard",
+              "label": "< Overview",
+              "options": {
+                "open_in_new_tab": false,
+                "use_filters": false,
+                "use_time_range": true
+              },
+              "type": "dashboardLink"
+            }
+          ]
+        },
+        "gridData": {
+          "h": 3,
+          "i": "v3-pod-back-link",
+          "w": 4,
+          "x": 0,
+          "y": 0
+        },
+        "panelIndex": "v3-pod-back-link",
+        "type": "links"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "75c10a74-0909-4bcd-a3d7-b4462341ce07": {
+                      "columns": [
+                        {
+                          "columnId": "c7d9c247-2dfe-4d60-afe7-46b26a0787cf",
+                          "customLabel": true,
+                          "fieldName": "name",
+                          "inMetricDimension": true,
+                          "label": "Pod",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "keyword"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), name = MAX(k8s.pod.name)\n| EVAL name = CASE(count == 1, name, CONCAT(TO_STRING(count), \" pods\"))\n| KEEP name"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS name = MAX(k8s.pod.name)\n"
+              },
+              "visualization": {
+                "colorMode": "none",
+                "layerId": "75c10a74-0909-4bcd-a3d7-b4462341ce07",
+                "layerType": "data",
+                "metricAccessor": "c7d9c247-2dfe-4d60-afe7-46b26a0787cf",
+                "primaryAlign": "left",
+                "showBar": false,
+                "titleWeight": "normal",
+                "titlesTextAlign": "left",
+                "titlesTextSize": "xxs",
+                "valueFontMode": "fit",
+                "valuesTextSize": "xs"
+              }
+            },
+            "title": "",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "gridData": {
+          "h": 3,
+          "i": "v3-pd-header-name",
+          "w": 16,
+          "x": 4,
+          "y": 0
+        },
+        "panelIndex": "v3-pd-header-name",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "c5f89909ebb652e46cf0119fe9e35f603b8b7ac8ea14e3f22c5461d86bb3afb3": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "c5f89909ebb652e46cf0119fe9e35f603b8b7ac8ea14e3f22c5461d86bb3afb3",
+                  "managed": false,
+                  "name": "metrics-k8sclusterreceiver.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "title": "metrics-k8sclusterreceiver.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "c5f89909ebb652e46cf0119fe9e35f603b8b7ac8ea14e3f22c5461d86bb3afb3",
+                      "title": "metrics-k8sclusterreceiver.otel-*"
+                    }
+                  ],
+                  "layers": {
+                    "27c7278e-80ea-4e50-bc62-52d7f3d97c0a": {
+                      "columns": [
+                        {
+                          "columnId": "8aad3722-bc81-4fef-98b5-fed428a300fc",
+                          "customLabel": true,
+                          "fieldName": "created_str",
+                          "inMetricDimension": true,
+                          "label": "Created on",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "keyword"
+                          }
+                        }
+                      ],
+                      "index": "c5f89909ebb652e46cf0119fe9e35f603b8b7ac8ea14e3f22c5461d86bb3afb3",
+                      "query": {
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), created = MIN(k8s.pod.start_time) \n| EVAL created_str = CASE(count == 1, DATE_FORMAT(\"MMM dd, yyyy\", TO_DATETIME(created)), \"N/A\")\n| KEEP created_str"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "needsRefresh": false,
+              "query": {
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), created = MIN(k8s.pod.start_time) \n| EVAL created_str = CASE(count == 1, DATE_FORMAT(\"MMM dd, yyyy\", TO_DATETIME(created)), \"N/A\")\n| KEEP created_str"
+              },
+              "visualization": {
+                "colorMode": "none",
+                "layerId": "27c7278e-80ea-4e50-bc62-52d7f3d97c0a",
+                "layerType": "data",
+                "metricAccessor": "8aad3722-bc81-4fef-98b5-fed428a300fc",
+                "primaryAlign": "left",
+                "showBar": false,
+                "titleWeight": "normal",
+                "titlesTextSize": "xxs",
+                "valueFontMode": "fit",
+                "valuesTextSize": "xs"
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "gridData": {
+          "h": 3,
+          "i": "v3-pd-header-created",
+          "w": 5,
+          "x": 20,
+          "y": 0
+        },
+        "panelIndex": "v3-pd-header-created",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "ac4df9dc-46c7-4813-beb3-bd1d6db3e3fb": {
+                      "columns": [
+                        {
+                          "columnId": "e22ebe78-b1f5-4202-85bc-8fc9b66ff4be",
+                          "customLabel": true,
+                          "fieldName": "phase",
+                          "inMetricDimension": true,
+                          "label": "Pod phase",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "keyword"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.phase IS NOT NULL AND k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), phase = MAX(k8s.pod.phase)\n| EVAL phase = CASE(\n    count > 1, \"N/A\",\n    phase == 1, \"Pending\",\n    phase == 2, \"Running\",\n    phase == 3, \"Succeeded\",\n    phase == 4, \"Failed\",\n    \"Unknown\"\n  )\n| KEEP phase"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.phase IS NOT NULL AND k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), phase = MAX(k8s.pod.phase)\n| EVAL phase = CASE(\n    count > 1, \"N/A\",\n    phase == 1, \"Pending\",\n    phase == 2, \"Running\",\n    phase == 3, \"Succeeded\",\n    phase == 4, \"Failed\",\n    \"Unknown\"\n  )\n| KEEP phase"
+              },
+              "visualization": {
+                "colorMode": "none",
+                "layerId": "ac4df9dc-46c7-4813-beb3-bd1d6db3e3fb",
+                "layerType": "data",
+                "metricAccessor": "e22ebe78-b1f5-4202-85bc-8fc9b66ff4be",
+                "primaryAlign": "left",
+                "showBar": false,
+                "titleWeight": "normal",
+                "titlesTextSize": "xxs",
+                "valueFontMode": "fit",
+                "valuesTextSize": "xs"
+              }
+            },
+            "title": "",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          },
+          "description": "Pod phase: Pending/Running/Succeeded/Failed/Unknown."
+        },
+        "gridData": {
+          "h": 3,
+          "i": "v3-pd-header-status",
+          "w": 7,
+          "x": 25,
+          "y": 0
+        },
+        "panelIndex": "v3-pd-header-status",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "4af3de89-68a8-8e1f-ccb7-4e6febd43855": {
+                      "columns": [
+                        {
+                          "columnId": "2999510e-3669-b52d-dfab-8810af241dd4",
+                          "customLabel": true,
+                          "fieldName": "restarts",
+                          "inMetricDimension": true,
+                          "label": "Container restarts",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.container.restarts IS NOT NULL\n| STATS restarts = MAX(k8s.container.restarts)\n"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.container.restarts IS NOT NULL\n| STATS restarts = MAX(k8s.container.restarts)\n"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#F6726A",
+                "colorMode": "background",
+                "layerId": "4af3de89-68a8-8e1f-ccb7-4e6febd43855",
+                "layerType": "data",
+                "metricAccessor": "2999510e-3669-b52d-dfab-8810af241dd4",
+                "showBar": false
+              }
+            },
+            "title": "",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          },
+          "description": "Total container restarts for this pod. MAX(k8s.container.restarts)."
+        },
+        "gridData": {
+          "h": 3,
+          "i": "v2-pod-detail-restarts",
+          "w": 11,
+          "x": 32,
+          "y": 0
+        },
+        "panelIndex": "v2-pod-detail-restarts",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "metrics-*",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "metrics-*",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ],
+                  "layers": {
+                    "9a5aa79b-5205-4e0d-811d-6f59fabdc1c6": {
+                      "columns": [
+                        {
+                          "columnId": "80d9ffc2-9aec-4511-8ef6-9f03fa2c13f7",
+                          "customLabel": true,
+                          "fieldName": "k8s.pod.name",
+                          "inMetricDimension": true,
+                          "label": "View pod logs in Discover",
+                          "meta": {
+                            "esType": "keyword",
+                            "params": {
+                              "id": "string"
+                            },
+                            "sourceParams": {
+                              "indexPattern": "metrics-*",
+                              "sourceField": "k8s.pod.name"
+                            },
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "index": "metrics-*",
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| KEEP k8s.pod.name\n| LIMIT 1"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "needsRefresh": false,
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| KEEP k8s.pod.name\n| LIMIT 1"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61A2FF",
+                "colorMode": "background",
+                "icon": "popout",
+                "iconAlign": "left",
+                "layerId": "9a5aa79b-5205-4e0d-811d-6f59fabdc1c6",
+                "layerType": "data",
+                "metricAccessor": "80d9ffc2-9aec-4511-8ef6-9f03fa2c13f7",
+                "primaryAlign": "center",
+                "showBar": false,
+                "titleWeight": "normal",
+                "titlesTextAlign": "center",
+                "titlesTextSize": "xxs",
+                "valueFontMode": "fit",
+                "valuesTextSize": "xs"
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          },
+          "drilldowns": [
+            {
+              "encode_url": true,
+              "label": "View logs in Discover",
+              "open_in_new_tab": true,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "{{kibanaUrl}}/app/discover#/?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'logs-*',type:dataView),query:(language:kuery,query:'k8s.pod.name:\"{{event.value}}\"'))"
+            }
+          ]
+        },
+        "gridData": {
+          "h": 3,
+          "i": "v4-pd-logs-card",
+          "w": 5,
+          "x": 43,
+          "y": 0
+        },
+        "panelIndex": "v4-pd-logs-card",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "5324aeda-31bb-49b8-8383-1e41599ce41f": {
+                      "columns": [
+                        {
+                          "columnId": "fce422fc-c20d-4469-804b-4a5042fe2864",
+                          "customLabel": true,
+                          "fieldName": "utilization",
+                          "inMetricDimension": true,
+                          "label": "CPU utilization (vs limits)",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "9c5960a8-831a-4a00-ae2a-3a31a4a64c9c",
+                          "customLabel": true,
+                          "fieldName": "max_val",
+                          "label": "Max",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.cpu_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.cpu_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.cpu_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.cpu_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+              },
+              "visualization": {
+                "applyColorTo": "bar",
+                "layerId": "5324aeda-31bb-49b8-8383-1e41599ce41f",
+                "layerType": "data",
+                "maxAccessor": "9c5960a8-831a-4a00-ae2a-3a31a4a64c9c",
+                "metricAccessor": "fce422fc-c20d-4469-804b-4a5042fe2864",
+                "palette": {
+                  "name": "custom",
+                  "params": {
+                    "colorStops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#E7664C",
+                        "stop": 0.8
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5,
+                    "name": "custom",
+                    "progression": "fixed",
+                    "rangeMax": null,
+                    "rangeMin": 0,
+                    "rangeType": "number",
+                    "reverse": false,
+                    "steps": 3,
+                    "stops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 0.8
+                      },
+                      {
+                        "color": "#E7664C",
+                        "stop": 1
+                      }
+                    ]
+                  },
+                  "type": "palette"
+                },
+                "progressDirection": "horizontal",
+                "showBar": true
+              }
+            },
+            "title": "CPU utilization (vs limits)",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          },
+          "hide_title": true
+        },
+        "gridData": {
+          "h": 5,
+          "i": "v4-pd-cpu-gauge",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 8,
+          "x": 0,
+          "y": 0
+        },
+        "panelIndex": "v4-pd-cpu-gauge",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "bebc6ffb-2627-4175-8afe-fad0d9cf5289": {
+                      "columns": [
+                        {
+                          "columnId": "70126d8b-8278-4efd-a2d1-afc301909b23",
+                          "customLabel": true,
+                          "fieldName": "timestamp",
+                          "label": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "34417900-9044-4140-87bb-043c2a448ecc",
+                          "customLabel": true,
+                          "fieldName": "CPU usage",
+                          "inMetricDimension": true,
+                          "label": "CPU usage",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2,
+                                "suffix": " Cores"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "48616c44-4158-49c4-ab1d-409ede8dda01",
+                          "customLabel": true,
+                          "fieldName": "CPU requests",
+                          "inMetricDimension": true,
+                          "label": "CPU requests",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2,
+                                "suffix": " Cores"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "3ca218ad-d196-435a-9956-15121e18025d",
+                          "customLabel": true,
+                          "fieldName": "CPU limits",
+                          "inMetricDimension": true,
+                          "label": "CPU limits",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2,
+                                "suffix": " Cores"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `CPU usage` = SUM(k8s.pod.cpu.usage),\n    `CPU requests` = SUM(k8s.container.cpu_request),\n    `CPU limits` = SUM(k8s.container.cpu_limit)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, `CPU usage`, `CPU requests`, `CPU limits`\n"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `CPU usage` = SUM(k8s.pod.cpu.usage),\n    `CPU requests` = SUM(k8s.container.cpu_request),\n    `CPU limits` = SUM(k8s.container.cpu_limit)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, `CPU usage`, `CPU requests`, `CPU limits`\n"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false
+                },
+                "curveType": "CURVE_MONOTONE_X",
+                "fillOpacity": 0.3,
+                "layers": [
+                  {
+                    "accessors": [
+                      "34417900-9044-4140-87bb-043c2a448ecc",
+                      "48616c44-4158-49c4-ab1d-409ede8dda01",
+                      "3ca218ad-d196-435a-9956-15121e18025d"
+                    ],
+                    "layerId": "bebc6ffb-2627-4175-8afe-fad0d9cf5289",
+                    "layerType": "data",
+                    "position": "top",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "xAccessor": "70126d8b-8278-4efd-a2d1-afc301909b23",
+                    "yConfig": [
+                      {
+                        "axisMode": "left",
+                        "forAccessor": "34417900-9044-4140-87bb-043c2a448ecc"
+                      },
+                      {
+                        "axisMode": "left",
+                        "color": "#D6BF57",
+                        "forAccessor": "48616c44-4158-49c4-ab1d-409ede8dda01",
+                        "lineStyle": "dashed",
+                        "lineWidth": 2
+                      },
+                      {
+                        "axisMode": "left",
+                        "color": "#E7664C",
+                        "forAccessor": "3ca218ad-d196-435a-9956-15121e18025d",
+                        "lineStyle": "dashed",
+                        "lineWidth": 2
+                      }
+                    ]
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "legendStats": [
+                    "currentAndLastValue",
+                    "max"
+                  ],
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "CPU usage vs requests & limits",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          },
+          "description": "CPU usage over time with request (dashed yellow) and limit (dashed red) reference lines.",
+          "title": "CPU usage vs requests & limits"
+        },
+        "gridData": {
+          "h": 10,
+          "i": "v4-pd-cpu-ts",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 16,
+          "x": 8,
+          "y": 0
+        },
+        "panelIndex": "v4-pd-cpu-ts",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "72938f7c-f5ca-480b-bcdd-bce4a68d676a": {
+                      "columns": [
+                        {
+                          "columnId": "0f876480-bcac-420d-ae57-75f55ea646dd",
+                          "customLabel": true,
+                          "fieldName": "utilization",
+                          "inMetricDimension": true,
+                          "label": "Memory utilization (vs limits)",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "1904a784-6ec9-43e9-b486-844c5498dc01",
+                          "customLabel": true,
+                          "fieldName": "max_val",
+                          "label": "Max",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.memory_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.memory_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.memory_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.memory_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+              },
+              "visualization": {
+                "applyColorTo": "bar",
+                "layerId": "72938f7c-f5ca-480b-bcdd-bce4a68d676a",
+                "layerType": "data",
+                "maxAccessor": "1904a784-6ec9-43e9-b486-844c5498dc01",
+                "metricAccessor": "0f876480-bcac-420d-ae57-75f55ea646dd",
+                "palette": {
+                  "name": "custom",
+                  "params": {
+                    "colorStops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#E7664C",
+                        "stop": 0.8
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5,
+                    "name": "custom",
+                    "progression": "fixed",
+                    "rangeMax": null,
+                    "rangeMin": 0,
+                    "rangeType": "number",
+                    "reverse": false,
+                    "steps": 3,
+                    "stops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 0.8
+                      },
+                      {
+                        "color": "#E7664C",
+                        "stop": 1
+                      }
+                    ]
+                  },
+                  "type": "palette"
+                },
+                "progressDirection": "horizontal",
+                "showBar": true
+              }
+            },
+            "title": "Memory utilization (vs limits)",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          },
+          "hide_title": true
+        },
+        "gridData": {
+          "h": 5,
+          "i": "v4-pd-mem-gauge",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 8,
+          "x": 24,
+          "y": 0
+        },
+        "panelIndex": "v4-pd-mem-gauge",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "d2accd7b-c5f9-45b2-9f6e-d99be3862d4d": {
+                      "columns": [
+                        {
+                          "columnId": "a1b168df-2784-456b-b4b3-2c10cdb30553",
+                          "customLabel": true,
+                          "fieldName": "timestamp",
+                          "label": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "fe83657c-4f40-4eb3-82fc-f1b07260d557",
+                          "customLabel": true,
+                          "fieldName": "Memory working set",
+                          "inMetricDimension": true,
+                          "label": "Memory working set",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "2b886e14-9c02-487d-81d6-e6f1a7f47235",
+                          "customLabel": true,
+                          "fieldName": "Memory requests",
+                          "inMetricDimension": true,
+                          "label": "Memory requests",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "66cf356d-07b5-4881-b113-e06aa7e093bd",
+                          "customLabel": true,
+                          "fieldName": "Memory limits",
+                          "inMetricDimension": true,
+                          "label": "Memory limits",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `Memory working set` = SUM(k8s.pod.memory.working_set),\n    `Memory requests` = SUM(k8s.container.memory_request),\n    `Memory limits` = SUM(k8s.container.memory_limit)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, `Memory working set`, `Memory requests`, `Memory limits`\n"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `Memory working set` = SUM(k8s.pod.memory.working_set),\n    `Memory requests` = SUM(k8s.container.memory_request),\n    `Memory limits` = SUM(k8s.container.memory_limit)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, `Memory working set`, `Memory requests`, `Memory limits`\n"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false
+                },
+                "curveType": "CURVE_MONOTONE_X",
+                "fillOpacity": 0.3,
+                "layers": [
+                  {
+                    "accessors": [
+                      "fe83657c-4f40-4eb3-82fc-f1b07260d557",
+                      "2b886e14-9c02-487d-81d6-e6f1a7f47235",
+                      "66cf356d-07b5-4881-b113-e06aa7e093bd"
+                    ],
+                    "layerId": "d2accd7b-c5f9-45b2-9f6e-d99be3862d4d",
+                    "layerType": "data",
+                    "position": "top",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "xAccessor": "a1b168df-2784-456b-b4b3-2c10cdb30553",
+                    "yConfig": [
+                      {
+                        "axisMode": "left",
+                        "forAccessor": "fe83657c-4f40-4eb3-82fc-f1b07260d557"
+                      },
+                      {
+                        "axisMode": "left",
+                        "color": "#D6BF57",
+                        "forAccessor": "2b886e14-9c02-487d-81d6-e6f1a7f47235",
+                        "lineStyle": "dashed",
+                        "lineWidth": 2
+                      },
+                      {
+                        "axisMode": "left",
+                        "color": "#E7664C",
+                        "forAccessor": "66cf356d-07b5-4881-b113-e06aa7e093bd",
+                        "lineStyle": "solid",
+                        "lineWidth": 2
+                      }
+                    ]
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "legendStats": [
+                    "currentAndLastValue",
+                    "max"
+                  ],
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Memory working set vs requests & limits",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          },
+          "description": "Memory working set over time. Yellow dashed = requests, solid red = limits (OOMKill threshold).",
+          "title": "Memory working set vs requests & limits"
+        },
+        "gridData": {
+          "h": 10,
+          "i": "v4-pd-mem-ts",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 16,
+          "x": 32,
+          "y": 0
+        },
+        "panelIndex": "v4-pd-mem-ts",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "27c8778d-41d0-47b6-b0da-cb1478a5794f": {
+                      "columns": [
+                        {
+                          "columnId": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
+                          "customLabel": true,
+                          "fieldName": "total_cores",
+                          "inMetricDimension": true,
+                          "label": "CPU limit (cores)",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.cpu_limit IS NOT NULL\n| STATS total_limit = SUM(k8s.container.cpu_limit)\n| EVAL total_cores = ROUND(total_limit, 2)\n| KEEP total_cores"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.cpu_limit IS NOT NULL\n| STATS total_limit = SUM(k8s.container.cpu_limit)\n| EVAL total_cores = ROUND(total_limit, 2)\n| KEEP total_cores"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61A2FF",
+                "colorMode": "background",
+                "layerId": "27c8778d-41d0-47b6-b0da-cb1478a5794f",
+                "layerType": "data",
+                "metricAccessor": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
+                "showBar": false
+              }
+            },
+            "title": "",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "gridData": {
+          "h": 5,
+          "i": "v4-pd-cpu-limit",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 8,
+          "x": 0,
+          "y": 5
+        },
+        "panelIndex": "v4-pd-cpu-limit",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "27c8778d-41d0-47b6-b0da-cb1478a5794f": {
+                      "columns": [
+                        {
+                          "columnId": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
+                          "customLabel": true,
+                          "fieldName": "total_gb",
+                          "inMetricDimension": true,
+                          "label": "Memory limit (GB)",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.memory_limit IS NOT NULL\n| STATS total_limit = SUM(k8s.container.memory_limit)\n| EVAL total_gb = ROUND(total_limit / 1073741824, 2)\n| KEEP total_gb"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.memory_limit IS NOT NULL\n| STATS total_limit = SUM(k8s.container.memory_limit)\n| EVAL total_gb = ROUND(total_limit / 1073741824, 2)\n| KEEP total_gb"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61A2FF",
+                "colorMode": "background",
+                "layerId": "27c8778d-41d0-47b6-b0da-cb1478a5794f",
+                "layerType": "data",
+                "metricAccessor": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
+                "showBar": false
+              }
+            },
+            "title": "",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "gridData": {
+          "h": 5,
+          "i": "v4-pd-mem-limit",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 8,
+          "x": 24,
+          "y": 5
+        },
+        "panelIndex": "v4-pd-mem-limit",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [
+              {
+                "id": "metrics-*",
+                "name": "indexpattern-datasource-layer-317026f2-4fa8-46bd-a528-00435b4ece07",
+                "type": "index-pattern"
+              }
+            ],
+            "state": {
+              "adHocDataViews": {},
+              "datasourceStates": {
+                "formBased": {
+                  "currentIndexPatternId": "metrics-*",
+                  "layers": {
+                    "317026f2-4fa8-46bd-a528-00435b4ece07": {
+                      "columnOrder": [
+                        "v3-nsd-volume-gauge-metric",
+                        "v3-nsd-volume-gauge-metricX0",
+                        "v3-nsd-volume-gauge-metricX1",
+                        "v3-nsd-volume-gauge-max",
+                        "v3-nsd-volume-gauge-metricX2"
+                      ],
+                      "columns": {
+                        "v3-nsd-volume-gauge-max": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "isStaticValue": true,
+                          "label": "Max",
+                          "operationType": "static_value",
+                          "params": {
+                            "value": "1"
+                          },
+                          "references": [],
+                          "scale": "ratio"
+                        },
+                        "v3-nsd-volume-gauge-metric": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Volume utilization",
+                          "operationType": "formula",
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 2
+                              }
+                            },
+                            "formula": "1 - sum(k8s.volume.available) / sum(k8s.volume.capacity)",
+                            "isFormulaBroken": false
+                          },
+                          "references": [
+                            "v3-nsd-volume-gauge-metricX2"
+                          ],
+                          "scale": "ratio"
+                        },
+                        "v3-nsd-volume-gauge-metricX0": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Part of volume utilization",
+                          "operationType": "sum",
+                          "params": {
+                            "emptyAsNull": false
+                          },
+                          "sourceField": "k8s.volume.available"
+                        },
+                        "v3-nsd-volume-gauge-metricX1": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Part of volume utilization",
+                          "operationType": "sum",
+                          "params": {
+                            "emptyAsNull": false
+                          },
+                          "sourceField": "k8s.volume.capacity"
+                        },
+                        "v3-nsd-volume-gauge-metricX2": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Part of volume utilization",
+                          "operationType": "math",
+                          "params": {
+                            "tinymathAst": {
+                              "args": [
+                                1,
+                                {
+                                  "args": [
+                                    "v3-nsd-volume-gauge-metricX0",
+                                    "v3-nsd-volume-gauge-metricX1"
+                                  ],
+                                  "location": {
+                                    "max": 56,
+                                    "min": 3
+                                  },
+                                  "name": "divide",
+                                  "text": " sum(k8s.volume.available) / sum(k8s.volume.capacity)",
+                                  "type": "function"
+                                }
+                              ],
+                              "location": {
+                                "max": 56,
+                                "min": 0
+                              },
+                              "name": "subtract",
+                              "text": "1 - sum(k8s.volume.available) / sum(k8s.volume.capacity)",
+                              "type": "function"
+                            }
+                          },
+                          "references": [
+                            "v3-nsd-volume-gauge-metricX0",
+                            "v3-nsd-volume-gauge-metricX1"
+                          ]
+                        }
+                      },
+                      "incompleteColumns": {},
+                      "indexPatternId": "metrics-*",
+                      "sampling": 1
+                    }
+                  }
+                },
+                "indexpattern": {
+                  "currentIndexPatternId": "metrics-*",
+                  "layers": {}
+                },
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "metrics-*",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ],
+                  "layers": {}
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "language": "kuery",
+                "query": ""
+              },
+              "visualization": {
+                "applyColorTo": "bar",
+                "layerId": "317026f2-4fa8-46bd-a528-00435b4ece07",
+                "layerType": "data",
+                "maxAccessor": "v3-nsd-volume-gauge-max",
+                "metricAccessor": "v3-nsd-volume-gauge-metric",
+                "palette": {
+                  "name": "custom",
+                  "params": {
+                    "colorStops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 0.8
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5,
+                    "name": "custom",
+                    "progression": "fixed",
+                    "rangeMax": null,
+                    "rangeMin": 0,
+                    "rangeType": "number",
+                    "reverse": false,
+                    "steps": 3,
+                    "stops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.8
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 1
+                      }
+                    ]
+                  },
+                  "type": "palette"
+                },
+                "progressDirection": "horizontal",
+                "showBar": true
+              }
+            },
+            "title": "",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          },
+          "description": "Volume utilization for this namespace. 1 - sum(k8s.volume.available) / sum(k8s.volume.capacity).",
+          "hide_title": true
+        },
+        "gridData": {
+          "h": 5,
+          "i": "v4-pd-vol-gauge",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 8,
+          "x": 0,
+          "y": 10
+        },
+        "panelIndex": "v4-pd-vol-gauge",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [
+              {
+                "id": "metrics-*",
+                "name": "indexpattern-datasource-layer-2788aa7c-d17a-4f2b-a121-43fa41c5cfe3",
+                "type": "index-pattern"
+              }
+            ],
+            "state": {
+              "datasourceStates": {
+                "formBased": {
+                  "currentIndexPatternId": "metrics-*",
+                  "layers": {
+                    "2788aa7c-d17a-4f2b-a121-43fa41c5cfe3": {
+                      "columnOrder": [
+                        "v3-nsd-volume-time-ts",
+                        "v3-nsd-volume-time-val",
+                        "v3-nsd-volume-time-valX0",
+                        "v3-nsd-volume-time-valX1",
+                        "v3-nsd-volume-time-valX2"
+                      ],
+                      "columns": {
+                        "v3-nsd-volume-time-ts": {
+                          "dataType": "date",
+                          "isBucketed": true,
+                          "label": "@timestamp",
+                          "operationType": "date_histogram",
+                          "params": {
+                            "includeEmptyRows": true,
+                            "interval": "auto"
+                          },
+                          "scale": "interval",
+                          "sourceField": "@timestamp"
+                        },
+                        "v3-nsd-volume-time-val": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Volume Usage",
+                          "operationType": "formula",
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            },
+                            "formula": "sum(k8s.volume.capacity) - sum(k8s.volume.available)",
+                            "isFormulaBroken": false
+                          },
+                          "references": [
+                            "v3-nsd-volume-time-valX2"
+                          ],
+                          "scale": "ratio"
+                        },
+                        "v3-nsd-volume-time-valX0": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Part of Volume Usage",
+                          "operationType": "sum",
+                          "params": {
+                            "emptyAsNull": false
+                          },
+                          "sourceField": "k8s.volume.capacity"
+                        },
+                        "v3-nsd-volume-time-valX1": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Part of Volume Usage",
+                          "operationType": "sum",
+                          "params": {
+                            "emptyAsNull": false
+                          },
+                          "sourceField": "k8s.volume.available"
+                        },
+                        "v3-nsd-volume-time-valX2": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Part of Volume Usage",
+                          "operationType": "math",
+                          "params": {
+                            "tinymathAst": {
+                              "args": [
+                                "v3-nsd-volume-time-valX0",
+                                "v3-nsd-volume-time-valX1"
+                              ],
+                              "location": {
+                                "max": 52,
+                                "min": 0
+                              },
+                              "name": "subtract",
+                              "text": "sum(k8s.volume.capacity) - sum(k8s.volume.available)",
+                              "type": "function"
+                            }
+                          },
+                          "references": [
+                            "v3-nsd-volume-time-valX0",
+                            "v3-nsd-volume-time-valX1"
+                          ]
+                        }
+                      },
+                      "incompleteColumns": {},
+                      "indexPatternId": "metrics-*"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "language": "kuery",
+                "query": ""
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false
+                },
+                "curveType": "CURVE_MONOTONE_X",
+                "fillOpacity": 0.3,
+                "layers": [
+                  {
+                    "accessors": [
+                      "v3-nsd-volume-time-val"
+                    ],
+                    "colorMapping": {
+                      "assignments": [],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "layerId": "2788aa7c-d17a-4f2b-a121-43fa41c5cfe3",
+                    "layerType": "data",
+                    "position": "top",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "xAccessor": "v3-nsd-volume-time-ts"
+                  }
+                ],
+                "legend": {
+                  "isVisible": false,
+                  "position": "right"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Volume usage over time",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          },
+          "title": "Volume usage over time"
+        },
+        "gridData": {
+          "h": 10,
+          "i": "v4-pd-vol-time",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 16,
+          "x": 8,
+          "y": 10
+        },
+        "panelIndex": "v4-pd-vol-time",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [
+              {
+                "id": "metrics-*",
+                "name": "indexpattern-datasource-layer-290050ae-2f71-4a4f-bf6d-8e638a825710",
+                "type": "index-pattern"
+              }
+            ],
+            "state": {
+              "datasourceStates": {
+                "formBased": {
+                  "layers": {
+                    "290050ae-2f71-4a4f-bf6d-8e638a825710": {
+                      "columnOrder": [
+                        "v3-nsd-pods-time-ts",
+                        "v3-nsd-pods-time-val"
+                      ],
+                      "columns": {
+                        "v3-nsd-pods-time-ts": {
+                          "dataType": "date",
+                          "isBucketed": true,
+                          "label": "@timestamp",
+                          "operationType": "date_histogram",
+                          "params": {
+                            "includeEmptyRows": true,
+                            "interval": "auto"
+                          },
+                          "scale": "interval",
+                          "sourceField": "@timestamp"
+                        },
+                        "v3-nsd-pods-time-val": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Container Count",
+                          "operationType": "unique_count",
+                          "params": {
+                            "emptyAsNull": true
+                          },
+                          "scale": "ratio",
+                          "sourceField": "k8s.container.name"
+                        }
+                      },
+                      "incompleteColumns": {},
+                      "indexPatternId": "metrics-*"
+                    }
+                  }
+                }
+              },
+              "filters": [
+                {
+                  "$state": {
+                    "store": "appState"
+                  },
+                  "meta": {
+                    "alias": "Has pod UID",
+                    "index": "metrics-*",
+                    "key": "k8s.pod.uid",
+                    "type": "exists",
+                    "value": "exists"
+                  },
+                  "query": {
+                    "exists": {
+                      "field": "k8s.pod.uid"
+                    }
+                  }
+                }
+              ],
+              "query": {
+                "language": "kuery",
+                "query": ""
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false
+                },
+                "curveType": "CURVE_MONOTONE_X",
+                "fillOpacity": 0.3,
+                "layers": [
+                  {
+                    "accessors": [
+                      "v3-nsd-pods-time-val"
+                    ],
+                    "colorMapping": {
+                      "assignments": [],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "layerId": "290050ae-2f71-4a4f-bf6d-8e638a825710",
+                    "layerType": "data",
+                    "position": "top",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "xAccessor": "v3-nsd-pods-time-ts"
+                  }
+                ],
+                "legend": {
+                  "isVisible": false,
+                  "position": "right"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Container count over time",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          },
+          "title": "Container count over time"
+        },
+        "gridData": {
+          "h": 10,
+          "i": "v4-pd-container-ts",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 24,
+          "x": 24,
+          "y": 10
+        },
+        "panelIndex": "v4-pd-container-ts",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "27c8778d-41d0-47b6-b0da-cb1478a5794f": {
+                      "columns": [
+                        {
+                          "columnId": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
+                          "customLabel": true,
+                          "fieldName": "total_gb",
+                          "inMetricDimension": true,
+                          "label": "Volume capacity (GB)",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS total_cap = SUM(k8s.volume.capacity)\n| EVAL total_gb = ROUND(total_cap / 1073741824, 2)\n| KEEP total_gb"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS total_cap = SUM(k8s.volume.capacity)\n| EVAL total_gb = ROUND(total_cap / 1073741824, 2)\n| KEEP total_gb"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61A2FF",
+                "colorMode": "background",
+                "layerId": "27c8778d-41d0-47b6-b0da-cb1478a5794f",
+                "layerType": "data",
+                "metricAccessor": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
+                "showBar": false
+              }
+            },
+            "title": "",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "gridData": {
+          "h": 5,
+          "i": "v4-pd-vol-cap",
+          "sectionId": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "w": 8,
+          "x": 0,
+          "y": 15
+        },
+        "panelIndex": "v4-pd-vol-cap",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "59a20b46-b600-d012-be50-50625f7f5c37": {
+                      "columns": [
+                        {
+                          "columnId": "0d580da0-7003-fa8d-8a51-e54effdeb1be",
+                          "customLabel": true,
+                          "fieldName": "RSS",
+                          "inMetricDimension": true,
+                          "label": "RSS",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "1a3fdc41-e583-3d65-fc73-8d8447692de5",
+                          "customLabel": true,
+                          "fieldName": "Working set",
+                          "inMetricDimension": true,
+                          "label": "Working set",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "026d5b20-6dde-f965-b135-11355a3a121f",
+                          "customLabel": true,
+                          "fieldName": "Available",
+                          "inMetricDimension": true,
+                          "label": "Available",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "24258928-91bb-7193-d4df-0329829a7575",
+                          "customLabel": false,
+                          "fieldName": "timestamp",
+                          "label": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        }
+                      ],
+                      "query": {
+                        "esql": "TS metrics-*\n| WHERE k8s.pod.memory.working_set IS NOT NULL\n| STATS\n    RSS = SUM(k8s.pod.memory.rss),\n    `Working set` = SUM(k8s.pod.memory.working_set),\n    Available = SUM(k8s.pod.memory.available)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, RSS, `Working set`, Available\n"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "TS metrics-*\n| WHERE k8s.pod.memory.working_set IS NOT NULL\n| STATS\n    RSS = SUM(k8s.pod.memory.rss),\n    `Working set` = SUM(k8s.pod.memory.working_set),\n    Available = SUM(k8s.pod.memory.available)\n  BY timestamp = TBUCKET(1 minute)\n| KEEP timestamp, RSS, `Working set`, Available\n"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false
+                },
+                "curveType": "CURVE_MONOTONE_X",
+                "layers": [
+                  {
+                    "accessors": [
+                      "0d580da0-7003-fa8d-8a51-e54effdeb1be",
+                      "1a3fdc41-e583-3d65-fc73-8d8447692de5",
+                      "026d5b20-6dde-f965-b135-11355a3a121f"
+                    ],
+                    "colorMapping": {
+                      "assignments": [],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "layerId": "59a20b46-b600-d012-be50-50625f7f5c37",
+                    "layerType": "data",
+                    "position": "top",
+                    "seriesType": "area_stacked",
+                    "showGridlines": false,
+                    "xAccessor": "24258928-91bb-7193-d4df-0329829a7575"
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "area",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Memory composition",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          },
+          "description": "Memory composition over time. RSS, working set, and available memory as separate series. SUM per 1m bucket.",
+          "title": "Memory composition"
+        },
+        "gridData": {
+          "h": 12,
+          "i": "v2-pod-detail-memory-decomp",
+          "sectionId": "7041373e-be6b-4e6b-8faf-2e46eb8c2be9",
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "panelIndex": "v2-pod-detail-memory-decomp",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                  "managed": false,
+                  "name": "metrics-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [],
+                  "layers": {
+                    "bc36d82c-66db-64a9-e033-efc583b64c36": {
+                      "columns": [
+                        {
+                          "columnId": "8bf2799c-18e0-294e-da52-73a0f37e1853",
+                          "customLabel": true,
+                          "fieldName": "Throughput",
+                          "inMetricDimension": true,
+                          "label": "Throughput",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2,
+                                "suffix": "/s"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "24258928-91bb-7193-d4df-0329829a7575",
+                          "customLabel": false,
+                          "fieldName": "timestamp",
+                          "label": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "0ab20c84-8419-5e13-10b8-54e55c2a4eb2",
+                          "customLabel": true,
+                          "fieldName": "direction",
+                          "label": "Direction"
+                        }
+                      ],
+                      "query": {
+                        "esql": "TS metrics-*\n| WHERE k8s.pod.network.io IS NOT NULL\n| STATS\n    `Throughput` = SUM(RATE(k8s.pod.network.io))\n  BY timestamp = TBUCKET(1 minute), direction\n| EVAL direction = CASE(direction == \"receive\", \"Network In\", direction == \"transmit\", \"Network Out\", direction)\n| KEEP timestamp, direction, `Throughput`\n"
+                      },
+                      "timeField": "@timestamp",
+                      "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "esql": "TS metrics-*\n| WHERE k8s.pod.network.io IS NOT NULL\n| STATS\n    `Throughput` = SUM(RATE(k8s.pod.network.io))\n  BY timestamp = TBUCKET(1 minute), direction\n| EVAL direction = CASE(direction == \"receive\", \"Network In\", direction == \"transmit\", \"Network Out\", direction)\n| KEEP timestamp, direction, `Throughput`\n"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false
+                },
+                "curveType": "CURVE_MONOTONE_X",
+                "layers": [
+                  {
+                    "accessors": [
+                      "8bf2799c-18e0-294e-da52-73a0f37e1853"
+                    ],
+                    "colorMapping": {
+                      "assignments": [
+                        {
+                          "color": {
+                            "colorCode": "#54B399",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "matchCase": true,
+                              "matchEntireWord": true,
+                              "pattern": "Network In",
+                              "type": "match"
+                            }
+                          ],
+                          "touched": false
+                        },
+                        {
+                          "color": {
+                            "colorCode": "#E7664C",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "matchCase": true,
+                              "matchEntireWord": true,
+                              "pattern": "Network Out",
+                              "type": "match"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "layerId": "bc36d82c-66db-64a9-e033-efc583b64c36",
+                    "layerType": "data",
+                    "position": "top",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessor": "0ab20c84-8419-5e13-10b8-54e55c2a4eb2",
+                    "xAccessor": "24258928-91bb-7193-d4df-0329829a7575"
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Network I/O",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          },
+          "description": "Network I/O over time. SUM(RATE(k8s.pod.network.io)) per 1m bucket."
+        },
+        "gridData": {
+          "h": 12,
+          "i": "v2-pod-detail-network-io",
+          "sectionId": "7041373e-be6b-4e6b-8faf-2e46eb8c2be9",
+          "w": 24,
+          "x": 24,
+          "y": 0
+        },
+        "panelIndex": "v2-pod-detail-network-io",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [
+              {
+                "id": "metrics-*",
+                "name": "indexpattern-datasource-layer-77718e63-67c1-ad71-9830-6e07c5301a7b",
+                "type": "index-pattern"
+              }
+            ],
+            "state": {
+              "adHocDataViews": {},
+              "datasourceStates": {
+                "formBased": {
+                  "currentIndexPatternId": "metrics-*",
+                  "layers": {
+                    "77718e63-67c1-ad71-9830-6e07c5301a7b": {
+                      "columnOrder": [
+                        "bd9a2ac9-2e88-451e-bfdb-b2f5bb64a197",
+                        "a01376ce-7bfd-f032-8917-96da6803fcc4",
+                        "1db67b39-395d-0ed2-f374-b8bd3dfa99ed",
+                        "f4e231dc-c1d8-50f9-1b0d-b7c7b5bf706a"
+                      ],
+                      "columns": {
+                        "1db67b39-395d-0ed2-f374-b8bd3dfa99ed": {
+                          "dataType": "string",
+                          "isBucketed": true,
+                          "label": "Top 10 values of k8s.container.name",
+                          "operationType": "terms",
+                          "params": {
+                            "exclude": [],
+                            "excludeIsRegex": false,
+                            "include": [],
+                            "includeIsRegex": false,
+                            "missingBucket": false,
+                            "orderBy": {
+                              "columnId": "f4e231dc-c1d8-50f9-1b0d-b7c7b5bf706a",
+                              "type": "column"
+                            },
+                            "orderDirection": "desc",
+                            "otherBucket": false,
+                            "parentFormat": {
+                              "id": "terms"
+                            },
+                            "size": 10
+                          },
+                          "scale": "ordinal",
+                          "sourceField": "k8s.container.name"
+                        },
+                        "a01376ce-7bfd-f032-8917-96da6803fcc4": {
+                          "dataType": "date",
+                          "isBucketed": true,
+                          "label": "@timestamp",
+                          "operationType": "date_histogram",
+                          "params": {
+                            "dropPartials": false,
+                            "includeEmptyRows": true,
+                            "interval": "auto"
+                          },
+                          "scale": "interval",
+                          "sourceField": "@timestamp"
+                        },
+                        "bd9a2ac9-2e88-451e-bfdb-b2f5bb64a197": {
+                          "customLabel": true,
+                          "dataType": "string",
+                          "isBucketed": true,
+                          "label": "k8s.container.name",
+                          "operationType": "terms",
+                          "params": {
+                            "exclude": [],
+                            "excludeIsRegex": false,
+                            "include": [],
+                            "includeIsRegex": false,
+                            "missingBucket": false,
+                            "orderBy": {
+                              "columnId": "f4e231dc-c1d8-50f9-1b0d-b7c7b5bf706a",
+                              "type": "column"
+                            },
+                            "orderDirection": "desc",
+                            "otherBucket": false,
+                            "parentFormat": {
+                              "id": "terms"
+                            },
+                            "size": 10
+                          },
+                          "sourceField": "k8s.container.name"
+                        },
+                        "f4e231dc-c1d8-50f9-1b0d-b7c7b5bf706a": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "CPU usage",
+                          "operationType": "average",
+                          "params": {},
+                          "scale": "ratio",
+                          "sourceField": "container.cpu.usage"
+                        }
+                      },
+                      "incompleteColumns": {},
+                      "indexPatternId": "metrics-*",
+                      "sampling": 1
+                    }
+                  }
+                },
+                "indexpattern": {
+                  "currentIndexPatternId": "metrics-*",
+                  "layers": {}
+                },
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "metrics-*",
+                      "timeField": "@timestamp",
+                      "title": "metrics-*"
+                    }
+                  ],
+                  "layers": {}
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "language": "kuery",
+                "query": ""
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "f4e231dc-c1d8-50f9-1b0d-b7c7b5bf706a"
+                    ],
+                    "colorMapping": {
+                      "assignments": [],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "layerId": "77718e63-67c1-ad71-9830-6e07c5301a7b",
+                    "layerType": "data",
+                    "position": "top",
+                    "seriesType": "area_stacked",
+                    "showGridlines": false,
+                    "splitAccessor": "bd9a2ac9-2e88-451e-bfdb-b2f5bb64a197",
+                    "splitAccessors": [
+                      "1db67b39-395d-0ed2-f374-b8bd3dfa99ed"
+                    ],
+                    "xAccessor": "a01376ce-7bfd-f032-8917-96da6803fcc4"
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "preferredSeriesType": "area",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "CPU usage by container",
+            "type": "lens",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          },
+          "description": "CPU usage per container. avg(container.cpu.usage) broken down by k8s.container.name.",
+          "title": "CPU usage by container"
+        },
+        "gridData": {
+          "h": 15,
+          "i": "v2-pod-detail-container-cpu",
+          "sectionId": "9fe62ff0-38d4-4caa-93e1-19f45f16f06f",
+          "w": 15,
+          "x": 33,
+          "y": 0
+        },
+        "panelIndex": "v2-pod-detail-container-cpu",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4": {
+                  "allowHidden": false,
+                  "allowNoIndex": false,
+                  "fieldFormats": {},
+                  "id": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
+                  "managed": false,
+                  "name": "metrics-kubeletstatsreceiver.otel-*,metrics-k8sclusterreceiver.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-kubeletstatsreceiver.otel-*,metrics-k8sclusterreceiver.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
+                      "timeField": "@timestamp",
+                      "title": "metrics-kubeletstatsreceiver.otel-*,metrics-k8sclusterreceiver.otel-*"
+                    }
+                  ],
+                  "layers": {
+                    "0407c8d7-cd96-4436-8a14-6f4bb354f8e8": {
+                      "columns": [
+                        {
+                          "columnId": "ready",
+                          "customLabel": true,
+                          "fieldName": "ready",
+                          "inMetricDimension": true,
+                          "label": "Ready",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "restarts",
+                          "customLabel": true,
+                          "fieldName": "restarts",
+                          "inMetricDimension": true,
+                          "label": "Restarts",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "cpu_usage",
+                          "customLabel": true,
+                          "fieldName": "cpu_usage",
+                          "inMetricDimension": true,
+                          "label": "CPU usage",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "cpu_limit",
+                          "customLabel": true,
+                          "fieldName": "cpu_limit",
+                          "inMetricDimension": true,
+                          "label": "CPU limit",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "columnId": "memory_ws",
+                          "customLabel": true,
+                          "fieldName": "memory_ws",
+                          "inMetricDimension": true,
+                          "label": "Memory working set",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "memory_limit",
+                          "customLabel": true,
+                          "fieldName": "memory_limit",
+                          "inMetricDimension": true,
+                          "label": "Memory limit",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "k8s.container.name",
+                          "customLabel": true,
+                          "fieldName": "k8s.container.name",
+                          "label": "Container",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "k8s.pod.name",
+                          "customLabel": true,
+                          "fieldName": "k8s.pod.name",
+                          "label": "Pod",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "mem_limit_util",
+                          "customLabel": true,
+                          "fieldName": "mem_limit_util",
+                          "inMetricDimension": true,
+                          "label": "Memory limit utilization",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
+                      "query": {
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS\n    ready        = MAX(k8s.container.ready),\n    restarts     = MAX(k8s.container.restarts),\n    cpu_usage    = AVG(container.cpu.usage),\n    memory_ws    = AVG(container.memory.working_set),\n    cpu_limit    = MAX(k8s.container.cpu_limit),\n    memory_limit = MAX(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      memory_limit IS NOT NULL AND memory_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(memory_limit), 4),\n      NULL)\n| SORT restarts DESC\n| LIMIT 100"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "needsRefresh": false,
+              "query": {
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS\n    ready        = MAX(k8s.container.ready),\n    restarts     = MAX(k8s.container.restarts),\n    cpu_usage    = AVG(container.cpu.usage),\n    memory_ws    = AVG(container.memory.working_set),\n    cpu_limit    = MAX(k8s.container.cpu_limit),\n    memory_limit = MAX(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      memory_limit IS NOT NULL AND memory_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(memory_limit), 4),\n      NULL)\n| SORT restarts DESC\n| LIMIT 100"
+              },
+              "visualization": {
+                "columns": [
+                  {
+                    "columnId": "ready"
+                  },
+                  {
+                    "columnId": "cpu_usage"
+                  },
+                  {
+                    "columnId": "memory_ws"
+                  },
+                  {
+                    "columnId": "cpu_limit"
+                  },
+                  {
+                    "columnId": "memory_limit"
+                  },
+                  {
+                    "columnId": "k8s.pod.name"
+                  },
+                  {
+                    "columnId": "k8s.container.name"
+                  },
+                  {
+                    "colorMode": "cell",
+                    "columnId": "restarts",
+                    "palette": {
+                      "name": "custom",
+                      "params": {
+                        "colorStops": [
+                          {
+                            "color": "#24c292",
+                            "stop": 0
+                          },
+                          {
+                            "color": "#f6726a",
+                            "stop": 1
+                          }
+                        ],
+                        "continuity": "above",
+                        "name": "custom",
+                        "progression": "fixed",
+                        "rangeMax": null,
+                        "rangeMin": 0,
+                        "rangeType": "number",
+                        "reverse": false,
+                        "steps": 5,
+                        "stops": [
+                          {
+                            "color": "#24c292",
+                            "stop": 1
+                          },
+                          {
+                            "color": "#f6726a",
+                            "stop": 1170
+                          }
+                        ]
+                      },
+                      "type": "palette"
+                    }
+                  },
+                  {
+                    "columnId": "mem_limit_util"
+                  }
+                ],
+                "layerId": "0407c8d7-cd96-4436-8a14-6f4bb354f8e8",
+                "layerType": "data",
+                "showRowNumbers": true
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsDatatable"
+          },
+          "description": "Container listing with ready status, restarts, CPU/memory usage, limits, and memory limit utilization.",
+          "drilldowns": [],
+          "title": "Containers"
+        },
+        "gridData": {
+          "h": 15,
+          "i": "7dad193d-fd5e-416d-8e59-63301bc8f9da",
+          "sectionId": "9fe62ff0-38d4-4caa-93e1-19f45f16f06f",
+          "w": 33,
+          "x": 0,
+          "y": 0
+        },
+        "panelIndex": "7dad193d-fd5e-416d-8e59-63301bc8f9da",
+        "type": "lens"
+      }
+    ],
+    "pinned_panels": {
+      "panels": {}
+    },
+    "sections": [
+      {
+        "collapsed": false,
+        "gridData": {
+          "i": "c7da56d9-39b6-452a-8c10-2694004c0d10",
+          "y": 3
+        },
+        "title": "Pod capacity"
+      },
+      {
+        "collapsed": false,
+        "gridData": {
+          "i": "7041373e-be6b-4e6b-8faf-2e46eb8c2be9",
+          "y": 4
+        },
+        "title": "Pod metrics"
+      },
+      {
+        "collapsed": false,
+        "gridData": {
+          "i": "9fe62ff0-38d4-4caa-93e1-19f45f16f06f",
+          "y": 5
+        },
+        "title": "Containers in pod"
+      }
+    ],
+    "timeFrom": "now-15m",
+    "timeRestore": true,
+    "timeTo": "now",
+    "title": "[OTEL][Kubernetes] Pod Detail"
+  },
+  "coreMigrationVersion": "8.8.0",
+  "created_at": "2026-03-27T21:16:35.709Z",
+  "id": "kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
+  "references": [
+    {
+      "id": "kubernetes_otel-7b1ac87f-60ea-477f-b506-8a248026afbb",
+      "name": "v3-pod-back-link:link_0976cf30-f018-4cc5-8a4f-d6171e75d93f_dashboard",
+      "type": "dashboard"
+    },
+    {
+      "id": "metrics-*",
+      "name": "v4-pd-vol-gauge:indexpattern-datasource-layer-317026f2-4fa8-46bd-a528-00435b4ece07",
+      "type": "index-pattern"
+    },
+    {
+      "id": "metrics-*",
+      "name": "v4-pd-vol-time:indexpattern-datasource-layer-2788aa7c-d17a-4f2b-a121-43fa41c5cfe3",
+      "type": "index-pattern"
+    },
+    {
+      "id": "metrics-*",
+      "name": "v4-pd-container-ts:indexpattern-datasource-layer-290050ae-2f71-4a4f-bf6d-8e638a825710",
+      "type": "index-pattern"
+    },
+    {
+      "id": "metrics-*",
+      "name": "v2-pod-detail-container-cpu:indexpattern-datasource-layer-77718e63-67c1-ad71-9830-6e07c5301a7b",
+      "type": "index-pattern"
+    },
+    {
+      "id": "metrics-*",
+      "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+      "type": "index-pattern"
+    }
+  ],
+  "type": "dashboard",
+  "typeMigrationVersion": "10.3.0"
+}
