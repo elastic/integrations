@@ -1,0 +1,127 @@
+{
+  "attributes": {
+    "name": "SOCRadar - Alarm Detection",
+    "description": "Creates a Security Alert for every alarm received from the SOCRadar integration. Required for SOCRadar status sync via Watcher.",
+    "enabled": true,
+    "rule_id": "socradar-alarm-detection-rule",
+    "version": 1,
+    "tags": [
+      "SOCRadar",
+      "Threat Intel",
+      "Incidents"
+    ],
+    "author": ["SOCRadar"],
+    "license": "Elastic License v2",
+    "risk_score": 47,
+    "risk_score_mapping": [
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "CRITICAL",
+        "risk_score": 99
+      },
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "HIGH",
+        "risk_score": 73
+      },
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "MEDIUM",
+        "risk_score": 47
+      },
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "LOW",
+        "risk_score": 21
+      }
+    ],
+    "severity": "medium",
+    "severity_mapping": [
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "CRITICAL",
+        "severity": "critical"
+      },
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "HIGH",
+        "severity": "high"
+      },
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "MEDIUM",
+        "severity": "medium"
+      },
+      {
+        "field": "alarm.alarm_risk_level",
+        "operator": "equals",
+        "value": "LOW",
+        "severity": "low"
+      }
+    ],
+    "type": "query",
+    "language": "kuery",
+    "query": "alarm.alarm_id: *",
+    "index": [
+      "logs-socradar.incidents-*"
+    ],
+    "filters": [],
+    "from": "now-2160h",
+    "interval": "5m",
+    "max_signals": 10000,
+    "timestamp_override": "alarm.date",
+    "timestamp_override_fallback_disabled": false,
+    "alert_suppression": {
+      "group_by": ["alarm.alarm_id"],
+      "duration": {
+        "value": 2160,
+        "unit": "h"
+      },
+      "missing_fields_strategy": "suppress"
+    },
+    "investigation_fields": {
+      "field_names": [
+        "alarm.alarm_id",
+        "alarm.company_id",
+        "alarm.status",
+        "alarm.alarm_risk_level",
+        "alarm.alarm_default_risk_level",
+        "alarm.alarm_generic_title",
+        "alarm.alarm_text",
+        "alarm.alarm_main_type",
+        "alarm.alarm_sub_type",
+        "alarm.date"
+      ]
+    },
+    "actions": [],
+    "exceptions_list": [],
+    "related_integrations": [
+      {
+        "package": "socradar",
+        "version": "^0.0.1"
+      }
+    ],
+    "required_fields": [
+      { "name": "alarm.alarm_id", "type": "keyword" },
+      { "name": "alarm.company_id", "type": "keyword" },
+      { "name": "alarm.alarm_risk_level", "type": "keyword" },
+      { "name": "alarm.alarm_generic_title", "type": "keyword" },
+      { "name": "alarm.status", "type": "keyword" },
+      { "name": "alarm.alarm_default_risk_level", "type": "keyword" },
+      { "name": "alarm.alarm_text", "type": "keyword" },
+      { "name": "alarm.alarm_main_type", "type": "keyword" },
+      { "name": "alarm.alarm_sub_type", "type": "keyword" },
+      { "name": "alarm.date", "type": "date" }
+    ],
+    "setup": ""
+  },
+  "id": "socradar-alarm-detection-rule",
+  "type": "security-rule"
+}

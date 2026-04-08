@@ -1,0 +1,25 @@
+---
+description: Pipeline for processing IPv4 and IPv6 STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_ip_pattern
+      patterns:
+        - "^\\[?ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?"
+        - "^\\[?ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}/%{NUMBER}'\\]?"
+        - "^\\[?ipv6-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?"
+      ignore_failure: true
+
+  # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
+  - append:
+      field: threat.indicator.ip
+      value: '{{{ _tmp.ip }}}'
+      if: ctx._tmp?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{ _tmp.ip }}}'
+      if: ctx._tmp?.ip != null
+      allow_duplicates: false
+  - remove:
+      field: _tmp
+      ignore_missing: true

@@ -1,0 +1,83 @@
+format_version: 3.3.2
+name: ti_socradar_taxii
+title: SOCRadar Threat Intelligence (TAXII)
+version: "1.0.0"
+description: Ingest threat intelligence indicators from SOCRadar's TAXII 2.1 server in STIX 2.1 format with Elastic Agent.
+type: integration
+categories:
+  - security
+  - threat_intel
+conditions:
+  kibana:
+    version: "^8.18.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/logo.svg
+    title: SOCRadar TAXII
+    size: 216x216
+    type: image/svg+xml
+policy_templates:
+  - name: ti_socradar_taxii
+    title: SOCRadar TAXII
+    description: Collect threat intelligence indicators from SOCRadar's TAXII 2.1 server.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: cel
+        title: Collect SOCRadar STIX data via TAXII 2.1
+        description: Collect STIX 2.1 threat intelligence indicators from SOCRadar's TAXII 2.1 server.
+        vars:
+          - name: url
+            type: text
+            title: TAXII 2.1 Collection URL
+            description: >
+              Full URL of the SOCRadar TAXII 2.1 collection objects endpoint. Format: https://taxii2.socradar.com/{api_root}/collections/{collection_id}/objects/
+            multi: false
+            required: true
+            show_user: true
+          - name: username
+            type: text
+            title: Username
+            description: The username for Basic HTTP authentication to the SOCRadar TAXII server.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: password
+            type: password
+            title: Password
+            description: The password for Basic HTTP authentication to the SOCRadar TAXII server.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    ...
+              #    -----END CERTIFICATE-----
+owner:
+  github: orcunsami
+  type: partner

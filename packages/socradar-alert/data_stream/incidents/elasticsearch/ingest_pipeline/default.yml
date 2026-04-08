@@ -1,0 +1,30 @@
+---
+description: Pipeline for processing alarm events
+processors:
+  - date:
+      field: alarm.date
+      target_field: alarm.date
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      timezone: UTC
+      ignore_failure: false
+  - set:
+      field: alarm.alarm_sub_type
+      value: "{{{alarm.alarm_type_details.alarm_sub_type}}}"
+      ignore_empty_value: true
+  - set:
+      field: alarm.alarm_main_type
+      value: "{{{alarm.alarm_type_details.alarm_main_type}}}"
+      ignore_empty_value: true
+  - set:
+      field: alarm.alarm_generic_title
+      value: "{{{alarm.alarm_type_details.alarm_generic_title}}}"
+      ignore_empty_value: true
+  - set:
+      field: alarm.alarm_default_risk_level
+      value: "{{{alarm.alarm_type_details.alarm_default_risk_level}}}"
+      ignore_empty_value: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
