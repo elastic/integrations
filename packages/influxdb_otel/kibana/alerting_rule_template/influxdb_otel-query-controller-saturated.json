@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-query-controller-saturated",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] Query controller saturated",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "query"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// Query controller queueing and memory budget\n| WHERE COALESCE(metrics.qc_queueing_active, qc_queueing_active) IS NOT NULL\n    OR COALESCE(metrics.qc_memory_unused_bytes, qc_memory_unused_bytes) IS NOT NULL\n// Get latest values per host (gauges)\n| STATS max_queueing = MAX(COALESCE(metrics.qc_queueing_active, qc_queueing_active)),\n    min_memory_unused = MIN(COALESCE(metrics.qc_memory_unused_bytes, qc_memory_unused_bytes))\n  BY host.name\n// Alert when queueing is high (>= 5) or memory budget exhausted (< 10MB)\n// Adjust thresholds for your workload\n| WHERE max_queueing >= 5 OR (min_memory_unused IS NOT NULL AND min_memory_unused < 10485760)"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

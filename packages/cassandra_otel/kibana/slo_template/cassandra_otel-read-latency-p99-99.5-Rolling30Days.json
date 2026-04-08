@@ -1,0 +1,50 @@
+{
+  "attributes": {
+    "name": "[Cassandra OTel] Read latency p99 99.5% rolling 30 days",
+    "description": "This SLO tracks the 99th percentile read request latency of Cassandra via OTel JMX metrics, ensuring that 99.5% of 1-minute time intervals show p99 latency below 50 milliseconds over a rolling period of 30 days. Read latency most directly impacts application performance; p99 spikes often correlate with compaction backlog, tombstone accumulation, or GC pauses.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"cassandra.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "last_value",
+              "field": "cassandra.client.request.read.latency.99p"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 50000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "cassandra",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.server.address"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {"id": "cassandra_otel-overview"}
+      ]
+    }
+  },
+  "id": "cassandra_otel-read-latency-p99-99.5-Rolling30Days",
+  "type": "slo_template"
+}
