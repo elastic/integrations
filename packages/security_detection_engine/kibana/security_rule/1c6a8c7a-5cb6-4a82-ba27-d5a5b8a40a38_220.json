@@ -1,0 +1,176 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an illicit consent grant request on-behalf-of a registered Entra ID application. Adversaries may create and register an application in Microsoft Entra ID for the purpose of requesting user consent to access resources. This is accomplished by tricking a user into granting consent to the application, typically via a pre-made phishing URL. This establishes an OAuth grant that allows the malicious client applocation to access resources on-behalf-of the user.",
+        "from": "now-7d",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Entra ID Illicit Consent Grant via Registered Application",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Illicit Consent Grant via Registered Application\n\nAdversaries may register a malicious application in Microsoft Entra ID and trick users into granting excessive permissions via OAuth consent. These applications can access sensitive data\u2014such as mail, profiles, or files\u2014on behalf of the user once consent is granted. This is commonly delivered via spearphishing links that prompt users to approve permissions for seemingly legitimate applications.\n\nThis rule identifies a new consent grant event based on Azure audit logs where a user or admin granted consent to an application.\n\nThis rule uses ES|QL aggregation-based new terms logic with a 7-day history window. It extracts the AppId from the multi-valued additional_details array using MV_EXPAND and UUID regex filtering, then alerts when the user-application pair is first seen within the last 9 minutes OR when Microsoft flags the consent as a \"Risky application detected\".\n\n#### Possible investigation steps\n\n- Review `azure.auditlogs.properties.additional_details.value` to identify the AppId and User-Agent values to determine which application was granted access and how the request was initiated. Pivot on the AppId in the Azure portal under Enterprise Applications to investigate further.\n- Review `azure.auditlogs.properties.initiated_by.user.userPrincipalName` to identify the user who approved the application. Investigate their recent activity for signs of phishing, account compromise, or anomalous behavior during the timeframe of the consent.\n- Review `azure.auditlogs.properties.initiated_by.user.ipAddress` to assess the geographic source of the consent action. Unexpected locations or IP ranges may indicate adversary-controlled infrastructure.\n- Review `azure.auditlogs.properties.target_resources.display_name` to evaluate whether the application name is familiar, expected, or potentially spoofing a known service.\n- Review `azure.auditlogs.properties.target_resources.modified_properties.display_name` to inspect key indicators of elevated privilege or risk, including:\n  - ConsentContext.IsAdminConsent to determine if the application was granted tenant-wide admin access.\n  - ConsentContext.OnBehalfOfAll to identify whether the app was granted permissions on behalf of all users in the tenant.\n  - ConsentAction.Permissions to evaluate the specific scopes and data access the application requested.\n  - ConsentAction.Reason to understand if Microsoft flagged the activity or if any reason was recorded by the platform.\n  - TargetId.ServicePrincipalNames to confirm the service principal associated with the granted permissions.\n- Review `azure.tenant_id` to confirm the activity originated from your tenant and is not related to a cross-tenant application.\n- Review `@timestamp` and `azure.auditlogs.properties.correlation_id` to pivot into related sign-in, token usage, or application activity for further context.\n\n### False positive analysis\n\n- Some applications may request high-privilege scopes for legitimate purposes. Validate whether the application is verified, developed by Microsoft, or approved internally by your organization.\n- Review publisher verification, app ownership, and scope alignment with the intended business use case.\n\n### Response and remediation\n\n- Revoke the application\u2019s OAuth grant using Graph API or PowerShell. Use the Remove-AzureADOAuth2PermissionGrant cmdlet.\n- Remove the associated service principal from Azure AD.\n- Reset credentials or revoke tokens for affected users.\n- Block the application via Conditional Access or Defender for Cloud Apps policies.\n- Enable the Admin Consent Workflow in Azure AD to prevent unsanctioned user approvals in the future.\n- Report any malicious applications to Microsoft to protect other tenants.\n",
+        "query": "FROM logs-azure.auditlogs-* metadata _id, _version, _index\n| WHERE (azure.auditlogs.operation_name == \"Consent to application\"\n    OR event.action == \"Consent to application\")\n  AND event.outcome == \"success\"\n\n| MV_EXPAND azure.auditlogs.properties.additional_details.value\n| WHERE azure.auditlogs.properties.additional_details.value\n    RLIKE \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\n| RENAME azure.auditlogs.properties.additional_details.value AS Esql.app_id\n\n| STATS\n    Esql.timestamp_first_seen = MIN(@timestamp),\n    Esql.timestamp_last_seen = MAX(@timestamp),\n    Esql.app_display_name_values = VALUES(`azure.auditlogs.properties.target_resources.0.display_name`),\n    Esql.service_principal_id_values = VALUES(`azure.auditlogs.properties.target_resources.0.id`),\n    Esql.is_admin_consent_values = VALUES(`azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value`),\n    Esql.is_app_only_values = VALUES(`azure.auditlogs.properties.target_resources.0.modified_properties.1.new_value`),\n    Esql.on_behalf_of_all_values = VALUES(`azure.auditlogs.properties.target_resources.0.modified_properties.2.new_value`),\n    Esql.consent_context_tags_values = VALUES(`azure.auditlogs.properties.target_resources.0.modified_properties.3.new_value`),\n    Esql.consent_permissions_values = VALUES(`azure.auditlogs.properties.target_resources.0.modified_properties.4.new_value`),\n    Esql.consent_reason_values = VALUES(`azure.auditlogs.properties.target_resources.0.modified_properties.5.new_value`),\n    Esql.user_id_values = VALUES(azure.auditlogs.properties.initiated_by.user.id),\n    Esql.ip_address_values = VALUES(azure.auditlogs.properties.initiated_by.user.ipAddress),\n    Esql.tenant_id_values = VALUES(azure.tenant_id),\n    Esql.correlation_id_values = VALUES(azure.auditlogs.properties.correlation_id),\n    Esql.event_count = COUNT(*)\n    BY azure.auditlogs.properties.initiated_by.user.userPrincipalName, Esql.app_id\n\n| WHERE Esql.timestamp_first_seen >= NOW() - 9 minutes\n    OR Esql.consent_reason_values LIKE \"*Risky application detected*\"\n| KEEP Esql.*, azure.*\n",
+        "references": [
+            "https://www.wiz.io/blog/midnight-blizzard-microsoft-breach-analysis-and-best-practices",
+            "https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/detect-and-remediate-illicit-consent-grants?view=o365-worldwide",
+            "https://www.cloud-architekt.net/detection-and-mitigation-consent-grant-attacks-azuread/",
+            "https://docs.microsoft.com/en-us/defender-cloud-apps/investigate-risky-oauth#how-to-detect-risky-oauth-apps"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.app_display_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.consent_context_tags_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.consent_permissions_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.consent_reason_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.correlation_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.ip_address_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_admin_consent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_app_only_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.on_behalf_of_all_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.service_principal_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.tenant_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.timestamp_first_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.timestamp_last_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.initiated_by.user.userPrincipalName",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1c6a8c7a-5cb6-4a82-ba27-d5a5b8a40a38",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Resources: Investigation Guide",
+            "Tactic: Initial Access",
+            "Tactic: Credential Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1199",
+                        "name": "Trusted Relationship",
+                        "reference": "https://attack.mitre.org/techniques/T1199/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            }
+        ],
+        "type": "esql",
+        "version": 220
+    },
+    "id": "1c6a8c7a-5cb6-4a82-ba27-d5a5b8a40a38_220",
+    "type": "security-rule"
+}
