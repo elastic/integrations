@@ -1,0 +1,38 @@
+{
+  "id": "oracle_otel-session-utilisation-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Oracle OTel] Session utilisation high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "oracle"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Sessions usage is split by session_type/session_status; limit is separate document group\n// First aggregate per-timestamp to get total sessions at each scrape point\n| STATS sessions_at_ts = SUM(oracledb.sessions.usage),\n        limit_val = MAX(oracledb.sessions.limit)\n        BY @timestamp, oracledb.instance.name, host.name\n// Then take peak sessions across the time window\n| STATS peak_sessions = MAX(sessions_at_ts),\n        limit_val = MAX(limit_val)\n        BY oracledb.instance.name, host.name\n| WHERE limit_val > 0\n// Utilisation threshold: 85% — approaching session limit prevents new connections\n// Adjust threshold to tune sensitivity\n| EVAL utilisation_pct = ROUND(peak_sessions * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "oracledb.instance.name",
+      "termSize": 50
+    }
+  }
+}
