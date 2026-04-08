@@ -5,61 +5,32 @@
 
 ## Overview
 
-The OpenTelemetry Profiling integration for Elastic enables collection of ...
-This integration facilitates ...
+The OpenTelemetry Profiling integration collects continuous profiling data using eBPF on Linux systems. It provides insights into CPU usage without requiring code instrumentation or application restarts. This integration facilitates the OpenTelemetry eBPF profiling receiver and enables deep visibility into your applications runtime characteristics.
 
 ### Compatibility
 
-This integration is compatible with ...
+This integration is supported on Linux systems with amd64 or arm64 architecture. It requires a minimum kernel version of 5.10 with eBPF support enabled. The host must have appropriate capabilities.
 
-### How it works
+## Prerequisites
+
+Before installing this integration, ensure:
+
+- **Linux kernel 5.10 or later** with eBPF support enabled
+- **Appropriate permissions**
+- **Elastic Agent 9.4.0 or later** with OpenTelemetry support
+- **amd64 or arm64 architecture**
 
 
 ## What data does this integration collect?
 
-The OpenTelemetry Profiling integration collects log messages of the following types:
-* ...
+The OpenTelemetry Profiling integration collects the following profiling data:
+
+- **CPU profiling**: Stack traces of CPU-bound functions with sampling frequency control
 
 ### Supported use cases
 
-
-## What do I need to use this integration?
-
-
-## How do I deploy this integration?
-
-### Agent-based deployment
-
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
-
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-
-
-### Onboard / configure
-
-
-### Validation
-
-
-## Troubleshooting
-
-For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
-
-
-## Scaling
-
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
-
-
-## Reference
-
-
-### Inputs used
-
-
-
-### API usage
-
-These APIs are used with this integration:
-* ...
+- **Performance optimization**: Identify performance bottlenecks and hotspots in your applications
+- **Resource monitoring**: Track CPU and memory usage across your infrastructure
+- **Continuous observability**: Maintain always-on profiling for production environments with minimal overhead
+- **Root cause analysis**: Understand application behavior during incidents and errors
+- **Capacity planning**: Analyze resource consumption trends over time
