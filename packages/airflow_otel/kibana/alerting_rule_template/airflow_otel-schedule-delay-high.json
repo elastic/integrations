@@ -24,7 +24,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-statsdreceiver.otel-default*\n| WHERE data_stream.dataset == \"statsdreceiver.otel\"\n| WHERE airflow.dagrun.schedule_delay IS NOT NULL\n// Timer values are in SECONDS (OTel statsd receiver convention)\n// Threshold 300 = 5 minutes delay; adjust for your SLA\n| STATS max_delay_sec = MAX(airflow.dagrun.schedule_delay)\n| WHERE max_delay_sec > 300"
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dagrun.schedule_delay IS NOT NULL\n// Timer values are in SECONDS (OTel statsd receiver convention)\n// Threshold 300 = 5 minutes delay; adjust for your SLA\n| STATS max_delay_sec = MAX(airflow.dagrun.schedule_delay)\n| WHERE max_delay_sec > 300"
       },
       "size": 0,
       "threshold": [0],

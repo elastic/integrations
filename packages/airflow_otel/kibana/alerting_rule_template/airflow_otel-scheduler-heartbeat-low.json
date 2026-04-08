@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-statsdreceiver.otel-default*\n| WHERE data_stream.dataset == \"statsdreceiver.otel\"\n// Count scheduler heartbeats in the rule's time window\n| STATS hb_count = COUNT(airflow.scheduler_heartbeat), total_docs = COUNT(*)\n// Alert when we have Airflow activity but fewer than 5 heartbeats\n// Adjust threshold (5) for your scheduler heartbeat cadence\n| WHERE total_docs > 10 AND hb_count < 5"
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n// Count scheduler heartbeats in the rule's time window\n| STATS hb_count = COUNT(airflow.scheduler_heartbeat), total_docs = COUNT(*)\n// Alert when we have Airflow activity but fewer than 5 heartbeats\n// Adjust threshold (5) for your scheduler heartbeat cadence\n| WHERE total_docs > 10 AND hb_count < 5"
       },
       "size": 0,
       "threshold": [0],

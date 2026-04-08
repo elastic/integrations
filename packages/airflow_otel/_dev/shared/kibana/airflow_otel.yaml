@@ -1,6 +1,6 @@
 # Apache Airflow monitoring dashboards
 # Spec: build/spec.md
-# Index: metrics-statsdreceiver.otel-default*
+# Index: metrics-airflow.otel-default*
 
 dashboards:
 - id: airflow_otel-overview
@@ -19,7 +19,7 @@ dashboards:
       colors: false
   filters:
   - field: data_stream.dataset
-    equals: statsdreceiver.otel
+    equals: airflow.otel
   controls:
   - type: options
     label: Host
@@ -58,8 +58,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler_heartbeat IS NOT NULL
       - STATS total = SUM(airflow.scheduler_heartbeat)
       primary:
@@ -75,8 +75,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.ti_successes IS NOT NULL
       - STATS total = SUM(airflow.ti_successes)
       primary:
@@ -92,8 +92,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.ti_failures IS NOT NULL
       - STATS total = SUM(airflow.ti_failures)
       primary:
@@ -109,8 +109,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.executor.open_slots IS NOT NULL
       - STATS slots = MAX(LAST_OVER_TIME(airflow.executor.open_slots))
       primary:
@@ -126,8 +126,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_processing.import_errors IS NOT NULL
       - STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors))
       primary:
@@ -143,8 +143,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler.tasks.starving IS NOT NULL
       - STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving))
       primary:
@@ -159,8 +159,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler_heartbeat IS NOT NULL
       - STATS total = SUM(airflow.scheduler_heartbeat) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
@@ -180,8 +180,8 @@ dashboards:
       type: area
       mode: stacked
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - STATS successes = SUM(airflow.ti_successes) WHERE airflow.ti_successes IS NOT NULL, failures = SUM(airflow.ti_failures) WHERE 
         airflow.ti_failures IS NOT NULL BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
@@ -209,8 +209,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.executor.open_slots IS NOT NULL OR airflow.executor.queued_tasks IS NOT NULL OR airflow.executor.running_tasks IS NOT 
         NULL
       - STATS open = MAX(LAST_OVER_TIME(airflow.executor.open_slots)), queued = MAX(LAST_OVER_TIME(airflow.executor.queued_tasks)), running 
@@ -235,8 +235,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_processing.import_errors IS NOT NULL OR airflow.dag_processing.file_path_queue_size IS NOT NULL
       - STATS import_errors = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors)), queue_size = 
         MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
@@ -268,7 +268,7 @@ dashboards:
       tooltips: false
   filters:
   - field: data_stream.dataset
-    equals: statsdreceiver.otel
+    equals: airflow.otel
   panels:
   - title: Navigation
     size: {w: 48, h: 2}
@@ -298,8 +298,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.ti.start IS NOT NULL
       - STATS total = SUM(airflow.ti.start)
       primary:
@@ -315,8 +315,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.ti.finish IS NOT NULL
       - STATS total = SUM(airflow.ti.finish)
       primary:
@@ -332,8 +332,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.ti_failures IS NOT NULL
       - STATS total = SUM(airflow.ti_failures)
       primary:
@@ -349,8 +349,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler.tasks.killed_externally IS NOT NULL
       - STATS total = SUM(airflow.scheduler.tasks.killed_externally)
       primary:
@@ -366,8 +366,8 @@ dashboards:
       type: area
       mode: stacked
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - STATS successes = SUM(airflow.ti_successes) WHERE airflow.ti_successes IS NOT NULL, failures = SUM(airflow.ti_failures) WHERE 
         airflow.ti_failures IS NOT NULL BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
@@ -396,10 +396,10 @@ dashboards:
       type: bar
       mode: stacked
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.operator_failures IS NOT NULL
-      - EVAL op = COALESCE(attributes.operator_name, "unknown")
+      - EVAL op = COALESCE(attributes.operator, "unknown")
       - STATS failures = SUM(airflow.operator_failures) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), op
       - SORT time_bucket ASC
       dimension:
@@ -421,8 +421,8 @@ dashboards:
     esql:
       type: line
       query:
-      - FROM metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - FROM metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag.metrics_generator.work_task_1.duration IS NOT NULL
       - STATS p95 = PERCENTILE(airflow.dag.metrics_generator.work_task_1.duration, 95.0), avg = 
         AVG(airflow.dag.metrics_generator.work_task_1.duration) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
@@ -448,8 +448,8 @@ dashboards:
     esql:
       type: datatable
       query:
-      - FROM metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - FROM metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.ti_failures IS NOT NULL
       - STATS failures = SUM(airflow.ti_failures) BY dag_id = COALESCE(attributes.dag_id, "unknown")
       - SORT failures DESC
@@ -478,7 +478,7 @@ dashboards:
       tooltips: false
   filters:
   - field: data_stream.dataset
-    equals: statsdreceiver.otel
+    equals: airflow.otel
   panels:
   - title: Navigation
     size: {w: 48, h: 2}
@@ -508,8 +508,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler.scheduler_loop_duration IS NOT NULL
       - STATS avg_s = AVG(airflow.scheduler.scheduler_loop_duration)
       primary:
@@ -525,8 +525,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.executor.open_slots IS NOT NULL
       - STATS slots = MAX(LAST_OVER_TIME(airflow.executor.open_slots))
       primary:
@@ -542,8 +542,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler.tasks.starving IS NOT NULL
       - STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving))
       primary:
@@ -558,8 +558,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler.scheduler_loop_duration IS NOT NULL
       - STATS avg_s = AVG(airflow.scheduler.scheduler_loop_duration) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
@@ -578,8 +578,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler.critical_section_duration IS NOT NULL
       - STATS avg_s = AVG(airflow.scheduler.critical_section_duration) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
@@ -599,8 +599,8 @@ dashboards:
       type: area
       mode: stacked
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.executor.open_slots IS NOT NULL OR airflow.executor.queued_tasks IS NOT NULL OR airflow.executor.running_tasks IS NOT 
         NULL
       - STATS open = MAX(LAST_OVER_TIME(airflow.executor.open_slots)), queued = MAX(LAST_OVER_TIME(airflow.executor.queued_tasks)), running 
@@ -625,8 +625,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.scheduler.tasks.starving IS NOT NULL
       - STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
@@ -654,7 +654,7 @@ dashboards:
       tooltips: false
   filters:
   - field: data_stream.dataset
-    equals: statsdreceiver.otel
+    equals: airflow.otel
   panels:
   - title: Navigation
     size: {w: 48, h: 2}
@@ -684,8 +684,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_processing.import_errors IS NOT NULL
       - STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors))
       primary:
@@ -701,8 +701,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_processing.file_path_queue_size IS NOT NULL
       - STATS size = MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size))
       primary:
@@ -718,8 +718,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_processing.processor_timeouts IS NOT NULL
       - STATS total = SUM(airflow.dag_processing.processor_timeouts)
       primary:
@@ -735,8 +735,8 @@ dashboards:
     esql:
       type: metric
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_file_refresh_error IS NOT NULL
       - STATS total = SUM(airflow.dag_file_refresh_error)
       primary:
@@ -751,8 +751,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_processing.import_errors IS NOT NULL
       - STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
       - SORT time_bucket ASC
@@ -770,8 +770,8 @@ dashboards:
     esql:
       type: line
       query:
-      - TS metrics-statsdreceiver.otel-default*
-      - WHERE data_stream.dataset == "statsdreceiver.otel"
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
       - WHERE airflow.dag_processing.total_parse_time IS NOT NULL OR airflow.dag_processing.file_path_queue_size IS NOT NULL
       - STATS parse_time = AVG(airflow.dag_processing.total_parse_time), queue_size = 
         MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)

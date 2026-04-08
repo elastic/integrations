@@ -24,7 +24,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-statsdreceiver.otel-default*\n| WHERE data_stream.dataset == \"statsdreceiver.otel\"\n| WHERE airflow.scheduler.tasks.starving IS NOT NULL\n// Gauge: tasks that cannot run due to pool slot limits\n| STATS max_starving = MAX(airflow.scheduler.tasks.starving)\n// Adjust threshold (5) based on acceptable starvation\n| WHERE max_starving > 5"
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.tasks.starving IS NOT NULL\n// Gauge: tasks that cannot run due to pool slot limits\n| STATS max_starving = MAX(airflow.scheduler.tasks.starving)\n// Adjust threshold (5) based on acceptable starvation\n| WHERE max_starving > 5"
       },
       "size": 0,
       "threshold": [0],

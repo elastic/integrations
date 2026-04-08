@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-statsdreceiver.otel-default*\n| WHERE data_stream.dataset == \"statsdreceiver.otel\"\n| WHERE airflow.dag_processing.file_path_queue_size IS NOT NULL\n// Gauge: DAG files pending processing; growing queue = processor falling behind\n| STATS max_queue = MAX(airflow.dag_processing.file_path_queue_size)\n// Adjust threshold (20) for your DAG count\n| WHERE max_queue > 20"
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.file_path_queue_size IS NOT NULL\n// Gauge: DAG files pending processing; growing queue = processor falling behind\n| STATS max_queue = MAX(airflow.dag_processing.file_path_queue_size)\n// Adjust threshold (20) for your DAG count\n| WHERE max_queue > 20"
       },
       "size": 0,
       "threshold": [0],

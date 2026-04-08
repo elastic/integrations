@@ -56,17 +56,30 @@ receivers:
     endpoint: 0.0.0.0:8125
     transport: udp
 
+processors:
+  resource/dataset:
+    attributes:
+      - key: data_stream.dataset
+        value: airflow
+        action: upsert
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
 exporters:
   elasticsearch/otel:
     endpoints: [<ES_ENDPOINT>]
     api_key: ${env:ELASTICSEARCH_API_KEY}
     mapping:
       mode: otel
+    metrics_dynamic_index:
+      enabled: true
 
 service:
   pipelines:
     metrics:
       receivers: [statsd]
+      processors: [resource/dataset, batch]
       exporters: [elasticsearch/otel]
 ```
 
