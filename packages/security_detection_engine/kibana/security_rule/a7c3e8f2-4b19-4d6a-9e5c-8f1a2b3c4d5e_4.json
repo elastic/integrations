@@ -12,7 +12,7 @@
         "license": "Elastic License v2",
         "name": "Execution via OpenClaw Agent",
         "note": "## Triage and analysis\n\n### Investigating Execution via OpenClaw Agent\n\nOpenClaw (formerly Clawdbot, rebranded to Moltbot) is a personal AI coding assistant that can execute shell commands \nand scripts on behalf of users. Malicious actors have weaponized the skill ecosystem (ClawHub) to distribute skills \nthat execute download-and-execute commands, targeting cryptocurrency wallets and credentials.\n\n### Possible investigation steps\n\n- Verify if OpenClaw/Moltbot is an approved application in your organization.\n- Review the child process command line for indicators of malicious activity (encoded payloads, remote downloads, credential access).\n- Check the parent Node.js process command line to identify which OpenClaw component initiated the execution.\n- Examine recently installed skills from ClawHub for malicious or obfuscated code.\n- Correlate with network events to identify data exfiltration or C2 communication.\n- Review the user's AI conversation history for prompt injection attempts.\n\n### False positive analysis\n\n- Developers legitimately using OpenClaw/Moltbot for AI-assisted coding may trigger this rule when the AI executes build scripts, curl commands, or other legitimate automation.\n- If the tool is approved, consider tuning based on specific command patterns or adding exception lists.\n\n### Response and remediation\n\n- If the child process activity appears malicious, terminate the OpenClaw gateway and investigate the skill that initiated the command.\n- Review and remove any suspicious skills from the OpenClaw configuration.\n- If credentials may have been accessed, rotate affected secrets and API keys.\n- Block known typosquat domains (moltbot.you, clawbot.ai, clawdbot.you) at the network level.\n",
-        "query": "process where event.type == \"start\" and\n  process.parent.name : (\"node\", \"node.exe\") and \n  process.parent.command_line : (\"*openclaw*\", \"*moltbot*\", \"*clawdbot*\") and\n   process.name : (\"bash\", \"sh\", \"zsh\", \"bash.exe\", \"cmd.exe\", \"powershell.exe\", \"curl.exe\", \"curl\", \"base64\", \"xattr\", \"osascript\", \"python*\", \"chmod\", \"certutil.exe\", \"rundll32.exe\") and\n   not process.command_line in (\"/bin/sh -c ip neigh show\", \"/usr/bin/sh -c ip neigh show\",\n                                \"/bin/sh -c arp -a -n -l\", \"/usr/bin/sh -c arp -a -n -l\")\n",
+        "query": "process where event.type == \"start\" and\n  process.parent.name : (\"node\", \"node.exe\") and \n  process.parent.command_line : (\"*openclaw*\", \"*moltbot*\", \"*clawdbot*\") and\n   process.name : (\"bash\", \"sh\", \"zsh\", \"bash.exe\", \"cmd.exe\", \"powershell.exe\", \"curl.exe\", \"curl\", \"base64\", \"xattr\", \"osascript\", \"python*\", \"chmod\", \"certutil.exe\", \"rundll32.exe\") and\n   not process.args in (\n     \"ip neigh show\",\n     \"arp -a -n -l\",\n     \"ip neighbor show dev wlan0\",\n     \"ip neighbor show dev eth0\",\n     \"arp -a | findstr /C:---\"\n   )\n",
         "references": [
             "https://www.malwarebytes.com/blog/threat-intel/2026/01/clawdbots-rename-to-moltbot-sparks-impersonation-campaign",
             "https://www.tomshardware.com/tech-industry/cyber-security/malicious-moltbot-skill-targets-crypto-users-on-clawhub",
@@ -33,8 +33,8 @@
             },
             {
                 "ecs": true,
-                "name": "process.command_line",
-                "type": "wildcard"
+                "name": "process.args",
+                "type": "keyword"
             },
             {
                 "ecs": true,
@@ -172,8 +172,8 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 3
+        "version": 4
     },
-    "id": "a7c3e8f2-4b19-4d6a-9e5c-8f1a2b3c4d5e_3",
+    "id": "a7c3e8f2-4b19-4d6a-9e5c-8f1a2b3c4d5e_4",
     "type": "security-rule"
 }
