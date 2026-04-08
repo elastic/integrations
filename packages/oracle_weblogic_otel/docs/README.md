@@ -2,7 +2,7 @@
 
 Oracle WebLogic Server is a Java EE / Jakarta EE application server used to develop, deploy, and run enterprise applications in production environments.
 
-These assets provide dashboards, alert rules, and SLO templates built on metrics collected by the OpenTelemetry JMX receiver with the `weblogic` target system. They cover JVM heap utilization, thread pool health, JTA transaction integrity, work manager performance, and server stability.
+These assets provide dashboards, alert rules, and SLO templates built on metrics collected by the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper) with a custom WebLogic [metrics definition](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/jmx-metrics). They cover JVM heap utilization, thread pool health, JTA transaction integrity, work manager performance, and server stability.
 
 ## Compatibility
 
@@ -33,26 +33,54 @@ Oracle WebLogic Server exposes JMX MBeans by default through the T3 protocol. En
 
 ### Configuration
 
-Configure the OpenTelemetry Collector (or EDOT Collector) with the JMX receiver targeting your WebLogic Server instance.
+Configure the [OpenTelemetry JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper) as a standalone process to collect metrics from your WebLogic Server instance, and the OpenTelemetry Collector (or EDOT Collector) with an OTLP receiver to forward those metrics to Elasticsearch.
 
 Placeholders used in the configuration below:
 
-- `<WEBLOGIC_HOST>` — Hostname or IP address of the WebLogic Server instance (e.g. `weblogic.example.com`)
-- `<WEBLOGIC_PORT>` — T3 protocol listen port for the WebLogic instance (e.g. `7001`)
-- `<ES_ENDPOINT>` — Your Elasticsearch endpoint URL (e.g. `https://my-deployment.es.us-central1.gcp.cloud.es.io:443`)
+- `<WEBLOGIC_HOST>` — Hostname or IP address of the WebLogic Server instance (for example, `weblogic.example.com`)
+- `<WEBLOGIC_PORT>` — T3 protocol listen port for the WebLogic instance (for example, `7001`)
+- `<COLLECTOR_HOST>` — Hostname or IP address where the OpenTelemetry Collector is running (for example, `localhost`)
+- `<ES_ENDPOINT>` — Your Elasticsearch endpoint URL (for example, `https://my-deployment.es.us-central1.gcp.cloud.es.io:443`)
 - `${env:WEBLOGIC_USERNAME}` — Environment variable containing the WebLogic monitoring user's username
 - `${env:WEBLOGIC_PASSWORD}` — Environment variable containing the WebLogic monitoring user's password
 - `${env:ES_API_KEY}` — Environment variable containing your Elasticsearch API key
+- `/path/to/weblogic.yaml` — Path to the custom WebLogic YAML metrics definition file
+
+#### JMX Scraper
+
+Download the [JMX Scraper JAR](https://github.com/open-telemetry/opentelemetry-java-contrib/releases/latest/download/opentelemetry-jmx-scraper.jar) and run it as a standalone process:
+
+```bash
+java -jar /opt/opentelemetry-jmx-scraper.jar \
+  -config \
+  otel.jmx.service.url=service:jmx:t3://<WEBLOGIC_HOST>:<WEBLOGIC_PORT>/jndi/weblogic.management.mbeanservers.runtime \
+  otel.jmx.config=/path/to/weblogic.yaml \
+  otel.jmx.username=${WEBLOGIC_USERNAME} \
+  otel.jmx.password=${WEBLOGIC_PASSWORD} \
+  otel.metric.export.interval=60s \
+  otel.exporter.otlp.endpoint=http://<COLLECTOR_HOST>:4317
+```
+
+The `weblogic.yaml` file contains the custom [YAML metrics definition](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/jmx-metrics) that maps WebLogic runtime MBeans to the `weblogic.*` metrics used by these assets. WebLogic is not yet a built-in target system in the JMX Scraper (see [upstream request](https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/14994)).
+
+> **Note**: The T3 protocol requires the WebLogic T3 thin client library (`wlthint3client.jar`) in the classpath. If needed, use `-cp` instead of `-jar`:
+>
+> ```bash
+> java -cp /opt/opentelemetry-jmx-scraper.jar:/path/to/wlthint3client.jar \
+>   io.opentelemetry.contrib.jmxscraper.JmxScraper \
+>   -config otel.jmx.config=/path/to/weblogic.yaml ...
+> ```
+
+#### OpenTelemetry Collector
+
+Configure the OpenTelemetry Collector (or EDOT Collector) to receive metrics from the JMX Scraper via OTLP and export them to Elasticsearch:
 
 ```yaml
 receivers:
-  jmx/weblogic:
-    jar_path: /opt/opentelemetry-jmx-metrics.jar
-    endpoint: service:jmx:t3://<WEBLOGIC_HOST>:<WEBLOGIC_PORT>/jndi/weblogic.management.mbeanservers.runtime
-    target_system: weblogic
-    username: ${env:WEBLOGIC_USERNAME}
-    password: ${env:WEBLOGIC_PASSWORD}
-    collection_interval: 60s
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
 
 exporters:
   elasticsearch/otel:
@@ -71,17 +99,17 @@ exporters:
 service:
   pipelines:
     metrics:
-      receivers: [jmx/weblogic]
+      receivers: [otlp]
       exporters: [elasticsearch/otel]
 ```
 
-> **Note**: To monitor multiple WebLogic Server instances, add additional `jmx/` receiver entries (e.g. `jmx/weblogic_managed1`) each pointing to a different host and port, and include all of them in the metrics pipeline receivers list.
+> **Note**: To monitor multiple WebLogic Server instances, run additional JMX Scraper processes, each pointing to a different host and port.
 
 ## Reference
 
 ### Metrics
 
-Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/jmxreceiver/metadata.yaml) of the OpenTelemetry JMX receiver for details on the receiver configuration. The WebLogic-specific metrics are defined by the `weblogic` [target system](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-metrics/src/main/resources/target-systems) in the OpenTelemetry Java contrib repository.
+Refer to the [JMX Scraper configuration reference](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/jmx-scraper#configuration-reference) for details on the scraper configuration options.
 
 ## Dashboards
 
