@@ -144,7 +144,7 @@
               "filters": [],
               "internalReferences": [],
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS name = MAX(k8s.node.name)\n"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| KEEP k8s.node.name\n| RENAME k8s.node.name AS name\n| LIMIT 1\n"
               },
               "visualization": {
                 "colorMode": "none",
@@ -752,7 +752,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": " FROM metrics-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.node.cpu.usage), alloc_cpu = AVG(k8s.node.allocatable_cpu)\n  | EVAL cpu_util = ROUND(cpu_usage / alloc_cpu, 4)\n  | KEEP cpu_util"
+                        "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.node.cpu.usage), alloc_cpu = AVG(k8s.node.allocatable_cpu)\n  | EVAL cpu_util = ROUND(cpu_usage / alloc_cpu, 4)\n  | KEEP cpu_util"
                       },
                       "timeField": "@timestamp"
                     }
@@ -762,7 +762,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": " FROM metrics-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.node.cpu.usage), alloc_cpu = AVG(k8s.node.allocatable_cpu)\n  | EVAL cpu_util = ROUND(cpu_usage / alloc_cpu, 4)\n  | KEEP cpu_util"
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.node.cpu.usage), alloc_cpu = AVG(k8s.node.allocatable_cpu)\n  | EVAL cpu_util = ROUND(cpu_usage / alloc_cpu, 4)\n  | KEEP cpu_util"
               },
               "visualization": {
                 "applyColorTo": "background",
@@ -935,7 +935,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.node.memory.working_set), alloc_mem = AVG(k8s.node.allocatable_memory)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4)\n  | KEEP mem_util"
+                        "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.node.memory.working_set), alloc_mem = AVG(k8s.node.allocatable_memory)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4)\n  | KEEP mem_util"
                       },
                       "timeField": "@timestamp"
                     }
@@ -945,7 +945,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.node.memory.working_set), alloc_mem = AVG(k8s.node.allocatable_memory)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4)\n  | KEEP mem_util"
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.node.memory.working_set), alloc_mem = AVG(k8s.node.allocatable_memory)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4)\n  | KEEP mem_util"
               },
               "visualization": {
                 "color": "#61A2FF",
