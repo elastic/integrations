@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-high-operation-latency",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] High operation latency",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.operation.time IS NOT NULL OR metrics.mongodb.operation.count IS NOT NULL\n// operation.time and operation.count are in separate docs; FORK to combine\n| FORK (\n    WHERE metrics.mongodb.operation.time IS NOT NULL\n    | STATS op_time_rate = SUM(RATE(metrics.mongodb.operation.time)) BY resource.attributes.server.address, attributes.operation\n    | EVAL server = resource.attributes.server.address, op = attributes.operation, op_count_rate = 0.0\n  )\n  (\n    WHERE metrics.mongodb.operation.count IS NOT NULL\n    | STATS op_count_rate = SUM(RATE(metrics.mongodb.operation.count)) BY resource.attributes.server.address, attributes.operation\n    | EVAL server = resource.attributes.server.address, op = attributes.operation, op_time_rate = 0.0\n  )\n| STATS op_time_rate = SUM(op_time_rate), op_count_rate = SUM(op_count_rate) BY server, op\n| WHERE op_count_rate > 0\n| EVAL avg_latency_ms = ROUND(op_time_rate / op_count_rate, 2)\n// Alert when avg latency exceeds 100ms (adjust for your slow query threshold)\n| WHERE avg_latency_ms > 100\n| SORT avg_latency_ms DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

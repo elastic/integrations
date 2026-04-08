@@ -1,0 +1,38 @@
+{
+  "id": "oracle_otel-tablespace-utilisation-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Oracle OTel] Tablespace utilisation high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "oracle"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Tablespace metrics are dimensioned by attributes.tablespace_name\n| WHERE oracledb.tablespace_size.usage IS NOT NULL\n        AND oracledb.tablespace_size.limit IS NOT NULL\n| STATS usage = MAX(oracledb.tablespace_size.usage),\n        limit_val = MAX(oracledb.tablespace_size.limit)\n        BY oracledb.instance.name, host.name, attributes.tablespace_name\n// Exclude unlimited tablespaces (limit -1)\n| WHERE limit_val > 0\n// Utilisation threshold: 90% — critical for SYSTEM/SYSAUX; write failures at full\n// Adjust threshold per environment (e.g. 85 for stricter monitoring)\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 90\n| SORT utilisation_pct DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.tablespace_name",
+      "termSize": 50
+    }
+  }
+}

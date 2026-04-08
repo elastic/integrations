@@ -4,6 +4,10 @@
 
 The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
 
+For a demo, refer to the following video (click to view).
+
+[![CrowdStrike integration video](https://play.vidyard.com/vkkwspg4sdek1dbxatkyep.jpg)](https://videos.elastic.co/watch/VKKWSpg4sDEk1DBXATkyEP)
+
 ### Compatibility
 
 This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
@@ -309,6 +313,28 @@ The integration sets `event.severity` according to the mapping in the table abov
 | 40 - 59                | medium        |
 | 60 - 79                | high          |
 | 80 - 100               | critical      |
+
+### Query-time host metadata enrichment (LOOKUP JOIN)
+
+When the integration is installed, a transform maintains the latest host metadata (`aidmaster`) per host in a lookup index. You can enrich FDR event data with this metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
+
+**Lookup index:** `logs-crowdstrike_lookup.aidmaster` — stable alias for the aidmaster lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from `aidmaster` are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
+
+**Example ES|QL query:**
+
+```sql
+FROM logs-crowdstrike.fdr-*
+| WHERE aws.s3.object.key LIKE "*/data/*"
+| LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id
+| KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname
+| LIMIT 20
+```
+
+**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `logs-crowdstrike_lookup.aidmaster` as in the example above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest aidmaster transform, and use the **destination_index** name shown there (that name can change with the integration version).
+
+**Using enriched fields:** Enrichment from the lookup is under the `crowdstrike.info.host.*` namespace (e.g. `crowdstrike.info.host.hostname` for hostname, `crowdstrike.info.host.cid` for customer ID). Use these fields in dashboards and detection rules when building on query-time enrichment.
+
+**Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern. Disabling **Enrich Host and User Metadata** automatically makes **Keep Original Host and User Metadata** option (`keep_metadata`) ineffective and the metadata events are retained.
 
 ## Logs
 

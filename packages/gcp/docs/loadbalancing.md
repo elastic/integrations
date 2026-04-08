@@ -10,11 +10,11 @@ An example event for `loadbalancing` looks as following:
 {
     "@timestamp": "2020-06-08T23:41:30.078Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "33aed168-6d97-4912-ab3b-1a396ca824bf",
+        "id": "969be203-c3f2-46e4-a107-78e7b3810687",
+        "name": "elastic-agent-10908",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.18.0"
     },
     "cloud": {
         "project": {
@@ -24,7 +24,7 @@ An example event for `loadbalancing` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.loadbalancing_logs",
-        "namespace": "ep",
+        "namespace": "28532",
         "type": "logs"
     },
     "destination": {
@@ -40,9 +40,9 @@ An example event for `loadbalancing` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "969be203-c3f2-46e4-a107-78e7b3810687",
+        "snapshot": false,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -52,7 +52,7 @@ An example event for `loadbalancing` looks as following:
         "created": "2020-06-08T23:41:30.588Z",
         "dataset": "gcp.loadbalancing_logs",
         "id": "1oek5rg3l3fxj7",
-        "ingested": "2023-01-13T15:02:22Z",
+        "ingested": "2026-03-18T10:20:32Z",
         "kind": "event",
         "type": [
             "info"
