@@ -108,6 +108,18 @@ processors:
           ctx.tenable_ot_security.assets = normalize(ctx.tenable_ot_security.assets);
         }
 
+  - convert:
+      tag: convert_total_risk_to_double
+      field: tenable_ot_security.assets.risk.total_risk
+      type: double
+      if: ctx.tenable_ot_security?.assets?.risk?.total_risk != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: tenable_ot_security.assets.risk.total_risk
+
   ##################### ECS Fields #####################
 
   - set:
