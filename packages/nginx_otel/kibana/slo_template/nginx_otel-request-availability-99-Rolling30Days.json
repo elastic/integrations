@@ -1,0 +1,48 @@
+{
+    "id": "nginx_otel-request-availability-99-Rolling30Days",
+    "type": "slo_template",
+    "attributes": {
+        "name": "[Nginx OTel] Request availability 99% rolling 30 days",
+        "description": "This SLO tracks the request availability of NGINX via OTel access logs, ensuring that 99% of HTTP requests return non-server-error responses (status code below 500) over a rolling 30-day period to maintain reliable web serving for clients.",
+        "indicator": {
+            "type": "sli.metric.custom",
+            "params": {
+                "index": "logs-*",
+                "filter": "data_stream.dataset: \"nginx.access.otel\"",
+                "good": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count",
+                            "filter": "NOT http.response.status_code >= 500"
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "total": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count"
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "occurrences",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.99
+        },
+        "tags": [
+            "nginx",
+            "otel"
+        ],
+        "groupBy": "host.name"
+    }
+}

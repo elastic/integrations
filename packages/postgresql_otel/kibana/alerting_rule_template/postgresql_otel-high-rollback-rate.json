@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-high-rollback-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] High rollback rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Commits and rollbacks are monotonic counters per database\n| WHERE postgresql.commits IS NOT NULL OR postgresql.rollbacks IS NOT NULL\n| EVAL commits_val = TO_DOUBLE(postgresql.commits), rollbacks_val = TO_DOUBLE(postgresql.rollbacks)\n| STATS total_commits = SUM(commits_val), total_rollbacks = SUM(rollbacks_val) BY service.instance.id, postgresql.database.name\n// Minimum transaction volume to avoid noisy low-traffic databases\n| WHERE total_commits > 10\n// Rollback rate > 1% indicates application errors or contention; adjust threshold as needed\n| EVAL rollback_rate_pct = CASE(total_commits > 0, ROUND(total_rollbacks / (total_commits + total_rollbacks) * 100.0, 2), 0.0)\n| WHERE rollback_rate_pct > 1.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
