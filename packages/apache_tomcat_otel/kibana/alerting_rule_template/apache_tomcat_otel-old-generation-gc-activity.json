@@ -1,0 +1,37 @@
+{
+    "id": "apache_tomcat_otel-old-generation-gc-activity",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Tomcat OTel] Old generation GC activity",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "tomcat"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_G1_Old_Generation_CollectionCount IS NOT NULL\n| STATS\n    max_count = MAX(java_lang_G1_Old_Generation_CollectionCount),\n    min_count = MIN(java_lang_G1_Old_Generation_CollectionCount)\n  BY host.name\n| EVAL full_gc_count = max_count - min_count\n// Any old generation (full) GC pauses the entire JVM and directly impacts latency\n// Frequent full GC (> 1/min) is critical \u2014 adjust threshold to match your GC tuning\n| WHERE full_gc_count > 0\n| SORT full_gc_count DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
