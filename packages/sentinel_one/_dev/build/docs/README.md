@@ -6,7 +6,7 @@ The [SentinelOne](https://www.sentinelone.com/) integration collects and parses 
 
 For a demo, refer to the following video (click to view).
 
-[![SentinelOne integration video](https://play.vidyard.com/gQovyr6REJoU4eotQsnTTB.jpg)](https://videos.elastic.co/watch/gQovyr6REJoU4eotQsnTTB)
+[![SentinelOne integration video](https://play.vidyard.com/gqovyr6rejou4eotqsnttb.jpg)](https://videos.elastic.co/watch/gQovyr6REJoU4eotQsnTTB)
 
 ### Compatibility
 
@@ -221,4 +221,4 @@ This integration dataset uses the following APIs:
 
 #### ILM Policy
 
-To facilitate application, application risk, and threat event data, source data stream-backed indices `.ds-logs-sentinel_one.application-*`, `.ds-logs-sentinel_one.application_risk-*`, and `.ds-logs-sentinel_one.threat_event-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-sentinel_one.application-default_policy`, `logs-sentinel_one.application_risk-default_policy`, and `logs-sentinel_one.threat_event-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate application, application risk, and threat event data, source data stream-backed indices `.ds-logs-sentinel_one.application-*`, `.ds-logs-sentinel_one.application_risk-*`, `.ds-logs-sentinel_one.threat_event-*`, and `.ds-logs-sentinel_one.unified_alert-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-sentinel_one.application-default_policy`, `logs-sentinel_one.application_risk-default_policy`, `logs-sentinel_one.threat_event-default_policy`, and `logs-sentinel_one.unified_alert-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

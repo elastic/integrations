@@ -164,7 +164,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	if serverlessEnv != "" {
 		var err error
 		serverless, err = strconv.ParseBool(serverlessEnv)
-		if err != err {
+		if err != nil {
 			return fmt.Errorf("failed to parse SERVERLESS value: %w", err)
 		}
 		if serverlessProjectEnv == "" {
@@ -196,7 +196,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	if dryRunEnv != "" {
 		var err error
 		dryRun, err = strconv.ParseBool(dryRunEnv)
-		if err != err {
+		if err != nil {
 			return fmt.Errorf("failed to parse DRY_RUN value: %w", err)
 		}
 	}

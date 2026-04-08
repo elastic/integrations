@@ -1,0 +1,37 @@
+{
+    "id": "apache_tomcat_otel-file-descriptor-exhaustion",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Tomcat OTel] File descriptor exhaustion",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "tomcat"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_OperatingSystem_OpenFileDescriptorCount IS NOT NULL\n    AND java_lang_OperatingSystem_MaxFileDescriptorCount IS NOT NULL\n| STATS\n    open_fds = MAX(java_lang_OperatingSystem_OpenFileDescriptorCount),\n    max_fds = MAX(java_lang_OperatingSystem_MaxFileDescriptorCount)\n  BY host.name\n| WHERE max_fds > 0\n| EVAL fd_pct = ROUND(open_fds / max_fds * 100.0, 2)\n// File descriptor exhaustion prevents new socket connections and file operations\n// Adjust threshold based on your FD limits (ulimit -n)\n| WHERE fd_pct > 80.0\n| SORT fd_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

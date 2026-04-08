@@ -285,6 +285,9 @@ The `audit` data stream collects audit logs from Hashicorp Vault. These logs con
 | hashicorp_vault.audit.request.headers | Additional HTTP headers specified by the client as part of the request. | flattened |
 | hashicorp_vault.audit.request.id | This is the unique request identifier. | keyword |
 | hashicorp_vault.audit.request.mount_accessor |  | keyword |
+| hashicorp_vault.audit.request.mount_class |  | keyword |
+| hashicorp_vault.audit.request.mount_point |  | keyword |
+| hashicorp_vault.audit.request.mount_running_version |  | keyword |
 | hashicorp_vault.audit.request.mount_type |  | keyword |
 | hashicorp_vault.audit.request.namespace.id |  | keyword |
 | hashicorp_vault.audit.request.namespace.path |  | keyword |
@@ -313,6 +316,9 @@ The `audit` data stream collects audit logs from Hashicorp Vault. These logs con
 | hashicorp_vault.audit.response.data | Response payload. | flattened |
 | hashicorp_vault.audit.response.headers | Headers will contain the http headers from the plugin that it wishes to have as part of the output. | flattened |
 | hashicorp_vault.audit.response.mount_accessor |  | keyword |
+| hashicorp_vault.audit.response.mount_class |  | keyword |
+| hashicorp_vault.audit.response.mount_point |  | keyword |
+| hashicorp_vault.audit.response.mount_running_plugin_version |  | keyword |
 | hashicorp_vault.audit.response.mount_type |  | keyword |
 | hashicorp_vault.audit.response.redirect | Redirect is an HTTP URL to redirect to for further authentication. This is only valid for credential backends. This will be blanked for any logical backend and ignored. | keyword |
 | hashicorp_vault.audit.response.warnings |  | keyword |
@@ -593,6 +599,8 @@ The `metrics` data stream collects telemetry data from Hashicorp Vault. These me
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |  |
 | labels.auth_method | Authorization engine type. | keyword |  |
 | labels.cluster | The cluster name from which the metric originated; set in the configuration file, or automatically generated when a cluster is created. | keyword |  |
+| labels.cluster_address | Address of the Vault cluster from which the metric originated. | keyword |  |
+| labels.code | The HTTP response status code returned by the Vault API (e.g., "200", "400", "404", "500") | keyword |  |
 | labels.creation_ttl | Time-to-live value assigned to a token or lease at creation. This value is rounded up to the next-highest bucket; the available buckets are 1m, 10m, 20m, 1h, 2h, 1d, 2d, 7d, and 30d. Any longer TTL is assigned the value +Inf. | keyword |  |
 | labels.expiring |  | keyword |  |
 | labels.gauge |  | keyword |  |
@@ -605,6 +613,7 @@ The `metrics` data stream collects telemetry data from Hashicorp Vault. These me
 | labels.policy |  | keyword |  |
 | labels.quantile |  | keyword |  |
 | labels.queue_id |  | keyword |  |
+| labels.seal_wrapper_name | The name of the seal wrapper or auto-seal backend configured in Vault (e.g., awskms, transit, shamir). It provides a dimension to track metrics like decryption times, decryption errors, and health check statuses specific to each configured seal mechanism. | keyword |  |
 | labels.term |  | keyword |  |
 | labels.token_type | Identifies whether the token is a batch token or a service token. | keyword |  |
 | labels.type |  | keyword |  |
@@ -677,6 +686,7 @@ An example event for `metrics` looks as following:
         }
     },
     "labels": {
+        "cluster_address": "https://hashicorp_vault:8201",
         "host": "hashicorp_vault",
         "instance": "hashicorp_vault:8200",
         "job": "hashicorp_vault",

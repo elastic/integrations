@@ -1,0 +1,39 @@
+{
+    "id": "cassandra_otel-hints-in-progress",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Cassandra OTel] Hints in progress (replicas unreachable)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "cassandra"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-cassandra.otel-default\n// Gauge: hints currently being sent; > 0 means replicas are unreachable\n| WHERE cassandra.storage.total_hints.in_progress.count IS NOT NULL\n| STATS hints_in_progress = MAX(MAX_OVER_TIME(cassandra.storage.total_hints.in_progress.count)) BY server.address\n| WHERE hints_in_progress > 0\n| SORT hints_in_progress DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "server.address",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

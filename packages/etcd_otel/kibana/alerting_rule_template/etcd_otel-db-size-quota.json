@@ -1,0 +1,40 @@
+{
+  "id": "etcd_otel-db-size-quota",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[etcd OTel] Database size approaching quota",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "etcd",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-etcd.otel-default*\n// DB size vs quota: when ratio reaches 1, etcd enters alarm mode and rejects writes\n| WHERE etcd_mvcc_db_total_size_in_bytes IS NOT NULL\n  AND etcd_server_quota_backend_bytes IS NOT NULL\n  AND etcd_server_quota_backend_bytes > 0\n| EVAL usage_ratio = etcd_mvcc_db_total_size_in_bytes * 1.0 / etcd_server_quota_backend_bytes\n// Alert when usage exceeds 90%; adjust threshold for earlier warning\n| WHERE usage_ratio > 0.9\n| STATS usage_ratio = MAX(usage_ratio),\n    db_bytes = MAX(etcd_mvcc_db_total_size_in_bytes),\n    quota_bytes = MAX(etcd_server_quota_backend_bytes)\n    BY resource.attributes.service.instance.id\n| SORT usage_ratio DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

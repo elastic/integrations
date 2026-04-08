@@ -1,0 +1,36 @@
+{
+  "id": "envoyproxy_otel-server-state-not-live",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Envoy OTel] Server state not LIVE",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "envoy",
+      "proxy-health"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 5,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.state IS NOT NULL\n// state: 0=LIVE, 1=DRAINING, 2=PRE_INITIALIZING, 3=INITIALIZING\n| STATS max_state = MAX(envoy.server.state)\n| WHERE max_state != 0"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m"
+    }
+  }
+}
