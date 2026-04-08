@@ -3,7 +3,7 @@ title: Okta
 version: "3.14.2"
 description: Collect and parse event logs from Okta API with Elastic Agent.
 type: integration
-format_version: "3.6.0"
+format_version: "3.5.0"
 categories: [security, iam]
 conditions:
   kibana:
@@ -35,7 +35,37 @@ policy_templates:
       - type: httpjson
         title: "Collect Okta logs via API"
         description: "Collecting logs from Okta via API"
+        show_divider: false
         vars:
+          - name: connection_settings
+            type: section_header
+            title: Connection Settings
+          - name: url
+            type: text
+            title: Okta System Log API URL
+            multi: false
+            required: true
+            show_user: true
+            description: This is the URL of your Okta System Log API. For example, https://dev-123456.okta.com/api/v1/logs.
+          - name: polling_settings
+            type: section_header
+            title: Polling Settings
+          - name: interval
+            type: text
+            title: Interval
+            multi: false
+            required: true
+            show_user: true
+            default: 60s
+            description: Interval at which logs are pulled. Supported units for this parameter are h/m/s.
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            multi: false
+            required: true
+            show_user: true
+            default: 24h
+            description: Initial Interval for first log pull. Supported units for this parameter are h/m/s.
           - name: api_key
             type: password
             title: API Key
@@ -104,29 +134,6 @@ policy_templates:
             default:
               - okta.logs.read
             description: The list of 'okta.*' scopes that your Okta service application has access to.
-          - name: url
-            type: text
-            title: Okta System Log API URL
-            multi: false
-            required: true
-            show_user: true
-            description: This is the URL of your Okta System Log API. For example, https://dev-123456.okta.com/api/v1/logs.
-          - name: interval
-            type: text
-            title: Interval
-            multi: false
-            required: true
-            show_user: true
-            default: 60s
-            description: Interval at which logs are pulled. Supported units for this parameter are h/m/s.
-          - name: initial_interval
-            type: text
-            title: Initial Interval
-            multi: false
-            required: true
-            show_user: true
-            default: 24h
-            description: Initial Interval for first log pull. Supported units for this parameter are h/m/s.
           - name: http_client_timeout
             type: text
             title: HTTP Client Timeout
