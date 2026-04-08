@@ -150,22 +150,12 @@ The feature `merge_results` has been introduced in 8.4 beats which creates a sin
 
 Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16).
 
-**SQL Server 2022+ performance counters** (new counters are included in the static query list; they return no data on SQL Server 2019 and earlier):
-
-| Field | Counter Name | Object | Notes |
-|---|---|---|---|
-| `mssql.metrics.dop_feedback_adjustments_per_sec` | `DOP Feedback adjustments/sec` | SQL Statistics | IQP adaptive Degree of Parallelism feedback |
-| `mssql.metrics.ce_feedback_adjustments_per_sec` | `CE Feedback adjustments/sec` | SQL Statistics | IQP Cardinality Estimation feedback |
-| `mssql.metrics.memory_grant_feedback_adjustments_per_sec` | `Memory Grant Feedback adjustments/sec` | SQL Statistics | IQP memory grant loop |
-| `mssql.metrics.optimized_plan_forcing_forced_plans_per_sec` | `Optimized Plan Forcing: Forced Plans/sec` | Query Store | Query Store plan forcing |
-| `mssql.metrics.optimized_plan_forcing_skipped_plans_per_sec` | `Optimized Plan Forcing: Skipped Plans/sec` | Query Store | Query Store plan forcing |
 
 **SQL Server 2025+ performance counters**:
 
-| Field | Counter Name | Notes |
-|---|---|---|
-| `mssql.metrics.vector_index_operations_per_sec` | `Vector index operations/sec` | Vector search workloads |
-| `mssql.metrics.external_model_invocations_per_sec` | `External model invocations/sec` | Native AI/ML function calls |
+| Field | Counter Name | Object | Notes |
+|---|---|---|---|
+| `mssql.metrics.external_rest_endpoint_total_executions` | `Total executions` | `SQLServer:External REST Endpoint` | Cumulative count of `sp_invoke_external_rest_endpoint` calls since last restart. Use `rate()` in Kibana to derive calls/sec. Returns no data on SQL Server 2022 and earlier. |
 
 #### Transaction log metrics
 
@@ -194,13 +184,13 @@ Collects metrics related to Always On Availability Groups, including replica sta
 - `sys.availability_replicas`
 - `sys.dm_hadr_availability_replica_states`
 
-**SQL Server 2022+ fields** collected via version-safe dynamic SQL (NULL on SQL Server 2019):
+**Version-conditional fields** — each column is guarded by a `sys.columns` existence check in dynamic SQL; returns `NULL` when the column is absent on the running SQL Server version:
 
-| Field | Notes |
-|---|---|
-| `mssql.metrics.is_contained` | 1 = Contained Availability Group (own system databases/logins). SQL Server 2022+ only. |
-| `mssql.metrics.basic_availability_group` | 1 = Basic AG (Standard Edition, single DB, no readable secondary). SQL Server 2016+. |
-| `mssql.metrics.is_distributed` | 1 = Distributed Availability Group spanning two WSFC clusters. SQL Server 2016+. |
+| Field | Available On | Notes |
+|---|---|---|
+| `mssql.metrics.basic_availability_group` | SQL Server 2016–2022 | 1 = Basic AG (Standard Edition, single DB, no readable secondary). **Removed in SQL Server 2025** — returns `NULL` on SQL Server 2025 and later. |
+| `mssql.metrics.is_distributed` | SQL Server 2016+ | 1 = Distributed Availability Group spanning two WSFC clusters. |
+| `mssql.metrics.is_contained` | SQL Server 2022+ | 1 = Contained Availability Group (own system databases/logins). `NULL` on SQL Server 2019 and earlier. |
 
 Per-replica state fields (`role`, `connected_state`, `replica_synchronization_health`, `last_connect_error_*`) are collected from `sys.dm_hadr_availability_replica_states` on all supported versions.
 

@@ -150,22 +150,12 @@ The feature `merge_results` has been introduced in 8.4 beats which creates a sin
 
 Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16).
 
-**SQL Server 2022+ performance counters** (new counters are included in the static query list; they return no data on SQL Server 2019 and earlier):
-
-| Field | Counter Name | Object | Notes |
-|---|---|---|---|
-| `mssql.metrics.dop_feedback_adjustments_per_sec` | `DOP Feedback adjustments/sec` | SQL Statistics | IQP adaptive Degree of Parallelism feedback |
-| `mssql.metrics.ce_feedback_adjustments_per_sec` | `CE Feedback adjustments/sec` | SQL Statistics | IQP Cardinality Estimation feedback |
-| `mssql.metrics.memory_grant_feedback_adjustments_per_sec` | `Memory Grant Feedback adjustments/sec` | SQL Statistics | IQP memory grant loop |
-| `mssql.metrics.optimized_plan_forcing_forced_plans_per_sec` | `Optimized Plan Forcing: Forced Plans/sec` | Query Store | Query Store plan forcing |
-| `mssql.metrics.optimized_plan_forcing_skipped_plans_per_sec` | `Optimized Plan Forcing: Skipped Plans/sec` | Query Store | Query Store plan forcing |
 
 **SQL Server 2025+ performance counters**:
 
-| Field | Counter Name | Notes |
-|---|---|---|
-| `mssql.metrics.vector_index_operations_per_sec` | `Vector index operations/sec` | Vector search workloads |
-| `mssql.metrics.external_model_invocations_per_sec` | `External model invocations/sec` | Native AI/ML function calls |
+| Field | Counter Name | Object | Notes |
+|---|---|---|---|
+| `mssql.metrics.external_rest_endpoint_total_executions` | `Total executions` | `SQLServer:External REST Endpoint` | Cumulative count of `sp_invoke_external_rest_endpoint` calls since last restart. Use `rate()` in Kibana to derive calls/sec. Returns no data on SQL Server 2022 and earlier. |
 
 #### Transaction log metrics
 
@@ -194,13 +184,13 @@ Collects metrics related to Always On Availability Groups, including replica sta
 - `sys.availability_replicas`
 - `sys.dm_hadr_availability_replica_states`
 
-**SQL Server 2022+ fields** collected via version-safe dynamic SQL (NULL on SQL Server 2019):
+**Version-conditional fields** — each column is guarded by a `sys.columns` existence check in dynamic SQL; returns `NULL` when the column is absent on the running SQL Server version:
 
-| Field | Notes |
-|---|---|
-| `mssql.metrics.is_contained` | 1 = Contained Availability Group (own system databases/logins). SQL Server 2022+ only. |
-| `mssql.metrics.basic_availability_group` | 1 = Basic AG (Standard Edition, single DB, no readable secondary). SQL Server 2016+. |
-| `mssql.metrics.is_distributed` | 1 = Distributed Availability Group spanning two WSFC clusters. SQL Server 2016+. |
+| Field | Available On | Notes |
+|---|---|---|
+| `mssql.metrics.basic_availability_group` | SQL Server 2016–2022 | 1 = Basic AG (Standard Edition, single DB, no readable secondary). **Removed in SQL Server 2025** — returns `NULL` on SQL Server 2025 and later. |
+| `mssql.metrics.is_distributed` | SQL Server 2016+ | 1 = Distributed Availability Group spanning two WSFC clusters. |
+| `mssql.metrics.is_contained` | SQL Server 2022+ | 1 = Contained Availability Group (own system databases/logins). `NULL` on SQL Server 2019 and earlier. |
 
 Per-replica state fields (`role`, `connected_state`, `replica_synchronization_health`, `last_connect_error_*`) are collected from `sys.dm_hadr_availability_replica_states` on all supported versions.
 
@@ -561,25 +551,19 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.buffer_database_pages | Indicates the number of pages in the buffer pool with database content. | long | gauge |
 | mssql.metrics.buffer_page_life_expectancy | Indicates the number of seconds a page will stay in the buffer pool without references (in seconds). | long | gauge |
 | mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long | gauge |
-| mssql.metrics.ce_feedback_adjustments_per_sec | Number of times per second the Cardinality Estimation (CE) Feedback mechanism corrected a plan's row estimates. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
 | mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
 | mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
-| mssql.metrics.dop_feedback_adjustments_per_sec | Number of times per second the Degree of Parallelism (DOP) Feedback mechanism adjusted query parallelism. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
-| mssql.metrics.external_model_invocations_per_sec | Number of external AI model invocations per second via sp_invoke_external_rest_endpoint or native AI/ML functions. Available on SQL Server 2025 and later; absent (no data) on earlier versions. | float | gauge |
+| mssql.metrics.external_rest_endpoint_total_executions | Cumulative number of calls to sp_invoke_external_rest_endpoint since the last SQL Server restart (SQLServer:External REST Endpoint, "Total executions" counter). Use rate() in Kibana to derive calls per second. Available on SQL Server 2025 and later; absent (no data) on earlier versions. | long | counter |
 | mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |
 | mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
 | mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
 | mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
-| mssql.metrics.memory_grant_feedback_adjustments_per_sec | Number of times per second the Memory Grant Feedback mechanism revised a query's memory grant to avoid spills or excessive memory waits. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
 | mssql.metrics.memory_grants_pending | This is generated from the default pattern given for Dynamic Counter Name variable. This counter tells us how many processes are waiting for the memory to be assigned to them so they can get started. | long |  |
-| mssql.metrics.optimized_plan_forcing_forced_plans_per_sec | Number of query plans per second that were successfully forced via Query Store Optimized Plan Forcing. Available on SQL Server 2022 (16.x) and later; absent (no data) on earlier versions. | float | gauge |
-| mssql.metrics.optimized_plan_forcing_skipped_plans_per_sec | Number of query plans per second that were skipped by Query Store Optimized Plan Forcing (e.g., because forcing was not safe or applicable). Available on SQL Server 2022 (16.x) and later. | float | gauge |
 | mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
 | mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
 | mssql.metrics.server_name | Name of the mssql server. | keyword |  |
 | mssql.metrics.transactions | Total number of transactions | long | gauge |
 | mssql.metrics.user_connections | Total number of user connections. | long | gauge |
-| mssql.metrics.vector_index_operations_per_sec | Number of vector index operations (inserts, updates, deletes, and scans) per second. Available on SQL Server 2025 and later; absent (no data) on earlier versions. | float | gauge |
 | mssql.query | The SQL queries executed. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
@@ -818,7 +802,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
-| mssql.metrics.basic_availability_group | Indicates whether the availability group is a Basic Availability Group (1 = basic, 0 = advanced). Basic AGs are available in SQL Server 2016+ Standard Edition and do not support readable secondaries or multiple databases per group. Available on SQL Server 2016 and later. | long | gauge |
+| mssql.metrics.basic_availability_group | Indicates whether the availability group is a Basic Availability Group (1 = basic, 0 = advanced). Basic AGs are available in SQL Server 2016–2022 Standard Edition and do not support readable secondaries or multiple databases per group. The column was removed from sys.availability_groups in SQL Server 2025; this field returns NULL on SQL Server 2025 and later. | long | gauge |
 | mssql.metrics.connected_state | Whether the secondary replica is currently connected to the primary replica (0 = DISCONNECTED, 1 = CONNECTED). | long | gauge |
 | mssql.metrics.connected_state_desc | Text description of the replica connected state (DISCONNECTED or CONNECTED). | keyword |  |
 | mssql.metrics.group_id | Unique identifier (GUID) of the availability group. | keyword |  |

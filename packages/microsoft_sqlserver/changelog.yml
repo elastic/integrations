@@ -4,13 +4,13 @@
     - description: >
         Add SQL Server 2022 and 2025 support.
         availability_groups: collect per-replica state from sys.dm_hadr_availability_replica_states;
-        add is_contained (SQL 2022+), basic_availability_group, and is_distributed fields via version-safe dynamic SQL.
+        add is_contained (SQL 2022+), basic_availability_group (SQL 2016–2022, removed in SQL Server 2025),
+        and is_distributed (SQL 2016+) fields via sys.columns-guarded dynamic SQL so all three columns
+        return NULL instead of an error when absent on the running SQL Server version.
         audit: add obo_middle_tier_app_id, obo_middle_tier_app_name, external_policy_permissions_checked fields (SQL 2022+);
         add LEDGER_OPERATION_GROUP, EXTERNAL_POLICY_OPERATION_GROUP (SQL 2022), VECTOR_OPERATION_GROUP, and
         EXTERNAL_REST_ENDPOINT_GROUP (SQL 2025) audit action group mappings.
-        performance: add IQP feedback counters (dop_feedback_adjustments_per_sec, ce_feedback_adjustments_per_sec,
-        memory_grant_feedback_adjustments_per_sec), Query Store plan-forcing counters (SQL 2022+),
-        and vector/AI counters (SQL 2025+).
+        performance: add external_rest_endpoint_total_executions counter via SQLServer:External REST Endpoint (SQL 2025+).
         transaction_log: add ADR Persistent Version Store (PVS) metrics from
         sys.dm_tran_persistent_version_store_stats (SQL 2022+) via version-safe dynamic SQL.
       type: enhancement

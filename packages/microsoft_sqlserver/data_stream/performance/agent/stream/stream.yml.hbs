@@ -43,23 +43,9 @@ sql_queries:
     response_format: table
   - query: "SELECT cntr_value As 're_compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'"
     response_format: table
-  # SQL Server 2022+ Intelligent Query Processing (IQP) feedback counters.
-  # These queries return 0 rows on SQL Server 2019 and earlier (no counter match) and are safe to run on all versions.
-  - query: "SELECT cntr_value AS 'dop_feedback_adjustments_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'DOP Feedback adjustments/sec' AND object_name LIKE '%SQL Statistics%'"
-    response_format: table
-  - query: "SELECT cntr_value AS 'ce_feedback_adjustments_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'CE Feedback adjustments/sec' AND object_name LIKE '%SQL Statistics%'"
-    response_format: table
-  - query: "SELECT cntr_value AS 'memory_grant_feedback_adjustments_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Memory Grant Feedback adjustments/sec' AND object_name LIKE '%SQL Statistics%'"
-    response_format: table
-  # SQL Server 2022+ Query Store plan-forcing counters.
-  - query: "SELECT cntr_value AS 'optimized_plan_forcing_forced_plans_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Optimized Plan Forcing: Forced Plans/sec'"
-    response_format: table
-  - query: "SELECT cntr_value AS 'optimized_plan_forcing_skipped_plans_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Optimized Plan Forcing: Skipped Plans/sec'"
-    response_format: table
-  # SQL Server 2025+ vector search and AI counters (0 rows on earlier versions).
-  - query: "SELECT cntr_value AS 'vector_index_operations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Vector index operations/sec'"
-    response_format: table
-  - query: "SELECT cntr_value AS 'external_model_invocations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'External model invocations/sec'"
+  # SQL Server 2025+ External REST Endpoint counter (SQLServer:External REST Endpoint object).
+  # Tracks cumulative calls to sp_invoke_external_rest_endpoint. Returns 0 rows on SQL Server 2022 and earlier.
+  - query: "SELECT cntr_value AS 'external_rest_endpoint_total_executions' FROM sys.dm_os_performance_counters WHERE counter_name = 'Total executions' AND object_name LIKE '%External REST Endpoint%'"
     response_format: table
   - query: "SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters WHERE counter_name like '{{dynamic_counter_name}}'"
     response_format: variables

@@ -7,10 +7,13 @@ merge_results: false
 driver: "mssql"
 sql_queries:
   # Availability groups metrics (compatible with SQL Server 2019+)
-  # is_contained (SQL Server 2022+) and basic_availability_group (SQL Server 2016+) are
-  # fetched via dynamic SQL so the query is safe to run on older versions.
+  # basic_availability_group (added SQL Server 2016, removed SQL Server 2025),
+  # is_distributed (SQL Server 2016+), and is_contained (SQL Server 2022+) are
+  # guarded by checking sys.columns so the query is safe across all versions.
   - query: >-
-      DECLARE @version INT = CONVERT(INT, SERVERPROPERTY('ProductMajorVersion'));
+      DECLARE @hasBasicAG      BIT = CASE WHEN EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('sys.availability_groups') AND name = 'basic_availability_group') THEN 1 ELSE 0 END;
+      DECLARE @hasIsDistributed BIT = CASE WHEN EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('sys.availability_groups') AND name = 'is_distributed')          THEN 1 ELSE 0 END;
+      DECLARE @hasIsContained   BIT = CASE WHEN EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('sys.availability_groups') AND name = 'is_contained')            THEN 1 ELSE 0 END;
       DECLARE @sql NVARCHAR(MAX) = N'SELECT
           @@servername AS server_name,
           ag.name,
@@ -19,12 +22,10 @@ sql_queries:
           ags.synchronization_health,
           ags.synchronization_health_desc,
           ags.primary_recovery_health,
-          ags.secondary_recovery_health,
-          CAST(ag.basic_availability_group AS INT) AS basic_availability_group,
-          CAST(ag.is_distributed AS INT) AS is_distributed'
-        + CASE WHEN @version >= 16
-               THEN N', CAST(ag.is_contained AS INT) AS is_contained'
-               ELSE N', NULL AS is_contained' END
+          ags.secondary_recovery_health'
+        + CASE WHEN @hasBasicAG      = 1 THEN N', CAST(ag.basic_availability_group AS INT) AS basic_availability_group' ELSE N', NULL AS basic_availability_group' END
+        + CASE WHEN @hasIsDistributed = 1 THEN N', CAST(ag.is_distributed          AS INT) AS is_distributed'          ELSE N', NULL AS is_distributed'          END
+        + CASE WHEN @hasIsContained   = 1 THEN N', CAST(ag.is_contained            AS INT) AS is_contained'            ELSE N', NULL AS is_contained'            END
         + N' FROM sys.dm_hadr_availability_group_states ags
              JOIN sys.availability_groups ag ON ags.group_id = ag.group_id;';
       EXEC sp_executesql @sql;
