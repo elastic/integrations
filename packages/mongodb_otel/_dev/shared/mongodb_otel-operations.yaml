@@ -1,0 +1,247 @@
+# MongoDB OTel dashboards — metrics-mongodbreceiver.otel-default
+# Data stream: metrics-mongodbreceiver.otel-default
+# Filter: data_stream.dataset == "mongodbreceiver.otel"
+
+dashboards:
+  # ─── Operations ───────────────────────────────────────────────────────
+- id: mongodb_otel-operations
+  name: '[MongoDB OTel] Operations'
+  description: Traffic, latency, and operation breakdown for MongoDB.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    layout_algorithm: blocked
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: mongodbreceiver.otel
+  controls:
+  - type: options
+    label: Server
+    data_view: metrics-*
+    field: attributes.mongodb.instance
+  panels:
+  - hide_title: true
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: mongodb_otel-overview
+      - label: Operations
+        dashboard: mongodb_otel-operations
+      - label: Capacity
+        dashboard: mongodb_otel-capacity
+  - hide_title: true
+    size: {w: 48, h: 12}
+    markdown:
+      content: |
+        ## [MongoDB OTel] Operations
+
+        This dashboard focuses on MongoDB traffic and latency:
+        - Operation rate by type (insert, query, update, delete, getmore, command)
+        - Operation time and average latency trends
+        - Global lock contention
+        - Network I/O (receive/transmit)
+  - title: Operations/sec
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.operation.count IS NOT NULL
+        | STATS ops_rate = SUM(RATE(metrics.mongodb.operation.count))
+      primary:
+        field: ops_rate
+        label: Operations/sec
+        format:
+          type: number
+          decimals: 1
+          suffix: "/sec"
+  - title: Avg Latency (ms)
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | FORK (
+            WHERE metrics.mongodb.operation.time IS NOT NULL
+            | STATS op_time_rate = SUM(RATE(metrics.mongodb.operation.time))
+          )
+          (
+            WHERE metrics.mongodb.operation.count IS NOT NULL
+            | STATS op_count_rate = SUM(RATE(metrics.mongodb.operation.count))
+          )
+        | STATS op_time_rate = SUM(op_time_rate), op_count_rate = SUM(op_count_rate)
+        | EVAL avg_latency_ms = CASE(op_count_rate > 0, op_time_rate / op_count_rate, 0)
+      primary:
+        field: avg_latency_ms
+        label: Avg Latency
+        format:
+          type: number
+          decimals: 1
+  - title: Global Lock (ms/sec)
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.global_lock.time IS NOT NULL
+        | STATS lock_rate = SUM(RATE(metrics.mongodb.global_lock.time))
+      primary:
+        field: lock_rate
+        label: Global Lock Rate
+        format:
+          type: number
+          decimals: 1
+  - title: Network Rx Delta (bytes)
+    hide_title: true
+    size: {w: 12, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.network.io.receive IS NOT NULL
+        | STATS rx = SUM(DELTA(metrics.mongodb.network.io.receive))
+      primary:
+        field: rx
+        label: Network Rx Delta
+        format:
+          type: bytes
+  - title: Operation Rate by Type
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.operation.count IS NOT NULL
+        | STATS ops_rate = SUM(RATE(metrics.mongodb.operation.count))
+          BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+             attributes.operation
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: ops_rate
+        label: Operations per second
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: attributes.operation
+      legend:
+        visible: show
+        position: right
+  - title: Operation Distribution
+    size: {w: 24, h: 12}
+    esql:
+      type: pie
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.operation.count IS NOT NULL
+        | STATS ops = SUM(RATE(metrics.mongodb.operation.count)) BY attributes.operation
+        | SORT ops DESC
+        | LIMIT 8
+      metrics:
+      - field: ops
+      breakdowns:
+      - field: attributes.operation
+        label: Operation
+      appearance:
+        donut: medium
+  - title: Operation Time by Type
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.operation.time IS NOT NULL
+        | STATS op_time_rate = SUM(RATE(metrics.mongodb.operation.time))
+          BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+             attributes.operation
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: op_time_rate
+        label: Operation Time (ms/sec)
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: attributes.operation
+      legend:
+        visible: show
+        position: right
+  - title: Global Lock Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.global_lock.time IS NOT NULL
+        | STATS lock_rate = SUM(RATE(metrics.mongodb.global_lock.time))
+          BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: lock_rate
+        label: Global Lock Time (ms/sec)
+        format:
+          type: number
+          decimals: 1
+  - title: Network I/O
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | FORK (
+            WHERE metrics.mongodb.network.io.receive IS NOT NULL
+            | STATS bytes_rate = SUM(DELTA(metrics.mongodb.network.io.receive))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL direction = "receive"
+          )
+          (
+            WHERE metrics.mongodb.network.io.transmit IS NOT NULL
+            | STATS bytes_rate = SUM(DELTA(metrics.mongodb.network.io.transmit))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL direction = "transmit"
+          )
+        | STATS bytes_rate = SUM(bytes_rate) BY time_bucket, direction
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: bytes_rate
+        label: Bytes Delta
+        format:
+          type: bytes
+      breakdown:
+        field: direction
+      legend:
+        visible: show
+        position: right

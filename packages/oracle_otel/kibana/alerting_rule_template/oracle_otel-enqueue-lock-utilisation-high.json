@@ -1,0 +1,38 @@
+{
+  "id": "oracle_otel-enqueue-lock-utilisation-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Oracle OTel] Enqueue lock utilisation high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "oracle"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Enqueue locks usage and limit are in separate TSDB document groups; aggregate across time window\n| STATS usage = MAX(oracledb.enqueue_locks.usage),\n        limit_val = MAX(oracledb.enqueue_locks.limit)\n        BY oracledb.instance.name, host.name\n| WHERE limit_val > 0\n// Utilisation > 85% precedes lock contention and enqueue wait events\n// Adjust threshold to tune sensitivity\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "oracledb.instance.name",
+      "termSize": 50
+    }
+  }
+}

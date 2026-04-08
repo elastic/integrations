@@ -1,0 +1,39 @@
+{
+    "id": "cassandra_otel-high-write-latency-p99",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Cassandra OTel] High write latency (p99)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "cassandra"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-cassandra.otel-default\n// p99 write latency in microseconds\n| WHERE `cassandra.client.request.write.latency.99p` IS NOT NULL\n| STATS p99_us = MAX(MAX_OVER_TIME(`cassandra.client.request.write.latency.99p`)) BY server.address\n// Threshold: 50000 us = 50 ms; writes typically lower than reads\n| WHERE p99_us > 50000\n| SORT p99_us DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "server.address",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
