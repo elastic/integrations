@@ -1,0 +1,270 @@
+dashboards:
+- id: etcd_otel-storage
+  name: '[etcd OTel] Storage & MVCC'
+  description: >-
+    Storage metrics: DB size vs quota, MVCC operations, compaction, watchers, and disk usage.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  filters:
+  - field: data_stream.dataset
+    equals: etcd.otel
+  controls:
+  - type: options
+    label: Instance
+    data_view: metrics-*
+    field: resource.attributes.service.instance.id
+  panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+  - size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: etcd_otel-overview
+      - label: Raft Consensus
+        dashboard: etcd_otel-raft-consensus
+      - label: Storage & MVCC
+        dashboard: etcd_otel-storage
+      - label: gRPC Traffic
+        dashboard: etcd_otel-grpc
+
+      # ─── Dashboard Overview Panel ───────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [etcd OTel] Storage & MVCC
+
+        Storage and key-value layer metrics:
+        - DB size vs quota (critical saturation indicator)
+        - MVCC operation rates (put, range, delete, txn)
+        - Compaction and defragmentation
+        - Watchers, watch streams, and lease operations
+
+      # ─── KPI Metric Row (top) ───────────────────────────────────────────
+  - title: DB Size % of Quota
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_mvcc_db_total_size_in_bytes IS NOT NULL AND etcd_server_quota_backend_bytes IS NOT
+        NULL AND etcd_server_quota_backend_bytes > 0
+      - STATS db_size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes)), quota = MAX(LAST_OVER_TIME(etcd_server_quota_backend_bytes))
+      - EVAL pct = db_size * 1.0 / quota
+      primary:
+        field: pct
+        label: DB % Quota
+        format:
+          type: percent
+          decimals: 1
+
+  - title: DB Size (bytes)
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_mvcc_db_total_size_in_bytes IS NOT NULL
+      - STATS db_size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes))
+      primary:
+        field: db_size
+        label: DB Size
+        format:
+          type: bytes
+          decimals: 2
+
+  - title: Keys Count
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_debugging_mvcc_keys_total IS NOT NULL
+      - STATS keys = MAX(LAST_OVER_TIME(etcd_debugging_mvcc_keys_total))
+      primary:
+        field: keys
+        label: Keys
+        format:
+          type: number
+          decimals: 2
+          compact: true
+
+  - title: Watchers
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_debugging_mvcc_watcher_total IS NOT NULL
+      - STATS watchers = MAX(LAST_OVER_TIME(etcd_debugging_mvcc_watcher_total))
+      primary:
+        field: watchers
+        label: Watchers
+        format:
+          type: number
+          decimals: 0
+
+      # ─── DB Size Table ──────────────────────────────────────────────────
+  - title: DB Size vs Quota by Instance
+    size: {w: 48, h: 10}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_mvcc_db_total_size_in_bytes IS NOT NULL AND etcd_server_quota_backend_bytes IS NOT
+        NULL AND etcd_server_quota_backend_bytes > 0
+      - STATS db_size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes)), quota = MAX(LAST_OVER_TIME(etcd_server_quota_backend_bytes)) 
+        BY instance = resource.attributes.service.instance.id
+      - EVAL pct = db_size * 1.0 / quota
+      - SORT pct DESC
+      breakdowns:
+      - field: instance
+        label: Instance
+      metrics:
+      - field: pct
+        label: DB % of Quota
+        format:
+          type: percent
+          decimals: 1
+
+      # ─── Storage Charts ─────────────────────────────────────────────────
+  - title: Database Size by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_mvcc_db_total_size_in_bytes IS NOT NULL
+      - STATS db_size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        instance = resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: db_size
+        label: DB Size
+        format:
+          type: bytes
+          decimals: 2
+      breakdown:
+        field: instance
+
+  - title: DB Size In Use vs Total by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_mvcc_db_total_size_in_bytes IS NOT NULL | STATS size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id | EVAL type = "total" ) ( WHERE etcd_mvcc_db_total_size_in_use_in_bytes IS NOT NULL | STATS size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_use_in_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id | EVAL type = "in_use" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: size
+        label: Bytes
+        format:
+          type: bytes
+          decimals: 2
+      breakdown:
+        field: type
+
+      # ─── MVCC Operations ────────────────────────────────────────────────
+  - title: MVCC Operations Rate
+    size: {w: 48, h: 10}
+    esql:
+      type: area
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_mvcc_put_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_put_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "put" ) ( WHERE etcd_mvcc_range_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_range_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "range" ) ( WHERE etcd_mvcc_delete_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_delete_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "delete" ) ( WHERE etcd_mvcc_txn_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_txn_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "txn" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Ops/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: op
+
+      # ─── Watchers and Keys ──────────────────────────────────────────────
+  - title: Watchers and Watch Streams by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_debugging_mvcc_watcher_total IS NOT NULL | STATS count = MAX(LAST_OVER_TIME(etcd_debugging_mvcc_watcher_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id | EVAL metric = "watchers" ) ( WHERE etcd_debugging_mvcc_watch_stream_total IS NOT NULL | STATS count = MAX(LAST_OVER_TIME(etcd_debugging_mvcc_watch_stream_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id | EVAL metric = "streams" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: count
+        label: Count
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: metric
+
+  - title: Keys and Revision by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_debugging_mvcc_keys_total IS NOT NULL | STATS value = MAX(LAST_OVER_TIME(etcd_debugging_mvcc_keys_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id | EVAL metric = "keys" ) ( WHERE etcd_debugging_mvcc_current_revision IS NOT NULL | STATS value = MAX(LAST_OVER_TIME(etcd_debugging_mvcc_current_revision)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id | EVAL metric = "revision" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: value
+        label: Value
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: metric
+
+      # ─── Lease Operations ───────────────────────────────────────────────
+  - title: Lease Operations Rate
+    size: {w: 24, h: 10}
+    esql:
+      type: area
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_debugging_lease_granted_total IS NOT NULL | STATS rate = SUM(RATE(etcd_debugging_lease_granted_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "granted" ) ( WHERE etcd_debugging_lease_renewed_total IS NOT NULL | STATS rate = SUM(RATE(etcd_debugging_lease_renewed_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "renewed" ) ( WHERE etcd_debugging_lease_revoked_total IS NOT NULL | STATS rate = SUM(RATE(etcd_debugging_lease_revoked_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "revoked" ) ( WHERE etcd_debugging_server_lease_expired_total IS NOT NULL | STATS rate = SUM(RATE(etcd_debugging_server_lease_expired_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "expired" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Ops/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: op
