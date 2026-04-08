@@ -366,10 +366,35 @@ processors:
                 malwareList.add(entity.name);
               }
               if (entity.affectedOperatingSystems instanceof List) {
+                def osMapping = [
+                  'Windows': ['win', 'windows', 'win32', 'win64', 'microsoft windows'],
+                  'Linux': ['elf', 'linux', 'unix'],
+                  'macOS': ['mac', 'macos', 'osx', 'os x', 'darwin', 'mac os', 'mac os x'],
+                  'AWS': ['aws', 'amazon web services'],
+                  'Azure': ['azure', 'microsoft azure'],
+                  'Azure AD': ['azure ad', 'azure active directory', 'azuread'],
+                  'GCP': ['gcp', 'google cloud', 'google cloud platform'],
+                  'Network': ['network'],
+                  'Office 365': ['office 365', 'o365', 'office365', 'microsoft 365', 'm365'],
+                  'SaaS': ['saas', 'software as a service']
+                  ];
+                
                 for (os in entity.affectedOperatingSystems) {
-                  platformsSet.add(os == 'win' ? 'Windows' : os == 'elf' ? 'Linux' : os);
-                }
+                  if (os == null) continue;
+        
+                  def osLower = os.toLowerCase();
+                  def normalized = null;
+                
+                  for (entry in osMapping.entrySet()) {
+                    if (entry.getValue().contains(osLower)) {
+                    normalized = entry.getKey();
+                    break;
+                    }
+                  }
+                  platformsSet.add(normalized);
               }
+            }
+
             } else if (entity.type == 'url' && entity.name != null && entity.name != '') {
               def refanged = entity.name.replace('[.]', '.');
               if (!urlList.contains(refanged)) {
@@ -523,6 +548,12 @@ processors:
       tag: remove_event_original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
+      ignore_missing: true
+
+  - remove:
+      field: message
+      tag: remove_message_after_rename
+      if: ctx.event?.original != null
       ignore_missing: true
 
   # Clean up temporary processing fields
