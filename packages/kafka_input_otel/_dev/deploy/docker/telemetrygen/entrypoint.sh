@@ -21,8 +21,10 @@ telemetrygen metrics \
   --metrics 10000 \
   --otlp-attributes='service.name="telemetrygen.metrics"' &
 
-exec telemetrygen traces \
+telemetrygen traces \
   --otlp-insecure \
   --otlp-endpoint otelcol:4317 \
   --traces 10000 \
-  --otlp-attributes='service.name="telemetrygen.traces"'
+  --otlp-attributes='service.name="telemetrygen.traces"' &
+
+wait
