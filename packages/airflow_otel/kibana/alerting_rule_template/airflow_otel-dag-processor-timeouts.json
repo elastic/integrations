@@ -23,7 +23,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.processor_timeouts IS NOT NULL\n// Processor timeouts are a counter; sum increments in the window\n| STATS timeout_count = SUM(airflow.dag_processing.processor_timeouts)\n| WHERE timeout_count > 0"
+        "esql": "TS metrics-airflow.otel-default*\n| WHERE airflow.dag_processing.processor_timeouts IS NOT NULL\n// Counter: detect new processor timeouts in the window\n| STATS timeout_count = SUM(INCREASE(airflow.dag_processing.processor_timeouts))\n| WHERE timeout_count > 0"
       },
       "size": 0,
       "threshold": [0],
