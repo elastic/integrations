@@ -472,6 +472,7 @@ dashboards:
       - FROM metrics-redisenterprise.otel-default
       - WHERE listener_total_req IS NOT NULL
       - STATS `Latency` = AVG(listener_acc_latency), `Read Latency` = AVG(listener_acc_read_latency), `Write Latency` = AVG(listener_acc_write_latency), `Total Req` = SUM(listener_total_req), `Read Req` = SUM(listener_read_req), `Write Req` = SUM(listener_write_req), Connections = AVG(listener_conns), `Auth Errors` = SUM(listener_auth_errors), `Max Conn Exceeded` = SUM(listener_max_connections_exceeded) BY bdb, endpoint, node, port
+      - EVAL `Latency` = COALESCE(`Latency`, 0.0), `Read Latency` = COALESCE(`Read Latency`, 0.0), `Write Latency` = COALESCE(`Write Latency`, 0.0), `Total Req` = COALESCE(`Total Req`, 0), `Read Req` = COALESCE(`Read Req`, 0), `Write Req` = COALESCE(`Write Req`, 0), Connections = COALESCE(Connections, 0), `Auth Errors` = COALESCE(`Auth Errors`, 0), `Max Conn Exceeded` = COALESCE(`Max Conn Exceeded`, 0)
       - SORT `Total Req` DESC
       - LIMIT 100
       breakdowns:

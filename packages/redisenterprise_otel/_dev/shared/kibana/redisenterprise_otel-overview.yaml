@@ -395,7 +395,8 @@ dashboards:
       - FROM metrics-redisenterprise.otel-default
       - WHERE bdb_up IS NOT NULL
       - STATS Status = MAX(bdb_up), `Avg Latency (s)` = AVG(bdb_avg_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), Connections = AVG(bdb_conns), `Shards Used` = AVG(bdb_shards_used) BY bdb
-      - EVAL `Memory %` = ROUND((`Used Memory` / `Memory Limit`) * 100, 1)
+      - EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Memory Limit`) * 100, 1), 0.0)
+      - EVAL Status = COALESCE(Status, 0), `Avg Latency (s)` = COALESCE(`Avg Latency (s)`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `Used Memory` = COALESCE(`Used Memory`, 0), `Memory Limit` = COALESCE(`Memory Limit`, 0), Connections = COALESCE(Connections, 0), `Shards Used` = COALESCE(`Shards Used`, 0)
       - SORT bdb ASC
       - LIMIT 100
       breakdowns:
@@ -450,8 +451,9 @@ dashboards:
       query:
       - FROM metrics-redisenterprise.otel-default
       - WHERE node_up IS NOT NULL
-      - EVAL cpu_used = node_cpu_user + node_cpu_system
+      - EVAL cpu_used = COALESCE(node_cpu_user, 0.0) + COALESCE(node_cpu_system, 0.0)
       - STATS Status = MAX(node_up), `CPU Used (cores)` = AVG(cpu_used), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), Connections = AVG(node_conns), Requests = AVG(node_total_req) BY node
+      - EVAL Status = COALESCE(Status, 0), `CPU Used (cores)` = COALESCE(`CPU Used (cores)`, 0.0), `Free Memory` = COALESCE(`Free Memory`, 0), `Available Memory` = COALESCE(`Available Memory`, 0), `Ephemeral Storage` = COALESCE(`Ephemeral Storage`, 0), `Persistent Storage` = COALESCE(`Persistent Storage`, 0), Connections = COALESCE(Connections, 0), Requests = COALESCE(Requests, 0)
       - SORT node ASC
       - LIMIT 100
       breakdowns:

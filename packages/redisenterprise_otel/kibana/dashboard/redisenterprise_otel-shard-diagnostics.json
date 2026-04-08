@@ -3238,19 +3238,19 @@
                                         "isMetric": true
                                     }
                                 ],
-                                "layerId": "7c6e575c-c0b6-5e1d-121c-ca9a0a96d486",
+                                "layerId": "8bcb80a7-0846-313f-b984-59e727e3b041",
                                 "layerType": "data"
                             },
                             "query": {
-                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_up IS NOT NULL\n| STATS Status = MAX(redis_up), `Used Memory` = AVG(redis_used_memory), `Max Memory` = AVG(redis_maxmemory), `RSS` = AVG(redis_used_memory_rss), `Frag Ratio` = AVG(redis_mem_fragmentation_ratio), `Ops/sec` = AVG(redis_instantaneous_ops_per_sec), `CPU %` = AVG(redis_process_cpu_usage_percent), `Clients` = AVG(redis_connected_clients), `Blocked` = AVG(redis_blocked_clients), `Errors` = SUM(redis_total_error_replies) BY redis, bdb, node, role\n| EVAL `Memory %` = ROUND((`Used Memory` / `Max Memory`) * 100, 1)\n| SORT `Used Memory` DESC\n| LIMIT 100"
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_up IS NOT NULL\n| STATS Status = MAX(redis_up), `Used Memory` = AVG(redis_used_memory), `Max Memory` = AVG(redis_maxmemory), `RSS` = AVG(redis_used_memory_rss), `Frag Ratio` = AVG(redis_mem_fragmentation_ratio), `Ops/sec` = AVG(redis_instantaneous_ops_per_sec), `CPU %` = AVG(redis_process_cpu_usage_percent), `Clients` = AVG(redis_connected_clients), `Blocked` = AVG(redis_blocked_clients), `Errors` = SUM(redis_total_error_replies) BY redis, bdb, node, role\n| EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Max Memory`) * 100, 1), 0.0)\n| EVAL Status = COALESCE(Status, 0), `Used Memory` = COALESCE(`Used Memory`, 0), `Max Memory` = COALESCE(`Max Memory`, 0), `RSS` = COALESCE(`RSS`, 0), `Frag Ratio` = COALESCE(`Frag Ratio`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `CPU %` = COALESCE(`CPU %`, 0.0), `Clients` = COALESCE(`Clients`, 0), `Blocked` = COALESCE(`Blocked`, 0), `Errors` = COALESCE(`Errors`, 0)\n| SORT `Used Memory` DESC\n| LIMIT 100"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "7c6e575c-c0b6-5e1d-121c-ca9a0a96d486": {
+                                        "8bcb80a7-0846-313f-b984-59e727e3b041": {
                                             "query": {
-                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_up IS NOT NULL\n| STATS Status = MAX(redis_up), `Used Memory` = AVG(redis_used_memory), `Max Memory` = AVG(redis_maxmemory), `RSS` = AVG(redis_used_memory_rss), `Frag Ratio` = AVG(redis_mem_fragmentation_ratio), `Ops/sec` = AVG(redis_instantaneous_ops_per_sec), `CPU %` = AVG(redis_process_cpu_usage_percent), `Clients` = AVG(redis_connected_clients), `Blocked` = AVG(redis_blocked_clients), `Errors` = SUM(redis_total_error_replies) BY redis, bdb, node, role\n| EVAL `Memory %` = ROUND((`Used Memory` / `Max Memory`) * 100, 1)\n| SORT `Used Memory` DESC\n| LIMIT 100"
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_up IS NOT NULL\n| STATS Status = MAX(redis_up), `Used Memory` = AVG(redis_used_memory), `Max Memory` = AVG(redis_maxmemory), `RSS` = AVG(redis_used_memory_rss), `Frag Ratio` = AVG(redis_mem_fragmentation_ratio), `Ops/sec` = AVG(redis_instantaneous_ops_per_sec), `CPU %` = AVG(redis_process_cpu_usage_percent), `Clients` = AVG(redis_connected_clients), `Blocked` = AVG(redis_blocked_clients), `Errors` = SUM(redis_total_error_replies) BY redis, bdb, node, role\n| EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Max Memory`) * 100, 1), 0.0)\n| EVAL Status = COALESCE(Status, 0), `Used Memory` = COALESCE(`Used Memory`, 0), `Max Memory` = COALESCE(`Max Memory`, 0), `RSS` = COALESCE(`RSS`, 0), `Frag Ratio` = COALESCE(`Frag Ratio`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `CPU %` = COALESCE(`CPU %`, 0.0), `Clients` = COALESCE(`Clients`, 0), `Blocked` = COALESCE(`Blocked`, 0), `Errors` = COALESCE(`Errors`, 0)\n| SORT `Used Memory` DESC\n| LIMIT 100"
                                             },
                                             "columns": [
                                                 {

@@ -575,7 +575,8 @@ dashboards:
       - FROM metrics-redisenterprise.otel-default
       - WHERE redis_up IS NOT NULL
       - STATS Status = MAX(redis_up), `Used Memory` = AVG(redis_used_memory), `Max Memory` = AVG(redis_maxmemory), `RSS` = AVG(redis_used_memory_rss), `Frag Ratio` = AVG(redis_mem_fragmentation_ratio), `Ops/sec` = AVG(redis_instantaneous_ops_per_sec), `CPU %` = AVG(redis_process_cpu_usage_percent), `Clients` = AVG(redis_connected_clients), `Blocked` = AVG(redis_blocked_clients), `Errors` = SUM(redis_total_error_replies) BY redis, bdb, node, role
-      - EVAL `Memory %` = ROUND((`Used Memory` / `Max Memory`) * 100, 1)
+      - EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Max Memory`) * 100, 1), 0.0)
+      - EVAL Status = COALESCE(Status, 0), `Used Memory` = COALESCE(`Used Memory`, 0), `Max Memory` = COALESCE(`Max Memory`, 0), `RSS` = COALESCE(`RSS`, 0), `Frag Ratio` = COALESCE(`Frag Ratio`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `CPU %` = COALESCE(`CPU %`, 0.0), `Clients` = COALESCE(`Clients`, 0), `Blocked` = COALESCE(`Blocked`, 0), `Errors` = COALESCE(`Errors`, 0)
       - SORT `Used Memory` DESC
       - LIMIT 100
       breakdowns:

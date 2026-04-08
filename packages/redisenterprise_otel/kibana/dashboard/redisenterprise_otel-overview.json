@@ -2118,19 +2118,19 @@
                                         "isMetric": true
                                     }
                                 ],
-                                "layerId": "35803aca-35aa-e3bf-fdbd-ee27db223bdb",
+                                "layerId": "4c7f901e-fead-e7b4-7dbf-42b52860f188",
                                 "layerType": "data"
                             },
                             "query": {
-                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS Status = MAX(bdb_up), `Avg Latency (s)` = AVG(bdb_avg_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), Connections = AVG(bdb_conns), `Shards Used` = AVG(bdb_shards_used) BY bdb\n| EVAL `Memory %` = ROUND((`Used Memory` / `Memory Limit`) * 100, 1)\n| SORT bdb ASC\n| LIMIT 100"
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS Status = MAX(bdb_up), `Avg Latency (s)` = AVG(bdb_avg_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), Connections = AVG(bdb_conns), `Shards Used` = AVG(bdb_shards_used) BY bdb\n| EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Memory Limit`) * 100, 1), 0.0)\n| EVAL Status = COALESCE(Status, 0), `Avg Latency (s)` = COALESCE(`Avg Latency (s)`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `Used Memory` = COALESCE(`Used Memory`, 0), `Memory Limit` = COALESCE(`Memory Limit`, 0), Connections = COALESCE(Connections, 0), `Shards Used` = COALESCE(`Shards Used`, 0)\n| SORT bdb ASC\n| LIMIT 100"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "35803aca-35aa-e3bf-fdbd-ee27db223bdb": {
+                                        "4c7f901e-fead-e7b4-7dbf-42b52860f188": {
                                             "query": {
-                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS Status = MAX(bdb_up), `Avg Latency (s)` = AVG(bdb_avg_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), Connections = AVG(bdb_conns), `Shards Used` = AVG(bdb_shards_used) BY bdb\n| EVAL `Memory %` = ROUND((`Used Memory` / `Memory Limit`) * 100, 1)\n| SORT bdb ASC\n| LIMIT 100"
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS Status = MAX(bdb_up), `Avg Latency (s)` = AVG(bdb_avg_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), Connections = AVG(bdb_conns), `Shards Used` = AVG(bdb_shards_used) BY bdb\n| EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Memory Limit`) * 100, 1), 0.0)\n| EVAL Status = COALESCE(Status, 0), `Avg Latency (s)` = COALESCE(`Avg Latency (s)`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `Used Memory` = COALESCE(`Used Memory`, 0), `Memory Limit` = COALESCE(`Memory Limit`, 0), Connections = COALESCE(Connections, 0), `Shards Used` = COALESCE(`Shards Used`, 0)\n| SORT bdb ASC\n| LIMIT 100"
                                             },
                                             "columns": [
                                                 {
@@ -2540,19 +2540,19 @@
                                         "isMetric": true
                                     }
                                 ],
-                                "layerId": "afb14fa6-274b-d274-84bb-92d28e4a7c4e",
+                                "layerId": "459d7807-5f09-cbbe-a22f-065a4f4b84cb",
                                 "layerType": "data"
                             },
                             "query": {
-                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| EVAL cpu_used = node_cpu_user + node_cpu_system\n| STATS Status = MAX(node_up), `CPU Used (cores)` = AVG(cpu_used), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), Connections = AVG(node_conns), Requests = AVG(node_total_req) BY node\n| SORT node ASC\n| LIMIT 100"
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| EVAL cpu_used = COALESCE(node_cpu_user, 0.0) + COALESCE(node_cpu_system, 0.0)\n| STATS Status = MAX(node_up), `CPU Used (cores)` = AVG(cpu_used), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), Connections = AVG(node_conns), Requests = AVG(node_total_req) BY node\n| EVAL Status = COALESCE(Status, 0), `CPU Used (cores)` = COALESCE(`CPU Used (cores)`, 0.0), `Free Memory` = COALESCE(`Free Memory`, 0), `Available Memory` = COALESCE(`Available Memory`, 0), `Ephemeral Storage` = COALESCE(`Ephemeral Storage`, 0), `Persistent Storage` = COALESCE(`Persistent Storage`, 0), Connections = COALESCE(Connections, 0), Requests = COALESCE(Requests, 0)\n| SORT node ASC\n| LIMIT 100"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "afb14fa6-274b-d274-84bb-92d28e4a7c4e": {
+                                        "459d7807-5f09-cbbe-a22f-065a4f4b84cb": {
                                             "query": {
-                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| EVAL cpu_used = node_cpu_user + node_cpu_system\n| STATS Status = MAX(node_up), `CPU Used (cores)` = AVG(cpu_used), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), Connections = AVG(node_conns), Requests = AVG(node_total_req) BY node\n| SORT node ASC\n| LIMIT 100"
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| EVAL cpu_used = COALESCE(node_cpu_user, 0.0) + COALESCE(node_cpu_system, 0.0)\n| STATS Status = MAX(node_up), `CPU Used (cores)` = AVG(cpu_used), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), Connections = AVG(node_conns), Requests = AVG(node_total_req) BY node\n| EVAL Status = COALESCE(Status, 0), `CPU Used (cores)` = COALESCE(`CPU Used (cores)`, 0.0), `Free Memory` = COALESCE(`Free Memory`, 0), `Available Memory` = COALESCE(`Available Memory`, 0), `Ephemeral Storage` = COALESCE(`Ephemeral Storage`, 0), `Persistent Storage` = COALESCE(`Persistent Storage`, 0), Connections = COALESCE(Connections, 0), Requests = COALESCE(Requests, 0)\n| SORT node ASC\n| LIMIT 100"
                                             },
                                             "columns": [
                                                 {
