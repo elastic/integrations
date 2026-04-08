@@ -200,7 +200,11 @@ dashboards:
         FROM logs-*
         | WHERE azure.category == "ResourceHealth"
         | WHERE azure.resourcehealth.state IS NOT NULL
-        | STATS count = COUNT(*) BY azure.resourcehealth.state
+        | WHERE cloud.resource_id IS NOT NULL
+        | EVAL ts_state = CONCAT(DATE_FORMAT("yyyy-MM-dd HH:mm:ss.SSS", @timestamp), "|", azure.resourcehealth.state)
+        | STATS latest = MV_LAST(MV_SORT(VALUES(ts_state))) BY cloud.resource_id
+        | EVAL state = MV_LAST(SPLIT(latest, "|"))
+        | STATS count = COUNT(*) BY state
         | SORT count DESC
         | LIMIT 6
       time_field: '@timestamp'
@@ -209,7 +213,7 @@ dashboards:
       metrics:
       - field: count
       breakdowns:
-      - field: azure.resourcehealth.state
+      - field: state
         label: Health State
       appearance:
         donut: medium

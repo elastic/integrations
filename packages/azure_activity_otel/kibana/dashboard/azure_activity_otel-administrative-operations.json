@@ -1204,7 +1204,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "54ac711b-2306-7b06-15fd-d3d0bc75ee21",
+                                        "layerId": "dd189120-2714-9e4d-d72f-d0b2b6602f0f",
                                         "layerType": "data",
                                         "colorMapping": {
                                             "assignments": [],
@@ -1241,15 +1241,15 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| STATS op_count = COUNT(*) BY azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 10\n"
+                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| WHERE azure.correlation_id IS NOT NULL\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id) BY azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 10\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "54ac711b-2306-7b06-15fd-d3d0bc75ee21": {
+                                        "dd189120-2714-9e4d-d72f-d0b2b6602f0f": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| STATS op_count = COUNT(*) BY azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 10\n"
+                                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| WHERE azure.correlation_id IS NOT NULL\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id) BY azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 10\n"
                                             },
                                             "columns": [
                                                 {
@@ -1333,7 +1333,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "d74c3628-9eb7-0b6c-0cfe-1ae8d3cd97a1",
+                                        "layerId": "7ab5968c-8986-250c-027a-57d4bc28a2dc",
                                         "layerType": "data",
                                         "colorMapping": {
                                             "assignments": [],
@@ -1354,7 +1354,7 @@
                                             }
                                         },
                                         "primaryGroups": [
-                                            "ae836e36-1a47-9710-e221-0fd364d11af6"
+                                            "22b7734f-f009-2d7a-0cd6-d4a7ba892fc3"
                                         ],
                                         "metrics": [
                                             "0a824a41-1c38-2f32-e6fa-ef6ae5a714da"
@@ -1370,15 +1370,15 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.result.type IS NOT NULL\n| STATS count = COUNT(*) BY azure.result.type\n| SORT count DESC\n| LIMIT 8\n"
+                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.result.type IS NOT NULL\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL ts_result = CONCAT(DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss.SSS\", @timestamp), \"|\", azure.result.type)\n| STATS latest = MV_LAST(MV_SORT(VALUES(ts_result))) BY azure.correlation_id\n| EVAL result_type = MV_LAST(SPLIT(latest, \"|\"))\n| STATS count = COUNT(*) BY result_type\n| SORT count DESC\n| LIMIT 8\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "d74c3628-9eb7-0b6c-0cfe-1ae8d3cd97a1": {
+                                        "7ab5968c-8986-250c-027a-57d4bc28a2dc": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.result.type IS NOT NULL\n| STATS count = COUNT(*) BY azure.result.type\n| SORT count DESC\n| LIMIT 8\n"
+                                                "esql": "FROM logs-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.result.type IS NOT NULL\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL ts_result = CONCAT(DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss.SSS\", @timestamp), \"|\", azure.result.type)\n| STATS latest = MV_LAST(MV_SORT(VALUES(ts_result))) BY azure.correlation_id\n| EVAL result_type = MV_LAST(SPLIT(latest, \"|\"))\n| STATS count = COUNT(*) BY result_type\n| SORT count DESC\n| LIMIT 8\n"
                                             },
                                             "columns": [
                                                 {
@@ -1393,8 +1393,8 @@
                                                     "inMetricDimension": true
                                                 },
                                                 {
-                                                    "fieldName": "azure.result.type",
-                                                    "columnId": "ae836e36-1a47-9710-e221-0fd364d11af6",
+                                                    "fieldName": "result_type",
+                                                    "columnId": "22b7734f-f009-2d7a-0cd6-d4a7ba892fc3",
                                                     "label": "Result Type",
                                                     "customLabel": true
                                                 }
@@ -1412,8 +1412,8 @@
                                                     "inMetricDimension": true
                                                 },
                                                 {
-                                                    "fieldName": "azure.result.type",
-                                                    "columnId": "ae836e36-1a47-9710-e221-0fd364d11af6",
+                                                    "fieldName": "result_type",
+                                                    "columnId": "22b7734f-f009-2d7a-0cd6-d4a7ba892fc3",
                                                     "label": "Result Type",
                                                     "customLabel": true
                                                 }

@@ -898,7 +898,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "f76328d9-fd34-5203-6eed-66597ebed512",
+                                        "layerId": "6cb8c58d-1819-9a4a-bf47-999829380df1",
                                         "layerType": "data",
                                         "colorMapping": {
                                             "assignments": [
@@ -959,7 +959,7 @@
                                             }
                                         },
                                         "primaryGroups": [
-                                            "04f4041b-f9b6-e9c1-84c4-30f964008326"
+                                            "571360d2-ca09-b815-5aaa-2607ea4177f5"
                                         ],
                                         "metrics": [
                                             "0a824a41-1c38-2f32-e6fa-ef6ae5a714da"
@@ -975,15 +975,15 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IS NOT NULL\n| STATS count = COUNT(*) BY azure.resourcehealth.state\n| SORT count DESC\n| LIMIT 6\n"
+                                "esql": "FROM logs-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IS NOT NULL\n| WHERE cloud.resource_id IS NOT NULL\n| EVAL ts_state = CONCAT(DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss.SSS\", @timestamp), \"|\", azure.resourcehealth.state)\n| STATS latest = MV_LAST(MV_SORT(VALUES(ts_state))) BY cloud.resource_id\n| EVAL state = MV_LAST(SPLIT(latest, \"|\"))\n| STATS count = COUNT(*) BY state\n| SORT count DESC\n| LIMIT 6\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "f76328d9-fd34-5203-6eed-66597ebed512": {
+                                        "6cb8c58d-1819-9a4a-bf47-999829380df1": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IS NOT NULL\n| STATS count = COUNT(*) BY azure.resourcehealth.state\n| SORT count DESC\n| LIMIT 6\n"
+                                                "esql": "FROM logs-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IS NOT NULL\n| WHERE cloud.resource_id IS NOT NULL\n| EVAL ts_state = CONCAT(DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss.SSS\", @timestamp), \"|\", azure.resourcehealth.state)\n| STATS latest = MV_LAST(MV_SORT(VALUES(ts_state))) BY cloud.resource_id\n| EVAL state = MV_LAST(SPLIT(latest, \"|\"))\n| STATS count = COUNT(*) BY state\n| SORT count DESC\n| LIMIT 6\n"
                                             },
                                             "columns": [
                                                 {
@@ -998,8 +998,8 @@
                                                     "inMetricDimension": true
                                                 },
                                                 {
-                                                    "fieldName": "azure.resourcehealth.state",
-                                                    "columnId": "04f4041b-f9b6-e9c1-84c4-30f964008326",
+                                                    "fieldName": "state",
+                                                    "columnId": "571360d2-ca09-b815-5aaa-2607ea4177f5",
                                                     "label": "Health State",
                                                     "customLabel": true
                                                 }
@@ -1017,8 +1017,8 @@
                                                     "inMetricDimension": true
                                                 },
                                                 {
-                                                    "fieldName": "azure.resourcehealth.state",
-                                                    "columnId": "04f4041b-f9b6-e9c1-84c4-30f964008326",
+                                                    "fieldName": "state",
+                                                    "columnId": "571360d2-ca09-b815-5aaa-2607ea4177f5",
                                                     "label": "Health State",
                                                     "customLabel": true
                                                 }
