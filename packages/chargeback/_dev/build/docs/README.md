@@ -1,12 +1,6 @@
 # Chargeback
 
-_Technical preview: This integration is not generally available (GA). It is developed by Elastic's Customer Engineering team. See **Support** below for how to get help._
-
-## Support
-
-The Chargeback integration is created and supported by Elastic **Field** (Customer Engineering), not Elastic Product. While it remains in technical preview and is not GA, assistance is provided through Field—for example via your Elastic account team or the Elastician who shared this integration with you. It is not covered under standard Elastic Support entitlements until that is explicitly arranged.
-
-When the integration reaches GA, Elastic will coordinate with **Support** to put an official support model in place so entitled customers can obtain help through standard support channels.
+_Technical preview: This integration is being developed by Elastic's Customer Engineering team. Please report any issues to the Elastician who shared this integration with you._
 
 The Chargeback integration provides FinOps visibility into Elastic usage across tenants. By integrating data from the [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) and [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integrations, it enables the determination of value provided by each deployment, data stream, and tier across the organisation. This allows Centre of Excellence (CoE) teams to accurately allocate costs back to the appropriate tenant.
 
