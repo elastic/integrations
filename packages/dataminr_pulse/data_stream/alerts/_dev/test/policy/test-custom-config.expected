@@ -10,7 +10,7 @@ inputs:
           data_stream:
             dataset: dataminr_pulse.alerts
           interval: 10m
-          max_executions: 10
+          max_executions: 1000
           processors:
             - add_fields:
                 fields:
@@ -65,7 +65,7 @@ inputs:
                     }
                 ).as(auth,
                   has(auth.error) ?
-                    {"events": {"error": {"message": auth.error}}}
+                    {"events": [{"error": {"message": auth.error}}]}
                   :
                     (
                       (state.next_cursor != "") ?

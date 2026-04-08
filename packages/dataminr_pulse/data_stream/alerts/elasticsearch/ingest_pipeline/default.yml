@@ -18,16 +18,6 @@ processors:
       field: event.kind
       tag: set_event_kind_default
       value: event
-  - append:
-      field: event.category
-      tag: append_web_into_event_category
-      value: web
-      allow_duplicates: false
-  - append:
-      field: event.type
-      tag: append_info_into_event_type
-      value: info
-      allow_duplicates: false
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -221,7 +211,7 @@ processors:
       target_field: dataminr_pulse.live_brief.timestamp
       ignore_missing: true
 
-  # Map EstimatedEventLocation.coordinates to geo.location
+  # Map EstimatedEventLocation.coordinates to source.geo.location
   - script:
       lang: painless
       tag: script_map_geo_coordinates
@@ -229,10 +219,11 @@ processors:
       source: |
         def coords = ctx.json.estimatedEventLocation.coordinates;
         if (coords instanceof List && coords.size() == 2) {
-          if (ctx.geo == null) { ctx.geo = [:]; }
-          if (ctx.geo.location == null) { ctx.geo.location = [:]; }
-          ctx.geo.location.lat = coords[0];
-          ctx.geo.location.lon = coords[1];
+          if (ctx.source == null) { ctx.source = [:]; }
+          if (ctx.source.geo == null) { ctx.source.geo = [:]; }
+          if (ctx.source.geo.location == null) { ctx.source.geo.location = [:]; }
+          ctx.source.geo.location.lat = coords[0];
+          ctx.source.geo.location.lon = coords[1];
         }
       on_failure:
         - append:
@@ -241,7 +232,7 @@ processors:
 
   # Store location name
   - set:
-      field: geo.name
+      field: source.geo.name
       tag: set_location_name
       copy_from: json.estimatedEventLocation.name
       ignore_empty_value: true
@@ -479,6 +470,79 @@ processors:
         if (enrichments.size() > 0) {
           if (ctx.threat == null) { ctx.threat = [:]; }
           ctx.threat.enrichments = enrichments;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}}
+              with tag '{{{_ingest.on_failure_processor_tag}}}'
+              in pipeline {{{_ingest.pipeline}}}
+              failed with message: {{{_ingest.on_failure_message}}}
+
+  # Dynamically set event.category and event.type based on discovered entities
+  - script:
+      lang: painless
+      tag: set_event_category_based_on_entities
+      source: |
+        // Initialize event.category as array if not exists
+        if (ctx.event == null) { ctx.event = [:]; }
+        if (ctx.event.category == null) { ctx.event.category = []; }
+        if (ctx.event.type == null) { ctx.event.type = []; }
+        
+        boolean hasEntities = false;
+        
+        // Check for vulnerability
+        if (ctx.dataminr_pulse?.vulnerability?.name != null && ctx.dataminr_pulse.vulnerability.name.size() > 0) {
+          if (!ctx.event.category.contains('vulnerability')) {
+            ctx.event.category.add('vulnerability');
+          }
+          if (!ctx.event.type.contains('info')) {
+            ctx.event.type.add('info');
+          }
+          hasEntities = true;
+        }
+        
+        // Check for threat actor
+        if (ctx.dataminr_pulse?.threatactor?.name != null && ctx.dataminr_pulse.threatactor.name.size() > 0) {
+          if (!ctx.event.category.contains('threat')) {
+            ctx.event.category.add('threat');
+          }
+          if (!ctx.event.type.contains('indicator')) {
+            ctx.event.type.add('indicator');
+          }
+          hasEntities = true;
+        }
+        
+        // Check for malware
+        if (ctx.dataminr_pulse?.malware != null && ctx.dataminr_pulse.malware.size() > 0) {
+          if (!ctx.event.category.contains('malware')) {
+            ctx.event.category.add('malware');
+          }
+          if (!ctx.event.type.contains('info')) {
+            ctx.event.type.add('info');
+          }
+          hasEntities = true;
+        }
+        
+        // Check for network indicators (IPs or URLs)
+        if ((ctx.dataminr_pulse?.ip != null && ctx.dataminr_pulse.ip.size() > 0) ||
+            (ctx.dataminr_pulse?.url != null && ctx.dataminr_pulse.url.size() > 0)) {
+          if (!ctx.event.category.contains('threat')) {
+            ctx.event.category.add('threat');
+          }
+          if (!ctx.event.type.contains('indicator')) {
+            ctx.event.type.add('indicator');
+          }
+          hasEntities = true;
+        }
+        
+        // Fallback to 'web' and 'info' if no specific entities found
+        if (!hasEntities) {
+          ctx.event.category.add('web');
+          if (!ctx.event.type.contains('info')) {
+            ctx.event.type.add('info');
+          }
         }
       on_failure:
         - append:

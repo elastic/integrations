@@ -185,7 +185,7 @@ The integration maps Dataminr Pulse alert fields to Elastic Common Schema (ECS) 
 | Alert creation time | event.created | When the alert was created |
 | Alert priority (Alert, Urgent, Flash) | event.severity | Numeric severity (10, 20, 30\) |
 | Dataminr alert URL | event.url | Link to alert in Dataminr platform |
-| Dataminr alert location coordinates | geo.location | Coordinates of the Dataminr alert |
+| Dataminr alert location coordinates | source.geo.location | Coordinates of the Dataminr alert |
 | Dataminr alert location name | geo.name | address of the Dataminr alert |
 | Dataminr entity category | event.category | Categories \- Threat Actor, Vulnerability, Malware |
 | Threat actor name | threat.group.name | Threat actor name (MITRE ATT\&CK) |

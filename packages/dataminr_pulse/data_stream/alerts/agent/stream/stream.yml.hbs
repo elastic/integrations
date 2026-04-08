@@ -1,6 +1,6 @@
 config_version: 2
 interval: {{interval}}
-max_executions: 10
+max_executions: 1000
 resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -87,7 +87,7 @@ program: |
           }
       ).as(auth,
         has(auth.error) ?
-          {"events": {"error": {"message": auth.error}}}
+          {"events": [{"error": {"message": auth.error}}]}
         :
           (
             (state.next_cursor != "") ?

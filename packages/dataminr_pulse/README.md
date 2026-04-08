@@ -177,28 +177,28 @@ The integration maps Dataminr Pulse alert fields to Elastic Common Schema (ECS) 
 
 ## ECS Field Mappings
 
-| Dataminr Pulse Field | ECS Field | Description |
-| :---- | :---- | :---- |
-| Alert timestamp | @timestamp | Event timestamp |
-| Alert headline | message | Single-sentence event summary |
-| Alert ID | event.id | Unique alert identifier |
-| Alert creation time | event.created | When the alert was created |
-| Alert priority (Alert, Urgent, Flash) | event.severity | Numeric severity (10, 20, 30\) |
-| Dataminr alert URL | event.url | Link to alert in Dataminr platform |
-| Dataminr alert location coordinates | geo.location | Coordinates of the Dataminr alert |
-| Dataminr alert location name | geo.name | address of the Dataminr alert |
-| Dataminr entity category | event.category | Categories \- Threat Actor, Vulnerability, Malware |
-| Threat actor name | threat.group.name | Threat actor name (MITRE ATT\&CK) |
-| Threat actor aliases | threat.group.alias | Threat actor alternative names |
-| Threat actor country of origin | threat.indicator.geo.country\_iso\_code | Country of Origin for threat actors |
-| CVE ID | vulnerability.id | CVE identifier |
-| CVSS score | vulnerability.score.base | CVSS base score |
-| Vulnerability description | vulnerability.description | Summary of the vulnerability |
-| Type to distinguish URL vs IP IOC | threat.enrichments\[\].indicator.type | Values \- ip4-ddr, ip6-addr, url |
-| URL | Threat.enrichments\[\].indicator.url.original | URL discovered to be related to the alert, as in the original form |
-| URL or IP addresses | threat.enrichments\[\].indicator.name | URL/IP addresses discovered to be related to the alert. |
-| IP Addresses | threat.enrichments\[\].indicator.ip | IP Addresses discovered to be related to the alert. |
-| Port | threat.enrichments\[\].indicator.port\[\]  | Ports discovered to be associated with the IP addresses above |
+| Dataminr Pulse Field                  | ECS Field                                     | Description                                                        |
+|:--------------------------------------|:----------------------------------------------|:-------------------------------------------------------------------|
+| Alert timestamp                       | @timestamp                                    | Event timestamp                                                    |
+| Alert headline                        | message                                       | Single-sentence event summary                                      |
+| Alert ID                              | event.id                                      | Unique alert identifier                                            |
+| Alert creation time                   | event.created                                 | When the alert was created                                         |
+| Alert priority (Alert, Urgent, Flash) | event.severity                                | Numeric severity (10, 20, 30\)                                     |
+| Dataminr alert URL                    | event.url                                     | Link to alert in Dataminr platform                                 |
+| Dataminr alert location coordinates   | source.geo.location                           | Coordinates of the Dataminr alert                                  |
+| Dataminr alert location name          | geo.name                                      | address of the Dataminr alert                                      |
+| Dataminr entity category              | event.category                                | Categories \- Threat Actor, Vulnerability, Malware                 |
+| Threat actor name                     | threat.group.name                             | Threat actor name (MITRE ATT\&CK)                                  |
+| Threat actor aliases                  | threat.group.alias                            | Threat actor alternative names                                     |
+| Threat actor country of origin        | threat.indicator.geo.country\_iso\_code       | Country of Origin for threat actors                                |
+| CVE ID                                | vulnerability.id                              | CVE identifier                                                     |
+| CVSS score                            | vulnerability.score.base                      | CVSS base score                                                    |
+| Vulnerability description             | vulnerability.description                     | Summary of the vulnerability                                       |
+| Type to distinguish URL vs IP IOC     | threat.enrichments\[\].indicator.type         | Values \- ip4-ddr, ip6-addr, url                                   |
+| URL                                   | Threat.enrichments\[\].indicator.url.original | URL discovered to be related to the alert, as in the original form |
+| URL or IP addresses                   | threat.enrichments\[\].indicator.name         | URL/IP addresses discovered to be related to the alert.            |
+| IP Addresses                          | threat.enrichments\[\].indicator.ip           | IP Addresses discovered to be related to the alert.                |
+| Port                                  | threat.enrichments\[\].indicator.port\[\]     | Ports discovered to be associated with the IP addresses above      |
 
 ## Custom Dataminr Fields
 
