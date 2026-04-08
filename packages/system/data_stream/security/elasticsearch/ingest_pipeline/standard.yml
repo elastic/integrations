@@ -4352,6 +4352,7 @@ processors:
           }
           ctx.process.put("args", al);
           ctx.process.put("command_line", ctx.winlog.event_data.CommandLine);
+          ctx.process.put("args_count", al.size());
         }
         if ((ctx.winlog?.event_data?.TargetUserName != null) &&
             (!ctx.winlog.event_data.TargetUserName.equals("-"))) {
@@ -4431,6 +4432,87 @@ processors:
       if: |-
         ctx.winlog?.event_data?.OldTargetUserName != null &&
         ctx.winlog.event_data.OldTargetUserName != "-"
+
+  - set:
+      field: event.reason
+      copy_from: winlog.event_data.OperationType
+      if: ctx.event?.code == "5136" && ctx.winlog?.event_data?.OperationType != null
+
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx.event?.code == "5136" && ctx.winlog?.event_data?.ObjectDN != null
+      tag: Event 5136 ObjectDN and ObjectClass mappings
+      description: Parse ObjectDN for event 5136 to set user.target.name, group.name based on ObjectClass
+      source: |-
+        String objectDN = ctx.winlog.event_data.ObjectDN.toString();
+        String objectClass = ctx.winlog?.event_data?.ObjectClass != null ? ctx.winlog.event_data.ObjectClass.toString().toLowerCase() : "";
+        int cnStart = objectDN.toLowerCase().indexOf("cn=");
+        if (cnStart < 0) return;
+        int valueStart = cnStart + 3;
+        int dnLen = objectDN.length();
+        StringBuilder cn = new StringBuilder();
+        for (int i = valueStart; i < dnLen; i++) {
+          char c = objectDN.charAt(i);
+          if (c == 92 && i + 1 < dnLen) { // backslash escape
+            char n = objectDN.charAt(++i);
+            int d1 = Character.digit(n, 16);
+            if (d1 >= 0 && i + 1 < dnLen) { // hex escape
+              int d2 = Character.digit(objectDN.charAt(i + 1), 16);
+              if (d2 >= 0) {
+                cn.append((char)(d1 * 16 + d2));
+                i++;
+                continue;
+              }
+            }
+            cn.append(n); // simple escaped char
+            continue;
+          }
+          if (c == 44) break; // unescaped comma ends CN
+          cn.append(c);
+        }
+        String cnValue = cn.toString().trim();
+        if (cnValue.length() == 0) return;
+        if (objectClass.contains("user")) {
+          if (ctx.user == null) ctx.put("user", new HashMap());
+          if (ctx.user.target == null) ctx.user.put("target", new HashMap());
+          ctx.user.target.put("name", cnValue);
+          if (ctx.related == null) ctx.put("related", new HashMap());
+          if (ctx.related.user == null) ctx.related.put("user", new ArrayList());
+          if (!ctx.related.user.contains(cnValue)) ctx.related.user.add(cnValue);
+        } else if (objectClass.contains("group")) {
+          if (ctx.group == null) ctx.put("group", new HashMap());
+          ctx.group.put("name", cnValue);
+          if (ctx.related == null) ctx.put("related", new HashMap());
+          if (ctx.related.user == null) ctx.related.put("user", new ArrayList());
+          if (!ctx.related.user.contains(cnValue)) ctx.related.user.add(cnValue);
+        } else if (objectClass.contains("computer") && (ctx.host == null || ctx.host.name == null)) {
+          if (ctx.host == null) ctx.put("host", new HashMap());
+          ctx.host.put("name", cnValue);
+        }
+
+  - set:
+      description: >-
+        Map registry key path from ObjectName for registry audit events only.
+        4657 is registry-specific; other IDs are generic object access — match when ObjectType is Key
+        or ObjectName uses the NT object-manager registry prefix (\REGISTRY\), so file/AD objects are not mapped.
+      field: registry.path
+      copy_from: winlog.event_data.ObjectName
+      if: |-
+        ctx.winlog?.event_data?.ObjectName != null &&
+        (
+          ["4657"].contains(ctx.event?.code) ||
+          (
+            ["4656","4658","4660","4661","4662","4663"].contains(ctx.event?.code) &&
+            (
+              ctx.winlog?.event_data?.ObjectType == "Key" ||
+              (
+                ctx.winlog.event_data.ObjectName instanceof String &&
+                ctx.winlog.event_data.ObjectName.toUpperCase().startsWith("\\REGISTRY\\")
+              )
+            )
+          )
+        )
 
   - gsub:
       description: Normalize separators in the SidList value.

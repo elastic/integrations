@@ -1,0 +1,40 @@
+{
+    "id": "couchdb_otel-high-average-request-time",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[CouchDB OTel] High average request time (latency)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// Average request time is a gauge — use MAX_OVER_TIME for peak detection\n| WHERE couchdb.average_request_time IS NOT NULL\n| STATS max_avg_request_time_ms = MAX(MAX_OVER_TIME(couchdb.average_request_time))\n  BY couchdb.node.name\n// Latency threshold in ms — adjust for your SLO (e.g. 500–2000 ms)\n| WHERE max_avg_request_time_ms > 1000\n| SORT max_avg_request_time_ms DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

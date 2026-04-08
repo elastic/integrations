@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-long-running-queries",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Long-running queries",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 4,
+      "statusChangeThreshold": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-postgresqlreceiver.otel-*\n// Active query samples from pg_stat_activity; total_exec_time is real-time execution ms\n| WHERE event_name == \"db.server.query_sample\"\n| WHERE attributes.postgresql.total_exec_time IS NOT NULL\n// Threshold: queries running > 5 minutes (300000 ms); adjust for your SLA\n| WHERE attributes.postgresql.total_exec_time > 300000\n| KEEP service.instance.id, attributes.db.namespace, attributes.db.query.text, attributes.postgresql.total_exec_time, attributes.postgresql.pid\n| SORT attributes.postgresql.total_exec_time DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
