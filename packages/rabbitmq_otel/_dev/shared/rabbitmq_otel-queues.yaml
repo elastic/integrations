@@ -1,0 +1,300 @@
+---
+dashboards:
+  - name: "[RabbitMQ OTel] Queues"
+    id: rabbitmq_otel-queues
+    description: >-
+      Queue-level view: message depths (ready/unack), consumer counts, publish and delivery rates,
+      and dropped messages per queue.
+
+    filters:
+      - field: "data_stream.dataset"
+        equals: "rabbitmqreceiver.otel"
+
+    controls:
+      - type: options
+        label: "Queue"
+        data_view: "metrics-*"
+        field: "resource.attributes.rabbitmq.queue.name"
+      - type: options
+        label: "VHost"
+        data_view: "metrics-*"
+        field: "resource.attributes.rabbitmq.vhost.name"
+
+    panels:
+      # Navigation Links
+      - hide_title: true
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: "Overview"
+              dashboard: "rabbitmq_otel-overview"
+            - label: "Queues"
+              dashboard: "rabbitmq_otel-queues"
+            - label: "Nodes"
+              dashboard: "rabbitmq_otel-nodes"
+
+      # Description Markdown
+      - hide_title: true
+        size: {w: 16, h: 12}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [RabbitMQ OTel] Queues
+
+            Queue-level monitoring for RabbitMQ:
+            - Ready vs unacknowledged message counts per queue
+            - Publish and delivery rates over time
+            - Consumer count per queue
+            - Dropped (unroutable) messages
+            - Queue ranking and backlog identification
+
+      # Queues with Messages Metric
+      - hide_title: true
+        size: {w: 12, h: 6}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.message.current IS NOT NULL
+            | STATS total = COUNT_DISTINCT(resource.attributes.rabbitmq.queue.name)
+          primary:
+            field: "total"
+            label: "Queues"
+            format:
+              type: number
+              decimals: 0
+
+      # Queues with Zero Consumers Metric
+      - hide_title: true
+        size: {w: 10, h: 6}
+        position: {x: 28, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.consumer.count IS NOT NULL
+            | STATS consumers = MAX(LAST_OVER_TIME(rabbitmq.consumer.count)) BY resource.attributes.rabbitmq.queue.name
+            | WHERE consumers == 0
+            | STATS count = COUNT(*)
+          primary:
+            field: "count"
+            label: "No Consumers"
+            format:
+              type: number
+              decimals: 0
+
+      # Total Ready Messages Metric
+      - hide_title: true
+        size: {w: 10, h: 6}
+        position: {x: 38, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.message.current IS NOT NULL AND attributes.state == "ready"
+            | STATS total = SUM(LAST_OVER_TIME(rabbitmq.message.current))
+          primary:
+            field: "total"
+            label: "Ready"
+            format:
+              type: number
+              decimals: 2
+              compact: true
+
+      # Total Unacknowledged Metric
+      - hide_title: true
+        size: {w: 16, h: 6}
+        position: {x: 16, y: 8}
+        esql:
+          type: metric
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.message.current IS NOT NULL AND attributes.state == "unacknowledged"
+            | STATS total = SUM(LAST_OVER_TIME(rabbitmq.message.current))
+          primary:
+            field: "total"
+            label: "Unack"
+            format:
+              type: number
+              decimals: 2
+              compact: true
+
+      # Avg Consumers per Queue Metric
+      - hide_title: true
+        size: {w: 16, h: 6}
+        position: {x: 32, y: 8}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.consumer.count IS NOT NULL
+            | STATS consumers = MAX(rabbitmq.consumer.count) BY resource.attributes.rabbitmq.queue.name
+            | STATS total_consumers = SUM(consumers), queue_count = COUNT(*)
+            | EVAL avg = 1.0 * total_consumers / queue_count
+          primary:
+            field: "avg"
+            label: "Avg Consumers"
+            format:
+              type: number
+              decimals: 1
+
+      # Ready Messages by Queue Over Time
+      - title: "Ready Messages by Queue Over Time"
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 14}
+        esql:
+          type: area
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.message.current IS NOT NULL AND attributes.state == "ready"
+            | STATS ready = MAX(LAST_OVER_TIME(rabbitmq.message.current)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.rabbitmq.queue.name
+            | SORT time_bucket ASC
+          dimension:
+            field: "time_bucket"
+            data_type: date
+          metrics:
+            - field: "ready"
+              label: "Ready"
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: "resource.attributes.rabbitmq.queue.name"
+            label: "queue"
+          legend:
+            visible: show
+            position: right
+
+      # Publish Rate by Queue Over Time
+      - title: "Publish Rate by Queue Over Time"
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 26}
+        esql:
+          type: line
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.message.published IS NOT NULL
+            | STATS rate = SUM(RATE(rabbitmq.message.published)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.rabbitmq.queue.name
+            | SORT time_bucket ASC
+          dimension:
+            field: "time_bucket"
+            data_type: date
+          metrics:
+            - field: "rate"
+              label: "Published/s"
+              format:
+                type: number
+                decimals: 1
+                suffix: "/s"
+          breakdown:
+            field: "resource.attributes.rabbitmq.queue.name"
+            label: "queue"
+          legend:
+            visible: show
+            position: right
+
+      # Delivery Rate by Queue Over Time
+      - title: "Delivery Rate by Queue Over Time"
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 26}
+        esql:
+          type: line
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.message.delivered IS NOT NULL
+            | STATS rate = SUM(RATE(rabbitmq.message.delivered)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.rabbitmq.queue.name
+            | SORT time_bucket ASC
+          dimension:
+            field: "time_bucket"
+            data_type: date
+          metrics:
+            - field: "rate"
+              label: "Delivered/s"
+              format:
+                type: number
+                decimals: 1
+                suffix: "/s"
+          breakdown:
+            field: "resource.attributes.rabbitmq.queue.name"
+            label: "queue"
+          legend:
+            visible: show
+            position: right
+
+      # Consumer Count by Queue
+      - title: "Consumer Count by Queue"
+        size: {w: 48, h: 10}
+        position: {x: 0, y: 36}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.consumer.count IS NOT NULL
+            | STATS consumers = MAX(LAST_OVER_TIME(rabbitmq.consumer.count)) BY resource.attributes.rabbitmq.queue.name
+            | SORT consumers DESC
+            | LIMIT 15
+          dimension:
+            field: "resource.attributes.rabbitmq.queue.name"
+            label: "queue"
+          metrics:
+            - field: "consumers"
+              label: "Consumers"
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      # Queue Summary Table
+      - title: "Queue Summary"
+        size: {w: 48, h: 15}
+        position: {x: 0, y: 46}
+        esql:
+          type: datatable
+          query: |
+            TS metrics-rabbitmqreceiver.otel-default
+            | WHERE data_stream.dataset == "rabbitmqreceiver.otel"
+            | WHERE rabbitmq.message.current IS NOT NULL OR rabbitmq.consumer.count IS NOT NULL
+            | STATS msg = MAX(LAST_OVER_TIME(rabbitmq.message.current)), consumers = MAX(LAST_OVER_TIME(rabbitmq.consumer.count)) BY resource.attributes.rabbitmq.queue.name, resource.attributes.rabbitmq.vhost.name, attributes.state
+            | STATS ready = MAX(CASE(attributes.state == "ready", msg)), unack = MAX(CASE(attributes.state == "unacknowledged", msg)), consumers = MAX(consumers) BY queue = resource.attributes.rabbitmq.queue.name, vhost = resource.attributes.rabbitmq.vhost.name
+            | EVAL ready = COALESCE(ready, TO_LONG(0)), unack = COALESCE(unack, TO_LONG(0)), consumers = COALESCE(consumers, TO_LONG(0))
+            | SORT ready DESC
+            | LIMIT 50
+          dimensions:
+            - field: "queue"
+              label: "queue"
+            - field: "vhost"
+              label: "VHost"
+          metrics:
+            - field: "ready"
+              label: "Ready"
+              format:
+                type: number
+                decimals: 2
+            - field: "unack"
+              label: "Unack"
+              format:
+                type: number
+                decimals: 2
+            - field: "consumers"
+              label: "Consumers"
+              format:
+                type: number
+                decimals: 2
+          paging:
+            enabled: true
+            page_size: 15

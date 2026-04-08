@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-request-errors-spike",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] Request errors spike",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-haproxyreceiver.otel-*\n// Request errors (malformed, timed out) \u2014 frontend-level counter\n| WHERE haproxy.requests.errors IS NOT NULL\n| STATS err_increase = SUM(INCREASE(haproxy.requests.errors))\n  BY haproxy.proxy_name, haproxy.addr\n| WHERE err_increase > 10\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT err_increase DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -32,8 +32,16 @@ receivers:
       digest_text_limit: {{statement_events_digest_text_limit}}
       time_limit: {{statement_events_time_limit}}
       limit: {{statement_events_limit}}
+    events:
+      db.server.query_sample:
+        enabled: {{enable_query_sample_events}}
+      db.server.top_query:
+        enabled: {{enable_top_query_events}}
+{{#if enable_query_sample_events}}
     query_sample_collection:
       max_rows_per_query: {{query_sample_max_rows_per_query}}
+{{/if}}
+{{#if enable_top_query_events}}
     top_query_collection:
       lookback_time: {{top_query_lookback_time}}
       max_query_sample_count: {{top_query_max_query_sample_count}}
@@ -41,6 +49,7 @@ receivers:
       collection_interval: {{top_query_collection_interval}}
       query_plan_cache_size: {{top_query_plan_cache_size}}
       query_plan_cache_ttl: {{top_query_plan_cache_ttl}}
+{{/if}}
 {{#if metrics}}
     metrics: {{metrics}}
 {{/if}}
@@ -49,6 +58,9 @@ processors:
     detectors: ["system"]
 service:
   pipelines:
+    logs:
+      receivers: [mysql]
+      processors: [resourcedetection/system]
     metrics:
       receivers: [mysql]
       processors: [resourcedetection/system]
