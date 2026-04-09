@@ -157,46 +157,37 @@ program: |-
                     body.?results.orValue([]).as(results,
                       (body.?paging.next_search_after.orValue(null) != null).as(has_more,
                         (size(results) > 0).as(has_results,
-                          has_results ?
-                            body.results[0].event_time
-                          :
-                            ""
-                        ).as(page_newest_event_time,
-                          (state.?cursor.max_event_time.orValue("") != "").as(has_max_event_time,
-                            has_results ?
-                              (
-                                has_max_event_time &&
-                                timestamp(state.cursor.max_event_time) > timestamp(page_newest_event_time)
-                              ) ?
-                                state.cursor.max_event_time
+                          (has_results ? body.results[0].event_time : "").as(page_newest_event_time,
+                            (state.?cursor.max_event_time.orValue("") != "").as(has_max_event_time,
+                              (has_results ?
+                                (has_max_event_time && timestamp(state.cursor.max_event_time) > timestamp(page_newest_event_time)).as(use_existing,
+                                  use_existing ? state.cursor.max_event_time : page_newest_event_time
+                                )
                               :
-                                page_newest_event_time
-                            :
-                              has_max_event_time ?
-                                state.cursor.max_event_time
-                              :
-                                ""
-                          ).as(next_max_event_time,
-                            {
-                              "auth_token": auth.auth_token,
-                              "events": results.map(e, {"message": e.encode_json()}),
-                              "cursor": {
-                                // Keep window_start_time fixed until the final
-                                // page succeeds so the whole window can be
-                                // retried safely if the PIT expires.
-                                "window_start_time": has_more ?
-                                  window_start_time
-                                :
-                                  (next_max_event_time != "") ?
-                                    next_max_event_time
-                                  :
-                                    window_start_time,
-                                "max_event_time": has_more ? next_max_event_time : "",
-                                "pit_id": has_more ? string(body.paging.pit_id) : "",
-                                "search_after": has_more ? string(body.paging.next_search_after) : "",
-                              },
-                              "want_more": has_more,
-                            }
+                                (has_max_event_time ? state.cursor.max_event_time : "")
+                              ).as(next_max_event_time,
+                                {
+                                  "auth_token": auth.auth_token,
+                                  "events": results.map(e, {"message": e.encode_json()}),
+                                  "cursor": {
+                                    // Keep window_start_time fixed until the final
+                                    // page succeeds so the whole window can be
+                                    // retried safely if the PIT expires.
+                                    "window_start_time": has_more ?
+                                      window_start_time
+                                    :
+                                      (next_max_event_time != "") ?
+                                        next_max_event_time
+                                      :
+                                        window_start_time,
+                                    "max_event_time": has_more ? next_max_event_time : "",
+                                    "pit_id": has_more ? string(body.paging.pit_id) : "",
+                                    "search_after": has_more ? string(body.paging.next_search_after) : "",
+                                  },
+                                  "want_more": has_more,
+                                }
+                              )
+                            )
                           )
                         )
                       )
