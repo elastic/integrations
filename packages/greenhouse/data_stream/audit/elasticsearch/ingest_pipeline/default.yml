@@ -112,16 +112,10 @@ processors:
       if: ctx.event?.category == null
 
   # User fields from performer
-  - convert:
+  - rename:
       field: greenhouse.audit.performer.id
-      type: string
       target_field: user.id
       ignore_missing: true
-      tag: convert_performer_id
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Failed to convert performer.id to string: {{{ _ingest.on_failure_message }}}'
   - set:
       field: user.email
       copy_from: greenhouse.audit.performer.meta.username

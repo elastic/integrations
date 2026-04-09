@@ -16,7 +16,7 @@ This integration collects the following data:
 
 ### Compatibility
 
-This integration uses the Greenhouse Harvest API V3 with OAuth 2.0 Client Credentials authentication.
+This integration uses the [Greenhouse Audit Log API](https://developers.greenhouse.io/audit-log.html#introduction) with Harvest V3 OAuth 2.0 Client Credentials authentication. Audit Log V2 will be deprecated in August 2026. This integration uses V3 credentials to avoid future migration.
 
 - **Data retention**: Greenhouse retains audit log data for **30 days** only. Events older than 30 days are no longer available from the API. To maintain a longer history, ensure this integration is collecting data continuously.
 - **Rate limits**: The Greenhouse Audit Log API allows 50 general requests per 10 seconds and 3 paginated requests per 30 seconds. The integration handles rate limiting automatically by respecting `HTTP 429` responses and backing off before retrying.
