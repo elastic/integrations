@@ -18,6 +18,9 @@ This integration collects the following data:
 
 This integration uses the Greenhouse Harvest API V3 with OAuth 2.0 Client Credentials authentication.
 
+- **Data retention**: Greenhouse retains audit log data for **30 days** only. Events older than 30 days are no longer available from the API. To maintain a longer history, ensure this integration is collecting data continuously.
+- **Rate limits**: The Greenhouse Audit Log API allows 50 general requests per 10 seconds and 3 paginated requests per 30 seconds. The integration handles rate limiting automatically by respecting `HTTP 429` responses and backing off before retrying.
+
 ## Setup
 
 ### Creating Harvest V3 OAuth Credentials
@@ -67,19 +70,6 @@ Audit logs capture the following types of events:
 | `data_change_update` | Existing data modified |
 | `data_change_destroy` | Data deleted |
 | `harvest_access` | Data accessed using Harvest API |
-
-## Rate Limiting
-
-The Greenhouse Audit Log API has the following rate limits:
-
-- General requests: 50 per 10 seconds
-- Paginated requests: 3 per 30 seconds
-
-This integration handles rate limiting automatically by respecting the default polling interval and pagination settings.
-
-## Data Retention
-
-Greenhouse retains audit log data for 30 days only. To maintain a longer history, ensure this integration is collecting data continuously.
 
 ## Troubleshooting
 

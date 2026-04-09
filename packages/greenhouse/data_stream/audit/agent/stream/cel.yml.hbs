@@ -56,7 +56,10 @@ State:
     Cleared to {} on 401 so the fields are absent, not sentinel-valued.
 
 Cursor:
-  last_event_time — newest event_time seen; drives after_time on next poll.
+  last_event_time — stable during pagination; advances to session_max_time
+    only when a full pagination session completes successfully.
+  session_max_time — newest event_time captured on page 1 of each session
+    (API returns newest-first). Preserved across pages, consumed on completion.
   pit_id, search_after — pagination state; cleared between poll intervals.
 --}}
 program: |-
@@ -122,14 +125,12 @@ program: |-
             (now - duration(state.initial_interval)).format(time_layout.RFC3339)
         ).as(after_time,
           (
-            // Only send after_time on the first page (no pit_id). Pages 2+
-            // navigate within the existing snapshot via Pit-Id + Search-After.
+            // Query params must stay consistent across all pages in a session
+            // (per API docs). after_time is stable because last_event_time is
+            // frozen during pagination.
             state.url.trim_right("/") + "/events?" + {
               "paging": ["true"],
-              ?"after_time": (state.?cursor.pit_id.orValue("") == "") ?
-                optional.of([after_time])
-              :
-                optional.none(),
+              "after_time": [after_time],
               ?"performer_ids": state.?performer_ids.optFlatMap(v,
                 (v != "") ? optional.of([v]) : optional.none()
               ),
@@ -156,10 +157,26 @@ program: |-
                         "auth_token": auth.auth_token,
                         "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
                         "cursor": {
-                          "last_event_time": (size(body.?results.orValue([])) > 0) ?
-                            max(state.?cursor.last_event_time.orValue(""), body.results[0].event_time)
+                          // Hold last_event_time stable during pagination so
+                          // after_time stays consistent and Pit_Id expiry
+                          // retries the full range (no data gap). Advance to
+                          // session_max_time only on successful completion.
+                          "last_event_time": has_more ?
+                            after_time
                           :
-                            after_time,
+                            (state.?cursor.session_max_time.orValue("") != "") ?
+                              state.cursor.session_max_time
+                            :
+                              ((size(body.?results.orValue([])) > 0) ?
+                                body.results[0].event_time
+                              :
+                                after_time),
+                          // Capture newest event_time on page 1 (API returns
+                          // newest-first). Preserve across subsequent pages.
+                          "session_max_time": (state.?cursor.pit_id.orValue("") == "") && (size(body.?results.orValue([])) > 0) ?
+                            body.results[0].event_time
+                          :
+                            state.?cursor.session_max_time.orValue(""),
                           "pit_id": has_more ? string(body.paging.pit_id) : "",
                           "search_after": has_more ? string(body.paging.next_search_after) : "",
                         },
@@ -179,8 +196,10 @@ program: |-
                     "want_more": false,
                   }
                 : string(resp.Body).contains("Pit_Id") ?
-                  // Pit_Id expired — clear pagination tokens so the next poll
-                  // starts a fresh snapshot from last_event_time.
+                  // Pit_Id expired — clear pagination tokens and retry.
+                  // Because last_event_time is held stable during pagination,
+                  // after_time still equals the session start, so the next
+                  // poll retries the full time range with no data gap.
                   {
                     "auth_token": auth.auth_token,
                     "events": [],
