@@ -9,7 +9,7 @@ These assets provide dashboards, alert rules, and SLO templates for monitoring I
 The IBM MQ OpenTelemetry assets have been tested with:
 
 - OpenTelemetry `prometheusreceiver` v0.146.0 from OpenTelemetry Collector Contrib.
-- IBMMQ v9.4.5.0
+- IBM MQ v9.4.5.0
 
 ## Requirements
 
