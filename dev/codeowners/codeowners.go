@@ -236,7 +236,7 @@ func (codeowners *githubOwners) checkDataStreams(packagePath string) error {
 			continue
 		}
 		if len(dataStreamOwners) > 1 {
-			return fmt.Errorf("data stream \"%s\" of package \"%s\" has more than one owners [%s]", dataStreamDir,
+			return fmt.Errorf("data stream \"%s\" of package \"%s\" has more than one owner [%s]", dataStreamDir,
 				packagePath, strings.Join(dataStreamOwners, ", "))
 		}
 	}
