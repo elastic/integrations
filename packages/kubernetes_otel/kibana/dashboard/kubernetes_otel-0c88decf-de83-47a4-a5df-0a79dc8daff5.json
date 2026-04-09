@@ -281,7 +281,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS\n    k8s.cluster.name=MAX(k8s.cluster.name),\n    status = MAX(k8s.node.condition_ready),\n    mem_pressure = MAX(k8s.node.condition_memory_pressure),\n    pods = COUNT_DISTINCT(k8s.pod.uid),\n    cpu_usage = AVG(k8s.node.cpu.usage),\n    alloc_cpu = AVG(k8s.node.allocatable_cpu),\n    mem_ws = AVG(k8s.node.memory.working_set),\n    alloc_mem = AVG(k8s.node.allocatable_memory),\n    mem_avail = AVG(k8s.node.memory.available),\n    fs_usage = AVG(k8s.node.filesystem.usage),\n    fs_cap = AVG(k8s.node.filesystem.capacity)\n  BY k8s.node.name\n| EVAL\n    cpu_util = ROUND(cpu_usage / alloc_cpu, 4),\n    mem_ws_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_util = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| KEEP k8s.node.name, k8s.cluster.name, status, mem_pressure, pods, cpu_util, mem_ws_util, mem_avail, disk_util\n| SORT status DESC"
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS\n    k8s.cluster.name=MAX(k8s.cluster.name),\n    status = MAX(k8s.node.condition_ready),\n    mem_pressure = MAX(k8s.node.condition_memory_pressure),\n    pods = COUNT_DISTINCT(k8s.pod.uid),\n    cpu_usage = AVG(k8s.node.cpu.usage),\n    alloc_cpu = AVG(k8s.node.allocatable_cpu),\n    mem_ws = AVG(k8s.node.memory.working_set),\n    alloc_mem = AVG(k8s.node.allocatable_memory),\n    mem_avail = AVG(k8s.node.memory.available),\n    fs_usage = AVG(k8s.node.filesystem.usage),\n    fs_cap = AVG(k8s.node.filesystem.capacity)\n  BY k8s.node.name\n| EVAL\n    cpu_util = ROUND(cpu_usage / alloc_cpu, 4),\n    mem_ws_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_util = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| KEEP k8s.node.name, k8s.cluster.name, status, mem_pressure, pods, cpu_util, mem_ws_util, mem_avail, disk_util\n| SORT status DESC"
                       },
                       "timeField": "@timestamp"
                     }
@@ -291,7 +291,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS\n    k8s.cluster.name=MAX(k8s.cluster.name),\n    status = MAX(k8s.node.condition_ready),\n    mem_pressure = MAX(k8s.node.condition_memory_pressure),\n    pods = COUNT_DISTINCT(k8s.pod.uid),\n    cpu_usage = AVG(k8s.node.cpu.usage),\n    alloc_cpu = AVG(k8s.node.allocatable_cpu),\n    mem_ws = AVG(k8s.node.memory.working_set),\n    alloc_mem = AVG(k8s.node.allocatable_memory),\n    mem_avail = AVG(k8s.node.memory.available),\n    fs_usage = AVG(k8s.node.filesystem.usage),\n    fs_cap = AVG(k8s.node.filesystem.capacity)\n  BY k8s.node.name\n| EVAL\n    cpu_util = ROUND(cpu_usage / alloc_cpu, 4),\n    mem_ws_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_util = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| KEEP k8s.node.name, k8s.cluster.name, status, mem_pressure, pods, cpu_util, mem_ws_util, mem_avail, disk_util\n| SORT status DESC"
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS\n    k8s.cluster.name=MAX(k8s.cluster.name),\n    status = MAX(k8s.node.condition_ready),\n    mem_pressure = MAX(k8s.node.condition_memory_pressure),\n    pods = COUNT_DISTINCT(k8s.pod.uid),\n    cpu_usage = AVG(k8s.node.cpu.usage),\n    alloc_cpu = AVG(k8s.node.allocatable_cpu),\n    mem_ws = AVG(k8s.node.memory.working_set),\n    alloc_mem = AVG(k8s.node.allocatable_memory),\n    mem_avail = AVG(k8s.node.memory.available),\n    fs_usage = AVG(k8s.node.filesystem.usage),\n    fs_cap = AVG(k8s.node.filesystem.capacity)\n  BY k8s.node.name\n| EVAL\n    cpu_util = ROUND(cpu_usage / alloc_cpu, 4),\n    mem_ws_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4),\n    disk_util = ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4)\n| KEEP k8s.node.name, k8s.cluster.name, status, mem_pressure, pods, cpu_util, mem_ws_util, mem_avail, disk_util\n| SORT status DESC"
               },
               "visualization": {
                 "columns": [
@@ -445,7 +445,7 @@
                         }
                       ],
                       "query": {
-                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS total_nodes = COUNT_DISTINCT(k8s.node.name)\n"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS total_nodes = COUNT_DISTINCT(k8s.node.name)\n"
                       },
                       "timeField": "@timestamp",
                       "index": "9ff905cea813eb1905e3c025058dbb6a5bfd43238dcadce16f72ea80f42a0216"
@@ -456,7 +456,7 @@
               "filters": [],
               "internalReferences": [],
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS total_nodes = COUNT_DISTINCT(k8s.node.name)\n"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS total_nodes = COUNT_DISTINCT(k8s.node.name)\n"
               },
               "visualization": {
                 "applyColorTo": "background",
@@ -525,7 +525,7 @@
                         }
                       ],
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS healthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready > 0\n"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS healthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready > 0\n"
                       },
                       "timeField": "@timestamp",
                       "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
@@ -536,7 +536,7 @@
               "filters": [],
               "internalReferences": [],
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS healthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready > 0\n"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS healthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready > 0\n"
               },
               "visualization": {
                 "applyColorTo": "background",
@@ -639,7 +639,7 @@
                         }
                       ],
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS unhealthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready <= 0\n"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS unhealthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready <= 0\n"
                       },
                       "timeField": "@timestamp",
                       "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed"
@@ -650,7 +650,7 @@
               "filters": [],
               "internalReferences": [],
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS unhealthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready <= 0\n"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.condition_ready IS NOT NULL\n| STATS unhealthy_nodes = COUNT_DISTINCT(k8s.node.name) WHERE k8s.node.condition_ready <= 0\n"
               },
               "visualization": {
                 "applyColorTo": "background",
@@ -785,7 +785,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.pod.uid IS NOT NULL\n| STATS\n    total_pods = COUNT_DISTINCT(k8s.pod.uid),\n    running_pods = COUNT_DISTINCT(k8s.pod.uid) WHERE k8s.pod.phase == 2\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL unhealthy_pods = total_pods - running_pods\n| KEEP k8s.node.name, @timestamp, unhealthy_pods"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.pod.uid IS NOT NULL AND k8s.pod.phase IS NOT NULL\n| STATS\n    total_pods = COUNT_DISTINCT(k8s.pod.uid),\n    running_pods = COUNT_DISTINCT(k8s.pod.uid) WHERE k8s.pod.phase == 2\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL unhealthy_pods = total_pods - running_pods\n| KEEP k8s.node.name, @timestamp, unhealthy_pods"
                       },
                       "timeField": "@timestamp"
                     }
@@ -795,7 +795,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.pod.uid IS NOT NULL\n| STATS\n    total_pods = COUNT_DISTINCT(k8s.pod.uid),\n    running_pods = COUNT_DISTINCT(k8s.pod.uid) WHERE k8s.pod.phase == 2\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL unhealthy_pods = total_pods - running_pods\n| KEEP k8s.node.name, @timestamp, unhealthy_pods"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.pod.uid IS NOT NULL AND k8s.pod.phase IS NOT NULL\n| STATS\n    total_pods = COUNT_DISTINCT(k8s.pod.uid),\n    running_pods = COUNT_DISTINCT(k8s.pod.uid) WHERE k8s.pod.phase == 2\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL unhealthy_pods = total_pods - running_pods\n| KEEP k8s.node.name, @timestamp, unhealthy_pods"
               },
               "visualization": {
                 "axisTitlesVisibilitySettings": {
@@ -951,7 +951,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.pod.uid IS NOT NULL\n| STATS pods = COUNT_DISTINCT(k8s.pod.uid)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| KEEP k8s.node.name, @timestamp, pods"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n| STATS pods = COUNT_DISTINCT(k8s.pod.uid)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| KEEP k8s.node.name, @timestamp, pods"
                       },
                       "timeField": "@timestamp"
                     }
@@ -961,7 +961,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.pod.uid IS NOT NULL\n| STATS pods = COUNT_DISTINCT(k8s.pod.uid)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| KEEP k8s.node.name, @timestamp, pods"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n| STATS pods = COUNT_DISTINCT(k8s.pod.uid)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| KEEP k8s.node.name, @timestamp, pods"
               },
               "visualization": {
                 "axisTitlesVisibilitySettings": {
@@ -1124,7 +1124,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS cpu_usage = MAX(k8s.node.cpu.usage), alloc_cpu = MAX(k8s.node.allocatable_cpu)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL cpu_util = cpu_usage / alloc_cpu\n| KEEP k8s.node.name, @timestamp, cpu_util"
+                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n| STATS cpu_usage = MAX(k8s.node.cpu.usage), alloc_cpu = MAX(k8s.node.allocatable_cpu)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL cpu_util = cpu_usage / alloc_cpu\n| KEEP k8s.node.name, @timestamp, cpu_util"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1134,7 +1134,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS cpu_usage = MAX(k8s.node.cpu.usage), alloc_cpu = MAX(k8s.node.allocatable_cpu)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL cpu_util = cpu_usage / alloc_cpu\n| KEEP k8s.node.name, @timestamp, cpu_util"
+                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n| STATS cpu_usage = MAX(k8s.node.cpu.usage), alloc_cpu = MAX(k8s.node.allocatable_cpu)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL cpu_util = cpu_usage / alloc_cpu\n| KEEP k8s.node.name, @timestamp, cpu_util"
               },
               "visualization": {
                 "axisTitlesVisibilitySettings": {
@@ -1297,7 +1297,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS mem_ws = MAX(k8s.node.memory.working_set), alloc_mem = MAX(k8s.node.allocatable_memory)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL mem_util = TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem)\n| KEEP k8s.node.name, @timestamp, mem_util"
+                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n| STATS mem_ws = MAX(k8s.node.memory.working_set), alloc_mem = MAX(k8s.node.allocatable_memory)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL mem_util = TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem)\n| KEEP k8s.node.name, @timestamp, mem_util"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1307,7 +1307,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS mem_ws = MAX(k8s.node.memory.working_set), alloc_mem = MAX(k8s.node.allocatable_memory)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL mem_util = TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem)\n| KEEP k8s.node.name, @timestamp, mem_util"
+                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n| STATS mem_ws = MAX(k8s.node.memory.working_set), alloc_mem = MAX(k8s.node.allocatable_memory)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL mem_util = TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem)\n| KEEP k8s.node.name, @timestamp, mem_util"
               },
               "visualization": {
                 "axisTitlesVisibilitySettings": {
@@ -1483,7 +1483,7 @@
                       ],
                       "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                       "query": {
-                        "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS fs_usage = MAX(k8s.node.filesystem.usage), fs_cap = MAX(k8s.node.filesystem.capacity)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL disk_util = TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap)\n| KEEP k8s.node.name, @timestamp, disk_util"
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.filesystem.usage IS NOT NULL AND k8s.node.filesystem.capacity IS NOT NULL\n| STATS fs_usage = MAX(k8s.node.filesystem.usage), fs_cap = MAX(k8s.node.filesystem.capacity)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL disk_util = TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap)\n| KEEP k8s.node.name, @timestamp, disk_util"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1493,7 +1493,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "FROM metrics-*\n| WHERE k8s.node.name IS NOT NULL\n| STATS fs_usage = MAX(k8s.node.filesystem.usage), fs_cap = MAX(k8s.node.filesystem.capacity)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL disk_util = TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap)\n| KEEP k8s.node.name, @timestamp, disk_util"
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n  AND k8s.node.filesystem.usage IS NOT NULL AND k8s.node.filesystem.capacity IS NOT NULL\n| STATS fs_usage = MAX(k8s.node.filesystem.usage), fs_cap = MAX(k8s.node.filesystem.capacity)\n  BY k8s.node.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL disk_util = TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap)\n| KEEP k8s.node.name, @timestamp, disk_util"
               },
               "visualization": {
                 "axisTitlesVisibilitySettings": {
