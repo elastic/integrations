@@ -1,0 +1,222 @@
+---
+# [PostgreSQL OTel] I/O Health Dashboard
+# Converted from Kibana dashboard JSON to kb-yaml-to-lens YAML format
+# Buffer cache hit ratio, checkpoint duration, background writer efficiency, and buffer writes by source.
+#
+# Data source: metrics-postgresqlreceiver.otel-*
+dashboards:
+  - id: postgresql_otel-io-health
+    name: '[PostgreSQL OTel] I/O Health'
+    description: Buffer cache hit ratio, checkpoint duration, background writer efficiency, and buffer writes by source.
+    controls:
+      - type: options
+        label: Instance
+        data_view: metrics-*
+        field: resource.attributes.service.instance.id
+    panels:
+      # Navigation links bar
+      - size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: postgresql_otel-overview
+            - label: Connections
+              dashboard: postgresql_otel-connections
+            - label: Workload
+              dashboard: postgresql_otel-workload
+            - label: Query Performance
+              dashboard: postgresql_otel-query-performance
+            - label: I/O Health
+              dashboard: postgresql_otel-io-health
+            - label: Locks
+              dashboard: postgresql_otel-locks
+            - label: Active Queries
+              dashboard: postgresql_otel-active-queries
+
+      # Markdown description
+      - size: {w: 16, h: 14}
+        position: {x: 0, y: 2}
+        hide_title: true
+        markdown:
+          content: |
+            ## [PostgreSQL OTel] I/O Health
+
+            This dashboard monitors I/O subsystem health:
+            - Buffer cache hit ratio (blks_hit vs blks_read)
+            - Checkpoint duration and count
+            - Background writer buffer writes by source
+            - Maxwritten stops (bgwriter overwhelmed)
+
+      # Buffer Hit Ratio (lnsMetric, percent)
+      - title: Buffer Hit Ratio
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.blks_hit IS NOT NULL OR postgresql.blks_read IS NOT NULL
+            | STATS hit = MAX(TO_DOUBLE(postgresql.blks_hit)), read = MAX(TO_DOUBLE(postgresql.blks_read))
+            | EVAL hit_ratio = CASE(read + hit > 0, hit / (hit + read), 0.0)
+          primary:
+            field: hit_ratio
+            label: Hit Ratio
+            format:
+              type: percent
+              decimals: 1
+
+      # Bgwriter Maxwritten (lnsMetric)
+      - title: Bgwriter Maxwritten
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.bgwriter.maxwritten IS NOT NULL
+            | STATS maxwritten = SUM(INCREASE(postgresql.bgwriter.maxwritten))
+          primary:
+            field: maxwritten
+            label: Maxwritten
+            format:
+              type: number
+              decimals: 0
+
+      # Buffer Hit Ratio Gauge (lnsGauge with arc, palette <0.9=red, 0.9-0.95=yellow, >0.95=green)
+      - title: Buffer Hit Ratio Gauge
+        size: {w: 16, h: 10}
+        position: {x: 16, y: 6}
+        esql:
+          type: gauge
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.blks_hit IS NOT NULL OR postgresql.blks_read IS NOT NULL
+            | STATS hit = MAX(TO_DOUBLE(postgresql.blks_hit)), read = MAX(TO_DOUBLE(postgresql.blks_read))
+            | EVAL hit_ratio = CASE(read + hit > 0, hit / (hit + read), 0.0), min_val = 0.0, max_val = 1.0, goal_val = 0.99
+          metric:
+            field: hit_ratio
+            label: Hit Ratio
+            format:
+              type: percent
+              decimals: 2
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          goal:
+            field: goal_val
+          color:
+            range_type: percent
+            range_min: 0
+            range_max: 1
+            thresholds:
+              - up_to: 0.9
+                color: "#cc5642"
+              - up_to: 0.95
+                color: "#d6bf57"
+              - up_to: 1
+                color: "#54b399"
+          appearance:
+            shape: arc
+            ticks_position: bands
+
+      # Buffer Writes by Source (lnsPie, donut)
+      - title: Buffer Writes by Source
+        size: {w: 16, h: 10}
+        position: {x: 32, y: 6}
+        esql:
+          type: pie
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.bgwriter.buffers.writes IS NOT NULL
+            | STATS writes = SUM(TO_DOUBLE(postgresql.bgwriter.buffers.writes)) BY attributes.source
+            | SORT writes DESC
+            | LIMIT 10
+          metrics:
+            - field: writes
+              label: writes
+              format:
+                type: number
+                decimals: 0
+          breakdowns:
+            - field: attributes.source
+              label: Source
+          appearance:
+            donut: medium
+
+      # Buffer Hit Ratio Over Time (lnsXY line, split by database)
+      - title: Buffer Hit Ratio Over Time
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 16}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | STATS hit = SUM(RATE(postgresql.blks_hit)), read = SUM(RATE(postgresql.blks_read)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.postgresql.database.name
+            | EVAL hit_ratio = CASE(read + hit > 0, hit / (hit + read), 0)
+            | WHERE hit_ratio IS NOT NULL
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: hit_ratio
+              label: Hit Ratio
+              format:
+                type: percent
+                decimals: 2
+          breakdown:
+            field: resource.attributes.postgresql.database.name
+
+      # Checkpoint Duration Over Time (lnsXY line, split by attributes.type)
+      - title: Checkpoint Duration Over Time
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 16}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.bgwriter.duration IS NOT NULL
+            | STATS duration = SUM(RATE(postgresql.bgwriter.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.type
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: duration
+              label: Duration ms/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.type
+
+      # Buffer Writes Rate by Source (lnsXY area, split by attributes.source)
+      - title: Buffer Writes Rate by Source
+        size: {w: 48, h: 10}
+        position: {x: 0, y: 26}
+        esql:
+          type: area
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.bgwriter.buffers.writes IS NOT NULL
+            | STATS writes = SUM(RATE(postgresql.bgwriter.buffers.writes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.source
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: writes
+              label: Buffers/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.source
