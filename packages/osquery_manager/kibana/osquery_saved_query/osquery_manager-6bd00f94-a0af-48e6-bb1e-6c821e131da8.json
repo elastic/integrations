@@ -1,0 +1,78 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Inventory active AI-related Chrome browser extensions across all users. Use for shadow AI discovery — identifies Copilot, ChatGPT, Claude, Gemini, Codeium, Tabnine, Grammarly, and other AI writing and coding assistant extensions installed in Chrome.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "package"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "package.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "package.version",
+                "value": {
+                    "field": "version"
+                }
+            },
+            {
+                "key": "package.description",
+                "value": {
+                    "field": "description"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "browser_extensions",
+                        "shadow_ai"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_chrome_extensions"
+                }
+            }
+        ],
+        "id": "ai_chrome_extensions_elastic",
+        "interval": "86400",
+        "platform": "darwin,linux,windows",
+        "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE '%Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE '%Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%');",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-6bd00f94-a0af-48e6-bb1e-6c821e131da8",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

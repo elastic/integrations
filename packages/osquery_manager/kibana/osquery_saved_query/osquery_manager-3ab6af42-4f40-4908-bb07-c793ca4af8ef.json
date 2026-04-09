@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect running local LLM servers and AI model runtimes on macOS and Linux. Use for shadow AI triage — identifies Ollama, LM Studio, vLLM, koboldcpp, llama-server, LiteLLM, Open WebUI, ComfyUI, and other local inference engines running on endpoints.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "ppid"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "llm_runtime",
+                        "shadow_ai"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_llm_processes"
+                }
+            }
+        ],
+        "id": "ai_llm_processes_elastic",
+        "interval": "3600",
+        "platform": "darwin,linux",
+        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'ollama', 'lms', 'gpt4all', 'jan', 'msty', 'local-ai',\n    'koboldcpp', 'llama-server', 'llama-cli', 'vllm',\n    'mlc_llm', 'mlc_chat', 'anythingllm', 'anything-llm',\n    'litellm', 'open-webui', 'llamafile', 'text-generation-launcher',\n    'text-generation-router', 'comfyui', 'invokeai'\n,\n    'msty',\n    'exo',\n    'tabby',\n    'qwen', 'grok')\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%exo%'\n    OR p.cmdline LIKE '%tabby%serve%'\n\n    OR p.cmdline LIKE '%cohere%serve%'\n    OR p.cmdline LIKE '%mistral%serve%'\n;",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-3ab6af42-4f40-4908-bb07-c793ca4af8ef",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

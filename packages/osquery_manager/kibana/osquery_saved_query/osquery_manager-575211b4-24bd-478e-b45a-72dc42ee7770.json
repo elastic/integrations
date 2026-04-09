@@ -1,0 +1,90 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect running Model Context Protocol (MCP) server processes on endpoints. Use for shadow AI triage — identifies processes launched via @modelcontextprotocol packages, mcp-server-* binaries, fastmcp, smithery, mcpx, and MCP proxy/gateway tools across all platforms.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "mcp_server",
+                        "shadow_ai"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_mcp_server_processes"
+                }
+            }
+        ],
+        "id": "ai_mcp_server_processes_elastic",
+        "interval": "3600",
+        "platform": "darwin,linux,windows",
+        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%mcp_server%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%';",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-575211b4-24bd-478e-b45a-72dc42ee7770",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

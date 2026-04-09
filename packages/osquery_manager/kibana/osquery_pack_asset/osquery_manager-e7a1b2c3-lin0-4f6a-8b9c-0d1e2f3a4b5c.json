@@ -1,2060 +1,2066 @@
 {
-  "attributes": {
-    "description": "Detect and inventory Shadow AI tools on Linux endpoints — local LLMs, AI coding agents, AI desktop applications, MCP servers (with config content scanning), AI model files, Python/npm AI packages, browser extensions, Docker containers, systemd services, crontab entries, GPU-equipped systems, AI API key exposure, and AI tool configuration directories, vector databases, model cache sizes, and SSH tunnels for AI services.",
-    "name": "ai-asset-discovery-linux",
-    "version": 1,
-    "queries": [
-      {
-        "id": "ai_llm_processes",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'ollama', 'lms', 'gpt4all', 'jan', 'msty', 'local-ai',\n    'koboldcpp', 'llama-server', 'llama-cli', 'vllm',\n    'mlc_llm', 'mlc_chat', 'anythingllm', 'anything-llm',\n    'litellm', 'open-webui', 'llamafile', 'text-generation-launcher',\n    'text-generation-router', 'comfyui', 'invokeai'\n,\n    'msty',\n    'exo',\n    'tabby',\n    'qwen', 'grok')\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%exo%'\n    OR p.cmdline LIKE '%tabby%serve%'\n\n    OR p.cmdline LIKE '%cohere%serve%'\n    OR p.cmdline LIKE '%mistral%serve%'\n;",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
+    "attributes": {
+        "description": "Detect and inventory Shadow AI tools on Linux endpoints — local LLMs, AI coding agents, AI desktop applications, MCP servers (with config content scanning), AI model files, Python/npm AI packages, browser extensions, Docker containers, systemd services, crontab entries, GPU-equipped systems, AI API key exposure, and AI tool configuration directories, vector databases, model cache sizes, and SSH tunnels for AI services.",
+        "name": "ai-asset-discovery-linux",
+        "version": 1,
+        "queries": [
+            {
+                "id": "ai_llm_processes",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'ollama', 'lms', 'gpt4all', 'jan', 'msty', 'local-ai',\n    'koboldcpp', 'llama-server', 'llama-cli', 'vllm',\n    'mlc_llm', 'mlc_chat', 'anythingllm', 'anything-llm',\n    'litellm', 'open-webui', 'llamafile', 'text-generation-launcher',\n    'text-generation-router', 'comfyui', 'invokeai'\n,\n    'msty',\n    'exo',\n    'tabby',\n    'qwen', 'grok')\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%exo%'\n    OR p.cmdline LIKE '%tabby%serve%'\n\n    OR p.cmdline LIKE '%cohere%serve%'\n    OR p.cmdline LIKE '%mistral%serve%'\n;",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "llm_runtime",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_llm_processes"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_coding_agents",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'claude', 'cursor', 'windsurf', 'warp', 'zed',\n    'tabnine', 'TabNine', 'WasmTabNine',\n    'codeium_language_server', 'supermaven',\n    'amazon-q', 'pieces-os', 'Pieces OS',\n    'codex', 'aider', 'sgpt'\n,\n    'augment',\n    'codex',\n    'goose',\n    'devin',\n    'amp',\n    'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell_gpt%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%semantic_kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    OR p.cmdline LIKE '%llama_index%'\n    OR p.cmdline LIKE '%haystack%pipeline%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistralai%'\n;",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "coding_agents",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_coding_agents"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_listening_ports",
+                "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n)\n    AND l.address != '127.0.0.1'\n    AND l.address != '::1';",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "server.port",
+                        "value": {
+                            "field": "port"
+                        }
+                    },
+                    {
+                        "key": "server.address",
+                        "value": {
+                            "field": "address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "protocol"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "network_exposure",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_listening_ports"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_listening_ports_local",
+                "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n);",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "server.port",
+                        "value": {
+                            "field": "port"
+                        }
+                    },
+                    {
+                        "key": "server.address",
+                        "value": {
+                            "field": "address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "protocol"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "listening_ports_inventory",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_listening_ports_local"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_packages_linux",
+                "query": "SELECT name, version, source, 'deb' AS pkg_type FROM deb_packages\nWHERE name LIKE '%ollama%'\n    OR name LIKE '%cursor%'\n    OR name LIKE '%windsurf%'\n    OR name LIKE '%lmstudio%'\n    OR name LIKE '%lm-studio%'\n    OR name LIKE '%gpt4all%'\n    OR name LIKE '%jan%'\n    OR name LIKE '%chatgpt%'\n    OR name LIKE '%claude%'\n    OR name LIKE '%perplexity%'\n    OR name LIKE '%deepseek%'\n    OR name LIKE '%anythingllm%'\n    OR name LIKE '%open-webui%'\n    OR name LIKE '%litellm%'\n    OR name LIKE '%comfyui%'\n    OR name LIKE '%invokeai%'\n    OR name LIKE '%nvidia-cuda%'\n    OR name LIKE '%nvidia-cudnn%'\n    OR name LIKE '%nvidia-driver%'\n    OR name LIKE '%libnvidia%'\n    OR name LIKE '%codeium%'\n    OR name LIKE '%tabnine%'\n    OR name LIKE '%amazon-q%'\n    OR name LIKE '%pieces%'\n    OR name LIKE '%zed-editor%'\n    OR name LIKE '%warp-terminal%'\nUNION ALL\nSELECT name, version, source, 'rpm' AS pkg_type FROM rpm_packages\nWHERE name LIKE '%ollama%'\n    OR name LIKE '%cursor%'\n    OR name LIKE '%windsurf%'\n    OR name LIKE '%lmstudio%'\n    OR name LIKE '%lm-studio%'\n    OR name LIKE '%gpt4all%'\n    OR name LIKE '%jan%'\n    OR name LIKE '%chatgpt%'\n    OR name LIKE '%claude%'\n    OR name LIKE '%perplexity%'\n    OR name LIKE '%deepseek%'\n    OR name LIKE '%anythingllm%'\n    OR name LIKE '%open-webui%'\n    OR name LIKE '%litellm%'\n    OR name LIKE '%comfyui%'\n    OR name LIKE '%invokeai%'\n    OR name LIKE '%cuda%'\n    OR name LIKE '%nvidia-driver%'\n    OR name LIKE '%libnvidia%'\n    OR name LIKE '%codeium%'\n    OR name LIKE '%tabnine%'\n    OR name LIKE '%amazon-q%'\n    OR name LIKE '%pieces%'\n    OR name LIKE '%zed-editor%'\n    OR name LIKE '%warp-terminal%'\n    OR name LIKE '%qwen%'\n    OR name LIKE '%grok%'\n    OR name LIKE '%gemini%'\n    OR name LIKE '%bito%'\n;",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "installed_packages",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.type",
+                        "value": {
+                            "field": "pkg_type"
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_packages_linux"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "mcp_server_processes",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%mcp_server%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%';",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "mcp_server",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.mcp_server_processes"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "mcp_config_files_linux",
+                "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE path LIKE '/home/%/.config/Claude/claude_desktop_config.json'\n    OR path LIKE '/home/%/.claude.json'\n    OR path LIKE '/home/%/.claude/settings.json'\n    OR path LIKE '/home/%/.cursor/mcp.json'\n    OR path LIKE '/home/%/.vscode/mcp.json'\n    OR path LIKE '/home/%/.mcp.json';",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "mcp_config",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.mcp_config_files_linux"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_model_files_linux",
+                "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE '/home/%/.ollama/models/blobs/%'\n    OR path LIKE '/home/%/.lmstudio/models/%'\n    OR path LIKE '/home/%/.cache/huggingface/hub/%'\n    OR path LIKE '/home/%/.cache/llama.cpp/%'\n    OR path LIKE '/home/%/.local/share/nomic.ai/GPT4All/%'\n    OR path LIKE '/opt/models/%'\n)\nAND size > 100000000;",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "model_files",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_model_files_linux"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_model_file_extensions_linux",
+                "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE '/home/%/%.gguf'\n    OR path LIKE '/home/%/%.safetensors'\n    OR path LIKE '/home/%/%.llamafile'\n    OR path LIKE '/home/%/%.ggml'\n    OR path LIKE '/home/%/%.onnx'\n    OR path LIKE '/opt/%/%.gguf'\n    OR path LIKE '/opt/%/%.safetensors'\n    OR path LIKE '/home/%/.cache/huggingface/hub/%.safetensors'\n    OR path LIKE '/home/%/.cache/llama.cpp/%.gguf'\n    OR path LIKE '/home/%/.local/share/nomic.ai/GPT4All/%.gguf'\n    OR path LIKE '/home/%/Downloads/%.gguf'\n    OR path LIKE '/home/%/Downloads/%.safetensors'\n)\nAND size > 100000000;",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "model_file_extensions",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_model_file_extensions_linux"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_python_packages",
+                "query": "SELECT\n    name,\n    version,\n    directory\nFROM python_packages\nWHERE name IN (\n    'torch', 'tensorflow', 'onnxruntime', 'jax', 'flax',\n    'transformers', 'diffusers', 'accelerate', 'peft', 'trl',\n    'huggingface-hub', 'tokenizers', 'datasets', 'sentence-transformers',\n    'safetensors',\n    'openai', 'anthropic', 'google-generativeai', 'cohere', 'replicate',\n    'groq', 'mistralai', 'together', 'fireworks-ai', 'deepseek-sdk',\n    'langchain', 'langchain-core', 'langchain-community',\n    'llama-index', 'llama-index-core',\n    'autogen', 'crewai', 'semantic-kernel', 'haystack-ai', 'dspy-ai',\n    'instructor', 'guidance', 'outlines',\n    'llama-cpp-python', 'ollama', 'vllm', 'ctransformers',\n    'bitsandbytes', 'auto-gptq', 'exllama',\n    'fastmcp', 'mcp',\n    'chromadb', 'qdrant-client', 'weaviate-client', 'pinecone-client',\n    'pymilvus', 'faiss-cpu', 'faiss-gpu',\n    'aider-chat', 'shell-gpt', 'mentat',\n    'gradio', 'streamlit',\n    'openai-whisper', 'whisper', 'elevenlabs', 'bark',\n    'litellm',\n    'llm'\n);",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "python_packages",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_python_packages"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_chrome_extensions",
+                "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE '%Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE '%Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%');",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "browser_extensions",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_chrome_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_docker_containers",
+                "query": "SELECT\n    id,\n    name,\n    image,\n    status,\n    command,\n    started_at\nFROM docker_containers\nWHERE\n    image LIKE '%ollama%' OR image LIKE '%vllm%'\n    OR image LIKE '%text-generation%' OR image LIKE '%localai%'\n    OR image LIKE '%llama.cpp%' OR image LIKE '%litellm%'\n    OR image LIKE '%pytorch%' OR image LIKE '%tensorflow%'\n    OR image LIKE '%triton%' OR image LIKE '%huggingface%'\n    OR image LIKE '%mcp%' OR image LIKE '%modelcontextprotocol%'\n    OR image LIKE '%open-webui%' OR image LIKE '%anythingllm%'\n    OR image LIKE '%flowise%' OR image LIKE '%langflow%'\n    OR image LIKE '%chromadb%' OR image LIKE '%chroma%'\n    OR image LIKE '%qdrant%' OR image LIKE '%weaviate%'\n    OR image LIKE '%milvus%' OR image LIKE '%pinecone%'\n    OR image LIKE '%comfyui%' OR image LIKE '%stable-diffusion%'\n    OR image LIKE '%invokeai%' OR image LIKE '%automatic1111%'\n    OR image LIKE '%n8n%' OR image LIKE '%openhands%'\n    OR image LIKE '%sweepai%' OR image LIKE '%pr-agent%'\n    OR image LIKE '%qwen%'\n    OR image LIKE '%grok%'\n    OR image LIKE '%cohere%'\n    OR image LIKE '%mistral%'\n;",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "host"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "container.id",
+                        "value": {
+                            "field": "id"
+                        }
+                    },
+                    {
+                        "key": "container.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "container.image.name",
+                        "value": {
+                            "field": "image"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "docker_containers",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_docker_containers"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "mcp_npm_packages",
+                "query": "SELECT\n    f.directory,\n    f.path,\n    f.filename\nFROM file f\nWHERE (\n    f.path LIKE '/usr/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/home/%/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/home/%/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/home/%/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/root/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/root/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/root/node_modules/@anthropic-ai/%/package.json'\n);",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "mcp_packages",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.mcp_npm_packages"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_gpu_systems",
+                "query": "SELECT\n    vendor,\n    model,\n    pci_class,\n    pci_subclass,\n    driver\nFROM pci_devices\nWHERE\n    (vendor LIKE '%NVIDIA%' AND (pci_class = '0300' OR pci_class = '0302'))\n    OR (vendor LIKE '%Advanced Micro Devices%' AND pci_class = '0300')\n    OR vendor LIKE '%Apple%GPU%';",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "host"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "gpu_systems",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_gpu_systems"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_config_directories_linux",
+                "query": "SELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE directory LIKE '/home/%/'\nAND (\n    (type = 'directory' AND filename IN (\n        '.ollama', 'jan', '.continue', '.cursor', '.codeium',\n        '.tabnine', '.claude', '.supermaven', '.anythingllm',\n        '.invokeai'\n    ))\n    OR filename = '.aider.conf.yml'\n)\nUNION\nSELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE directory LIKE '/home/%/.cache/'\nAND type = 'directory'\nAND filename IN (\n    'lm-studio', 'huggingface', 'gpt4all', 'llama.cpp'\n)\nUNION\nSELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE directory LIKE '/home/%/.config/'\nAND type = 'directory'\nAND filename IN (\n    'github-copilot', 'shell_gpt'\n);",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "config_directories",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_config_directories_linux"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_firefox_extensions",
+                "query": "SELECT\n    fa.name,\n    fa.identifier,\n    fa.version,\n    fa.description,\n    fa.path,\n    fa.active,\n    u.username\nFROM users u CROSS JOIN firefox_addons fa USING(uid)\nWHERE fa.active = 1 AND (\n    fa.name LIKE '%Copilot%' OR fa.name LIKE '%ChatGPT%'\n    OR fa.name LIKE '%Claude%' OR fa.name LIKE '%Gemini%'\n    OR fa.name LIKE '%Perplexity%' OR fa.name LIKE '%DeepSeek%'\n    OR fa.name LIKE '%Monica%' OR fa.name LIKE '%Merlin%'\n    OR fa.name LIKE '%Sider%' OR fa.name LIKE '%MaxAI%'\n    OR fa.name LIKE '%UseChatGPT%' OR fa.name LIKE '%Poe%'\n    OR fa.name LIKE '%Cody%' OR fa.name LIKE '%Codeium%'\n    OR fa.name LIKE '%Tabnine%' OR fa.name LIKE '%Blackbox%'\n    OR fa.name LIKE '%Phind%' OR fa.name LIKE '%Bito%'\n    OR fa.name LIKE '%Grammarly%' OR fa.name LIKE '%Jasper%'\n    OR fa.name LIKE '%Wordtune%' OR fa.name LIKE '%Quillbot%'\n    OR fa.name LIKE '%QuillBot%' OR fa.name LIKE '%Compose AI%'\n    OR fa.name LIKE '%Writesonic%' OR fa.name LIKE '%Copy.ai%'\n    OR fa.name LIKE '%You.com%' OR fa.name LIKE '%AIPRM%'\n    OR fa.name LIKE '%WebChatGPT%'\n    OR fa.name LIKE '%Glasp%' OR fa.name LIKE '%Eightify%'\n    OR fa.name LIKE '%NoteGPT%' OR fa.name LIKE '%tl;dv%'\n    OR fa.name LIKE '%DeepL%' OR fa.name LIKE '%Immersive Translate%'\n    -- Match by identifier (more reliable than name for Firefox)\n    OR fa.identifier LIKE '%chatgpt%'\n    OR fa.identifier LIKE '%copilot%'\n    OR fa.identifier LIKE '%claude%'\n    OR fa.identifier LIKE '%perplexity%'\n    OR fa.identifier LIKE '%deepseek%'\n    OR fa.identifier LIKE '%openai%'\n    OR fa.identifier LIKE '%anthropic%'\n    OR fa.identifier LIKE '%codeium%'\n    OR fa.identifier LIKE '%tabnine%'\n    OR fa.identifier LIKE '%grammarly%'\n    OR fa.identifier LIKE '%deepl%'\n    OR fa.identifier LIKE '%monica%'\n    OR fa.identifier LIKE '%sider%');",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "browser_extensions",
+                                "firefox",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_firefox_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_credential_files_linux",
+                "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE '/home/%/.env'\n    OR path LIKE '/home/%/.env.local'\n    OR path LIKE '/home/%/projects/%/.env'\n    OR path LIKE '/home/%/src/%/.env'\n    OR path LIKE '/home/%/code/%/.env'\n    OR path LIKE '/home/%/repos/%/.env'\n    OR path LIKE '/home/%/.openai'\n    OR path LIKE '/home/%/.anthropic'\n    OR path LIKE '/home/%/.config/openai/auth.json'\n    OR path LIKE '/home/%/.config/anthropic/auth.json'\n    OR path LIKE '/home/%/.config/groq/auth.json'\n    OR path LIKE '/home/%/.config/cohere/auth.json'\n    OR path LIKE '/home/%/.cache/huggingface/token'\n    OR path LIKE '/home/%/.huggingface/token'\n    OR path LIKE '/home/%/.ollama/auth'\n    OR path LIKE '/home/%/litellm_config.yaml'\n    OR path LIKE '/home/%/.litellm/config.yaml'\n    OR path LIKE '/home/%/.config/shell_gpt/.sgptrc'\n    OR path LIKE '/home/%/.aider.conf.yml'\n    OR path LIKE '/home/%/.aider.env'\n)\nAND size > 0;",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "credential_exposure",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_credential_files_linux"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_jupyter_servers",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'jupyter', 'jupyter-lab', 'jupyter-notebook',\n    'jupyter-server', 'jupyterhub', 'jupyterhub-singleuser'\n)\n    OR p.cmdline LIKE '%jupyter%notebook%'\n    OR p.cmdline LIKE '%jupyter%lab%'\n    OR p.cmdline LIKE '%jupyter%server%'\n    OR p.cmdline LIKE '%jupyterhub%'\n    OR p.cmdline LIKE '%jupyter-notebook%'\n    OR p.cmdline LIKE '%jupyter_core%'\n    OR (p.name = 'python3' AND p.cmdline LIKE '%jupyter%')\n    OR (p.name = 'python' AND p.cmdline LIKE '%jupyter%');",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "jupyter",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_jupyter_servers"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_vscode_extensions",
+                "query": "SELECT\n    path,\n    filename AS extension_id,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE '/home/%/.vscode/extensions/github.copilot%'\n    OR path LIKE '/home/%/.vscode/extensions/github.copilot-chat%'\n    OR path LIKE '/home/%/.vscode/extensions/saoudrizwan.claude-dev%'\n    OR path LIKE '/home/%/.vscode/extensions/rooveterinaryinc.roo-cline%'\n    OR path LIKE '/home/%/.vscode/extensions/continue.continue%'\n    OR path LIKE '/home/%/.vscode/extensions/sourcegraph.cody%'\n    OR path LIKE '/home/%/.vscode/extensions/codeium.codeium%'\n    OR path LIKE '/home/%/.vscode/extensions/tabnine.tabnine%'\n    OR path LIKE '/home/%/.vscode/extensions/amazonwebservices.amazon-q%'\n    OR path LIKE '/home/%/.vscode/extensions/supermaven.supermaven%'\n    OR path LIKE '/home/%/.vscode/extensions/blackboxapp.blackbox%'\n    OR path LIKE '/home/%/.vscode/extensions/pieces.pieces-vscode%'\n    OR path LIKE '/home/%/.vscode/extensions/phind.phind%'\n    OR path LIKE '/home/%/.vscode/extensions/bito.bito%'\n)\nAND type = 'directory';",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "extension_id"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "vscode_extensions",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_vscode_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_systemd_services",
+                "query": "SELECT\n    su.id AS unit_id,\n    su.description,\n    su.load_state,\n    su.active_state,\n    su.sub_state,\n    su.unit_file_state,\n    su.fragment_path,\n    datetime(f.mtime, 'unixepoch') AS modified_time\nFROM systemd_units su\nLEFT JOIN file f ON f.path = su.fragment_path\nWHERE su.id LIKE '%.service'\n    AND su.fragment_path IS NOT NULL\n    AND su.fragment_path != ''\n    AND (\n        su.id LIKE '%ollama%'\n        OR su.id LIKE '%lmstudio%'\n        OR su.id LIKE '%llama%'\n        OR su.id LIKE '%vllm%'\n        OR su.id LIKE '%litellm%'\n        OR su.id LIKE '%localai%'\n        OR su.id LIKE '%gpt4all%'\n        OR su.id LIKE '%koboldcpp%'\n        OR su.id LIKE '%text-generation%'\n        OR su.id LIKE '%open-webui%'\n        OR su.id LIKE '%anythingllm%'\n        OR su.id LIKE '%jan%ai%'\n        OR su.id LIKE '%mcp-server%'\n        OR su.id LIKE '%mcp_server%'\n        OR su.id LIKE '%modelcontextprotocol%'\n        OR su.id LIKE '%comfyui%'\n        OR su.id LIKE '%invokeai%'\n        OR su.id LIKE '%stable-diffusion%'\n        OR su.id LIKE '%whisper%'\n        OR su.id LIKE '%jupyter%'\n        OR su.id LIKE '%jupyterhub%'\n        OR su.id LIKE '%chromadb%'\n        OR su.id LIKE '%qdrant%'\n        OR su.id LIKE '%weaviate%'\n        OR su.id LIKE '%milvus%'\n        OR su.fragment_path LIKE '%ollama%'\n        OR su.fragment_path LIKE '%llama-server%'\n        OR su.fragment_path LIKE '%litellm%'\n        OR su.fragment_path LIKE '%mcp-server%'\n        OR su.fragment_path LIKE '%jupyter%'\n    );",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "unit_id"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "active_state"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "fragment_path"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "systemd",
+                                "auto_start",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_systemd_services"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_crontab_linux",
+                "query": "SELECT\n    c.command,\n    c.path AS crontab_path,\n    c.minute,\n    c.hour,\n    c.day_of_month,\n    c.month,\n    c.day_of_week\nFROM crontab c\nWHERE c.command IS NOT NULL\n    AND c.command != ''\n    AND (\n        LOWER(c.command) LIKE '%ollama%'\n        OR LOWER(c.command) LIKE '%llama-server%'\n        OR LOWER(c.command) LIKE '%llama.cpp%'\n        OR LOWER(c.command) LIKE '%litellm%'\n        OR LOWER(c.command) LIKE '%localai%'\n        OR LOWER(c.command) LIKE '%vllm%'\n        OR LOWER(c.command) LIKE '%gpt4all%'\n        OR LOWER(c.command) LIKE '%anythingllm%'\n        OR LOWER(c.command) LIKE '%open-webui%'\n        OR LOWER(c.command) LIKE '%koboldcpp%'\n        OR LOWER(c.command) LIKE '%comfyui%'\n        OR LOWER(c.command) LIKE '%invokeai%'\n        OR LOWER(c.command) LIKE '%stable-diffusion%'\n        OR LOWER(c.command) LIKE '%mcp-server%'\n        OR LOWER(c.command) LIKE '%mcp_server%'\n        OR LOWER(c.command) LIKE '%jupyter%'\n        OR LOWER(c.command) LIKE '%whisper%'\n        OR LOWER(c.command) LIKE '%huggingface%'\n    );",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "crontab_path"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "crontab",
+                                "auto_start",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_crontab_linux"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_network_connections",
+                "query": "SELECT DISTINCT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    pos.remote_address,\n    pos.remote_port,\n    pos.local_port,\n    pos.protocol\nFROM process_open_sockets pos\nJOIN processes p ON pos.pid = p.pid\nLEFT JOIN users u ON p.uid = u.uid\nWHERE pos.remote_port IN (443, 80)\n    AND pos.state = 'ESTABLISHED'\n    AND pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::')\n    AND (\n        p.name IN (\n            'ollama', 'cursor', 'Cursor', 'Cursor Helper',\n            'claude', 'Claude', 'claude-code',\n            'copilot-agent', 'copilot',\n            'windsurf', 'Windsurf',\n            'aider', 'cline', 'codeium',\n            'ChatGPT', 'chatgpt'\n        )\n        OR p.cmdline LIKE '%openai%'\n        OR p.cmdline LIKE '%anthropic%'\n        OR p.cmdline LIKE '%langchain%'\n        OR p.cmdline LIKE '%huggingface%'\n    );",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "connection"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "destination.address",
+                        "value": {
+                            "field": "remote_address"
+                        }
+                    },
+                    {
+                        "key": "destination.port",
+                        "value": {
+                            "field": "remote_port"
+                        }
+                    },
+                    {
+                        "key": "source.port",
+                        "value": {
+                            "field": "local_port"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "protocol"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "network_connections",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_network_connections"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_vector_databases",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN ('qdrant', 'milvus', 'weaviate', 'chroma')\n    OR p.cmdline LIKE '%chromadb%'\n    OR p.cmdline LIKE '%qdrant%'\n    OR p.cmdline LIKE '%weaviate%'\n    OR p.cmdline LIKE '%milvus%'\n    OR p.cmdline LIKE '%pinecone%'\n    OR p.cmdline LIKE '%pgvector%'\n    OR p.cmdline LIKE '%lancedb%'\n    OR p.cmdline LIKE '%faiss%';",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "vector_databases",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_vector_databases"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_model_cache_size_linux",
+                "query": "SELECT\n    CASE\n        WHEN f.directory LIKE '%/.ollama/models%' THEN 'ollama'\n        WHEN f.directory LIKE '%/.cache/huggingface%' THEN 'huggingface'\n        WHEN f.directory LIKE '%/.cache/lm-studio%' THEN 'lm-studio'\n    END AS ai_tool,\n    CASE\n        WHEN f.directory LIKE '%/.ollama/models%' THEN '/home/*/.ollama/models'\n        WHEN f.directory LIKE '%/.cache/huggingface%' THEN '/home/*/.cache/huggingface'\n        WHEN f.directory LIKE '%/.cache/lm-studio%' THEN '/home/*/.cache/lm-studio'\n    END AS cache_path,\n    SUM(f.size) AS total_bytes,\n    COUNT(*) AS file_count\nFROM file f\nWHERE (\n    f.directory LIKE '/home/%/.ollama/models%'\n    OR f.directory LIKE '/home/%/.cache/huggingface%'\n    OR f.directory LIKE '/home/%/.cache/lm-studio%'\n)\n    AND f.type = 'regular'\nGROUP BY ai_tool\nHAVING total_bytes > 104857600;",
+                "interval": 86400,
+                "platform": "linux",
+                "timeout": 300,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "model_storage",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_model_cache_size_linux"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_ssh_tunnels",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name = 'ssh'\n    AND (\n        p.cmdline LIKE '%L %:%11434%'\n        OR p.cmdline LIKE '%L %:%8080%'\n        OR p.cmdline LIKE '%L %:%8000%'\n        OR p.cmdline LIKE '%L %:%3000%'\n        OR p.cmdline LIKE '%L %:%7860%'\n        OR p.cmdline LIKE '%L %:%1234%'\n        OR p.cmdline LIKE '%L %:%8888%'\n        OR p.cmdline LIKE '%L %:%6333%'\n        OR p.cmdline LIKE '%R %:%11434%'\n        OR p.cmdline LIKE '%R %:%8080%'\n        OR p.cmdline LIKE '%R %:%8000%'\n        OR p.cmdline LIKE '%R %:%3000%'\n        OR p.cmdline LIKE '%R %:%7860%'\n        OR p.cmdline LIKE '%R %:%1234%'\n        OR p.cmdline LIKE '%R %:%8888%'\n        OR p.cmdline LIKE '%R %:%6333%'\n    );",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 60,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "ssh_tunnels",
+                                "network_exposure",
+                                "shadow_ai",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_ssh_tunnels"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_config_file_changes_linux",
+                "query": "SELECT f.path, f.size, datetime(f.mtime, 'unixepoch') AS modified_time, datetime(f.ctime, 'unixepoch') AS changed_time, u.username FROM file f LEFT JOIN users u ON f.uid = u.uid WHERE ( f.path LIKE '/home/%/.config/Claude/claude_desktop_config.json' OR f.path LIKE '/home/%/.claude/settings.json' OR f.path LIKE '/home/%/.claude.json' OR f.path LIKE '/home/%/.cursor/mcp.json' OR f.path LIKE '/home/%/.vscode/mcp.json' OR f.path LIKE '/home/%/.mcp.json' OR f.path LIKE '/home/%/.config/ollama/config' OR f.path = '/etc/ollama/config' OR f.path LIKE '/home/%/.continue/config.json' OR f.path LIKE '/home/%/.codeium/config.json' ) AND f.mtime > (strftime('%s', 'now') - 3600)",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "snapshot": true,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "change"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "config_change",
+                                "shadow_ai",
+                                "genai_detection",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_config_file_changes"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "ai_sensitive_file_proximity_linux",
+                "query": "SELECT p.name AS process_name, p.path AS process_path, p.pid, u.username, sens.path AS sensitive_file_path, sens.size AS sensitive_file_size, datetime(sens.atime, 'unixepoch') AS accessed_time, datetime(sens.mtime, 'unixepoch') AS modified_time FROM processes p JOIN users u ON p.uid = u.uid JOIN ( SELECT path, size, atime, mtime, uid FROM file WHERE path LIKE '/home/%/.aws/credentials' OR path LIKE '/home/%/.aws/config' OR path LIKE '/home/%/.ssh/id_rsa' OR path LIKE '/home/%/.ssh/id_ed25519' OR path LIKE '/home/%/.ssh/id_ecdsa' OR path LIKE '/home/%/.config/gcloud/credentials.db' OR path LIKE '/home/%/.config/gcloud/application_default_credentials.json' OR path LIKE '/home/%/.azure/accessTokens.json' OR path LIKE '/home/%/.azure/msal_token_cache.json' OR path LIKE '/home/%/.kube/config' ) AS sens ON p.uid = sens.uid WHERE ( p.name IN ('ollama', 'claude', 'cursor', 'Cursor', 'windsurf', 'Windsurf', 'copilot-agent', 'aider', 'ChatGPT', 'codex', 'lms', 'gpt4all', 'jan', 'koboldcpp', 'llama-server', 'vllm', 'litellm', 'qwen', 'grok', 'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito') OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%'\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    )",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "snapshot": true,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process",
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "sensitive_file_path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "sensitive_file_size"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "credential_risk",
+                                "shadow_ai",
+                                "genai_detection",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_sensitive_file_proximity"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "ai_process_network_summary",
+                "query": "SELECT p.name AS process_name, p.path AS process_path, p.cmdline, p.pid, u.username, pos.remote_address, pos.remote_port, pos.local_port, pos.local_address, pos.state, CASE pos.family WHEN 2 THEN 'IPv4' WHEN 10 THEN 'IPv6' ELSE 'unknown' END AS address_family, CASE pos.protocol WHEN 6 THEN 'tcp' WHEN 17 THEN 'udp' ELSE CAST(pos.protocol AS TEXT) END AS transport_protocol, CASE WHEN pos.remote_address LIKE '10.%' OR pos.remote_address LIKE '192.168.%' THEN 1 ELSE 0 END AS is_rfc1918_destination, datetime(p.start_time, 'unixepoch') AS start_time FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid LEFT JOIN users u ON p.uid = u.uid WHERE pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::') AND pos.remote_address != '' AND (pos.state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR pos.state IS NULL) AND ( p.name IN ( 'ollama', 'claude', 'cursor', 'Cursor', 'windsurf', 'Windsurf', 'ChatGPT', 'copilot-agent', 'aider', 'codex', 'lms', 'gpt4all', 'jan', 'llama-server', 'open-webui', 'litellm', 'koboldcpp', 'vllm', 'llamafile', 'tabby', 'exo', 'qwen', 'grok', 'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito') OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%llama-server%' OR p.cmdline LIKE '%vllm.entrypoints%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%' \n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    )",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "snapshot": true,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network",
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "connection"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "destination.ip",
+                        "value": {
+                            "field": "remote_address"
+                        }
+                    },
+                    {
+                        "key": "destination.port",
+                        "value": {
+                            "field": "remote_port"
+                        }
+                    },
+                    {
+                        "key": "source.port",
+                        "value": {
+                            "field": "local_port"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "local_address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "transport_protocol"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "network_connections",
+                                "shadow_ai",
+                                "genai_detection",
+                                "linux"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_process_network_summary"
+                        }
+                    }
+                ]
             }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "process.parent.pid",
-            "value": {
-              "field": "ppid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "llm_runtime",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_llm_processes"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_coding_agents",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'claude', 'cursor', 'windsurf', 'warp', 'zed',\n    'tabnine', 'TabNine', 'WasmTabNine',\n    'codeium_language_server', 'supermaven',\n    'amazon-q', 'pieces-os', 'Pieces OS',\n    'codex', 'aider', 'sgpt'\n,\n    'augment',\n    'codex',\n    'goose',\n    'devin',\n    'amp',\n    'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell_gpt%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%semantic_kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    OR p.cmdline LIKE '%llama_index%'\n    OR p.cmdline LIKE '%haystack%pipeline%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistralai%'\n;",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "process.parent.pid",
-            "value": {
-              "field": "ppid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "coding_agents",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_coding_agents"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_listening_ports",
-        "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n)\n    AND l.address != '127.0.0.1'\n    AND l.address != '::1';",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "server.port",
-            "value": {
-              "field": "port"
-            }
-          },
-          {
-            "key": "server.address",
-            "value": {
-              "field": "address"
-            }
-          },
-          {
-            "key": "network.transport",
-            "value": {
-              "field": "protocol"
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "network_exposure",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_listening_ports"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_listening_ports_local",
-        "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n);",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "server.port",
-            "value": {
-              "field": "port"
-            }
-          },
-          {
-            "key": "server.address",
-            "value": {
-              "field": "address"
-            }
-          },
-          {
-            "key": "network.transport",
-            "value": {
-              "field": "protocol"
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "listening_ports_inventory",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_listening_ports_local"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_packages_linux",
-        "query": "SELECT name, version, source, 'deb' AS pkg_type FROM deb_packages\nWHERE name LIKE '%ollama%'\n    OR name LIKE '%cursor%'\n    OR name LIKE '%windsurf%'\n    OR name LIKE '%lmstudio%'\n    OR name LIKE '%lm-studio%'\n    OR name LIKE '%gpt4all%'\n    OR name LIKE '%jan%'\n    OR name LIKE '%chatgpt%'\n    OR name LIKE '%claude%'\n    OR name LIKE '%perplexity%'\n    OR name LIKE '%deepseek%'\n    OR name LIKE '%anythingllm%'\n    OR name LIKE '%open-webui%'\n    OR name LIKE '%litellm%'\n    OR name LIKE '%comfyui%'\n    OR name LIKE '%invokeai%'\n    OR name LIKE '%nvidia-cuda%'\n    OR name LIKE '%nvidia-cudnn%'\n    OR name LIKE '%nvidia-driver%'\n    OR name LIKE '%libnvidia%'\n    OR name LIKE '%codeium%'\n    OR name LIKE '%tabnine%'\n    OR name LIKE '%amazon-q%'\n    OR name LIKE '%pieces%'\n    OR name LIKE '%zed-editor%'\n    OR name LIKE '%warp-terminal%'\nUNION ALL\nSELECT name, version, source, 'rpm' AS pkg_type FROM rpm_packages\nWHERE name LIKE '%ollama%'\n    OR name LIKE '%cursor%'\n    OR name LIKE '%windsurf%'\n    OR name LIKE '%lmstudio%'\n    OR name LIKE '%lm-studio%'\n    OR name LIKE '%gpt4all%'\n    OR name LIKE '%jan%'\n    OR name LIKE '%chatgpt%'\n    OR name LIKE '%claude%'\n    OR name LIKE '%perplexity%'\n    OR name LIKE '%deepseek%'\n    OR name LIKE '%anythingllm%'\n    OR name LIKE '%open-webui%'\n    OR name LIKE '%litellm%'\n    OR name LIKE '%comfyui%'\n    OR name LIKE '%invokeai%'\n    OR name LIKE '%cuda%'\n    OR name LIKE '%nvidia-driver%'\n    OR name LIKE '%libnvidia%'\n    OR name LIKE '%codeium%'\n    OR name LIKE '%tabnine%'\n    OR name LIKE '%amazon-q%'\n    OR name LIKE '%pieces%'\n    OR name LIKE '%zed-editor%'\n    OR name LIKE '%warp-terminal%'\n    OR name LIKE '%qwen%'\n    OR name LIKE '%grok%'\n    OR name LIKE '%gemini%'\n    OR name LIKE '%bito%'\n;",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "package.version",
-            "value": {
-              "field": "version"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "installed_packages",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "package.type",
-            "value": {
-              "field": "pkg_type"
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_packages_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "mcp_server_processes",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%mcp_server%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%';",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "mcp_server",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.mcp_server_processes"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "mcp_config_files_linux",
-        "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE path LIKE '/home/%/.config/Claude/claude_desktop_config.json'\n    OR path LIKE '/home/%/.claude.json'\n    OR path LIKE '/home/%/.claude/settings.json'\n    OR path LIKE '/home/%/.cursor/mcp.json'\n    OR path LIKE '/home/%/.vscode/mcp.json'\n    OR path LIKE '/home/%/.mcp.json';",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "mcp_config",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.mcp_config_files_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_model_files_linux",
-        "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE '/home/%/.ollama/models/blobs/%'\n    OR path LIKE '/home/%/.lmstudio/models/%'\n    OR path LIKE '/home/%/.cache/huggingface/hub/%'\n    OR path LIKE '/home/%/.cache/llama.cpp/%'\n    OR path LIKE '/home/%/.local/share/nomic.ai/GPT4All/%'\n    OR path LIKE '/opt/models/%'\n)\nAND size > 100000000;",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.name",
-            "value": {
-              "field": "filename"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "model_files",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_model_files_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_model_file_extensions_linux",
-        "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE '/home/%/%.gguf'\n    OR path LIKE '/home/%/%.safetensors'\n    OR path LIKE '/home/%/%.llamafile'\n    OR path LIKE '/home/%/%.ggml'\n    OR path LIKE '/home/%/%.onnx'\n    OR path LIKE '/opt/%/%.gguf'\n    OR path LIKE '/opt/%/%.safetensors'\n    OR path LIKE '/home/%/.cache/huggingface/hub/%.safetensors'\n    OR path LIKE '/home/%/.cache/llama.cpp/%.gguf'\n    OR path LIKE '/home/%/.local/share/nomic.ai/GPT4All/%.gguf'\n    OR path LIKE '/home/%/Downloads/%.gguf'\n    OR path LIKE '/home/%/Downloads/%.safetensors'\n)\nAND size > 100000000;",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.name",
-            "value": {
-              "field": "filename"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "model_file_extensions",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_model_file_extensions_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_python_packages",
-        "query": "SELECT\n    name,\n    version,\n    directory\nFROM python_packages\nWHERE name IN (\n    'torch', 'tensorflow', 'onnxruntime', 'jax', 'flax',\n    'transformers', 'diffusers', 'accelerate', 'peft', 'trl',\n    'huggingface-hub', 'tokenizers', 'datasets', 'sentence-transformers',\n    'safetensors',\n    'openai', 'anthropic', 'google-generativeai', 'cohere', 'replicate',\n    'groq', 'mistralai', 'together', 'fireworks-ai', 'deepseek-sdk',\n    'langchain', 'langchain-core', 'langchain-community',\n    'llama-index', 'llama-index-core',\n    'autogen', 'crewai', 'semantic-kernel', 'haystack-ai', 'dspy-ai',\n    'instructor', 'guidance', 'outlines',\n    'llama-cpp-python', 'ollama', 'vllm', 'ctransformers',\n    'bitsandbytes', 'auto-gptq', 'exllama',\n    'fastmcp', 'mcp',\n    'chromadb', 'qdrant-client', 'weaviate-client', 'pinecone-client',\n    'pymilvus', 'faiss-cpu', 'faiss-gpu',\n    'aider-chat', 'shell-gpt', 'mentat',\n    'gradio', 'streamlit',\n    'openai-whisper', 'whisper', 'elevenlabs', 'bark',\n    'litellm',\n    'llm'\n);",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "package.version",
-            "value": {
-              "field": "version"
-            }
-          },
-          {
-            "key": "package.path",
-            "value": {
-              "field": "directory"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "python_packages",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_python_packages"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_chrome_extensions",
-        "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE '%Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE '%Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%');",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "package.version",
-            "value": {
-              "field": "version"
-            }
-          },
-          {
-            "key": "package.description",
-            "value": {
-              "field": "description"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "browser_extensions",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_chrome_extensions"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_docker_containers",
-        "query": "SELECT\n    id,\n    name,\n    image,\n    status,\n    command,\n    started_at\nFROM docker_containers\nWHERE\n    image LIKE '%ollama%' OR image LIKE '%vllm%'\n    OR image LIKE '%text-generation%' OR image LIKE '%localai%'\n    OR image LIKE '%llama.cpp%' OR image LIKE '%litellm%'\n    OR image LIKE '%pytorch%' OR image LIKE '%tensorflow%'\n    OR image LIKE '%triton%' OR image LIKE '%huggingface%'\n    OR image LIKE '%mcp%' OR image LIKE '%modelcontextprotocol%'\n    OR image LIKE '%open-webui%' OR image LIKE '%anythingllm%'\n    OR image LIKE '%flowise%' OR image LIKE '%langflow%'\n    OR image LIKE '%chromadb%' OR image LIKE '%chroma%'\n    OR image LIKE '%qdrant%' OR image LIKE '%weaviate%'\n    OR image LIKE '%milvus%' OR image LIKE '%pinecone%'\n    OR image LIKE '%comfyui%' OR image LIKE '%stable-diffusion%'\n    OR image LIKE '%invokeai%' OR image LIKE '%automatic1111%'\n    OR image LIKE '%n8n%' OR image LIKE '%openhands%'\n    OR image LIKE '%sweepai%' OR image LIKE '%pr-agent%'\n    OR image LIKE '%qwen%'\n    OR image LIKE '%grok%'\n    OR image LIKE '%cohere%'\n    OR image LIKE '%mistral%'\n;",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "host"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "container.id",
-            "value": {
-              "field": "id"
-            }
-          },
-          {
-            "key": "container.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "container.image.name",
-            "value": {
-              "field": "image"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "docker_containers",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_docker_containers"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "mcp_npm_packages",
-        "query": "SELECT\n    f.directory,\n    f.path,\n    f.filename\nFROM file f\nWHERE (\n    f.path LIKE '/usr/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/home/%/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/home/%/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/home/%/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/root/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/root/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/root/node_modules/@anthropic-ai/%/package.json'\n);",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.name",
-            "value": {
-              "field": "filename"
-            }
-          },
-          {
-            "key": "file.directory",
-            "value": {
-              "field": "directory"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "mcp_packages",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.mcp_npm_packages"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_gpu_systems",
-        "query": "SELECT\n    vendor,\n    model,\n    pci_class,\n    pci_subclass,\n    driver\nFROM pci_devices\nWHERE\n    (vendor LIKE '%NVIDIA%' AND (pci_class = '0300' OR pci_class = '0302'))\n    OR (vendor LIKE '%Advanced Micro Devices%' AND pci_class = '0300')\n    OR vendor LIKE '%Apple%GPU%';",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "host"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "gpu_systems",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_gpu_systems"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_config_directories_linux",
-        "query": "SELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE directory LIKE '/home/%/'\nAND (\n    (type = 'directory' AND filename IN (\n        '.ollama', 'jan', '.continue', '.cursor', '.codeium',\n        '.tabnine', '.claude', '.supermaven', '.anythingllm',\n        '.invokeai'\n    ))\n    OR filename = '.aider.conf.yml'\n)\nUNION\nSELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE directory LIKE '/home/%/.cache/'\nAND type = 'directory'\nAND filename IN (\n    'lm-studio', 'huggingface', 'gpt4all', 'llama.cpp'\n)\nUNION\nSELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE directory LIKE '/home/%/.config/'\nAND type = 'directory'\nAND filename IN (\n    'github-copilot', 'shell_gpt'\n);",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "config_directories",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_config_directories_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_firefox_extensions",
-        "query": "SELECT\n    fa.name,\n    fa.identifier,\n    fa.version,\n    fa.description,\n    fa.path,\n    fa.active,\n    u.username\nFROM users u CROSS JOIN firefox_addons fa USING(uid)\nWHERE fa.active = 1 AND (\n    fa.name LIKE '%Copilot%' OR fa.name LIKE '%ChatGPT%'\n    OR fa.name LIKE '%Claude%' OR fa.name LIKE '%Gemini%'\n    OR fa.name LIKE '%Perplexity%' OR fa.name LIKE '%DeepSeek%'\n    OR fa.name LIKE '%Monica%' OR fa.name LIKE '%Merlin%'\n    OR fa.name LIKE '%Sider%' OR fa.name LIKE '%MaxAI%'\n    OR fa.name LIKE '%UseChatGPT%' OR fa.name LIKE '%Poe%'\n    OR fa.name LIKE '%Cody%' OR fa.name LIKE '%Codeium%'\n    OR fa.name LIKE '%Tabnine%' OR fa.name LIKE '%Blackbox%'\n    OR fa.name LIKE '%Phind%' OR fa.name LIKE '%Bito%'\n    OR fa.name LIKE '%Grammarly%' OR fa.name LIKE '%Jasper%'\n    OR fa.name LIKE '%Wordtune%' OR fa.name LIKE '%Quillbot%'\n    OR fa.name LIKE '%QuillBot%' OR fa.name LIKE '%Compose AI%'\n    OR fa.name LIKE '%Writesonic%' OR fa.name LIKE '%Copy.ai%'\n    OR fa.name LIKE '%You.com%' OR fa.name LIKE '%AIPRM%'\n    OR fa.name LIKE '%WebChatGPT%'\n    OR fa.name LIKE '%Glasp%' OR fa.name LIKE '%Eightify%'\n    OR fa.name LIKE '%NoteGPT%' OR fa.name LIKE '%tl;dv%'\n    OR fa.name LIKE '%DeepL%' OR fa.name LIKE '%Immersive Translate%'\n    -- Match by identifier (more reliable than name for Firefox)\n    OR fa.identifier LIKE '%chatgpt%'\n    OR fa.identifier LIKE '%copilot%'\n    OR fa.identifier LIKE '%claude%'\n    OR fa.identifier LIKE '%perplexity%'\n    OR fa.identifier LIKE '%deepseek%'\n    OR fa.identifier LIKE '%openai%'\n    OR fa.identifier LIKE '%anthropic%'\n    OR fa.identifier LIKE '%codeium%'\n    OR fa.identifier LIKE '%tabnine%'\n    OR fa.identifier LIKE '%grammarly%'\n    OR fa.identifier LIKE '%deepl%'\n    OR fa.identifier LIKE '%monica%'\n    OR fa.identifier LIKE '%sider%');",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "package.version",
-            "value": {
-              "field": "version"
-            }
-          },
-          {
-            "key": "package.description",
-            "value": {
-              "field": "description"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "browser_extensions",
-                "firefox",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_firefox_extensions"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_credential_files_linux",
-        "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE '/home/%/.env'\n    OR path LIKE '/home/%/.env.local'\n    OR path LIKE '/home/%/projects/%/.env'\n    OR path LIKE '/home/%/src/%/.env'\n    OR path LIKE '/home/%/code/%/.env'\n    OR path LIKE '/home/%/repos/%/.env'\n    OR path LIKE '/home/%/.openai'\n    OR path LIKE '/home/%/.anthropic'\n    OR path LIKE '/home/%/.config/openai/auth.json'\n    OR path LIKE '/home/%/.config/anthropic/auth.json'\n    OR path LIKE '/home/%/.config/groq/auth.json'\n    OR path LIKE '/home/%/.config/cohere/auth.json'\n    OR path LIKE '/home/%/.cache/huggingface/token'\n    OR path LIKE '/home/%/.huggingface/token'\n    OR path LIKE '/home/%/.ollama/auth'\n    OR path LIKE '/home/%/litellm_config.yaml'\n    OR path LIKE '/home/%/.litellm/config.yaml'\n    OR path LIKE '/home/%/.config/shell_gpt/.sgptrc'\n    OR path LIKE '/home/%/.aider.conf.yml'\n    OR path LIKE '/home/%/.aider.env'\n)\nAND size > 0;",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "credential_exposure",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_credential_files_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_jupyter_servers",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'jupyter', 'jupyter-lab', 'jupyter-notebook',\n    'jupyter-server', 'jupyterhub', 'jupyterhub-singleuser'\n)\n    OR p.cmdline LIKE '%jupyter%notebook%'\n    OR p.cmdline LIKE '%jupyter%lab%'\n    OR p.cmdline LIKE '%jupyter%server%'\n    OR p.cmdline LIKE '%jupyterhub%'\n    OR p.cmdline LIKE '%jupyter-notebook%'\n    OR p.cmdline LIKE '%jupyter_core%'\n    OR (p.name = 'python3' AND p.cmdline LIKE '%jupyter%')\n    OR (p.name = 'python' AND p.cmdline LIKE '%jupyter%');",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "process.parent.pid",
-            "value": {
-              "field": "ppid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "jupyter",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_jupyter_servers"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_vscode_extensions",
-        "query": "SELECT\n    path,\n    filename AS extension_id,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE '/home/%/.vscode/extensions/github.copilot%'\n    OR path LIKE '/home/%/.vscode/extensions/github.copilot-chat%'\n    OR path LIKE '/home/%/.vscode/extensions/saoudrizwan.claude-dev%'\n    OR path LIKE '/home/%/.vscode/extensions/rooveterinaryinc.roo-cline%'\n    OR path LIKE '/home/%/.vscode/extensions/continue.continue%'\n    OR path LIKE '/home/%/.vscode/extensions/sourcegraph.cody%'\n    OR path LIKE '/home/%/.vscode/extensions/codeium.codeium%'\n    OR path LIKE '/home/%/.vscode/extensions/tabnine.tabnine%'\n    OR path LIKE '/home/%/.vscode/extensions/amazonwebservices.amazon-q%'\n    OR path LIKE '/home/%/.vscode/extensions/supermaven.supermaven%'\n    OR path LIKE '/home/%/.vscode/extensions/blackboxapp.blackbox%'\n    OR path LIKE '/home/%/.vscode/extensions/pieces.pieces-vscode%'\n    OR path LIKE '/home/%/.vscode/extensions/phind.phind%'\n    OR path LIKE '/home/%/.vscode/extensions/bito.bito%'\n)\nAND type = 'directory';",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "extension_id"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "vscode_extensions",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_vscode_extensions"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_systemd_services",
-        "query": "SELECT\n    su.id AS unit_id,\n    su.description,\n    su.load_state,\n    su.active_state,\n    su.sub_state,\n    su.unit_file_state,\n    su.fragment_path,\n    datetime(f.mtime, 'unixepoch') AS modified_time\nFROM systemd_units su\nLEFT JOIN file f ON f.path = su.fragment_path\nWHERE su.id LIKE '%.service'\n    AND su.fragment_path IS NOT NULL\n    AND su.fragment_path != ''\n    AND (\n        su.id LIKE '%ollama%'\n        OR su.id LIKE '%lmstudio%'\n        OR su.id LIKE '%llama%'\n        OR su.id LIKE '%vllm%'\n        OR su.id LIKE '%litellm%'\n        OR su.id LIKE '%localai%'\n        OR su.id LIKE '%gpt4all%'\n        OR su.id LIKE '%koboldcpp%'\n        OR su.id LIKE '%text-generation%'\n        OR su.id LIKE '%open-webui%'\n        OR su.id LIKE '%anythingllm%'\n        OR su.id LIKE '%jan%ai%'\n        OR su.id LIKE '%mcp-server%'\n        OR su.id LIKE '%mcp_server%'\n        OR su.id LIKE '%modelcontextprotocol%'\n        OR su.id LIKE '%comfyui%'\n        OR su.id LIKE '%invokeai%'\n        OR su.id LIKE '%stable-diffusion%'\n        OR su.id LIKE '%whisper%'\n        OR su.id LIKE '%jupyter%'\n        OR su.id LIKE '%jupyterhub%'\n        OR su.id LIKE '%chromadb%'\n        OR su.id LIKE '%qdrant%'\n        OR su.id LIKE '%weaviate%'\n        OR su.id LIKE '%milvus%'\n        OR su.fragment_path LIKE '%ollama%'\n        OR su.fragment_path LIKE '%llama-server%'\n        OR su.fragment_path LIKE '%litellm%'\n        OR su.fragment_path LIKE '%mcp-server%'\n        OR su.fragment_path LIKE '%jupyter%'\n    );",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "configuration"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "service.name",
-            "value": {
-              "field": "unit_id"
-            }
-          },
-          {
-            "key": "service.state",
-            "value": {
-              "field": "active_state"
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "fragment_path"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "systemd",
-                "auto_start",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_systemd_services"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_crontab_linux",
-        "query": "SELECT\n    c.command,\n    c.path AS crontab_path,\n    c.minute,\n    c.hour,\n    c.day_of_month,\n    c.month,\n    c.day_of_week\nFROM crontab c\nWHERE c.command IS NOT NULL\n    AND c.command != ''\n    AND (\n        LOWER(c.command) LIKE '%ollama%'\n        OR LOWER(c.command) LIKE '%llama-server%'\n        OR LOWER(c.command) LIKE '%llama.cpp%'\n        OR LOWER(c.command) LIKE '%litellm%'\n        OR LOWER(c.command) LIKE '%localai%'\n        OR LOWER(c.command) LIKE '%vllm%'\n        OR LOWER(c.command) LIKE '%gpt4all%'\n        OR LOWER(c.command) LIKE '%anythingllm%'\n        OR LOWER(c.command) LIKE '%open-webui%'\n        OR LOWER(c.command) LIKE '%koboldcpp%'\n        OR LOWER(c.command) LIKE '%comfyui%'\n        OR LOWER(c.command) LIKE '%invokeai%'\n        OR LOWER(c.command) LIKE '%stable-diffusion%'\n        OR LOWER(c.command) LIKE '%mcp-server%'\n        OR LOWER(c.command) LIKE '%mcp_server%'\n        OR LOWER(c.command) LIKE '%jupyter%'\n        OR LOWER(c.command) LIKE '%whisper%'\n        OR LOWER(c.command) LIKE '%huggingface%'\n    );",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "configuration"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "command"
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "crontab_path"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "crontab",
-                "auto_start",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_crontab_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_network_connections",
-        "query": "SELECT DISTINCT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    pos.remote_address,\n    pos.remote_port,\n    pos.local_port,\n    pos.protocol\nFROM process_open_sockets pos\nJOIN processes p ON pos.pid = p.pid\nLEFT JOIN users u ON p.uid = u.uid\nWHERE pos.remote_port IN (443, 80)\n    AND pos.state = 'ESTABLISHED'\n    AND pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::')\n    AND (\n        p.name IN (\n            'ollama', 'cursor', 'Cursor', 'Cursor Helper',\n            'claude', 'Claude', 'claude-code',\n            'copilot-agent', 'copilot',\n            'windsurf', 'Windsurf',\n            'aider', 'cline', 'codeium',\n            'ChatGPT', 'chatgpt'\n        )\n        OR p.cmdline LIKE '%openai%'\n        OR p.cmdline LIKE '%anthropic%'\n        OR p.cmdline LIKE '%langchain%'\n        OR p.cmdline LIKE '%huggingface%'\n    );",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "connection"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "destination.address",
-            "value": {
-              "field": "remote_address"
-            }
-          },
-          {
-            "key": "destination.port",
-            "value": {
-              "field": "remote_port"
-            }
-          },
-          {
-            "key": "source.port",
-            "value": {
-              "field": "local_port"
-            }
-          },
-          {
-            "key": "network.transport",
-            "value": {
-              "field": "protocol"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "network_connections",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_network_connections"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_vector_databases",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN ('qdrant', 'milvus', 'weaviate', 'chroma')\n    OR p.cmdline LIKE '%chromadb%'\n    OR p.cmdline LIKE '%qdrant%'\n    OR p.cmdline LIKE '%weaviate%'\n    OR p.cmdline LIKE '%milvus%'\n    OR p.cmdline LIKE '%pinecone%'\n    OR p.cmdline LIKE '%pgvector%'\n    OR p.cmdline LIKE '%lancedb%'\n    OR p.cmdline LIKE '%faiss%';",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "vector_databases",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_vector_databases"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_model_cache_size_linux",
-        "query": "SELECT\n    CASE\n        WHEN f.directory LIKE '%/.ollama/models%' THEN 'ollama'\n        WHEN f.directory LIKE '%/.cache/huggingface%' THEN 'huggingface'\n        WHEN f.directory LIKE '%/.cache/lm-studio%' THEN 'lm-studio'\n    END AS ai_tool,\n    CASE\n        WHEN f.directory LIKE '%/.ollama/models%' THEN '/home/*/.ollama/models'\n        WHEN f.directory LIKE '%/.cache/huggingface%' THEN '/home/*/.cache/huggingface'\n        WHEN f.directory LIKE '%/.cache/lm-studio%' THEN '/home/*/.cache/lm-studio'\n    END AS cache_path,\n    SUM(f.size) AS total_bytes,\n    COUNT(*) AS file_count\nFROM file f\nWHERE (\n    f.directory LIKE '/home/%/.ollama/models%'\n    OR f.directory LIKE '/home/%/.cache/huggingface%'\n    OR f.directory LIKE '/home/%/.cache/lm-studio%'\n)\n    AND f.type = 'regular'\nGROUP BY ai_tool\nHAVING total_bytes > 104857600;",
-        "interval": 86400,
-        "platform": "linux",
-        "timeout": 300,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "model_storage",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_model_cache_size_linux"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_ssh_tunnels",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name = 'ssh'\n    AND (\n        p.cmdline LIKE '%L %:%11434%'\n        OR p.cmdline LIKE '%L %:%8080%'\n        OR p.cmdline LIKE '%L %:%8000%'\n        OR p.cmdline LIKE '%L %:%3000%'\n        OR p.cmdline LIKE '%L %:%7860%'\n        OR p.cmdline LIKE '%L %:%1234%'\n        OR p.cmdline LIKE '%L %:%8888%'\n        OR p.cmdline LIKE '%L %:%6333%'\n        OR p.cmdline LIKE '%R %:%11434%'\n        OR p.cmdline LIKE '%R %:%8080%'\n        OR p.cmdline LIKE '%R %:%8000%'\n        OR p.cmdline LIKE '%R %:%3000%'\n        OR p.cmdline LIKE '%R %:%7860%'\n        OR p.cmdline LIKE '%R %:%1234%'\n        OR p.cmdline LIKE '%R %:%8888%'\n        OR p.cmdline LIKE '%R %:%6333%'\n    );",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 60,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "ssh_tunnels",
-                "network_exposure",
-                "shadow_ai",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_ssh_tunnels"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_config_file_changes_linux",
-        "query": "SELECT f.path, f.size, datetime(f.mtime, 'unixepoch') AS modified_time, datetime(f.ctime, 'unixepoch') AS changed_time, u.username FROM file f LEFT JOIN users u ON f.uid = u.uid WHERE ( f.path LIKE '/home/%/.config/Claude/claude_desktop_config.json' OR f.path LIKE '/home/%/.claude/settings.json' OR f.path LIKE '/home/%/.claude.json' OR f.path LIKE '/home/%/.cursor/mcp.json' OR f.path LIKE '/home/%/.vscode/mcp.json' OR f.path LIKE '/home/%/.mcp.json' OR f.path LIKE '/home/%/.config/ollama/config' OR f.path = '/etc/ollama/config' OR f.path LIKE '/home/%/.continue/config.json' OR f.path LIKE '/home/%/.codeium/config.json' ) AND f.mtime > (strftime('%s', 'now') - 3600)",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "snapshot": true,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "change"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.ctime",
-            "value": {
-              "field": "changed_time"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "config_change",
-                "shadow_ai",
-                "genai_detection",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_config_file_changes"
-            }
-          }
         ]
-      },
-      {
-        "id": "ai_sensitive_file_proximity_linux",
-        "query": "SELECT p.name AS process_name, p.path AS process_path, p.pid, u.username, sens.path AS sensitive_file_path, sens.size AS sensitive_file_size, datetime(sens.atime, 'unixepoch') AS accessed_time, datetime(sens.mtime, 'unixepoch') AS modified_time FROM processes p JOIN users u ON p.uid = u.uid JOIN ( SELECT path, size, atime, mtime, uid FROM file WHERE path LIKE '/home/%/.aws/credentials' OR path LIKE '/home/%/.aws/config' OR path LIKE '/home/%/.ssh/id_rsa' OR path LIKE '/home/%/.ssh/id_ed25519' OR path LIKE '/home/%/.ssh/id_ecdsa' OR path LIKE '/home/%/.config/gcloud/credentials.db' OR path LIKE '/home/%/.config/gcloud/application_default_credentials.json' OR path LIKE '/home/%/.azure/accessTokens.json' OR path LIKE '/home/%/.azure/msal_token_cache.json' OR path LIKE '/home/%/.kube/config' ) AS sens ON p.uid = sens.uid WHERE ( p.name IN ('ollama', 'claude', 'cursor', 'Cursor', 'windsurf', 'Windsurf', 'copilot-agent', 'aider', 'ChatGPT', 'codex', 'lms', 'gpt4all', 'jan', 'koboldcpp', 'llama-server', 'vllm', 'litellm', 'qwen', 'grok', 'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito') OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%'\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    )",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "snapshot": true,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process",
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "process_name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "process_path"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "sensitive_file_path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "sensitive_file_size"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "credential_risk",
-                "shadow_ai",
-                "genai_detection",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_sensitive_file_proximity"
-            }
-          }
-        ]
-      },
-      {
-        "id": "ai_process_network_summary",
-        "query": "SELECT p.name AS process_name, p.path AS process_path, p.cmdline, p.pid, u.username, pos.remote_address, pos.remote_port, pos.local_port, pos.local_address, pos.state, CASE pos.family WHEN 2 THEN 'IPv4' WHEN 10 THEN 'IPv6' ELSE 'unknown' END AS address_family, CASE pos.protocol WHEN 6 THEN 'tcp' WHEN 17 THEN 'udp' ELSE CAST(pos.protocol AS TEXT) END AS transport_protocol, CASE WHEN pos.remote_address LIKE '10.%' OR pos.remote_address LIKE '192.168.%' THEN 1 ELSE 0 END AS is_rfc1918_destination, datetime(p.start_time, 'unixepoch') AS start_time FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid LEFT JOIN users u ON p.uid = u.uid WHERE pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::') AND pos.remote_address != '' AND (pos.state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR pos.state IS NULL) AND ( p.name IN ( 'ollama', 'claude', 'cursor', 'Cursor', 'windsurf', 'Windsurf', 'ChatGPT', 'copilot-agent', 'aider', 'codex', 'lms', 'gpt4all', 'jan', 'llama-server', 'open-webui', 'litellm', 'koboldcpp', 'vllm', 'llamafile', 'tabby', 'exo', 'qwen', 'grok', 'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito') OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%llama-server%' OR p.cmdline LIKE '%vllm.entrypoints%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%' \n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    )",
-        "interval": 3600,
-        "platform": "linux",
-        "timeout": 180,
-        "snapshot": true,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network",
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "connection"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "process_name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "process_path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "destination.ip",
-            "value": {
-              "field": "remote_address"
-            }
-          },
-          {
-            "key": "destination.port",
-            "value": {
-              "field": "remote_port"
-            }
-          },
-          {
-            "key": "source.port",
-            "value": {
-              "field": "local_port"
-            }
-          },
-          {
-            "key": "source.ip",
-            "value": {
-              "field": "local_address"
-            }
-          },
-          {
-            "key": "network.transport",
-            "value": {
-              "field": "transport_protocol"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "network_connections",
-                "shadow_ai",
-                "genai_detection",
-                "linux"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_process_network_summary"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  "coreMigrationVersion": "9.3.0",
-  "created_at": "2025-06-01T00:00:00.000Z",
-  "id": "osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c",
-  "type": "osquery-pack-asset",
-  "updated_at": "2025-06-01T00:00:00.000Z",
-  "version": "WzEsMV0="
+    },
+    "coreMigrationVersion": "9.3.0",
+    "created_at": "2025-06-01T00:00:00.000Z",
+    "id": "osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c",
+    "type": "osquery-pack-asset",
+    "updated_at": "2025-06-01T00:00:00.000Z",
+    "version": "WzEsMV0="
 }

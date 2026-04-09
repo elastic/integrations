@@ -1,0 +1,72 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Inventory AI-related Docker containers on macOS and Linux. Use for shadow AI triage — identifies containers running Ollama, vLLM, LiteLLM, Open WebUI, AnythingLLM, Flowise, Langflow, vector databases (ChromaDB, Qdrant, Weaviate, Milvus), ComfyUI, stable diffusion, and other AI workloads.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "host"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "container.id",
+                "value": {
+                    "field": "id"
+                }
+            },
+            {
+                "key": "container.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "container.image.name",
+                "value": {
+                    "field": "image"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "docker_containers",
+                        "shadow_ai"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_docker_containers"
+                }
+            }
+        ],
+        "id": "ai_docker_containers_elastic",
+        "interval": "3600",
+        "platform": "darwin,linux",
+        "query": "SELECT\n    id,\n    name,\n    image,\n    status,\n    command,\n    started_at\nFROM docker_containers\nWHERE\n    image LIKE '%ollama%' OR image LIKE '%vllm%'\n    OR image LIKE '%text-generation%' OR image LIKE '%localai%'\n    OR image LIKE '%llama.cpp%' OR image LIKE '%litellm%'\n    OR image LIKE '%pytorch%' OR image LIKE '%tensorflow%'\n    OR image LIKE '%triton%' OR image LIKE '%huggingface%'\n    OR image LIKE '%mcp%' OR image LIKE '%modelcontextprotocol%'\n    OR image LIKE '%open-webui%' OR image LIKE '%anythingllm%'\n    OR image LIKE '%flowise%' OR image LIKE '%langflow%'\n    OR image LIKE '%chromadb%' OR image LIKE '%chroma%'\n    OR image LIKE '%qdrant%' OR image LIKE '%weaviate%'\n    OR image LIKE '%milvus%' OR image LIKE '%pinecone%'\n    OR image LIKE '%comfyui%' OR image LIKE '%stable-diffusion%'\n    OR image LIKE '%invokeai%' OR image LIKE '%automatic1111%'\n    OR image LIKE '%n8n%' OR image LIKE '%openhands%'\n    OR image LIKE '%sweepai%' OR image LIKE '%pr-agent%'\n    OR image LIKE '%qwen%'\n    OR image LIKE '%grok%'\n    OR image LIKE '%cohere%'\n    OR image LIKE '%mistral%'\n;",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-7faf19b9-6eaf-4314-a035-e5797f612653",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect running AI coding agent processes on Windows. Use for shadow AI triage — identifies Claude Code, Cursor, Windsurf, GitHub Copilot, Aider, Codeium, Amazon Q, Tabnine, Goose, Devin, and other AI-assisted development tools running as Windows processes.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "ppid"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "coding_agents",
+                        "shadow_ai",
+                        "windows"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_coding_agents_windows"
+                }
+            }
+        ],
+        "id": "ai_coding_agents_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'claude', 'claude.exe', 'cursor', 'cursor.exe',\n    'windsurf', 'windsurf.exe', 'warp', 'warp.exe',\n    'zed', 'zed.exe', 'tabnine', 'tabnine.exe',\n    'TabNine', 'TabNine.exe', 'WasmTabNine', 'WasmTabNine.exe',\n    'codeium_language_server', 'codeium_language_server.exe',\n    'supermaven', 'supermaven.exe',\n    'amazon-q', 'amazon-q.exe', 'pieces-os', 'pieces-os.exe',\n    'Pieces OS', 'Pieces OS.exe',\n    'codex', 'codex.exe', 'aider', 'aider.exe',\n    'sgpt', 'sgpt.exe'\n,\n    'augment',\n    'augment.exe',\n    'codex',\n    'codex.exe',\n    'goose',\n    'goose.exe',\n    'devin',\n    'devin.exe',\n    'amp',\n    'amp.exe',\n    'gemini-cli', 'gemini-cli.exe', 'genaiscript', 'genaiscript.exe', 'openai', 'openai.exe', 'llm', 'llm.exe', 'bolt', 'bolt.exe', 'replit', 'replit.exe', 'ghostwriter', 'ghostwriter.exe', 'bito', 'bito.exe')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell_gpt%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%semantic_kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    OR p.cmdline LIKE '%llama_index%'\n    OR p.cmdline LIKE '%haystack%pipeline%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistralai%'\n;",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-9b09dfeb-5ec2-49f2-819a-a073a3e3b502",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

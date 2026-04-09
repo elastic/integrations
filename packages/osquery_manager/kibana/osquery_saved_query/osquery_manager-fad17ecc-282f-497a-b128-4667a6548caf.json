@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect AI tool ports listening on non-loopback interfaces. Use for shadow AI network exposure triage — identifies Ollama, LM Studio, vLLM, ComfyUI, vector databases, and other AI services bound to externally-reachable addresses on well-known AI ports.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "network"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "server.port",
+                "value": {
+                    "field": "port"
+                }
+            },
+            {
+                "key": "server.address",
+                "value": {
+                    "field": "address"
+                }
+            },
+            {
+                "key": "network.transport",
+                "value": {
+                    "field": "protocol"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "network_exposure",
+                        "shadow_ai"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_listening_ports"
+                }
+            }
+        ],
+        "id": "ai_listening_ports_elastic",
+        "interval": "3600",
+        "platform": "darwin,linux,windows",
+        "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n)\n    AND l.address != '127.0.0.1'\n    AND l.address != '::1';",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-fad17ecc-282f-497a-b128-4667a6548caf",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

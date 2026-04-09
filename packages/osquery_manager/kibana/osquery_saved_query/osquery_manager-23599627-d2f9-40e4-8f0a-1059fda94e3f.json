@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect running local LLM servers and AI model runtimes on Windows. Use for shadow AI triage — identifies Ollama, LM Studio, GPT4All, Jan, vLLM, koboldcpp, llama-server, LiteLLM, Open WebUI, ComfyUI, and other local inference engines running on Windows endpoints.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "ppid"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "llm_runtime",
+                        "shadow_ai",
+                        "windows"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_llm_processes_windows"
+                }
+            }
+        ],
+        "id": "ai_llm_processes_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'ollama', 'ollama.exe', 'lms', 'lms.exe',\n    'gpt4all', 'gpt4all.exe', 'jan', 'jan.exe',\n    'msty', 'msty.exe', 'local-ai', 'local-ai.exe',\n    'koboldcpp', 'koboldcpp.exe', 'llama-server', 'llama-server.exe',\n    'llama-cli', 'llama-cli.exe', 'vllm', 'vllm.exe',\n    'mlc_llm', 'mlc_llm.exe', 'mlc_chat', 'mlc_chat.exe',\n    'anythingllm', 'anythingllm.exe', 'anything-llm', 'anything-llm.exe',\n    'litellm', 'litellm.exe', 'open-webui', 'open-webui.exe',\n    'llamafile', 'llamafile.exe',\n    'text-generation-launcher', 'text-generation-launcher.exe',\n    'text-generation-router', 'text-generation-router.exe',\n    'comfyui', 'comfyui.exe', 'invokeai', 'invokeai.exe'\n,\n    'msty',\n    'msty.exe',\n    'Msty.exe',\n    'exo',\n    'exo.exe',\n    'tabby',\n    'tabby.exe',\n    'qwen', 'qwen.exe', 'grok', 'grok.exe')\n    OR p.path LIKE '%\\\\Ollama\\\\%'\n    OR p.path LIKE '%\\\\LM Studio\\\\%'\n    OR p.path LIKE '%\\\\GPT4All\\\\%'\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%exo%'\n    OR p.cmdline LIKE '%tabby%serve%'\n\n    OR p.cmdline LIKE '%cohere%serve%'\n    OR p.cmdline LIKE '%mistral%serve%'\n;",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-23599627-d2f9-40e4-8f0a-1059fda94e3f",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

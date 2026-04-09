@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect running AI coding agent processes on macOS and Linux. Use for shadow AI triage — identifies Claude Code, Cursor, Windsurf, GitHub Copilot, Aider, Codeium, Amazon Q, Tabnine, Goose, Devin, and other AI-assisted development tools running on endpoints.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "ppid"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "coding_agents",
+                        "shadow_ai"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_coding_agents"
+                }
+            }
+        ],
+        "id": "ai_coding_agents_elastic",
+        "interval": "3600",
+        "platform": "darwin,linux",
+        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'claude', 'cursor', 'windsurf', 'warp', 'zed',\n    'tabnine', 'TabNine', 'WasmTabNine',\n    'codeium_language_server', 'supermaven',\n    'amazon-q', 'pieces-os', 'Pieces OS',\n    'codex', 'aider', 'sgpt'\n,\n    'augment',\n    'codex',\n    'goose',\n    'devin',\n    'amp',\n    'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell_gpt%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%semantic_kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    OR p.cmdline LIKE '%llama_index%'\n    OR p.cmdline LIKE '%haystack%pipeline%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistralai%'\n;",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-7f9e6cf7-5537-49de-89e0-bf6f3377bb6e",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

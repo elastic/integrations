@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Show active outbound network connections from known AI processes on macOS and Linux. Use for shadow AI C2 and data exfiltration triage — identifies Ollama, Claude, Cursor, Copilot, MCP servers, and other AI tools making external connections, with RFC1918 classification.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "network",
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "connection"
+                    ]
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "process_name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "process_path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "destination.ip",
+                "value": {
+                    "field": "remote_address"
+                }
+            },
+            {
+                "key": "destination.port",
+                "value": {
+                    "field": "remote_port"
+                }
+            },
+            {
+                "key": "source.port",
+                "value": {
+                    "field": "local_port"
+                }
+            },
+            {
+                "key": "source.ip",
+                "value": {
+                    "field": "local_address"
+                }
+            },
+            {
+                "key": "network.transport",
+                "value": {
+                    "field": "transport_protocol"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "network_connections",
+                        "shadow_ai",
+                        "genai_detection"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_process_network_summary"
+                }
+            }
+        ],
+        "id": "ai_process_network_summary_elastic",
+        "interval": "3600",
+        "platform": "darwin,linux",
+        "query": "SELECT p.name AS process_name, p.path AS process_path, p.cmdline, p.pid, u.username, pos.remote_address, pos.remote_port, pos.local_port, pos.local_address, pos.state, CASE pos.family WHEN 2 THEN 'IPv4' WHEN 10 THEN 'IPv6' ELSE 'unknown' END AS address_family, CASE pos.protocol WHEN 6 THEN 'tcp' WHEN 17 THEN 'udp' ELSE CAST(pos.protocol AS TEXT) END AS transport_protocol, CASE WHEN pos.remote_address LIKE '10.%' OR pos.remote_address LIKE '192.168.%' THEN 1 ELSE 0 END AS is_rfc1918_destination, datetime(p.start_time, 'unixepoch') AS start_time FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid LEFT JOIN users u ON p.uid = u.uid WHERE pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::') AND pos.remote_address != '' AND (pos.state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR pos.state IS NULL) AND ( p.name IN ( 'ollama', 'claude', 'cursor', 'Cursor', 'windsurf', 'Windsurf', 'ChatGPT', 'copilot-agent', 'aider', 'codex', 'lms', 'gpt4all', 'jan', 'llama-server', 'open-webui', 'litellm', 'koboldcpp', 'vllm', 'llamafile', 'tabby', 'exo', 'qwen', 'grok', 'gemini-cli', 'genaiscript', 'openai', 'llm', 'bolt', 'replit', 'ghostwriter', 'bito') OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%llama-server%' OR p.cmdline LIKE '%vllm.entrypoints%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%' \n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    )",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-57a53832-3af5-4a18-b98d-58144ed0c30a",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

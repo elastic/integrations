@@ -1,1978 +1,1984 @@
 {
-  "attributes": {
-    "description": "Detect and inventory Shadow AI tools on Windows endpoints — local LLMs, AI coding agents, AI desktop applications, MCP servers (with config content scanning), AI model files, Python/npm AI packages, browser extensions, Docker containers, Windows services, scheduled tasks, GPU-equipped systems, AI API key exposure, and AI tool configuration directories, vector databases, and model cache sizes.",
-    "name": "ai-asset-discovery-windows",
-    "version": 1,
-    "queries": [
-      {
-        "id": "ai_llm_processes",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'ollama', 'ollama.exe', 'lms', 'lms.exe',\n    'gpt4all', 'gpt4all.exe', 'jan', 'jan.exe',\n    'msty', 'msty.exe', 'local-ai', 'local-ai.exe',\n    'koboldcpp', 'koboldcpp.exe', 'llama-server', 'llama-server.exe',\n    'llama-cli', 'llama-cli.exe', 'vllm', 'vllm.exe',\n    'mlc_llm', 'mlc_llm.exe', 'mlc_chat', 'mlc_chat.exe',\n    'anythingllm', 'anythingllm.exe', 'anything-llm', 'anything-llm.exe',\n    'litellm', 'litellm.exe', 'open-webui', 'open-webui.exe',\n    'llamafile', 'llamafile.exe',\n    'text-generation-launcher', 'text-generation-launcher.exe',\n    'text-generation-router', 'text-generation-router.exe',\n    'comfyui', 'comfyui.exe', 'invokeai', 'invokeai.exe'\n,\n    'msty',\n    'msty.exe',\n    'Msty.exe',\n    'exo',\n    'exo.exe',\n    'tabby',\n    'tabby.exe',\n    'qwen', 'qwen.exe', 'grok', 'grok.exe')\n    OR p.path LIKE '%\\\\Ollama\\\\%'\n    OR p.path LIKE '%\\\\LM Studio\\\\%'\n    OR p.path LIKE '%\\\\GPT4All\\\\%'\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%exo%'\n    OR p.cmdline LIKE '%tabby%serve%'\n\n    OR p.cmdline LIKE '%cohere%serve%'\n    OR p.cmdline LIKE '%mistral%serve%'\n;",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
+    "attributes": {
+        "description": "Detect and inventory Shadow AI tools on Windows endpoints — local LLMs, AI coding agents, AI desktop applications, MCP servers (with config content scanning), AI model files, Python/npm AI packages, browser extensions, Docker containers, Windows services, scheduled tasks, GPU-equipped systems, AI API key exposure, and AI tool configuration directories, vector databases, and model cache sizes.",
+        "name": "ai-asset-discovery-windows",
+        "version": 1,
+        "queries": [
+            {
+                "id": "ai_llm_processes",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'ollama', 'ollama.exe', 'lms', 'lms.exe',\n    'gpt4all', 'gpt4all.exe', 'jan', 'jan.exe',\n    'msty', 'msty.exe', 'local-ai', 'local-ai.exe',\n    'koboldcpp', 'koboldcpp.exe', 'llama-server', 'llama-server.exe',\n    'llama-cli', 'llama-cli.exe', 'vllm', 'vllm.exe',\n    'mlc_llm', 'mlc_llm.exe', 'mlc_chat', 'mlc_chat.exe',\n    'anythingllm', 'anythingllm.exe', 'anything-llm', 'anything-llm.exe',\n    'litellm', 'litellm.exe', 'open-webui', 'open-webui.exe',\n    'llamafile', 'llamafile.exe',\n    'text-generation-launcher', 'text-generation-launcher.exe',\n    'text-generation-router', 'text-generation-router.exe',\n    'comfyui', 'comfyui.exe', 'invokeai', 'invokeai.exe'\n,\n    'msty',\n    'msty.exe',\n    'Msty.exe',\n    'exo',\n    'exo.exe',\n    'tabby',\n    'tabby.exe',\n    'qwen', 'qwen.exe', 'grok', 'grok.exe')\n    OR p.path LIKE '%\\\\Ollama\\\\%'\n    OR p.path LIKE '%\\\\LM Studio\\\\%'\n    OR p.path LIKE '%\\\\GPT4All\\\\%'\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%exo%'\n    OR p.cmdline LIKE '%tabby%serve%'\n\n    OR p.cmdline LIKE '%cohere%serve%'\n    OR p.cmdline LIKE '%mistral%serve%'\n;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "llm_runtime",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_llm_processes"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_coding_agents",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'claude', 'claude.exe', 'cursor', 'cursor.exe',\n    'windsurf', 'windsurf.exe', 'warp', 'warp.exe',\n    'zed', 'zed.exe', 'tabnine', 'tabnine.exe',\n    'TabNine', 'TabNine.exe', 'WasmTabNine', 'WasmTabNine.exe',\n    'codeium_language_server', 'codeium_language_server.exe',\n    'supermaven', 'supermaven.exe',\n    'amazon-q', 'amazon-q.exe', 'pieces-os', 'pieces-os.exe',\n    'Pieces OS', 'Pieces OS.exe',\n    'codex', 'codex.exe', 'aider', 'aider.exe',\n    'sgpt', 'sgpt.exe'\n,\n    'augment',\n    'augment.exe',\n    'codex',\n    'codex.exe',\n    'goose',\n    'goose.exe',\n    'devin',\n    'devin.exe',\n    'amp',\n    'amp.exe',\n    'gemini-cli', 'gemini-cli.exe', 'genaiscript', 'genaiscript.exe', 'openai', 'openai.exe', 'llm', 'llm.exe', 'bolt', 'bolt.exe', 'replit', 'replit.exe', 'ghostwriter', 'ghostwriter.exe', 'bito', 'bito.exe')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell_gpt%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%semantic_kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    OR p.cmdline LIKE '%llama_index%'\n    OR p.cmdline LIKE '%haystack%pipeline%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistralai%'\n;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "coding_agents",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_coding_agents"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_listening_ports",
+                "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n)\n    AND l.address != '127.0.0.1'\n    AND l.address != '::1';",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "server.port",
+                        "value": {
+                            "field": "port"
+                        }
+                    },
+                    {
+                        "key": "server.address",
+                        "value": {
+                            "field": "address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "protocol"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "network_exposure",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_listening_ports"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_listening_ports_local",
+                "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n);",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "server.port",
+                        "value": {
+                            "field": "port"
+                        }
+                    },
+                    {
+                        "key": "server.address",
+                        "value": {
+                            "field": "address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "protocol"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "listening_ports_inventory",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_listening_ports_local"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_programs_windows",
+                "query": "SELECT\n    name,\n    version,\n    install_location,\n    publisher,\n    install_date\nFROM programs\nWHERE name LIKE '%Ollama%' OR name LIKE '%LM Studio%' OR name LIKE '%ChatGPT%'\n    OR name LIKE '%Claude%' OR name LIKE '%Cursor%' OR name LIKE '%GPT4All%'\n    OR name LIKE '%Perplexity%' OR name LIKE '%Windsurf%' OR name LIKE '%DeepSeek%'\n    OR name LIKE '%Copilot%' OR name LIKE '%Jan%' OR name LIKE '%Msty%'\n    OR name LIKE '%AnythingLLM%' OR name LIKE '%Open WebUI%'\n    OR name LIKE '%Warp%' OR name LIKE '%Zed%' OR name LIKE '%Poe%'\n    OR name LIKE '%Amazon Q%' OR name LIKE '%Pieces%'\n    OR name LIKE '%Codeium%' OR name LIKE '%Tabnine%'\n    OR name LIKE '%DiffusionBee%' OR name LIKE '%ComfyUI%'\n    OR name LIKE '%LiteLLM%' OR name LIKE '%Notion%'\n    OR name LIKE '%Grammarly%'\n    OR name LIKE '%Qwen%'\n    OR name LIKE '%Grok%'\n    OR name LIKE '%Gemini%'\n    OR name LIKE '%Bolt%'\n    OR name LIKE '%Replit%'\n    OR name LIKE '%Ghostwriter%'\n    OR name LIKE '%Bito%'\n;",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "install_location"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "installed_apps",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_programs_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "mcp_server_processes",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%mcp_server%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%';",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "mcp_server",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.mcp_server_processes"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "mcp_config_files_windows",
+                "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Claude\\claude_desktop_config.json'\n    OR path LIKE 'C:\\Users\\%\\.claude.json'\n    OR path LIKE 'C:\\Users\\%\\.claude\\settings.json'\n    OR path LIKE 'C:\\Users\\%\\.cursor\\mcp.json'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\mcp.json'\n    OR path LIKE 'C:\\Users\\%\\.mcp.json';",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "mcp_config",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.mcp_config_files_windows"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_model_files_windows",
+                "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.ollama\\models\\blobs\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%'\n)\nAND size > 100000000;",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "model_files",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_model_files_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_model_file_extensions_windows",
+                "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\%.safetensors'\n    OR path LIKE 'C:\\Users\\%\\%.llamafile'\n    OR path LIKE 'C:\\Users\\%\\%.ggml'\n    OR path LIKE 'C:\\Users\\%\\%.onnx'\n    OR path LIKE 'C:\\Users\\%\\.ollama\\models\\%\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%\\%\\%\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%\\%\\%\\%.safetensors'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.safetensors'\n)\nAND size > 100000000;",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "model_file_extensions",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_model_file_extensions_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_python_packages",
+                "query": "SELECT\n    REPLACE(RTRIM(f.directory, '\\'), RTRIM(RTRIM(f.directory, '\\'), 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'), '') AS name,\n    f.path,\n    f.directory,\n    datetime(f.mtime, 'unixepoch') AS modified_time\nFROM file f\nWHERE (\n    f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\torch\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\tensorflow\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\onnxruntime\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\jax\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\transformers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\diffusers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\accelerate\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\huggingface_hub\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\openai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\anthropic\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\langchain\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\langchain_core\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\llama_index\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\autogen\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\crewai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\vllm\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\llama_cpp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\chromadb\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\fastmcp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\mcp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\groq\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\cohere\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\mistralai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\together\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\replicate\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\aider\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\shell_gpt\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\torch\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\tensorflow\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\transformers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\openai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\anthropic\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\langchain\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\torch\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\tensorflow\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\transformers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\openai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\anthropic\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\langchain\\%'\n)\nAND f.filename = '__init__.py'\nAND f.type = 'regular';",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "python_packages",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_python_packages"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_chrome_extensions",
+                "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE '%Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE '%Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%');",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "browser_extensions",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_chrome_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_docker_containers",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    datetime(p.start_time, 'unixepoch') AS started_at\nFROM processes p\nWHERE (p.name IN ('docker.exe', 'docker', 'podman.exe', 'podman')\n    OR p.path LIKE '%docker%' OR p.path LIKE '%podman%')\n    AND (\n    p.cmdline LIKE '%ollama%' OR p.cmdline LIKE '%vllm%'\n    OR p.cmdline LIKE '%text-generation%' OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%llama.cpp%' OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%pytorch%' OR p.cmdline LIKE '%tensorflow%'\n    OR p.cmdline LIKE '%triton%' OR p.cmdline LIKE '%huggingface%'\n    OR p.cmdline LIKE '%mcp%' OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%open-webui%' OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%flowise%' OR p.cmdline LIKE '%langflow%'\n    OR p.cmdline LIKE '%chromadb%' OR p.cmdline LIKE '%chroma%'\n    OR p.cmdline LIKE '%qdrant%' OR p.cmdline LIKE '%weaviate%'\n    OR p.cmdline LIKE '%milvus%' OR p.cmdline LIKE '%pinecone%'\n    OR p.cmdline LIKE '%comfyui%' OR p.cmdline LIKE '%stable-diffusion%'\n    OR p.cmdline LIKE '%invokeai%' OR p.cmdline LIKE '%automatic1111%'\n    OR p.cmdline LIKE '%n8n%' OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%sweepai%' OR p.cmdline LIKE '%pr-agent%'\n    OR p.cmdline LIKE '%qwen%'\n    OR p.cmdline LIKE '%grok%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistral%'\n    );",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "host"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "docker_containers",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_docker_containers"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_windows_services",
+                "query": "SELECT\n    name,\n    display_name,\n    path,\n    start_type,\n    status,\n    user_account\nFROM services\nWHERE name LIKE '%ollama%' OR name LIKE '%lmstudio%'\n    OR name LIKE '%anythingllm%' OR name LIKE '%litellm%'\n    OR name LIKE '%pieces%' OR name LIKE '%comfyui%'\n    OR display_name LIKE '%Ollama%' OR display_name LIKE '%LM Studio%'\n    OR display_name LIKE '%AnythingLLM%' OR display_name LIKE '%LiteLLM%'\n    OR display_name LIKE '%Pieces%'\n    OR path LIKE '%ollama%' OR path LIKE '%litellm%'\n    OR path LIKE '%llama-server%' OR path LIKE '%anythingllm%';",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "status"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "user_account"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "auto_start",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_windows_services"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "mcp_npm_packages",
+                "query": "SELECT\n    f.directory,\n    f.path,\n    f.filename\nFROM file f\nWHERE (\n    f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\npm\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\npm\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\node_modules\\@anthropic-ai\\%\\package.json'\n    OR f.path LIKE 'C:\\Program Files\\nodejs\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Program Files\\nodejs\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Program Files\\nodejs\\node_modules\\@anthropic-ai\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\nvm\\%\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\nvm\\%\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\nvm\\%\\node_modules\\@anthropic-ai\\%\\package.json'\n);",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "mcp_packages",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.mcp_npm_packages"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_gpu_systems",
+                "query": "SELECT\n    model,\n    manufacturer AS vendor,\n    driver_version AS driver,\n    series\nFROM video_info\nWHERE manufacturer LIKE '%NVIDIA%'\n    OR manufacturer LIKE '%Advanced Micro Devices%'\n    OR manufacturer LIKE '%AMD%'\n    OR model LIKE '%NVIDIA%'\n    OR model LIKE '%GeForce%'\n    OR model LIKE '%Radeon%'\n    OR model LIKE '%RTX%'\n    OR model LIKE '%GTX%';",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "host"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "host.gpu.model",
+                        "value": {
+                            "field": "model"
+                        }
+                    },
+                    {
+                        "key": "host.gpu.vendor",
+                        "value": {
+                            "field": "vendor"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "gpu_systems",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_gpu_systems"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_firefox_extensions",
+                "query": "SELECT\n    fa.name,\n    fa.identifier,\n    fa.version,\n    fa.description,\n    fa.path,\n    fa.active,\n    u.username\nFROM users u CROSS JOIN firefox_addons fa USING(uid)\nWHERE fa.active = 1 AND (\n    fa.name LIKE '%Copilot%' OR fa.name LIKE '%ChatGPT%'\n    OR fa.name LIKE '%Claude%' OR fa.name LIKE '%Gemini%'\n    OR fa.name LIKE '%Perplexity%' OR fa.name LIKE '%DeepSeek%'\n    OR fa.name LIKE '%Monica%' OR fa.name LIKE '%Merlin%'\n    OR fa.name LIKE '%Sider%' OR fa.name LIKE '%MaxAI%'\n    OR fa.name LIKE '%UseChatGPT%' OR fa.name LIKE '%Poe%'\n    OR fa.name LIKE '%Cody%' OR fa.name LIKE '%Codeium%'\n    OR fa.name LIKE '%Tabnine%' OR fa.name LIKE '%Blackbox%'\n    OR fa.name LIKE '%Phind%' OR fa.name LIKE '%Bito%'\n    OR fa.name LIKE '%Grammarly%' OR fa.name LIKE '%Jasper%'\n    OR fa.name LIKE '%Wordtune%' OR fa.name LIKE '%Quillbot%'\n    OR fa.name LIKE '%QuillBot%' OR fa.name LIKE '%Compose AI%'\n    OR fa.name LIKE '%Writesonic%' OR fa.name LIKE '%Copy.ai%'\n    OR fa.name LIKE '%You.com%' OR fa.name LIKE '%AIPRM%'\n    OR fa.name LIKE '%WebChatGPT%'\n    OR fa.name LIKE '%Glasp%' OR fa.name LIKE '%Eightify%'\n    OR fa.name LIKE '%NoteGPT%' OR fa.name LIKE '%tl;dv%'\n    OR fa.name LIKE '%DeepL%' OR fa.name LIKE '%Immersive Translate%'\n    -- Match by identifier (more reliable than name for Firefox)\n    OR fa.identifier LIKE '%chatgpt%'\n    OR fa.identifier LIKE '%copilot%'\n    OR fa.identifier LIKE '%claude%'\n    OR fa.identifier LIKE '%perplexity%'\n    OR fa.identifier LIKE '%deepseek%'\n    OR fa.identifier LIKE '%openai%'\n    OR fa.identifier LIKE '%anthropic%'\n    OR fa.identifier LIKE '%codeium%'\n    OR fa.identifier LIKE '%tabnine%'\n    OR fa.identifier LIKE '%grammarly%'\n    OR fa.identifier LIKE '%deepl%'\n    OR fa.identifier LIKE '%monica%'\n    OR fa.identifier LIKE '%sider%');",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "browser_extensions",
+                                "firefox",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_firefox_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_credential_files_windows",
+                "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\.env.local'\n    OR path LIKE 'C:\\Users\\%\\Projects\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\src\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\code\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\repos\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\.openai'\n    OR path LIKE 'C:\\Users\\%\\.anthropic'\n    OR path LIKE 'C:\\Users\\%\\.config\\openai\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.config\\anthropic\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.config\\groq\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.config\\cohere\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\token'\n    OR path LIKE 'C:\\Users\\%\\.huggingface\\token'\n    OR path LIKE 'C:\\Users\\%\\.ollama\\auth'\n    OR path LIKE 'C:\\Users\\%\\litellm_config.yaml'\n    OR path LIKE 'C:\\Users\\%\\.litellm\\config.yaml'\n    OR path LIKE 'C:\\Users\\%\\.config\\shell_gpt\\.sgptrc'\n    OR path LIKE 'C:\\Users\\%\\.aider.conf.yml'\n    OR path LIKE 'C:\\Users\\%\\.aider.env'\n)\nAND size > 0;",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "credential_exposure",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_credential_files_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_jupyter_servers",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'jupyter', 'jupyter.exe', 'jupyter-lab', 'jupyter-lab.exe',\n    'jupyter-notebook', 'jupyter-notebook.exe',\n    'jupyter-server', 'jupyter-server.exe',\n    'jupyterhub', 'jupyterhub.exe',\n    'jupyterhub-singleuser', 'jupyterhub-singleuser.exe'\n)\n    OR p.cmdline LIKE '%jupyter%notebook%'\n    OR p.cmdline LIKE '%jupyter%lab%'\n    OR p.cmdline LIKE '%jupyter%server%'\n    OR p.cmdline LIKE '%jupyterhub%';",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "jupyter",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_jupyter_servers"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_vscode_extensions_windows",
+                "query": "SELECT\n    path,\n    filename AS extension_id,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.vscode\\extensions\\github.copilot%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\github.copilot-chat%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\saoudrizwan.claude-dev%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\rooveterinaryinc.roo-cline%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\continue.continue%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\sourcegraph.cody%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\codeium.codeium%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\tabnine.tabnine%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\amazonwebservices.amazon-q%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\supermaven.supermaven%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\blackboxapp.blackbox%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\pieces.pieces-vscode%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\phind.phind%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\bito.bito%'\n)\nAND type = 'directory';",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "extension_id"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "vscode_extensions",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_vscode_extensions_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_dns_cache_windows",
+                "query": "SELECT\n    name AS query_name,\n    type AS query_type,\n    flags\nFROM dns_cache\nWHERE (\n    name LIKE '%openai.com'\n    OR name LIKE '%chatgpt.com'\n    OR name LIKE '%oaiusercontent.com'\n    OR name LIKE '%anthropic.com'\n    OR name LIKE '%claude.ai'\n    OR name LIKE '%generativelanguage.googleapis.com'\n    OR name LIKE '%gemini.google.com'\n    OR name LIKE '%aistudio.google.com'\n    OR name LIKE '%notebooklm.google.com'\n    OR name LIKE '%copilot.microsoft.com'\n    OR name LIKE '%meta.ai'\n    OR name LIKE '%llama.meta.com'\n    OR name LIKE '%perplexity.ai'\n    OR name LIKE '%cohere.ai'\n    OR name LIKE '%cohere.com'\n    OR name LIKE '%mistral.ai'\n    OR name LIKE '%groq.com'\n    OR name LIKE '%together.ai'\n    OR name LIKE '%together.xyz'\n    OR name LIKE '%fireworks.ai'\n    OR name LIKE '%deepseek.com'\n    OR name LIKE '%huggingface.co'\n    OR name LIKE '%replicate.com'\n    OR name LIKE '%cursor.sh'\n    OR name LIKE '%cursor.com'\n    OR name LIKE '%codeium.com'\n    OR name LIKE '%tabnine.com'\n    OR name LIKE '%copilot-proxy.githubusercontent.com'\n    OR name LIKE '%githubcopilot.com'\n    OR name LIKE '%midjourney.com'\n    OR name LIKE '%stability.ai'\n    OR name LIKE '%leonardo.ai'\n    OR name LIKE '%ideogram.ai'\n    OR name LIKE '%jasper.ai'\n    OR name LIKE '%writesonic.com'\n    OR name LIKE '%copy.ai'\n    OR name LIKE '%otter.ai'\n    OR name LIKE '%fireflies.ai'\n    OR name LIKE '%krisp.ai'\n    OR name LIKE '%you.com'\n    OR name LIKE '%phind.com'\n    OR name LIKE '%ollama.ai'\n    OR name LIKE '%ollama.com'\n);",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "dns.question.name",
+                        "value": {
+                            "field": "query_name"
+                        }
+                    },
+                    {
+                        "key": "dns.question.type",
+                        "value": {
+                            "field": "query_type"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "dns_cache",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_dns_cache_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_scheduled_tasks_windows",
+                "query": "SELECT\n    st.name AS task_name,\n    st.action AS command_line,\n    st.path AS task_path,\n    st.enabled,\n    st.state AS task_state,\n    st.hidden,\n    datetime(st.last_run_time, 'unixepoch') AS last_execution,\n    datetime(st.next_run_time, 'unixepoch') AS next_execution\nFROM scheduled_tasks st\nWHERE st.action IS NOT NULL\n    AND st.action != ''\n    AND (\n        LOWER(st.action) LIKE '%ollama%'\n        OR LOWER(st.action) LIKE '%lmstudio%'\n        OR LOWER(st.action) LIKE '%lm studio%'\n        OR LOWER(st.action) LIKE '%llama-server%'\n        OR LOWER(st.action) LIKE '%llama.cpp%'\n        OR LOWER(st.action) LIKE '%gpt4all%'\n        OR LOWER(st.action) LIKE '%koboldcpp%'\n        OR LOWER(st.action) LIKE '%litellm%'\n        OR LOWER(st.action) LIKE '%localai%'\n        OR LOWER(st.action) LIKE '%anythingllm%'\n        OR LOWER(st.action) LIKE '%open-webui%'\n        OR LOWER(st.action) LIKE '%vllm%'\n        OR LOWER(st.action) LIKE '%jan.exe%'\n        OR LOWER(st.action) LIKE '%msty%'\n        OR LOWER(st.action) LIKE '%cursor%'\n        OR LOWER(st.action) LIKE '%windsurf%'\n        OR LOWER(st.action) LIKE '%codeium%'\n        OR LOWER(st.action) LIKE '%tabnine%'\n        OR LOWER(st.action) LIKE '%pieces%'\n        OR LOWER(st.action) LIKE '%mcp-server%'\n        OR LOWER(st.action) LIKE '%mcp_server%'\n        OR LOWER(st.action) LIKE '%modelcontextprotocol%'\n        OR LOWER(st.action) LIKE '%comfyui%'\n        OR LOWER(st.action) LIKE '%invokeai%'\n        OR LOWER(st.action) LIKE '%stable-diffusion%'\n        OR LOWER(st.action) LIKE '%jupyter%'\n        OR LOWER(st.name) LIKE '%ollama%'\n        OR LOWER(st.name) LIKE '%lmstudio%'\n        OR LOWER(st.name) LIKE '%gpt4all%'\n        OR LOWER(st.name) LIKE '%anythingllm%'\n        OR LOWER(st.name) LIKE '%litellm%'\n        OR LOWER(st.name) LIKE '%comfyui%'\n        OR LOWER(st.name) LIKE '%pieces%'\n    );",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "task_name"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "task_state"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command_line"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "task_path"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "scheduled_tasks",
+                                "auto_start",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_scheduled_tasks_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_config_directories_windows",
+                "query": "SELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.ollama\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\lm-studio\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\gpt4all\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%'\n    OR path LIKE 'C:\\Users\\%\\jan\\%'\n    OR path LIKE 'C:\\Users\\%\\.continue\\%'\n    OR path LIKE 'C:\\Users\\%\\.cursor\\%'\n    OR path LIKE 'C:\\Users\\%\\.codeium\\%'\n    OR path LIKE 'C:\\Users\\%\\.tabnine\\%'\n    OR path LIKE 'C:\\Users\\%\\.claude\\%'\n    OR path LIKE 'C:\\Users\\%\\.config\\github-copilot\\%'\n    OR path LIKE 'C:\\Users\\%\\.config\\shell_gpt\\%'\n    OR path LIKE 'C:\\Users\\%\\.supermaven\\%'\n    OR path LIKE 'C:\\Users\\%\\.anythingllm\\%'\n    OR path LIKE 'C:\\Users\\%\\.invokeai\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\LM Studio\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\AnythingLLM\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Ollama\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\GPT4All\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Jan\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Pieces\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Cursor\\%'\n);",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "config_directories",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_config_directories_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_vector_databases",
+                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN ('qdrant', 'milvus', 'weaviate', 'chroma')\n    OR p.cmdline LIKE '%chromadb%'\n    OR p.cmdline LIKE '%qdrant%'\n    OR p.cmdline LIKE '%weaviate%'\n    OR p.cmdline LIKE '%milvus%'\n    OR p.cmdline LIKE '%pinecone%'\n    OR p.cmdline LIKE '%pgvector%'\n    OR p.cmdline LIKE '%lancedb%'\n    OR p.cmdline LIKE '%faiss%';",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "vector_databases",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_vector_databases"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_model_cache_size_windows",
+                "query": "SELECT\n    CASE\n        WHEN f.directory LIKE '%\\.ollama\\models%' THEN 'ollama'\n        WHEN f.directory LIKE '%\\.cache\\huggingface%' THEN 'huggingface'\n        WHEN f.directory LIKE '%\\.cache\\lm-studio%' THEN 'lm-studio'\n    END AS ai_tool,\n    CASE\n        WHEN f.directory LIKE '%\\.ollama\\models%' THEN 'C:\\Users\\*\\.ollama\\models'\n        WHEN f.directory LIKE '%\\.cache\\huggingface%' THEN 'C:\\Users\\*\\.cache\\huggingface'\n        WHEN f.directory LIKE '%\\.cache\\lm-studio%' THEN 'C:\\Users\\*\\.cache\\lm-studio'\n    END AS cache_path,\n    SUM(f.size) AS total_bytes,\n    COUNT(*) AS file_count\nFROM file f\nWHERE (\n    f.directory LIKE 'C:\\Users\\%\\.ollama\\models%'\n    OR f.directory LIKE 'C:\\Users\\%\\.cache\\huggingface%'\n    OR f.directory LIKE 'C:\\Users\\%\\.cache\\lm-studio%'\n)\n    AND f.type = 'regular'\nGROUP BY ai_tool\nHAVING total_bytes > 104857600;",
+                "interval": 86400,
+                "platform": "windows",
+                "timeout": 300,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "model_storage",
+                                "shadow_ai",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_model_cache_size_windows"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_config_file_changes_windows",
+                "query": "SELECT f.path, f.size, datetime(f.mtime, 'unixepoch') AS modified_time, datetime(f.ctime, 'unixepoch') AS changed_time, u.username FROM file f LEFT JOIN users u ON f.uid = u.uid WHERE ( f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Claude\\claude_desktop_config.json' OR f.path LIKE 'C:\\Users\\%\\.claude\\settings.json' OR f.path LIKE 'C:\\Users\\%\\.claude.json' OR f.path LIKE 'C:\\Users\\%\\.cursor\\mcp.json' OR f.path LIKE 'C:\\Users\\%\\.vscode\\mcp.json' OR f.path LIKE 'C:\\Users\\%\\.mcp.json' OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Ollama\\config' OR f.path LIKE 'C:\\Users\\%\\.continue\\config.json' OR f.path LIKE 'C:\\Users\\%\\.codeium\\config.json' ) AND f.mtime > (strftime('%s', 'now') - 3600)",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "snapshot": true,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "change"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "config_change",
+                                "shadow_ai",
+                                "genai_detection",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_config_file_changes"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "ai_sensitive_file_proximity_windows",
+                "query": "SELECT p.name AS process_name, p.path AS process_path, p.pid, u.username, sens.path AS sensitive_file_path, sens.size AS sensitive_file_size, datetime(sens.atime, 'unixepoch') AS accessed_time, datetime(sens.mtime, 'unixepoch') AS modified_time FROM processes p JOIN users u ON p.uid = u.uid JOIN ( SELECT path, size, atime, mtime, uid FROM file WHERE path LIKE 'C:\\Users\\%\\.aws\\credentials' OR path LIKE 'C:\\Users\\%\\.aws\\config' OR path LIKE 'C:\\Users\\%\\.ssh\\id_rsa' OR path LIKE 'C:\\Users\\%\\.ssh\\id_ed25519' OR path LIKE 'C:\\Users\\%\\.ssh\\id_ecdsa' OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data' OR path LIKE 'C:\\Users\\%\\.config\\gcloud\\credentials.db' OR path LIKE 'C:\\Users\\%\\.config\\gcloud\\application_default_credentials.json' OR path LIKE 'C:\\Users\\%\\.azure\\accessTokens.json' OR path LIKE 'C:\\Users\\%\\.azure\\msal_token_cache.json' ) AS sens ON p.uid = sens.uid WHERE ( p.name IN ('ollama.exe', 'claude.exe', 'Cursor.exe', 'windsurf.exe', 'copilot-agent.exe', 'aider.exe', 'ChatGPT.exe', 'codex.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe', 'koboldcpp.exe', 'llama-server.exe', 'vllm.exe', 'litellm.exe', 'qwen.exe', 'grok.exe', 'gemini-cli.exe', 'genaiscript.exe', 'openai.exe', 'llm.exe', 'bolt.exe', 'replit.exe', 'ghostwriter.exe', 'bito.exe') OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%'\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    )",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "snapshot": true,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process",
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "sensitive_file_path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "sensitive_file_size"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.modified",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "credential_risk",
+                                "shadow_ai",
+                                "genai_detection",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_sensitive_file_proximity"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "ai_process_network_summary",
+                "query": "SELECT p.name AS process_name, p.path AS process_path, p.cmdline, p.pid, u.username, pos.remote_address, pos.remote_port, pos.local_port, pos.local_address, pos.state, CASE pos.family WHEN 2 THEN 'IPv4' WHEN 10 THEN 'IPv6' ELSE 'unknown' END AS address_family, CASE pos.protocol WHEN 6 THEN 'tcp' WHEN 17 THEN 'udp' ELSE CAST(pos.protocol AS TEXT) END AS transport_protocol, CASE WHEN pos.remote_address LIKE '10.%' OR pos.remote_address LIKE '192.168.%' THEN 1 ELSE 0 END AS is_rfc1918_destination, datetime(p.start_time, 'unixepoch') AS start_time FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid LEFT JOIN users u ON p.uid = u.uid WHERE pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::') AND pos.remote_address != '' AND (pos.state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR pos.state IS NULL) AND ( p.name IN ( 'ollama.exe', 'claude.exe', 'Cursor.exe', 'windsurf.exe', 'ChatGPT.exe', 'copilot-agent.exe', 'aider.exe', 'codex.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe', 'llama-server.exe', 'open-webui.exe', 'litellm.exe', 'koboldcpp.exe', 'vllm.exe', 'llamafile.exe', 'tabby.exe', 'exo.exe', 'qwen.exe', 'grok.exe', 'gemini-cli.exe', 'genaiscript.exe', 'openai.exe', 'llm.exe', 'bolt.exe', 'replit.exe', 'ghostwriter.exe', 'bito.exe') OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%llama-server%' OR p.cmdline LIKE '%vllm.entrypoints%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%' \n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    )",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "snapshot": true,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network",
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "connection"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "destination.ip",
+                        "value": {
+                            "field": "remote_address"
+                        }
+                    },
+                    {
+                        "key": "destination.port",
+                        "value": {
+                            "field": "remote_port"
+                        }
+                    },
+                    {
+                        "key": "source.port",
+                        "value": {
+                            "field": "local_port"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "local_address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "transport_protocol"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "network_connections",
+                                "shadow_ai",
+                                "genai_detection",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_process_network_summary"
+                        }
+                    }
+                ]
             }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "process.parent.pid",
-            "value": {
-              "field": "ppid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "llm_runtime",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_llm_processes"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_coding_agents",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'claude', 'claude.exe', 'cursor', 'cursor.exe',\n    'windsurf', 'windsurf.exe', 'warp', 'warp.exe',\n    'zed', 'zed.exe', 'tabnine', 'tabnine.exe',\n    'TabNine', 'TabNine.exe', 'WasmTabNine', 'WasmTabNine.exe',\n    'codeium_language_server', 'codeium_language_server.exe',\n    'supermaven', 'supermaven.exe',\n    'amazon-q', 'amazon-q.exe', 'pieces-os', 'pieces-os.exe',\n    'Pieces OS', 'Pieces OS.exe',\n    'codex', 'codex.exe', 'aider', 'aider.exe',\n    'sgpt', 'sgpt.exe'\n,\n    'augment',\n    'augment.exe',\n    'codex',\n    'codex.exe',\n    'goose',\n    'goose.exe',\n    'devin',\n    'devin.exe',\n    'amp',\n    'amp.exe',\n    'gemini-cli', 'gemini-cli.exe', 'genaiscript', 'genaiscript.exe', 'openai', 'openai.exe', 'llm', 'llm.exe', 'bolt', 'bolt.exe', 'replit', 'replit.exe', 'ghostwriter', 'ghostwriter.exe', 'bito', 'bito.exe')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell_gpt%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%semantic_kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    OR p.cmdline LIKE '%llama_index%'\n    OR p.cmdline LIKE '%haystack%pipeline%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistralai%'\n;",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "process.parent.pid",
-            "value": {
-              "field": "ppid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "coding_agents",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_coding_agents"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_listening_ports",
-        "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n)\n    AND l.address != '127.0.0.1'\n    AND l.address != '::1';",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "server.port",
-            "value": {
-              "field": "port"
-            }
-          },
-          {
-            "key": "server.address",
-            "value": {
-              "field": "address"
-            }
-          },
-          {
-            "key": "network.transport",
-            "value": {
-              "field": "protocol"
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "network_exposure",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_listening_ports"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_listening_ports_local",
-        "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE l.port IN (\n    11434, 1234, 43411, 4891, 1337, 5001, 7860,\n    8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000,\n    8501, 6333, 6334, 19530, 8265, 9099, 5678, 8888\n);",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "server.port",
-            "value": {
-              "field": "port"
-            }
-          },
-          {
-            "key": "server.address",
-            "value": {
-              "field": "address"
-            }
-          },
-          {
-            "key": "network.transport",
-            "value": {
-              "field": "protocol"
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "listening_ports_inventory",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_listening_ports_local"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_programs_windows",
-        "query": "SELECT\n    name,\n    version,\n    install_location,\n    publisher,\n    install_date\nFROM programs\nWHERE name LIKE '%Ollama%' OR name LIKE '%LM Studio%' OR name LIKE '%ChatGPT%'\n    OR name LIKE '%Claude%' OR name LIKE '%Cursor%' OR name LIKE '%GPT4All%'\n    OR name LIKE '%Perplexity%' OR name LIKE '%Windsurf%' OR name LIKE '%DeepSeek%'\n    OR name LIKE '%Copilot%' OR name LIKE '%Jan%' OR name LIKE '%Msty%'\n    OR name LIKE '%AnythingLLM%' OR name LIKE '%Open WebUI%'\n    OR name LIKE '%Warp%' OR name LIKE '%Zed%' OR name LIKE '%Poe%'\n    OR name LIKE '%Amazon Q%' OR name LIKE '%Pieces%'\n    OR name LIKE '%Codeium%' OR name LIKE '%Tabnine%'\n    OR name LIKE '%DiffusionBee%' OR name LIKE '%ComfyUI%'\n    OR name LIKE '%LiteLLM%' OR name LIKE '%Notion%'\n    OR name LIKE '%Grammarly%'\n    OR name LIKE '%Qwen%'\n    OR name LIKE '%Grok%'\n    OR name LIKE '%Gemini%'\n    OR name LIKE '%Bolt%'\n    OR name LIKE '%Replit%'\n    OR name LIKE '%Ghostwriter%'\n    OR name LIKE '%Bito%'\n;",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "package.version",
-            "value": {
-              "field": "version"
-            }
-          },
-          {
-            "key": "package.path",
-            "value": {
-              "field": "install_location"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "installed_apps",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_programs_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "mcp_server_processes",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%mcp_server%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%';",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "mcp_server",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.mcp_server_processes"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "mcp_config_files_windows",
-        "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Claude\\claude_desktop_config.json'\n    OR path LIKE 'C:\\Users\\%\\.claude.json'\n    OR path LIKE 'C:\\Users\\%\\.claude\\settings.json'\n    OR path LIKE 'C:\\Users\\%\\.cursor\\mcp.json'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\mcp.json'\n    OR path LIKE 'C:\\Users\\%\\.mcp.json';",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "mcp_config",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.mcp_config_files_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_model_files_windows",
-        "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.ollama\\models\\blobs\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%'\n)\nAND size > 100000000;",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.name",
-            "value": {
-              "field": "filename"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "model_files",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_model_files_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_model_file_extensions_windows",
-        "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\%.safetensors'\n    OR path LIKE 'C:\\Users\\%\\%.llamafile'\n    OR path LIKE 'C:\\Users\\%\\%.ggml'\n    OR path LIKE 'C:\\Users\\%\\%.onnx'\n    OR path LIKE 'C:\\Users\\%\\.ollama\\models\\%\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%\\%\\%\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%\\%\\%\\%.safetensors'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.safetensors'\n)\nAND size > 100000000;",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.name",
-            "value": {
-              "field": "filename"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "model_file_extensions",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_model_file_extensions_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_python_packages",
-        "query": "SELECT\n    REPLACE(RTRIM(f.directory, '\\'), RTRIM(RTRIM(f.directory, '\\'), 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'), '') AS name,\n    f.path,\n    f.directory,\n    datetime(f.mtime, 'unixepoch') AS modified_time\nFROM file f\nWHERE (\n    f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\torch\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\tensorflow\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\onnxruntime\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\jax\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\transformers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\diffusers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\accelerate\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\huggingface_hub\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\openai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\anthropic\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\langchain\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\langchain_core\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\llama_index\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\autogen\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\crewai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\vllm\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\llama_cpp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\chromadb\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\fastmcp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\mcp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\groq\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\cohere\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\mistralai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\together\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\replicate\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\aider\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Programs\\Python\\%\\Lib\\site-packages\\shell_gpt\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\torch\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\tensorflow\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\transformers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\openai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\anthropic\\%'\n    OR f.path LIKE 'C:\\Users\\%\\anaconda3\\Lib\\site-packages\\langchain\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\torch\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\tensorflow\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\transformers\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\openai\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\anthropic\\%'\n    OR f.path LIKE 'C:\\Users\\%\\miniconda3\\Lib\\site-packages\\langchain\\%'\n)\nAND f.filename = '__init__.py'\nAND f.type = 'regular';",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.directory",
-            "value": {
-              "field": "directory"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "python_packages",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_python_packages"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_chrome_extensions",
-        "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE '%Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE '%Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%');",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "package.version",
-            "value": {
-              "field": "version"
-            }
-          },
-          {
-            "key": "package.description",
-            "value": {
-              "field": "description"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "browser_extensions",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_chrome_extensions"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_docker_containers",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    datetime(p.start_time, 'unixepoch') AS started_at\nFROM processes p\nWHERE (p.name IN ('docker.exe', 'docker', 'podman.exe', 'podman')\n    OR p.path LIKE '%docker%' OR p.path LIKE '%podman%')\n    AND (\n    p.cmdline LIKE '%ollama%' OR p.cmdline LIKE '%vllm%'\n    OR p.cmdline LIKE '%text-generation%' OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%llama.cpp%' OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%pytorch%' OR p.cmdline LIKE '%tensorflow%'\n    OR p.cmdline LIKE '%triton%' OR p.cmdline LIKE '%huggingface%'\n    OR p.cmdline LIKE '%mcp%' OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%open-webui%' OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%flowise%' OR p.cmdline LIKE '%langflow%'\n    OR p.cmdline LIKE '%chromadb%' OR p.cmdline LIKE '%chroma%'\n    OR p.cmdline LIKE '%qdrant%' OR p.cmdline LIKE '%weaviate%'\n    OR p.cmdline LIKE '%milvus%' OR p.cmdline LIKE '%pinecone%'\n    OR p.cmdline LIKE '%comfyui%' OR p.cmdline LIKE '%stable-diffusion%'\n    OR p.cmdline LIKE '%invokeai%' OR p.cmdline LIKE '%automatic1111%'\n    OR p.cmdline LIKE '%n8n%' OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%sweepai%' OR p.cmdline LIKE '%pr-agent%'\n    OR p.cmdline LIKE '%qwen%'\n    OR p.cmdline LIKE '%grok%'\n    OR p.cmdline LIKE '%cohere%'\n    OR p.cmdline LIKE '%mistral%'\n    );",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "host"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "docker_containers",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_docker_containers"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_windows_services",
-        "query": "SELECT\n    name,\n    display_name,\n    path,\n    start_type,\n    status,\n    user_account\nFROM services\nWHERE name LIKE '%ollama%' OR name LIKE '%lmstudio%'\n    OR name LIKE '%anythingllm%' OR name LIKE '%litellm%'\n    OR name LIKE '%pieces%' OR name LIKE '%comfyui%'\n    OR display_name LIKE '%Ollama%' OR display_name LIKE '%LM Studio%'\n    OR display_name LIKE '%AnythingLLM%' OR display_name LIKE '%LiteLLM%'\n    OR display_name LIKE '%Pieces%'\n    OR path LIKE '%ollama%' OR path LIKE '%litellm%'\n    OR path LIKE '%llama-server%' OR path LIKE '%anythingllm%';",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "configuration"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "service.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "service.state",
-            "value": {
-              "field": "status"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "user_account"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "auto_start",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_windows_services"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "mcp_npm_packages",
-        "query": "SELECT\n    f.directory,\n    f.path,\n    f.filename\nFROM file f\nWHERE (\n    f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\npm\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\npm\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\node_modules\\@anthropic-ai\\%\\package.json'\n    OR f.path LIKE 'C:\\Program Files\\nodejs\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Program Files\\nodejs\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Program Files\\nodejs\\node_modules\\@anthropic-ai\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\nvm\\%\\node_modules\\@modelcontextprotocol\\%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\nvm\\%\\node_modules\\mcp-server-%\\package.json'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\nvm\\%\\node_modules\\@anthropic-ai\\%\\package.json'\n);",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.directory",
-            "value": {
-              "field": "directory"
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.name",
-            "value": {
-              "field": "filename"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "mcp_packages",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.mcp_npm_packages"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_gpu_systems",
-        "query": "SELECT\n    model,\n    manufacturer AS vendor,\n    driver_version AS driver,\n    series\nFROM video_info\nWHERE manufacturer LIKE '%NVIDIA%'\n    OR manufacturer LIKE '%Advanced Micro Devices%'\n    OR manufacturer LIKE '%AMD%'\n    OR model LIKE '%NVIDIA%'\n    OR model LIKE '%GeForce%'\n    OR model LIKE '%Radeon%'\n    OR model LIKE '%RTX%'\n    OR model LIKE '%GTX%';",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "host"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "host.gpu.model",
-            "value": {
-              "field": "model"
-            }
-          },
-          {
-            "key": "host.gpu.vendor",
-            "value": {
-              "field": "vendor"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "gpu_systems",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_gpu_systems"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_firefox_extensions",
-        "query": "SELECT\n    fa.name,\n    fa.identifier,\n    fa.version,\n    fa.description,\n    fa.path,\n    fa.active,\n    u.username\nFROM users u CROSS JOIN firefox_addons fa USING(uid)\nWHERE fa.active = 1 AND (\n    fa.name LIKE '%Copilot%' OR fa.name LIKE '%ChatGPT%'\n    OR fa.name LIKE '%Claude%' OR fa.name LIKE '%Gemini%'\n    OR fa.name LIKE '%Perplexity%' OR fa.name LIKE '%DeepSeek%'\n    OR fa.name LIKE '%Monica%' OR fa.name LIKE '%Merlin%'\n    OR fa.name LIKE '%Sider%' OR fa.name LIKE '%MaxAI%'\n    OR fa.name LIKE '%UseChatGPT%' OR fa.name LIKE '%Poe%'\n    OR fa.name LIKE '%Cody%' OR fa.name LIKE '%Codeium%'\n    OR fa.name LIKE '%Tabnine%' OR fa.name LIKE '%Blackbox%'\n    OR fa.name LIKE '%Phind%' OR fa.name LIKE '%Bito%'\n    OR fa.name LIKE '%Grammarly%' OR fa.name LIKE '%Jasper%'\n    OR fa.name LIKE '%Wordtune%' OR fa.name LIKE '%Quillbot%'\n    OR fa.name LIKE '%QuillBot%' OR fa.name LIKE '%Compose AI%'\n    OR fa.name LIKE '%Writesonic%' OR fa.name LIKE '%Copy.ai%'\n    OR fa.name LIKE '%You.com%' OR fa.name LIKE '%AIPRM%'\n    OR fa.name LIKE '%WebChatGPT%'\n    OR fa.name LIKE '%Glasp%' OR fa.name LIKE '%Eightify%'\n    OR fa.name LIKE '%NoteGPT%' OR fa.name LIKE '%tl;dv%'\n    OR fa.name LIKE '%DeepL%' OR fa.name LIKE '%Immersive Translate%'\n    -- Match by identifier (more reliable than name for Firefox)\n    OR fa.identifier LIKE '%chatgpt%'\n    OR fa.identifier LIKE '%copilot%'\n    OR fa.identifier LIKE '%claude%'\n    OR fa.identifier LIKE '%perplexity%'\n    OR fa.identifier LIKE '%deepseek%'\n    OR fa.identifier LIKE '%openai%'\n    OR fa.identifier LIKE '%anthropic%'\n    OR fa.identifier LIKE '%codeium%'\n    OR fa.identifier LIKE '%tabnine%'\n    OR fa.identifier LIKE '%grammarly%'\n    OR fa.identifier LIKE '%deepl%'\n    OR fa.identifier LIKE '%monica%'\n    OR fa.identifier LIKE '%sider%');",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "package.version",
-            "value": {
-              "field": "version"
-            }
-          },
-          {
-            "key": "package.description",
-            "value": {
-              "field": "description"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "browser_extensions",
-                "firefox",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_firefox_extensions"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_credential_files_windows",
-        "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\.env.local'\n    OR path LIKE 'C:\\Users\\%\\Projects\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\src\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\code\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\repos\\%\\.env'\n    OR path LIKE 'C:\\Users\\%\\.openai'\n    OR path LIKE 'C:\\Users\\%\\.anthropic'\n    OR path LIKE 'C:\\Users\\%\\.config\\openai\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.config\\anthropic\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.config\\groq\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.config\\cohere\\auth.json'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\token'\n    OR path LIKE 'C:\\Users\\%\\.huggingface\\token'\n    OR path LIKE 'C:\\Users\\%\\.ollama\\auth'\n    OR path LIKE 'C:\\Users\\%\\litellm_config.yaml'\n    OR path LIKE 'C:\\Users\\%\\.litellm\\config.yaml'\n    OR path LIKE 'C:\\Users\\%\\.config\\shell_gpt\\.sgptrc'\n    OR path LIKE 'C:\\Users\\%\\.aider.conf.yml'\n    OR path LIKE 'C:\\Users\\%\\.aider.env'\n)\nAND size > 0;",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "credential_exposure",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_credential_files_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_jupyter_servers",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'jupyter', 'jupyter.exe', 'jupyter-lab', 'jupyter-lab.exe',\n    'jupyter-notebook', 'jupyter-notebook.exe',\n    'jupyter-server', 'jupyter-server.exe',\n    'jupyterhub', 'jupyterhub.exe',\n    'jupyterhub-singleuser', 'jupyterhub-singleuser.exe'\n)\n    OR p.cmdline LIKE '%jupyter%notebook%'\n    OR p.cmdline LIKE '%jupyter%lab%'\n    OR p.cmdline LIKE '%jupyter%server%'\n    OR p.cmdline LIKE '%jupyterhub%';",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "process.parent.pid",
-            "value": {
-              "field": "ppid"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "jupyter",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_jupyter_servers"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_vscode_extensions_windows",
-        "query": "SELECT\n    path,\n    filename AS extension_id,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.vscode\\extensions\\github.copilot%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\github.copilot-chat%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\saoudrizwan.claude-dev%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\rooveterinaryinc.roo-cline%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\continue.continue%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\sourcegraph.cody%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\codeium.codeium%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\tabnine.tabnine%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\amazonwebservices.amazon-q%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\supermaven.supermaven%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\blackboxapp.blackbox%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\pieces.pieces-vscode%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\phind.phind%'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\extensions\\bito.bito%'\n)\nAND type = 'directory';",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "package"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "package.name",
-            "value": {
-              "field": "extension_id"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "vscode_extensions",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_vscode_extensions_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_dns_cache_windows",
-        "query": "SELECT\n    name AS query_name,\n    type AS query_type,\n    flags\nFROM dns_cache\nWHERE (\n    name LIKE '%openai.com'\n    OR name LIKE '%chatgpt.com'\n    OR name LIKE '%oaiusercontent.com'\n    OR name LIKE '%anthropic.com'\n    OR name LIKE '%claude.ai'\n    OR name LIKE '%generativelanguage.googleapis.com'\n    OR name LIKE '%gemini.google.com'\n    OR name LIKE '%aistudio.google.com'\n    OR name LIKE '%notebooklm.google.com'\n    OR name LIKE '%copilot.microsoft.com'\n    OR name LIKE '%meta.ai'\n    OR name LIKE '%llama.meta.com'\n    OR name LIKE '%perplexity.ai'\n    OR name LIKE '%cohere.ai'\n    OR name LIKE '%cohere.com'\n    OR name LIKE '%mistral.ai'\n    OR name LIKE '%groq.com'\n    OR name LIKE '%together.ai'\n    OR name LIKE '%together.xyz'\n    OR name LIKE '%fireworks.ai'\n    OR name LIKE '%deepseek.com'\n    OR name LIKE '%huggingface.co'\n    OR name LIKE '%replicate.com'\n    OR name LIKE '%cursor.sh'\n    OR name LIKE '%cursor.com'\n    OR name LIKE '%codeium.com'\n    OR name LIKE '%tabnine.com'\n    OR name LIKE '%copilot-proxy.githubusercontent.com'\n    OR name LIKE '%githubcopilot.com'\n    OR name LIKE '%midjourney.com'\n    OR name LIKE '%stability.ai'\n    OR name LIKE '%leonardo.ai'\n    OR name LIKE '%ideogram.ai'\n    OR name LIKE '%jasper.ai'\n    OR name LIKE '%writesonic.com'\n    OR name LIKE '%copy.ai'\n    OR name LIKE '%otter.ai'\n    OR name LIKE '%fireflies.ai'\n    OR name LIKE '%krisp.ai'\n    OR name LIKE '%you.com'\n    OR name LIKE '%phind.com'\n    OR name LIKE '%ollama.ai'\n    OR name LIKE '%ollama.com'\n);",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "dns.question.name",
-            "value": {
-              "field": "query_name"
-            }
-          },
-          {
-            "key": "dns.question.type",
-            "value": {
-              "field": "query_type"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "dns_cache",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_dns_cache_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_scheduled_tasks_windows",
-        "query": "SELECT\n    st.name AS task_name,\n    st.action AS command_line,\n    st.path AS task_path,\n    st.enabled,\n    st.state AS task_state,\n    st.hidden,\n    datetime(st.last_run_time, 'unixepoch') AS last_execution,\n    datetime(st.next_run_time, 'unixepoch') AS next_execution\nFROM scheduled_tasks st\nWHERE st.action IS NOT NULL\n    AND st.action != ''\n    AND (\n        LOWER(st.action) LIKE '%ollama%'\n        OR LOWER(st.action) LIKE '%lmstudio%'\n        OR LOWER(st.action) LIKE '%lm studio%'\n        OR LOWER(st.action) LIKE '%llama-server%'\n        OR LOWER(st.action) LIKE '%llama.cpp%'\n        OR LOWER(st.action) LIKE '%gpt4all%'\n        OR LOWER(st.action) LIKE '%koboldcpp%'\n        OR LOWER(st.action) LIKE '%litellm%'\n        OR LOWER(st.action) LIKE '%localai%'\n        OR LOWER(st.action) LIKE '%anythingllm%'\n        OR LOWER(st.action) LIKE '%open-webui%'\n        OR LOWER(st.action) LIKE '%vllm%'\n        OR LOWER(st.action) LIKE '%jan.exe%'\n        OR LOWER(st.action) LIKE '%msty%'\n        OR LOWER(st.action) LIKE '%cursor%'\n        OR LOWER(st.action) LIKE '%windsurf%'\n        OR LOWER(st.action) LIKE '%codeium%'\n        OR LOWER(st.action) LIKE '%tabnine%'\n        OR LOWER(st.action) LIKE '%pieces%'\n        OR LOWER(st.action) LIKE '%mcp-server%'\n        OR LOWER(st.action) LIKE '%mcp_server%'\n        OR LOWER(st.action) LIKE '%modelcontextprotocol%'\n        OR LOWER(st.action) LIKE '%comfyui%'\n        OR LOWER(st.action) LIKE '%invokeai%'\n        OR LOWER(st.action) LIKE '%stable-diffusion%'\n        OR LOWER(st.action) LIKE '%jupyter%'\n        OR LOWER(st.name) LIKE '%ollama%'\n        OR LOWER(st.name) LIKE '%lmstudio%'\n        OR LOWER(st.name) LIKE '%gpt4all%'\n        OR LOWER(st.name) LIKE '%anythingllm%'\n        OR LOWER(st.name) LIKE '%litellm%'\n        OR LOWER(st.name) LIKE '%comfyui%'\n        OR LOWER(st.name) LIKE '%pieces%'\n    );",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "configuration"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "service.name",
-            "value": {
-              "field": "task_name"
-            }
-          },
-          {
-            "key": "service.state",
-            "value": {
-              "field": "task_state"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "command_line"
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "task_path"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "scheduled_tasks",
-                "auto_start",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_scheduled_tasks_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_config_directories_windows",
-        "query": "SELECT\n    path,\n    type,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.ollama\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\lm-studio\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\gpt4all\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%'\n    OR path LIKE 'C:\\Users\\%\\jan\\%'\n    OR path LIKE 'C:\\Users\\%\\.continue\\%'\n    OR path LIKE 'C:\\Users\\%\\.cursor\\%'\n    OR path LIKE 'C:\\Users\\%\\.codeium\\%'\n    OR path LIKE 'C:\\Users\\%\\.tabnine\\%'\n    OR path LIKE 'C:\\Users\\%\\.claude\\%'\n    OR path LIKE 'C:\\Users\\%\\.config\\github-copilot\\%'\n    OR path LIKE 'C:\\Users\\%\\.config\\shell_gpt\\%'\n    OR path LIKE 'C:\\Users\\%\\.supermaven\\%'\n    OR path LIKE 'C:\\Users\\%\\.anythingllm\\%'\n    OR path LIKE 'C:\\Users\\%\\.invokeai\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\LM Studio\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\AnythingLLM\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Ollama\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\GPT4All\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Jan\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Pieces\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Cursor\\%'\n);",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 120,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "config_directories",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_config_directories_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_vector_databases",
-        "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN ('qdrant', 'milvus', 'weaviate', 'chroma')\n    OR p.cmdline LIKE '%chromadb%'\n    OR p.cmdline LIKE '%qdrant%'\n    OR p.cmdline LIKE '%weaviate%'\n    OR p.cmdline LIKE '%milvus%'\n    OR p.cmdline LIKE '%pinecone%'\n    OR p.cmdline LIKE '%pgvector%'\n    OR p.cmdline LIKE '%lancedb%'\n    OR p.cmdline LIKE '%faiss%';",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "vector_databases",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_vector_databases"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_model_cache_size_windows",
-        "query": "SELECT\n    CASE\n        WHEN f.directory LIKE '%\\.ollama\\models%' THEN 'ollama'\n        WHEN f.directory LIKE '%\\.cache\\huggingface%' THEN 'huggingface'\n        WHEN f.directory LIKE '%\\.cache\\lm-studio%' THEN 'lm-studio'\n    END AS ai_tool,\n    CASE\n        WHEN f.directory LIKE '%\\.ollama\\models%' THEN 'C:\\Users\\*\\.ollama\\models'\n        WHEN f.directory LIKE '%\\.cache\\huggingface%' THEN 'C:\\Users\\*\\.cache\\huggingface'\n        WHEN f.directory LIKE '%\\.cache\\lm-studio%' THEN 'C:\\Users\\*\\.cache\\lm-studio'\n    END AS cache_path,\n    SUM(f.size) AS total_bytes,\n    COUNT(*) AS file_count\nFROM file f\nWHERE (\n    f.directory LIKE 'C:\\Users\\%\\.ollama\\models%'\n    OR f.directory LIKE 'C:\\Users\\%\\.cache\\huggingface%'\n    OR f.directory LIKE 'C:\\Users\\%\\.cache\\lm-studio%'\n)\n    AND f.type = 'regular'\nGROUP BY ai_tool\nHAVING total_bytes > 104857600;",
-        "interval": 86400,
-        "platform": "windows",
-        "timeout": 300,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "model_storage",
-                "shadow_ai",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_model_cache_size_windows"
-            }
-          }
-        ],
-        "snapshot": true
-      },
-      {
-        "id": "ai_config_file_changes_windows",
-        "query": "SELECT f.path, f.size, datetime(f.mtime, 'unixepoch') AS modified_time, datetime(f.ctime, 'unixepoch') AS changed_time, u.username FROM file f LEFT JOIN users u ON f.uid = u.uid WHERE ( f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Claude\\claude_desktop_config.json' OR f.path LIKE 'C:\\Users\\%\\.claude\\settings.json' OR f.path LIKE 'C:\\Users\\%\\.claude.json' OR f.path LIKE 'C:\\Users\\%\\.cursor\\mcp.json' OR f.path LIKE 'C:\\Users\\%\\.vscode\\mcp.json' OR f.path LIKE 'C:\\Users\\%\\.mcp.json' OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Ollama\\config' OR f.path LIKE 'C:\\Users\\%\\.continue\\config.json' OR f.path LIKE 'C:\\Users\\%\\.codeium\\config.json' ) AND f.mtime > (strftime('%s', 'now') - 3600)",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "snapshot": true,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "change"
-              ]
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "size"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "file.ctime",
-            "value": {
-              "field": "changed_time"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "config_change",
-                "shadow_ai",
-                "genai_detection",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_config_file_changes"
-            }
-          }
         ]
-      },
-      {
-        "id": "ai_sensitive_file_proximity_windows",
-        "query": "SELECT p.name AS process_name, p.path AS process_path, p.pid, u.username, sens.path AS sensitive_file_path, sens.size AS sensitive_file_size, datetime(sens.atime, 'unixepoch') AS accessed_time, datetime(sens.mtime, 'unixepoch') AS modified_time FROM processes p JOIN users u ON p.uid = u.uid JOIN ( SELECT path, size, atime, mtime, uid FROM file WHERE path LIKE 'C:\\Users\\%\\.aws\\credentials' OR path LIKE 'C:\\Users\\%\\.aws\\config' OR path LIKE 'C:\\Users\\%\\.ssh\\id_rsa' OR path LIKE 'C:\\Users\\%\\.ssh\\id_ed25519' OR path LIKE 'C:\\Users\\%\\.ssh\\id_ecdsa' OR path LIKE 'C:\\Users\\%\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data' OR path LIKE 'C:\\Users\\%\\.config\\gcloud\\credentials.db' OR path LIKE 'C:\\Users\\%\\.config\\gcloud\\application_default_credentials.json' OR path LIKE 'C:\\Users\\%\\.azure\\accessTokens.json' OR path LIKE 'C:\\Users\\%\\.azure\\msal_token_cache.json' ) AS sens ON p.uid = sens.uid WHERE ( p.name IN ('ollama.exe', 'claude.exe', 'Cursor.exe', 'windsurf.exe', 'copilot-agent.exe', 'aider.exe', 'ChatGPT.exe', 'codex.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe', 'koboldcpp.exe', 'llama-server.exe', 'vllm.exe', 'litellm.exe', 'qwen.exe', 'grok.exe', 'gemini-cli.exe', 'genaiscript.exe', 'openai.exe', 'llm.exe', 'bolt.exe', 'replit.exe', 'ghostwriter.exe', 'bito.exe') OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%'\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    )",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "snapshot": true,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "process",
-                "file"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "info"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "process_name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "process_path"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "file.path",
-            "value": {
-              "field": "sensitive_file_path"
-            }
-          },
-          {
-            "key": "file.size",
-            "value": {
-              "field": "sensitive_file_size"
-            }
-          },
-          {
-            "key": "file.accessed",
-            "value": {
-              "field": "accessed_time"
-            }
-          },
-          {
-            "key": "file.modified",
-            "value": {
-              "field": "modified_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "credential_risk",
-                "shadow_ai",
-                "genai_detection",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_sensitive_file_proximity"
-            }
-          }
-        ]
-      },
-      {
-        "id": "ai_process_network_summary",
-        "query": "SELECT p.name AS process_name, p.path AS process_path, p.cmdline, p.pid, u.username, pos.remote_address, pos.remote_port, pos.local_port, pos.local_address, pos.state, CASE pos.family WHEN 2 THEN 'IPv4' WHEN 10 THEN 'IPv6' ELSE 'unknown' END AS address_family, CASE pos.protocol WHEN 6 THEN 'tcp' WHEN 17 THEN 'udp' ELSE CAST(pos.protocol AS TEXT) END AS transport_protocol, CASE WHEN pos.remote_address LIKE '10.%' OR pos.remote_address LIKE '192.168.%' THEN 1 ELSE 0 END AS is_rfc1918_destination, datetime(p.start_time, 'unixepoch') AS start_time FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid LEFT JOIN users u ON p.uid = u.uid WHERE pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::') AND pos.remote_address != '' AND (pos.state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR pos.state IS NULL) AND ( p.name IN ( 'ollama.exe', 'claude.exe', 'Cursor.exe', 'windsurf.exe', 'ChatGPT.exe', 'copilot-agent.exe', 'aider.exe', 'codex.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe', 'llama-server.exe', 'open-webui.exe', 'litellm.exe', 'koboldcpp.exe', 'vllm.exe', 'llamafile.exe', 'tabby.exe', 'exo.exe', 'qwen.exe', 'grok.exe', 'gemini-cli.exe', 'genaiscript.exe', 'openai.exe', 'llm.exe', 'bolt.exe', 'replit.exe', 'ghostwriter.exe', 'bito.exe') OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%llama-server%' OR p.cmdline LIKE '%vllm.entrypoints%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%' \n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    )",
-        "interval": 3600,
-        "platform": "windows",
-        "timeout": 180,
-        "snapshot": true,
-        "ecs_mapping": [
-          {
-            "key": "event.category",
-            "value": {
-              "value": [
-                "network",
-                "process"
-              ]
-            }
-          },
-          {
-            "key": "event.type",
-            "value": {
-              "value": [
-                "connection"
-              ]
-            }
-          },
-          {
-            "key": "process.name",
-            "value": {
-              "field": "process_name"
-            }
-          },
-          {
-            "key": "process.executable",
-            "value": {
-              "field": "process_path"
-            }
-          },
-          {
-            "key": "process.command_line",
-            "value": {
-              "field": "cmdline"
-            }
-          },
-          {
-            "key": "process.pid",
-            "value": {
-              "field": "pid"
-            }
-          },
-          {
-            "key": "user.name",
-            "value": {
-              "field": "username"
-            }
-          },
-          {
-            "key": "destination.ip",
-            "value": {
-              "field": "remote_address"
-            }
-          },
-          {
-            "key": "destination.port",
-            "value": {
-              "field": "remote_port"
-            }
-          },
-          {
-            "key": "source.port",
-            "value": {
-              "field": "local_port"
-            }
-          },
-          {
-            "key": "source.ip",
-            "value": {
-              "field": "local_address"
-            }
-          },
-          {
-            "key": "network.transport",
-            "value": {
-              "field": "transport_protocol"
-            }
-          },
-          {
-            "key": "process.start",
-            "value": {
-              "field": "start_time"
-            }
-          },
-          {
-            "key": "tags",
-            "value": {
-              "value": [
-                "osquery",
-                "ai_discovery",
-                "network_connections",
-                "shadow_ai",
-                "genai_detection",
-                "windows"
-              ]
-            }
-          },
-          {
-            "key": "event.action",
-            "value": {
-              "value": "osquery.ai_process_network_summary"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  "coreMigrationVersion": "9.3.0",
-  "created_at": "2025-06-01T00:00:00.000Z",
-  "id": "osquery_manager-e7a1b2c3-win0-4f6a-8b9c-0d1e2f3a4b5c",
-  "type": "osquery-pack-asset",
-  "updated_at": "2025-06-01T00:00:00.000Z",
-  "version": "WzEsMV0="
+    },
+    "coreMigrationVersion": "9.3.0",
+    "created_at": "2025-06-01T00:00:00.000Z",
+    "id": "osquery_manager-e7a1b2c3-win0-4f6a-8b9c-0d1e2f3a4b5c",
+    "type": "osquery-pack-asset",
+    "updated_at": "2025-06-01T00:00:00.000Z",
+    "version": "WzEsMV0="
 }

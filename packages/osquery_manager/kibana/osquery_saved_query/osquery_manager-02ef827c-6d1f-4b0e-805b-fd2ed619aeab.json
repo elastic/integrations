@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Find MCP configuration files on Windows endpoints. Use for shadow AI discovery — scans well-known user profile paths for Claude Desktop, Cursor, and VS Code MCP configuration files that define which MCP servers are permitted to run, revealing AI tool deployments and integrations.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "file"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.modified",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "mcp_config",
+                        "shadow_ai",
+                        "windows"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_mcp_config_files_windows"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            }
+        ],
+        "id": "ai_mcp_config_files_windows_elastic",
+        "interval": "86400",
+        "platform": "windows",
+        "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Claude\\claude_desktop_config.json'\n    OR path LIKE 'C:\\Users\\%\\.claude.json'\n    OR path LIKE 'C:\\Users\\%\\.claude\\settings.json'\n    OR path LIKE 'C:\\Users\\%\\.cursor\\mcp.json'\n    OR path LIKE 'C:\\Users\\%\\.vscode\\mcp.json'\n    OR path LIKE 'C:\\Users\\%\\.mcp.json';",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-02ef827c-6d1f-4b0e-805b-fd2ed619aeab",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

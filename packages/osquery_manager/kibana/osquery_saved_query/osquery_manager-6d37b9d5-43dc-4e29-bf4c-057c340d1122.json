@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "created_at": "2026-04-09T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Find MCP configuration files on macOS endpoints. Use for shadow AI discovery — scans well-known paths for Claude Desktop, Cursor, and VS Code MCP configuration files that define which MCP servers are permitted to run, revealing AI tool deployments and integrations.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "file"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.modified",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "ai_discovery",
+                        "mcp_config",
+                        "shadow_ai",
+                        "darwin"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.ai_mcp_config_files_darwin"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            }
+        ],
+        "id": "ai_mcp_config_files_darwin_elastic",
+        "interval": "86400",
+        "platform": "darwin",
+        "query": "SELECT\n    path,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE path LIKE '/Users/%/Library/Application Support/Claude/claude_desktop_config.json'\n    OR path LIKE '/Users/%/.claude.json'\n    OR path LIKE '/Users/%/.claude/settings.json'\n    OR path LIKE '/Users/%/.cursor/mcp.json'\n    OR path LIKE '/Users/%/.vscode/mcp.json'\n    OR path LIKE '/Users/%/.mcp.json';",
+        "updated_at": "2026-04-09T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-6d37b9d5-43dc-4e29-bf4c-057c340d1122",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-04-09T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
