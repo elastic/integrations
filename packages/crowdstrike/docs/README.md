@@ -2673,6 +2673,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.eid |  | integer |
 | crowdstrike.event-type |  | keyword |
 | crowdstrike.event_category |  | keyword |
+| crowdstrike.event_simpleName |  | keyword |
 | crowdstrike.finding |  | keyword |
 | crowdstrike.findings.name |  | keyword |
 | crowdstrike.findings.value |  | keyword |

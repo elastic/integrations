@@ -1,0 +1,40 @@
+{
+    "id": "traefik_otel-tls-cert-expiry-imminent",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Traefik OTel] TLS certificate expiry imminent",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "traefik",
+            "tls"
+        ],
+        "schedule": {
+            "interval": "1h"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 5,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-traefik.otel-*\n// Limit to TLS cert expiry timestamps (Unix epoch seconds)\n| WHERE traefik_tls_certs_not_after IS NOT NULL\n// Take latest expiry per cert (cn + serial)\n| STATS expiry_epoch = MAX(traefik_tls_certs_not_after) BY attributes.cn, attributes.serial\n// Convert epoch seconds to datetime; compute days until expiry\n// Adjust 30-day threshold based on renewal lead time\n| EVAL expiry_datetime = TO_DATETIME(expiry_epoch * 1000)\n| EVAL days_until_expiry = DATE_DIFF(\"days\", NOW(), expiry_datetime)\n| WHERE days_until_expiry < 30 AND days_until_expiry >= 0\n| SORT days_until_expiry ASC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "h",
+            "groupBy": "row",
+            "termField": "attributes.cn",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": false
+        }
+    }
+}
