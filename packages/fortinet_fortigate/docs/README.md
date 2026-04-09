@@ -435,8 +435,10 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | fortinet.firewall.dstunauthusersource | Destination unauthenticated source | keyword |
 | fortinet.firewall.dstuuid | UUID of the Destination IP address | keyword |
 | fortinet.firewall.duid | DHCP UID | keyword |
+| fortinet.firewall.eapauthgroup | EAP authentication group | keyword |
 | fortinet.firewall.eapolcnt | EAPOL packet count | integer |
 | fortinet.firewall.eapoltype | EAPOL packet type | keyword |
+| fortinet.firewall.eapuser | EAP user name | keyword |
 | fortinet.firewall.encrypt | Whether the packet is encrypted or not | integer |
 | fortinet.firewall.encryption | Encryption method | keyword |
 | fortinet.firewall.epoch | Epoch used for locating file | integer |
@@ -720,6 +722,7 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | fortinet.firewall.used_for_type | Connection for the type | integer |
 | fortinet.firewall.utmaction | Security action performed by UTM | keyword |
 | fortinet.firewall.utmref | UTM reference | keyword |
+| fortinet.firewall.uuid | UUID of the policy or object | keyword |
 | fortinet.firewall.valid |  | integer |
 | fortinet.firewall.vap | Virtual AP | keyword |
 | fortinet.firewall.vapmode | Virtual AP mode | keyword |
