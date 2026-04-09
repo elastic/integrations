@@ -56,10 +56,11 @@ State:
     Cleared to {} on 401 so the fields are absent, not sentinel-valued.
 
 Cursor:
-  last_event_time — stable during pagination; advances to session_max_time
-    only when a full pagination session completes successfully.
-  session_max_time — newest event_time captured on page 1 of each session
-    (API returns newest-first). Preserved across pages, consumed on completion.
+  window_start_time — frozen after_time used for every request in the
+    current window. Advances only when a full window completes.
+  max_event_time — newest event_time seen anywhere in the current window.
+    Cleared when the window completes; preserved when an expired PIT
+    forces a retry of the same window.
   pit_id, search_after — pagination state; cleared between poll intervals.
 --}}
 program: |-
@@ -120,18 +121,18 @@ program: |-
         auth
       :
         (
-          (state.?cursor.last_event_time.orValue("") != "") ?
-            state.cursor.last_event_time
+          (state.?cursor.window_start_time.orValue("") != "") ?
+            state.cursor.window_start_time
           :
             (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-        ).as(after_time,
+        ).as(window_start_time,
           (
             // Query params must stay consistent across all pages in a session
-            // (per API docs). after_time is stable because last_event_time is
-            // frozen during pagination.
+            // (per API docs). after_time is fixed to window_start_time for the
+            // entire pagination window, including retries after PIT expiry.
             state.url.trim_right("/") + "/events?" + {
               "paging": ["true"],
-              "after_time": [after_time],
+              "after_time": [window_start_time],
               ?"performer_ids": state.?performer_ids.optFlatMap(v,
                 (v != "") ? optional.of([v]) : optional.none()
               ),
@@ -153,36 +154,52 @@ program: |-
               request("GET", url).with({"Header": headers}).do_request().as(resp,
                 (resp.StatusCode == 200) ?
                   resp.Body.decode_json().as(body,
-                    (body.?paging.next_search_after.orValue(null) != null).as(has_more,
-                      {
-                        "auth_token": auth.auth_token,
-                        "events": body.?results.orValue([]).map(e, {"message": e.encode_json()}),
-                        "cursor": {
-                          // Hold last_event_time stable during pagination so
-                          // after_time stays consistent and Pit_Id expiry
-                          // retries the full range (no data gap). Advance to
-                          // session_max_time only on successful completion.
-                          "last_event_time": has_more ?
-                            after_time
-                          :
-                            (state.?cursor.session_max_time.orValue("") != "") ?
-                              state.cursor.session_max_time
-                            :
-                              ((size(body.?results.orValue([])) > 0) ?
-                                body.results[0].event_time
-                              :
-                                after_time),
-                          // Capture newest event_time on page 1 (API returns
-                          // newest-first). Preserve across subsequent pages.
-                          "session_max_time": (state.?cursor.pit_id.orValue("") == "") && (size(body.?results.orValue([])) > 0) ?
+                    body.?results.orValue([]).as(results,
+                      (body.?paging.next_search_after.orValue(null) != null).as(has_more,
+                        (size(results) > 0).as(has_results,
+                          has_results ?
                             body.results[0].event_time
                           :
-                            state.?cursor.session_max_time.orValue(""),
-                          "pit_id": has_more ? string(body.paging.pit_id) : "",
-                          "search_after": has_more ? string(body.paging.next_search_after) : "",
-                        },
-                        "want_more": has_more,
-                      }
+                            ""
+                        ).as(page_newest_event_time,
+                          (state.?cursor.max_event_time.orValue("") != "").as(has_max_event_time,
+                            has_results ?
+                              (
+                                has_max_event_time &&
+                                timestamp(state.cursor.max_event_time) > timestamp(page_newest_event_time)
+                              ) ?
+                                state.cursor.max_event_time
+                              :
+                                page_newest_event_time
+                            :
+                              has_max_event_time ?
+                                state.cursor.max_event_time
+                              :
+                                ""
+                          ).as(next_max_event_time,
+                            {
+                              "auth_token": auth.auth_token,
+                              "events": results.map(e, {"message": e.encode_json()}),
+                              "cursor": {
+                                // Keep window_start_time fixed until the final
+                                // page succeeds so the whole window can be
+                                // retried safely if the PIT expires.
+                                "window_start_time": has_more ?
+                                  window_start_time
+                                :
+                                  (next_max_event_time != "") ?
+                                    next_max_event_time
+                                  :
+                                    window_start_time,
+                                "max_event_time": has_more ? next_max_event_time : "",
+                                "pit_id": has_more ? string(body.paging.pit_id) : "",
+                                "search_after": has_more ? string(body.paging.next_search_after) : "",
+                              },
+                              "want_more": has_more,
+                            }
+                          )
+                        )
+                      )
                     )
                   )
                 : (resp.StatusCode == 401) ?
@@ -197,15 +214,15 @@ program: |-
                     "want_more": false,
                   }
                 : string(resp.Body).contains("Pit_Id") ?
-                  // Pit_Id expired — clear pagination tokens and retry.
-                  // Because last_event_time is held stable during pagination,
-                  // after_time still equals the session start, so the next
-                  // poll retries the full time range with no data gap.
+                  // Pit_Id expired — clear pagination tokens but keep the
+                  // current window so the next poll retries the same range.
+                  // Emit a dummy event so the cursor reset is persisted.
                   {
                     "auth_token": auth.auth_token,
-                    "events": [],
+                    "events": [{"retry": true}],
                     "cursor": {
-                      "last_event_time": after_time,
+                      "window_start_time": window_start_time,
+                      "max_event_time": state.?cursor.max_event_time.orValue(""),
                       "pit_id": "",
                       "search_after": "",
                     },
@@ -238,7 +255,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}
