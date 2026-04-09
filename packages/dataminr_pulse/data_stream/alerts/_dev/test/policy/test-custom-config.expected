@@ -97,16 +97,18 @@ inputs:
                           {
                             "access_token": auth.token,
                             "expires_at": auth.expires,
-                            "events": {
-                              "error": {
-                                "message": "GET " + req_url + ": " + (
-                                  (size(resp.Body) != 0) ?
-                                    string(resp.Body)
-                                  :
-                                    string(resp.StatusCode)
-                                ),
+                            "events": [
+                              {
+                                  "error": {
+                                    "message": "GET " + req_url + ": " + (
+                                      (size(resp.Body) != 0) ?
+                                        string(resp.Body)
+                                      :
+                                        string(resp.StatusCode)
+                                    ),
+                                  },
                               },
-                            },
+                            ],
                           }
                         :
                           bytes(resp.Body).decode_json().as(body,
