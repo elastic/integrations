@@ -9,7 +9,7 @@ processors:
       tag: set_event_outcome_102f0bb5
       field: event.outcome
       value: failure
-      if: ctx.fortinet?.firewall?.result == 'ERROR' || ctx.fortinet?.firewall?.status == 'negotiate_error'
+      if: ctx.fortinet?.firewall?.result == 'ERROR' || ctx.fortinet?.firewall?.status == 'negotiate_error' || ctx.fortinet?.firewall?.status == 'failure'
   - set:
       tag: set_event_outcome_bac8ed90
       field: event.outcome
@@ -37,6 +37,11 @@ processors:
       field: event.category
       value: network
       if: ctx.fortinet?.firewall?.subtype == 'vpn'
+  - append:
+      tag: append_event_type_error
+      field: event.type
+      value: error
+      if: ctx.fortinet?.firewall?.level == 'error'
   - append:
       tag: append_event_type_d9e5777e
       field: event.type
@@ -301,6 +306,11 @@ processors:
       field: source.user.name
       copy_from: fortinet.firewall.xauthuser
       if: ctx.fortinet?.firewall?.subtype == 'vpn' && ctx.fortinet.firewall.xauthuser != null
+  - set:
+      tag: set_source_user_name_from_eapuser
+      field: source.user.name
+      copy_from: fortinet.firewall.eapuser
+      if: ctx.fortinet?.firewall?.subtype == 'vpn' && ctx.fortinet?.firewall?.eapuser != null
   - script:
       lang: painless
       tag: script_convert_advpnsc
