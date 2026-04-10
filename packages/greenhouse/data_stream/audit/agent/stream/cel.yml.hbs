@@ -59,9 +59,10 @@ Cursor:
   window_start_time — frozen after_time used for every request in the
     current window. Advances only when a full window completes.
   max_event_time — newest event_time seen anywhere in the current window.
-    Cleared when the window completes; preserved when an expired PIT
-    forces a retry of the same window.
-  pit_id, search_after — pagination state; cleared between poll intervals.
+    Absent between windows; preserved when an expired PIT forces a retry.
+  pit_id, search_after — pagination state; absent between windows.
+  Fields use genuine absence (omitted from the cursor map) rather than
+  empty-string sentinels.
 --}}
 program: |-
   state.with(
@@ -120,11 +121,8 @@ program: |-
       has(auth.events) ?
         auth
       :
-        (
-          (state.?cursor.window_start_time.orValue("") != "") ?
-            state.cursor.window_start_time
-          :
-            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        state.?cursor.window_start_time.orValue(
+          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
         ).as(window_start_time,
           (
             // Query params must stay consistent across all pages in a session
@@ -144,54 +142,41 @@ program: |-
             {
               "Authorization": ["Bearer " + auth.auth_token.token],
               "Size": [string(int(state.batch_size))],
-              ?"Pit-Id": state.?cursor.pit_id.optFlatMap(v,
-                (v != "") ? optional.of([v]) : optional.none()
-              ),
-              ?"Search-After": state.?cursor.search_after.optFlatMap(v,
-                (v != "") ? optional.of([v]) : optional.none()
-              ),
+              ?"Pit-Id": state.?cursor.pit_id.optMap(v, [v]),
+              ?"Search-After": state.?cursor.search_after.optMap(v, [v]),
             }.as(headers,
               request("GET", url).with({"Header": headers}).do_request().as(resp,
                 (resp.StatusCode == 200) ?
                   resp.Body.decode_json().as(body,
-                    body.?results.orValue([]).as(results,
+                    !body.?results[0].hasValue() ?
+                      {
+                        "auth_token": auth.auth_token,
+                        "events": [],
+                        "want_more": false,
+                      }
+                    :
                       (body.?paging.next_search_after.orValue(null) != null).as(has_more,
-                        (size(results) > 0).as(has_results,
-                          (has_results ? body.results[0].event_time : "").as(page_newest_event_time,
-                            (state.?cursor.max_event_time.orValue("") != "").as(has_max_event_time,
-                              (has_results ?
-                                (has_max_event_time && timestamp(state.cursor.max_event_time) > timestamp(page_newest_event_time)).as(use_existing,
-                                  use_existing ? state.cursor.max_event_time : page_newest_event_time
-                                )
-                              :
-                                (has_max_event_time ? state.cursor.max_event_time : "")
-                              ).as(next_max_event_time,
-                                {
-                                  "auth_token": auth.auth_token,
-                                  "events": results.map(e, {"message": e.encode_json()}),
-                                  "cursor": {
-                                    // Keep window_start_time fixed until the final
-                                    // page succeeds so the whole window can be
-                                    // retried safely if the PIT expires.
-                                    "window_start_time": has_more ?
-                                      window_start_time
-                                    :
-                                      (next_max_event_time != "") ?
-                                        next_max_event_time
-                                      :
-                                        window_start_time,
-                                    "max_event_time": has_more ? next_max_event_time : "",
-                                    "pit_id": has_more ? string(body.paging.pit_id) : "",
-                                    "search_after": has_more ? string(body.paging.next_search_after) : "",
-                                  },
-                                  "want_more": has_more,
-                                }
-                              )
-                            )
+                        body.results[0].event_time.as(page_newest,
+                          state.?cursor.max_event_time.optMap(v,
+                            timestamp(v) > timestamp(page_newest) ? v : page_newest
+                          ).orValue(page_newest).as(next_max_event_time,
+                            {
+                              "auth_token": auth.auth_token,
+                              "events": body.results.map(e, {"message": e.encode_json()}),
+                              "cursor": {
+                                "window_start_time": has_more ?
+                                  window_start_time
+                                :
+                                  next_max_event_time,
+                                ?"max_event_time": has_more ? optional.of(next_max_event_time) : optional.none(),
+                                ?"pit_id": has_more ? optional.of(string(body.paging.pit_id)) : optional.none(),
+                                ?"search_after": has_more ? optional.of(string(body.paging.next_search_after)) : optional.none(),
+                              },
+                              "want_more": has_more,
+                            }
                           )
                         )
                       )
-                    )
                   )
                 : (resp.StatusCode == 401) ?
                   {
@@ -201,6 +186,7 @@ program: |-
                   }
                 : (resp.StatusCode == 429) ?
                   {
+                    "auth_token": auth.auth_token,
                     "events": [],
                     "want_more": false,
                   }
@@ -213,9 +199,7 @@ program: |-
                     "events": [{"retry": true}],
                     "cursor": {
                       "window_start_time": window_start_time,
-                      "max_event_time": state.?cursor.max_event_time.orValue(""),
-                      "pit_id": "",
-                      "search_after": "",
+                      ?"max_event_time": state.?cursor.max_event_time,
                     },
                     "want_more": false,
                   }
