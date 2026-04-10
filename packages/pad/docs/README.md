@@ -155,12 +155,11 @@ To customize the datafeed query and other settings such as model memory limit, f
 
 ## v2.0.0 and beyond
 
-v2.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
+v2.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
 
-- The new ML jobs include an `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
 - Previously installed ML jobs, transforms, and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
-- We recommend installing the new ML jobs and transforms and verifying that they are properly set up, collecting data, and generating anomalies.
-- **Important**: New matching `_ea` detection rules for all supported stack versions will be available only after stack version 9.4 is publicly released. Continue to run your existing ML jobs and rules, without the `_ea` suffix, until then.
+- **Important**: We recommend installing the new ML jobs and transforms and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
 - The new Entity Analytics transforms write to separate destination indices postfixed with `_ea`. Create a new data view for the Entity Analytics anomaly detection jobs using the new destination indices/aliases listed below. Do not mix old and new transform destination indices in the same data view.
 - New dashboards are available in this version with the suffix "(Entity Analytics)" in the title. If you are still running jobs or transforms from before this version, the original dashboards without the suffix remain available.
 
@@ -190,6 +189,34 @@ The new Entity Analytics ML job IDs are:
 The new Entity Analytics transforms are:
 - `pad.pivot_transform_okta_sessions_ea` → destination index: `ml_okta_multiple_user_sessions_pad_ea-2.0.0`, alias: `ml_okta_multiple_user_sessions_pad_ea.latest`, `ml_okta_multiple_user_sessions_pad_ea.all`
 - `pad.pivot_transform_win_privilege_list_ea` → destination index: `ml_windows_privilege_type_pad_ea-2.0.0`, alias: `ml_windows_privilege_type_pad_ea.latest`, `ml_windows_privilege_type_pad_ea.all`
+
+After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `pad_windows_high_count_special_logon_events`
+    - `pad_windows_high_count_special_privilege_use_events`
+    - `pad_windows_high_count_group_management_events`
+    - `pad_windows_high_count_user_account_management_events`
+    - `pad_windows_rare_privilege_assigned_to_user`
+    - `pad_windows_rare_group_name_by_user`
+    - `pad_windows_rare_device_by_user`
+    - `pad_windows_rare_source_ip_by_user`
+    - `pad_windows_rare_region_name_by_user`
+    - `pad_linux_high_count_privileged_process_events_by_user`
+    - `pad_linux_rare_process_executed_by_user`
+    - `pad_linux_high_median_process_command_line_entropy_by_user`
+    - `pad_okta_spike_in_group_membership_changes`
+    - `pad_okta_spike_in_user_lifecycle_management_changes`
+    - `pad_okta_spike_in_group_privilege_changes`
+    - `pad_okta_spike_in_group_application_assignment_changes`
+    - `pad_okta_spike_in_group_lifecycle_changes`
+    - `pad_okta_high_sum_concurrent_sessions_by_user`
+    - `pad_okta_rare_source_ip_by_user`
+    - `pad_okta_rare_region_name_by_user`
+    - `pad_okta_rare_host_name_by_user`
+- Delete old transforms: Navigate to **Stack Management -> Data -> Transforms** and delete:
+    - `pad.pivot_transform_okta_multiple_sessions`
+    - `pad.pivot_transform_windows_privilege_list`
 
 ## Licensing
 

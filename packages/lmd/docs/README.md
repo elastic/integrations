@@ -179,12 +179,11 @@ To customize the datafeed query and other settings such as model memory limit, f
 
 ## v3.0.0 and beyond
 
-v3.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
+v3.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
 
-- The new ML jobs include an `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
 - Previously installed ML jobs, transforms, and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
-- We recommend installing the new ML jobs and transforms and verifying that they are properly set up, collecting data, and generating anomalies.
-- **Important**: New matching `_ea` detection rules for all supported stack versions will be available only after stack version 9.4 is publicly released. Continue to run your existing ML jobs and rules, without the `_ea` suffix, until then.
+- **Important**: We recommend installing the new ML jobs and transforms and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
 - The new Entity Analytics transforms write to separate destination indices postfixed with `_ea`. Create a new data view for the Entity Analytics anomaly detection jobs using the new destination indices/aliases listed below. Do not mix old and new transform destination indices in the same data view.
 - New dashboards are available in this version with the suffix "(Entity Analytics)" in the title. If you are still running jobs or transforms from before this version, the original dashboards without the suffix remain available.
 
@@ -203,6 +202,23 @@ The new Entity Analytics ML job IDs are:
 
 The new Entity Analytics transforms are:
 - `lmd.pivot_transform_ea` → destination index: `ml-rdp-lmd_ea`
+
+After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `lmd_high_count_remote_file_transfer`
+    - `lmd_high_file_size_remote_file_transfer`
+    - `lmd_rare_file_extension_remote_transfer`
+    - `lmd_rare_file_path_remote_transfer`
+    - `lmd_high_mean_rdp_session_duration`
+    - `lmd_high_var_rdp_session_duration`
+    - `lmd_high_sum_rdp_number_of_processes`
+    - `lmd_unusual_time_weekday_rdp_session_start`
+    - `lmd_high_rdp_distinct_count_source_ip_for_destination`
+    - `lmd_high_rdp_distinct_count_destination_ip_for_source`
+    - `lmd_high_mean_rdp_process_args`
+- Delete old transforms: Navigate to **Stack Management -> Data -> Transforms** and delete:
+    - `lmd.pivot_transform`
 
 ## v2.0.0 and beyond
 

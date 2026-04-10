@@ -109,15 +109,19 @@ To customize the datafeed query and other settings such as model memory limit, f
 
 ## v3.0.0 and beyond
 
-v3.0.0 of the package introduces support for Entity Analytics (EA) in Elastic Stack version 9.4, adding new fields for proper entity resolution.
+v3.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
 
-- The new ML jobs include an `_ea` suffix in their names, as outlined below. New detection rules are also included.
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. New detection rules are also included.
 - Previously installed ML jobs and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
-- We recommend installing the new ML jobs and verifying that they are properly set up, collecting data, and generating anomalies.
-- **Important**: New matching `_ea` detection rules for all supported stack versions will be available only after stack version 9.4 is publicly released. Continue to run your existing ML jobs and rules, without the `_ea` suffix, until then.
+- **Important**: We recommend installing the new ML jobs and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
 
 The new Entity Analytics ML job IDs are:
 - `dga_high_sum_probability_ea`
+
+After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `dga_high_sum_probability`
 
 ## v2.0.0 and beyond
 
