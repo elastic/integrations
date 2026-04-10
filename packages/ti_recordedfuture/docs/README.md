@@ -445,7 +445,7 @@ An example event for `triggered_alert` looks as following:
 | recordedfuture.triggered_alert.rule.id |  | keyword |
 | recordedfuture.triggered_alert.rule.name |  | keyword |
 | recordedfuture.triggered_alert.rule.url.portal |  | keyword |
-| recordedfuture.triggered_alert.rule.use_case_deprecation |  | keyword |
+| recordedfuture.triggered_alert.rule.use_case_deprecation.description |  | keyword |
 | recordedfuture.triggered_alert.title |  | keyword |
 | recordedfuture.triggered_alert.type |  | keyword |
 | recordedfuture.triggered_alert.url.api |  | keyword |
