@@ -1,0 +1,40 @@
+{
+    "id": "zookeeper_otel-file-descriptor-utilization-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[ZooKeeper OTel] File descriptor utilization high",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "zookeeper"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.file_descriptor.open IS NOT NULL\n  AND metrics.zookeeper.file_descriptor.limit IS NOT NULL\n// Compute FD utilization as a percentage\n| EVAL fd_pct = metrics.zookeeper.file_descriptor.open * 100.0\n  / metrics.zookeeper.file_descriptor.limit\n// Take the peak utilization per node in the time window\n| STATS max_fd_pct = MAX(fd_pct) BY host.name\n// 80% threshold — approaching the limit causes connection refusals\n// Each client connection uses one FD plus FDs for data/transaction logs\n// Adjust based on your configured FD limits\n| WHERE max_fd_pct > 80"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        }
+    }
+}
