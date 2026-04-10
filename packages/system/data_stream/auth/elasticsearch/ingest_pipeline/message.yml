@@ -51,6 +51,25 @@ processors:
       patterns:
         - '^pam_unix(%{DATA}:%{WORD:_temp.category})'
       if: ctx.message != null && ctx.message.contains('pam_unix(')
+  - grok:
+      description: Extract rhost and user from PAM key-value messages.
+      tag: grok-pam-kv
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.message != null && ctx.message.contains('rhost=')
+      patterns:
+        - 'rhost=%{IPORHOST:_temp.pam_rhost}%{SPACE}(?:user=%{DATA:_temp.pam_user})?$'
+        - 'rhost=%{SPACE}user=%{DATA:_temp.pam_user}$'
+  - grok:
+      description: Extract username from PAM password change messages.
+      tag: grok-pam-password-changed
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.message != null && ctx.message.contains('password changed for')
+      patterns:
+        - 'password changed for %{USERNAME:_temp.pam_user}$'
   - kv:
       tag: "kv_syslog_structured_semicolon_colon"
       if: ctx.syslog5424_sd != null && ctx.syslog5424_sd != ''
@@ -168,6 +187,20 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name != null
+  - rename:
+      tag: rename_pam_rhost
+      field: _temp.pam_rhost
+      target_field: source.address
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp?.pam_rhost != null && ctx.source?.address == null
+  - rename:
+      tag: rename_pam_user
+      field: _temp.pam_user
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
   - remove:
       tag: remove_temp
       field: _temp

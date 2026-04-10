@@ -1,0 +1,43 @@
+{
+    "id": "vsphere_otel-entity-status-unhealthy",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[vSphere OTel] Entity status unhealthy",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vsphere",
+            "vcenter",
+            "availability"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-vcenterreceiver.otel-*\n// Datacenter-level host, VM, and cluster counts by entity status\n// Yellow or red status indicates problems; gray may indicate disconnected\n// Combine host, VM, and cluster counts with unhealthy status\n| WHERE (vcenter.datacenter.host.count IS NOT NULL OR vcenter.datacenter.vm.count IS NOT NULL OR vcenter.datacenter.cluster.count IS NOT NULL)\n  AND attributes.status IN (\"yellow\", \"red\")\n| EVAL entity_type = CASE(vcenter.datacenter.host.count IS NOT NULL, \"host\", vcenter.datacenter.vm.count IS NOT NULL, \"vm\", \"cluster\")\n| EVAL unhealthy_count = COALESCE(vcenter.datacenter.host.count, vcenter.datacenter.vm.count, vcenter.datacenter.cluster.count)\n| WHERE unhealthy_count > 0\n| STATS total_unhealthy = SUM(unhealthy_count) BY vcenter.datacenter.name, attributes.status, entity_type\n| SORT total_unhealthy DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vcenter.datacenter.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
