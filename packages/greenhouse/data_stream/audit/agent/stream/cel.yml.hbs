@@ -149,9 +149,16 @@ program: |-
                 (resp.StatusCode == 200) ?
                   resp.Body.decode_json().as(body,
                     !body.?results[0].hasValue() ?
+                      // Empty last page signals end of window. Emit a
+                      // placeholder so the cursor advance is persisted.
                       {
                         "auth_token": auth.auth_token,
-                        "events": [],
+                        "events": [{"retry": true}],
+                        "cursor": {
+                          "window_start_time": state.?cursor.max_event_time.orValue(
+                            window_start_time
+                          ),
+                        },
                         "want_more": false,
                       }
                     :
