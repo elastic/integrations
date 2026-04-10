@@ -435,7 +435,9 @@ An example event for `triggered_alert` looks as following:
 | recordedfuture.triggered_alert.owner_organisation_details.enterprise_name |  | keyword |
 | recordedfuture.triggered_alert.owner_organisation_details.organisations.organisation_id |  | keyword |
 | recordedfuture.triggered_alert.owner_organisation_details.organisations.organisation_name |  | keyword |
-| recordedfuture.triggered_alert.primary_entity |  | keyword |
+| recordedfuture.triggered_alert.primary_entity.id |  | keyword |
+| recordedfuture.triggered_alert.primary_entity.name |  | keyword |
+| recordedfuture.triggered_alert.primary_entity.type |  | keyword |
 | recordedfuture.triggered_alert.review.assignee |  | keyword |
 | recordedfuture.triggered_alert.review.note |  | keyword |
 | recordedfuture.triggered_alert.review.status |  | keyword |
