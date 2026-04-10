@@ -1,0 +1,43 @@
+{
+    "id": "vsphere_otel-vm-memory-ballooning",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[vSphere OTel] VM memory ballooning",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vsphere",
+            "vcenter",
+            "memory"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-vcenterreceiver.otel-*\n// VM memory ballooning: host reclaiming memory from VMs indicates memory pressure\n// Any non-zero value is a concern; adjust threshold if needed for noise reduction\n| WHERE vcenter.vm.memory.ballooned IS NOT NULL AND vcenter.vm.memory.ballooned > 0\n| STATS ballooned_mib = MAX(vcenter.vm.memory.ballooned) BY vcenter.datacenter.name, vcenter.cluster.name, vcenter.host.name, vcenter.vm.name\n| SORT ballooned_mib DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vcenter.vm.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

@@ -94,6 +94,8 @@ of the OpenTelemetry ZooKeeper receiver for details on available metrics.
 
 ## SLO templates
 
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
 | SLO | Target | Window | Description |
 |-----|--------|--------|-------------|
 | **[ZooKeeper OTel] Average request latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Ensures 99.5% of 1-minute intervals show average request latency below 100 ms. |
