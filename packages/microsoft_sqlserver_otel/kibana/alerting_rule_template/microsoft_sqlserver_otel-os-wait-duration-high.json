@@ -1,0 +1,39 @@
+{
+  "id": "microsoft_sqlserver_otel-os-wait-duration-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[SQL Server OTel] OS wait duration high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "sqlserver"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-sqlserverreceiver.otel-default\n// Cumulative wait time by wait type (counter); PAGEIOLATCH_SH, WRITELOG, SOS_SCHEDULER_YIELD indicate I/O/CPU pressure\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_increase = SUM(INCREASE(metrics.sqlserver.os.wait.duration))\n  BY instance_id = COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\"),\n     wait_type = COALESCE(attributes.wait.type, wait.type, \"\")\n// Alert when wait time increased by > 60s in the window (indicates sustained waits)\n| WHERE wait_increase > 60.0\n| KEEP instance_id, wait_type, wait_increase"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "instance_id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
