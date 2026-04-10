@@ -1066,11 +1066,25 @@ processors:
       field: checkpoint.packets
       type: long
       ignore_missing: true
+      ignore_failure: true
   - rename:
       tag: rename_checkpoint_packets_to_network_packets_c4dea38a
       field: checkpoint.packets
       target_field: network.packets
       ignore_missing: true
+      if: ctx.checkpoint?.packets instanceof Number
+  - convert:
+      tag: convert_checkpoint_packet_amount_ff3e9341
+      field: checkpoint.packet_amount
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: set_network_packets_from_checkpoint_packet_amount_205f4365
+      field: network.packets
+      copy_from: checkpoint.packet_amount
+      ignore_empty_value: true
+      if: ctx.network?.packets == null && ctx.checkpoint?.packet_amount instanceof Number
   - rename:
       tag: rename_checkpoint_layer_name_to_network_name_4d820e3c
       field: checkpoint.layer_name
