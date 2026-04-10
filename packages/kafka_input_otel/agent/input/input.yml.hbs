@@ -1,0 +1,84 @@
+receivers:
+{{#if logs_topic}}
+  kafka/logs:
+    brokers:
+      - {{brokers}}
+    topic: {{logs_topic}}
+    encoding: {{encoding}}
+    protocol_version: "{{protocol_version}}"
+    group_id: {{#if logs_group_id}}{{logs_group_id}}{{else}}{{group_id}}{{/if}}
+    auth:
+      sasl:
+        mechanism: {{sasl_mechanism}}
+        username: {{sasl_username}}
+        password: {{sasl_password}}
+      tls:
+{{#if tls_enabled}}
+        insecure: false
+        insecure_skip_verify: {{tls_insecure_skip_verify}}
+{{else}}
+        insecure: true
+{{/if}}
+{{/if}}
+{{#if metrics_topic}}
+  kafka/metrics:
+    brokers:
+      - {{brokers}}
+    topic: {{metrics_topic}}
+    encoding: {{encoding}}
+    protocol_version: "{{protocol_version}}"
+    group_id: {{#if metrics_group_id}}{{metrics_group_id}}{{else}}{{group_id}}{{/if}}
+    auth:
+      sasl:
+        mechanism: {{sasl_mechanism}}
+        username: {{sasl_username}}
+        password: {{sasl_password}}
+      tls:
+{{#if tls_enabled}}
+        insecure: false
+        insecure_skip_verify: {{tls_insecure_skip_verify}}
+{{else}}
+        insecure: true
+{{/if}}
+{{/if}}
+{{#if traces_topic}}
+  kafka/traces:
+    brokers:
+      - {{brokers}}
+    topic: {{traces_topic}}
+    encoding: {{encoding}}
+    protocol_version: "{{protocol_version}}"
+    group_id: {{#if traces_group_id}}{{traces_group_id}}{{else}}{{group_id}}{{/if}}
+    auth:
+      sasl:
+        mechanism: {{sasl_mechanism}}
+        username: {{sasl_username}}
+        password: {{sasl_password}}
+      tls:
+{{#if tls_enabled}}
+        insecure: false
+        insecure_skip_verify: {{tls_insecure_skip_verify}}
+{{else}}
+        insecure: true
+{{/if}}
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+{{#if logs_topic}}
+    logs:
+      receivers: [kafka/logs]
+      processors: [resourcedetection/system]
+{{/if}}
+{{#if metrics_topic}}
+    metrics:
+      receivers: [kafka/metrics]
+      processors: [resourcedetection/system]
+{{/if}}
+{{#if traces_topic}}
+    traces:
+      receivers: [kafka/traces]
+      processors: [resourcedetection/system]
+{{/if}}
