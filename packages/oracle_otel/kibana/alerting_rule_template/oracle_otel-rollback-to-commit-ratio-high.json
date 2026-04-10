@@ -1,0 +1,38 @@
+{
+  "id": "oracle_otel-rollback-to-commit-ratio-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Oracle OTel] Rollback-to-commit ratio high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "oracle"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-oracledbreceiver.otel-*\n// user_commits and user_rollbacks are in separate TSDB groups; INCREASE for counter deltas\n| STATS delta_commits = SUM(INCREASE(oracledb.user_commits)),\n        delta_rollbacks = SUM(INCREASE(oracledb.user_rollbacks))\n        BY oracledb.instance.name, host.name\n| EVAL total_tx = delta_commits + delta_rollbacks\n| WHERE total_tx > 0\n// Ratio > 10% signals systematic transaction failures (constraint violations, timeouts)\n// Adjust threshold (e.g. 0.05 for 5%) to tune sensitivity\n| EVAL rollback_ratio_pct = ROUND(delta_rollbacks / total_tx * 100.0, 1)\n| WHERE rollback_ratio_pct > 10\n| SORT rollback_ratio_pct DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "oracledb.instance.name",
+      "termSize": 50
+    }
+  }
+}
