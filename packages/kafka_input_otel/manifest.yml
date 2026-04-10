@@ -1,0 +1,173 @@
+format_version: 3.6.0
+name: kafka_input_otel
+title: "Kafka OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect logs, metrics, and traces from Kafka-compatible brokers (including Azure Event Hub) using the OpenTelemetry kafkareceiver"
+type: input
+categories:
+  - message_queue
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_kafka_otel.svg
+    title: Kafka logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: kafkareceiver
+    title: Kafka Logs, Metrics, and Traces (OpenTelemetry)
+    description: Consume OTLP-encoded logs, metrics, and traces from Kafka-compatible brokers using the OpenTelemetry kafkareceiver
+    input: otelcol
+    template_path: input.yml.hbs
+    dynamic_signal_types: true
+    vars:
+      # Connection settings
+      - name: brokers
+        type: text
+        required: true
+        title: Broker Address
+        description: >-
+          Broker address including port (e.g. myns.servicebus.windows.net:9093 for Event Hub,
+          or kafka-broker:9092 for plain Kafka).
+        show_user: true
+      - name: protocol_version
+        type: text
+        required: false
+        title: Kafka Protocol Version
+        description: >-
+          Kafka protocol version. Azure Event Hub supports up to 2.1.
+          Plain Kafka clusters may use higher versions.
+        default: "2.1.0"
+        show_user: false
+      # Signal topics
+      - name: logs_topic
+        type: text
+        required: false
+        title: Logs Topic
+        description: >-
+          Topic name (or Event Hub name) for logs.
+          Leave empty to disable log collection.
+        show_user: true
+      - name: metrics_topic
+        type: text
+        required: false
+        title: Metrics Topic
+        description: >-
+          Topic name (or Event Hub name) for metrics.
+          Leave empty to disable metrics collection.
+        show_user: true
+      - name: traces_topic
+        type: text
+        required: false
+        title: Traces Topic
+        description: >-
+          Topic name (or Event Hub name) for traces.
+          Leave empty to disable trace collection.
+        show_user: true
+      # Encoding
+      - name: encoding
+        type: select
+        required: false
+        title: Message Encoding
+        description: >-
+          Encoding of messages on the Kafka topics.
+          EDOT's kafkareceiver only supports otlp_json and otlp_proto.
+        default: otlp_json
+        options:
+          - text: OTLP JSON
+            value: otlp_json
+          - text: OTLP Protobuf
+            value: otlp_proto
+        show_user: false
+      # Authentication
+      - name: sasl_mechanism
+        type: select
+        required: false
+        title: SASL Mechanism
+        description: >-
+          SASL authentication mechanism.
+          Use PLAIN for Azure Event Hub with connection string.
+        default: PLAIN
+        options:
+          - text: PLAIN
+            value: PLAIN
+          - text: SCRAM-SHA-256
+            value: SCRAM-SHA-256
+          - text: SCRAM-SHA-512
+            value: SCRAM-SHA-512
+        show_user: true
+      - name: sasl_username
+        type: text
+        required: false
+        title: SASL Username
+        description: >-
+          SASL username. For Azure Event Hub with PLAIN mechanism,
+          use $ConnectionString.
+        default: "$ConnectionString"
+        show_user: true
+      - name: sasl_password
+        type: password
+        required: false
+        title: SASL Password
+        description: >-
+          SASL password. For Azure Event Hub, this is the full connection string
+          (e.g. Endpoint=sb://myns.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=...).
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        show_user: true
+      # Consumer groups
+      - name: group_id
+        type: text
+        required: false
+        title: Consumer Group
+        description: >-
+          Default consumer group for all signal types.
+          For Azure Event Hub, $Default is the built-in consumer group.
+        default: "$Default"
+        show_user: false
+      - name: logs_group_id
+        type: text
+        required: false
+        title: Logs Consumer Group Override
+        description: Override consumer group for the logs topic. Falls back to the default Consumer Group if empty.
+        show_user: false
+      - name: metrics_group_id
+        type: text
+        required: false
+        title: Metrics Consumer Group Override
+        description: Override consumer group for the metrics topic. Falls back to the default Consumer Group if empty.
+        show_user: false
+      - name: traces_group_id
+        type: text
+        required: false
+        title: Traces Consumer Group Override
+        description: Override consumer group for the traces topic. Falls back to the default Consumer Group if empty.
+        show_user: false
+      # TLS
+      - name: tls_enabled
+        type: bool
+        required: false
+        title: Enable TLS
+        description: >-
+          Enable TLS for broker connections. Required for Azure Event Hub.
+          May be disabled for local/development Kafka clusters.
+        default: true
+        show_user: false
+      - name: tls_insecure_skip_verify
+        type: bool
+        required: false
+        title: Skip TLS Verification
+        description: Skip server certificate verification. Not recommended for production.
+        default: false
+        show_user: false
+owner:
+  github: elastic/ecosystem
+  type: elastic
