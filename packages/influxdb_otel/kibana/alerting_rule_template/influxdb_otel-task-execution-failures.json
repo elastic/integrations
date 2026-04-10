@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-task-execution-failures",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] Task execution failures",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "tasks"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 8,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// Task scheduler execution failure counter (cumulative)\n| WHERE COALESCE(metrics.task_scheduler_total_execute_failure, task_scheduler_total_execute_failure) IS NOT NULL\n// Detect increase in failures over the window\n| STATS min_fail = MIN(COALESCE(metrics.task_scheduler_total_execute_failure, task_scheduler_total_execute_failure)),\n    max_fail = MAX(COALESCE(metrics.task_scheduler_total_execute_failure, task_scheduler_total_execute_failure))\n  BY host.name\n| EVAL failure_increase = max_fail - min_fail\n// Alert when any new task execution failures occurred\n| WHERE failure_increase > 0"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

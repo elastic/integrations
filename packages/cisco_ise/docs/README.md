@@ -547,6 +547,7 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.radius.packet.type |  | keyword |
 | cisco_ise.log.radius_identifier |  | long |
 | cisco_ise.log.radius_packet.type |  | keyword |
+| cisco_ise.log.remote_address |  | keyword |
 | cisco_ise.log.request.latency |  | long |
 | cisco_ise.log.request.received_time |  | date |
 | cisco_ise.log.request_response.type |  | keyword |

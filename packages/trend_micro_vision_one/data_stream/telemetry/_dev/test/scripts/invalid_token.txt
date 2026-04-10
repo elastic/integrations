@@ -1,0 +1,90 @@
+# Test that a 401 Unauthorized response when listing data pipelines results in
+# an indexed error event and no telemetry data is collected.
+#
+# On first run (no cursor.pipeline_id, no hard_coded_pipeline_id), the CEL
+# program GETs /v3.0/datalake/dataPipelines. A non-200 response causes an
+# error event with want_more=false, stopping collection until the next interval.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock Trend Micro Vision One API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} tmv1-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy pointing at the mock server.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for exactly 1 document (the error event). Use a longer confirm duration
+# to verify no additional data events arrive.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# The single document should be an error event.
+exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
+stdout '^1$'
+
+# Verify the error message indicates the 401 response.
+exec jq -r '.hits.hits[0]._source.error.message' got_docs.json
+stdout 'Unauthorized'
+
+# Verify the error message indicates the failure was during pipeline listing.
+exec jq -r '.hits.hits[0]._source.error.message' got_docs.json
+stdout 'GET list pipelines'
+
+# No telemetry data events should be present.
+exec jq '[.hits.hits[]._source | select(.trend_micro_vision_one.telemetry != null)] | length' got_docs.json
+stdout '^0$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down tmv1-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  hostname: http://tmv1-mock:8080
+  api_token: wrong-api-token
+data_stream:
+  vars:
+    interval: 30s
+    preserve_original_event: true
+    enable_request_tracer: false
+-- tmv1-mock/docker-compose.yml --
+version: '2.3'
+services:
+  tmv1-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: tmv1-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- tmv1-mock/config.yml --
+rules:
+  # Data pipelines endpoint: all requests return 401 (invalid token).
+  # On first run the CEL program GETs this endpoint to discover the pipeline ID.
+  - path: /v3.0/datalake/dataPipelines
+    methods: [GET]
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"message":"Unauthorized","code":401}
