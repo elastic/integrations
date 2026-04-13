@@ -336,6 +336,14 @@ FROM logs-crowdstrike.fdr-*
 
 **Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern. Disabling **Enrich Host and User Metadata** automatically makes **Keep Original Host and User Metadata** option (`keep_metadata`) ineffective and the metadata events are retained.
 
+#### ES|QL dashboard panels
+
+The **FDR Overview** dashboards include **Top 10 hostnames** and **Event rate over time by hostname** ES|QL visualizations that use `LOOKUP JOIN` against the aidmaster lookup. They are reference examples of **query-time enrichment** that you can reuse in your own dashboards.
+
+**ES|QL result row cap:** By default, Elasticsearch returns **at most 1000 rows** for an ES|QL query. If your query does not end with an explicit `LIMIT`, results are truncated at that cap and Kibana may not make that obvious in the visualization. See [ES|QL limitations](https://www.elastic.co/docs/reference/query-languages/esql/limitations) for the authoritative limits.
+
+**What you can do:** Add an explicit `| LIMIT …` at the end of your ES|QL query when you need more rows than the default. Narrow the time range, filter hosts or indices, or clone a packaged visualization and tune the query for your environment.
+
 ## Logs
 
 ### Alert
