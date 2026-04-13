@@ -1,0 +1,47 @@
+format_version: 2.0.0
+name: spoofsentry
+title: SpoofSentry
+version: 1.0.0
+description: Ingest DMARC monitoring, spoofing detection, and takedown events from SpoofSentry
+type: integration
+categories:
+  - security
+  - email_security
+conditions:
+  kibana.version: "^8.0.0"
+  elastic.subscription: basic
+owner:
+  github: netallion
+  type: community
+icons:
+  - src: /img/spoofsentry-logo.svg
+    title: SpoofSentry
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: spoofsentry
+    title: SpoofSentry Events
+    description: Collect domain security events from SpoofSentry
+    inputs:
+      - type: http_endpoint
+        title: SpoofSentry HTTP Endpoint
+        description: Receive SpoofSentry events via HTTP
+        vars:
+          - name: listen_address
+            type: text
+            title: Listen Address
+            default: "0.0.0.0"
+          - name: listen_port
+            type: integer
+            title: Listen Port
+            default: 8089
+          - name: secret_header
+            type: text
+            title: Secret Header
+            description: Header name containing the authentication token
+            default: "Authorization"
+          - name: secret_value
+            type: password
+            title: Secret Value
+            description: Expected token value for authentication
+            secret: true
