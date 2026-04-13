@@ -1,0 +1,43 @@
+{
+    "description": "Alerts when a node's memory working set exceeds a configurable threshold. High memory usage triggers OOM kills and pod evictions. Threshold should be calibrated to your node's allocatable memory.",
+    "name": "K8s node memory saturation",
+    "rule_type_id": ".es-query",
+    "tags": [
+        "kubernetes",
+        "node-health",
+        "saturation"
+    ],
+    "schedule": {
+        "interval": "5m"
+    },
+    "alert_delay": {
+        "active": 3
+    },
+    "flapping": {
+        "enabled": true,
+        "look_back_window": 10,
+        "status_change_threshold": 4
+    },
+    "artifacts": {
+        "investigation_guide": {
+            "blob": "## Node Memory Saturation\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard to view memory usage trends (working_set, rss, available).\n3. Navigate to Pod & Container Detail filtered by the affected node to find the top memory consumers.\n4. Check for pods without memory limits or with very generous limits.\n5. Run `kubectl top pods --sort-by=memory -A` on the affected node.\n\n### Common Causes\n- Memory leaks in application containers\n- Workloads without proper memory limits\n- Too many pods scheduled on the node\n- Large in-memory caches or datasets\n\n### Tuning\n- The `memory_threshold_bytes` value (default: ~13.7 GiB) represents ~85% of a 16 GiB node.\n- Adjust based on your node's allocatable memory: `allocatable_memory * 0.85`.\n- For heterogeneous clusters, consider creating separate rules per node pool.\n\n### Escalation\nSustained memory saturation will cause OOM kills and pod evictions. Consider scaling the node pool or optimising workload memory usage."
+        }
+    },
+    "params": {
+        "searchType": "esqlQuery",
+        "esqlQuery": {
+            "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.memory.working_set IS NOT NULL\n| STATS avg_memory = AVG(k8s.node.memory.working_set)\n    BY k8s.node.name\n// Threshold in bytes — set to ~85% of your node's allocatable memory.\n// Example: for a 16 GiB node, 85% ≈ 13,743,895,347 bytes.\n// Formula: allocatable_memory_bytes * 0.85\n| EVAL memory_threshold_bytes = 13743895347\n| WHERE avg_memory > memory_threshold_bytes\n| EVAL avg_memory_gib = ROUND(avg_memory / 1073741824, 2)\n| KEEP k8s.node.name, avg_memory_gib"
+        },
+        "size": 0,
+        "threshold": [
+            0
+        ],
+        "thresholdComparator": ">",
+        "timeField": "@timestamp",
+        "timeWindowSize": 15,
+        "timeWindowUnit": "m",
+        "groupBy": "top",
+        "termField": "k8s.node.name",
+        "termSize": 20
+    }
+}

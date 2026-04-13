@@ -1,0 +1,43 @@
+{
+    "description": "Alerts when containers have a high restart count, indicating CrashLoopBackOff. Rapidly increasing restarts mean a container is repeatedly crashing and being restarted by the kubelet.",
+    "name": "K8s pod CrashLoopBackOff",
+    "rule_type_id": ".es-query",
+    "tags": [
+        "kubernetes",
+        "pod-health",
+        "errors"
+    ],
+    "schedule": {
+        "interval": "1m"
+    },
+    "alert_delay": {
+        "active": 3
+    },
+    "flapping": {
+        "enabled": true,
+        "look_back_window": 10,
+        "status_change_threshold": 4
+    },
+    "artifacts": {
+        "investigation_guide": {
+            "blob": "## Pod CrashLoopBackOff\n\n### Triage Steps\n1. Identify the affected pod(s) and container(s) from the alert results.\n2. Check container logs: `kubectl logs <pod> -c <container> -n <namespace> --previous` (use `--previous` to see logs from the crashed instance).\n3. Open the Pod & Container Detail dashboard filtered to the affected namespace/pod.\n4. Check the container's `last_terminated_reason` for clues (OOMKilled, Error, etc.).\n5. Verify the container image is correct and pullable.\n6. Check if ConfigMaps, Secrets, or environment variables are missing.\n\n### Common Causes\n- Application bugs causing immediate crashes\n- Missing or incorrect configuration (ConfigMaps, Secrets, env vars)\n- Missing dependencies (database not reachable, required service unavailable)\n- OOM kills (check for OOMKilled terminated reason)\n- Liveness probe misconfiguration causing healthy containers to be killed\n\n### Tuning\n- The restart threshold (default: 5) detects containers that have restarted multiple times.\n- Lower this for critical workloads; raise it for jobs or batch workloads that retry by design.\n- The `k8s.container.restarts` metric is cumulative, so long-running pods may accumulate restarts over time.\n\n### Escalation\nCrashLooping pods consume cluster resources without providing service. If the root cause isn't immediately clear from logs, escalate to the application team."
+        }
+    },
+    "params": {
+        "searchType": "esqlQuery",
+        "esqlQuery": {
+            "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.container.restarts IS NOT NULL\n| STATS\n    max_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name\n// Alert when a container has accumulated more than 5 restarts.\n// This is a cumulative count — adjust the threshold based on\n// expected restart behaviour in your environment.\n| WHERE max_restarts > 5\n| SORT max_restarts DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, max_restarts\n| LIMIT 50"
+        },
+        "size": 0,
+        "threshold": [
+            0
+        ],
+        "thresholdComparator": ">",
+        "timeField": "@timestamp",
+        "timeWindowSize": 15,
+        "timeWindowUnit": "m",
+        "groupBy": "top",
+        "termField": "k8s.pod.name",
+        "termSize": 50
+    }
+}

@@ -1,0 +1,43 @@
+{
+    "description": "Alerts when a node's average CPU usage exceeds a configurable threshold. High CPU usage causes scheduling failures, pod throttling, and degraded workload performance. Threshold should be calibrated to your node's allocatable CPU.",
+    "name": "K8s node CPU saturation",
+    "rule_type_id": ".es-query",
+    "tags": [
+        "kubernetes",
+        "node-health",
+        "saturation"
+    ],
+    "schedule": {
+        "interval": "5m"
+    },
+    "alert_delay": {
+        "active": 3
+    },
+    "flapping": {
+        "enabled": true,
+        "look_back_window": 10,
+        "status_change_threshold": 4
+    },
+    "artifacts": {
+        "investigation_guide": {
+            "blob": "## Node CPU Saturation\n\n### Triage Steps\n1. Identify the saturated node(s) from the alert results.\n2. Open the Node Performance dashboard to view CPU usage trends.\n3. Navigate to Pod & Container Detail filtered by the affected node to find the top CPU consumers.\n4. Check whether any pods lack CPU limits or have excessively high limits.\n5. Run `kubectl top pods --sort-by=cpu -A` on the affected node.\n\n### Common Causes\n- CPU-intensive workloads without proper resource limits\n- Too many pods scheduled on a single node\n- Runaway processes or infinite loops in containers\n- Insufficient cluster capacity for the workload\n\n### Tuning\n- The `cpu_threshold` value (default: 3.6 cores) represents ~90% of a 4-core node.\n- Adjust this value based on your node's allocatable CPU: `allocatable_cpu * 0.9`.\n- For heterogeneous clusters, consider creating separate rules per node pool.\n\n### Escalation\nSustained CPU saturation will cause workload degradation and scheduling failures. Consider scaling the node pool or redistributing workloads."
+        }
+    },
+    "params": {
+        "searchType": "esqlQuery",
+        "esqlQuery": {
+            "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.cpu.usage IS NOT NULL\n| STATS avg_cpu = AVG(k8s.node.cpu.usage)\n    BY k8s.node.name\n// Threshold in CPU cores — set to ~90% of your node's allocatable CPU.\n// Example: for a 4-core node with allocatable_cpu = 3.8, use 3.6.\n// For an 8-core node, use ~7.2. Adjust per your cluster sizing.\n| EVAL cpu_threshold = 3.6\n| WHERE avg_cpu > cpu_threshold\n| KEEP k8s.node.name, avg_cpu, cpu_threshold"
+        },
+        "size": 0,
+        "threshold": [
+            0
+        ],
+        "thresholdComparator": ">",
+        "timeField": "@timestamp",
+        "timeWindowSize": 15,
+        "timeWindowUnit": "m",
+        "groupBy": "top",
+        "termField": "k8s.node.name",
+        "termSize": 20
+    }
+}
