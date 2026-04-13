@@ -1,3 +1,9 @@
+{{#if singleInput}}
+{{!
+For single input, we can use a static ID because there will only be one instance of this input, 
+}}
+id: kubernetes-container-logs
+{{else}}
 {{!
   Because we use `${kubernetes.container.id}` in the ID, an instance
   of this input will be generated for every container, so `paths` must
@@ -8,12 +14,18 @@
   This ID is also mentioned in the `README.md, so if it is changed, it
   needs to be updated there as well.
 }}
-
 id: {{ inputID }}
+{{/if}}
 paths:
+{{#if singleInput}}
+{{#each pathsSingleInput}}
+  - {{this}}
+{{/each}}
+{{else}}
 {{#each paths}}
   - {{this}}
 {{/each}}
+{{/if}}
 data_stream:
   dataset: {{data_stream.dataset}}
 prospector.scanner.symlinks: {{ symlinks }}
