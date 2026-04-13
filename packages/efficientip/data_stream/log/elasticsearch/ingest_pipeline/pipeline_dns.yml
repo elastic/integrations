@@ -1,0 +1,121 @@
+---
+description: Pipeline for parsing EfficientIP DNS logs.
+processors:
+  - set:
+      field: network.protocol
+      value: dns
+  - grok:
+      field: message
+      patterns:
+        - "%{CLIENT}\\s*\\(%{GREEDYDATA}.\\)\\:\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} \\(%{IP:server.ip}\\) -> %{WORD:dns.response_code}(\\s+%{GREEDYDATA:dns_answers_data})?"
+        - "%{CLIENT}\\s+(\\(%{GREEDYDATA}.\\))?\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type}\\s+\\(%{IP:server.ip}\\)$"
+      pattern_definitions:
+        CLIENT: 'client (?:%{DATA} )?%{IP:client.ip}#%{NUMBER:client.port:long}:?'
+        VIEW: 'view %{DATA:efficient_ip.log.view}: '
+  - date:
+      field: _tmp.timestamp
+      target_field: _tmp.timestamp
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null
+      tag: date_tmp_timestamp_tz
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - dd-MMM-yyyy HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSS'Z'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: _tmp.timestamp
+      target_field: _tmp.timestamp
+      tag: date_tmp_timestamp_notz
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone == null
+      formats:
+        - dd-MMM-yyyy HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSS'Z'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - script:
+      lang: painless
+      if: "ctx.dns_answers_data != null && ctx.dns_answers_data != ''"
+      description: "Parse DNS answer records"
+      source: |
+        def answers = new ArrayList();
+        def matcher = /(\d+)\s+(\w+)\s+([\S]+)/.matcher(ctx.dns_answers_data);
+        while (matcher.find()) {
+          def answer = new HashMap();
+          answer.put('type', matcher.group(2));
+          answer.put('data', matcher.group(3));
+          answers.add(answer);
+        }
+        if (ctx.dns == null) {
+          ctx.dns = new HashMap();
+        }
+        ctx.dns.put('answers', answers);
+        if (ctx.efficient_ip?.log?.dns == null) {
+          if (ctx.efficient_ip == null) ctx.efficient_ip = new HashMap();
+          if (ctx.efficient_ip.log == null) ctx.efficient_ip.put('log', new HashMap());
+          if (ctx.efficient_ip.log.dns == null) ctx.efficient_ip.log.put('dns', new HashMap());
+        }
+        ctx.efficient_ip.log.dns.put('answers', answers);
+        ctx.remove('dns_answers_data');
+  - convert:
+      field: server.ip
+      if: ctx.server?.ip != null && ctx.server.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: server.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: related.ip
+      value: '{{{server.ip}}}'
+      if: ctx.server?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{dns.question.name}}}'
+      if: ctx.dns?.question?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - registered_domain:
+      field: "dns.question.name"
+      target_field: "dns.question"
+      if: ctx.dns?.question != null
+  - remove:
+      field:
+        - repeat_message
+        - dns.question.domain
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
