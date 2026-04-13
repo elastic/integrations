@@ -3,9 +3,7 @@
     "name": "K8s node not ready",
     "rule_type_id": ".es-query",
     "tags": [
-        "kubernetes",
-        "node-health",
-        "infrastructure"
+        "Kubernetes"
     ],
     "schedule": {
         "interval": "1m"
@@ -26,7 +24,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n| STATS latest_ready = MAX(k8s.node.condition_ready)\n    BY k8s.node.name\n// Alert on any node where condition_ready is 0 (NotReady)\n| WHERE latest_ready == 0"
+            "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n| STATS all_ready = MIN(k8s.node.condition_ready)\n    BY k8s.node.name\n// Alert on any node where condition_ready is 0 (NotReady)\n| WHERE all_ready == 0"
         },
         "size": 0,
         "threshold": [
@@ -34,7 +32,7 @@
         ],
         "thresholdComparator": ">",
         "timeField": "@timestamp",
-        "timeWindowSize": 5,
+        "timeWindowSize": 1,
         "timeWindowUnit": "m",
         "groupBy": "top",
         "termField": "k8s.node.name",
