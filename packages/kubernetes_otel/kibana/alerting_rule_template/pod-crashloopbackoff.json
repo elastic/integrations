@@ -26,7 +26,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.container.restarts IS NOT NULL\n| STATS\n    max_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name\n// Alert when a container has accumulated more than 5 restarts.\n// This is a cumulative count — adjust the threshold based on\n// expected restart behaviour in your environment.\n| WHERE max_restarts > 5\n| SORT max_restarts DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, max_restarts\n| LIMIT 50"
+            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| STATS restart_rate = MAX(RATE(k8s.container.restarts))\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name\n// restart_rate is restarts per second. Any non-zero rate means\n// the container is actively restarting. Combined with alert_delay\n// of 3 consecutive evaluations, this catches sustained crash loops\n// without firing on historical restart counts or one-off restarts.\n| WHERE restart_rate > 0\n| SORT restart_rate DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, restart_rate\n| LIMIT 50"
         },
         "size": 0,
         "threshold": [
@@ -34,7 +34,7 @@
         ],
         "thresholdComparator": ">",
         "timeField": "@timestamp",
-        "timeWindowSize": 15,
+        "timeWindowSize": 1,
         "timeWindowUnit": "m",
         "groupBy": "top",
         "termField": "k8s.pod.name",
