@@ -3,9 +3,7 @@
     "name": "K8s node memory saturation",
     "rule_type_id": ".es-query",
     "tags": [
-        "kubernetes",
-        "node-health",
-        "saturation"
+        "Kubernetes"
     ],
     "schedule": {
         "interval": "5m"
@@ -20,7 +18,7 @@
     },
     "artifacts": {
         "investigation_guide": {
-            "blob": "## Node Memory Saturation\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard to view memory usage trends (working_set, rss, available).\n3. Navigate to Pod & Container Detail filtered by the affected node to find the top memory consumers.\n4. Check for pods without memory limits or with very generous limits.\n5. Run `kubectl top pods --sort-by=memory -A` on the affected node.\n\n### Common Causes\n- Memory leaks in application containers\n- Workloads without proper memory limits\n- Too many pods scheduled on the node\n- Large in-memory caches or datasets\n\n### Tuning\n- The `memory_threshold_bytes` value (default: ~13.7 GiB) represents ~85% of a 16 GiB node.\n- Adjust based on your node's allocatable memory: `allocatable_memory * 0.85`.\n- For heterogeneous clusters, consider creating separate rules per node pool.\n\n### Escalation\nSustained memory saturation will cause OOM kills and pod evictions. Consider scaling the node pool or optimising workload memory usage."
+            "blob": "## Node Memory Saturation\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard to view memory usage trends (working_set, rss, available).\n3. Navigate to Pod & Container Detail filtered by the affected node to find the top memory consumers.\n4. Check for pods without memory limits or with very generous limits.\n5. Run `kubectl top pods --sort-by=memory -A` on the affected node.\n\n### Common Causes\n- Memory leaks in application containers\n- Workloads without proper memory limits\n- Too many pods scheduled on the node\n- Large in-memory caches or datasets\n\n### Tuning\n- The default threshold is 85% of allocatable memory. Adjust based on your tolerance.\n- For heterogeneous clusters, consider creating separate rules per node pool.\n\n### Escalation\nSustained memory saturation will cause OOM kills and pod evictions. Consider scaling the node pool or optimising workload memory usage."
         }
     },
     "params": {

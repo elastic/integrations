@@ -3,9 +3,7 @@
     "name": "K8s node CPU saturation",
     "rule_type_id": ".es-query",
     "tags": [
-        "kubernetes",
-        "node-health",
-        "saturation"
+        "Kubernetes"
     ],
     "schedule": {
         "interval": "5m"
@@ -20,7 +18,7 @@
     },
     "artifacts": {
         "investigation_guide": {
-            "blob": "## Node CPU Saturation\n\n### Triage Steps\n1. Identify the saturated node(s) from the alert results.\n2. Open the Node Performance dashboard to view CPU usage trends.\n3. Navigate to Pod & Container Detail filtered by the affected node to find the top CPU consumers.\n4. Check whether any pods lack CPU limits or have excessively high limits.\n5. Run `kubectl top pods --sort-by=cpu -A` on the affected node.\n\n### Common Causes\n- CPU-intensive workloads without proper resource limits\n- Too many pods scheduled on a single node\n- Runaway processes or infinite loops in containers\n- Insufficient cluster capacity for the workload\n\n### Tuning\n- The `cpu_threshold` value (default: 3.6 cores) represents ~90% of a 4-core node.\n- Adjust this value based on your node's allocatable CPU: `allocatable_cpu * 0.9`.\n- For heterogeneous clusters, consider creating separate rules per node pool.\n\n### Escalation\nSustained CPU saturation will cause workload degradation and scheduling failures. Consider scaling the node pool or redistributing workloads."
+            "blob": "## Node CPU Saturation\n\n### Triage Steps\n1. Identify the saturated node(s) from the alert results.\n2. Open the Node Performance dashboard to view CPU usage trends.\n3. Navigate to Pod & Container Detail filtered by the affected node to find the top CPU consumers.\n4. Check whether any pods lack CPU limits or have excessively high limits.\n5. Run `kubectl top pods --sort-by=cpu -A` on the affected node.\n\n### Common Causes\n- CPU-intensive workloads without proper resource limits\n- Too many pods scheduled on a single node\n- Runaway processes or infinite loops in containers\n- Insufficient cluster capacity for the workload\n\n### Tuning\n- The default threshold is 90% of allocatable CPU. Adjust based on your tolerance.\n- For heterogeneous clusters, consider creating separate rules per node pool.\n\n### Escalation\nSustained CPU saturation will cause workload degradation and scheduling failures. Consider scaling the node pool or redistributing workloads."
         }
     },
     "params": {
