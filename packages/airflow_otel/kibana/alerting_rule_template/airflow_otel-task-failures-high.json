@@ -1,0 +1,36 @@
+{
+  "id": "airflow_otel-task-failures-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Airflow OTel] Task failures above threshold",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "airflow",
+      "tasks"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.ti_failures IS NOT NULL\n// Sum task instance failures in the time window\n| STATS failure_count = SUM(airflow.ti_failures)\n// Adjust threshold (10) for your expected failure volume\n| WHERE failure_count > 10"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

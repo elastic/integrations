@@ -492,6 +492,13 @@ processors:
       value: '{{{watchguard_firebox.log.domain}}}'
       allow_duplicates: false
       if: ctx.watchguard_firebox?.log?.domain != null
+  - grok:
+      field: watchguard_firebox.log.duration
+      tag: grok_parse_duration_value
+      patterns:
+        - '%{NUMBER:watchguard_firebox.log.duration}'
+      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: watchguard_firebox.log.duration
       tag: convert_duration_to_long

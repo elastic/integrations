@@ -4,6 +4,11 @@ source:
     - "logs-crowdstrike.fdr-*"
   query:
     bool:
+      must_not:
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
       minimum_should_match: 1
       should:
         - wildcard:
@@ -22,7 +27,7 @@ latest:
   sort: "@timestamp"
 description: >-
   Latest host metadata from CrowdStrike FDR aidmaster objects for lookup joins.
-frequency: 30s
+frequency: 1h
 settings:
   # This is required to prevent the transform from clobbering Fleet-managed mappings.
   deduce_mappings: false
@@ -41,5 +46,5 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.1.1
+  fleet_transform_version: 0.2.0
   run_as_kibana_system: false
