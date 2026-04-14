@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-03-31
-**Total Core Artifacts**: 49 available + 5 in progress = 54 total variants
-**Total Queries**: 72
-**Completion Rate**: 90.7% (49/54 core artifacts fully supported)
+**Last Updated**: 2026-04-13
+**Total Core Artifacts**: 56 available + 4 in progress = 60 total variants
+**Total Queries**: 78
+**Completion Rate**: 91.7% (55/60 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved objects. Some fields are used by Kibana, while others are used by Osquery/Fleet.
 - **`attributes.platform`**: Target OS. Single platform is one of `windows`, `linux`, `darwin`. Cross-platform uses a comma-separated list (alphabetical, e.g. `darwin,linux,windows`).
-- **`coreMigrationVersion`**: Kibana saved object migration version (not the Elastic Agent minimum version). Agent requirements (e.g. "Elastic Agent v9.3.0+") are documented in the query description and/or implementation notes.
-- **`version`**: Kibana saved object version metadata from export; this is not a semantic "query version".
+- **`coreMigrationVersion`**: Kibana saved object migration version (not the Elastic Agent minimum version). Agent requirements (e.g. “Elastic Agent v9.3.0+”) are documented in the query description and/or implementation notes.
+- **`version`**: Kibana saved object version metadata from export; this is not a semantic “query version”.
 
 ---
 
@@ -22,8 +22,8 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 
 | Status                             | Count | Percentage |
 |------------------------------------|-------|------------|
-| ✅ Available (Fully Supported)      | 49    | 90.7%      |
-| ⚠️ In Progress (Needs Validation)  | 5     | 9.3%       |
+| ✅ Available (Fully Supported)      | 56    | 91.7%      |
+| ⚠️ In Progress (Needs Validation)  | 4     | 8.3%       |
 
 ---
 
@@ -32,7 +32,13 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 | #   | Artifact                              | ✓ | OS    | Query                                      | File                                                                                             | Implementation Notes                                                                                                                                                                                                                       |
 |-----|---------------------------------------|---|-------|--------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1   | AppCompatCache                        | ✅ | Win   | appcompatcache_shimcache_windows_elastic   | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)     | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                  |
-| 2   | AmCache                               | ⚠️ | Win   | -                                          | -                                                                                                | In progress                                                                                                                                                                                                                                |
+| 2   | AmCache (Applications)                | ✅ | Win   | amcache_application_forensics_windows_elastic | [5b2e](kibana/osquery_saved_query/osquery_manager-5b2e3867-a277-4269-b3eb-9158d10965df.json)     | Combined application + file inventory via `elastic_amcache_applications_view`. SHA1 hashes, publishers, install dates, binary types, USN, VirusTotal links. Requires Elastic Agent with osquery extension amcache support.                  |
+| 2a  | AmCache (Drivers)                     | ✅ | Win   | amcache_driver_forensics_windows_elastic    | [d55f](kibana/osquery_saved_query/osquery_manager-d55fb469-b20d-43aa-902a-f0e71cf036a6.json)     | Driver binary inventory sorted by unsigned + kernel-mode first. Detects rootkits, BYOVD, unauthorized drivers.                                                                                                                             |
+| 2b  | AmCache (Shortcuts)                   | ✅ | Win   | amcache_shortcut_windows_elastic           | [c138](kibana/osquery_saved_query/osquery_manager-c1382246-e840-4270-b095-677b6c6be796.json)     | Start Menu shortcut (LNK) inventory for execution evidence and persistence analysis.                                                                                                                                                        |
+| 2c  | AmCache (Device PnP)                  | ✅ | Win   | amcache_device_pnp_windows_elastic         | [5bc9](kibana/osquery_saved_query/osquery_manager-5bc9de27-6ae5-4148-b087-97d2669f6f27.json)     | Plug and Play device history (USB, Bluetooth, peripherals). Unauthorized device detection, data exfiltration investigation.                                                                                                                 |
+| 2d  | AmCache (Driver Packages)             | ✅ | Win   | amcache_driver_package_windows_elastic      | [bcef](kibana/osquery_saved_query/osquery_manager-bcef7e6e-31df-4d72-a296-2e7657f49d64.json)     | Driver package metadata: class, version, provider, directory, hardware IDs. Cross-references with driver binaries and PnP devices.                                                                                                          |
+| 2e  | AmCache (Application Enriched)       | ✅ | Win   | amcache_application_enriched_windows_elastic | [abed](kibana/osquery_saved_query/osquery_manager-abed45b1-6b61-4398-b607-a7a6b09e6dc6.json)   | Combined JOIN: applications view + shortcuts via program_id. Full app forensics with shortcut launch points. Superset of #2 and #2b.                                                                                                        |
+| 2f  | AmCache (Driver Enriched)            | ✅ | Win   | amcache_driver_enriched_windows_elastic    | [743c](kibana/osquery_saved_query/osquery_manager-743c6727-2a18-46cc-9e23-215ca38b3373.json)     | Combined JOIN: driver binaries + PnP devices via service name. Driver-to-device correlation. Superset of #2a and #2c.                                                                                                                       |
 | 3   | BITS Jobs Database                    | ✅ | Win   | bits_monitoring_windows_elastic            | [4b2e](kibana/osquery_saved_query/osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f.json)     | Not a native table, but can be queried via windows_eventlog (EventID 59)                                                                                                                                                                   |
 | 4   | Browser URL History Suspicious        | ✅ | All   | browser_history_suspicious_elastic         | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Requires Elastic Agent v9.3.0+. Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed.                                                                                |
 | 4a  | Browser URL History (Full Collection) | ✅ | All   | browser_history_elastic                    | [2a5c0d4a](kibana/osquery_saved_query/osquery_manager-2a5c0d4a-21b8-4a37-8d71-2d5d2c8a0f45.json) | Complete browser history collection for forensic analysis. Requires Elastic Agent v9.3.0+. Discovers Chrome, Edge, Firefox, Safari histories.                                                                                              |
@@ -146,7 +152,7 @@ Queries are organized by investigative goal to support both **scheduled monitori
 - ✅ **Shimcache / AppCompatCache** (Windows) - Application compatibility cache with signature-aware filtering. Query: `appcompatcache_shimcache_windows_elastic`
 - ✅ **Process Listing** (All) - Full forensic process listing with parent/child relationships. Queries: `process_listing_windows_elastic`, `process_listing_linux_elastic`, `process_listing_darwin_elastic`
 - ✅ **Suspicious Processes** (All) - LOLBins, unsigned binaries, unusual paths. Queries: `suspicious_processes_windows_elastic`, `suspicious_processes_linux_elastic`, `suspicious_processes_darwin_elastic`
-- ⚠️ **AmCache** - In Progress
+- ✅ **AmCache** (Windows) - 7 queries covering all 6 extension tables: 5 individual table queries + 2 combined JOINed queries for full-picture forensics. Requires Elastic Agent with osquery extension amcache support. Individual: `amcache_application_forensics_windows_elastic`, `amcache_driver_forensics_windows_elastic`, `amcache_driver_package_windows_elastic`, `amcache_shortcut_windows_elastic`, `amcache_device_pnp_windows_elastic`. Combined: `amcache_application_enriched_windows_elastic`, `amcache_driver_enriched_windows_elastic`
 - ✅ **Jumplists** (Windows) - User activity timeline with DestList metadata (hostname, MAC, interaction count) and LOLBin/suspicious argument detection. Requires Elastic Agent v9.3.0+. Query: `jumplists_forensics_windows_elastic`
 
 ### Persistence
@@ -200,6 +206,7 @@ Queries are organized by investigative goal to support both **scheduled monitori
 
 - ✅ **Shell / PowerShell History** (All) - See User Activity above. Queries: `powershell_history_windows_elastic`, `shell_history_linux_darwin_elastic`
 - ✅ **External Device Usage** (Linux/macOS) - USB device enumeration. Query: `usb_devices_mac_or_linux_elastic`
+- ✅ **External Device Usage** (Windows) - Amcache PnP device history (USB, Bluetooth, peripherals). Query: `amcache_device_pnp_windows_elastic`
 - ⚠️ **Sensitive Directory Access** - Partially covered by suspicious process queries (processes accessing sensitive paths). *Needs dedicated file access monitoring query*
 - ⚠️ **Screenshot Taken** (Windows) - In progress
 - ⚠️ **Large File Copies / Archival Tools** - In Progress

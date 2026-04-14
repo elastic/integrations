@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-node-storage-low",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Node storage running low",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "15m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_persistent_storage_avail IS NOT NULL\n    OR node_ephemeral_storage_avail IS NOT NULL\n| STATS\n    avg_persistent = AVG(node_persistent_storage_avail),\n    avg_ephemeral = AVG(node_ephemeral_storage_avail)\n  BY node, cluster\n| EVAL persistent_gb = ROUND(avg_persistent / 1073741824, 2)\n| EVAL ephemeral_gb = ROUND(avg_ephemeral / 1073741824, 2)\n// Alert when available storage drops below 5 GB on either volume\n// Persistent storage holds AOF/RDB snapshots; exhaustion prevents persistence\n// Ephemeral storage holds temp files and logs; exhaustion can crash processes\n// Adjust thresholds based on your node's total disk capacity\n| WHERE (persistent_gb IS NOT NULL AND persistent_gb < 5)\n    OR (ephemeral_gb IS NOT NULL AND ephemeral_gb < 5)\n| SORT persistent_gb ASC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "node",
+            "termSize": 100
+        }
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-http-api-high-error-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] HTTP API high error rate",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "api"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// HTTP API requests with response code/status\n| WHERE COALESCE(metrics.http_api_requests_total, http_api_requests_total) IS NOT NULL\n// Aggregate total and error counts per host (status != 2XX = errors)\n| STATS total = SUM(COALESCE(metrics.http_api_requests_total, http_api_requests_total)),\n    errors = SUM(COALESCE(metrics.http_api_requests_total, http_api_requests_total))\n      WHERE COALESCE(attributes.status, status) != \"2XX\"\n  BY host.name\n// Minimum sample size to avoid noisy low-traffic hosts\n| WHERE total > 10\n// Calculate error rate as percentage\n| EVAL error_rate_pct = ROUND(errors / total * 100.0, 2)\n// Alert threshold: adjust for your environment (e.g. 5%)\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

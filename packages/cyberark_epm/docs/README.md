@@ -231,7 +231,7 @@ An example event for `raw_event` looks as following:
 | cyberark_epm.raw_event.defence_action_value |  | keyword |
 | cyberark_epm.raw_event.display_name | The file display name. | keyword |
 | cyberark_epm.raw_event.evidences | The evidence related to a Threat Protection event. | flattened |
-| cyberark_epm.raw_event.exposed_users | The users who were exposed in the threat protection event. | keyword |
+| cyberark_epm.raw_event.exposed_users | The users who were exposed in the threat protection event. | flattened |
 | cyberark_epm.raw_event.file_access_permission | The file access permission. | keyword |
 | cyberark_epm.raw_event.file_description | File description of the file that triggered the event. | keyword |
 | cyberark_epm.raw_event.file_name | The name of the event file that triggered the event. | keyword |

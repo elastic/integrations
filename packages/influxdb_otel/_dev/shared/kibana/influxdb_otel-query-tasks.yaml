@@ -1,0 +1,328 @@
+# [InfluxDB OTel] Query & Tasks — Query controller, task scheduler, executor
+dashboards:
+  - id: influxdb_otel-query-tasks
+    name: '[InfluxDB OTel] Query & Tasks'
+    description: >-
+      Query controller load, memory budget, stage durations, task scheduler
+      execution, and task executor saturation.
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    filters:
+      - field: data_stream.dataset
+        equals: influxdb.otel
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+    panels:
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: influxdb_otel-overview
+            - label: HTTP & Storage
+              dashboard: influxdb_otel-http-storage
+            - label: Query & Tasks
+              dashboard: influxdb_otel-query-tasks
+
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [InfluxDB OTel] Query & Tasks
+
+            This dashboard focuses on query execution and task scheduling:
+            - Query controller: active queries by stage, memory budget
+            - Query throughput and stage durations
+            - Task scheduler: execution count, failures, schedule delay
+            - Task executor: busy workers, promise queue usage
+
+      - title: Active Queries
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE qc_all_active IS NOT NULL
+            - STATS active = MAX(LAST_OVER_TIME(qc_all_active))
+          primary:
+            field: active
+            label: Active
+            format:
+              type: number
+              decimals: 0
+
+      - title: Memory Unused
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE qc_memory_unused_bytes IS NOT NULL
+            - STATS unused = MAX(LAST_OVER_TIME(qc_memory_unused_bytes))
+          primary:
+            field: unused
+            label: QC Memory Free
+            format:
+              type: bytes
+
+      - title: Query Controller Requests
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - WHERE qc_requests_total IS NOT NULL
+            - STATS requests = MAX(qc_requests_total)
+          primary:
+            field: requests
+            label: QC Requests
+            format:
+              type: number
+              compact: true
+
+      - title: Task Executions
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - WHERE task_scheduler_total_execution_calls IS NOT NULL
+            - STATS executions = MAX(task_scheduler_total_execution_calls)
+          primary:
+            field: executions
+            label: Executions
+            format:
+              type: number
+              compact: true
+
+      - title: Task Failures
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - WHERE task_scheduler_total_execute_failure IS NOT NULL
+            - STATS failures = MAX(task_scheduler_total_execute_failure)
+          primary:
+            field: failures
+            label: Failures
+            format:
+              type: number
+              decimals: 0
+
+      - title: Workers Busy
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE task_executor_workers_busy IS NOT NULL
+            - STATS busy = MAX(LAST_OVER_TIME(task_executor_workers_busy))
+          primary:
+            field: busy
+            label: Workers Busy
+            format:
+              type: number
+              decimals: 0
+
+      - title: Query Controller Active by Stage
+        size: {w: 48, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE qc_compiling_active IS NOT NULL OR qc_queueing_active IS NOT NULL OR qc_executing_active IS NOT NULL
+            - STATS compiling = MAX(LAST_OVER_TIME(qc_compiling_active)), queueing = MAX(LAST_OVER_TIME(qc_queueing_active)), executing = MAX(LAST_OVER_TIME(qc_executing_active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: compiling
+              label: Compiling
+              format:
+                type: number
+            - field: queueing
+              label: Queueing
+              format:
+                type: number
+            - field: executing
+              label: Executing
+              format:
+                type: number
+          appearance:
+            y_left_axis:
+              title: Active Queries
+          legend:
+            visible: show
+            position: right
+
+      - title: Query Controller Memory Budget
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE qc_memory_unused_bytes IS NOT NULL
+            - STATS unused = MAX(LAST_OVER_TIME(qc_memory_unused_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: unused
+              label: Unused Bytes
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      - title: Task Executor Saturation
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE task_executor_workers_busy IS NOT NULL OR task_executor_promise_queue_usage IS NOT NULL OR task_executor_total_runs_active IS NOT NULL
+            - STATS workers_busy = MAX(LAST_OVER_TIME(task_executor_workers_busy)), queue_usage = MAX(LAST_OVER_TIME(task_executor_promise_queue_usage)), runs_active = MAX(LAST_OVER_TIME(task_executor_total_runs_active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: workers_busy
+              label: Workers Busy
+              format:
+                type: number
+            - field: queue_usage
+              label: Promise Queue
+              format:
+                type: number
+            - field: runs_active
+              label: Active Runs
+              format:
+                type: number
+          appearance:
+            y_left_axis:
+              title: Count
+          legend:
+            visible: show
+            position: right
+
+      - title: Task Executions vs Failures
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - WHERE task_scheduler_total_execution_calls IS NOT NULL OR task_scheduler_total_execute_failure IS NOT NULL
+            - STATS executions = MAX(task_scheduler_total_execution_calls), failures = MAX(task_scheduler_total_execute_failure) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: executions
+              label: Executions
+              format:
+                type: number
+            - field: failures
+              label: Failures
+              format:
+                type: number
+          appearance:
+            y_left_axis:
+              title: Count
+          legend:
+            visible: show
+            position: right
+
+      - title: BoltDB Operations
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - WHERE boltdb_reads_total IS NOT NULL OR boltdb_writes_total IS NOT NULL
+            - STATS reads = MAX(boltdb_reads_total), writes = MAX(boltdb_writes_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: reads
+              label: Reads
+              format:
+                type: number
+            - field: writes
+              label: Writes
+              format:
+                type: number
+          appearance:
+            y_left_axis:
+              title: Operations
+          legend:
+            visible: show
+            position: right
+
+      - title: Go Runtime Heap
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-influxdb.otel-*
+            - WHERE data_stream.dataset == "influxdb.otel"
+            - WHERE go_memstats_heap_inuse_bytes IS NOT NULL OR go_memstats_heap_sys_bytes IS NOT NULL
+            - STATS heap_inuse = MAX(LAST_OVER_TIME(go_memstats_heap_inuse_bytes)), heap_sys = MAX(LAST_OVER_TIME(go_memstats_heap_sys_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: heap_inuse
+              label: Heap In-Use
+              format:
+                type: bytes
+            - field: heap_sys
+              label: Heap Sys
+              format:
+                type: bytes
+          appearance:
+            y_left_axis:
+              title: Bytes
+          legend:
+            visible: show
+            position: right
