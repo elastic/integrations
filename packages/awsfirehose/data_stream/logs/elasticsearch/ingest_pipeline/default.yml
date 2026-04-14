@@ -32,8 +32,8 @@ processors:
             ctx.event.dataset = 'aws.cloudtrail';
         }
 
-        // AWS VPC Flow Logs
-        else if (message_lower.contains('"eni-') && message_lower.contains('"vpc-') && message_lower.contains('accept') || message_lower.contains('reject')) {
+        // AWS VPC Flow Logs (standard and transit gateway)
+        else if (message_lower.contains('eni-') && (message_lower.contains('accept') || message_lower.contains('reject') || message_lower.contains('nodata') || message_lower.contains('skipdata') || message_lower.contains('tgw-'))) {
             ctx.event.dataset = 'aws.vpcflow';
         }
 
