@@ -26,7 +26,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.filesystem.usage IS NOT NULL\n    AND k8s.node.filesystem.capacity IS NOT NULL\n    AND k8s.node.filesystem.capacity > 0\n| STATS\n    avg_usage = AVG(k8s.node.filesystem.usage),\n    avg_capacity = AVG(k8s.node.filesystem.capacity)\n    BY k8s.node.name\n| EVAL usage_pct = ROUND(avg_usage / avg_capacity * 100, 1)\n// Alert when filesystem usage exceeds 85% of capacity\n// Adjust this threshold based on your operational requirements\n| WHERE usage_pct > 85\n| KEEP k8s.node.name, usage_pct"
+            "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.filesystem.usage IS NOT NULL\n    AND k8s.node.filesystem.capacity IS NOT NULL\n    AND k8s.node.filesystem.capacity > 0\n| STATS\n    avg_usage = AVG(k8s.node.filesystem.usage),\n    avg_capacity = AVG(k8s.node.filesystem.capacity)\n    BY k8s.node.name\n| EVAL usage_pct = ROUND(avg_usage / avg_capacity * 100, 1)\n// Alert when filesystem usage exceeds 85% of capacity\n// Adjust this threshold based on your operational requirements\n| WHERE usage_pct > 85\n| KEEP k8s.node.name, usage_pct"
         },
         "size": 0,
         "threshold": [

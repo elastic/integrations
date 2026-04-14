@@ -26,7 +26,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.container.memory_limit_utilization IS NOT NULL\n| STATS\n    avg_util = AVG(k8s.container.memory_limit_utilization)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.name\n// Alert when average memory usage exceeds 90% of the container's limit.\n// Adjust the 0.9 threshold to tune sensitivity:\n//   0.80 = early warning (more alerts)\n//   0.95 = imminent OOMKill risk (fewer alerts)\n| WHERE avg_util > 0.9\n| EVAL util_pct = ROUND(avg_util * 100, 1)\n| SORT util_pct DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, k8s.node.name, util_pct\n| LIMIT 50"
+            "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.container.memory_limit_utilization IS NOT NULL\n| STATS\n    avg_util = AVG(k8s.container.memory_limit_utilization)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.name\n// Alert when average memory usage exceeds 90% of the container's limit.\n// Adjust the 0.9 threshold to tune sensitivity:\n//   0.80 = early warning (more alerts)\n//   0.95 = imminent OOMKill risk (fewer alerts)\n| WHERE avg_util > 0.9\n| EVAL util_pct = ROUND(avg_util * 100, 1)\n| SORT util_pct DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, k8s.node.name, util_pct\n| LIMIT 50"
         },
         "size": 0,
         "threshold": [
