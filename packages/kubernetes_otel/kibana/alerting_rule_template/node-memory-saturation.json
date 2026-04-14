@@ -26,7 +26,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.memory.working_set IS NOT NULL\n| STATS avg_memory = AVG(k8s.node.memory.working_set)\n    BY k8s.node.name\n// Threshold in bytes — set to ~85% of your node's allocatable memory.\n// Example: for a 16 GiB node, 85% ≈ 13,743,895,347 bytes.\n// Formula: allocatable_memory_bytes * 0.85\n| EVAL memory_threshold_bytes = 13743895347\n| WHERE avg_memory > memory_threshold_bytes\n| EVAL avg_memory_gib = ROUND(avg_memory / 1073741824, 2)\n| KEEP k8s.node.name, avg_memory_gib"
+            "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n| STATS avg_memory = AVG(k8s.node.memory.working_set),\n    allocatable_memory = MAX(k8s.node.allocatable_memory)\n    BY k8s.node.name\n| EVAL memory_utilization = avg_memory / allocatable_memory\n// Alert when average memory working set exceeds 85% of allocatable.\n// Adjust the threshold to suit your environment.\n//\n// Requires k8s.node.allocatable_memory from k8sclusterreceiver.\n// This metric is controlled by allocatable_types_to_report config\n// option, which must include \"memory\". Not enabled by default.\n// If unavailable, replace the utilization check with a static\n// threshold on avg_memory, e.g.: WHERE avg_memory > 13743895347\n| WHERE memory_utilization > 0.85\n| EVAL avg_memory_gib = ROUND(avg_memory / 1073741824, 2)\n| KEEP k8s.node.name, avg_memory_gib, allocatable_memory, memory_utilization"
         },
         "size": 0,
         "threshold": [
