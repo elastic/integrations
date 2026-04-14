@@ -67,7 +67,8 @@ The host running the Elastic Agent must have outbound HTTPS (port 443\) access t
 
 | Destination | Purpose |
 | :---- | :---- |
-| api.dataminr.com | For authentication and to fetch alerts from Pulse API |
+| userauth.dataminr.com | For OAuth authentication |
+| api.dataminr.com | For fetching alerts from Pulse API |
 | Fleet Server URL | Agent enrollment and policy management within the clients systems |
 
 **Note:** No inbound ports are required on the agent host.
