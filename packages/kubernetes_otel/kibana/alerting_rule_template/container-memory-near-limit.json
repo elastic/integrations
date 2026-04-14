@@ -3,9 +3,7 @@
     "name": "K8s container memory near limit",
     "rule_type_id": ".es-query",
     "tags": [
-        "kubernetes",
-        "pod-health",
-        "saturation"
+        "Kubernetes"
     ],
     "schedule": {
         "interval": "5m"
@@ -20,7 +18,7 @@
     },
     "artifacts": {
         "investigation_guide": {
-            "blob": "## Container Memory Near Limit\n\n### Triage Steps\n1. Identify the affected container(s) from the alert results.\n2. Open the Pod & Container Detail dashboard to see memory usage vs limits over time.\n3. Determine if memory is steadily climbing (leak) or spiking (load-related).\n4. Check current memory usage: `kubectl top pods -n <namespace> --containers`.\n5. Review the container's memory limit — is it set appropriately for the workload?\n\n### Common Causes\n- Memory limit too low for actual workload requirements\n- Memory leak in the application\n- Increased traffic causing higher memory consumption\n- In-memory caching growing without eviction\n- JVM heap sized too close to the container memory limit\n\n### Tuning\n- The default threshold is 90% of the memory limit (`memory_limit_utilization > 0.9`).\n- Lower to 80% for early warning; raise to 95% to reduce noise.\n- Exclude known memory-intensive containers that run close to their limits by design.\n\n### Escalation\nContainers above 90% memory utilisation are at imminent risk of OOMKill. Increase memory limits as a short-term mitigation and investigate the root cause."
+            "blob": "## Container Memory Near Limit\n\n### Triage Steps\n1. Identify the affected container(s) from the alert results.\n2. Open the Pod & Container Detail dashboard to see memory usage vs limits over time.\n3. Determine if memory is steadily climbing (leak) or spiking (load-related).\n4. Check current memory usage: `kubectl top pods -n <namespace> --containers`.\n5. Review the container's memory limit — is it set appropriately for the workload?\n\n### Common Causes\n- Memory limit too low for actual workload requirements\n- Memory leak in the application\n- Increased traffic causing higher memory consumption\n- In-memory caching growing without eviction\n- JVM heap sized too close to the container memory limit\n\n### Tuning\n- The default threshold is 90% of the memory limit.\n- Lower to 80% for early warning; raise to 95% to reduce noise.\n- Exclude known memory-intensive containers that run close to their limits by design.\n\n### Escalation\nContainers above 90% memory utilisation are at imminent risk of OOMKill. Increase memory limits as a short-term mitigation and investigate the root cause."
         }
     },
     "params": {
