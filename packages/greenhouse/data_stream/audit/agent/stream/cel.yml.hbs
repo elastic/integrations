@@ -142,8 +142,9 @@ program: |-
             {
               "Authorization": ["Bearer " + auth.auth_token.token],
               "Size": [string(int(state.batch_size))],
-              ?"Pit-Id": state.?cursor.pit_id.optMap(v, [v]),
-              ?"Search-After": state.?cursor.search_after.optMap(v, [v]),
+              // TODO: Remove empty-string check after legacy cursor state expires
+              ?"Pit-Id": state.?cursor.pit_id.optMap(v, v != "" ? [v] : []),
+              ?"Search-After": state.?cursor.search_after.optMap(v, v != "" ? [v] : []),
             }.as(headers,
               request("GET", url).with({"Header": headers}).do_request().as(resp,
                 (resp.StatusCode == 200) ?
