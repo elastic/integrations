@@ -24,7 +24,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n| STATS all_ready = MIN(k8s.node.condition_ready)\n    BY k8s.node.name\n// Alert on any node where condition_ready is 0 (NotReady)\n| WHERE all_ready == 0"
+            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n| STATS all_ready = MIN(k8s.node.condition_ready)\n    BY k8s.node.name\n// Alert on any node where condition_ready is 0 (NotReady)\n| WHERE all_ready == 0\n| EVAL status = \"NotReady\""
         },
         "size": 0,
         "threshold": [

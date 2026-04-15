@@ -24,7 +24,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS phase = LAST(k8s.pod.phase, @timestamp)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name\n// Phase 1 = Pending — alert when the pod is currently stuck waiting to be scheduled\n| WHERE phase == 1\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, phase\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
+            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS max_phase = MAX(k8s.pod.phase)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name\n// Phase 1 = Pending — alert only if the pod never progressed beyond Pending\n// in the window. If it reached Running (2) or beyond, MAX > 1 and it drops out.\n| WHERE max_phase == 1\n| EVAL status = \"Pending\"\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, status\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
         },
         "size": 0,
         "threshold": [

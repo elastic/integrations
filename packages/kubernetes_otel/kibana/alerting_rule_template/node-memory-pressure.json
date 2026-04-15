@@ -24,7 +24,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_memory_pressure IS NOT NULL\n| STATS any_pressure = MAX(k8s.node.condition_memory_pressure)\n    BY k8s.node.name\n// Alert when memory pressure is active (1 = pressure detected)\n| WHERE any_pressure == 1"
+            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_memory_pressure IS NOT NULL\n| STATS any_pressure = MAX(k8s.node.condition_memory_pressure)\n    BY k8s.node.name\n// Alert when memory pressure is active (1 = pressure detected)\n| WHERE any_pressure == 1\n| EVAL status = \"MemoryPressure\""
         },
         "size": 0,
         "threshold": [

@@ -24,7 +24,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS phases = VALUES(k8s.pod.phase)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name\n// Phase 4 = Failed — alert if any data point in the window showed Failed,\n// even if the pod has since transitioned to another phase\n| WHERE MV_CONTAINS(phases, TO_LONG(4))\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, phases\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
+            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS observed_phases = VALUES(k8s.pod.phase)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name\n// Phase 4 = Failed — alert if any data point in the window showed Failed,\n// even if the pod has since transitioned to another phase\n| WHERE MV_CONTAINS(observed_phases, TO_LONG(4))\n| EVAL status = \"Failed\"\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, status, observed_phases\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
         },
         "size": 0,
         "threshold": [
