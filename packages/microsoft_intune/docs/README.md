@@ -4,30 +4,32 @@
 
 [Microsoft Intune](https://www.microsoft.com/en-in/security/business/microsoft-intune) is a cloud-based endpoint management solution that helps organizations manage and secure their devices, applications, and data. It provides comprehensive mobile device management (MDM) and mobile application management (MAM) capabilities for iOS, Android, Windows, and macOS devices.
 
-The Microsoft Intune integration for Elastic allows you to collect audit logs using [Azure Event Hub](https://docs.microsoft.com/en-us/azure/event-hubs/), then visualize the data in Kibana. This integration provides visibility into device management activities, policy compliance, application deployments, and security events across your Intune-managed environment.
+The Microsoft Intune integration for Elastic allows you to collect audit and managed device logs using [Azure Event Hub](https://docs.microsoft.com/en-us/azure/event-hubs/), then visualize the data in Kibana. This integration provides visibility into device management activities, policy compliance, application deployments, and security events across your Intune-managed environment.
 
 ### Compatibility
 
-The Microsoft Intune integration uses Azure Event Hub to collect audit logs from Microsoft Intune.
+The Microsoft Intune integration uses Azure Event Hub to collect audit and managed device logs from Microsoft Intune.
 
 ### How it works
 
-This integration collects audit logs from Microsoft Intune by consuming events from an Azure Event Hub. Intune audit logs are forwarded to the Event Hub, and the Elastic Agent reads these events in real-time, processes them through ingest pipelines, and indexes them in Elasticsearch.
+This integration collects audit and managed device logs from Microsoft Intune by consuming events from an Azure Event Hub. Intune audit and managed device logs are forwarded to the Event Hub, and the Elastic Agent reads these events in real-time, processes them through ingest pipelines, and indexes them in Elasticsearch.
 
 ## What data does this integration collect?
 
-This integration collects Microsoft Intune audit logs.
+This integration collects Microsoft Intune audit and managed device logs.
 
 ### Supported use cases
 
-Integrating Microsoft Intune audit logs into SIEM dashboards provides centralized visibility into administrative actions and operational changes. The dashboard highlights total events, success vs. failure trends, top operations, and active actors. Breakdowns by actor type, delegated activity, and application context clarify who performed actions and under what authority. Detailed audit views, including modified properties and key event fields, support efficient investigation, governance, and compliance monitoring.
+Integrating device inventory data and Microsoft Intune audit logs into SIEM dashboards provides a unified view of endpoint posture and administrative activity. It highlights device attributes like OS, ownership, and compliance status alongside audit insights such as total events, success vs. failure trends, top operations, and active actors. Combined breakdowns by actor type and context, along with detailed inventory and audit records, enable quick assessment, efficient investigation, and improved governance and security monitoring.
 
 ## What do I need to use this integration?
 
 ### Collect data from Microsoft Azure Event Hub
 
--  Set up Azure Event Hub for Intune Audit Logs and send audit logs from Intune to Azure Event Hub. For more detail, refer to the link [here](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
-- **Note:** Select LOG > AuditLogs.
+-  Set up Azure Event Hub for Intune Audit Logs and Managed device logs and send audit logs and managed device logs from Intune to Azure Event Hub. For more detail, refer to the link [here](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
+- **Note:**
+   - Audit: Select LOG > AuditLogs.
+   - Managed Device: Select LOG > IntuneDevices.
 
 ## How do I deploy this integration?
 
@@ -65,6 +67,72 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
+
+### managed_device
+
+This is the `managed_device` dataset.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| microsoft_intune.managed_device.category | Diagnostic category indicating the type of Intune data (Devices). | keyword |
+| microsoft_intune.managed_device.operation_name | Name of the operation producing the device record. | keyword |
+| microsoft_intune.managed_device.properties.aad_tenant_id | Azure Active Directory tenant identifier associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.android_patch_level | Android security patch level installed on the device. | keyword |
+| microsoft_intune.managed_device.properties.batch_id | Identifier of the batch in which the device record was exported. | keyword |
+| microsoft_intune.managed_device.properties.category_name | Category name assigned to the device in Intune. | keyword |
+| microsoft_intune.managed_device.properties.compliant_state | Compliance status of the device as evaluated by Intune. | keyword |
+| microsoft_intune.managed_device.properties.created_date | Date and time when the device object was created in Intune. | date |
+| microsoft_intune.managed_device.properties.device_id | Unique identifier of the managed device in Intune. | keyword |
+| microsoft_intune.managed_device.properties.device_name | Human-readable name assigned to the device. | keyword |
+| microsoft_intune.managed_device.properties.device_registration_state | Registration state of the device with Intune. | keyword |
+| microsoft_intune.managed_device.properties.device_state | Current management state of the device. | keyword |
+| microsoft_intune.managed_device.properties.eas_id | Exchange ActiveSync identifier associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.encryption_status_string | Indicates whether the device storage is encrypted. | keyword |
+| microsoft_intune.managed_device.properties.graph_device_is_managed | Indicates whether the device is managed according to Microsoft Graph. | boolean |
+| microsoft_intune.managed_device.properties.imei | International Mobile Equipment Identity of the device, if applicable. | keyword |
+| microsoft_intune.managed_device.properties.in_grace_period_until | Date and time until which the device remains in compliance grace period. | date |
+| microsoft_intune.managed_device.properties.intune_account_id | Identifier of the Intune account managing the device. | keyword |
+| microsoft_intune.managed_device.properties.jail_broken | Indicates whether the device is jail-broken or rooted. | keyword |
+| microsoft_intune.managed_device.properties.join_type | Join type indicating how the device is joined to Azure AD. | keyword |
+| microsoft_intune.managed_device.properties.last_contact | Date and time when the device last communicated with Intune. | date |
+| microsoft_intune.managed_device.properties.managed_by | Management authority responsible for the device. | keyword |
+| microsoft_intune.managed_device.properties.managed_device_name | Managed device name generated by Intune. | keyword |
+| microsoft_intune.managed_device.properties.manufacturer | Name of the device manufacturer. | keyword |
+| microsoft_intune.managed_device.properties.meid | Mobile Equipment Identifier of the device, if applicable. | keyword |
+| microsoft_intune.managed_device.properties.model | Hardware model identifier reported by the device. | keyword |
+| microsoft_intune.managed_device.properties.os | Operating system platform of the device. | keyword |
+| microsoft_intune.managed_device.properties.os_version | Version of the operating system installed on the device. | keyword |
+| microsoft_intune.managed_device.properties.ownership | Ownership type of the device (Corporate or Personal). | keyword |
+| microsoft_intune.managed_device.properties.phone_number | Phone number associated with the device, if available. | keyword |
+| microsoft_intune.managed_device.properties.primary_user | Identifier of the primary user object linked to the device. | keyword |
+| microsoft_intune.managed_device.properties.reference_id | Azure Active Directory device identifier. | keyword |
+| microsoft_intune.managed_device.properties.serial_number | Serial number assigned by the device manufacturer. | keyword |
+| microsoft_intune.managed_device.properties.sku_family | Stock-keeping unit family associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.storage_free | Available free storage capacity on the device. | long |
+| microsoft_intune.managed_device.properties.storage_total | Total storage capacity available on the device. | long |
+| microsoft_intune.managed_device.properties.subscriber_carrier_network | Subscriber carrier network information for cellular devices. | keyword |
+| microsoft_intune.managed_device.properties.supervised_status_string | Indicates whether the device is supervised. | keyword |
+| microsoft_intune.managed_device.properties.upn | User Principal Name of the user associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.user_email | Email address of the primary user associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.user_name | Display name of the primary user associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.wifi_mac_address | Wi-Fi MAC address of the device network interface. | keyword |
+| microsoft_intune.managed_device.result_type | Result of the operation associated with the device record. | keyword |
+| microsoft_intune.managed_device.tenant_id | Unique identifier of the Microsoft Entra tenant associated with the device. | keyword |
+| microsoft_intune.managed_device.time | Timestamp when the device record was emitted to Azure Event Hub. | date |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| tags | User defined tags. | keyword |
+
 
 ### audit
 
