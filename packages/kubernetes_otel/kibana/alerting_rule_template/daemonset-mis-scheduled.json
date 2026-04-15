@@ -24,7 +24,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n| STATS\n    desired = MAX(k8s.daemonset.desired_scheduled_nodes),\n    current = MAX(k8s.daemonset.current_scheduled_nodes),\n    ready = MIN(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n    BY k8s.daemonset.name, k8s.namespace.name\n// Alert when pods are misscheduled OR not all desired nodes are ready\n| WHERE misscheduled > 0\n    OR ready < desired\n| EVAL not_ready = desired - ready\n| KEEP k8s.namespace.name, k8s.daemonset.name, desired, ready, not_ready, misscheduled"
+            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n| STATS\n    desired = LAST(k8s.daemonset.desired_scheduled_nodes, @timestamp),\n    current = LAST(k8s.daemonset.current_scheduled_nodes, @timestamp),\n    ready = LAST(k8s.daemonset.ready_nodes, @timestamp),\n    misscheduled = LAST(k8s.daemonset.misscheduled_nodes, @timestamp)\n    BY k8s.daemonset.name, k8s.namespace.name\n// Alert when pods are misscheduled OR not all desired nodes are ready\n| WHERE misscheduled > 0\n    OR ready < desired\n| EVAL not_ready = desired - ready\n| KEEP k8s.namespace.name, k8s.daemonset.name, desired, ready, not_ready, misscheduled"
         },
         "size": 0,
         "threshold": [

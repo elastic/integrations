@@ -24,7 +24,7 @@
     "params": {
         "searchType": "esqlQuery",
         "esqlQuery": {
-            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.desired_pods IS NOT NULL\n    AND k8s.statefulset.ready_pods IS NOT NULL\n| STATS\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready = MIN(k8s.statefulset.ready_pods)\n    BY k8s.statefulset.name, k8s.namespace.name\n// Exclude StatefulSets scaled to zero\n| WHERE desired > 0\n// Alert when ready pods are fewer than desired\n| WHERE ready < desired\n| EVAL not_ready = desired - ready\n| KEEP k8s.namespace.name, k8s.statefulset.name, desired, ready, not_ready\n| SORT not_ready DESC"
+            "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.desired_pods IS NOT NULL\n    AND k8s.statefulset.ready_pods IS NOT NULL\n| STATS\n    desired = LAST(k8s.statefulset.desired_pods, @timestamp),\n    ready = LAST(k8s.statefulset.ready_pods, @timestamp)\n    BY k8s.statefulset.name, k8s.namespace.name\n// Exclude StatefulSets scaled to zero\n| WHERE desired > 0\n// Alert when ready pods are fewer than desired\n| WHERE ready < desired\n| EVAL not_ready = desired - ready\n| KEEP k8s.namespace.name, k8s.statefulset.name, desired, ready, not_ready\n| SORT not_ready DESC"
         },
         "size": 0,
         "threshold": [
