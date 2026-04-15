@@ -30,7 +30,11 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against ActiveMQ 5.17.1 (independent from the operating system).
+This integration targets **Apache ActiveMQ Classic**. Elastic package system tests can run against **ActiveMQ Classic 6.2.2** (default) or **5.17.1** (see `_dev/deploy/variants.yml`). Use a **Java 17 or newer** JVM in the test image; ActiveMQ Classic 6.2.x requires Java 17+ on the broker, and 5.17.x runs on Java 17 for these tests.
+
+Metrics are collected through the embedded **Jolokia** endpoint (Jolokia 2.x in ActiveMQ 6.2.x). The default path (`/api/jolokia/?ignoreErrors=true&canonicalNaming=false`) matches the web console `/api` context from the upstream distribution.
+
+Log and audit parsing follow the default log line formats described below, which match the pipeline test fixtures for this package.
 
 ## What do I need to use this integration?
 
