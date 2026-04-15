@@ -28,7 +28,15 @@ program: |
       "country": [state.country],
   {{/if}}
     }.format_query()
-  ).do_request().as(resp, resp.StatusCode != 200 ?
+  ).do_request().as(resp, resp.StatusCode == 204 ?
+    state.with({
+      "events": [],
+      "want_more": false,
+      "cursor": {
+        "last_poll_date": now.format("01/02/2006"),
+      },
+    })
+  : resp.StatusCode != 200 ?
     state.with({
       "events": {
         "error": {
