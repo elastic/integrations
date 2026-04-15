@@ -1,683 +1,683 @@
 ---
 description: Pipeline for parsing Pulse Connect Secure logs
 processors:
-    - set:
-            field: ecs.version
-            value: '9.3.0'
-    - rename:
-            field: message
-            target_field: event.original
-            ignore_missing: true
-            if: ctx.event?.original == null
-    - set:
-            field: observer.vendor
-            value: Pulse Secure
-    - set:
-            field: observer.product
-            value: Pulse Secure Connect
-    - set:
-            field: observer.type
-            value: vpn
-    - grok:
-            field: event.original
-            patterns:
-                - '^%{SYSLOGTIMESTAMP:_tmp.syslog_header_timestamp} %{NOTSPACE:host.hostname}(?: %{INT})? %{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:_tmp.sender} PulseSecure: - - - %{DATE2:_tmp.device_timestamp} - %{NOTSPACE:observer.name} - \[%{IPORHOST:client.address}\] %{DATA:_tmp.actor_block} - %{GREEDYDATA:message}'
-                - '^<%{NONNEGINT:log.syslog.priority:long}>%{NONNEGINT:log.syslog.version} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:_tmp.sender} PulseSecure: - - - %{DATE2:_tmp.device_timestamp} - %{NOTSPACE:observer.name} - \[%{IPORHOST:client.address}\] %{DATA:_tmp.actor_block} - %{GREEDYDATA:message}'
-            pattern_definitions:
-                TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
-                DATE2: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
-    - grok:
-            field: _tmp.actor_block
-            patterns:
-                - '^(?:%{DATA:pulse_secure.namespace}::)?%{DATA:_tmp.principal}\(%{DATA:pulse_secure.realm}\)\[%{DATA:pulse_secure.role}\](?:\[%{DATA:pulse_secure.session.id_short}\])?$'
-            ignore_failure: true
-    - script:
-            if: ctx._tmp != null
-            lang: painless
-            source: |
-                String trimToNull(String value) {
-                    if (value == null) {
-                        return null;
-                    }
-                    value = value.trim();
-                    return value.length() == 0 ? null : value;
-                }
+  - set:
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - set:
+      field: observer.vendor
+      value: Pulse Secure
+  - set:
+      field: observer.product
+      value: Pulse Secure Connect
+  - set:
+      field: observer.type
+      value: vpn
+  - grok:
+      field: event.original
+      patterns:
+        - '^%{SYSLOGTIMESTAMP:_tmp.syslog_header_timestamp} %{NOTSPACE:host.hostname}(?: %{INT})? %{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:_tmp.sender} PulseSecure: - - - %{DATE2:_tmp.device_timestamp} - %{NOTSPACE:observer.name} - \[%{IPORHOST:client.address}\] %{DATA:_tmp.actor_block} - %{GREEDYDATA:message}'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NONNEGINT:log.syslog.version} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:_tmp.sender} PulseSecure: - - - %{DATE2:_tmp.device_timestamp} - %{NOTSPACE:observer.name} - \[%{IPORHOST:client.address}\] %{DATA:_tmp.actor_block} - %{GREEDYDATA:message}'
+      pattern_definitions:
+        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
+        DATE2: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
+  - grok:
+      field: _tmp.actor_block
+      patterns:
+        - '^(?:%{DATA:pulse_secure.namespace}::)?%{DATA:_tmp.principal}\(%{DATA:pulse_secure.realm}\)\[%{DATA:pulse_secure.role}\](?:\[%{DATA:pulse_secure.session.id_short}\])?$'
+      ignore_failure: true
+  - script:
+      if: ctx._tmp != null
+      lang: painless
+      source: |
+        String trimToNull(String value) {
+          if (value == null) {
+            return null;
+          }
+          value = value.trim();
+          return value.length() == 0 ? null : value;
+        }
 
-                List splitCommaSeparated(String raw) {
-                    raw = trimToNull(raw);
-                    if (raw == null) {
-                        return null;
-                    }
-                    List values = new ArrayList();
-                    for (String part : raw.splitOnToken(",")) {
-                        String value = trimToNull(part);
-                        if (value != null) {
-                            values.add(value);
-                        }
-                    }
-                    return values.isEmpty() ? null : values;
-                }
+        List splitCommaSeparated(String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return null;
+          }
+          List values = new ArrayList();
+          for (String part : raw.splitOnToken(",")) {
+            String value = trimToNull(part);
+            if (value != null) {
+              values.add(value);
+            }
+          }
+          return values.isEmpty() ? null : values;
+        }
 
-                String sender = trimToNull(ctx._tmp.sender);
-                if (sender != null) {
-                    if (ctx.observer == null) {
-                        ctx.observer = new HashMap();
-                    }
-                    if (/^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$/.matcher(sender).matches()) {
-                        List observerIps = new ArrayList();
-                        observerIps.add(sender);
-                        ctx.observer.ip = observerIps;
-                    } else {
-                        ctx.observer.hostname = sender;
-                    }
-                }
+        String sender = trimToNull(ctx._tmp.sender);
+        if (sender != null) {
+          if (ctx.observer == null) {
+            ctx.observer = new HashMap();
+          }
+          if (/^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$/.matcher(sender).matches()) {
+            List observerIps = new ArrayList();
+            observerIps.add(sender);
+            ctx.observer.ip = observerIps;
+          } else {
+            ctx.observer.hostname = sender;
+          }
+        }
 
-                if (ctx.pulse_secure instanceof Map) {
-                    String namespace = trimToNull(ctx.pulse_secure.namespace instanceof String ? ctx.pulse_secure.namespace : null);
-                    if (namespace == null) {
-                        ctx.pulse_secure.remove("namespace");
-                    } else {
-                        ctx.pulse_secure.namespace = namespace;
-                    }
+        if (ctx.pulse_secure instanceof Map) {
+          String namespace = trimToNull(ctx.pulse_secure.namespace instanceof String ? ctx.pulse_secure.namespace : null);
+          if (namespace == null) {
+            ctx.pulse_secure.remove("namespace");
+          } else {
+            ctx.pulse_secure.namespace = namespace;
+          }
 
-                    String realm = trimToNull(ctx.pulse_secure.realm instanceof String ? ctx.pulse_secure.realm : null);
-                    if (realm == null) {
-                        ctx.pulse_secure.remove("realm");
-                    } else {
-                        ctx.pulse_secure.realm = realm;
-                    }
+          String realm = trimToNull(ctx.pulse_secure.realm instanceof String ? ctx.pulse_secure.realm : null);
+          if (realm == null) {
+            ctx.pulse_secure.remove("realm");
+          } else {
+            ctx.pulse_secure.realm = realm;
+          }
 
-                    String role = trimToNull(ctx.pulse_secure.role instanceof String ? ctx.pulse_secure.role : null);
-                    if (role == null) {
-                        ctx.pulse_secure.remove("role");
-                    } else {
-                        ctx.pulse_secure.role = role;
-                    }
+          String role = trimToNull(ctx.pulse_secure.role instanceof String ? ctx.pulse_secure.role : null);
+          if (role == null) {
+            ctx.pulse_secure.remove("role");
+          } else {
+            ctx.pulse_secure.role = role;
+          }
 
-                    if (ctx.pulse_secure.session instanceof Map) {
-                        String shortId = trimToNull(ctx.pulse_secure.session.id_short instanceof String ? ctx.pulse_secure.session.id_short : null);
-                        if (shortId == null) {
-                            ctx.pulse_secure.session.remove("id_short");
-                        } else {
-                            ctx.pulse_secure.session.id_short = shortId;
-                        }
-                    }
-                }
+          if (ctx.pulse_secure.session instanceof Map) {
+            String shortId = trimToNull(ctx.pulse_secure.session.id_short instanceof String ? ctx.pulse_secure.session.id_short : null);
+            if (shortId == null) {
+              ctx.pulse_secure.session.remove("id_short");
+            } else {
+              ctx.pulse_secure.session.id_short = shortId;
+            }
+          }
+        }
 
-                String principal = trimToNull(ctx._tmp.principal instanceof String ? ctx._tmp.principal : null);
-                if (principal != null) {
-                    principal = principal.replace("\\\\", "\\");
-                    if (ctx.user == null) {
-                        ctx.user = new HashMap();
-                    }
-                    if (principal.contains("@")) {
-                        int atIndex = principal.indexOf("@");
-                        ctx.user.name = trimToNull(principal.substring(0, atIndex));
-                        String domain = trimToNull(principal.substring(atIndex + 1));
-                        if (domain != null) {
-                            ctx.user.domain = domain;
-                        }
-                    } else if (principal.contains("\\")) {
-                        int separator = principal.lastIndexOf("\\");
-                        String domain = trimToNull(principal.substring(0, separator));
-                        String name = trimToNull(principal.substring(separator + 1));
-                        if (domain != null) {
-                            ctx.user.domain = domain;
-                        }
-                        if (name != null) {
-                            ctx.user.name = name;
-                        }
-                    } else {
-                        ctx.user.name = principal;
-                    }
-                }
+        String principal = trimToNull(ctx._tmp.principal instanceof String ? ctx._tmp.principal : null);
+        if (principal != null) {
+          principal = principal.replace("\\\\", "\\");
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          if (principal.contains("@")) {
+            int atIndex = principal.indexOf("@");
+            ctx.user.name = trimToNull(principal.substring(0, atIndex));
+            String domain = trimToNull(principal.substring(atIndex + 1));
+            if (domain != null) {
+              ctx.user.domain = domain;
+            }
+          } else if (principal.contains("\\")) {
+            int separator = principal.lastIndexOf("\\");
+            String domain = trimToNull(principal.substring(0, separator));
+            String name = trimToNull(principal.substring(separator + 1));
+            if (domain != null) {
+              ctx.user.domain = domain;
+            }
+            if (name != null) {
+              ctx.user.name = name;
+            }
+          } else {
+            ctx.user.name = principal;
+          }
+        }
 
-                List roles = null;
-                if (ctx.pulse_secure instanceof Map && ctx.pulse_secure.role instanceof String) {
-                    roles = splitCommaSeparated(ctx.pulse_secure.role);
-                }
-                if (roles != null) {
-                    if (ctx.user == null) {
-                        ctx.user = new HashMap();
-                    }
-                    ctx.user.roles = roles;
-                }
-    - date:
-            field: _tmp.timestamp
-            target_field: '@timestamp'
-            timezone: "{{{ event.timezone }}}"
-            formats:
-                - ISO8601
-            if: ctx.event?.timezone != null
-    - date:
-            field: _tmp.timestamp
-            target_field: '@timestamp'
-            formats:
-                - ISO8601
-            if: ctx.event?.timezone == null
-    - set:
-            field: event.created
-            copy_from: '@timestamp'
-    - grok:
-            field: message
-            patterns:
-                - '^Agent login %{WORD:_tmp.auth_result} for %{DATA:_tmp.auth_target} %{SESSION} from %{IP:_tmp.auth_source_ip} with %{GREEDYDATA:user_agent.original}\.?$'
-                - '^VPN Tunneling: Session %{WORD:_tmp.session_state} for user(?: %{DATA:_tmp.vpn_user_label})?\s+%{SESSION} with %{WORD:_tmp.assigned_ip_version} address %{IP:client.nat.ip}(?:, hostname %{GREEDYDATA:host.name})?$'
-                - '^VPN Tunneling: User with IP %{IP:client.nat.ip} connected with %{WORD:pulse_secure.transport_mode} transport mode\.?$'
-                - '^Session resumed from user agent ''%{GREEDYDATA:user_agent.original}'' %{SESSION}\.?$'
-                - '^Login %{WORD:_tmp.auth_result} using auth server %{DATA:pulse_secure.auth_server.primary.name} \(%{DATA:pulse_secure.auth_server.primary.type}\)\. Reason: %{GREEDYDATA:event.reason}$'
-                - '^Login %{WORD:_tmp.auth_result}\. Reason: %{GREEDYDATA:event.reason}$'
-                - '^Primary authentication %{WORD:_tmp.auth_result} for %{DATA:_tmp.auth_target} from %{IP:_tmp.auth_source_ip}$'
-                - '^Primary authentication %{WORD:_tmp.auth_result} for %{GREEDYDATA:_tmp.auth_target}$'
-                - '^Secondary authentication %{WORD:_tmp.auth_result} for %{DATA:_tmp.secondary_auth_target} from %{IP:_tmp.auth_source_ip}$'
-                - '^Source IP realm restrictions %{DATA:_tmp.restriction_result} for %{GREEDYDATA:_tmp.restriction_target}$'
-                - '^User Limit realm restrictions %{DATA:_tmp.restriction_result} for %{GREEDYDATA:_tmp.restriction_target}$'
-                - '^Session timed out for %{DATA:_tmp.session_target} %{SESSION} due to inactivity \(last access at %{DATA:pulse_secure.session.last_access}\)\. %{GREEDYDATA:event.reason}$'
-                - '^Closed connection to %{DATA:_tmp.connection_target} after %{NUMBER:_tmp.connection_seconds:double} seconds, with %{NUMBER:pulse_secure.bandwidth.read:long} bytes read(?: \(in %{NUMBER:pulse_secure.bandwidth.read_chunks:long} chunks\))? and %{NUMBER:pulse_secure.bandwidth.written:long} bytes written(?: \(in %{NUMBER:pulse_secure.bandwidth.written_chunks:long} chunks\))?(?: %{SESSION})?\.?$'
-                - '^Logout from %{IP:_tmp.logout_ip} %{SESSION}$'
-                - '^WebRequest completed, %{WORD:http.request.method} to %{NOTSPACE:url.original} from %{IP:destination.ip} result=%{NUMBER:http.response.status_code:long} sent=%{NUMBER:pulse_secure.web_request.bytes_sent:long} received=%{NUMBER:pulse_secure.web_request.bytes_received:long} in %{NUMBER:_tmp.web_seconds:double} seconds$'
-                - '^Session:\[%{DATA:pulse_secure.session.id_short}\] for user:\[%{DATA:_tmp.deleted_user}\] with roles:\[%{DATA:_tmp.deleted_roles}\] deleted\. Bandwidth consumed \[%{DATA:_tmp.bandwidth_consumed}\] bytes$'
-                - '^Session:\[%{DATA:pulse_secure.session.id_short}\] deleted\. Bandwidth consumed \[%{DATA:_tmp.bandwidth_consumed}\] bytes$'
-                - '^:Client connection done for %{NOTSPACE:pulse_secure.session.id}, reason code %{NUMBER:pulse_secure.connection.reason_code:long}$'
-                - '^Session created for user: \[%{DATA:_tmp.created_user}\] from \[%{IP:_tmp.auth_source_ip}\] with primary auth-server type: \[%{DATA:pulse_secure.auth_server.primary.type}\], primary auth-server name: \[%{DATA:pulse_secure.auth_server.primary.name}\], secondary auth-server type: \[%{DATA:pulse_secure.auth_server.secondary.type}\], secondary auth-servername: \[%{DATA:pulse_secure.auth_server.secondary.name}\], secondary auth-server user: \[%{DATA:pulse_secure.auth_server.secondary.user}\], mac-address: \[%{DATA:client.mac}\]\.$'
-                - '^Host Checker Compliance Result - \[''%{DATA:pulse_secure.host_checker.status}''\] on host \[''%{IP:_tmp.host_checker_host}''\] from address \[''%{DATA:client.mac}''\] for user \[''%{DATA:_tmp.host_checker_user}''\], passed_hc_policies:\[''%{DATA:_tmp.hc_passed}''\], failed_hc_policies:\[''%{DATA:_tmp.hc_failed}''\], failed_reasons: \[''%{GREEDYDATA:_tmp.hc_failed_reasons}''\]\.$'
-                - '^Host Checker policy ''%{DATA:pulse_secure.host_checker.policy}'' %{WORD:_tmp.host_checker_result} on host ''%{IP:_tmp.host_checker_host}'' address ''%{DATA:client.mac}''\s+for user ''%{DATA:_tmp.host_checker_user}''(?: reason ''%{DATA:_tmp.hc_failed_reasons}'')?(?:\s+session ''%{NOTSPACE:pulse_secure.session.id}'')?\.?$'
-                - '^Connection from IP %{IP:_tmp.connection_ip} not authenticated yet \(URL=%{DATA:url.original}\)$'
-                - '^Syslog server %{IP:destination.ip} \(facility %{DATA:pulse_secure.syslog.facility}, filter %{DATA:pulse_secure.syslog.filter}, type %{WORD:pulse_secure.syslog.type}, interface %{DATA:pulse_secure.syslog.interface}\) removed from Events logs$'
-                - '^No new virus signature list available from ''%{GREEDYDATA:url.original}''\.$'
-                - '^The current virus signature list imported %{WORD:_tmp.operation_result}\.$'
-                - '^The current virus signature list downloaded %{WORD:_tmp.operation_result} from ''%{GREEDYDATA:url.original}''$'
-                - '^Integrity Checker Tool: Periodic Scan %{WORD:_tmp.integrity_phase}!$'
-                - '^Integrity Scan Completed: Integrity Scan Results : Matched Files %{NUMBER:pulse_secure.integrity.matched_files:long}, Newly Detected Files %{NUMBER:pulse_secure.integrity.new_files:long}, Mismatched Files %{NUMBER:pulse_secure.integrity.mismatched_files:long}$'
-                - '^User Accounts modified\. Removed username %{DATA:user.target.name} from authentication server %{DATA:pulse_secure.auth_server.primary.name}\.$'
-                - '^User %{DATA:_tmp.denied_user} denied access as the client version ''%{DATA:pulse_secure.client.version}'' is lower than the minimum client version configured$'
-            pattern_definitions:
-                SESSION: '\(session:\s*%{NOTSPACE:pulse_secure.session.id}\)'
-            ignore_failure: true
-    - grok:
-            field: _tmp.connection_target
-            patterns:
-                - '^%{IP:destination.ip}$'
-                - '^%{DATA:pulse_secure.connection.target} port %{INT:destination.port:long}$'
-            ignore_failure: true
-            if: ctx._tmp?.connection_target != null && ctx._tmp.connection_target != ''
-    - set:
-            field: destination.address
-            copy_from: _tmp.connection_target
-            if: ctx._tmp?.connection_target != null
-    - script:
-            if: ctx.message != null
-            lang: painless
-            source: |
-                String trimToNull(String value) {
-                    if (value == null) {
-                        return null;
-                    }
-                    value = value.trim();
-                    return value.length() == 0 ? null : value;
-                }
+        List roles = null;
+        if (ctx.pulse_secure instanceof Map && ctx.pulse_secure.role instanceof String) {
+          roles = splitCommaSeparated(ctx.pulse_secure.role);
+        }
+        if (roles != null) {
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          ctx.user.roles = roles;
+        }
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      timezone: "{{{ event.timezone }}}"
+      formats:
+        - ISO8601
+      if: ctx.event?.timezone != null
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.event?.timezone == null
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+  - grok:
+      field: message
+      patterns:
+        - '^Agent login %{WORD:_tmp.auth_result} for %{DATA:_tmp.auth_target} %{SESSION} from %{IP:_tmp.auth_source_ip} with %{GREEDYDATA:user_agent.original}\.?$'
+        - '^VPN Tunneling: Session %{WORD:_tmp.session_state} for user(?: %{DATA:_tmp.vpn_user_label})?\s+%{SESSION} with %{WORD:_tmp.assigned_ip_version} address %{IP:client.nat.ip}(?:, hostname %{GREEDYDATA:host.name})?$'
+        - '^VPN Tunneling: User with IP %{IP:client.nat.ip} connected with %{WORD:pulse_secure.transport_mode} transport mode\.?$'
+        - '^Session resumed from user agent ''%{GREEDYDATA:user_agent.original}'' %{SESSION}\.?$'
+        - '^Login %{WORD:_tmp.auth_result} using auth server %{DATA:pulse_secure.auth_server.primary.name} \(%{DATA:pulse_secure.auth_server.primary.type}\)\. Reason: %{GREEDYDATA:event.reason}$'
+        - '^Login %{WORD:_tmp.auth_result}\. Reason: %{GREEDYDATA:event.reason}$'
+        - '^Primary authentication %{WORD:_tmp.auth_result} for %{DATA:_tmp.auth_target} from %{IP:_tmp.auth_source_ip}$'
+        - '^Primary authentication %{WORD:_tmp.auth_result} for %{GREEDYDATA:_tmp.auth_target}$'
+        - '^Secondary authentication %{WORD:_tmp.auth_result} for %{DATA:_tmp.secondary_auth_target} from %{IP:_tmp.auth_source_ip}$'
+        - '^Source IP realm restrictions %{DATA:_tmp.restriction_result} for %{GREEDYDATA:_tmp.restriction_target}$'
+        - '^User Limit realm restrictions %{DATA:_tmp.restriction_result} for %{GREEDYDATA:_tmp.restriction_target}$'
+        - '^Session timed out for %{DATA:_tmp.session_target} %{SESSION} due to inactivity \(last access at %{DATA:pulse_secure.session.last_access}\)\. %{GREEDYDATA:event.reason}$'
+        - '^Closed connection to %{DATA:_tmp.connection_target} after %{NUMBER:_tmp.connection_seconds:double} seconds, with %{NUMBER:pulse_secure.bandwidth.read:long} bytes read(?: \(in %{NUMBER:pulse_secure.bandwidth.read_chunks:long} chunks\))? and %{NUMBER:pulse_secure.bandwidth.written:long} bytes written(?: \(in %{NUMBER:pulse_secure.bandwidth.written_chunks:long} chunks\))?(?: %{SESSION})?\.?$'
+        - '^Logout from %{IP:_tmp.logout_ip} %{SESSION}$'
+        - '^WebRequest completed, %{WORD:http.request.method} to %{NOTSPACE:url.original} from %{IP:destination.ip} result=%{NUMBER:http.response.status_code:long} sent=%{NUMBER:pulse_secure.web_request.bytes_sent:long} received=%{NUMBER:pulse_secure.web_request.bytes_received:long} in %{NUMBER:_tmp.web_seconds:double} seconds$'
+        - '^Session:\[%{DATA:pulse_secure.session.id_short}\] for user:\[%{DATA:_tmp.deleted_user}\] with roles:\[%{DATA:_tmp.deleted_roles}\] deleted\. Bandwidth consumed \[%{DATA:_tmp.bandwidth_consumed}\] bytes$'
+        - '^Session:\[%{DATA:pulse_secure.session.id_short}\] deleted\. Bandwidth consumed \[%{DATA:_tmp.bandwidth_consumed}\] bytes$'
+        - '^:Client connection done for %{NOTSPACE:pulse_secure.session.id}, reason code %{NUMBER:pulse_secure.connection.reason_code:long}$'
+        - '^Session created for user: \[%{DATA:_tmp.created_user}\] from \[%{IP:_tmp.auth_source_ip}\] with primary auth-server type: \[%{DATA:pulse_secure.auth_server.primary.type}\], primary auth-server name: \[%{DATA:pulse_secure.auth_server.primary.name}\], secondary auth-server type: \[%{DATA:pulse_secure.auth_server.secondary.type}\], secondary auth-servername: \[%{DATA:pulse_secure.auth_server.secondary.name}\], secondary auth-server user: \[%{DATA:pulse_secure.auth_server.secondary.user}\], mac-address: \[%{DATA:client.mac}\]\.$'
+        - '^Host Checker Compliance Result - \[''%{DATA:pulse_secure.host_checker.status}''\] on host \[''%{IP:_tmp.host_checker_host}''\] from address \[''%{DATA:client.mac}''\] for user \[''%{DATA:_tmp.host_checker_user}''\], passed_hc_policies:\[''%{DATA:_tmp.hc_passed}''\], failed_hc_policies:\[''%{DATA:_tmp.hc_failed}''\], failed_reasons: \[''%{GREEDYDATA:_tmp.hc_failed_reasons}''\]\.$'
+        - '^Host Checker policy ''%{DATA:pulse_secure.host_checker.policy}'' %{WORD:_tmp.host_checker_result} on host ''%{IP:_tmp.host_checker_host}'' address ''%{DATA:client.mac}''\s+for user ''%{DATA:_tmp.host_checker_user}''(?: reason ''%{DATA:_tmp.hc_failed_reasons}'')?(?:\s+session ''%{NOTSPACE:pulse_secure.session.id}'')?\.?$'
+        - '^Connection from IP %{IP:_tmp.connection_ip} not authenticated yet \(URL=%{DATA:url.original}\)$'
+        - '^Syslog server %{IP:destination.ip} \(facility %{DATA:pulse_secure.syslog.facility}, filter %{DATA:pulse_secure.syslog.filter}, type %{WORD:pulse_secure.syslog.type}, interface %{DATA:pulse_secure.syslog.interface}\) removed from Events logs$'
+        - '^No new virus signature list available from ''%{GREEDYDATA:url.original}''\.$'
+        - '^The current virus signature list imported %{WORD:_tmp.operation_result}\.$'
+        - '^The current virus signature list downloaded %{WORD:_tmp.operation_result} from ''%{GREEDYDATA:url.original}''$'
+        - '^Integrity Checker Tool: Periodic Scan %{WORD:_tmp.integrity_phase}!$'
+        - '^Integrity Scan Completed: Integrity Scan Results : Matched Files %{NUMBER:pulse_secure.integrity.matched_files:long}, Newly Detected Files %{NUMBER:pulse_secure.integrity.new_files:long}, Mismatched Files %{NUMBER:pulse_secure.integrity.mismatched_files:long}$'
+        - '^User Accounts modified\. Removed username %{DATA:user.target.name} from authentication server %{DATA:pulse_secure.auth_server.primary.name}\.$'
+        - '^User %{DATA:_tmp.denied_user} denied access as the client version ''%{DATA:pulse_secure.client.version}'' is lower than the minimum client version configured$'
+      pattern_definitions:
+        SESSION: '\(session:\s*%{NOTSPACE:pulse_secure.session.id}\)'
+      ignore_failure: true
+  - grok:
+      field: _tmp.connection_target
+      patterns:
+        - '^%{IP:destination.ip}$'
+        - '^%{DATA:pulse_secure.connection.target} port %{INT:destination.port:long}$'
+      ignore_failure: true
+      if: ctx._tmp?.connection_target != null && ctx._tmp.connection_target != ''
+  - set:
+      field: destination.address
+      copy_from: _tmp.connection_target
+      if: ctx._tmp?.connection_target != null
+  - script:
+      if: ctx.message != null
+      lang: painless
+      source: |
+        String trimToNull(String value) {
+          if (value == null) {
+            return null;
+          }
+          value = value.trim();
+          return value.length() == 0 ? null : value;
+        }
 
-                List list(String first, String second, String third) {
-                    List values = new ArrayList();
-                    if (first != null) {
-                        values.add(first);
-                    }
-                    if (second != null) {
-                        values.add(second);
-                    }
-                    if (third != null) {
-                        values.add(third);
-                    }
-                    return values;
-                }
+        List list(String first, String second, String third) {
+          List values = new ArrayList();
+          if (first != null) {
+            values.add(first);
+          }
+          if (second != null) {
+            values.add(second);
+          }
+          if (third != null) {
+            values.add(third);
+          }
+          return values;
+        }
 
-                List splitCommaSeparated(String raw) {
-                    raw = trimToNull(raw);
-                    if (raw == null) {
-                        return null;
-                    }
-                    List values = new ArrayList();
-                    for (String part : raw.splitOnToken(",")) {
-                        String value = trimToNull(part);
-                        if (value != null) {
-                            values.add(value);
-                        }
-                    }
-                    return values.isEmpty() ? null : values;
-                }
+        List splitCommaSeparated(String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return null;
+          }
+          List values = new ArrayList();
+          for (String part : raw.splitOnToken(",")) {
+            String value = trimToNull(part);
+            if (value != null) {
+              values.add(value);
+            }
+          }
+          return values.isEmpty() ? null : values;
+        }
 
-                List splitReasons(String raw) {
-                    raw = trimToNull(raw);
-                    if (raw == null) {
-                        return null;
-                    }
-                    List values = new ArrayList();
-                    if (raw.contains(";")) {
-                        for (String part : raw.splitOnToken(";")) {
-                            String value = trimToNull(part);
-                            if (value != null) {
-                                values.add(value);
-                            }
-                        }
-                    } else {
-                        values.add(raw);
-                    }
-                    return values.isEmpty() ? null : values;
-                }
+        List splitReasons(String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return null;
+          }
+          List values = new ArrayList();
+          if (raw.contains(";")) {
+            for (String part : raw.splitOnToken(";")) {
+              String value = trimToNull(part);
+              if (value != null) {
+                values.add(value);
+              }
+            }
+          } else {
+            values.add(raw);
+          }
+          return values.isEmpty() ? null : values;
+        }
 
-                void setOutcome(Map event, String raw) {
-                    raw = trimToNull(raw);
-                    if (raw == null) {
-                        return;
-                    }
-                    raw = raw.toLowerCase(Locale.ROOT);
-                    if (raw.contains("success") || raw.contains("succeed") || raw.contains("pass")) {
-                        event.outcome = "success";
-                    } else if (raw.contains("fail") || raw.contains("denied") || raw.contains("partial")) {
-                        event.outcome = "failure";
-                    }
-                }
+        void setOutcome(Map event, String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return;
+          }
+          raw = raw.toLowerCase(Locale.ROOT);
+          if (raw.contains("success") || raw.contains("succeed") || raw.contains("pass")) {
+            event.outcome = "success";
+          } else if (raw.contains("fail") || raw.contains("denied") || raw.contains("partial")) {
+            event.outcome = "failure";
+          }
+        }
 
-                if (ctx.event == null) {
-                    ctx.event = new HashMap();
-                }
-                ctx.event.kind = "event";
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.kind = "event";
 
-                if (ctx._tmp?.auth_target instanceof String && ctx._tmp.auth_target.endsWith(" fr")) {
-                    ctx._tmp.auth_target = ctx._tmp.auth_target.substring(0, ctx._tmp.auth_target.length() - 3);
-                }
+        if (ctx._tmp?.auth_target instanceof String && ctx._tmp.auth_target.endsWith(" fr")) {
+          ctx._tmp.auth_target = ctx._tmp.auth_target.substring(0, ctx._tmp.auth_target.length() - 3);
+        }
 
-                String message = ctx.message;
-                if (message.startsWith("Agent login ")) {
-                    ctx.event.action = "agent-login";
-                    ctx.event.category = list("authentication", null, null);
-                    ctx.event.type = list("start", null, null);
-                    setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-                } else if (message.startsWith("Primary authentication ")) {
-                    ctx.event.action = "primary-authentication";
-                    ctx.event.category = list("authentication", null, null);
-                    ctx.event.type = list("start", null, null);
-                    setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-                } else if (message.startsWith("Secondary authentication ")) {
-                    ctx.event.action = "secondary-authentication";
-                    ctx.event.category = list("authentication", null, null);
-                    ctx.event.type = list("start", null, null);
-                    setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-                    String target = trimToNull(ctx._tmp?.secondary_auth_target instanceof String ? ctx._tmp.secondary_auth_target : null);
-                    if (target != null) {
-                        int separator = target.lastIndexOf("/");
-                        if (separator > -1 && ctx.pulse_secure?.auth_server instanceof Map && ctx.pulse_secure.auth_server.secondary instanceof Map) {
-                            String method = trimToNull(target.substring(separator + 1));
-                            if (method != null) {
-                                ctx.pulse_secure.auth_server.secondary.name = method;
-                            }
-                        }
-                    }
-                } else if (message.startsWith("Login ")) {
-                    ctx.event.action = "login";
-                    ctx.event.category = list("authentication", null, null);
-                    ctx.event.type = list("start", null, null);
-                    setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-                } else if (message.startsWith("Source IP realm restrictions ")) {
-                    ctx.event.action = "source-ip-restriction-check";
-                    ctx.event.category = list("authentication", null, null);
-                    ctx.event.type = list("info", null, null);
-                    if (ctx.pulse_secure == null) {
-                        ctx.pulse_secure = new HashMap();
-                    }
-                    Map restriction = ctx.pulse_secure.restriction instanceof Map ? ctx.pulse_secure.restriction : new HashMap();
-                    restriction.type = "source_ip";
-                    ctx.pulse_secure.restriction = restriction;
-                    setOutcome(ctx.event, ctx._tmp?.restriction_result instanceof String ? ctx._tmp.restriction_result : null);
-                } else if (message.startsWith("User Limit realm restrictions ")) {
-                    ctx.event.action = "user-limit-restriction-check";
-                    ctx.event.category = list("authentication", null, null);
-                    ctx.event.type = list("info", null, null);
-                    if (ctx.pulse_secure == null) {
-                        ctx.pulse_secure = new HashMap();
-                    }
-                    Map restriction = ctx.pulse_secure.restriction instanceof Map ? ctx.pulse_secure.restriction : new HashMap();
-                    restriction.type = "user_limit";
-                    ctx.pulse_secure.restriction = restriction;
-                    setOutcome(ctx.event, ctx._tmp?.restriction_result instanceof String ? ctx._tmp.restriction_result : null);
-                } else if (message.startsWith("VPN Tunneling: Session started")) {
-                    ctx.event.action = "vpn-session-start";
-                    ctx.event.category = list("network", "session", null);
-                    ctx.event.type = list("connection", "start", null);
-                    ctx.event.outcome = "success";
-                } else if (message.startsWith("VPN Tunneling: Session ended")) {
-                    ctx.event.action = "vpn-session-end";
-                    ctx.event.category = list("network", "session", null);
-                    ctx.event.type = list("connection", "end", null);
-                } else if (message.startsWith("VPN Tunneling: User with IP ")) {
-                    ctx.event.action = "vpn-tunnel-connected";
-                    ctx.event.category = list("network", "session", null);
-                    ctx.event.type = list("connection", "info", null);
-                } else if (message.startsWith("Session resumed")) {
-                    ctx.event.action = "session-resumed";
-                    ctx.event.category = list("session", null, null);
-                    ctx.event.type = list("info", null, null);
-                } else if (message.startsWith("Session timed out")) {
-                    ctx.event.action = "session-timeout";
-                    ctx.event.category = list("session", null, null);
-                    ctx.event.type = list("end", null, null);
-                    if (ctx.event.reason == null) {
-                        ctx.event.reason = "Idle session identified during routine system scan";
-                    }
-                } else if (message.startsWith("Closed connection to ")) {
-                    ctx.event.action = "connection-closed";
-                    ctx.event.category = list("network", "session", null);
-                    ctx.event.type = list("connection", "end", null);
-                    if (ctx._tmp?.connection_seconds != null) {
-                        ctx.event.duration = (long) Math.round(((double) ctx._tmp.connection_seconds) * 1000000000L);
-                    }
-                    long readBytes = ctx.pulse_secure?.bandwidth?.read instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.read).longValue() : 0L;
-                    long writtenBytes = ctx.pulse_secure?.bandwidth?.written instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.written).longValue() : 0L;
-                    if (readBytes > 0L || writtenBytes > 0L) {
-                        ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-                        ctx.network.bytes = readBytes + writtenBytes;
-                    }
-                } else if (message.startsWith("Logout from ")) {
-                    ctx.event.action = "logout";
-                    ctx.event.category = list("authentication", "session", null);
-                    ctx.event.type = list("end", null, null);
-                    ctx.event.outcome = "success";
-                } else if (message.startsWith("WebRequest completed,")) {
-                    ctx.event.action = "web-request-completed";
-                    ctx.event.category = list("web", "network", null);
-                    ctx.event.type = list("access", "info", null);
-                    if (ctx._tmp?.web_seconds != null) {
-                        ctx.event.duration = (long) Math.round(((double) ctx._tmp.web_seconds) * 1000000000L);
-                    }
-                    long sent = ctx.pulse_secure?.web_request?.bytes_sent instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_sent).longValue() : 0L;
-                    long received = ctx.pulse_secure?.web_request?.bytes_received instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_received).longValue() : 0L;
-                    if (sent > 0L || received > 0L) {
-                        ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-                        ctx.network.bytes = sent + received;
-                    }
-                } else if (message.startsWith("Session:[")) {
-                    ctx.event.action = "session-deleted";
-                    ctx.event.category = list("session", null, null);
-                    ctx.event.type = list("end", null, null);
-                    String consumed = trimToNull(ctx._tmp?.bandwidth_consumed instanceof String ? ctx._tmp.bandwidth_consumed : null);
-                    if (consumed != null) {
-                        ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
-                        Map bandwidth = ctx.pulse_secure.bandwidth instanceof Map ? ctx.pulse_secure.bandwidth : new HashMap();
-                        bandwidth.consumed = Long.parseLong(consumed);
-                        ctx.pulse_secure.bandwidth = bandwidth;
-                        ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-                        ctx.network.bytes = bandwidth.consumed;
-                    }
-                    if (ctx.user == null) {
-                        ctx.user = new HashMap();
-                    }
-                    String deletedUser = trimToNull(ctx._tmp?.deleted_user instanceof String ? ctx._tmp.deleted_user : null);
-                    if (deletedUser != null && ctx.user.name == null) {
-                        ctx.user.name = deletedUser;
-                    }
-                    if (ctx.user.roles == null) {
-                        List deletedRoles = splitCommaSeparated(ctx._tmp?.deleted_roles instanceof String ? ctx._tmp.deleted_roles : null);
-                        if (deletedRoles != null) {
-                            ctx.user.roles = deletedRoles;
-                        }
-                    }
-                } else if (message.startsWith(":Client connection done")) {
-                    ctx.event.action = "client-connection-done";
-                    ctx.event.category = list("session", "network", null);
-                    ctx.event.type = list("end", "info", null);
-                } else if (message.startsWith("Session created for user:")) {
-                    ctx.event.action = "session-created";
-                    ctx.event.category = list("session", "authentication", null);
-                    ctx.event.type = list("start", "info", null);
-                    ctx.event.outcome = "success";
-                } else if (message.startsWith("Host Checker Compliance Result")) {
-                    ctx.event.action = "host-checker-compliance";
-                    ctx.event.category = list("host", null, null);
-                    ctx.event.type = list("info", null, null);
-                    setOutcome(ctx.event, ctx.pulse_secure?.host_checker?.status instanceof String ? ctx.pulse_secure.host_checker.status : null);
-                } else if (message.startsWith("Host Checker policy ")) {
-                    ctx.event.action = "host-checker-policy";
-                    ctx.event.category = list("host", null, null);
-                    ctx.event.type = list("info", null, null);
-                    setOutcome(ctx.event, ctx._tmp?.host_checker_result instanceof String ? ctx._tmp.host_checker_result : null);
-                } else if (message.startsWith("Connection from IP ")) {
-                    ctx.event.action = "unauthenticated-connection";
-                    ctx.event.category = list("authentication", "network", null);
-                    ctx.event.type = list("info", null, null);
-                    ctx.event.outcome = "failure";
-                    String connectionIp = trimToNull(ctx._tmp?.connection_ip instanceof String ? ctx._tmp.connection_ip : null);
-                    if (connectionIp != null) {
-                        ctx.client = ctx.client instanceof Map ? ctx.client : new HashMap();
-                        ctx.client.address = connectionIp;
-                        ctx.client.ip = connectionIp;
-                    }
-                    if (ctx.url == null) {
-                        ctx.url = new HashMap();
-                    }
-                    if (ctx.url.original instanceof String && ((String) ctx.url.original).startsWith("/")) {
-                        ctx.url.path = ctx.url.original;
-                    }
-                } else if (message.startsWith("Syslog server ")) {
-                    ctx.event.action = "syslog-server-removed";
-                    ctx.event.category = list("configuration", null, null);
-                    ctx.event.type = list("change", null, null);
-                } else if (message.startsWith("No new virus signature list")) {
-                    ctx.event.action = "virus-signature-check";
-                    ctx.event.category = list("configuration", null, null);
-                    ctx.event.type = list("info", null, null);
-                } else if (message.startsWith("The current virus signature list imported")) {
-                    ctx.event.action = "virus-signature-import";
-                    ctx.event.category = list("configuration", null, null);
-                    ctx.event.type = list("info", null, null);
-                    setOutcome(ctx.event, ctx._tmp?.operation_result instanceof String ? ctx._tmp.operation_result : null);
-                } else if (message.startsWith("The current virus signature list downloaded")) {
-                    ctx.event.action = "virus-signature-download";
-                    ctx.event.category = list("configuration", null, null);
-                    ctx.event.type = list("info", null, null);
-                    setOutcome(ctx.event, ctx._tmp?.operation_result instanceof String ? ctx._tmp.operation_result : null);
-                } else if (message.startsWith("Integrity Checker Tool: Periodic Scan Started")) {
-                    ctx.event.action = "integrity-scan-start";
-                    ctx.event.category = list("host", null, null);
-                    ctx.event.type = list("start", null, null);
-                } else if (message.startsWith("Integrity Checker Tool: Periodic Scan Finished")) {
-                    ctx.event.action = "integrity-scan-end";
-                    ctx.event.category = list("host", null, null);
-                    ctx.event.type = list("end", null, null);
-                    ctx.event.outcome = "success";
-                } else if (message.startsWith("Integrity Scan Completed")) {
-                    ctx.event.action = "integrity-scan-result";
-                    ctx.event.category = list("host", null, null);
-                    ctx.event.type = list("info", null, null);
-                    ctx.event.outcome = "success";
-                } else if (message.startsWith("User Accounts modified")) {
-                    ctx.event.action = "user-account-removed";
-                    ctx.event.category = list("iam", "configuration", null);
-                    ctx.event.type = list("change", "user", null);
-                } else if (message.startsWith("User ") && message.contains("denied access as the client version")) {
-                    ctx.event.action = "access-denied";
-                    ctx.event.category = list("authentication", null, null);
-                    ctx.event.type = list("info", null, null);
-                    ctx.event.outcome = "failure";
-                    if (ctx.event.reason == null) {
-                        ctx.event.reason = "Client version lower than minimum configured";
-                    }
-                } else {
-                    ctx.event.category = list("network", null, null);
-                    ctx.event.type = list("info", null, null);
-                }
+        String message = ctx.message;
+        if (message.startsWith("Agent login ")) {
+          ctx.event.action = "agent-login";
+          ctx.event.category = list("authentication", null, null);
+          ctx.event.type = list("start", null, null);
+          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
+        } else if (message.startsWith("Primary authentication ")) {
+          ctx.event.action = "primary-authentication";
+          ctx.event.category = list("authentication", null, null);
+          ctx.event.type = list("start", null, null);
+          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
+        } else if (message.startsWith("Secondary authentication ")) {
+          ctx.event.action = "secondary-authentication";
+          ctx.event.category = list("authentication", null, null);
+          ctx.event.type = list("start", null, null);
+          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
+          String target = trimToNull(ctx._tmp?.secondary_auth_target instanceof String ? ctx._tmp.secondary_auth_target : null);
+          if (target != null) {
+            int separator = target.lastIndexOf("/");
+            if (separator > -1 && ctx.pulse_secure?.auth_server instanceof Map && ctx.pulse_secure.auth_server.secondary instanceof Map) {
+              String method = trimToNull(target.substring(separator + 1));
+              if (method != null) {
+                ctx.pulse_secure.auth_server.secondary.name = method;
+              }
+            }
+          }
+        } else if (message.startsWith("Login ")) {
+          ctx.event.action = "login";
+          ctx.event.category = list("authentication", null, null);
+          ctx.event.type = list("start", null, null);
+          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
+        } else if (message.startsWith("Source IP realm restrictions ")) {
+          ctx.event.action = "source-ip-restriction-check";
+          ctx.event.category = list("authentication", null, null);
+          ctx.event.type = list("info", null, null);
+          if (ctx.pulse_secure == null) {
+            ctx.pulse_secure = new HashMap();
+          }
+          Map restriction = ctx.pulse_secure.restriction instanceof Map ? ctx.pulse_secure.restriction : new HashMap();
+          restriction.type = "source_ip";
+          ctx.pulse_secure.restriction = restriction;
+          setOutcome(ctx.event, ctx._tmp?.restriction_result instanceof String ? ctx._tmp.restriction_result : null);
+        } else if (message.startsWith("User Limit realm restrictions ")) {
+          ctx.event.action = "user-limit-restriction-check";
+          ctx.event.category = list("authentication", null, null);
+          ctx.event.type = list("info", null, null);
+          if (ctx.pulse_secure == null) {
+            ctx.pulse_secure = new HashMap();
+          }
+          Map restriction = ctx.pulse_secure.restriction instanceof Map ? ctx.pulse_secure.restriction : new HashMap();
+          restriction.type = "user_limit";
+          ctx.pulse_secure.restriction = restriction;
+          setOutcome(ctx.event, ctx._tmp?.restriction_result instanceof String ? ctx._tmp.restriction_result : null);
+        } else if (message.startsWith("VPN Tunneling: Session started")) {
+          ctx.event.action = "vpn-session-start";
+          ctx.event.category = list("network", "session", null);
+          ctx.event.type = list("connection", "start", null);
+          ctx.event.outcome = "success";
+        } else if (message.startsWith("VPN Tunneling: Session ended")) {
+          ctx.event.action = "vpn-session-end";
+          ctx.event.category = list("network", "session", null);
+          ctx.event.type = list("connection", "end", null);
+        } else if (message.startsWith("VPN Tunneling: User with IP ")) {
+          ctx.event.action = "vpn-tunnel-connected";
+          ctx.event.category = list("network", "session", null);
+          ctx.event.type = list("connection", "info", null);
+        } else if (message.startsWith("Session resumed")) {
+          ctx.event.action = "session-resumed";
+          ctx.event.category = list("session", null, null);
+          ctx.event.type = list("info", null, null);
+        } else if (message.startsWith("Session timed out")) {
+          ctx.event.action = "session-timeout";
+          ctx.event.category = list("session", null, null);
+          ctx.event.type = list("end", null, null);
+          if (ctx.event.reason == null) {
+            ctx.event.reason = "Idle session identified during routine system scan";
+          }
+        } else if (message.startsWith("Closed connection to ")) {
+          ctx.event.action = "connection-closed";
+          ctx.event.category = list("network", "session", null);
+          ctx.event.type = list("connection", "end", null);
+          if (ctx._tmp?.connection_seconds != null) {
+            ctx.event.duration = (long) Math.round(((double) ctx._tmp.connection_seconds) * 1000000000L);
+          }
+          long readBytes = ctx.pulse_secure?.bandwidth?.read instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.read).longValue() : 0L;
+          long writtenBytes = ctx.pulse_secure?.bandwidth?.written instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.written).longValue() : 0L;
+          if (readBytes > 0L || writtenBytes > 0L) {
+            ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
+            ctx.network.bytes = readBytes + writtenBytes;
+          }
+        } else if (message.startsWith("Logout from ")) {
+          ctx.event.action = "logout";
+          ctx.event.category = list("authentication", "session", null);
+          ctx.event.type = list("end", null, null);
+          ctx.event.outcome = "success";
+        } else if (message.startsWith("WebRequest completed,")) {
+          ctx.event.action = "web-request-completed";
+          ctx.event.category = list("web", "network", null);
+          ctx.event.type = list("access", "info", null);
+          if (ctx._tmp?.web_seconds != null) {
+            ctx.event.duration = (long) Math.round(((double) ctx._tmp.web_seconds) * 1000000000L);
+          }
+          long sent = ctx.pulse_secure?.web_request?.bytes_sent instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_sent).longValue() : 0L;
+          long received = ctx.pulse_secure?.web_request?.bytes_received instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_received).longValue() : 0L;
+          if (sent > 0L || received > 0L) {
+            ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
+            ctx.network.bytes = sent + received;
+          }
+        } else if (message.startsWith("Session:[")) {
+          ctx.event.action = "session-deleted";
+          ctx.event.category = list("session", null, null);
+          ctx.event.type = list("end", null, null);
+          String consumed = trimToNull(ctx._tmp?.bandwidth_consumed instanceof String ? ctx._tmp.bandwidth_consumed : null);
+          if (consumed != null) {
+            ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
+            Map bandwidth = ctx.pulse_secure.bandwidth instanceof Map ? ctx.pulse_secure.bandwidth : new HashMap();
+            bandwidth.consumed = Long.parseLong(consumed);
+            ctx.pulse_secure.bandwidth = bandwidth;
+            ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
+            ctx.network.bytes = bandwidth.consumed;
+          }
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          String deletedUser = trimToNull(ctx._tmp?.deleted_user instanceof String ? ctx._tmp.deleted_user : null);
+          if (deletedUser != null && ctx.user.name == null) {
+            ctx.user.name = deletedUser;
+          }
+          if (ctx.user.roles == null) {
+            List deletedRoles = splitCommaSeparated(ctx._tmp?.deleted_roles instanceof String ? ctx._tmp.deleted_roles : null);
+            if (deletedRoles != null) {
+              ctx.user.roles = deletedRoles;
+            }
+          }
+        } else if (message.startsWith(":Client connection done")) {
+          ctx.event.action = "client-connection-done";
+          ctx.event.category = list("session", "network", null);
+          ctx.event.type = list("end", "info", null);
+        } else if (message.startsWith("Session created for user:")) {
+          ctx.event.action = "session-created";
+          ctx.event.category = list("session", "authentication", null);
+          ctx.event.type = list("start", "info", null);
+          ctx.event.outcome = "success";
+        } else if (message.startsWith("Host Checker Compliance Result")) {
+          ctx.event.action = "host-checker-compliance";
+          ctx.event.category = list("host", null, null);
+          ctx.event.type = list("info", null, null);
+          setOutcome(ctx.event, ctx.pulse_secure?.host_checker?.status instanceof String ? ctx.pulse_secure.host_checker.status : null);
+        } else if (message.startsWith("Host Checker policy ")) {
+          ctx.event.action = "host-checker-policy";
+          ctx.event.category = list("host", null, null);
+          ctx.event.type = list("info", null, null);
+          setOutcome(ctx.event, ctx._tmp?.host_checker_result instanceof String ? ctx._tmp.host_checker_result : null);
+        } else if (message.startsWith("Connection from IP ")) {
+          ctx.event.action = "unauthenticated-connection";
+          ctx.event.category = list("authentication", "network", null);
+          ctx.event.type = list("info", null, null);
+          ctx.event.outcome = "failure";
+          String connectionIp = trimToNull(ctx._tmp?.connection_ip instanceof String ? ctx._tmp.connection_ip : null);
+          if (connectionIp != null) {
+            ctx.client = ctx.client instanceof Map ? ctx.client : new HashMap();
+            ctx.client.address = connectionIp;
+            ctx.client.ip = connectionIp;
+          }
+          if (ctx.url == null) {
+            ctx.url = new HashMap();
+          }
+          if (ctx.url.original instanceof String && ((String) ctx.url.original).startsWith("/")) {
+            ctx.url.path = ctx.url.original;
+          }
+        } else if (message.startsWith("Syslog server ")) {
+          ctx.event.action = "syslog-server-removed";
+          ctx.event.category = list("configuration", null, null);
+          ctx.event.type = list("change", null, null);
+        } else if (message.startsWith("No new virus signature list")) {
+          ctx.event.action = "virus-signature-check";
+          ctx.event.category = list("configuration", null, null);
+          ctx.event.type = list("info", null, null);
+        } else if (message.startsWith("The current virus signature list imported")) {
+          ctx.event.action = "virus-signature-import";
+          ctx.event.category = list("configuration", null, null);
+          ctx.event.type = list("info", null, null);
+          setOutcome(ctx.event, ctx._tmp?.operation_result instanceof String ? ctx._tmp.operation_result : null);
+        } else if (message.startsWith("The current virus signature list downloaded")) {
+          ctx.event.action = "virus-signature-download";
+          ctx.event.category = list("configuration", null, null);
+          ctx.event.type = list("info", null, null);
+          setOutcome(ctx.event, ctx._tmp?.operation_result instanceof String ? ctx._tmp.operation_result : null);
+        } else if (message.startsWith("Integrity Checker Tool: Periodic Scan Started")) {
+          ctx.event.action = "integrity-scan-start";
+          ctx.event.category = list("host", null, null);
+          ctx.event.type = list("start", null, null);
+        } else if (message.startsWith("Integrity Checker Tool: Periodic Scan Finished")) {
+          ctx.event.action = "integrity-scan-end";
+          ctx.event.category = list("host", null, null);
+          ctx.event.type = list("end", null, null);
+          ctx.event.outcome = "success";
+        } else if (message.startsWith("Integrity Scan Completed")) {
+          ctx.event.action = "integrity-scan-result";
+          ctx.event.category = list("host", null, null);
+          ctx.event.type = list("info", null, null);
+          ctx.event.outcome = "success";
+        } else if (message.startsWith("User Accounts modified")) {
+          ctx.event.action = "user-account-removed";
+          ctx.event.category = list("iam", "configuration", null);
+          ctx.event.type = list("change", "user", null);
+        } else if (message.startsWith("User ") && message.contains("denied access as the client version")) {
+          ctx.event.action = "access-denied";
+          ctx.event.category = list("authentication", null, null);
+          ctx.event.type = list("info", null, null);
+          ctx.event.outcome = "failure";
+          if (ctx.event.reason == null) {
+            ctx.event.reason = "Client version lower than minimum configured";
+          }
+        } else {
+          ctx.event.category = list("network", null, null);
+          ctx.event.type = list("info", null, null);
+        }
 
-                if (ctx._tmp?.assigned_ip_version instanceof String) {
-                    ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-                    ctx.network.type = ctx._tmp.assigned_ip_version;
-                }
+        if (ctx._tmp?.assigned_ip_version instanceof String) {
+          ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
+          ctx.network.type = ctx._tmp.assigned_ip_version;
+        }
 
-                if (ctx.url instanceof Map && ctx.url.original instanceof String) {
-                    String original = trimToNull(ctx.url.original);
-                    if (original != null && original.contains("://")) {
-                        ctx.url.full = original;
-                    } else if (original != null && original.startsWith("/")) {
-                        ctx.url.path = original;
-                    }
-                }
+        if (ctx.url instanceof Map && ctx.url.original instanceof String) {
+          String original = trimToNull(ctx.url.original);
+          if (original != null && original.contains("://")) {
+            ctx.url.full = original;
+          } else if (original != null && original.startsWith("/")) {
+            ctx.url.path = original;
+          }
+        }
 
-                if (ctx._tmp?.host_checker_result instanceof String) {
-                    ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
-                    Map hostChecker = ctx.pulse_secure.host_checker instanceof Map ? ctx.pulse_secure.host_checker : new HashMap();
-                    hostChecker.status = ctx._tmp.host_checker_result;
-                    ctx.pulse_secure.host_checker = hostChecker;
-                }
+        if (ctx._tmp?.host_checker_result instanceof String) {
+          ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
+          Map hostChecker = ctx.pulse_secure.host_checker instanceof Map ? ctx.pulse_secure.host_checker : new HashMap();
+          hostChecker.status = ctx._tmp.host_checker_result;
+          ctx.pulse_secure.host_checker = hostChecker;
+        }
 
-                if (ctx._tmp?.hc_passed instanceof String || ctx._tmp?.hc_failed instanceof String || ctx._tmp?.hc_failed_reasons instanceof String) {
-                    ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
-                    Map hostChecker = ctx.pulse_secure.host_checker instanceof Map ? ctx.pulse_secure.host_checker : new HashMap();
-                    List passedPolicies = splitCommaSeparated(ctx._tmp?.hc_passed instanceof String ? ctx._tmp.hc_passed : null);
-                    if (passedPolicies != null) {
-                        hostChecker.passed_policies = passedPolicies;
-                    }
-                    List failedPolicies = splitCommaSeparated(ctx._tmp?.hc_failed instanceof String ? ctx._tmp.hc_failed : null);
-                    if (failedPolicies != null) {
-                        hostChecker.failed_policies = failedPolicies;
-                    }
-                    List failedReasons = splitReasons(ctx._tmp?.hc_failed_reasons instanceof String ? ctx._tmp.hc_failed_reasons : null);
-                    if (failedReasons != null) {
-                        hostChecker.failed_reasons = failedReasons;
-                        if (ctx.event.reason == null) {
-                            ctx.event.reason = failedReasons.get(0);
-                        }
-                    }
-                    ctx.pulse_secure.host_checker = hostChecker;
-                } else if (ctx._tmp?.hc_failed_reasons instanceof String) {
-                    List failedReasons = splitReasons(ctx._tmp.hc_failed_reasons);
-                    if (failedReasons != null && ctx.pulse_secure?.host_checker instanceof Map) {
-                        ctx.pulse_secure.host_checker.failed_reasons = failedReasons;
-                    }
-                }
+        if (ctx._tmp?.hc_passed instanceof String || ctx._tmp?.hc_failed instanceof String || ctx._tmp?.hc_failed_reasons instanceof String) {
+          ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
+          Map hostChecker = ctx.pulse_secure.host_checker instanceof Map ? ctx.pulse_secure.host_checker : new HashMap();
+          List passedPolicies = splitCommaSeparated(ctx._tmp?.hc_passed instanceof String ? ctx._tmp.hc_passed : null);
+          if (passedPolicies != null) {
+            hostChecker.passed_policies = passedPolicies;
+          }
+          List failedPolicies = splitCommaSeparated(ctx._tmp?.hc_failed instanceof String ? ctx._tmp.hc_failed : null);
+          if (failedPolicies != null) {
+            hostChecker.failed_policies = failedPolicies;
+          }
+          List failedReasons = splitReasons(ctx._tmp?.hc_failed_reasons instanceof String ? ctx._tmp.hc_failed_reasons : null);
+          if (failedReasons != null) {
+            hostChecker.failed_reasons = failedReasons;
+            if (ctx.event.reason == null) {
+              ctx.event.reason = failedReasons.get(0);
+            }
+          }
+          ctx.pulse_secure.host_checker = hostChecker;
+        } else if (ctx._tmp?.hc_failed_reasons instanceof String) {
+          List failedReasons = splitReasons(ctx._tmp.hc_failed_reasons);
+          if (failedReasons != null && ctx.pulse_secure?.host_checker instanceof Map) {
+            ctx.pulse_secure.host_checker.failed_reasons = failedReasons;
+          }
+        }
 
-                if (ctx._tmp?.host_checker_user instanceof String) {
-                    String hostCheckerUser = trimToNull(ctx._tmp.host_checker_user);
-                    if (hostCheckerUser != null && (ctx.user == null || ctx.user.name == null || "System".equals(ctx.user.name))) {
-                        ctx.user = ctx.user instanceof Map ? ctx.user : new HashMap();
-                        if (hostCheckerUser.contains("\\")) {
-                            int separator = hostCheckerUser.lastIndexOf("\\");
-                            ctx.user.domain = trimToNull(hostCheckerUser.substring(0, separator));
-                            ctx.user.name = trimToNull(hostCheckerUser.substring(separator + 1));
-                        } else {
-                            ctx.user.name = hostCheckerUser;
-                        }
-                    }
-                }
+        if (ctx._tmp?.host_checker_user instanceof String) {
+          String hostCheckerUser = trimToNull(ctx._tmp.host_checker_user);
+          if (hostCheckerUser != null && (ctx.user == null || ctx.user.name == null || "System".equals(ctx.user.name))) {
+            ctx.user = ctx.user instanceof Map ? ctx.user : new HashMap();
+            if (hostCheckerUser.contains("\\")) {
+              int separator = hostCheckerUser.lastIndexOf("\\");
+              ctx.user.domain = trimToNull(hostCheckerUser.substring(0, separator));
+              ctx.user.name = trimToNull(hostCheckerUser.substring(separator + 1));
+            } else {
+              ctx.user.name = hostCheckerUser;
+            }
+          }
+        }
 
-                if (ctx._tmp?.denied_user instanceof String && (ctx.user == null || ctx.user.name == null)) {
-                    ctx.user = ctx.user instanceof Map ? ctx.user : new HashMap();
-                    ctx.user.name = trimToNull(ctx._tmp.denied_user);
-                }
-    - lowercase:
-            field: network.type
-            ignore_missing: true
-    - uri_parts:
-            field: url.full
-            ignore_failure: true
-            if: ctx.url?.full != null
-    - convert:
-            field: client.address
-            target_field: client.ip
-            type: ip
-            ignore_missing: true
-            ignore_failure: true
-    - uppercase:
-            field: client.mac
-            ignore_missing: true
-    - user_agent:
-            field: user_agent.original
-            ignore_failure: true
-            ignore_missing: true
-    - geoip:
-            field: client.ip
-            target_field: client.geo
-            ignore_missing: true
-    - geoip:
-            database_file: GeoLite2-ASN.mmdb
-            field: client.ip
-            target_field: client.as
-            properties:
-                - asn
-                - organization_name
-            ignore_missing: true
-    - rename:
-            field: client.as.asn
-            target_field: client.as.number
-            ignore_missing: true
-    - rename:
-            field: client.as.organization_name
-            target_field: client.as.organization.name
-            ignore_missing: true
-    - set:
-            field: source.address
-            copy_from: client.address
-            if: ctx.client?.address != null
-    - set:
-            field: source.ip
-            copy_from: client.ip
-            if: ctx.client?.ip != null
-    - set:
-            field: source.as
-            copy_from: client.as
-            if: ctx.client?.as != null
-    - set:
-            field: source.geo
-            copy_from: client.geo
-            if: ctx.client?.geo != null
-    - set:
-            field: source.mac
-            copy_from: client.mac
-            if: ctx.client?.mac != null
-    - script:
-            lang: painless
-            source: |
-                void appendUnique(List values, def value) {
-                    if (value == null) {
-                        return;
-                    }
-                    if (value instanceof List) {
-                        for (def item : value) {
-                            appendUnique(values, item);
-                        }
-                        return;
-                    }
-                    if (!values.contains(value)) {
-                        values.add(value);
-                    }
-                }
+        if (ctx._tmp?.denied_user instanceof String && (ctx.user == null || ctx.user.name == null)) {
+          ctx.user = ctx.user instanceof Map ? ctx.user : new HashMap();
+          ctx.user.name = trimToNull(ctx._tmp.denied_user);
+        }
+  - lowercase:
+      field: network.type
+      ignore_missing: true
+  - uri_parts:
+      field: url.full
+      ignore_failure: true
+      if: ctx.url?.full != null
+  - convert:
+      field: client.address
+      target_field: client.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - uppercase:
+      field: client.mac
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - set:
+      field: source.address
+      copy_from: client.address
+      if: ctx.client?.address != null
+  - set:
+      field: source.ip
+      copy_from: client.ip
+      if: ctx.client?.ip != null
+  - set:
+      field: source.as
+      copy_from: client.as
+      if: ctx.client?.as != null
+  - set:
+      field: source.geo
+      copy_from: client.geo
+      if: ctx.client?.geo != null
+  - set:
+      field: source.mac
+      copy_from: client.mac
+      if: ctx.client?.mac != null
+  - script:
+      lang: painless
+      source: |
+        void appendUnique(List values, def value) {
+          if (value == null) {
+            return;
+          }
+          if (value instanceof List) {
+            for (def item : value) {
+              appendUnique(values, item);
+            }
+            return;
+          }
+          if (!values.contains(value)) {
+            values.add(value);
+          }
+        }
 
-                List relatedIps = new ArrayList();
-                appendUnique(relatedIps, ctx.client?.ip);
-                appendUnique(relatedIps, ctx.client?.nat?.ip);
-                appendUnique(relatedIps, ctx.destination?.ip);
-                appendUnique(relatedIps, ctx.observer?.ip);
-                if (!relatedIps.isEmpty()) {
-                    ctx.related = ctx.related instanceof Map ? ctx.related : new HashMap();
-                    ctx.related.ip = relatedIps;
-                }
+        List relatedIps = new ArrayList();
+        appendUnique(relatedIps, ctx.client?.ip);
+        appendUnique(relatedIps, ctx.client?.nat?.ip);
+        appendUnique(relatedIps, ctx.destination?.ip);
+        appendUnique(relatedIps, ctx.observer?.ip);
+        if (!relatedIps.isEmpty()) {
+          ctx.related = ctx.related instanceof Map ? ctx.related : new HashMap();
+          ctx.related.ip = relatedIps;
+        }
 
-                List relatedUsers = new ArrayList();
-                appendUnique(relatedUsers, ctx.user?.name);
-                appendUnique(relatedUsers, ctx.user?.target?.name);
-                if (!relatedUsers.isEmpty()) {
-                    ctx.related = ctx.related instanceof Map ? ctx.related : new HashMap();
-                    ctx.related.user = relatedUsers;
-                }
-    - remove:
-            field:
-                - _tmp
-            ignore_missing: true
+        List relatedUsers = new ArrayList();
+        appendUnique(relatedUsers, ctx.user?.name);
+        appendUnique(relatedUsers, ctx.user?.target?.name);
+        if (!relatedUsers.isEmpty()) {
+          ctx.related = ctx.related instanceof Map ? ctx.related : new HashMap();
+          ctx.related.user = relatedUsers;
+        }
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
 on_failure:
-    - set:
-            field: event.kind
-            value: pipeline_error
-    - append:
-            field: tags
-            value: preserve_original_event
-            allow_duplicates: false
-    - append:
-            field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
