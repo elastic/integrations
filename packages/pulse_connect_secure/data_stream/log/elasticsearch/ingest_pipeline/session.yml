@@ -1,0 +1,186 @@
+---
+description: Pipeline for parsing Pulse Connect Secure session lifecycle events
+processors:
+  - set:
+      field: event.action
+      value: session-resumed
+      if: ctx.message instanceof String && ctx.message.startsWith('Session resumed')
+  - append:
+      field: event.category
+      value:
+        - session
+      if: ctx.message instanceof String && ctx.message.startsWith('Session resumed')
+  - append:
+      field: event.type
+      value:
+        - info
+      if: ctx.message instanceof String && ctx.message.startsWith('Session resumed')
+  - set:
+      field: event.action
+      value: session-timeout
+      if: ctx.message instanceof String && ctx.message.startsWith('Session timed out')
+  - append:
+      field: event.category
+      value:
+        - session
+      if: ctx.message instanceof String && ctx.message.startsWith('Session timed out')
+  - append:
+      field: event.type
+      value:
+        - end
+      if: ctx.message instanceof String && ctx.message.startsWith('Session timed out')
+  - set:
+      field: event.reason
+      value: Idle session identified during routine system scan
+      if: ctx.message instanceof String && ctx.message.startsWith('Session timed out') && ctx.event?.reason == null
+  - set:
+      field: event.action
+      value: connection-closed
+      if: ctx.message instanceof String && ctx.message.startsWith('Closed connection to ')
+  - append:
+      field: event.category
+      value:
+        - network
+        - session
+      if: ctx.message instanceof String && ctx.message.startsWith('Closed connection to ')
+  - append:
+      field: event.type
+      value:
+        - connection
+        - end
+      if: ctx.message instanceof String && ctx.message.startsWith('Closed connection to ')
+  - script:
+      if: ctx.message instanceof String && ctx.message.startsWith('Closed connection to ')
+      lang: painless
+      source: |
+        if (ctx._tmp?.connection_seconds != null) {
+          ctx.event.duration = (long) Math.round(((double) ctx._tmp.connection_seconds) * 1000000000L);
+        }
+
+        long readBytes = ctx.pulse_secure?.bandwidth?.read instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.read).longValue() : 0L;
+        long writtenBytes = ctx.pulse_secure?.bandwidth?.written instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.written).longValue() : 0L;
+        if (readBytes > 0L || writtenBytes > 0L) {
+          ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
+          ctx.network.bytes = readBytes + writtenBytes;
+        }
+  - set:
+      field: event.action
+      value: logout
+      if: ctx.message instanceof String && ctx.message.startsWith('Logout from ')
+  - append:
+      field: event.category
+      value:
+        - authentication
+        - session
+      if: ctx.message instanceof String && ctx.message.startsWith('Logout from ')
+  - append:
+      field: event.type
+      value:
+        - end
+      if: ctx.message instanceof String && ctx.message.startsWith('Logout from ')
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.message instanceof String && ctx.message.startsWith('Logout from ')
+  - set:
+      field: event.action
+      value: session-deleted
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session:[')"
+  - append:
+      field: event.category
+      value:
+        - session
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session:[')"
+  - append:
+      field: event.type
+      value:
+        - end
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session:[')"
+  - script:
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session:[')"
+      lang: painless
+      source: |
+        String trimToNull(String value) {
+          if (value == null) {
+            return null;
+          }
+          value = value.trim();
+          return value.length() == 0 ? null : value;
+        }
+
+        List splitCommaSeparated(String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return null;
+          }
+          List values = new ArrayList();
+          for (String part : raw.splitOnToken(",")) {
+            String value = trimToNull(part);
+            if (value != null) {
+              values.add(value);
+            }
+          }
+          return values.isEmpty() ? null : values;
+        }
+
+        String consumed = trimToNull(ctx._tmp?.bandwidth_consumed instanceof String ? ctx._tmp.bandwidth_consumed : null);
+        if (consumed != null) {
+          ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
+          Map bandwidth = ctx.pulse_secure.bandwidth instanceof Map ? ctx.pulse_secure.bandwidth : new HashMap();
+          bandwidth.consumed = Long.parseLong(consumed);
+          ctx.pulse_secure.bandwidth = bandwidth;
+          ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
+          ctx.network.bytes = bandwidth.consumed;
+        }
+
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+
+        String deletedUser = trimToNull(ctx._tmp?.deleted_user instanceof String ? ctx._tmp.deleted_user : null);
+        if (deletedUser != null && ctx.user.name == null) {
+          ctx.user.name = deletedUser;
+        }
+
+        if (ctx.user.roles == null) {
+          List deletedRoles = splitCommaSeparated(ctx._tmp?.deleted_roles instanceof String ? ctx._tmp.deleted_roles : null);
+          if (deletedRoles != null) {
+            ctx.user.roles = deletedRoles;
+          }
+        }
+  - set:
+      field: event.action
+      value: client-connection-done
+      if: "ctx.message instanceof String && ctx.message.startsWith(':Client connection done')"
+  - append:
+      field: event.category
+      value:
+        - session
+        - network
+      if: "ctx.message instanceof String && ctx.message.startsWith(':Client connection done')"
+  - append:
+      field: event.type
+      value:
+        - end
+        - info
+      if: "ctx.message instanceof String && ctx.message.startsWith(':Client connection done')"
+  - set:
+      field: event.action
+      value: session-created
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session created for user:')"
+  - append:
+      field: event.category
+      value:
+        - session
+        - authentication
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session created for user:')"
+  - append:
+      field: event.type
+      value:
+        - start
+        - info
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session created for user:')"
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx.message instanceof String && ctx.message.startsWith('Session created for user:')"

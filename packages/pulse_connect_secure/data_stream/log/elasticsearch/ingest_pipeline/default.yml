@@ -205,372 +205,84 @@ processors:
       field: destination.address
       copy_from: _tmp.connection_target
       if: ctx._tmp?.connection_target != null
-  - script:
-      if: ctx.message != null
-      lang: painless
-      source: |
-        String trimToNull(String value) {
-          if (value == null) {
-            return null;
-          }
-          value = value.trim();
-          return value.length() == 0 ? null : value;
+  - set:
+      field: event.kind
+      value: event
+  - pipeline:
+      name: '{{ IngestPipeline "auth" }}'
+      if: >-
+        if (!(ctx.message instanceof String)) {
+          return false;
         }
-
-        List list(String first, String second, String third) {
-          List values = new ArrayList();
-          if (first != null) {
-            values.add(first);
-          }
-          if (second != null) {
-            values.add(second);
-          }
-          if (third != null) {
-            values.add(third);
-          }
-          return values;
-        }
-
-        List splitCommaSeparated(String raw) {
-          raw = trimToNull(raw);
-          if (raw == null) {
-            return null;
-          }
-          List values = new ArrayList();
-          for (String part : raw.splitOnToken(",")) {
-            String value = trimToNull(part);
-            if (value != null) {
-              values.add(value);
-            }
-          }
-          return values.isEmpty() ? null : values;
-        }
-
-        List splitReasons(String raw) {
-          raw = trimToNull(raw);
-          if (raw == null) {
-            return null;
-          }
-          List values = new ArrayList();
-          if (raw.contains(";")) {
-            for (String part : raw.splitOnToken(";")) {
-              String value = trimToNull(part);
-              if (value != null) {
-                values.add(value);
-              }
-            }
-          } else {
-            values.add(raw);
-          }
-          return values.isEmpty() ? null : values;
-        }
-
-        void setOutcome(Map event, String raw) {
-          raw = trimToNull(raw);
-          if (raw == null) {
-            return;
-          }
-          raw = raw.toLowerCase(Locale.ROOT);
-          if (raw.contains("success") || raw.contains("succeed") || raw.contains("pass")) {
-            event.outcome = "success";
-          } else if (raw.contains("fail") || raw.contains("denied") || raw.contains("partial")) {
-            event.outcome = "failure";
-          }
-        }
-
-        if (ctx.event == null) {
-          ctx.event = new HashMap();
-        }
-        ctx.event.kind = "event";
-
-        if (ctx._tmp?.auth_target instanceof String && ctx._tmp.auth_target.endsWith(" fr")) {
-          ctx._tmp.auth_target = ctx._tmp.auth_target.substring(0, ctx._tmp.auth_target.length() - 3);
-        }
-
         String message = ctx.message;
-        if (message.startsWith("Agent login ")) {
-          ctx.event.action = "agent-login";
-          ctx.event.category = list("authentication", null, null);
-          ctx.event.type = list("start", null, null);
-          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-        } else if (message.startsWith("Primary authentication ")) {
-          ctx.event.action = "primary-authentication";
-          ctx.event.category = list("authentication", null, null);
-          ctx.event.type = list("start", null, null);
-          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-        } else if (message.startsWith("Secondary authentication ")) {
-          ctx.event.action = "secondary-authentication";
-          ctx.event.category = list("authentication", null, null);
-          ctx.event.type = list("start", null, null);
-          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-          String target = trimToNull(ctx._tmp?.secondary_auth_target instanceof String ? ctx._tmp.secondary_auth_target : null);
-          if (target != null) {
-            int separator = target.lastIndexOf("/");
-            if (separator > -1 && ctx.pulse_secure?.auth_server instanceof Map && ctx.pulse_secure.auth_server.secondary instanceof Map) {
-              String method = trimToNull(target.substring(separator + 1));
-              if (method != null) {
-                ctx.pulse_secure.auth_server.secondary.name = method;
-              }
-            }
-          }
-        } else if (message.startsWith("Login ")) {
-          ctx.event.action = "login";
-          ctx.event.category = list("authentication", null, null);
-          ctx.event.type = list("start", null, null);
-          setOutcome(ctx.event, ctx._tmp?.auth_result instanceof String ? ctx._tmp.auth_result : null);
-        } else if (message.startsWith("Source IP realm restrictions ")) {
-          ctx.event.action = "source-ip-restriction-check";
-          ctx.event.category = list("authentication", null, null);
-          ctx.event.type = list("info", null, null);
-          if (ctx.pulse_secure == null) {
-            ctx.pulse_secure = new HashMap();
-          }
-          Map restriction = ctx.pulse_secure.restriction instanceof Map ? ctx.pulse_secure.restriction : new HashMap();
-          restriction.type = "source_ip";
-          ctx.pulse_secure.restriction = restriction;
-          setOutcome(ctx.event, ctx._tmp?.restriction_result instanceof String ? ctx._tmp.restriction_result : null);
-        } else if (message.startsWith("User Limit realm restrictions ")) {
-          ctx.event.action = "user-limit-restriction-check";
-          ctx.event.category = list("authentication", null, null);
-          ctx.event.type = list("info", null, null);
-          if (ctx.pulse_secure == null) {
-            ctx.pulse_secure = new HashMap();
-          }
-          Map restriction = ctx.pulse_secure.restriction instanceof Map ? ctx.pulse_secure.restriction : new HashMap();
-          restriction.type = "user_limit";
-          ctx.pulse_secure.restriction = restriction;
-          setOutcome(ctx.event, ctx._tmp?.restriction_result instanceof String ? ctx._tmp.restriction_result : null);
-        } else if (message.startsWith("VPN Tunneling: Session started")) {
-          ctx.event.action = "vpn-session-start";
-          ctx.event.category = list("network", "session", null);
-          ctx.event.type = list("connection", "start", null);
-          ctx.event.outcome = "success";
-        } else if (message.startsWith("VPN Tunneling: Session ended")) {
-          ctx.event.action = "vpn-session-end";
-          ctx.event.category = list("network", "session", null);
-          ctx.event.type = list("connection", "end", null);
-        } else if (message.startsWith("VPN Tunneling: User with IP ")) {
-          ctx.event.action = "vpn-tunnel-connected";
-          ctx.event.category = list("network", "session", null);
-          ctx.event.type = list("connection", "info", null);
-        } else if (message.startsWith("Session resumed")) {
-          ctx.event.action = "session-resumed";
-          ctx.event.category = list("session", null, null);
-          ctx.event.type = list("info", null, null);
-        } else if (message.startsWith("Session timed out")) {
-          ctx.event.action = "session-timeout";
-          ctx.event.category = list("session", null, null);
-          ctx.event.type = list("end", null, null);
-          if (ctx.event.reason == null) {
-            ctx.event.reason = "Idle session identified during routine system scan";
-          }
-        } else if (message.startsWith("Closed connection to ")) {
-          ctx.event.action = "connection-closed";
-          ctx.event.category = list("network", "session", null);
-          ctx.event.type = list("connection", "end", null);
-          if (ctx._tmp?.connection_seconds != null) {
-            ctx.event.duration = (long) Math.round(((double) ctx._tmp.connection_seconds) * 1000000000L);
-          }
-          long readBytes = ctx.pulse_secure?.bandwidth?.read instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.read).longValue() : 0L;
-          long writtenBytes = ctx.pulse_secure?.bandwidth?.written instanceof Number ? ((Number) ctx.pulse_secure.bandwidth.written).longValue() : 0L;
-          if (readBytes > 0L || writtenBytes > 0L) {
-            ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-            ctx.network.bytes = readBytes + writtenBytes;
-          }
-        } else if (message.startsWith("Logout from ")) {
-          ctx.event.action = "logout";
-          ctx.event.category = list("authentication", "session", null);
-          ctx.event.type = list("end", null, null);
-          ctx.event.outcome = "success";
-        } else if (message.startsWith("WebRequest completed,")) {
-          ctx.event.action = "web-request-completed";
-          ctx.event.category = list("web", "network", null);
-          ctx.event.type = list("access", "info", null);
-          if (ctx._tmp?.web_seconds != null) {
-            ctx.event.duration = (long) Math.round(((double) ctx._tmp.web_seconds) * 1000000000L);
-          }
-          long sent = ctx.pulse_secure?.web_request?.bytes_sent instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_sent).longValue() : 0L;
-          long received = ctx.pulse_secure?.web_request?.bytes_received instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_received).longValue() : 0L;
-          if (sent > 0L || received > 0L) {
-            ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-            ctx.network.bytes = sent + received;
-          }
-        } else if (message.startsWith("Session:[")) {
-          ctx.event.action = "session-deleted";
-          ctx.event.category = list("session", null, null);
-          ctx.event.type = list("end", null, null);
-          String consumed = trimToNull(ctx._tmp?.bandwidth_consumed instanceof String ? ctx._tmp.bandwidth_consumed : null);
-          if (consumed != null) {
-            ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
-            Map bandwidth = ctx.pulse_secure.bandwidth instanceof Map ? ctx.pulse_secure.bandwidth : new HashMap();
-            bandwidth.consumed = Long.parseLong(consumed);
-            ctx.pulse_secure.bandwidth = bandwidth;
-            ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-            ctx.network.bytes = bandwidth.consumed;
-          }
-          if (ctx.user == null) {
-            ctx.user = new HashMap();
-          }
-          String deletedUser = trimToNull(ctx._tmp?.deleted_user instanceof String ? ctx._tmp.deleted_user : null);
-          if (deletedUser != null && ctx.user.name == null) {
-            ctx.user.name = deletedUser;
-          }
-          if (ctx.user.roles == null) {
-            List deletedRoles = splitCommaSeparated(ctx._tmp?.deleted_roles instanceof String ? ctx._tmp.deleted_roles : null);
-            if (deletedRoles != null) {
-              ctx.user.roles = deletedRoles;
-            }
-          }
-        } else if (message.startsWith(":Client connection done")) {
-          ctx.event.action = "client-connection-done";
-          ctx.event.category = list("session", "network", null);
-          ctx.event.type = list("end", "info", null);
-        } else if (message.startsWith("Session created for user:")) {
-          ctx.event.action = "session-created";
-          ctx.event.category = list("session", "authentication", null);
-          ctx.event.type = list("start", "info", null);
-          ctx.event.outcome = "success";
-        } else if (message.startsWith("Host Checker Compliance Result")) {
-          ctx.event.action = "host-checker-compliance";
-          ctx.event.category = list("host", null, null);
-          ctx.event.type = list("info", null, null);
-          setOutcome(ctx.event, ctx.pulse_secure?.host_checker?.status instanceof String ? ctx.pulse_secure.host_checker.status : null);
-        } else if (message.startsWith("Host Checker policy ")) {
-          ctx.event.action = "host-checker-policy";
-          ctx.event.category = list("host", null, null);
-          ctx.event.type = list("info", null, null);
-          setOutcome(ctx.event, ctx._tmp?.host_checker_result instanceof String ? ctx._tmp.host_checker_result : null);
-        } else if (message.startsWith("Connection from IP ")) {
-          ctx.event.action = "unauthenticated-connection";
-          ctx.event.category = list("authentication", "network", null);
-          ctx.event.type = list("info", null, null);
-          ctx.event.outcome = "failure";
-          String connectionIp = trimToNull(ctx._tmp?.connection_ip instanceof String ? ctx._tmp.connection_ip : null);
-          if (connectionIp != null) {
-            ctx.client = ctx.client instanceof Map ? ctx.client : new HashMap();
-            ctx.client.address = connectionIp;
-            ctx.client.ip = connectionIp;
-          }
-          if (ctx.url == null) {
-            ctx.url = new HashMap();
-          }
-          if (ctx.url.original instanceof String && ((String) ctx.url.original).startsWith("/")) {
-            ctx.url.path = ctx.url.original;
-          }
-        } else if (message.startsWith("Syslog server ")) {
-          ctx.event.action = "syslog-server-removed";
-          ctx.event.category = list("configuration", null, null);
-          ctx.event.type = list("change", null, null);
-        } else if (message.startsWith("No new virus signature list")) {
-          ctx.event.action = "virus-signature-check";
-          ctx.event.category = list("configuration", null, null);
-          ctx.event.type = list("info", null, null);
-        } else if (message.startsWith("The current virus signature list imported")) {
-          ctx.event.action = "virus-signature-import";
-          ctx.event.category = list("configuration", null, null);
-          ctx.event.type = list("info", null, null);
-          setOutcome(ctx.event, ctx._tmp?.operation_result instanceof String ? ctx._tmp.operation_result : null);
-        } else if (message.startsWith("The current virus signature list downloaded")) {
-          ctx.event.action = "virus-signature-download";
-          ctx.event.category = list("configuration", null, null);
-          ctx.event.type = list("info", null, null);
-          setOutcome(ctx.event, ctx._tmp?.operation_result instanceof String ? ctx._tmp.operation_result : null);
-        } else if (message.startsWith("Integrity Checker Tool: Periodic Scan Started")) {
-          ctx.event.action = "integrity-scan-start";
-          ctx.event.category = list("host", null, null);
-          ctx.event.type = list("start", null, null);
-        } else if (message.startsWith("Integrity Checker Tool: Periodic Scan Finished")) {
-          ctx.event.action = "integrity-scan-end";
-          ctx.event.category = list("host", null, null);
-          ctx.event.type = list("end", null, null);
-          ctx.event.outcome = "success";
-        } else if (message.startsWith("Integrity Scan Completed")) {
-          ctx.event.action = "integrity-scan-result";
-          ctx.event.category = list("host", null, null);
-          ctx.event.type = list("info", null, null);
-          ctx.event.outcome = "success";
-        } else if (message.startsWith("User Accounts modified")) {
-          ctx.event.action = "user-account-removed";
-          ctx.event.category = list("iam", "configuration", null);
-          ctx.event.type = list("change", "user", null);
-        } else if (message.startsWith("User ") && message.contains("denied access as the client version")) {
-          ctx.event.action = "access-denied";
-          ctx.event.category = list("authentication", null, null);
-          ctx.event.type = list("info", null, null);
-          ctx.event.outcome = "failure";
-          if (ctx.event.reason == null) {
-            ctx.event.reason = "Client version lower than minimum configured";
-          }
-        } else {
-          ctx.event.category = list("network", null, null);
-          ctx.event.type = list("info", null, null);
+        return message.startsWith("Agent login ")
+          || message.startsWith("Primary authentication ")
+          || message.startsWith("Secondary authentication ")
+          || message.startsWith("Login ")
+          || message.startsWith("Source IP realm restrictions ")
+          || message.startsWith("User Limit realm restrictions ")
+          || message.startsWith("Connection from IP ")
+          || (message.startsWith("User ") && message.contains("denied access as the client version"));
+  - pipeline:
+      name: '{{ IngestPipeline "vpn" }}'
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: ')"
+  - pipeline:
+      name: '{{ IngestPipeline "session" }}'
+      if: >-
+        if (!(ctx.message instanceof String)) {
+          return false;
         }
-
-        if (ctx._tmp?.assigned_ip_version instanceof String) {
-          ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
-          ctx.network.type = ctx._tmp.assigned_ip_version;
+        String message = ctx.message;
+        return message.startsWith("Session resumed")
+          || message.startsWith("Session timed out")
+          || message.startsWith("Closed connection to ")
+          || message.startsWith("Logout from ")
+          || message.startsWith("Session:[")
+          || message.startsWith(":Client connection done")
+          || message.startsWith("Session created for user:");
+  - pipeline:
+      name: '{{ IngestPipeline "host_checker" }}'
+      if: ctx.message instanceof String && (ctx.message.startsWith('Host Checker Compliance Result') || ctx.message.startsWith('Host Checker policy '))
+  - pipeline:
+      name: '{{ IngestPipeline "config" }}'
+      if: >-
+        if (!(ctx.message instanceof String)) {
+          return false;
         }
-
-        if (ctx.url instanceof Map && ctx.url.original instanceof String) {
-          String original = trimToNull(ctx.url.original);
-          if (original != null && original.contains("://")) {
-            ctx.url.full = original;
-          } else if (original != null && original.startsWith("/")) {
-            ctx.url.path = original;
-          }
-        }
-
-        if (ctx._tmp?.host_checker_result instanceof String) {
-          ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
-          Map hostChecker = ctx.pulse_secure.host_checker instanceof Map ? ctx.pulse_secure.host_checker : new HashMap();
-          hostChecker.status = ctx._tmp.host_checker_result;
-          ctx.pulse_secure.host_checker = hostChecker;
-        }
-
-        if (ctx._tmp?.hc_passed instanceof String || ctx._tmp?.hc_failed instanceof String || ctx._tmp?.hc_failed_reasons instanceof String) {
-          ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
-          Map hostChecker = ctx.pulse_secure.host_checker instanceof Map ? ctx.pulse_secure.host_checker : new HashMap();
-          List passedPolicies = splitCommaSeparated(ctx._tmp?.hc_passed instanceof String ? ctx._tmp.hc_passed : null);
-          if (passedPolicies != null) {
-            hostChecker.passed_policies = passedPolicies;
-          }
-          List failedPolicies = splitCommaSeparated(ctx._tmp?.hc_failed instanceof String ? ctx._tmp.hc_failed : null);
-          if (failedPolicies != null) {
-            hostChecker.failed_policies = failedPolicies;
-          }
-          List failedReasons = splitReasons(ctx._tmp?.hc_failed_reasons instanceof String ? ctx._tmp.hc_failed_reasons : null);
-          if (failedReasons != null) {
-            hostChecker.failed_reasons = failedReasons;
-            if (ctx.event.reason == null) {
-              ctx.event.reason = failedReasons.get(0);
-            }
-          }
-          ctx.pulse_secure.host_checker = hostChecker;
-        } else if (ctx._tmp?.hc_failed_reasons instanceof String) {
-          List failedReasons = splitReasons(ctx._tmp.hc_failed_reasons);
-          if (failedReasons != null && ctx.pulse_secure?.host_checker instanceof Map) {
-            ctx.pulse_secure.host_checker.failed_reasons = failedReasons;
-          }
-        }
-
-        if (ctx._tmp?.host_checker_user instanceof String) {
-          String hostCheckerUser = trimToNull(ctx._tmp.host_checker_user);
-          if (hostCheckerUser != null && (ctx.user == null || ctx.user.name == null || "System".equals(ctx.user.name))) {
-            ctx.user = ctx.user instanceof Map ? ctx.user : new HashMap();
-            if (hostCheckerUser.contains("\\")) {
-              int separator = hostCheckerUser.lastIndexOf("\\");
-              ctx.user.domain = trimToNull(hostCheckerUser.substring(0, separator));
-              ctx.user.name = trimToNull(hostCheckerUser.substring(separator + 1));
-            } else {
-              ctx.user.name = hostCheckerUser;
-            }
-          }
-        }
-
-        if (ctx._tmp?.denied_user instanceof String && (ctx.user == null || ctx.user.name == null)) {
-          ctx.user = ctx.user instanceof Map ? ctx.user : new HashMap();
-          ctx.user.name = trimToNull(ctx._tmp.denied_user);
-        }
+        String message = ctx.message;
+        return message.startsWith("Syslog server ")
+          || message.startsWith("No new virus signature list")
+          || message.startsWith("The current virus signature list imported")
+          || message.startsWith("The current virus signature list downloaded")
+          || message.startsWith("Integrity Checker Tool: Periodic Scan Started")
+          || message.startsWith("Integrity Checker Tool: Periodic Scan Finished")
+          || message.startsWith("Integrity Scan Completed")
+          || message.startsWith("User Accounts modified");
+  - pipeline:
+      name: '{{ IngestPipeline "web_request" }}'
+      if: ctx.message instanceof String && ctx.message.startsWith('WebRequest completed,')
+  - set:
+      field: network.type
+      copy_from: _tmp.assigned_ip_version
+      if: ctx._tmp?.assigned_ip_version != null
+  - set:
+      field: url.full
+      copy_from: url.original
+      if: ctx.url?.original instanceof String && ctx.url.original.contains('://')
+  - set:
+      field: url.path
+      copy_from: url.original
+      if: ctx.url?.path == null && ctx.url?.original instanceof String && ctx.url.original.startsWith('/')
+  - append:
+      field: event.category
+      value:
+        - network
+      if: ctx.event?.category == null
+  - append:
+      field: event.type
+      value:
+        - info
+      if: ctx.event?.type == null
   - lowercase:
       field: network.type
       ignore_missing: true

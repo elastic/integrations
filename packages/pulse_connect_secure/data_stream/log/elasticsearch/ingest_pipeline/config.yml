@@ -1,0 +1,145 @@
+---
+description: Pipeline for parsing Pulse Connect Secure configuration and maintenance events
+processors:
+  - set:
+      field: event.action
+      value: syslog-server-removed
+      if: ctx.message instanceof String && ctx.message.startsWith('Syslog server ')
+  - append:
+      field: event.category
+      value:
+        - configuration
+      if: ctx.message instanceof String && ctx.message.startsWith('Syslog server ')
+  - append:
+      field: event.type
+      value:
+        - change
+      if: ctx.message instanceof String && ctx.message.startsWith('Syslog server ')
+  - set:
+      field: event.action
+      value: virus-signature-check
+      if: ctx.message instanceof String && ctx.message.startsWith('No new virus signature list')
+  - append:
+      field: event.category
+      value:
+        - configuration
+      if: ctx.message instanceof String && ctx.message.startsWith('No new virus signature list')
+  - append:
+      field: event.type
+      value:
+        - info
+      if: ctx.message instanceof String && ctx.message.startsWith('No new virus signature list')
+  - set:
+      field: event.action
+      value: virus-signature-import
+      if: ctx.message instanceof String && ctx.message.startsWith('The current virus signature list imported')
+  - append:
+      field: event.category
+      value:
+        - configuration
+      if: ctx.message instanceof String && ctx.message.startsWith('The current virus signature list imported')
+  - append:
+      field: event.type
+      value:
+        - info
+      if: ctx.message instanceof String && ctx.message.startsWith('The current virus signature list imported')
+  - set:
+      field: event.action
+      value: virus-signature-download
+      if: ctx.message instanceof String && ctx.message.startsWith('The current virus signature list downloaded')
+  - append:
+      field: event.category
+      value:
+        - configuration
+      if: ctx.message instanceof String && ctx.message.startsWith('The current virus signature list downloaded')
+  - append:
+      field: event.type
+      value:
+        - info
+      if: ctx.message instanceof String && ctx.message.startsWith('The current virus signature list downloaded')
+  - set:
+      field: event.outcome
+      value: success
+      if: >-
+        ctx._tmp?.operation_result != null
+        && (
+          ctx._tmp.operation_result.toLowerCase().contains('success')
+          || ctx._tmp.operation_result.toLowerCase().contains('succeed')
+          || ctx._tmp.operation_result.toLowerCase().contains('pass')
+        )
+  - set:
+      field: event.outcome
+      value: failure
+      if: >-
+        ctx._tmp?.operation_result != null
+        && (
+          ctx._tmp.operation_result.toLowerCase().contains('fail')
+          || ctx._tmp.operation_result.toLowerCase().contains('denied')
+          || ctx._tmp.operation_result.toLowerCase().contains('partial')
+        )
+  - set:
+      field: event.action
+      value: integrity-scan-start
+      if: "ctx.message instanceof String && ctx.message.startsWith('Integrity Checker Tool: Periodic Scan Started')"
+  - append:
+      field: event.category
+      value:
+        - host
+      if: "ctx.message instanceof String && ctx.message.startsWith('Integrity Checker Tool: Periodic Scan Started')"
+  - append:
+      field: event.type
+      value:
+        - start
+      if: "ctx.message instanceof String && ctx.message.startsWith('Integrity Checker Tool: Periodic Scan Started')"
+  - set:
+      field: event.action
+      value: integrity-scan-end
+      if: "ctx.message instanceof String && ctx.message.startsWith('Integrity Checker Tool: Periodic Scan Finished')"
+  - append:
+      field: event.category
+      value:
+        - host
+      if: "ctx.message instanceof String && ctx.message.startsWith('Integrity Checker Tool: Periodic Scan Finished')"
+  - append:
+      field: event.type
+      value:
+        - end
+      if: "ctx.message instanceof String && ctx.message.startsWith('Integrity Checker Tool: Periodic Scan Finished')"
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx.message instanceof String && ctx.message.startsWith('Integrity Checker Tool: Periodic Scan Finished')"
+  - set:
+      field: event.action
+      value: integrity-scan-result
+      if: ctx.message instanceof String && ctx.message.startsWith('Integrity Scan Completed')
+  - append:
+      field: event.category
+      value:
+        - host
+      if: ctx.message instanceof String && ctx.message.startsWith('Integrity Scan Completed')
+  - append:
+      field: event.type
+      value:
+        - info
+      if: ctx.message instanceof String && ctx.message.startsWith('Integrity Scan Completed')
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.message instanceof String && ctx.message.startsWith('Integrity Scan Completed')
+  - set:
+      field: event.action
+      value: user-account-removed
+      if: ctx.message instanceof String && ctx.message.startsWith('User Accounts modified')
+  - append:
+      field: event.category
+      value:
+        - iam
+        - configuration
+      if: ctx.message instanceof String && ctx.message.startsWith('User Accounts modified')
+  - append:
+      field: event.type
+      value:
+        - change
+        - user
+      if: ctx.message instanceof String && ctx.message.startsWith('User Accounts modified')
