@@ -1,0 +1,25 @@
+---
+description: Benchmark 1000 falcon events ingested
+input: streaming
+data_stream:
+  name: falcon
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    client_id: xxxx
+    client_secret: yyyy
+    token_url: http://{{Hostname}}:{{Port}}/oauth2/token
+    app_id: nonsecretappid
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: crowdstrike
+  generator:
+    total_events: 1000
+    template:
+      path: ./falcon-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./falcon-benchmark/config.yml
+    fields:
+      path: ./falcon-benchmark/fields.yml

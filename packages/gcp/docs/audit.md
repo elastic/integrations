@@ -53,6 +53,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.logentry_operation.producer | Optional. An arbitrary producer identifier. The combination of id and producer must be globally unique. | keyword |
 | gcp.audit.metadata | Service-specific data about the request, response, and other information associated with the current audited event. | flattened |
 | gcp.audit.method_name | The name of the service method or operation. For API calls, this  should be the name of the API method.  For example, 'google.datastore.v1.Datastore.RunQuery'. | keyword |
+| gcp.audit.notification | Plain-text GKE cluster notification message (for example, upgrade notifications). | keyword |
 | gcp.audit.num_response_items | The number of items returned from a List or Query API method, if applicable. | long |
 | gcp.audit.policy_violation_info.payload | Resource payload that is currently in scope and is subjected to orgpolicy conditions. | flattened |
 | gcp.audit.policy_violation_info.resource_tags | Tags referenced on the resource at the time of evaluation. | flattened |
@@ -71,6 +72,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
+| gcp.audit.service_data.policy_delta.binding_deltas.action | The action that was performed on a Binding. Allowed values are `ADD`, `REMOVE` and `ACTION_UNSPECIFIED` | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.description | Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI. | text |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.expression | Textual representation of an expression in Common Expression Language syntax. | text |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.location | Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.title | Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.member | A single identity requesting access for a Google Cloud resource. Follows the same format of Binding.members. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.role | Role that is assigned to members. For example, roles/viewer, roles/editor, or roles/owner. | keyword |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
 | gcp.audit.source_log_ids.insert_id |  | keyword |
 | gcp.audit.source_log_ids.log_time |  | date |
@@ -98,6 +106,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | host.target.entity.id | Unique identifier for compute resources targeted by GCP audit events. Includes Compute Engine instance IDs and resource paths. | keyword |
 | input.type | Input type | keyword |
+| labels.cluster_location |  | keyword |
+| labels.cluster_name |  | keyword |
+| labels.payload.currentVersion |  | keyword |
+| labels.payload.operation |  | keyword |
+| labels.payload.resource |  | keyword |
+| labels.payload.resourceType |  | keyword |
+| labels.payload.targetVersion |  | keyword |
+| labels.project_id |  | keyword |
+| labels.type_url |  | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
 | service.entity.id | Unique identifier for service accounts and GCP services acting as principals. Contains serviceAccount: prefixed values, \*.iam.gserviceaccount.com addresses, and \*.googleapis.com services. | keyword |
@@ -120,11 +137,11 @@ An example event for `audit` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "c12ff10d-c028-4d1b-80b1-a8151b80a275",
-        "id": "5bce43a4-737b-4c53-9db0-a4bff79e32d1",
-        "name": "elastic-agent-10901",
+        "ephemeral_id": "d3d085d3-8938-4909-9bcb-9a9ec8bc1665",
+        "id": "7fc8d2fb-f718-4f96-9c78-1118e4203336",
+        "name": "elastic-agent-81621",
         "type": "filebeat",
-        "version": "8.18.7"
+        "version": "8.18.0"
     },
     "client": {
         "user": {
@@ -140,16 +157,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.audit",
-        "namespace": "84187",
+        "namespace": "55990",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5bce43a4-737b-4c53-9db0-a4bff79e32d1",
+        "id": "7fc8d2fb-f718-4f96-9c78-1118e4203336",
         "snapshot": false,
-        "version": "8.18.7"
+        "version": "8.18.0"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -158,10 +175,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2025-10-09T12:32:26.254Z",
+        "created": "2026-03-19T05:40:34.897Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2025-10-09T12:32:29Z",
+        "ingested": "2026-03-19T05:40:37Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -212,6 +229,15 @@ An example event for `audit` looks as following:
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
         }
     },
+    "host": {
+        "target": {
+            "entity": {
+                "id": [
+                    "projects/elastic-beats/global/instances"
+                ]
+            }
+        }
+    },
     "input": {
         "type": "gcp-pubsub"
     },
@@ -245,6 +271,14 @@ An example event for `audit` looks as following:
         "entity": {
             "id": [
                 "projects/elastic-beats/global/instances"
+            ]
+        }
+    },
+    "user": {
+        "email": "xxx@xxx.xxx",
+        "entity": {
+            "id": [
+                "xxx@xxx.xxx"
             ]
         }
     },

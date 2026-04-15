@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-database-high-latency",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Database high latency",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_avg_latency IS NOT NULL\n| STATS avg_latency_s = AVG(bdb_avg_latency) BY bdb, cluster\n| EVAL avg_latency_ms = ROUND(avg_latency_s * 1000, 2)\n// Threshold: 5ms average latency — adjust based on your SLA\n// Redis should deliver sub-millisecond responses; sustained >5ms warrants investigation\n// Common causes: memory pressure, fork operations (AOF/RDB), hot shards\n| WHERE avg_latency_ms > 5\n| SORT avg_latency_ms DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "bdb",
+            "termSize": 100
+        }
+    }
+}

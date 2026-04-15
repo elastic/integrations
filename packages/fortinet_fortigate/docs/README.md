@@ -854,6 +854,8 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
@@ -1070,7 +1072,7 @@ To collect logs via TCP, select **Collect logs via TCP** and configure the follo
 To enable encrypted connections, configure the following SSL settings:
 
 **SSL Settings:**
-- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Enable SSL - Toggle to enable SSL/TLS encryption
 - Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
 - Certificate Key - Path to the private key file (`.key`)
 - Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
