@@ -19,7 +19,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM logs-azure.activity.otel-*\n// Restrict to Azure Activity Logs (Security category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"Security\"\n// Derive actor for grouping\n| EVAL actor = COALESCE(user.id, \"unknown\")\n| STATS event_count = COUNT(*) BY actor, process.executable.path\n| SORT event_count DESC\n| LIMIT 20"
+        "esql": "FROM logs-azure.activity.otel-*\n// Restrict to Azure Activity Logs (Security category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"Security\"\n// Derive actor for grouping\n| EVAL actor = COALESCE(user.id, \"unknown\")\n| STATS event_count = COUNT(*) BY actor, azure.operation.name\n| SORT event_count DESC\n| LIMIT 20"
       },
       "size": 0,
       "threshold": [0],
