@@ -18,6 +18,33 @@ Here is a list of log types that are supported by this integration:
 | VPC Flow           | Firehose, CloudWatch, S3 |
 | WAF                | Firehose, CloudWatch. S3 |
 
+### How log routing works
+
+This integration uses content-based detection to automatically identify the log type and route
+each record to the appropriate integration dataset. The detection relies on known patterns in the
+log message, such as field names, resource identifiers, or structural characteristics.
+
+The following table describes how each log type is detected and what is required for routing
+to work correctly:
+
+| Log type         | Detection method                              | Requirements                                |
+|------------------|-----------------------------------------------|---------------------------------------------|
+| WAF              | Delivery stream or log group name contains `aws-waf-logs-`, or message contains WAF-specific JSON fields (`webaclId`, `terminatingRule`, etc.) | Use the [default naming convention](https://docs.aws.amazon.com/waf/latest/developerguide/logging-s3.html) for the delivery stream, or use the default WAF log format |
+| CloudTrail       | CloudWatch log stream name contains `CloudTrail` | Send via a CloudWatch Logs subscription with a log stream that includes `CloudTrail` in the name |
+| VPC Flow         | Message contains resource identifiers (`eni-`, `nat-`, or `tgw-` + `TransitGateway`) and action/status keywords (`ACCEPT`, `REJECT`, `NODATA`, `SKIPDATA`) | Use the [default flow log format](https://docs.aws.amazon.com/vpc/latest/userguide/flow-log-records.html) or a custom format that includes the `action` or `log-status` fields. For transit gateway flow logs, use the default format (which includes the `resource-type` field). Custom formats that exclude both `action` and `log-status` are not auto-detected. |
+| Network Firewall | Message contains JSON fields `firewall_name`, `availability_zone`, `event_timestamp`, `event` | Use the default firewall log format |
+| Route53 Resolver | Message contains JSON fields `version`, `account_id`, `region`, `vpc_id`, `query_timestamp` | Use the default resolver query log format |
+| Route53 Public   | CloudWatch log group name contains `/aws/route53/` | Send via a CloudWatch Logs subscription from a `/aws/route53/` log group |
+| API Gateway      | Message contains JSON fields `requestId`, `ip`, `requestTime`, `httpMethod` | Use the default API Gateway access log format |
+| S3 Access        | Message token structure matches S3 access log format (host header contains `s3.amazonaws.com` or operation field starts with `SOAP.`, `REST.`, etc.) | Use the default S3 server access log format |
+| CloudFront       | Message has 33 space-delimited tokens with a date-time pattern | Use the default CloudFront standard log format |
+| ELB              | Message starts with a protocol token (`http`, `https`, `tcp`, `tls`, `udp`) or matches classic ELB token structure | Use the default ALB/NLB/CLB access log format |
+
+> **Note:** If auto-detection does not work for your log format (for example, VPC flow logs
+> with a custom format that excludes standard fields), you can configure the `es_datastream_name`
+> [delivery stream parameter](https://docs.aws.amazon.com/firehose/latest/dev/create-destination.html#create-destination-elasticsearch)
+> to route records directly to the target data stream.
+
 Here is a list of CloudWatch metrics that are supported by this integration:
 
 | AWS service monitoring metrics |
