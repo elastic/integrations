@@ -114,7 +114,7 @@ For most forward upgrades within a major version this is harmless: newer agents 
 - **Downgrades**: the cached policy was rendered for a newer agent and may reference inputs, processors, or built-ins not available in the older binary.
 - **Major-version upgrades** that remove an input option or processor the cached rendering depends on.
 
-If a version-conditional feature is critical to the integration's correctness—for example, the integration produces no useful data or fails to start without it—prefer the package-level `conditions.agent.version` mechanism instead. Fleet will exclude the integration entirely from incompatible agents rather than ship a configuration that may fail during the brief window before the first check-in completes.
+If a version-conditional feature is critical to the integration's correctness—for example, the integration produces no useful data or fails to start without it—prefer the package-level `conditions.agent.version` mechanism instead. Fleet will exclude the integration entirely from incompatible agents rather than ship a configuration that might fail during the brief window before the first check-in completes.
 
 
 ## When to use each approach [when-to-use]
