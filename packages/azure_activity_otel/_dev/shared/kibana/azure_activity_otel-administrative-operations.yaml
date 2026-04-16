@@ -250,27 +250,28 @@ dashboards:
     size: {w: 24, h: 12}
     position: {x: 0, y: 34}
     esql:
-      type: pie
+      type: datatable
       query: |
         FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
-        | WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL
         | WHERE azure.correlation_id IS NOT NULL
-        | STATS op_count = COUNT_DISTINCT(azure.correlation_id) BY azure.identity.authorization.evidence.principal.type
+        | EVAL actor = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, "unknown")
+        | STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN ("Failure", "Failed") BY actor, azure.identity.authorization.evidence.principal.type
         | SORT op_count DESC
-        | LIMIT 10
+        | LIMIT 20
       time_field: '@timestamp'
-      legend:
-        visible: show
-      metrics:
-      - field: op_count
       breakdowns:
+      - field: actor
+        label: Actor
       - field: azure.identity.authorization.evidence.principal.type
-        label: Principal Type
-      appearance:
-        donut: medium
-        values:
-          format: percent
+        label: Type
+      - field: op_count
+        label: Operations
+      - field: failures
+        label: Failures
+      paging:
+        enabled: true
+        page_size: 10
   - id: 7bd2e9b8-7c01-f968-33a0-4f8c44f48eb4
     title: Operations by Result Type
     size: {w: 24, h: 12}

@@ -1197,95 +1197,100 @@
                     },
                     "attributes": {
                         "title": "Top Actors by Operation Count",
-                        "visualizationType": "lnsPie",
+                        "visualizationType": "lnsDatatable",
                         "type": "lens",
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "layerId": "cc74b71e-9a9e-0dcf-13cc-65c6a5131c62",
-                                        "layerType": "data",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "specialAssignments": [
-                                                {
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ],
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            }
-                                        },
-                                        "primaryGroups": [
-                                            "316a818b-b99f-90f3-22bb-55b347d70254"
-                                        ],
-                                        "metrics": [
-                                            "9c7f7336-f3b5-7d6a-61b6-c68d5425136b"
-                                        ],
-                                        "numberDisplay": "percent",
-                                        "categoryDisplay": "default",
-                                        "legendDisplay": "show",
-                                        "legendPosition": "right",
-                                        "nestedLegend": false,
-                                        "emptySizeRatio": 0.5
+                                        "columnId": "26570f22-74a8-5ac8-1a40-058fbee7c6dc",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "9f6509b2-978b-e75c-b273-e27618f6b110",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "b9f15d79-4cc2-d068-6e67-1243d9a56a33",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "db9a17f7-51ac-761f-10d0-05adb8c3e7ec",
+                                        "isTransposed": false,
+                                        "isMetric": false
                                     }
                                 ],
-                                "shape": "donut"
+                                "layerId": "84610bac-793d-652b-6b71-7e25f84eda91",
+                                "layerType": "data",
+                                "paging": {
+                                    "size": 10,
+                                    "enabled": true
+                                }
                             },
                             "query": {
-                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| WHERE azure.correlation_id IS NOT NULL\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id) BY azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 10\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL actor = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY actor, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "cc74b71e-9a9e-0dcf-13cc-65c6a5131c62": {
+                                        "84610bac-793d-652b-6b71-7e25f84eda91": {
                                             "query": {
-                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| WHERE azure.correlation_id IS NOT NULL\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id) BY azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 10\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL actor = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY actor, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
                                             },
                                             "columns": [
                                                 {
-                                                    "fieldName": "op_count",
-                                                    "columnId": "9c7f7336-f3b5-7d6a-61b6-c68d5425136b",
-                                                    "label": "op_count",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
+                                                    "fieldName": "actor",
+                                                    "columnId": "26570f22-74a8-5ac8-1a40-058fbee7c6dc",
+                                                    "label": "Actor",
+                                                    "customLabel": true
                                                 },
                                                 {
                                                     "fieldName": "azure.identity.authorization.evidence.principal.type",
-                                                    "columnId": "316a818b-b99f-90f3-22bb-55b347d70254",
-                                                    "label": "Principal Type",
+                                                    "columnId": "9f6509b2-978b-e75c-b273-e27618f6b110",
+                                                    "label": "Type",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "op_count",
+                                                    "columnId": "b9f15d79-4cc2-d068-6e67-1243d9a56a33",
+                                                    "label": "Operations",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "db9a17f7-51ac-761f-10d0-05adb8c3e7ec",
+                                                    "label": "Failures",
                                                     "customLabel": true
                                                 }
                                             ],
                                             "allColumns": [
                                                 {
-                                                    "fieldName": "op_count",
-                                                    "columnId": "9c7f7336-f3b5-7d6a-61b6-c68d5425136b",
-                                                    "label": "op_count",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
+                                                    "fieldName": "actor",
+                                                    "columnId": "26570f22-74a8-5ac8-1a40-058fbee7c6dc",
+                                                    "label": "Actor",
+                                                    "customLabel": true
                                                 },
                                                 {
                                                     "fieldName": "azure.identity.authorization.evidence.principal.type",
-                                                    "columnId": "316a818b-b99f-90f3-22bb-55b347d70254",
-                                                    "label": "Principal Type",
+                                                    "columnId": "9f6509b2-978b-e75c-b273-e27618f6b110",
+                                                    "label": "Type",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "op_count",
+                                                    "columnId": "b9f15d79-4cc2-d068-6e67-1243d9a56a33",
+                                                    "label": "Operations",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "db9a17f7-51ac-761f-10d0-05adb8c3e7ec",
+                                                    "label": "Failures",
                                                     "customLabel": true
                                                 }
                                             ],
