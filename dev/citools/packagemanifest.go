@@ -46,7 +46,7 @@ func (m *packageManifest) IsValid() bool {
 	return slices.Contains(validTypes, m.Type)
 }
 
-func readPackageManifest(path string) (*packageManifest, error) {
+func ReadPackageManifest(path string) (*packageManifest, error) {
 	cfg, err := yaml.NewConfigWithFile(path, ucfg.PathSep("."))
 	if err != nil {
 		return nil, fmt.Errorf("reading file failed (path: %s): %w", path, err)

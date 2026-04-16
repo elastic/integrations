@@ -32,7 +32,7 @@ func ListPackages(dir string) ([]string, error) {
 		} else if statErr != nil {
 			return fmt.Errorf("error statting manifest %s: %w", manifestPath, statErr)
 		}
-		manifest, err := readPackageManifest(manifestPath)
+		manifest, err := ReadPackageManifest(manifestPath)
 		if err != nil {
 			return fmt.Errorf("error reading manifest %s: %w", manifestPath, err)
 		}

@@ -37,7 +37,7 @@ func checkPackageNames(dir string) error {
 func checkDuplicateNames(paths []string) error {
 	seen := make(map[string][]string)
 	for _, path := range paths {
-		manifest, err := readManifest(filepath.Join(path, manifestFileName))
+		manifest, err := citools.ReadPackageManifest(filepath.Join(path, manifestFileName))
 		if err != nil {
 			return fmt.Errorf("error reading manifest in %s: %w", path, err)
 		}
