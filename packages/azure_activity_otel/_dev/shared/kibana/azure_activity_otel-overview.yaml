@@ -275,7 +275,8 @@ dashboards:
       query: |
         FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
-        | STATS count = COUNT(*) BY azure.category
+        | WHERE azure.correlation_id IS NOT NULL
+        | STATS count = COUNT_DISTINCT(azure.correlation_id) BY azure.category
         | SORT count DESC
         | LIMIT 10
       time_field: '@timestamp'
