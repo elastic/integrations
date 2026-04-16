@@ -2,7 +2,7 @@
 
 This integration periodically fetches logs and metrics from [HAProxy](https://www.haproxy.org/) servers.
 
-The Integration can collect metrics in three datastreams from HAProxy: `info`, `stat` and `metrics`. `info` is not available when using the stats page. For more information, refer to the [HAProxy module](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-haproxy).
+The Integration can collect metrics in two datastreams from HAProxy: `info` and `stat`. `info` is not available when using the stats page. For more information, refer to the [HAProxy module](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-haproxy).
 
 ## Compatibility
 
@@ -14,8 +14,7 @@ The integration supports the following default log patterns:
 * [HTTPS log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.4)
 * [Error log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.5)
 
-The `info` and `stat` datasets were tested with HAProxy versions from `1.6`, `1.7`, `1.8` to `3.2`.  
-The `metrics` dataset collects metrics from Prometheus metrics. It was tested with HAProxy `2.8` and `3.2`. In Haproxy it was introduced in `2.0`. For configuration instructions, refer to the [HAProxy documentation](https://www.haproxy.com/documentation/haproxy-configuration-tutorials/alerts-and-monitoring/prometheus/).
+The `info` and `stat` datasets were tested with HAProxy versions from `1.6`, `1.7`, `1.8` to `3.2`.
 
 ## Troubleshooting
 
@@ -67,17 +66,3 @@ The fields reported are:
 Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "stat"}}
-
-### metrics
-
-The HAProxy `metrics` metricset collects metric fields from HAProxy Prometheus metrics.
-
-{{event "metrics"}}
-
-The fields reported are:
-
-**ECS Field Reference**
-
-Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "metrics"}}
