@@ -2098,22 +2098,10 @@ processors:
       if: ctx.crowdstrike?.File instanceof Map
       source: |-
         def fileMap = ctx.crowdstrike.File;
-        if (ctx.file == null) {
-          ctx.file = [:];
-        }
-        if (ctx.file.name == null && fileMap.Name != null) {
-          ctx.file.name = fileMap.Name;
-        }
-        if (ctx.file.extension == null && fileMap.Extension != null) {
-          ctx.file.extension = fileMap.Extension;
-        }
-        if (ctx.file.path == null) {
-          if (fileMap.NormalizedAbsolutePath != null) {
-            ctx.file.path = fileMap.NormalizedAbsolutePath;
-          } else if (fileMap.AbsolutePath != null) {
-            ctx.file.path = fileMap.AbsolutePath;
-          }
-        }
+        ctx.file = ctx.file ?: [:];
+        if (ctx.file.name == null && fileMap.Name != null) ctx.file.name = fileMap.Name;
+        if (ctx.file.extension == null && fileMap.Extension != null) ctx.file.extension = fileMap.Extension;
+        if (ctx.file.path == null) ctx.file.path = fileMap.NormalizedAbsolutePath ?: fileMap.AbsolutePath;
         def fileType = [:];
         if (fileMap.FileTypeID != null) fileType.ID = fileMap.FileTypeID;
         if (fileMap.FileTypeName != null) fileType.Name = fileMap.FileTypeName;
@@ -2121,9 +2109,7 @@ processors:
         if (fileMap.FileTypeCategoryID != null) fileType.CategoryID = fileMap.FileTypeCategoryID;
         if (fileMap.FileTypeCategoryName != null) fileType.CategoryName = fileMap.FileTypeCategoryName;
         if (!fileType.isEmpty()) {
-          if (ctx.crowdstrike.FileType == null) {
-            ctx.crowdstrike.FileType = [:];
-          }
+          ctx.crowdstrike.FileType = ctx.crowdstrike.FileType ?: [:];
           ctx.crowdstrike.FileType.Type = fileType;
         }
         ctx.crowdstrike.remove('File');
