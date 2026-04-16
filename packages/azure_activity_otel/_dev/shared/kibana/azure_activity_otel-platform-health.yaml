@@ -283,30 +283,33 @@ dashboards:
         - value: NonCompliant
           color: '#BD271E'
   - id: 0e925cbb-bede-2581-c3d5-4b03d5ee9fc0
-    title: Recommendations by Category
+    title: Active Recommendations
     size: {w: 24, h: 12}
     position: {x: 0, y: 34}
     esql:
-      type: pie
+      type: datatable
       query: |
         FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Recommendation"
-        | WHERE azure.recommendation.category IS NOT NULL
-        | STATS count = COUNT(*) BY azure.recommendation.category
-        | SORT count DESC
-        | LIMIT 10
+        | WHERE azure.recommendation.name IS NOT NULL
+        | STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact
+        | SORT azure.recommendation.impact ASC, affected_resources DESC
+        | LIMIT 50
       time_field: '@timestamp'
-      legend:
-        visible: show
-      metrics:
-      - field: count
       breakdowns:
+      - field: azure.recommendation.name
+        label: Recommendation
       - field: azure.recommendation.category
         label: Category
-      appearance:
-        donut: medium
-        values:
-          format: percent
+      - field: azure.recommendation.impact
+        label: Impact
+      - field: affected_resources
+        label: Affected Resources
+      - field: last_seen
+        label: Last Seen
+      paging:
+        enabled: true
+        page_size: 10
   - id: a9bfb3cb-31b8-e1b4-0ed2-d635bc8fd9bb
     title: ResourceHealth by Cause
     size: {w: 24, h: 12}

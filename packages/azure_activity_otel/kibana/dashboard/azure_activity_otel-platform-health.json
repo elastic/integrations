@@ -1344,96 +1344,118 @@
                         }
                     },
                     "attributes": {
-                        "title": "Recommendations by Category",
-                        "visualizationType": "lnsPie",
+                        "title": "Active Recommendations",
+                        "visualizationType": "lnsDatatable",
                         "type": "lens",
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "layerId": "677d5c4e-c491-4051-008b-e9e7696a356c",
-                                        "layerType": "data",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "specialAssignments": [
-                                                {
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ],
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            }
-                                        },
-                                        "primaryGroups": [
-                                            "8fb303b8-6620-3b6e-a93f-54f0e8c6be34"
-                                        ],
-                                        "metrics": [
-                                            "0a824a41-1c38-2f32-e6fa-ef6ae5a714da"
-                                        ],
-                                        "numberDisplay": "percent",
-                                        "categoryDisplay": "default",
-                                        "legendDisplay": "show",
-                                        "legendPosition": "right",
-                                        "nestedLegend": false,
-                                        "emptySizeRatio": 0.5
+                                        "columnId": "a39ce7bb-a989-723e-a9f0-b7ba9e34ee91",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "146b9f2f-fa7a-8bd7-e28d-5d0a02acdaf8",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "aa0347ee-c682-fee7-b387-f4f286928c2a",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "03f4ebef-9229-923f-7b70-962136633a05",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "9896f632-47a5-76a4-18eb-a5e9193893b6",
+                                        "isTransposed": false,
+                                        "isMetric": false
                                     }
                                 ],
-                                "shape": "donut"
+                                "layerId": "675a5215-7814-a31a-c85c-6da54995009a",
+                                "layerType": "data",
+                                "paging": {
+                                    "size": 10,
+                                    "enabled": true
+                                }
                             },
                             "query": {
-                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.category IS NOT NULL\n| STATS count = COUNT(*) BY azure.recommendation.category\n| SORT count DESC\n| LIMIT 10\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.name IS NOT NULL\n| STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact\n| SORT azure.recommendation.impact ASC, affected_resources DESC\n| LIMIT 50\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "677d5c4e-c491-4051-008b-e9e7696a356c": {
+                                        "675a5215-7814-a31a-c85c-6da54995009a": {
                                             "query": {
-                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.category IS NOT NULL\n| STATS count = COUNT(*) BY azure.recommendation.category\n| SORT count DESC\n| LIMIT 10\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.name IS NOT NULL\n| STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact\n| SORT azure.recommendation.impact ASC, affected_resources DESC\n| LIMIT 50\n"
                                             },
                                             "columns": [
                                                 {
-                                                    "fieldName": "count",
-                                                    "columnId": "0a824a41-1c38-2f32-e6fa-ef6ae5a714da",
-                                                    "label": "count",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
+                                                    "fieldName": "azure.recommendation.name",
+                                                    "columnId": "a39ce7bb-a989-723e-a9f0-b7ba9e34ee91",
+                                                    "label": "Recommendation",
+                                                    "customLabel": true
                                                 },
                                                 {
                                                     "fieldName": "azure.recommendation.category",
-                                                    "columnId": "8fb303b8-6620-3b6e-a93f-54f0e8c6be34",
+                                                    "columnId": "146b9f2f-fa7a-8bd7-e28d-5d0a02acdaf8",
                                                     "label": "Category",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "azure.recommendation.impact",
+                                                    "columnId": "aa0347ee-c682-fee7-b387-f4f286928c2a",
+                                                    "label": "Impact",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "affected_resources",
+                                                    "columnId": "03f4ebef-9229-923f-7b70-962136633a05",
+                                                    "label": "Affected Resources",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "last_seen",
+                                                    "columnId": "9896f632-47a5-76a4-18eb-a5e9193893b6",
+                                                    "label": "Last Seen",
                                                     "customLabel": true
                                                 }
                                             ],
                                             "allColumns": [
                                                 {
-                                                    "fieldName": "count",
-                                                    "columnId": "0a824a41-1c38-2f32-e6fa-ef6ae5a714da",
-                                                    "label": "count",
-                                                    "customLabel": false,
-                                                    "meta": {
-                                                        "type": "number",
-                                                        "esType": "long"
-                                                    },
-                                                    "inMetricDimension": true
+                                                    "fieldName": "azure.recommendation.name",
+                                                    "columnId": "a39ce7bb-a989-723e-a9f0-b7ba9e34ee91",
+                                                    "label": "Recommendation",
+                                                    "customLabel": true
                                                 },
                                                 {
                                                     "fieldName": "azure.recommendation.category",
-                                                    "columnId": "8fb303b8-6620-3b6e-a93f-54f0e8c6be34",
+                                                    "columnId": "146b9f2f-fa7a-8bd7-e28d-5d0a02acdaf8",
                                                     "label": "Category",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "azure.recommendation.impact",
+                                                    "columnId": "aa0347ee-c682-fee7-b387-f4f286928c2a",
+                                                    "label": "Impact",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "affected_resources",
+                                                    "columnId": "03f4ebef-9229-923f-7b70-962136633a05",
+                                                    "label": "Affected Resources",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "last_seen",
+                                                    "columnId": "9896f632-47a5-76a4-18eb-a5e9193893b6",
+                                                    "label": "Last Seen",
                                                     "customLabel": true
                                                 }
                                             ],
