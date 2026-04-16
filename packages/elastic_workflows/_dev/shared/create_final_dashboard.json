@@ -1,0 +1,1644 @@
+{
+  "title": "[Elastic Workflows] Execution Overview",
+  "description": "Comprehensive monitoring for Elastic Workflows. Click workflow IDs in tables to navigate to the workflow page.",
+  "time_range": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "refresh_interval": {
+    "pause": false,
+    "value": 30000
+  },
+  "panels": [
+    {
+      "type": "vis",
+      "id": "total-executions",
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "config": {
+        "title": "Total Executions",
+        "attributes": {
+          "title": "Total Executions",
+          "visualizationType": "lnsMetric",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "col1": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Executions",
+                        "dataType": "number",
+                        "isBucketed": false
+                      }
+                    },
+                    "columnOrder": [
+                      "col1"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layerId": "layer1",
+              "layerType": "data",
+              "metricAccessor": "col1"
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "success-rate",
+      "grid": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "config": {
+        "title": "Success Rate",
+        "attributes": {
+          "title": "Success Rate",
+          "visualizationType": "lnsMetric",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "total": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Total",
+                        "dataType": "number",
+                        "isBucketed": false
+                      },
+                      "completed": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Completed",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "status: \"completed\"",
+                          "language": "kuery"
+                        }
+                      },
+                      "formula": {
+                        "operationType": "formula",
+                        "label": "Success Rate",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "references": [
+                          "formulaX0"
+                        ],
+                        "customLabel": true,
+                        "params": {
+                          "formula": "count(kql='status: \"completed\"') / count()",
+                          "format": {
+                            "id": "percent",
+                            "params": {
+                              "decimals": 1
+                            }
+                          }
+                        }
+                      },
+                      "formulaX0": {
+                        "operationType": "math",
+                        "references": [
+                          "completed",
+                          "total"
+                        ],
+                        "label": "Part of formula",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "customLabel": true
+                      },
+                      "maxval": {
+                        "operationType": "static_value",
+                        "label": "Static value: 1",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "isStaticValue": true,
+                        "scale": "ratio",
+                        "params": {
+                          "value": "1"
+                        },
+                        "references": []
+                      }
+                    },
+                    "columnOrder": [
+                      "total",
+                      "completed",
+                      "formula",
+                      "formulaX0",
+                      "maxval"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layerId": "layer1",
+              "layerType": "data",
+              "metricAccessor": "formula",
+              "maxAccessor": "maxval",
+              "showBar": true,
+              "subtitle": " ",
+              "palette": {
+                "type": "palette",
+                "name": "status",
+                "params": {
+                  "name": "status",
+                  "reverse": false,
+                  "rangeType": "percent",
+                  "rangeMin": 0,
+                  "rangeMax": 100,
+                  "progression": "fixed",
+                  "stops": [
+                    {
+                      "color": "#f66d64",
+                      "stop": 80
+                    },
+                    {
+                      "color": "#fcd279",
+                      "stop": 95
+                    },
+                    {
+                      "color": "#23be8f",
+                      "stop": 100
+                    }
+                  ],
+                  "steps": 3,
+                  "colorStops": [],
+                  "continuity": "all",
+                  "maxSteps": 5
+                }
+              }
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "avg-duration",
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "config": {
+        "title": "Avg Duration",
+        "attributes": {
+          "title": "Avg Duration",
+          "visualizationType": "lnsMetric",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "col1": {
+                        "operationType": "average",
+                        "sourceField": "duration",
+                        "label": "Avg Duration (ms)",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "params": {
+                          "format": {
+                            "id": "number",
+                            "params": {
+                              "decimals": 0,
+                              "suffix": " ms"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "col1"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layerId": "layer1",
+              "layerType": "data",
+              "metricAccessor": "col1"
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "failure-count",
+      "grid": {
+        "x": 36,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "config": {
+        "title": "Failures",
+        "attributes": {
+          "title": "Failures",
+          "visualizationType": "lnsMetric",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "col1": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Failures",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "status: \"failed\" OR status: \"timed_out\"",
+                          "language": "kuery"
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "col1"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layerId": "layer1",
+              "layerType": "data",
+              "metricAccessor": "col1",
+              "color": "#BD271E"
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "executions-over-time",
+      "grid": {
+        "x": 0,
+        "y": 8,
+        "w": 32,
+        "h": 14
+      },
+      "config": {
+        "title": "Executions Over Time",
+        "attributes": {
+          "title": "Executions Over Time",
+          "visualizationType": "lnsXY",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "time": {
+                        "operationType": "date_histogram",
+                        "sourceField": "createdAt",
+                        "label": "Time",
+                        "dataType": "date",
+                        "isBucketed": true,
+                        "params": {
+                          "interval": "auto"
+                        }
+                      },
+                      "count": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Executions",
+                        "dataType": "number",
+                        "isBucketed": false
+                      },
+                      "status": {
+                        "operationType": "terms",
+                        "sourceField": "status",
+                        "label": "Status",
+                        "dataType": "string",
+                        "isBucketed": true,
+                        "params": {
+                          "size": 10,
+                          "orderBy": {
+                            "type": "column",
+                            "columnId": "count"
+                          },
+                          "orderDirection": "desc"
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "time",
+                      "status",
+                      "count"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layers": [
+                {
+                  "layerId": "layer1",
+                  "layerType": "data",
+                  "seriesType": "bar_stacked",
+                  "xAccessor": "time",
+                  "accessors": [
+                    "count"
+                  ],
+                  "splitAccessor": "status"
+                }
+              ],
+              "legend": {
+                "isVisible": true,
+                "position": "right"
+              },
+              "preferredSeriesType": "bar_stacked",
+              "valueLabels": "hide"
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "trigger-breakdown",
+      "grid": {
+        "x": 32,
+        "y": 8,
+        "w": 16,
+        "h": 14
+      },
+      "config": {
+        "title": "Trigger Breakdown",
+        "attributes": {
+          "title": "Trigger Breakdown",
+          "visualizationType": "lnsPie",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "trigger": {
+                        "operationType": "terms",
+                        "sourceField": "triggeredBy",
+                        "label": "Triggered By",
+                        "dataType": "string",
+                        "isBucketed": true,
+                        "params": {
+                          "size": 10,
+                          "orderBy": {
+                            "type": "column",
+                            "columnId": "count"
+                          },
+                          "orderDirection": "desc"
+                        }
+                      },
+                      "count": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Count",
+                        "dataType": "number",
+                        "isBucketed": false
+                      }
+                    },
+                    "columnOrder": [
+                      "trigger",
+                      "count"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "shape": "donut",
+              "layers": [
+                {
+                  "layerId": "layer1",
+                  "layerType": "data",
+                  "primaryGroups": [
+                    "trigger"
+                  ],
+                  "metrics": [
+                    "count"
+                  ]
+                }
+              ],
+              "legend": {
+                "isVisible": true,
+                "position": "right"
+              }
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "failure-rate-trend",
+      "grid": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 14
+      },
+      "config": {
+        "title": "Failure Rate Trend",
+        "attributes": {
+          "title": "Failure Rate Trend",
+          "visualizationType": "lnsXY",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "time": {
+                        "operationType": "date_histogram",
+                        "sourceField": "createdAt",
+                        "label": "Time",
+                        "dataType": "date",
+                        "isBucketed": true,
+                        "params": {
+                          "interval": "auto"
+                        }
+                      },
+                      "total": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Total",
+                        "dataType": "number",
+                        "isBucketed": false
+                      },
+                      "failed": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Failed",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "status: \"failed\" OR status: \"timed_out\"",
+                          "language": "kuery"
+                        }
+                      },
+                      "formula": {
+                        "operationType": "formula",
+                        "label": "Failure Rate",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "references": [
+                          "formulaX0"
+                        ],
+                        "customLabel": true,
+                        "params": {
+                          "formula": "count(kql='status: \"failed\" OR status: \"timed_out\"') / count()",
+                          "format": {
+                            "id": "percent",
+                            "params": {
+                              "decimals": 1
+                            }
+                          }
+                        }
+                      },
+                      "formulaX0": {
+                        "operationType": "math",
+                        "references": [
+                          "failed",
+                          "total"
+                        ],
+                        "label": "Part of formula",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "customLabel": true
+                      }
+                    },
+                    "columnOrder": [
+                      "time",
+                      "formula",
+                      "formulaX0",
+                      "total",
+                      "failed"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layers": [
+                {
+                  "layerId": "layer1",
+                  "layerType": "data",
+                  "seriesType": "area",
+                  "xAccessor": "time",
+                  "accessors": [
+                    "formula"
+                  ],
+                  "yConfig": [
+                    {
+                      "forAccessor": "formula",
+                      "axisMode": "left",
+                      "color": "#BD271E"
+                    }
+                  ]
+                }
+              ],
+              "legend": {
+                "isVisible": false
+              },
+              "preferredSeriesType": "area",
+              "valueLabels": "hide",
+              "yTitle": "Failure Rate"
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "duration-distribution",
+      "grid": {
+        "x": 24,
+        "y": 22,
+        "w": 24,
+        "h": 14
+      },
+      "config": {
+        "title": "Duration Distribution",
+        "attributes": {
+          "title": "Duration Distribution",
+          "visualizationType": "lnsXY",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "fast": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "< 1s",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "duration < 1000",
+                          "language": "kuery"
+                        },
+                        "customLabel": true
+                      },
+                      "medium": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "1s - 5s",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "duration >= 1000 AND duration < 5000",
+                          "language": "kuery"
+                        },
+                        "customLabel": true
+                      },
+                      "slow": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "5s - 30s",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "duration >= 5000 AND duration < 30000",
+                          "language": "kuery"
+                        },
+                        "customLabel": true
+                      },
+                      "very_slow": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "> 30s",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "duration >= 30000",
+                          "language": "kuery"
+                        },
+                        "customLabel": true
+                      },
+                      "time": {
+                        "operationType": "date_histogram",
+                        "sourceField": "createdAt",
+                        "label": "Time",
+                        "dataType": "date",
+                        "isBucketed": true,
+                        "params": {
+                          "interval": "auto"
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "time",
+                      "fast",
+                      "medium",
+                      "slow",
+                      "very_slow"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layers": [
+                {
+                  "layerId": "layer1",
+                  "layerType": "data",
+                  "seriesType": "bar_stacked",
+                  "xAccessor": "time",
+                  "accessors": [
+                    "fast",
+                    "medium",
+                    "slow",
+                    "very_slow"
+                  ],
+                  "yConfig": [
+                    {
+                      "forAccessor": "fast",
+                      "color": "#23be8f"
+                    },
+                    {
+                      "forAccessor": "medium",
+                      "color": "#fcd279"
+                    },
+                    {
+                      "forAccessor": "slow",
+                      "color": "#f5a623"
+                    },
+                    {
+                      "forAccessor": "very_slow",
+                      "color": "#BD271E"
+                    }
+                  ]
+                }
+              ],
+              "legend": {
+                "isVisible": true,
+                "position": "right"
+              },
+              "preferredSeriesType": "bar_stacked",
+              "valueLabels": "hide",
+              "yTitle": "Executions"
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "duration-over-time",
+      "grid": {
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 14
+      },
+      "config": {
+        "title": "Execution Duration Over Time",
+        "attributes": {
+          "title": "Execution Duration Over Time",
+          "visualizationType": "lnsXY",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "time": {
+                        "operationType": "date_histogram",
+                        "sourceField": "createdAt",
+                        "label": "Time",
+                        "dataType": "date",
+                        "isBucketed": true,
+                        "params": {
+                          "interval": "auto"
+                        }
+                      },
+                      "avg_dur": {
+                        "operationType": "average",
+                        "sourceField": "duration",
+                        "label": "Avg (ms)",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "params": {
+                          "format": {
+                            "id": "number",
+                            "params": {
+                              "decimals": 0
+                            }
+                          }
+                        }
+                      },
+                      "p95_dur": {
+                        "operationType": "percentile",
+                        "sourceField": "duration",
+                        "label": "p95 (ms)",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "params": {
+                          "percentile": 95,
+                          "format": {
+                            "id": "number",
+                            "params": {
+                              "decimals": 0
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "time",
+                      "avg_dur",
+                      "p95_dur"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layers": [
+                {
+                  "layerId": "layer1",
+                  "layerType": "data",
+                  "seriesType": "line",
+                  "xAccessor": "time",
+                  "accessors": [
+                    "avg_dur",
+                    "p95_dur"
+                  ],
+                  "yConfig": [
+                    {
+                      "forAccessor": "avg_dur",
+                      "axisMode": "left",
+                      "color": "#0077CC"
+                    },
+                    {
+                      "forAccessor": "p95_dur",
+                      "axisMode": "left",
+                      "color": "#f5a623"
+                    }
+                  ]
+                }
+              ],
+              "legend": {
+                "isVisible": true,
+                "position": "right"
+              },
+              "preferredSeriesType": "line",
+              "valueLabels": "hide",
+              "yTitle": "Duration (ms)"
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "status-breakdown",
+      "grid": {
+        "x": 24,
+        "y": 36,
+        "w": 12,
+        "h": 14
+      },
+      "config": {
+        "title": "Status Breakdown",
+        "attributes": {
+          "title": "Status Breakdown",
+          "visualizationType": "lnsPie",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "status": {
+                        "operationType": "terms",
+                        "sourceField": "status",
+                        "label": "Status",
+                        "dataType": "string",
+                        "isBucketed": true,
+                        "params": {
+                          "size": 10,
+                          "orderBy": {
+                            "type": "column",
+                            "columnId": "count"
+                          },
+                          "orderDirection": "desc"
+                        }
+                      },
+                      "count": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Count",
+                        "dataType": "number",
+                        "isBucketed": false
+                      }
+                    },
+                    "columnOrder": [
+                      "status",
+                      "count"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "shape": "donut",
+              "layers": [
+                {
+                  "layerId": "layer1",
+                  "layerType": "data",
+                  "primaryGroups": [
+                    "status"
+                  ],
+                  "metrics": [
+                    "count"
+                  ]
+                }
+              ],
+              "legend": {
+                "isVisible": true,
+                "position": "right"
+              }
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "slowest-workflows",
+      "grid": {
+        "x": 36,
+        "y": 36,
+        "w": 12,
+        "h": 14
+      },
+      "config": {
+        "title": "Slowest Workflows",
+        "attributes": {
+          "title": "Slowest Workflows (p95)",
+          "visualizationType": "lnsDatatable",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "workflow": {
+                        "operationType": "terms",
+                        "sourceField": "workflowId",
+                        "label": "Workflow",
+                        "dataType": "string",
+                        "isBucketed": true,
+                        "params": {
+                          "size": 10,
+                          "orderBy": {
+                            "type": "column",
+                            "columnId": "p95dur"
+                          },
+                          "orderDirection": "desc"
+                        }
+                      },
+                      "p95dur": {
+                        "operationType": "percentile",
+                        "sourceField": "duration",
+                        "label": "p95 (ms)",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "params": {
+                          "percentile": 95,
+                          "format": {
+                            "id": "number",
+                            "params": {
+                              "decimals": 0
+                            }
+                          }
+                        }
+                      },
+                      "execcount": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Runs",
+                        "dataType": "number",
+                        "isBucketed": false
+                      }
+                    },
+                    "columnOrder": [
+                      "workflow",
+                      "p95dur",
+                      "execcount"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layerId": "layer1",
+              "layerType": "data",
+              "columns": [
+                {
+                  "columnId": "workflow"
+                },
+                {
+                  "columnId": "p95dur",
+                  "colorMode": "text",
+                  "palette": {
+                    "type": "palette",
+                    "name": "status",
+                    "params": {
+                      "name": "status",
+                      "reverse": true,
+                      "rangeType": "number",
+                      "rangeMin": 0,
+                      "rangeMax": null,
+                      "progression": "fixed",
+                      "stops": [
+                        {
+                          "color": "#23be8f",
+                          "stop": 1000
+                        },
+                        {
+                          "color": "#fcd279",
+                          "stop": 5000
+                        },
+                        {
+                          "color": "#f66d64",
+                          "stop": 30000
+                        }
+                      ],
+                      "steps": 3,
+                      "continuity": "above"
+                    }
+                  }
+                },
+                {
+                  "columnId": "execcount"
+                }
+              ]
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "top-workflows",
+      "grid": {
+        "x": 0,
+        "y": 50,
+        "w": 24,
+        "h": 16
+      },
+      "config": {
+        "title": "Top Workflows",
+        "attributes": {
+          "title": "Top Workflows",
+          "visualizationType": "lnsDatatable",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "workflow": {
+                        "operationType": "terms",
+                        "sourceField": "workflowId",
+                        "label": "Workflow",
+                        "dataType": "string",
+                        "isBucketed": true,
+                        "params": {
+                          "size": 20,
+                          "orderBy": {
+                            "type": "column",
+                            "columnId": "executions"
+                          },
+                          "orderDirection": "desc"
+                        }
+                      },
+                      "executions": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Executions",
+                        "dataType": "number",
+                        "isBucketed": false
+                      },
+                      "avgduration": {
+                        "operationType": "average",
+                        "sourceField": "duration",
+                        "label": "Avg Duration (ms)",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "params": {
+                          "format": {
+                            "id": "number",
+                            "params": {
+                              "decimals": 0
+                            }
+                          }
+                        }
+                      },
+                      "failures": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Failures",
+                        "dataType": "number",
+                        "isBucketed": false,
+                        "filter": {
+                          "query": "status: \"failed\" OR status: \"timed_out\"",
+                          "language": "kuery"
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "workflow",
+                      "executions",
+                      "avgduration",
+                      "failures"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layerId": "layer1",
+              "layerType": "data",
+              "columns": [
+                {
+                  "columnId": "workflow"
+                },
+                {
+                  "columnId": "executions"
+                },
+                {
+                  "columnId": "avgduration"
+                },
+                {
+                  "columnId": "failures",
+                  "colorMode": "text",
+                  "palette": {
+                    "type": "palette",
+                    "name": "status",
+                    "params": {
+                      "name": "status",
+                      "reverse": true,
+                      "rangeType": "number",
+                      "rangeMin": 0,
+                      "rangeMax": null,
+                      "progression": "fixed",
+                      "stops": [
+                        {
+                          "color": "#23be8f",
+                          "stop": 1
+                        },
+                        {
+                          "color": "#fcd279",
+                          "stop": 5
+                        },
+                        {
+                          "color": "#f66d64",
+                          "stop": 20
+                        }
+                      ],
+                      "steps": 3,
+                      "continuity": "above"
+                    }
+                  }
+                }
+              ]
+            },
+            "query": {
+              "query": "NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        },
+        "enhancements": {
+          "dynamicActions": {
+            "events": [
+              {
+                "eventId": "da9a622e-f10e-4869-87f9-1e517e8c0dc5",
+                "triggers": [
+                  "VALUE_CLICK_TRIGGER"
+                ],
+                "action": {
+                  "factoryId": "URL_DRILLDOWN",
+                  "name": "View Workflow",
+                  "config": {
+                    "url": {
+                      "template": "/app/workflows/{{event.value}}"
+                    },
+                    "openInNewTab": true,
+                    "encodeUrl": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "recent-failures",
+      "grid": {
+        "x": 24,
+        "y": 50,
+        "w": 24,
+        "h": 16
+      },
+      "config": {
+        "title": "Recent Failures",
+        "attributes": {
+          "title": "Recent Failures",
+          "visualizationType": "lnsDatatable",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "workflow": {
+                        "operationType": "terms",
+                        "sourceField": "workflowId",
+                        "label": "Workflow",
+                        "dataType": "string",
+                        "isBucketed": true,
+                        "params": {
+                          "size": 20,
+                          "orderBy": {
+                            "type": "column",
+                            "columnId": "failures"
+                          },
+                          "orderDirection": "desc"
+                        }
+                      },
+                      "failures": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Failures",
+                        "dataType": "number",
+                        "isBucketed": false
+                      },
+                      "laststatus": {
+                        "operationType": "last_value",
+                        "sourceField": "status",
+                        "label": "Last Status",
+                        "dataType": "string",
+                        "isBucketed": false,
+                        "params": {
+                          "sortField": "createdAt"
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "workflow",
+                      "failures",
+                      "laststatus"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_wf"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layerId": "layer1",
+              "layerType": "data",
+              "columns": [
+                {
+                  "columnId": "workflow"
+                },
+                {
+                  "columnId": "failures"
+                },
+                {
+                  "columnId": "laststatus"
+                }
+              ]
+            },
+            "query": {
+              "query": "(status: \"failed\" OR status: \"timed_out\") AND NOT isTestRun: true",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_wf": {
+                "id": "adhoc_wf",
+                "title": ".workflows-executions",
+                "timeFieldName": "createdAt"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_wf",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        },
+        "enhancements": {
+          "dynamicActions": {
+            "events": [
+              {
+                "eventId": "120af0bf-b53a-4d65-8fdc-35e59c163bbb",
+                "triggers": [
+                  "VALUE_CLICK_TRIGGER"
+                ],
+                "action": {
+                  "factoryId": "URL_DRILLDOWN",
+                  "name": "View Workflow Executions",
+                  "config": {
+                    "url": {
+                      "template": "/app/workflows/{{event.value}}?tab=executions"
+                    },
+                    "openInNewTab": true,
+                    "encodeUrl": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "id": "error-logs-over-time",
+      "grid": {
+        "x": 0,
+        "y": 66,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "title": "Error & Warning Logs Over Time",
+        "attributes": {
+          "title": "Error & Warning Logs Over Time",
+          "visualizationType": "lnsXY",
+          "state": {
+            "datasourceStates": {
+              "formBased": {
+                "layers": {
+                  "layer1": {
+                    "columns": {
+                      "time": {
+                        "operationType": "date_histogram",
+                        "sourceField": "@timestamp",
+                        "label": "Time",
+                        "dataType": "date",
+                        "isBucketed": true,
+                        "params": {
+                          "interval": "auto"
+                        }
+                      },
+                      "count": {
+                        "operationType": "count",
+                        "sourceField": "___records___",
+                        "label": "Log entries",
+                        "dataType": "number",
+                        "isBucketed": false
+                      },
+                      "level": {
+                        "operationType": "terms",
+                        "sourceField": "level",
+                        "label": "Level",
+                        "dataType": "string",
+                        "isBucketed": true,
+                        "params": {
+                          "size": 5,
+                          "orderBy": {
+                            "type": "column",
+                            "columnId": "count"
+                          },
+                          "orderDirection": "desc"
+                        }
+                      }
+                    },
+                    "columnOrder": [
+                      "time",
+                      "level",
+                      "count"
+                    ],
+                    "incompleteColumns": {},
+                    "indexPatternId": "adhoc_logs"
+                  }
+                }
+              }
+            },
+            "visualization": {
+              "layers": [
+                {
+                  "layerId": "layer1",
+                  "layerType": "data",
+                  "seriesType": "bar_stacked",
+                  "xAccessor": "time",
+                  "accessors": [
+                    "count"
+                  ],
+                  "splitAccessor": "level"
+                }
+              ],
+              "legend": {
+                "isVisible": true,
+                "position": "right"
+              },
+              "preferredSeriesType": "bar_stacked",
+              "valueLabels": "hide"
+            },
+            "query": {
+              "query": "level: \"error\" OR level: \"warn\"",
+              "language": "kuery"
+            },
+            "filters": [],
+            "adHocDataViews": {
+              "adhoc_logs": {
+                "id": "adhoc_logs",
+                "title": ".workflows-execution-data-stream-logs",
+                "timeFieldName": "@timestamp"
+              }
+            }
+          },
+          "references": [
+            {
+              "type": "index-pattern",
+              "id": "adhoc_logs",
+              "name": "indexpattern-datasource-layer-layer1"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
