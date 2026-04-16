@@ -6,14 +6,14 @@ package codeowners
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/elastic/integrations/dev/citools"
 )
 
 const DefaultCodeownersPath = ".github/CODEOWNERS"
@@ -64,40 +64,22 @@ type githubOwners struct {
 // data_streams, it checks that all data_streams are explicitly owned by a single owner. Such ownership
 // sharing packages are identified by having at least one data_stream with explicit ownership in codeowners.
 func validatePackages(codeowners *githubOwners, packagesDir string) error {
-	foundPackages := false
-	err := filepath.WalkDir(packagesDir, func(path string, d fs.DirEntry, err error) error {
-		if !d.IsDir() {
-			return nil
-		}
-
-		packageManifestPath := filepath.Join(path, "manifest.yml")
-		_, err = os.Stat(packageManifestPath)
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		} else if err != nil {
-			return err
-		}
-
-		err = codeowners.checkManifest(packageManifestPath)
+	paths, err := citools.ListPackages(packagesDir)
+	if err != nil {
+		return fmt.Errorf("error listing packages in %s: %w", packagesDir, err)
+	}
+	for _, path := range paths {
+		err = codeowners.checkManifest(filepath.Join(path, "manifest.yml"))
 		if err != nil {
-			return fmt.Errorf("error checking manifest '%s': %w", packageManifestPath, err)
+			return fmt.Errorf("error checking manifest '%s': %w", path, err)
 		}
-
 		err = codeowners.checkDataStreams(path)
 		if err != nil {
 			return fmt.Errorf("error checking data streams from '%s': %w", path, err)
 		}
-
-		foundPackages = true
-
-		// No need to look deeper, we already found a package.
-		return fs.SkipDir
-	})
-	if err != nil {
-		return err
 	}
 
-	if !foundPackages {
+	if len(paths) == 0 {
 		if len(codeowners.owners) == 0 {
 			return nil
 		}
