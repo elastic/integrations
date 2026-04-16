@@ -3,19 +3,20 @@
 ## Overview
 [Forescout](https://www.forescout.com) is a leading device visibility and control platform that enables organizations to continuously identify, classify, and enforce security policies across all connected devices. It provides real-time visibility into IT, IoT, OT, and unmanaged devices across enterprise networks.
 
-The Forescout integration for Elastic allows you to collect event data using TCP and UDP, then visualize the data in Kibana.
+The Forescout integration for Elastic enables you to ingest host data from the Forescout eyeExtend Connect app and event data using TCP and UDP, then visualize it in Kibana.
 
 ### Compatibility
-The Forescout integration is tested with product version **8.5.2**.
+The Forescout integration is compatible with Forescout product version **8.5.2** and the Elastic eyeExtend Connect app version **0.2.0**.
 
 ### How it works
-This integration receives real-time syslog events sent by the Forescout platform over TCP and UDP.
+This integration receives host data sent directly by the Forescout eyeExtend Connect app to Elastic, as well as real-time syslog events sent by the Forescout platform over TCP and UDP.
 
-The Elastic Agent listens on the configured network port, ingests the incoming syslog messages, and processes them using ingest pipelines to parse, normalize, and map the events to Elastic Common Schema (ECS).
+The Elastic Agent listens on the configured network port for syslog messages and receives host data from the eyeExtend Connect app. The integration processes the incoming data using ingest pipelines to parse, normalize, and map the information to Elastic Common Schema (ECS).
 
 ## What data does this integration collect?
 This integration collects log messages of the following type:
 
+- `host`: Collect host information sent by the Forescout eyeExtend Connect app from the Forescout platform.
 - `event`: collect event messages forwarded by the [syslog plugin](https://docs.forescout.com/bundle/syslog-3-6-1-h/page/syslog-3-6-1-h.How-to-Work-with-the-Syslog-Plugin.html) from Forescout platform. These events are categorized into following groups:
     - **NAC Events**: These event messages contain information on all policy event logs.
     - **Threat Protection**: These event messages contain information on intrusion-related activity, including bite events, scan events, lockdown events and manual events.
@@ -26,16 +27,26 @@ This integration collects log messages of the following type:
 **Note**: Logs other than those from the fsservice are ingested as-is. These logs can be excluded from being ingested into Elastic, you can configure this behavior using the Syslog plugin on the Forescout platform. Refer to the configuration steps [here](https://docs.forescout.com/bundle/syslog-3-6-1-h/page/syslog-3-6-1-h.Syslog-Triggers.html#pID0E0UC0HA).
 
 ### Supported use cases
-Integrating Forescout with Elastic SIEM delivers centralized, real-time visibility into network access control, device posture, and security enforcement across IT, IoT, and OT environments by transforming Forescout’s device intelligence and policy enforcement events into actionable SIEM data. Dedicated Kibana dashboards provide detailed breakdowns by severity, facility, priority, hosts, and applications, enabling rapid triage and effective risk assessment, while time-based visualizations such as Events over Time by Priority reveal trends and abnormal spikes in access or security activity to support proactive threat detection. Together, these insights strengthen threat hunting, accelerate incident response, streamline SOC workflows, and enhance continuous network compliance and security posture management within a unified Elastic environment.
+
+Integrating Forescout with Elastic SIEM delivers centralized, real-time visibility into network access control, device posture, and security enforcement across IT, IoT, and OT environments by transforming Forescout's device intelligence and policy enforcement events into actionable SIEM data.
+
+For **Host Data**, the dashboard provides detailed breakdowns by compliance state and network segments, enabling rapid asset discovery and inventory management across managed and unmanaged devices.
+
+For **Events**, the dashboard presents key metrics with breakdowns by `Severity`, `Facility`, `Priority`, `Hosts`, and `Applications`, helping analysts quickly triage security events and assess risk levels.
+
+Time-based visualizations such as `Events over Time by Priority` reveal trends and abnormal spikes in access or security activity, supporting proactive threat detection and continuous monitoring.
+
+Interactive filtering controls allow analysts to drill down across hosts and events, supporting streamlined investigation, threat hunting, and accelerated incident response within a unified Elastic environment.
 
 ## What do I need to use this integration?
 ### From Elastic
-- Elastic Agent installed on a host that is reachable by the Forescout syslog sender
+- Elastic Stack with ingest pipelines capability to process incoming host data.
+- Elastic Agent installed on a host that is reachable by the Forescout syslog sender.
 - Ensure the required TCP/UDP ports are open to receive data.
 
 ### From Forescout
-
-[Configure the syslog plugin](https://docs.forescout.com/bundle/syslog-3-6-1-h/page/syslog-3-6-1-h.Configure-the-Syslog-Plugin.html) in Forescout to continuously send the event message over either TCP or UDP.
+- [Forescout eyeExtend Connect app](https://docs.forescout.com/bundle/connect-1-4-1-h/page/connect-1-4-1-h.About-the-Connect-Plugin.html) configured to send host data to Elastic.
+- [Configure the syslog plugin](https://docs.forescout.com/bundle/syslog-3-6-1-h/page/syslog-3-6-1-h.Configure-the-Syslog-Plugin.html) in Forescout to continuously send the event message over either TCP or UDP.
 
 ## How do I deploy this integration?
 
@@ -44,6 +55,8 @@ Integrating Forescout with Elastic SIEM delivers centralized, real-time visibili
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+This integration does not include a data collector for host data. Host data is sent directly by the Forescout eyeExtend Connect app to Elastic. The integration provides the necessary ingest pipelines and Kibana dashboards for processing and visualizing both host and event data.
 
 ## Setup
 1. In the top search bar in Kibana, search for **Integrations**.
@@ -61,6 +74,8 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 
 > **Note**: The configured timezone is added to the `event.timezone` field for each event and is used to accurately build the `@timestamp` for syslog messages that lack a year value. The default is UTC, and if no value is provided, the system timezone of the Elastic Agent host is used.
 
+> **Note**: This integration does not include a data collector for host data. It provides ingest pipelines and Kibana dashboards to process host data sent directly by the Forescout eyeExtend Connect app to Elastic.
+
 ### Validation
 #### Dashboards populated
 
@@ -71,6 +86,8 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+If host data is not appearing in Elastic, verify that the Forescout eyeExtend Connect app is properly configured to send data to your Elastic instance.
 
 A known data-corruption issue affects the TCP input in Elastic Stack versions 9.2.0 and 9.2.1, so these releases should be avoided for TCP-based data collection.
 
@@ -133,31 +150,31 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-22T18:31:08.000Z",
+    "@timestamp": "2026-11-22T18:31:08.000Z",
     "agent": {
-        "ephemeral_id": "e43ed1bf-8e3d-4782-b219-645a05161d62",
-        "id": "a9ba2fc5-a39e-4640-b87d-98c414f0f78e",
-        "name": "elastic-agent-68504",
+        "ephemeral_id": "1d936cb6-f23d-4c04-b07f-ada119d549a5",
+        "id": "a013286f-d805-4c6e-b5a3-aa506e415086",
+        "name": "elastic-agent-95897",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "forescout.event",
-        "namespace": "48683",
+        "namespace": "61844",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "a9ba2fc5-a39e-4640-b87d-98c414f0f78e",
+        "id": "a013286f-d805-4c6e-b5a3-aa506e415086",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "forescout.event",
-        "ingested": "2025-12-09T07:28:49Z",
+        "ingested": "2026-04-03T10:15:37Z",
         "kind": "event",
         "original": "<85>Nov 22 18:31:08 azure-app01 sudo: _fsservice : TTY=unknown ; PWD=/usr/local/forescout ; USER=root ; COMMAND=/bin/fstool fw status"
     },
@@ -172,7 +189,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.243.3:58960"
+            "address": "192.168.241.3:37420"
         },
         "syslog": {
             "appname": "sudo",
@@ -220,3 +237,4 @@ An example event for `event` looks as following:
 These inputs are used in this integration:
 - [TCP](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp)
 - [UDP](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp)
+- [Forescout eyeExtend Connect Plugin](https://docs.forescout.com/bundle/connect-1-4-1-h/page/connect-1-4-1-h.About-the-Connect-Plugin.html)
