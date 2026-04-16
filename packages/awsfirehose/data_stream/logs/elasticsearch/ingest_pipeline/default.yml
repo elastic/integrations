@@ -32,7 +32,10 @@ processors:
             ctx.event.dataset = 'aws.cloudtrail';
         }
 
-        // AWS VPC Flow Logs (standard, transit gateway, and regional NAT gateway)
+        // AWS VPC Flow Logs:
+        //   eni-  → standard ENI-based records AND zonal NAT gateway (interface-id = eni-xxxxx)
+        //   nat-  → regional NAT gateway v9+ (interface-id = "-", resource-id = nat-xxxxx)
+        //   tgw-  → transit gateway (no action field; log-status may be OK with no ACCEPT/REJECT)
         else if ((message_lower.contains('tgw-') && message_lower.contains('transitgateway')) || ((message_lower.contains('eni-') || message_lower.contains('nat-')) && (message_lower.contains('accept') || message_lower.contains('reject') || message_lower.contains('nodata') || message_lower.contains('skipdata')))) {
             ctx.event.dataset = 'aws.vpcflow';
         }
