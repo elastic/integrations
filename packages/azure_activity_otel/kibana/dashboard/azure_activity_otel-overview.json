@@ -68,7 +68,7 @@
                         "params": {
                             "fontSize": 12,
                             "openLinksInNewTab": false,
-                            "markdown": "## [Azure Activity Logs OTel] Overview\n\nThis dashboard provides an overview of Azure Activity Log control plane operations:\n- Verb-level breakdown (WRITE/DELETE/READ/ACTION) over time\n- Operations by resource provider (Key Vault, Network, Storage, etc.)\n- Top callers by individual identity (user.name)\n- Sensitive operations (listKeys, role assignments, deny assignments)\n- Failure rates and resource health status\n"
+                            "markdown": "## [Azure Activity Logs OTel] Overview\n\nThis dashboard provides an overview of Azure Activity Log control plane operations:\n- Verb-level breakdown (WRITE/DELETE/READ/ACTION) over time\n- Operations by resource provider (Key Vault, Network, Storage, etc.)\n- Top callers by individual identity (user.id)\n- Sensitive operations (listKeys, role assignments, deny assignments)\n- Failure rates and resource health status\n"
                         },
                         "uiState": {},
                         "data": {
@@ -108,22 +108,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "085a7d5d-7634-40cb-341c-57de57a697bf",
+                                "layerId": "235dcef4-e095-ea84-726f-9a90b2dfc106",
                                 "layerType": "data",
                                 "metricAccessor": "7f29782e-d6e9-6bc6-369a-f8febb36b987",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| STATS total = COUNT(*)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| STATS total = COUNT(*)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "085a7d5d-7634-40cb-341c-57de57a697bf": {
+                                        "235dcef4-e095-ea84-726f-9a90b2dfc106": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| STATS total = COUNT(*)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| STATS total = COUNT(*)\n"
                                             },
                                             "columns": [
                                                 {
@@ -212,22 +212,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "2003f91d-5dc3-ae23-7620-cfd8e395e478",
+                                "layerId": "c0ce1461-7d12-e428-533c-b8de2759fcbb",
                                 "layerType": "data",
                                 "metricAccessor": "34b4ce04-d267-0818-6020-9238e27f635f",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed = COUNT(*)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed = COUNT(*)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "2003f91d-5dc3-ae23-7620-cfd8e395e478": {
+                                        "c0ce1461-7d12-e428-533c-b8de2759fcbb": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed = COUNT(*)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed = COUNT(*)\n"
                                             },
                                             "columns": [
                                                 {
@@ -316,22 +316,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "4b02a459-1117-9e14-f815-c3429ac53f97",
+                                "layerId": "63fe4ca1-c61b-13a5-ff4a-4439cf5d4900",
                                 "layerType": "data",
                                 "metricAccessor": "d0bb62c6-91c5-144e-7d27-a555298bd73c",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type NOT IN (\"Start\", \"Started\")\n| STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| EVAL failure_rate = CASE(total > 0, TO_DOUBLE(failed) / total, 0.0)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type NOT IN (\"Start\", \"Started\")\n| STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| EVAL failure_rate = CASE(total > 0, TO_DOUBLE(failed) / total, 0.0)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "4b02a459-1117-9e14-f815-c3429ac53f97": {
+                                        "63fe4ca1-c61b-13a5-ff4a-4439cf5d4900": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type NOT IN (\"Start\", \"Started\")\n| STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| EVAL failure_rate = CASE(total > 0, TO_DOUBLE(failed) / total, 0.0)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type NOT IN (\"Start\", \"Started\")\n| STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| EVAL failure_rate = CASE(total > 0, TO_DOUBLE(failed) / total, 0.0)\n"
                                             },
                                             "columns": [
                                                 {
@@ -418,22 +418,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "94c6143b-c7d5-82c6-9673-2414a146979b",
+                                "layerId": "c9484f15-03ad-aa2f-4d53-3bdc69b84fc0",
                                 "layerType": "data",
                                 "metricAccessor": "f8e22da2-c0e4-f57b-9728-1768ad554cf1",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category == \"Policy\"\n| WHERE azure.policy.compliance_check == false\n| STATS violations = COUNT(*)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Policy\"\n| WHERE azure.policy.compliance_check == false\n| STATS violations = COUNT(*)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "94c6143b-c7d5-82c6-9673-2414a146979b": {
+                                        "c9484f15-03ad-aa2f-4d53-3bdc69b84fc0": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category == \"Policy\"\n| WHERE azure.policy.compliance_check == false\n| STATS violations = COUNT(*)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Policy\"\n| WHERE azure.policy.compliance_check == false\n| STATS violations = COUNT(*)\n"
                                             },
                                             "columns": [
                                                 {
@@ -522,22 +522,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "6277e089-03a0-8f41-5d44-f59e150e05b7",
+                                "layerId": "cbd129e1-23f1-9162-f157-610bd29b1e25",
                                 "layerType": "data",
                                 "metricAccessor": "4bb37413-e0f1-2099-c3f3-d0d73526b51a",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IN (\"Unavailable\", \"Degraded\")\n| STATS unhealthy = COUNT(*)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IN (\"Unavailable\", \"Degraded\")\n| STATS unhealthy = COUNT(*)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "6277e089-03a0-8f41-5d44-f59e150e05b7": {
+                                        "cbd129e1-23f1-9162-f157-610bd29b1e25": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IN (\"Unavailable\", \"Degraded\")\n| STATS unhealthy = COUNT(*)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"ResourceHealth\"\n| WHERE azure.resourcehealth.state IN (\"Unavailable\", \"Degraded\")\n| STATS unhealthy = COUNT(*)\n"
                                             },
                                             "columns": [
                                                 {
@@ -626,22 +626,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "66d35020-2499-5c2f-67ab-d1b4893918bb",
+                                "layerId": "2cab2a8f-f2db-0304-2aba-70a81b8cd872",
                                 "layerType": "data",
                                 "metricAccessor": "9b11fa34-5e9e-b545-85d6-4caa47c36099",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category == \"ServiceHealth\"\n| WHERE azure.servicehealth.incident.type == \"Incident\"\n| WHERE azure.servicehealth.state IN (\"Active\", \"Resolved\")\n| STATS incidents = COUNT(*)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"ServiceHealth\"\n| WHERE azure.servicehealth.incident.type == \"Incident\"\n| WHERE azure.servicehealth.state IN (\"Active\", \"Resolved\")\n| STATS incidents = COUNT(*)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "66d35020-2499-5c2f-67ab-d1b4893918bb": {
+                                        "2cab2a8f-f2db-0304-2aba-70a81b8cd872": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category == \"ServiceHealth\"\n| WHERE azure.servicehealth.incident.type == \"Incident\"\n| WHERE azure.servicehealth.state IN (\"Active\", \"Resolved\")\n| STATS incidents = COUNT(*)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"ServiceHealth\"\n| WHERE azure.servicehealth.incident.type == \"Incident\"\n| WHERE azure.servicehealth.state IN (\"Active\", \"Resolved\")\n| STATS incidents = COUNT(*)\n"
                                             },
                                             "columns": [
                                                 {
@@ -730,22 +730,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "af02659d-fe44-eb3a-28e8-155e9c396ca8",
+                                "layerId": "fcd63c4f-e913-75b3-1781-2d89c770935c",
                                 "layerType": "data",
                                 "metricAccessor": "fd0d687d-f839-4552-0604-38c9b5e038fe",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS deletes = COUNT(*)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS deletes = COUNT(*)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "af02659d-fe44-eb3a-28e8-155e9c396ca8": {
+                                        "fcd63c4f-e913-75b3-1781-2d89c770935c": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS deletes = COUNT(*)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS deletes = COUNT(*)\n"
                                             },
                                             "columns": [
                                                 {
@@ -834,22 +834,22 @@
                         "references": [],
                         "state": {
                             "visualization": {
-                                "layerId": "f222ce60-5e24-c926-eb4c-a0136acdfefb",
+                                "layerId": "fb993ffa-6f13-8a6f-3301-b9274433accf",
                                 "layerType": "data",
                                 "metricAccessor": "c6a49de0-9df0-8551-989f-050a7114e38f",
                                 "showBar": false,
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| STATS sensitive = COUNT(*)\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| STATS sensitive = COUNT(*)\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "f222ce60-5e24-c926-eb4c-a0136acdfefb": {
+                                        "fb993ffa-6f13-8a6f-3301-b9274433accf": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| STATS sensitive = COUNT(*)\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| STATS sensitive = COUNT(*)\n"
                                             },
                                             "columns": [
                                                 {
@@ -939,7 +939,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "1376fbc8-0970-1ce6-a397-095ac24fec7d",
+                                        "layerId": "9a0c7016-6b66-1b01-a2a4-be7f173656bd",
                                         "accessors": [
                                             "fb0b2e31-ec80-81ff-bca8-82d6ca53abfc"
                                         ],
@@ -1042,15 +1042,15 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL verb = CASE(azure.operation.name LIKE \"*DELETE*\", \"DELETE\", azure.operation.name LIKE \"*WRITE*\", \"WRITE\", azure.operation.name LIKE \"*ACTION*\", \"ACTION\", azure.operation.name LIKE \"*READ*\", \"READ\", \"OTHER\")\n| STATS op_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), verb\n| SORT time_bucket ASC\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL verb = CASE(azure.operation.name LIKE \"*DELETE*\", \"DELETE\", azure.operation.name LIKE \"*WRITE*\", \"WRITE\", azure.operation.name LIKE \"*ACTION*\", \"ACTION\", azure.operation.name LIKE \"*READ*\", \"READ\", \"OTHER\")\n| STATS op_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), verb\n| SORT time_bucket ASC\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "1376fbc8-0970-1ce6-a397-095ac24fec7d": {
+                                        "9a0c7016-6b66-1b01-a2a4-be7f173656bd": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL verb = CASE(azure.operation.name LIKE \"*DELETE*\", \"DELETE\", azure.operation.name LIKE \"*WRITE*\", \"WRITE\", azure.operation.name LIKE \"*ACTION*\", \"ACTION\", azure.operation.name LIKE \"*READ*\", \"READ\", \"OTHER\")\n| STATS op_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), verb\n| SORT time_bucket ASC\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL verb = CASE(azure.operation.name LIKE \"*DELETE*\", \"DELETE\", azure.operation.name LIKE \"*WRITE*\", \"WRITE\", azure.operation.name LIKE \"*ACTION*\", \"ACTION\", azure.operation.name LIKE \"*READ*\", \"READ\", \"OTHER\")\n| STATS op_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), verb\n| SORT time_bucket ASC\n"
                                             },
                                             "columns": [
                                                 {
@@ -1170,7 +1170,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "4a38ce4c-4751-5e4a-e1b8-b689df79a3d5",
+                                        "layerId": "2a4d3b64-4952-0450-27b7-81aba235e536",
                                         "accessors": [
                                             "349ac6a5-faa2-9540-04d9-adcd0c606c93"
                                         ],
@@ -1207,15 +1207,15 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.category\n| SORT time_bucket ASC\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.category\n| SORT time_bucket ASC\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "4a38ce4c-4751-5e4a-e1b8-b689df79a3d5": {
+                                        "2a4d3b64-4952-0450-27b7-81aba235e536": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.category\n| SORT time_bucket ASC\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.category\n| SORT time_bucket ASC\n"
                                             },
                                             "columns": [
                                                 {
@@ -1335,7 +1335,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "12a10818-5314-64e8-394c-b6878ba65dfc",
+                                        "layerId": "52dd2d93-94d8-e4ed-1afe-4e64183f7f3d",
                                         "layerType": "data",
                                         "colorMapping": {
                                             "assignments": [],
@@ -1372,15 +1372,15 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| STATS count = COUNT(*) BY azure.category\n| SORT count DESC\n| LIMIT 10\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| STATS count = COUNT(*) BY azure.category\n| SORT count DESC\n| LIMIT 10\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "12a10818-5314-64e8-394c-b6878ba65dfc": {
+                                        "52dd2d93-94d8-e4ed-1afe-4e64183f7f3d": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| STATS count = COUNT(*) BY azure.category\n| SORT count DESC\n| LIMIT 10\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| STATS count = COUNT(*) BY azure.category\n| SORT count DESC\n| LIMIT 10\n"
                                             },
                                             "columns": [
                                                 {
@@ -1464,7 +1464,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "62a9daf8-d7a1-8245-918a-933294a7d23a",
+                                        "layerId": "7a6df8e2-1467-6615-3a9c-843efe4ba7ba",
                                         "layerType": "data",
                                         "colorMapping": {
                                             "assignments": [],
@@ -1501,15 +1501,15 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| STATS op_count = COUNT(*) BY azure.operation.name\n| SORT op_count DESC\n| LIMIT 10\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| STATS op_count = COUNT(*) BY azure.operation.name\n| SORT op_count DESC\n| LIMIT 10\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "62a9daf8-d7a1-8245-918a-933294a7d23a": {
+                                        "7a6df8e2-1467-6615-3a9c-843efe4ba7ba": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| STATS op_count = COUNT(*) BY azure.operation.name\n| SORT op_count DESC\n| LIMIT 10\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| STATS op_count = COUNT(*) BY azure.operation.name\n| SORT op_count DESC\n| LIMIT 10\n"
                                             },
                                             "columns": [
                                                 {
@@ -1593,7 +1593,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "4a16c220-6445-a36f-0889-34e31b482dba",
+                                        "layerId": "23e83a13-89b9-0da1-929f-e80830921dce",
                                         "layerType": "data",
                                         "colorMapping": {
                                             "assignments": [],
@@ -1630,15 +1630,15 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| STATS count = COUNT(*) BY azure.identity.authorization.evidence.principal.type\n| SORT count DESC\n| LIMIT 5\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| STATS count = COUNT(*) BY azure.identity.authorization.evidence.principal.type\n| SORT count DESC\n| LIMIT 5\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "4a16c220-6445-a36f-0889-34e31b482dba": {
+                                        "23e83a13-89b9-0da1-929f-e80830921dce": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| STATS count = COUNT(*) BY azure.identity.authorization.evidence.principal.type\n| SORT count DESC\n| LIMIT 5\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL\n| STATS count = COUNT(*) BY azure.identity.authorization.evidence.principal.type\n| SORT count DESC\n| LIMIT 5\n"
                                             },
                                             "columns": [
                                                 {
@@ -1722,7 +1722,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "8146c3ad-2d0f-7d37-493e-159f01257261",
+                                        "layerId": "b5d0330d-39df-a5d6-8dd1-fbd5ac4582aa",
                                         "accessors": [
                                             "b10d7e1e-9f7c-55ad-47fe-a7b798c568cc"
                                         ],
@@ -1772,15 +1772,15 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "8146c3ad-2d0f-7d37-493e-159f01257261": {
+                                        "b5d0330d-39df-a5d6-8dd1-fbd5ac4582aa": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n| STATS failed_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
                                             },
                                             "columns": [
                                                 {
@@ -1888,7 +1888,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "414cacdc-2f6e-651d-a451-8b9fe63ff232",
+                                        "layerId": "5294ea84-62a2-1b33-77bb-632d5337ad78",
                                         "layerType": "data",
                                         "colorMapping": {
                                             "assignments": [],
@@ -1925,15 +1925,15 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL provider = SPLIT(azure.operation.name, \"/\")\n| EVAL provider_name = MV_FIRST(provider)\n| STATS op_count = COUNT(*) BY provider_name\n| SORT op_count DESC\n| LIMIT 10\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL provider = SPLIT(azure.operation.name, \"/\")\n| EVAL provider_name = MV_FIRST(provider)\n| STATS op_count = COUNT(*) BY provider_name\n| SORT op_count DESC\n| LIMIT 10\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "414cacdc-2f6e-651d-a451-8b9fe63ff232": {
+                                        "5294ea84-62a2-1b33-77bb-632d5337ad78": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL provider = SPLIT(azure.operation.name, \"/\")\n| EVAL provider_name = MV_FIRST(provider)\n| STATS op_count = COUNT(*) BY provider_name\n| SORT op_count DESC\n| LIMIT 10\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name IS NOT NULL\n| EVAL provider = SPLIT(azure.operation.name, \"/\")\n| EVAL provider_name = MV_FIRST(provider)\n| STATS op_count = COUNT(*) BY provider_name\n| SORT op_count DESC\n| LIMIT 10\n"
                                             },
                                             "columns": [
                                                 {
@@ -2037,7 +2037,7 @@
                                         "isMetric": false
                                     }
                                 ],
-                                "layerId": "48d92c0f-4160-112e-6cd5-ddc37100f5cb",
+                                "layerId": "3e8f3789-48cb-a520-9e6e-cd101b9657d5",
                                 "layerType": "data",
                                 "paging": {
                                     "size": 10,
@@ -2045,15 +2045,15 @@
                                 }
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| EVAL caller = COALESCE(user.name, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT(*), failures = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY caller, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT(*), failures = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY caller, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "48d92c0f-4160-112e-6cd5-ddc37100f5cb": {
+                                        "3e8f3789-48cb-a520-9e6e-cd101b9657d5": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| EVAL caller = COALESCE(user.name, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT(*), failures = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY caller, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT(*), failures = COUNT(*) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY caller, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
                                             },
                                             "columns": [
                                                 {
@@ -2151,7 +2151,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "layerId": "8ec15b04-4a45-ead0-3b26-ab0de81ae386",
+                                        "layerId": "401a9cf8-f060-34a0-31d3-aae7bf8aed55",
                                         "accessors": [
                                             "5606a65a-2e2f-03eb-9fa5-ea09986ef5d0"
                                         ],
@@ -2187,15 +2187,15 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS delete_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS delete_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "8ec15b04-4a45-ead0-3b26-ab0de81ae386": {
+                                        "401a9cf8-f060-34a0-31d3-aae7bf8aed55": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS delete_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*DELETE*\"\n| STATS delete_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
                                             },
                                             "columns": [
                                                 {
@@ -2318,7 +2318,7 @@
                                         "isMetric": false
                                     },
                                     {
-                                        "columnId": "1a1bee20-26cc-95f6-d97f-a03b6016fb76",
+                                        "columnId": "d633cdb1-212d-94db-ed54-4a31d58eadff",
                                         "isTransposed": false,
                                         "isMetric": false
                                     },
@@ -2328,7 +2328,7 @@
                                         "isMetric": false
                                     }
                                 ],
-                                "layerId": "8634e841-6d09-def2-afed-8307b13cb94a",
+                                "layerId": "1b54085c-ff6d-f1f9-235b-a3fd1cfd7cb3",
                                 "layerType": "data",
                                 "paging": {
                                     "size": 10,
@@ -2336,15 +2336,15 @@
                                 }
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.email, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, result_status, azure.resource.name\n| SORT count DESC\n| LIMIT 100\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.email, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, result_status, cloud.resource_id\n| SORT count DESC\n| LIMIT 100\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "8634e841-6d09-def2-afed-8307b13cb94a": {
+                                        "1b54085c-ff6d-f1f9-235b-a3fd1cfd7cb3": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.email, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, result_status, azure.resource.name\n| SORT count DESC\n| LIMIT 100\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.email, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, result_status, cloud.resource_id\n| SORT count DESC\n| LIMIT 100\n"
                                             },
                                             "columns": [
                                                 {
@@ -2366,8 +2366,8 @@
                                                     "customLabel": true
                                                 },
                                                 {
-                                                    "fieldName": "azure.resource.name",
-                                                    "columnId": "1a1bee20-26cc-95f6-d97f-a03b6016fb76",
+                                                    "fieldName": "cloud.resource_id",
+                                                    "columnId": "d633cdb1-212d-94db-ed54-4a31d58eadff",
                                                     "label": "Resource",
                                                     "customLabel": true
                                                 },
@@ -2398,8 +2398,8 @@
                                                     "customLabel": true
                                                 },
                                                 {
-                                                    "fieldName": "azure.resource.name",
-                                                    "columnId": "1a1bee20-26cc-95f6-d97f-a03b6016fb76",
+                                                    "fieldName": "cloud.resource_id",
+                                                    "columnId": "d633cdb1-212d-94db-ed54-4a31d58eadff",
                                                     "label": "Resource",
                                                     "customLabel": true
                                                 },
@@ -2479,7 +2479,7 @@
                                         "isMetric": false
                                     },
                                     {
-                                        "columnId": "d0c4661a-5131-8ed6-2d7e-03df289b0d53",
+                                        "columnId": "b7e5ddca-2d57-1003-acf6-e35b4f92a84f",
                                         "isTransposed": false,
                                         "isMetric": false
                                     },
@@ -2489,7 +2489,7 @@
                                         "isMetric": false
                                     }
                                 ],
-                                "layerId": "c20fa636-c707-2cf1-b1b4-77cfd7cd6b8a",
+                                "layerId": "f959915e-d826-f5bd-0488-c118c666069c",
                                 "layerType": "data",
                                 "paging": {
                                     "size": 10,
@@ -2497,15 +2497,15 @@
                                 }
                             },
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| KEEP @timestamp, azure.category, azure.operation.name, azure.result.type, azure.identity.authorization.evidence.principal.type, user.name, network.peer.address, azure.result.description\n| SORT @timestamp DESC\n| LIMIT 100\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| KEEP @timestamp, azure.category, azure.operation.name, azure.result.type, azure.identity.authorization.evidence.principal.type, user.id, network.peer.address, azure.result.description\n| SORT @timestamp DESC\n| LIMIT 100\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "c20fa636-c707-2cf1-b1b4-77cfd7cd6b8a": {
+                                        "f959915e-d826-f5bd-0488-c118c666069c": {
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE azure.category IS NOT NULL\n| KEEP @timestamp, azure.category, azure.operation.name, azure.result.type, azure.identity.authorization.evidence.principal.type, user.name, network.peer.address, azure.result.description\n| SORT @timestamp DESC\n| LIMIT 100\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| KEEP @timestamp, azure.category, azure.operation.name, azure.result.type, azure.identity.authorization.evidence.principal.type, user.id, network.peer.address, azure.result.description\n| SORT @timestamp DESC\n| LIMIT 100\n"
                                             },
                                             "columns": [
                                                 {
@@ -2539,8 +2539,8 @@
                                                     "customLabel": true
                                                 },
                                                 {
-                                                    "fieldName": "user.name",
-                                                    "columnId": "d0c4661a-5131-8ed6-2d7e-03df289b0d53",
+                                                    "fieldName": "user.id",
+                                                    "columnId": "b7e5ddca-2d57-1003-acf6-e35b4f92a84f",
                                                     "label": "User",
                                                     "customLabel": true
                                                 },
@@ -2583,8 +2583,8 @@
                                                     "customLabel": true
                                                 },
                                                 {
-                                                    "fieldName": "user.name",
-                                                    "columnId": "d0c4661a-5131-8ed6-2d7e-03df289b0d53",
+                                                    "fieldName": "user.id",
+                                                    "columnId": "b7e5ddca-2d57-1003-acf6-e35b4f92a84f",
                                                     "label": "User",
                                                     "customLabel": true
                                                 },

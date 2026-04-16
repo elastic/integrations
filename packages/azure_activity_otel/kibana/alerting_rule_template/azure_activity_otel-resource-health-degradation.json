@@ -19,7 +19,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM logs-*\n// Restrict to Azure Activity Logs (ResourceHealth category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"ResourceHealth\"\n// Current state indicates Unavailable or Degraded — resources needing attention\n| WHERE azure.resourcehealth.state IN (\"Unavailable\", \"Degraded\")\n// Optional: filter by cause (PlatformInitiated vs UserInitiated) — remove to include all\n| STATS event_count = COUNT(*), health_type = VALUES(azure.resourcehealth.type), cause = VALUES(azure.resourcehealth.cause) BY cloud.resource_id, azure.resourcehealth.title\n| SORT event_count DESC\n| LIMIT 20"
+        "esql": "FROM logs-azure.activity.otel-*\n// Restrict to Azure Activity Logs (ResourceHealth category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"ResourceHealth\"\n// Current state indicates Unavailable or Degraded — resources needing attention\n| WHERE azure.resourcehealth.state IN (\"Unavailable\", \"Degraded\")\n// Optional: filter by cause (PlatformInitiated vs UserInitiated) — remove to include all\n| STATS event_count = COUNT(*), health_type = VALUES(azure.resourcehealth.type), cause = VALUES(azure.resourcehealth.cause) BY cloud.resource_id, azure.resourcehealth.title\n| SORT event_count DESC\n| LIMIT 20"
       },
       "size": 0,
       "threshold": [0],

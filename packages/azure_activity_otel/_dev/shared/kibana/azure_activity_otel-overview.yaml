@@ -41,7 +41,7 @@ dashboards:
         This dashboard provides an overview of Azure Activity Log control plane operations:
         - Verb-level breakdown (WRITE/DELETE/READ/ACTION) over time
         - Operations by resource provider (Key Vault, Network, Storage, etc.)
-        - Top callers by individual identity (user.name)
+        - Top callers by individual identity (user.id)
         - Sensitive operations (listKeys, role assignments, deny assignments)
         - Failure rates and resource health status
       font_size: 12
@@ -54,7 +54,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | STATS total = COUNT(*)
       time_field: '@timestamp'
@@ -73,7 +73,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.result.type IN ("Failure", "Failed")
         | STATS failed = COUNT(*)
@@ -93,7 +93,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.result.type NOT IN ("Start", "Started")
         | STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN ("Failure", "Failed")
@@ -113,7 +113,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Policy"
         | WHERE azure.policy.compliance_check == false
         | STATS violations = COUNT(*)
@@ -133,7 +133,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ResourceHealth"
         | WHERE azure.resourcehealth.state IN ("Unavailable", "Degraded")
         | STATS unhealthy = COUNT(*)
@@ -153,7 +153,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ServiceHealth"
         | WHERE azure.servicehealth.incident.type == "Incident"
         | WHERE azure.servicehealth.state IN ("Active", "Resolved")
@@ -174,7 +174,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.operation.name LIKE "*DELETE*"
         | STATS deletes = COUNT(*)
@@ -194,7 +194,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.operation.name LIKE "*LISTKEYS*" OR azure.operation.name LIKE "*ROLEASSIGNMENT*" OR azure.operation.name LIKE "*DENYASSIGNMENT*"
         | STATS sensitive = COUNT(*)
@@ -213,7 +213,7 @@ dashboards:
     esql:
       type: area
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.operation.name IS NOT NULL
         | EVAL verb = CASE(azure.operation.name LIKE "*DELETE*", "DELETE", azure.operation.name LIKE "*WRITE*", "WRITE", azure.operation.name LIKE "*ACTION*", "ACTION", azure.operation.name LIKE "*READ*", "READ", "OTHER")
@@ -250,7 +250,7 @@ dashboards:
     esql:
       type: area
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.category
         | SORT time_bucket ASC
@@ -273,7 +273,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | STATS count = COUNT(*) BY azure.category
         | SORT count DESC
@@ -297,7 +297,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.operation.name IS NOT NULL
         | STATS op_count = COUNT(*) BY azure.operation.name
@@ -322,7 +322,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL
         | STATS count = COUNT(*) BY azure.identity.authorization.evidence.principal.type
@@ -347,7 +347,7 @@ dashboards:
     esql:
       type: line
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.result.type IN ("Failure", "Failed")
         | STATS failed_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
@@ -373,7 +373,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.operation.name IS NOT NULL
         | EVAL provider = SPLIT(azure.operation.name, "/")
@@ -400,9 +400,9 @@ dashboards:
     esql:
       type: datatable
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
-        | EVAL caller = COALESCE(user.name, azure.identity.authorization.evidence.principal.id, "unknown")
+        | EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, "unknown")
         | STATS op_count = COUNT(*), failures = COUNT(*) WHERE azure.result.type IN ("Failure", "Failed") BY caller, azure.identity.authorization.evidence.principal.type
         | SORT op_count DESC
         | LIMIT 20
@@ -426,7 +426,7 @@ dashboards:
     esql:
       type: line
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.operation.name LIKE "*DELETE*"
         | STATS delete_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
@@ -448,12 +448,12 @@ dashboards:
     esql:
       type: datatable
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
         | WHERE azure.operation.name LIKE "*LISTKEYS*" OR azure.operation.name LIKE "*ROLEASSIGNMENT*" OR azure.operation.name LIKE "*DENYASSIGNMENT*"
         | EVAL caller = COALESCE(user.email, azure.identity.authorization.evidence.principal.id, "unknown")
         | EVAL result_status = CASE(azure.result.type IN ("Failure", "Failed"), "Failed", azure.result.type IN ("Success", "Succeeded", "Accept", "Activated", "Resolved", "Updated", "Active"), "Success", "Other")
-        | STATS count = COUNT(*) BY azure.operation.name, caller, result_status, azure.resource.name
+        | STATS count = COUNT(*) BY azure.operation.name, caller, result_status, cloud.resource_id
         | SORT count DESC
         | LIMIT 100
       time_field: '@timestamp'
@@ -464,7 +464,7 @@ dashboards:
         label: Caller
       - field: result_status
         label: Result
-      - field: azure.resource.name
+      - field: cloud.resource_id
         label: Resource
       - field: count
         label: Count
@@ -478,9 +478,9 @@ dashboards:
     esql:
       type: datatable
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category IS NOT NULL
-        | KEEP @timestamp, azure.category, azure.operation.name, azure.result.type, azure.identity.authorization.evidence.principal.type, user.name, network.peer.address, azure.result.description
+        | KEEP @timestamp, azure.category, azure.operation.name, azure.result.type, azure.identity.authorization.evidence.principal.type, user.id, network.peer.address, azure.result.description
         | SORT @timestamp DESC
         | LIMIT 100
       time_field: '@timestamp'
@@ -495,7 +495,7 @@ dashboards:
         label: Result
       - field: azure.identity.authorization.evidence.principal.type
         label: Principal Type
-      - field: user.name
+      - field: user.id
         label: User
       - field: network.peer.address
         label: IP

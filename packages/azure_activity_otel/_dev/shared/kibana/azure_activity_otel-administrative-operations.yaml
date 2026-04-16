@@ -55,7 +55,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | STATS total = COUNT(*)
       time_field: '@timestamp'
@@ -74,7 +74,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.result.type IN ("Failure", "Failed")
         | STATS failed = COUNT(*)
@@ -94,7 +94,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.result.type NOT IN ("Start", "Started")
         | STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN ("Failure", "Failed")
@@ -114,10 +114,10 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
-        | WHERE azure.duration IS NOT NULL
-        | STATS avg_duration = AVG(azure.duration)
+        | WHERE azure.operation.duration IS NOT NULL
+        | STATS avg_duration = AVG(azure.operation.duration)
       time_field: '@timestamp'
       primary:
         field: avg_duration
@@ -134,7 +134,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.operation.name IS NOT NULL
         | WHERE azure.operation.name LIKE "*WRITE*" OR azure.operation.name LIKE "*DELETE*" OR azure.operation.name LIKE "*ACTION*"
@@ -155,7 +155,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.operation.name == "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE"
         | STATS deployments = COUNT(*)
@@ -174,7 +174,7 @@ dashboards:
     esql:
       type: area
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | EVAL result_group = CASE(azure.result.type IN ("Failure", "Failed"), "Failed", azure.result.type IN ("Success", "Succeeded", "Accept", "Activated", "Resolved", "Updated", "Active"), "Success", "InProgress")
         | STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), result_group
@@ -204,10 +204,10 @@ dashboards:
     esql:
       type: line
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
-        | WHERE azure.duration IS NOT NULL
-        | STATS p95_duration = PERCENTILE(azure.duration, 95.0) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+        | WHERE azure.operation.duration IS NOT NULL
+        | STATS p95_duration = PERCENTILE(azure.operation.duration, 95.0) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
         | SORT time_bucket ASC
       time_field: '@timestamp'
       dimension:
@@ -226,7 +226,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.result.type IN ("Failure", "Failed")
         | WHERE azure.operation.name IS NOT NULL
@@ -252,7 +252,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL
         | WHERE azure.correlation_id IS NOT NULL
@@ -278,7 +278,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.result.type IS NOT NULL
         | WHERE azure.correlation_id IS NOT NULL
@@ -307,10 +307,10 @@ dashboards:
     esql:
       type: datatable
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.result.type IN ("Failure", "Failed")
-        | KEEP @timestamp, azure.operation.name, azure.result.type, azure.result.description, user.name, azure.identity.authorization.evidence.principal.type, network.peer.address, azure.correlation_id
+        | KEEP @timestamp, azure.operation.name, azure.result.type, azure.result.description, user.id, azure.identity.authorization.evidence.principal.type, network.peer.address, azure.correlation_id
         | SORT @timestamp DESC
         | LIMIT 100
       time_field: '@timestamp'
@@ -323,7 +323,7 @@ dashboards:
         label: Error
       - field: azure.identity.authorization.evidence.principal.type
         label: Principal Type
-      - field: user.name
+      - field: user.id
         label: User
       - field: network.peer.address
         label: IP

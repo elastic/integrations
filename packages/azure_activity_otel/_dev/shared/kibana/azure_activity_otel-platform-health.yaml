@@ -55,7 +55,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ServiceHealth"
         | WHERE azure.servicehealth.incident.type == "Incident"
         | STATS incidents = COUNT(*)
@@ -75,7 +75,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ResourceHealth"
         | WHERE azure.resourcehealth.state IN ("Unavailable", "Degraded")
         | STATS unhealthy = COUNT(*)
@@ -95,7 +95,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Policy"
         | WHERE azure.policy.compliance_check == false
         | STATS violations = COUNT(*)
@@ -115,7 +115,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Recommendation"
         | STATS recommendations = COUNT(*)
       time_field: '@timestamp'
@@ -134,7 +134,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Alert"
         | WHERE azure.result.type IN ("Activated", "Active")
         | STATS alerts = COUNT(*)
@@ -154,7 +154,7 @@ dashboards:
     esql:
       type: metric
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ServiceHealth"
         | WHERE azure.servicehealth.incident.type == "Maintenance"
         | STATS maintenance = COUNT(*)
@@ -173,7 +173,7 @@ dashboards:
     esql:
       type: area
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ServiceHealth"
         | WHERE azure.servicehealth.incident.type IS NOT NULL
         | STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.servicehealth.incident.type
@@ -197,7 +197,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ResourceHealth"
         | WHERE azure.resourcehealth.state IS NOT NULL
         | WHERE cloud.resource_id IS NOT NULL
@@ -234,7 +234,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ServiceHealth"
         | WHERE azure.servicehealth.service IS NOT NULL
         | STATS event_count = COUNT(*) BY azure.servicehealth.service
@@ -259,7 +259,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Policy"
         | EVAL compliance = CASE(azure.policy.compliance_check == true, "Compliant", "NonCompliant")
         | STATS count = COUNT(*) BY compliance
@@ -289,7 +289,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Recommendation"
         | WHERE azure.recommendation.category IS NOT NULL
         | STATS count = COUNT(*) BY azure.recommendation.category
@@ -314,7 +314,7 @@ dashboards:
     esql:
       type: pie
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ResourceHealth"
         | WHERE azure.resourcehealth.cause IS NOT NULL
         | STATS count = COUNT(*) BY azure.resourcehealth.cause
@@ -339,7 +339,7 @@ dashboards:
     esql:
       type: datatable
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ServiceHealth"
         | KEEP @timestamp, azure.servicehealth.title, azure.servicehealth.incident.type, azure.servicehealth.state, azure.servicehealth.service, azure.servicehealth.region
         | SORT @timestamp DESC
@@ -366,7 +366,7 @@ dashboards:
     esql:
       type: datatable
       query: |
-        FROM logs-*
+        FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ResourceHealth"
         | KEEP @timestamp, azure.resourcehealth.state, azure.resourcehealth.previous_state, azure.resourcehealth.title, azure.resourcehealth.type, azure.resourcehealth.cause, cloud.resource_id
         | SORT @timestamp DESC

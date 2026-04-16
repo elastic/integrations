@@ -19,7 +19,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM logs-*\n// Restrict to Azure Activity Logs (Policy category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"Policy\"\n// compliance_check: false indicates real-time policy effect (non-compliance), true is evaluation only\n| WHERE azure.policy.compliance_check == false\n// Aggregate by resource and policy for context\n| STATS violation_count = COUNT(*) BY cloud.resource_id, azure.operation.name\n// Minimum violations to alert — tune to reduce noise\n| WHERE violation_count >= 2\n| SORT violation_count DESC\n| LIMIT 20"
+        "esql": "FROM logs-azure.activity.otel-*\n// Restrict to Azure Activity Logs (Policy category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"Policy\"\n// compliance_check: false indicates real-time policy effect (non-compliance), true is evaluation only\n| WHERE azure.policy.compliance_check == false\n// Aggregate by resource and policy for context\n| STATS violation_count = COUNT(*) BY cloud.resource_id, azure.operation.name\n// Minimum violations to alert — tune to reduce noise\n| WHERE violation_count >= 2\n| SORT violation_count DESC\n| LIMIT 20"
       },
       "size": 0,
       "threshold": [0],

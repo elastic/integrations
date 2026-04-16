@@ -19,7 +19,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM logs-*\n// Restrict to Azure Activity Logs (Administrative category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"Administrative\"\n// Capture both Failure and Failed result types (Azure uses inconsistent casing)\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n// Derive actor for grouping (user.name or principal ID)\n| EVAL actor = COALESCE(user.name, azure.identity.authorization.evidence.principal.id, \"unknown\")\n// Aggregate by operation and actor for context; adjust minimum count to reduce noise\n| STATS failed_count = COUNT(*), sample_timestamps = VALUES(@timestamp) BY azure.operation.name, actor, network.peer.address\n// Minimum failures to alert — tune based on environment noise\n| WHERE failed_count >= 3\n| SORT failed_count DESC\n| LIMIT 20"
+        "esql": "FROM logs-azure.activity.otel-*\n// Restrict to Azure Activity Logs (Administrative category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"Administrative\"\n// Capture both Failure and Failed result types (Azure uses inconsistent casing)\n| WHERE azure.result.type IN (\"Failure\", \"Failed\")\n// Derive actor for grouping (user.id or principal ID)\n| EVAL actor = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n// Aggregate by operation and actor for context; adjust minimum count to reduce noise\n| STATS failed_count = COUNT(*), sample_timestamps = VALUES(@timestamp) BY azure.operation.name, actor, network.peer.address\n// Minimum failures to alert — tune based on environment noise\n| WHERE failed_count >= 3\n| SORT failed_count DESC\n| LIMIT 20"
       },
       "size": 0,
       "threshold": [0],
