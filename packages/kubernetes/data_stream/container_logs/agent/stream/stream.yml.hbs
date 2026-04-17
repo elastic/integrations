@@ -62,12 +62,38 @@ processors:
 
   [^1]: https://github.com/elastic/elastic-agent/blob/37ec2bb7ee1d2cc6c0fccf2f0cd0a44eb3d61efd/internal/pkg/composable/providers/kubernetes/pod.go#L311-L315
 }}
+{{#if singleInput}}
+- add_kubernetes_metadata:
+    include_annotations:
+      - elastic.co/dataset
+      - elastic.co/namespace
+      - elastic.co/preserve_original_event
+    host: ${NODE_NAME}
+    default_indexers.enabled: false
+    default_matchers.enabled: false
+    indexers:
+      - pod_uid:
+    matchers:
+      - logs_path:
+        logs_path: "/var/log/pods/"
+        resource_type: "pod"
+- move_fields:
+    fields:
+      - from: kubernetes.pod.annotations.elastic.co/dataset
+        to: kubernetes.annotations.elastic_co/dataset
+      - from: kubernetes.pod.annotations.elastic.co/namespace
+        to: kubernetes.annotations.elastic_co/namespace
+      - from: kubernetes.pod.annotations.elastic.co/preserve_original_event
+        to: kubernetes.annotations.elastic_co/preserve_original_event
+    ignore_missing: true
+{{else}}
 - add_fields:
     target: kubernetes
     fields:
       annotations.elastic_co/dataset: ${kubernetes.annotations.elastic.co/dataset|""}
       annotations.elastic_co/namespace: ${kubernetes.annotations.elastic.co/namespace|""}
       annotations.elastic_co/preserve_original_event: ${kubernetes.annotations.elastic.co/preserve_original_event|""}
+{{/if}}
 - drop_fields:
     fields:
       - kubernetes.annotations.elastic_co/dataset
