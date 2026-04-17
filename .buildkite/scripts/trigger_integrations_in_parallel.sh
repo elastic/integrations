@@ -75,7 +75,10 @@ for package_path in ${PACKAGE_LIST}; do
     fi
 
     # package names (manifest.yml) are unique, so it can be used as key for the step
+    pushd "${package_path}" > /dev/null
     package_name=$(package_name_manifest)
+    popd > /dev/null
+
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
     - label: "Check integrations ${package_name}"

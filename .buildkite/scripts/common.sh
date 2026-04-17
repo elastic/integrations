@@ -1036,10 +1036,11 @@ process_package() {
     local failed_packages_file="${2:-""}"
     local exit_code=0
     local package_name=""
-    package_name="$(package_name_manifest)"
 
-    echo "--- Package ${package_name}: check"
     pushd "${package_path}" > /dev/null
+
+    package_name="$(package_name_manifest)"
+    echo "--- Package ${package_name}: check"
 
     clean_safe_logs
 
