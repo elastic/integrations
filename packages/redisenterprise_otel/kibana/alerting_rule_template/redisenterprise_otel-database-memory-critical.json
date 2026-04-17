@@ -1,40 +1,54 @@
 {
-    "id": "redisenterprise_otel-database-memory-critical",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Redis Enterprise OTel] Database memory utilization critical",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "redisenterprise"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "redisenterprise_otel-database-memory-critical",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when database memory utilisation exceeds 90%. OOM rejections or evictions imminent.",
+    "name": "[Redis Enterprise OTel] Database memory utilization critical",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redisenterprise"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redisenterprise_otel-database-performance"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_used_memory IS NOT NULL\n    AND bdb_memory_limit IS NOT NULL\n    AND bdb_memory_limit > 0\n| STATS\n    avg_used = AVG(bdb_used_memory),\n    avg_limit = AVG(bdb_memory_limit)\n  BY bdb, cluster\n| EVAL utilization_pct = ROUND(avg_used / avg_limit * 100, 2)\n// Alert when memory utilization exceeds 90%\n// For non-caching workloads, exceeding the limit causes OOM rejections\n// For caching workloads with eviction policies, higher utilization is expected —\n// consider raising this threshold or disabling for cache-only databases\n| WHERE utilization_pct > 90\n| SORT utilization_pct DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "bdb",
-            "termSize": 100
+        {
+          "id": "redisenterprise_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis Enterprise database memory utilization critical\n\n### What fired\n`bdb_used_memory / bdb_memory_limit > 90%`.\n\n### Why it matters\nNon-caching workloads reject writes at the limit. Caching workloads evict aggressively above this point.\n\n### Triage\n1. Check eviction rate and data model.\n\n### Remediation\n- Raise `memory_limit` or shard out.\n\n### Tuning\n- 90% threshold; tune per workload.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_used_memory IS NOT NULL\n    AND bdb_memory_limit IS NOT NULL\n    AND bdb_memory_limit > 0\n| STATS\n    avg_used = AVG(bdb_used_memory),\n    avg_limit = AVG(bdb_memory_limit)\n  BY bdb, cluster\n| EVAL utilization_pct = ROUND(avg_used / avg_limit * 100, 2)\n// Alert when memory utilization exceeds 90%\n// For non-caching workloads, exceeding the limit causes OOM rejections\n// For caching workloads with eviction policies, higher utilization is expected \u2014\n// consider raising this threshold or disabling for cache-only databases\n| WHERE utilization_pct > 90\n| SORT utilization_pct DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "bdb",
+      "termSize": 100
     }
+  }
 }

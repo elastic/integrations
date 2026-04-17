@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `postgresql.temp_files > 0`. Queries spilling to disk indicates work_mem pressure.",
     "name": "[PostgreSQL OTel] Temp files created",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 4,
       "statusChangeThreshold": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-query-performance"
+        },
+        {
+          "id": "postgresql_otel-io-health"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL temp files created\n\n### What fired\n`postgresql.temp_files` increased during the window.\n\n### Why it matters\nAny temp file creation means a query exceeded `work_mem` and spilled to disk. Frequent spilling is a strong tuning signal.\n\n### Triage\n1. Identify the queries causing temp files.\n\n### Remediation\n- Raise `work_mem`.\n- Rewrite queries to reduce memory.\n\n### Tuning\n- Fires on any creation.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

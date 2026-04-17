@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when total checkpoint duration exceeds 30 s in the window. Long checkpoints cause I/O spikes.",
     "name": "[PostgreSQL OTel] Long checkpoint duration",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-io-health"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL long checkpoint duration\n\n### What fired\nTotal `bgwriter.duration` exceeded 30,000 ms over the window.\n\n### Why it matters\nCheckpoints stall writes and stress disk. Long durations indicate write pressure or too-infrequent checkpoints.\n\n### Triage\n1. Tune checkpoint parameters.\n\n### Remediation\n- Raise `max_wal_size` / tune `checkpoint_timeout`.\n\n### Tuning\n- 30 s threshold; tune to cadence.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

@@ -1,37 +1,54 @@
 {
-    "id": "nginx_otel-high-5xx-error-rate",
-    "type": "alerting_rule_template",
-    "attributes": {
-        "name": "[Nginx OTel] High 5xx error rate",
-        "tags": [
-            "Nginx OTel"
-        ],
-        "ruleTypeId": ".es-query",
-        "schedule": {
-            "interval": "1m"
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "esqlQuery": {
-                "esql": "FROM logs-nginx.access.otel-*\n// Flag each access log entry as a server error (5xx) or not\n| EVAL is_5xx = CASE(http.response.status_code >= 500, 1, 0)\n// Aggregate total requests and 5xx count per NGINX host\n| STATS total = COUNT(*), errors_5xx = SUM(is_5xx) BY host.name\n// Minimum sample size to avoid noisy low-traffic hosts\n| WHERE total > 50\n// Calculate 5xx error rate as a percentage\n| EVAL error_rate_pct = ROUND(TO_DOUBLE(errors_5xx) / TO_DOUBLE(total) * 100.0, 2)\n// Alert threshold: adjust to tune sensitivity\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10
-        },
-        "alertDelay": {
-            "active": 3
-        }
+  "id": "nginx_otel-high-5xx-error-rate",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when 5xx responses exceed 5% of access logs. Server-side errors directly impact users.",
+    "name": "[Nginx OTel] High 5xx error rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Nginx OTel"
+    ],
+    "schedule": {
+      "interval": "1m"
     },
-    "managed": true,
-    "coreMigrationVersion": "8.8.0",
-    "typeMigrationVersion": "10.1.0"
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        },
+        {
+          "id": "nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901"
+        },
+        {
+          "id": "nginx_otel-c3d4e5f6-a7b8-9012-cdef-123456789012"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## NGINX high 5xx error rate\n\n### What fired\n5xx response rate exceeded 5% over the window (min 50 total requests).\n\n### Why it matters\n5xx errors are server-side \u2014 upstream failures, misconfigured proxying, or NGINX internal errors. Usually client-visible outages.\n\n### Triage\n1. Inspect error log for correlated entries.\n2. Check upstream application health.\n\n### Remediation\n- Roll back or fix the offending upstream.\n\n### Tuning\n- 5% threshold; tighten per SLA.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "FROM logs-nginx.access.otel-*\n// Flag each access log entry as a server error (5xx) or not\n| EVAL is_5xx = CASE(http.response.status_code >= 500, 1, 0)\n// Aggregate total requests and 5xx count per NGINX host\n| STATS total = COUNT(*), errors_5xx = SUM(is_5xx) BY host.name\n// Minimum sample size to avoid noisy low-traffic hosts\n| WHERE total > 50\n// Calculate 5xx error rate as a percentage\n| EVAL error_rate_pct = ROUND(TO_DOUBLE(errors_5xx) / TO_DOUBLE(total) * 100.0, 2)\n// Alert threshold: adjust to tune sensitivity\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
 }

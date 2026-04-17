@@ -1,39 +1,52 @@
 {
-    "id": "cassandra_otel-high-read-latency-p99",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Cassandra OTel] High read latency (p99)",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "cassandra"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-cassandra.otel-default\n// p99 read latency in microseconds; backtick-quote field names with numeric segments\n| WHERE `cassandra.client.request.read.latency.99p` IS NOT NULL\n| STATS p99_us = MAX(MAX_OVER_TIME(`cassandra.client.request.read.latency.99p`)) BY server.address\n// Threshold: 100000 us = 100 ms; tune for your SLA\n| WHERE p99_us > 100000\n| SORT p99_us DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "server.address",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+  "id": "cassandra_otel-high-read-latency-p99",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the p99 read latency exceeds 100 ms (`cassandra.client.request.read.latency.99p > 100000 us`). This is the primary read-side SLI for Cassandra.",
+    "name": "[Cassandra OTel] High read latency (p99)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cassandra"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cassandra_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Cassandra high read latency (p99)\n\n### What fired\n`cassandra.client.request.read.latency.99p` exceeded 100 ms on at least one node during the evaluation window.\n\n### Why it matters\nRead latency p99 is the user-facing latency for point-lookup reads. Sustained high p99 reflects disk pressure, compaction backlog, GC pauses, or network issues between coordinator and replicas. Client SLAs break long before p99 becomes extreme.\n\n### Triage\n1. Overview dashboard: identify affected nodes and correlate with compaction pending, hints-in-progress, and error rate.\n2. Check disk I/O utilisation and free page cache.\n3. GC pauses \u2014 large young-gen or old-gen GCs pause the JVM and directly impact p99.\n4. Inspect per-query patterns \u2014 hot partitions can dominate a node.\n\n### Remediation\n- Resolve compaction backlog.\n- Fix hot partitions (data modelling).\n- Add capacity or tune JVM/GC for lower pauses.\n\n### Tuning\n- 100 ms is a reasonable default for point lookups. Tune to the consuming application's SLA.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-cassandra.otel-default\n// p99 read latency in microseconds; backtick-quote field names with numeric segments\n| WHERE `cassandra.client.request.read.latency.99p` IS NOT NULL\n| STATS p99_us = MAX(MAX_OVER_TIME(`cassandra.client.request.read.latency.99p`)) BY server.address\n// Threshold: 100000 us = 100 ms; tune for your SLA\n| WHERE p99_us > 100000\n| SORT p99_us DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

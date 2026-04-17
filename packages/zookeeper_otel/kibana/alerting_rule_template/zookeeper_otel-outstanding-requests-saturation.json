@@ -1,40 +1,51 @@
 {
-    "id": "zookeeper_otel-outstanding-requests-saturation",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[ZooKeeper OTel] Outstanding requests saturation",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "zookeeper"
-        ],
-        "schedule": {
-            "interval": "1m"
-        },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.request.active IS NOT NULL\n// Average outstanding requests per node over the time window\n| STATS avg_outstanding = AVG(metrics.zookeeper.request.active) BY host.name\n// A healthy ensemble should have near-zero outstanding requests\n// Sustained values above this threshold indicate processing saturation\n// Adjust based on your workload; lower values catch issues sooner\n| WHERE avg_outstanding > 10"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10
+  "id": "zookeeper_otel-outstanding-requests-saturation",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when average outstanding requests exceed 10. Processing saturation on ZooKeeper.",
+    "name": "[ZooKeeper OTel] Outstanding requests saturation",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "zookeeper"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "zookeeper_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## ZooKeeper outstanding requests saturation\n\n### What fired\nAverage `zookeeper.request.active > 10` during the window.\n\n### Why it matters\nA healthy ZK has near-zero outstanding requests. Sustained values signal saturation \u2014 client timeouts follow.\n\n### Triage\n1. Check disk fsync latency.\n2. Inspect CPU / GC pauses.\n\n### Remediation\n- Move ZK to faster storage or less-contended hosts.\n\n### Tuning\n- 10 threshold; lower for stricter monitoring.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.request.active IS NOT NULL\n// Average outstanding requests per node over the time window\n| STATS avg_outstanding = AVG(metrics.zookeeper.request.active) BY host.name\n// A healthy ensemble should have near-zero outstanding requests\n// Sustained values above this threshold indicate processing saturation\n// Adjust based on your workload; lower values catch issues sooner\n| WHERE avg_outstanding > 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10
     }
+  }
 }

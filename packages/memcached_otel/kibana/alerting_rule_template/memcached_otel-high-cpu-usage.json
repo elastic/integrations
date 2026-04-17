@@ -1,40 +1,53 @@
 {
-    "id": "memcached_otel-high-cpu-usage",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Memcached OTel] High CPU usage",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "memcached"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "enabled": true,
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.cpu.usage IS NOT NULL\n// CPU usage is cumulative seconds (system + user) — RATE gives cores in use\n| STATS cpu_cores = SUM(RATE(memcached.cpu.usage))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when CPU exceeds 0.8 cores — memcached is typically CPU-light\n| WHERE cpu_cores > 0.8\n| SORT cpu_cores DESC\n| LIMIT 20"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+  "id": "memcached_otel-high-cpu-usage",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when Memcached CPU usage exceeds 0.8 cores. Memcached is typically CPU-light; high CPU indicates heavy workload or pathological access patterns.",
+    "name": "[Memcached OTel] High CPU usage",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "memcached"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "memcached_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Memcached high CPU usage\n\n### What fired\nCPU usage rate exceeded 0.8 cores during the window.\n\n### Why it matters\nBecause of its single-threaded command processing, Memcached's CPU usage tracks linearly with command rate. High CPU is unusual and often indicates very large values, heavy traffic, or pathological access patterns.\n\n### Triage\n1. Correlate with command throughput.\n2. Check item sizes and large-value usage.\n\n### Remediation\n- Scale horizontally.\n- Reduce value size or client-side work-split.\n\n### Tuning\n- 0.8 cores for a busy cache; tune to your thread count (`-t`).\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.cpu.usage IS NOT NULL\n// CPU usage is cumulative seconds (system + user) \u2014 RATE gives cores in use\n| STATS cpu_cores = SUM(RATE(memcached.cpu.usage))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when CPU exceeds 0.8 cores \u2014 memcached is typically CPU-light\n| WHERE cpu_cores > 0.8\n| SORT cpu_cores DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when frontend `haproxy.requests.errors` increases by more than 10 in 5 minutes. Request errors are malformed or timed-out client requests.",
     "name": "[HAProxy OTel] Request errors spike",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-frontend"
+        },
+        {
+          "id": "haproxy_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy request errors spike\n\n### What fired\nCounter `haproxy.requests.errors` increased by > 10 during the window.\n\n### Why it matters\nRequest errors include bad HTTP framing, too-long headers, and client timeouts. A sudden spike usually reflects a faulty client, bot traffic, or an MTU/proxy misconfiguration.\n\n### Triage\n1. Inspect HAProxy access logs for the dominant error pattern.\n2. Correlate with source IPs if possible.\n\n### Remediation\n- Block abusive clients at the edge.\n- Fix misbehaving upstream MTU / proxy.\n\n### Tuning\n- 10 errors/5m is a generic threshold; raise for busy edges.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

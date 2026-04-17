@@ -1,40 +1,54 @@
 {
-    "id": "redisenterprise_otel-database-down",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Redis Enterprise OTel] Database down",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "redisenterprise"
-        ],
-        "schedule": {
-            "interval": "1m"
+  "id": "redisenterprise_otel-database-down",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `bdb_up < 1`. The database is reported down \u2014 clients cannot read or write.",
+    "name": "[Redis Enterprise OTel] Database down",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redisenterprise"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redisenterprise_otel-database-performance"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS min_up = MIN(bdb_up) BY bdb, cluster\n// Alert when any database reports as down (bdb_up < 1)\n// This is a critical alert — a down database means clients cannot read or write\n| WHERE min_up < 1"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "bdb",
-            "termSize": 100
+        {
+          "id": "redisenterprise_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis Enterprise database down\n\n### What fired\n`bdb_up < 1` during the window.\n\n### Why it matters\nA down database is a complete outage for its clients. Usually caused by shard failures or cluster management issues.\n\n### Triage\n1. Check shard status.\n2. Inspect node health.\n\n### Remediation\n- Restore shards / failover replicas.\n\n### Tuning\n- Always P1.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS min_up = MIN(bdb_up) BY bdb, cluster\n// Alert when any database reports as down (bdb_up < 1)\n// This is a critical alert \u2014 a down database means clients cannot read or write\n| WHERE min_up < 1"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "bdb",
+      "termSize": 100
     }
+  }
 }

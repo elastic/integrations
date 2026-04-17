@@ -1,38 +1,54 @@
 {
-    "id": "traefik_otel-high-goroutine-count",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Traefik OTel] High goroutine count",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "traefik",
-            "saturation"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "traefik_otel-high-goroutine-count",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `go_goroutines > 2000`. Possible goroutine leak in Traefik.",
+    "name": "[Traefik OTel] High goroutine count",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "traefik",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "traefik_otel-process"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 8,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-traefik.otel-*\n// Limit to Go runtime goroutine gauge\n| WHERE go_goroutines IS NOT NULL\n// Take max goroutine count in window (gauge)\n| STATS goroutines = MAX(go_goroutines)\n// Alert when goroutines exceed threshold; tune for typical baseline (e.g. 500-2000)\n| WHERE goroutines > 2000"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "all",
-            "excludeHitsFromPreviousRun": false
+        {
+          "id": "traefik_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Traefik high goroutine count\n\n### What fired\n`go_goroutines > 2000` during the window.\n\n### Why it matters\nTraefik uses one goroutine per active connection plus workers. Elevated counts usually mean connection leaks or a stuck plugin.\n\n### Triage\n1. Sample Go profile from Traefik admin endpoint.\n2. Check plugin / middleware behaviour.\n\n### Remediation\n- Restart Traefik.\n- File issue if reproducible.\n\n### Tuning\n- 2000 threshold; tune to baseline (typically 500-2000).\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-traefik.otel-*\n// Limit to Go runtime goroutine gauge\n| WHERE go_goroutines IS NOT NULL\n// Take max goroutine count in window (gauge)\n| STATS goroutines = MAX(go_goroutines)\n// Alert when goroutines exceed threshold; tune for typical baseline (e.g. 500-2000)\n| WHERE goroutines > 2000"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
     }
+  }
 }

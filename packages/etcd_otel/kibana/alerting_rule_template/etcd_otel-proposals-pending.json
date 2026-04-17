@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when more than 10 Raft proposals are pending commit (`etcd_server_proposals_pending > 10`). Backlog indicates leader overload or slow disk.",
     "name": "[etcd OTel] Pending proposals backlog",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-raft-consensus"
+        },
+        {
+          "id": "etcd_otel-storage"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd pending proposals backlog\n\n### What fired\n`etcd_server_proposals_pending > 10` on a member during the window.\n\n### Why it matters\nPending proposals accumulate when Raft cannot commit them quickly. Usually means slow fsync on the leader, overloaded peer, or excessive write throughput.\n\n### Triage\n1. Check leader CPU and disk latency.\n2. Look at incoming client write rate.\n3. Inspect slow-apply counter for correlated disk pressure.\n\n### Remediation\n- Move etcd to faster storage.\n- Throttle write-heavy clients.\n\n### Tuning\n- `> 10` is a moderate threshold. Tune to your write rate.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-etcd.otel-default*\n// Gauge: proposals waiting to be committed; backlog indicates leader overload or slow disk\n| WHERE etcd_server_proposals_pending IS NOT NULL\n  AND etcd_server_proposals_pending > 10\n// Adjust threshold (10) based on expected write throughput\n| STATS pending = MAX(etcd_server_proposals_pending)\n    BY resource.attributes.service.instance.id\n| SORT pending DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

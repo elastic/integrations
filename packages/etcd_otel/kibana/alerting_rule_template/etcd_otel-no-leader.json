@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `etcd_server_has_leader == 0`. The member cannot see a leader \u2014 quorum is lost or this member is partitioned.",
     "name": "[etcd OTel] No leader",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-raft-consensus"
+        },
+        {
+          "id": "etcd_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd no leader\n\n### What fired\nA member reported `has_leader == 0` during the window.\n\n### Why it matters\nWithout a leader, no writes are possible from this member. If the whole cluster lacks a leader, Kubernetes and other dependents are down.\n\n### Triage\n1. Check if only one member is affected (partition) vs whole cluster (quorum loss).\n2. Inspect peer connectivity.\n3. Look at recent restarts, config changes, and disk health.\n\n### Remediation\n- Restore peer connectivity / bring missing peers online.\n- As last resort, run a disaster-recovery restore from snapshot.\n\n### Tuning\n- Always P1. Do not raise the threshold.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-etcd.otel-default*\n// Member has no leader: network partition, quorum lost, or all members down\n| WHERE etcd_server_has_leader IS NOT NULL\n  AND etcd_server_has_leader == 0\n// Group by instance for per-member alerting\n| STATS count = COUNT(*) BY resource.attributes.service.instance.id\n| SORT count DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

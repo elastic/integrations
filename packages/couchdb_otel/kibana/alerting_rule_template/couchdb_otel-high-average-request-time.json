@@ -3,6 +3,7 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
+        "description": "Alerts when the average HTTP request time on a CouchDB node exceeds a configurable latency threshold. Rising request times indicate disk I/O saturation, lock contention, view rebuilds, or general resource pressure.",
         "name": "[CouchDB OTel] High average request time (latency)",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -16,9 +17,16 @@
             "active": 2
         },
         "flapping": {
-            "enabled": true,
             "lookBackWindow": 6,
             "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Average Request Time (Latency)\n\n### Triage Steps\n1. Open the CouchDB overview dashboard and identify the node and time range where latency spiked.\n2. Correlate with HTTP request rate — was there a traffic surge, or did latency climb at constant load?\n3. Check `couchdb.database.operations` (reads vs writes) and `couchdb.httpd.bulk_requests` for workload composition shifts.\n4. Review host metrics: disk I/O wait, CPU saturation, and memory pressure.\n5. Check for view rebuilds — design document changes trigger costly background indexing that can stall queries.\n\n### Remediation\n- If view rebuilds are the cause, schedule design document changes during off-peak hours and pre-warm views with `?stale=update_after`.\n- For disk I/O saturation, move data files to faster storage or reduce write rate via batching.\n- Tune `[httpd] max_connections` and `[chttpd] backlog` to prevent request queueing under load.\n- Consider compacting databases (`POST /{db}/_compact`) if file sizes are bloated.\n\n### Threshold Tuning\nThe default 1000ms threshold is a generic starting point. Set it to align with your CouchDB SLO — typical OLTP workloads target <100-500ms. The rule uses peak (MAX) latency in the window, so brief spikes are detected; switch to averaging if you want to filter out transient outliers."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
         },
         "params": {
             "searchType": "esqlQuery",

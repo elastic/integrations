@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when task instance failures exceed 10 in the evaluation window (`airflow.ti_failures > 10`). Elevated task failures usually reflect application bugs or unstable dependencies.",
     "name": "[Airflow OTel] Task failures above threshold",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-tasks"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow task failures above threshold\n\n### What fired\nSummed `airflow.ti_failures` over the evaluation window exceeded 10.\n\n### Why it matters\nA spike in task failures degrades DAG completion rates and burns through retry budgets, amplifying load on downstream systems. Failures are usually concentrated on a handful of DAGs or operators.\n\n### Triage\n1. Tasks dashboard: identify which DAGs/tasks are failing most.\n2. Sample a failing task log for the root cause (application error, dependency timeout, OOM).\n3. Correlate with infrastructure events: deployments, DB issues, third-party outages.\n\n### Remediation\n- Fix the failing task or its upstream dependency.\n- If a dependency is flaky, add retries with exponential backoff \u2014 but alert if retry counts are the dominant driver of load.\n\n### Tuning\n- 10 failures / 15 min is mid-range. Lower for SLA-critical DAGs; raise for large noisy pipelines.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.ti_failures IS NOT NULL\n// Sum task instance failures in the time window\n| STATS failure_count = SUM(airflow.ti_failures)\n// Adjust threshold (10) for your expected failure volume\n| WHERE failure_count > 10"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

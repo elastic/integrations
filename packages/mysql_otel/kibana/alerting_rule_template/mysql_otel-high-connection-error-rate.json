@@ -1,39 +1,61 @@
 {
-    "id": "mysql_otel-high-connection-error-rate",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[MySQL OTel] High connection error rate",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "mysql"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "mysql_otel-high-connection-error-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when connection errors exceed 5 in the window. Auth, host-cache, or network issues.",
+    "name": "[MySQL OTel] High connection error rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "mysql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mysql_otel-14f9bee0-b03e-4e6d-b386-c89d5e7589c8"
         },
-        "alertDelay": {
-            "active": 3
+        {
+          "id": "mysql_otel-233fa1a2-7c05-46b9-8ae6-112d42610e12"
         },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
+        {
+          "id": "mysql_otel-49452773-8358-4394-827e-d15d1e3f8467"
         },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-mysqlreceiver.otel-*\n// Connection errors are a monotonic counter; use INCREASE for delta over the time window\n| WHERE metrics.mysql.connection.errors IS NOT NULL\n| STATS increase = SUM(INCREASE(metrics.mysql.connection.errors))\n  BY resource.attributes.mysql.instance.endpoint, attributes.error\n// Alert when more than 5 connection errors in the window; adjust threshold as needed\n| WHERE increase > 5\n| SORT increase DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "resource.attributes.mysql.instance.endpoint",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "mysql_otel-71977e60-f126-4c18-8769-639e686585a3"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## MySQL high connection error rate\n\n### What fired\n`INCREASE(mysql.connection.errors) > 5` in the window.\n\n### Why it matters\nMySQL tracks connection errors by type (max_connections, accept, select, etc.). Any sustained rate indicates clients cannot connect reliably.\n\n### Triage\n1. Split by `attributes.error` to categorise.\n2. Check `max_connections` utilisation.\n3. Inspect host cache / DNS.\n\n### Remediation\n- Raise `max_connections`.\n- Fix DNS / auth.\n\n### Tuning\n- 5/window threshold; tune to baseline.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-mysqlreceiver.otel-*\n// Connection errors are a monotonic counter; use INCREASE for delta over the time window\n| WHERE metrics.mysql.connection.errors IS NOT NULL\n| STATS increase = SUM(INCREASE(metrics.mysql.connection.errors))\n  BY resource.attributes.mysql.instance.endpoint, attributes.error\n// Alert when more than 5 connection errors in the window; adjust threshold as needed\n| WHERE increase > 5\n| SORT increase DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.mysql.instance.endpoint",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

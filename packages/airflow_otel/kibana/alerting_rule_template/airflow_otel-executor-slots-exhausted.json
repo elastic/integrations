@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the executor has zero open slots (`airflow.executor.open_slots <= 0`) at any point in the window, meaning tasks cannot be dispatched and the scheduler is back-pressured.",
     "name": "[Airflow OTel] Executor open slots exhausted",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -21,13 +22,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-scheduler-capacity"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow executor open slots exhausted\n\n### What fired\n`airflow.executor.open_slots` dropped to zero or below at least once during the evaluation window.\n\n### Why it matters\nWith no free executor slots, the scheduler cannot dispatch new task instances. Runs accumulate in the queue, schedule delay grows, and SLA miss rates climb. This is a capacity signal \u2014 tasks are running, but the pool is fully committed.\n\n### Triage\n1. Scheduler & Capacity dashboard: confirm executor slot trend against `airflow.executor.running_tasks`.\n2. Check for stuck / long-running tasks that hold slots. Inspect DAGs with unusually long task durations.\n3. Look at pools (`airflow.pool.*`) for additional bottlenecks.\n4. Cross-check `airflow.scheduler.tasks.starving` \u2014 related but distinct signal.\n\n### Remediation\n- Increase `parallelism` and/or the executor worker count.\n- Kill or re-queue hung tasks.\n- Split workloads across pools so high-priority DAGs are not blocked by bulk jobs.\n\n### Tuning\n- The rule fires if slots hit zero at any sample. If your workload routinely runs at full capacity without issue, consider requiring a sustained condition (e.g. `min_slots <= 0` over a longer window).\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.executor.open_slots IS NOT NULL\n// Gauge: use min to detect any point where slots hit zero\n| STATS min_slots = MIN(airflow.executor.open_slots)\n| WHERE min_slots <= 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

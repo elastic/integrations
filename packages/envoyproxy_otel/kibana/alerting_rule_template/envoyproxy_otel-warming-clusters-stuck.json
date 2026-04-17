@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `envoy.cluster_manager.warming_clusters > 0` persists. Clusters stuck warming cannot route requests.",
     "name": "[Envoy OTel] Warming clusters stuck",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "envoyproxy_otel-envoy-upstream-proxy"
+        },
+        {
+          "id": "envoyproxy_otel-envoy-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Envoy warming clusters stuck\n\n### What fired\n`envoy.cluster_manager.warming_clusters` remained above 0 during the window.\n\n### Why it matters\nClusters warm when Envoy is awaiting DNS/EDS responses for their endpoints. Stuck warming means endpoints cannot route, effectively taking the upstream offline.\n\n### Triage\n1. Inspect admin `/clusters` for the stuck cluster name.\n2. Check DNS resolution / EDS connectivity from the Envoy pod.\n3. Look for recent CDS/EDS push failures.\n\n### Remediation\n- Fix DNS / control-plane connectivity.\n- Push a correct cluster config.\n\n### Tuning\n- Fires on any sustained value > 0.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.cluster_manager.warming_clusters IS NOT NULL\n// Warming clusters should drop to 0 after config load; sustained > 0 indicates config issues\n| STATS max_warming = MAX(envoy.cluster_manager.warming_clusters)\n| WHERE max_warming > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

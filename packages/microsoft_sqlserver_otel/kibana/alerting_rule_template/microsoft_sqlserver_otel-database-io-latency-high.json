@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when average per-operation I/O latency exceeds 100 ms. Storage pressure degrades overall database performance.",
     "name": "[SQL Server OTel] Database I/O latency high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-database-io"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server database I/O latency high\n\n### What fired\n`INCREASE(sqlserver.database.latency) / INCREASE(sqlserver.database.operations) > 0.1 s` during the window.\n\n### Why it matters\nHigh average I/O latency per operation means the storage backend is the bottleneck. Every query reading or writing waits longer.\n\n### Triage\n1. Split by file_type (data, log, filestream) and direction to localise.\n2. Check OS wait types for PAGEIOLATCH* or WRITELOG.\n3. Inspect storage layer metrics.\n\n### Remediation\n- Migrate files to faster storage.\n- Reduce I/O-heavy workloads.\n\n### Tuning\n- 100 ms threshold; tighten for OLTP workloads.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-sqlserverreceiver.otel-default\n// Per-database file I/O latency (counter); INCREASE over window indicates storage pressure\n| WHERE metrics.sqlserver.database.latency IS NOT NULL\n    AND metrics.sqlserver.database.operations IS NOT NULL\n| STATS lat_increase = SUM(INCREASE(metrics.sqlserver.database.latency)),\n       ops_increase = SUM(INCREASE(metrics.sqlserver.database.operations))\n  BY instance_id = COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\"),\n     database_name = COALESCE(resource.attributes.sqlserver.database.name, \"\"),\n     file_type = COALESCE(attributes.file_type, file_type, \"\"),\n     direction = COALESCE(attributes.direction, direction, \"\")\n// Avg latency per op > 0.1s (100ms) when we have operations in the window\n| WHERE ops_increase > 0 AND (lat_increase / ops_increase) > 0.1\n| KEEP instance_id, database_name, file_type, direction, lat_increase, ops_increase"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

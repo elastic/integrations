@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a `db.server.top_query` delta total_exec_time exceeds 10 s. Top queries consuming disproportionate time.",
     "name": "[PostgreSQL OTel] Slow top queries",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-query-performance"
+        },
+        {
+          "id": "postgresql_otel-active-queries"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL slow top queries\n\n### What fired\n`attributes.postgresql.total_exec_time > 10000 ms` delta per scrape on a top query.\n\n### Why it matters\nTop queries from pg_stat_statements dominate total workload. A query consuming 10+ seconds per scrape interval is a prime optimisation target.\n\n### Triage\n1. Inspect the query text and plan.\n2. Check for missing indexes / poor stats.\n\n### Remediation\n- Optimise the query.\n- Consider query rewrite or index changes.\n\n### Tuning\n- 10 s threshold; tune to scrape cadence.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

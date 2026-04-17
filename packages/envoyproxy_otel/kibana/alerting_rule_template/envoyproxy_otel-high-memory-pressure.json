@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `envoy.server.memory_allocated / memory_heap_size > 0.9`. Sustained high ratios indicate memory pressure or a leak and risk OOM kills.",
     "name": "[Envoy OTel] High memory pressure",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "envoyproxy_otel-envoy-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Envoy high memory pressure\n\n### What fired\n`memory_allocated / memory_heap_size` exceeded 0.9 over the evaluation window.\n\n### Why it matters\nEnvoy is C++ and uses tcmalloc-style allocators. High allocated/heap ratios usually mean too many active connections, huge header sets, or a genuine leak. OOM kills the process entirely.\n\n### Triage\n1. Check concurrent connection count and typical response size.\n2. Look at `envoy.server.live` / restart counters to see if the process has been flapping.\n3. Compare with recent traffic growth or config pushes.\n\n### Remediation\n- Increase pod memory limits.\n- Tune `overload_manager` to trigger backpressure before OOM.\n- Collect a heap profile if a leak is suspected.\n\n### Tuning\n- 0.9 threshold balances noise and severity; lower to 0.85 for tighter environments.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL\n    AND envoy.server.memory_heap_size IS NOT NULL\n    AND envoy.server.memory_heap_size > 0\n// Ratio of allocated to heap — sustained high values indicate pressure or leak\n| EVAL mem_ratio = envoy.server.memory_allocated / envoy.server.memory_heap_size\n| STATS max_ratio = MAX(mem_ratio)\n// Adjust threshold (0.9 = 90%) based on your memory headroom expectations\n| WHERE max_ratio > 0.9"
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL\n    AND envoy.server.memory_heap_size IS NOT NULL\n    AND envoy.server.memory_heap_size > 0\n// Ratio of allocated to heap \u2014 sustained high values indicate pressure or leak\n| EVAL mem_ratio = envoy.server.memory_allocated / envoy.server.memory_heap_size\n| STATS max_ratio = MAX(mem_ratio)\n// Adjust threshold (0.9 = 90%) based on your memory headroom expectations\n| WHERE max_ratio > 0.9"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

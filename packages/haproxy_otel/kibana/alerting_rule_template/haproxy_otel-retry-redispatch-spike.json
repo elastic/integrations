@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the sum of retries + redispatches exceeds 5 in 5 minutes. Retries and redispatches both signal backend instability.",
     "name": "[HAProxy OTel] Connection retries or redispatches spike",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-server"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy connection retries / redispatches spike\n\n### What fired\n`haproxy.connections.retries + haproxy.requests.redispatched` increased by > 5 over the window.\n\n### Why it matters\nRetries and redispatches mean HAProxy had to try again because the first attempt failed. Sustained counts indicate flapping backend servers.\n\n### Triage\n1. Identify which servers require retries.\n2. Correlate with connection errors and health-check failures.\n\n### Remediation\n- Remove the unhealthy server from rotation.\n- Fix the backend or its network.\n\n### Tuning\n- 5 events/5m threshold.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

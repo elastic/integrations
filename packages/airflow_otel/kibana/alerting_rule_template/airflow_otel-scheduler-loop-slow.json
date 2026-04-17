@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the scheduler main-loop duration exceeds 60 seconds (`airflow.scheduler.scheduler_loop_duration > 60`). A slow loop starves task dispatch and inflates schedule delay.",
     "name": "[Airflow OTel] Scheduler loop duration excessive",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -21,13 +22,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-scheduler-capacity"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow scheduler loop duration excessive\n\n### What fired\n`airflow.scheduler.scheduler_loop_duration` peaked above 60 seconds during the evaluation window.\n\n### Why it matters\nThe scheduler main loop evaluates DAGs and dispatches tasks. A slow loop means fewer dispatches per unit time, queues grow, and SLAs slip. It is usually caused by DB latency, many DAGs, or a slow DAG processor.\n\n### Triage\n1. Scheduler & Capacity dashboard: correlate loop duration with schedule delay and executor slot availability.\n2. Check DB latency and connection pool saturation on the metadata store.\n3. Look for high DAG counts or recent DAG inventory growth.\n4. Inspect scheduler logs for slow queries or long-running hooks.\n\n### Remediation\n- Scale the metadata DB or add read replicas.\n- Increase `min_file_process_interval` so the processor re-parses DAGs less often.\n- Split the workload across multiple schedulers (HA mode).\n\n### Tuning\n- 60s is a conservative default. For latency-sensitive tiers tighten to 30s; for heavy deployments raise to 90-120s.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.scheduler_loop_duration IS NOT NULL\n// Timer values are in SECONDS (OTel statsd receiver convention)\n// Threshold 60 = 60 seconds; adjust for your environment\n| STATS max_loop_sec = MAX(airflow.scheduler.scheduler_loop_duration)\n| WHERE max_loop_sec > 60"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

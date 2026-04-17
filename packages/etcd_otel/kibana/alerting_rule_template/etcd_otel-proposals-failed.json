@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `etcd_server_proposals_failed_total` increases. Failed Raft proposals indicate lost quorum or severe network issues.",
     "name": "[etcd OTel] Proposal failures",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-raft-consensus"
+        },
+        {
+          "id": "etcd_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd proposal failures\n\n### What fired\nCounter `etcd_server_proposals_failed_total` increased during the window.\n\n### Why it matters\nProposals fail when the cluster cannot replicate the change \u2014 usually because quorum is unreachable or the leader stepped down mid-proposal. Client writes for failed proposals return errors.\n\n### Triage\n1. Check `has_leader` and leader change counters.\n2. Inspect peer connectivity and disk latency.\n\n### Remediation\n- Restore quorum.\n- Stabilise disk and network.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-etcd.otel-default*\n// Counter: failed Raft proposals indicate lost quorum or severe network issues\n| WHERE etcd_server_proposals_failed_total IS NOT NULL\n// INCREASE: any increase in the window indicates failures\n| STATS increase = SUM(INCREASE(etcd_server_proposals_failed_total))\n    BY resource.attributes.service.instance.id\n| WHERE increase > 0\n| SORT increase DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

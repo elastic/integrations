@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.memory.grants.pending.count > 0`. Queries unable to get memory grants cannot execute.",
     "name": "[SQL Server OTel] Memory grants pending",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-memory-saturation"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-query-performance"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server memory grants pending\n\n### What fired\nMemory grants pending > 0 during the window.\n\n### Why it matters\nQueries request memory for sorts / hashes before executing. Pending grants mean the workspace memory is exhausted \u2014 queries wait and may time out.\n\n### Triage\n1. Check memory configuration.\n2. Look at queries with large memory grants (sorts, hashes).\n\n### Remediation\n- Add memory or tune queries.\n\n### Tuning\n- Fires on any non-zero value.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Queries waiting for memory grants cannot execute; any sustained non-zero is critical\n| WHERE metrics.sqlserver.memory.grants.pending.count IS NOT NULL\n| STATS max_pending = MAX(metrics.sqlserver.memory.grants.pending.count),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE max_pending > 0\n| KEEP instance_id, max_pending"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

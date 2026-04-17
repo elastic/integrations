@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the hard-parse ratio exceeds 10%. Indicates shared pool pressure or absent bind variables.",
     "name": "[Oracle OTel] Hard parse ratio high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "oracle_otel-sql-execution"
+        },
+        {
+          "id": "oracle_otel-query-performance"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Oracle hard parse ratio high\n\n### What fired\n`hard_parses / parse_calls > 10%` over the window.\n\n### Why it matters\nHard parses are expensive \u2014 they fully re-plan a statement. High ratios indicate shared pool churn, ad-hoc SQL, or missing bind variables. This is a classic performance antipattern.\n\n### Triage\n1. Look at top literal-heavy SQL in ASH.\n2. Check shared pool size.\n\n### Remediation\n- Force cursor sharing or adopt bind variables.\n- Raise shared pool size.\n\n### Tuning\n- 10% threshold; tighten for OLTP.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-oracledbreceiver.otel-*\n// hard_parses and parse_calls are co-located in Parses TSDB group; INCREASE for counter deltas\n| WHERE oracledb.parse_calls IS NOT NULL\n        AND oracledb.hard_parses IS NOT NULL\n| STATS delta_hard = SUM(INCREASE(oracledb.hard_parses)),\n        delta_total = SUM(INCREASE(oracledb.parse_calls))\n        BY oracledb.instance.name, host.name\n| WHERE delta_total > 0\n// Ratio > 10% indicates shared pool pressure, ad-hoc SQL, or missing bind variables\n// Adjust threshold (e.g. 0.05 for 5%) for stricter monitoring\n| EVAL hard_parse_ratio_pct = ROUND(delta_hard / delta_total * 100.0, 1)\n| WHERE hard_parse_ratio_pct > 10\n| SORT hard_parse_ratio_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any DAG files fail to import (`airflow.dag_processing.import_errors > 0`). Import errors prevent the affected DAGs from running.",
     "name": "[Airflow OTel] DAG import errors present",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-dag-processing"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow DAG import errors present\n\n### What fired\n`airflow.dag_processing.import_errors` is greater than zero.\n\n### Why it matters\nA DAG that fails to import is invisible to the scheduler \u2014 its runs will not be created, and downstream systems that expect those runs will silently miss them.\n\n### Triage\n1. Check the Airflow webserver \"Import errors\" page for the traceback.\n2. Correlate with recent deploys or config pushes to the DAG folder.\n3. Look at `airflow.dag_processing.total_parse_time` and processor logs for environmental issues.\n\n### Remediation\n- Fix or revert the offending DAG file.\n- If an external dependency is missing in the scheduler environment, install it and restart the scheduler.\n\n### Tuning\n- This rule fires on any non-zero value. Do not raise the threshold \u2014 every import error should be triaged.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.import_errors IS NOT NULL\n// Use max gauge value in window; import_errors is a gauge\n| STATS max_errors = MAX(airflow.dag_processing.import_errors)\n| WHERE max_errors > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

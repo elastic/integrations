@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a store reports any intentional write stalls due to disk backpressure (`storage_write_stalls > 0`). Write stalls are a direct user impact: SQL writes will be latent or failing while they persist.",
     "name": "[CockroachDB OTel] Storage write stalls detected",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-storage"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB storage write stalls detected\n\n### What fired\nThe gauge `storage_write_stalls` on at least one store exceeded 0 over the evaluation window.\n\n### Why it matters\nWrite stalls are intentional back-pressure by the storage engine to prevent the LSM from collapsing. While they are preferable to an unavailable store, they cause direct user-visible latency spikes for any workload writing through that store.\n\n### Triage\n1. On the Storage dashboard, correlate stalls with `admission_io_overload`, `storage_l0_sublevels`, `storage_l0_num_files`, and `rocksdb_read_amplification`.\n2. Check disk queue (`sys_host_disk_iopsinprogress`) and host I/O.\n3. Check CPU \u2014 compaction starvation can cause stalls.\n\n### Remediation\n- Increase provisioned IOPS / upgrade storage.\n- Shed or throttle the write workload temporarily.\n- Add nodes to spread the write load.\n\n### Tuning\n- This rule fires on any stall. For noisy environments, require `> N` over a longer window.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND storage_write_stalls IS NOT NULL\n  AND storage_write_stalls > 0\n// Store-level metric: intentional write stalls due to disk backpressure\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS stalls = MAX(storage_write_stalls) BY attributes.node_id, attributes.store, host.name\n| SORT stalls DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

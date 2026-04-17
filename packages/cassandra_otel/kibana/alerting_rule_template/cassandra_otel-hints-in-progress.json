@@ -1,39 +1,52 @@
 {
-    "id": "cassandra_otel-hints-in-progress",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Cassandra OTel] Hints in progress (replicas unreachable)",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "cassandra"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-cassandra.otel-default\n// Gauge: hints currently being sent; > 0 means replicas are unreachable\n| WHERE cassandra.storage.total_hints.in_progress.count IS NOT NULL\n| STATS hints_in_progress = MAX(MAX_OVER_TIME(cassandra.storage.total_hints.in_progress.count)) BY server.address\n| WHERE hints_in_progress > 0\n| SORT hints_in_progress DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "server.address",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+  "id": "cassandra_otel-hints-in-progress",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any hints are in progress (`cassandra.storage.total_hints.in_progress.count > 0`). In-progress hints indicate replicas were recently unreachable.",
+    "name": "[Cassandra OTel] Hints in progress (replicas unreachable)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cassandra"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cassandra_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Cassandra hints in progress\n\n### What fired\n`cassandra.storage.total_hints.in_progress.count` exceeded 0 on at least one node.\n\n### Why it matters\nWhen a replica is unreachable, coordinators write hints for it that are replayed once the replica recovers. Hints in progress signal that one or more replicas were recently down or network-partitioned. If hints accumulate faster than they can be replayed, data loss becomes possible after `max_hint_window_in_ms`.\n\n### Triage\n1. Overview dashboard: identify nodes generating hints and their destinations.\n2. Check gossip / liveness state across the cluster.\n3. Correlate with error rate spikes and network health.\n4. Confirm the unreachable node has come back online and hint replay is progressing.\n\n### Remediation\n- Restore the unreachable node(s) as soon as possible.\n- If a replica is permanently lost, decommission and let hinted handoff expire; then run `nodetool repair` to restore consistency.\n\n### Tuning\n- Fires on any active hint. In-progress hints are always worth noting \u2014 do not loosen.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-cassandra.otel-default\n// Gauge: hints currently being sent; > 0 means replicas are unreachable\n| WHERE cassandra.storage.total_hints.in_progress.count IS NOT NULL\n| STATS hints_in_progress = MAX(MAX_OVER_TIME(cassandra.storage.total_hints.in_progress.count)) BY server.address\n| WHERE hints_in_progress > 0\n| SORT hints_in_progress DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

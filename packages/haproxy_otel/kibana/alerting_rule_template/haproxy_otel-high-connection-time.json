@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the moving-average backend connect time exceeds 100 ms (`haproxy.connections.average_time > 100`). High connect times indicate backend or network pressure.",
     "name": "[HAProxy OTel] High backend connection time",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-server"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy high backend connection time\n\n### What fired\n`haproxy.connections.average_time > 100 ms` over the window.\n\n### Why it matters\nThe connection time metric is the average over the last 1024 requests. Sustained high values indicate the backend server or the network path is slow to complete TCP connects.\n\n### Triage\n1. Correlate with queue time and response time.\n2. Check backend CPU and TCP accept queues.\n3. Inspect network latency.\n\n### Remediation\n- Add backend capacity.\n- Investigate network path issues.\n\n### Tuning\n- 100 ms is a generic default; tune to your environment's baseline.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

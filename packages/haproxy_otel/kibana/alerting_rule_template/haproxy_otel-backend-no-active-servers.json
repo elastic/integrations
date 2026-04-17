@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a HAProxy backend has zero active servers (`haproxy.active < 1` on service_name=BACKEND). The backend cannot serve any traffic.",
     "name": "[HAProxy OTel] Backend has no active servers",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,22 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-server"
+        },
+        {
+          "id": "haproxy_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy backend has no active servers\n\n### What fired\n`haproxy.active` on a BACKEND row dropped to 0 during the window.\n\n### Why it matters\nA backend with no active servers rejects all requests routed to it. This is a complete outage for any frontend using that backend.\n\n### Triage\n1. Drill into Server dashboard to see individual server health checks and downtime.\n2. Check `haproxy.failed_checks` increments and backup server availability.\n3. Look at server-side causes (crashes, networking).\n\n### Remediation\n- Restore at least one healthy server in the backend.\n- Route traffic to a backup backend if configured.\n\n### Tuning\n- Always P1 \u2014 do not loosen.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

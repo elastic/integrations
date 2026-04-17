@@ -3,6 +3,7 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
+        "description": "Alerts when the number of open databases on a CouchDB node grows beyond a configurable threshold. Unbounded growth typically indicates database proliferation (e.g. per-user databases not being closed) or a leak in the application data model.",
         "name": "[CouchDB OTel] Open databases count high",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -16,9 +17,16 @@
             "active": 2
         },
         "flapping": {
-            "enabled": true,
             "lookBackWindow": 6,
             "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Open Databases Count High\n\n### Triage Steps\n1. Check the open databases trend on the CouchDB overview dashboard — is the count growing linearly or step-wise?\n2. Cross-reference with `couchdb.file_descriptor.open` — open databases consume file descriptors and may trigger the FD exhaustion alert.\n3. Query `/_all_dbs` to enumerate databases and look for naming patterns indicating per-user, per-tenant, or per-session databases.\n4. Check the `[couchdb] max_dbs_open` setting in `local.ini` against the current count.\n\n### Remediation\n- If per-user databases are growing unbounded, implement application-side cleanup of inactive accounts.\n- Consolidate small databases into a single database with a discriminator field where the data model allows.\n- Raise `[couchdb] max_dbs_open` if the growth is legitimate, ensuring the OS file descriptor limit is also raised correspondingly.\n- Use `PUT /{db}/_revs_limit` to reduce per-database overhead if many databases are kept for historical access only.\n\n### Threshold Tuning\nThe default of 100 open databases is conservative. Multi-tenant deployments often legitimately maintain thousands; set the threshold to ~70-80% of `max_dbs_open` so you have time to react before CouchDB starts refusing to open additional databases."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
         },
         "params": {
             "searchType": "esqlQuery",

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when unacked messages exceed 500 on a queue. Consumers delivered but never acked.",
     "name": "[RabbitMQ OTel] High unacknowledged message count",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "rabbitmq_otel-queues"
+        },
+        {
+          "id": "rabbitmq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## RabbitMQ high unacknowledged message count\n\n### What fired\nUnacknowledged message count exceeded 500 on a queue.\n\n### Why it matters\nUnacked messages are delivered but not yet confirmed by the consumer. Growing unacked counts mean consumers are slow, stuck, or crashing before ack.\n\n### Triage\n1. Check consumer processing time.\n2. Look for consumer crashes.\n\n### Remediation\n- Raise prefetch thoughtfully or reduce it to protect memory.\n- Fix consumer code.\n\n### Tuning\n- 500 threshold; tune to workload.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-rabbitmqreceiver.otel-default\n// Unacknowledged: delivered but not yet acked; buildup indicates consumer issues\n| WHERE attributes.state == \"unacknowledged\"\n  AND metrics.rabbitmq.message.current IS NOT NULL\n| STATS unack_count = MAX(metrics.rabbitmq.message.current)\n  BY resource.attributes.rabbitmq.queue.name,\n     resource.attributes.rabbitmq.vhost.name,\n     resource.attributes.rabbitmq.node.name\n// Alert threshold: adjust 500 to tune for consumer processing expectations\n| WHERE unack_count > 500\n| SORT unack_count DESC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

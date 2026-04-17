@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.login.rate > 50/sec`. A sudden login spike often indicates connection-pool misconfiguration or a connection storm.",
     "name": "[SQL Server OTel] Login rate spike",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,25 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server login rate spike\n\n### What fired\nAverage login rate exceeded 50/sec over the window.\n\n### Why it matters\nApplication clients should reuse pooled connections. A login storm suggests a pool is disabled or cycling rapidly, which is expensive (auth, reset, etc.) and can exhaust the worker thread budget.\n\n### Triage\n1. Identify which clients are spiking.\n2. Check pool settings (min/max, connection TTL).\n\n### Remediation\n- Fix client pooling.\n\n### Tuning\n- 50/sec assumes an OLTP baseline near zero; tune to your workload.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// High login rate may indicate connection pool misconfiguration or connection storm\n| WHERE metrics.sqlserver.login.rate IS NOT NULL\n| STATS avg_login_rate = AVG(metrics.sqlserver.login.rate),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// Adjust threshold (logins/s) based on baseline; 50/s is a starting point for investigation\n| WHERE avg_login_rate > 50.0\n| KEEP instance_id, avg_login_rate"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

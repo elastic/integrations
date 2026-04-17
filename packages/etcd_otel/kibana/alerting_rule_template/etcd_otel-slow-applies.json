@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `etcd_server_slow_apply_total` increases. Raft applies exceeding the expected duration indicate disk or compaction contention.",
     "name": "[etcd OTel] Slow apply operations",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-storage"
+        },
+        {
+          "id": "etcd_otel-raft-consensus"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd slow apply operations\n\n### What fired\nCounter `etcd_server_slow_apply_total` incremented during the window.\n\n### Why it matters\netcd considers an apply 'slow' when it takes > 100 ms. Sustained slow applies indicate slow disk or compaction thrashing that will cascade into leader churn and client timeouts.\n\n### Triage\n1. Check disk fsync latency and IOPS.\n2. Inspect compaction backlog and DB size trend.\n3. Look for CPU contention.\n\n### Remediation\n- Upgrade storage.\n- Run defrag to reduce DB size.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-etcd.otel-default*\n// Counter: Raft applies that exceeded expected duration (~100ms); indicates slow disk or compaction contention\n| WHERE etcd_server_slow_apply_total IS NOT NULL\n| STATS increase = SUM(INCREASE(etcd_server_slow_apply_total))\n    BY resource.attributes.service.instance.id\n| WHERE increase > 0\n| SORT increase DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,
