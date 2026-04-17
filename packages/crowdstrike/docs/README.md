@@ -750,6 +750,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.data_domains |  | keyword |
 | crowdstrike.alert.description |  | keyword |
 | crowdstrike.alert.detect_type |  | keyword |
+| crowdstrike.alert.detection_context |  | flattened |
 | crowdstrike.alert.device.agent_load_flags |  | long |
 | crowdstrike.alert.device.agent_local_time |  | date |
 | crowdstrike.alert.device.agent_version |  | keyword |
