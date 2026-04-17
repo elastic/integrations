@@ -6789,12 +6789,12 @@
                         "references": [
                             {
                                 "id": "logstash-sm-metrics",
-                                "name": "indexpattern-datasource-layer-a8c2c277-1b48-416e-84fa-31ef12f6b5ed",
+                                "name": "indexpattern-datasource-layer-a7473309-8ac9-4157-b1fc-88c459a5d220",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logstash-sm-metrics",
-                                "name": "indexpattern-datasource-layer-a7473309-8ac9-4157-b1fc-88c459a5d220",
+                                "name": "indexpattern-datasource-layer-a8c2c277-1b48-416e-84fa-31ef12f6b5ed",
                                 "type": "index-pattern"
                             }
                         ],
@@ -6807,7 +6807,10 @@
                                             "columnOrder": [
                                                 "35953d49-dc19-4f0e-884d-094811a16375",
                                                 "6090c0d4-2421-4b1d-8b2d-d9186c16dbd7",
-                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6"
+                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6",
+                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X0",
+                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X1",
+                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X2"
                                             ],
                                             "columns": {
                                                 "35953d49-dc19-4f0e-884d-094811a16375": {
@@ -6827,7 +6830,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "p50 last minute",
-                                                    "operationType": "average",
+                                                    "operationType": "median",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
@@ -6837,12 +6840,63 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "p90 last minute",
+                                                    "label": "p90 last minute (delta)",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "average(logstash.pipeline.total.batch.byte_size.p90.last_1_minute) - average(logstash.pipeline.total.batch.byte_size.p50.last_1_minute) ",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e29cbd4d-2d96-4b76-a135-b3162e3563d6X2"
+                                                    ]
+                                                },
+                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of p90 last minute (delta)",
                                                     "operationType": "average",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "sourceField": "logstash.pipeline.total.batch.byte_size.p90.last_1_minute"
+                                                },
+                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of p90 last minute (delta)",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "logstash.pipeline.total.batch.byte_size.p50.last_1_minute"
+                                                },
+                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of p90 last minute (delta)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X0",
+                                                                "e29cbd4d-2d96-4b76-a135-b3162e3563d6X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 136,
+                                                                "min": 0
+                                                            },
+                                                            "name": "subtract",
+                                                            "text": "average(logstash.pipeline.total.batch.byte_size.p90.last_1_minute) - average(logstash.pipeline.total.batch.byte_size.p50.last_1_minute) ",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "e29cbd4d-2d96-4b76-a135-b3162e3563d6X0",
+                                                        "e29cbd4d-2d96-4b76-a135-b3162e3563d6X1"
+                                                    ]
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -6930,6 +6984,7 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
+                                "fillOpacity": 0.3,
                                 "labelsOrientation": {
                                     "x": 0,
                                     "yLeft": 0,
@@ -6970,14 +7025,17 @@
                                         "xAccessor": "e830e95e-ada9-476f-9392-8514bb6dfaf3",
                                         "yConfig": [
                                             {
+                                                "axisMode": "left",
                                                 "color": "#61a2ff",
                                                 "forAccessor": "38a796b9-1ccf-4a53-a940-8da67a133b5d"
                                             },
                                             {
+                                                "axisMode": "left",
                                                 "color": "#bfdbff",
                                                 "forAccessor": "a20aba59-2eb3-408c-ae36-6d7fd5546caa"
                                             },
                                             {
+                                                "axisMode": "left",
                                                 "color": "#f6726a",
                                                 "forAccessor": "02dedb74-d833-479b-aa0d-740cd01d0d9e"
                                             }
@@ -6985,8 +7043,8 @@
                                     },
                                     {
                                         "accessors": [
-                                            "6090c0d4-2421-4b1d-8b2d-d9186c16dbd7",
-                                            "e29cbd4d-2d96-4b76-a135-b3162e3563d6"
+                                            "e29cbd4d-2d96-4b76-a135-b3162e3563d6",
+                                            "6090c0d4-2421-4b1d-8b2d-d9186c16dbd7"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -7011,16 +7069,18 @@
                                         "layerId": "a7473309-8ac9-4157-b1fc-88c459a5d220",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "area",
+                                        "seriesType": "area_stacked",
                                         "showGridlines": false,
                                         "xAccessor": "35953d49-dc19-4f0e-884d-094811a16375",
                                         "yConfig": [
                                             {
-                                                "color": "#0ef270",
+                                                "axisMode": "left",
+                                                "color": "#fdffff",
                                                 "forAccessor": "6090c0d4-2421-4b1d-8b2d-d9186c16dbd7"
                                             },
                                             {
-                                                "color": "#eaae01",
+                                                "axisMode": "left",
+                                                "color": "#d57558",
                                                 "forAccessor": "e29cbd4d-2d96-4b76-a135-b3162e3563d6"
                                             }
                                         ]
@@ -7072,7 +7132,7 @@
         "title": "[Metrics Logstash] Logstash Single Pipeline View"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-04-09T10:07:20.769Z",
+    "created_at": "2026-04-17T12:30:41.002Z",
     "id": "logstash-bc1a8050-5ee1-11ee-8e78-bf6865bc3ffc",
     "references": [
         {
@@ -7267,12 +7327,12 @@
         },
         {
             "id": "logstash-sm-metrics",
-            "name": "94713cee-aa91-4b06-afff-ac6b8082b6e0:indexpattern-datasource-layer-a8c2c277-1b48-416e-84fa-31ef12f6b5ed",
+            "name": "94713cee-aa91-4b06-afff-ac6b8082b6e0:indexpattern-datasource-layer-a7473309-8ac9-4157-b1fc-88c459a5d220",
             "type": "index-pattern"
         },
         {
             "id": "logstash-sm-metrics",
-            "name": "94713cee-aa91-4b06-afff-ac6b8082b6e0:indexpattern-datasource-layer-a7473309-8ac9-4157-b1fc-88c459a5d220",
+            "name": "94713cee-aa91-4b06-afff-ac6b8082b6e0:indexpattern-datasource-layer-a8c2c277-1b48-416e-84fa-31ef12f6b5ed",
             "type": "index-pattern"
         }
     ],
