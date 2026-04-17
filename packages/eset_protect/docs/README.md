@@ -6,29 +6,27 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
 
-**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [ESET Connect - Incident Management](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Incident%20Management).
+**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [Incident Management - List detections v1](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html) endpoint.
 
-**[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [ESET Connect - Automation](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Automation).
+**[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [Automation - List tasks](https://help.eset.com/eset_connect/en-US/automation_v1_device_tasks_get.html) endpoint.
 
-**Event** is used to retrieve Detection, Firewall, HIPS, Audit, and ESET Inspect logs using the [Syslog Server](https://help.eset.com/protect_cloud/en-US/events-exported-to-json-format.html?admin_server_settings_export_to_syslog.html). ESET notifications are also retrieved but in plain text.
+**Event** is used to retrieve Detection, Firewall, HIPS, Audit, and ESET Inspect logs using the [Syslog Server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_export_to_syslog.html). ESET notifications are also retrieved but in plain text.
 
 ## Requirements
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-This module has been tested against the **ESET PROTECT (version: 5.0.9.1)**.
-
 ## Setup
 
 ### Collect data from ESET Connect
 
-1. [Create API User Account](https://help.eset.com/eset_connect/en-US/use_api_with_swagger.html?create_api_user_account.html)
+1. [Create API User Account](https://help.eset.com/eset_connect/en-US/create_api_user_account.html)
 2. Retrieve the username and password generated during the creation of an API user account.
 3. Retrieve the region from the ESET Web Console URL.
 
 ### Collect data from ESET PROTECT via Syslog
 
-Follow these steps to [configure syslog server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_export_to_syslog.html?admin_server_settings_syslog.html):
+Follow these steps to [configure syslog server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_syslog.html):
 
 1. Set the format of the payload to **JSON** (Hint: ESET Notifications are sent as plain text, regardless of the selection made https://help.eset.com/protect_admin/12.0/en-US/events-exported-to-json-format.html).
 2. Set the format of the envelope to **Syslog**.
@@ -58,15 +56,15 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2023-10-26T13:36:53.000Z",
     "agent": {
-        "ephemeral_id": "b51f7ff3-ce17-4024-92bc-3d0e88739447",
-        "id": "b48af936-fff7-410e-bceb-954a720e7c99",
-        "name": "elastic-agent-51462",
+        "ephemeral_id": "3166280a-d109-4e1a-a949-eae156770c1e",
+        "id": "fbb34d12-6a92-4b08-8435-1076804a69a2",
+        "name": "elastic-agent-11274",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.detection",
-        "namespace": "23163",
+        "namespace": "36613",
         "type": "logs"
     },
     "destination": {
@@ -95,7 +93,7 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b48af936-fff7-410e-bceb-954a720e7c99",
+        "id": "fbb34d12-6a92-4b08-8435-1076804a69a2",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -132,9 +130,11 @@ An example event for `detection` looks as following:
             "intrusion_detection"
         ],
         "dataset": "eset_protect.detection",
-        "ingested": "2025-11-10T06:06:25Z",
+        "id": "xxx-xxxx-xxxx-1234-xxxxxxxxxxxx",
+        "ingested": "2026-04-01T06:55:33Z",
         "kind": "alert",
         "original": "{\"category\":\"DETECTION_CATEGORY_NETWORK_INTRUSION\",\"context\":{\"circumstances\":\"Eicar\",\"deviceUuid\":\"xxx-xxxx-1234-5678-xxxxxxxxxxxx\",\"process\":{\"path\":\"C:\\\\Windows\\\\chrome.exe\"},\"userName\":\"testingpc\\\\example\"},\"networkCommunication\":{\"protocolName\":\"0\",\"remoteIpAddress\":\"89.160.20.112\",\"remotePort\":443},\"objectHashSha1\":\"AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D\",\"objectTypeName\":\"File\",\"objectUrl\":\"C:\\\\Temp\\\\06516f11-xxxx-xxxx-xxxx-37da66b5de99_ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8.zip.e99\\\\ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8\",\"occurTime\":\"2023-10-26T13:36:53Z\",\"responses\":[{}],\"severityLevel\":\"SEVERITY_LEVEL_MEDIUM\",\"typeName\":\"TCP Port scanning attack\",\"uuid\":\"xxx-xxxx-xxxx-1234-xxxxxxxxxxxx\"}",
+        "reason": "Eicar",
         "type": [
             "info"
         ]
@@ -431,7 +431,7 @@ An example event for `event` looks as following:
             "is_handled": false,
             "name": "An attempt to connect to URL",
             "object_uri": "https://test.com",
-            "occured": "2021-06-21T03:56:20.000Z",
+            "occurred": "2021-06-21T03:56:20.000Z",
             "os_name": "Microsoft Windows 11 Pro",
             "processname": "C:\\Program Files\\Web browser\\brwser.exe",
             "rule_id": "Blocked by PUA blacklist",
@@ -544,6 +544,10 @@ An example event for `event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | eset_protect.event.account | Name of the user account associated with the event. | keyword |
 | eset_protect.event.action | Action taken. | keyword |
 | eset_protect.event.action_error | Error message if the "action" was not successful. | keyword |
@@ -576,7 +580,7 @@ An example event for `event` looks as following:
 | eset_protect.event.need_restart | Whether or not the restart is needed. | boolean |
 | eset_protect.event.object_type | Type of object related to this event. | keyword |
 | eset_protect.event.object_uri | Object URI associated with the event. | keyword |
-| eset_protect.event.occured | UTC time of occurrence of the event. Format is %d-%b-%Y %H:%M:%S. | date |
+| eset_protect.event.occurred | UTC time of occurrence of the event. Format is %d-%b-%Y %H:%M:%S. | date |
 | eset_protect.event.operation | Operation associated with the event. | keyword |
 | eset_protect.event.os_name | Information about the computer´s operating system. | keyword |
 | eset_protect.event.processname | Name of the process associated with the event. | keyword |

@@ -35,7 +35,7 @@ An example event for `assets` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-25T17:05:14.23377Z",
+    "@timestamp": "2025-04-01T09:45:48Z",
     "agent": {
         "ephemeral_id": "e4143ea9-6edb-47f5-b711-43dda27896e9",
         "id": "49934b6e-d1c4-4a6d-9745-e82197ba288f",
@@ -114,7 +114,7 @@ An example event for `assets` looks as following:
             "name": "DeviceNet_L81",
             "purdue_level": "Level1",
             "risk": {
-                "total_risk": "72.8374829734034"
+                "total_risk": 72.8374829734034
             },
             "run_status": "Unknown",
             "run_status_time": "0001-01-01T00:00:00Z",
@@ -160,7 +160,7 @@ The following non-ECS fields are used in assets documents:
 | tenable_ot_security.assets.macs | A list of MAC addresses associated with the asset. | keyword |
 | tenable_ot_security.assets.name | The name of the asset. | keyword |
 | tenable_ot_security.assets.purdue_level | The Purdue level classification of the asset. | keyword |
-| tenable_ot_security.assets.risk.total_risk | The overall risk score of the asset. | keyword |
+| tenable_ot_security.assets.risk.total_risk | The overall risk score of the asset. | double |
 | tenable_ot_security.assets.run_status | The current operational status of the asset. | keyword |
 | tenable_ot_security.assets.run_status_time | The timestamp when the run status was last updated. | date |
 | tenable_ot_security.assets.segments.archived | Indicates whether the segment is archived. | boolean |

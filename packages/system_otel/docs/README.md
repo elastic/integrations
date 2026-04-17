@@ -11,9 +11,13 @@ Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiv
 
 Compatible `hostmetrics` receiver versions are version 0.102.0 or later.
 
+## Where to start
+
+If you're configuring your OpenTelemetry Collector so the dashboards in this package work as expected, start with [Collector configuration](#collector-configuration), and then verify the required [Available metrics](#available-metrics).
+
 ## Collector configuration
 
-By default, the Elastic Distribution of OpenTelemetry Collector already uses the `hostmetrics` receiver. If you're using a different Collector distribution or the contrib Collector, make sure to add the following snippets to your Collector configuration file.
+The Elastic Distribution of OpenTelemetry (EDOT) Collector and the upstream Contrib Collector both include the `hostmetrics` receiver. Regardless of which Collector distribution you use, review the following snippets and add or adjust your Collector configuration to ensure the required metrics are enabled, as some of them are not enabled by default.
 
 ### Receivers configuration
 
@@ -103,10 +107,6 @@ processors:
           enabled: false
         host.arch:
           enabled: true
-        host.ip:
-          enabled: true
-        host.mac:
-          enabled: true
         host.cpu.vendor.id:
           enabled: true
         host.cpu.family:
@@ -189,8 +189,6 @@ Also, it's recommended to enable the [`resourcedetection` processor](https://git
 - `host.name`
 - `host.id`
 - `host.arch`
-- `host.ip`
-- `host.mac`
 - `host.cpu.vendor.id`
 - `host.cpu.family`
 - `host.cpu.model.id`
@@ -202,10 +200,10 @@ Also, it's recommended to enable the [`resourcedetection` processor](https://git
 
 ## Troubleshooting
 
-If individual widgets in the dashboard show errors that certain fields are not evailable, that might be an indicator of one of the following:
+If individual widgets in the dashboard show errors that certain fields are not available, that might be an indicator of one of the following:
 
-- For your use case the missing data is not relevant (e.g. you are only running plain, local VMs, no `Cloud` metadata will be available)
-- You are using the OpenTelemetry upstream Contrib Collector (or any other, non-EDOT Collector) and some of the above-mentioned requirements are not met
+- For your use case, the missing data is not relevant (e.g. you are only running plain, local VMs, no `Cloud` metadata will be available).
+- Your Collector configuration does not enable all of the required metrics, or resource attributes.
 
 For additional information, refer to:
 
