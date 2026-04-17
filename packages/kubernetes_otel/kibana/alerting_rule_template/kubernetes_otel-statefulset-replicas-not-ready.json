@@ -5,24 +5,24 @@
     "attributes": {
         "description": "Alerts when a StatefulSet has fewer ready pods than desired. StatefulSets manage stateful applications with stable identities, so missing replicas can cause data availability issues.",
         "name": "[K8s OTel] StatefulSet replicas not ready",
-        "rule_type_id": ".es-query",
+        "ruleTypeId": ".es-query",
         "tags": [
             "Kubernetes"
         ],
         "schedule": {
             "interval": "1m"
         },
-        "alert_delay": {
+        "alertDelay": {
             "active": 3
         },
         "flapping": {
             "enabled": true,
-            "look_back_window": 10,
-            "status_change_threshold": 4
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
         },
         "artifacts": {
             "investigation_guide": {
-                "blob": "## StatefulSet Replicas Not Ready\n\n### Triage Steps\n1. Identify the affected StatefulSet(s) from the alert results.\n2. Check the Workload Health dashboard for StatefulSet status.\n3. Run `kubectl describe statefulset <name> -n <namespace>` for events.\n4. Check individual pod status: `kubectl get pods -l app=<statefulset> -n <namespace>`.\n5. Verify PVC bindings — StatefulSet pods require their PVCs to be bound before starting.\n\n### Common Causes\n- PersistentVolumeClaim binding failures (no matching PV available)\n- Pod crash loops in stateful workloads\n- Ordered startup blocked by earlier pod failures (StatefulSets start sequentially)\n- Resource constraints preventing pod scheduling\n\n### Tuning\n- The rule filters out StatefulSets scaled to zero (`desired > 0`).\n- StatefulSets roll out pods sequentially, so transient gaps during updates are normal. The `alert_delay` of 3 runs helps avoid false positives.\n\n### Escalation\nStatefulSet failures often affect databases and message queues. Prioritise investigation to prevent data loss."
+                "blob": "## StatefulSet Replicas Not Ready\n\n### Triage Steps\n1. Identify the affected StatefulSet(s) from the alert results.\n2. Check the Workload Health dashboard for StatefulSet status.\n3. Run `kubectl describe statefulset <name> -n <namespace>` for events.\n4. Check individual pod status: `kubectl get pods -l app=<statefulset> -n <namespace>`.\n5. Verify PVC bindings — StatefulSet pods require their PVCs to be bound before starting.\n\n### Common Causes\n- PersistentVolumeClaim binding failures (no matching PV available)\n- Pod crash loops in stateful workloads\n- Ordered startup blocked by earlier pod failures (StatefulSets start sequentially)\n- Resource constraints preventing pod scheduling\n\n### Tuning\n- The rule filters out StatefulSets scaled to zero (`desired > 0`).\n- StatefulSets roll out pods sequentially, so transient gaps during updates are normal. The `alertDelay` of 3 runs helps avoid false positives.\n\n### Escalation\nStatefulSet failures often affect databases and message queues. Prioritise investigation to prevent data loss."
             }
         },
         "params": {

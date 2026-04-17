@@ -5,24 +5,24 @@
     "attributes": {
         "description": "Alerts when pods are stuck in Pending phase (phase == 1). Pending pods cannot be scheduled — typically due to insufficient node resources, node affinity/taint mismatches, or missing PVCs. Sustained Pending pods are a proxy for scheduling latency.",
         "name": "[K8s OTel] Pods stuck in Pending phase",
-        "rule_type_id": ".es-query",
+        "ruleTypeId": ".es-query",
         "tags": [
             "Kubernetes"
         ],
         "schedule": {
             "interval": "1m"
         },
-        "alert_delay": {
+        "alertDelay": {
             "active": 5
         },
         "flapping": {
             "enabled": true,
-            "look_back_window": 10,
-            "status_change_threshold": 4
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
         },
         "artifacts": {
             "investigation_guide": {
-                "blob": "## Pods Stuck in Pending Phase\n\n### Triage Steps\n1. Identify the affected pod(s) from the alert results.\n2. Run `kubectl describe pod <pod_name> -n <namespace>` — the Events section shows why scheduling failed.\n3. Check the Cluster Overview dashboard for node resource availability.\n4. Verify node resources: `kubectl describe nodes | grep -A 5 'Allocated resources'`.\n5. Check for PVC binding issues: `kubectl get pvc -n <namespace>`.\n\n### Common Causes\n- Insufficient CPU or memory on available nodes\n- Node affinity, anti-affinity, or taint/toleration mismatches\n- PersistentVolumeClaim not bound (no available PV)\n- Pod topology spread constraints cannot be satisfied\n- Resource quotas exceeded in the namespace\n\n### Tuning\n- The `alert_delay` of 5 runs (5 minutes at 1m interval) allows for normal scheduling delays.\n- Increase `alert_delay` for clusters with slow autoscaling (e.g. cloud node provisioning).\n- Add namespace filters to exclude namespaces where Pending pods are expected (e.g. batch workloads waiting for resources).\n\n### Escalation\nSustained Pending pods indicate the cluster cannot meet workload demand. Consider scaling up the node pool or reviewing resource requests."
+                "blob": "## Pods Stuck in Pending Phase\n\n### Triage Steps\n1. Identify the affected pod(s) from the alert results.\n2. Run `kubectl describe pod <pod_name> -n <namespace>` — the Events section shows why scheduling failed.\n3. Check the Cluster Overview dashboard for node resource availability.\n4. Verify node resources: `kubectl describe nodes | grep -A 5 'Allocated resources'`.\n5. Check for PVC binding issues: `kubectl get pvc -n <namespace>`.\n\n### Common Causes\n- Insufficient CPU or memory on available nodes\n- Node affinity, anti-affinity, or taint/toleration mismatches\n- PersistentVolumeClaim not bound (no available PV)\n- Pod topology spread constraints cannot be satisfied\n- Resource quotas exceeded in the namespace\n\n### Tuning\n- The `alertDelay` of 5 runs (5 minutes at 1m interval) allows for normal scheduling delays.\n- Increase `alertDelay` for clusters with slow autoscaling (e.g. cloud node provisioning).\n- Add namespace filters to exclude namespaces where Pending pods are expected (e.g. batch workloads waiting for resources).\n\n### Escalation\nSustained Pending pods indicate the cluster cannot meet workload demand. Consider scaling up the node pool or reviewing resource requests."
             }
         },
         "params": {
