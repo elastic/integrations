@@ -13,6 +13,8 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
+resource.rate_limit.limit: {{resource_rate_limit}}
+resource.rate_limit.burst: 1
 state:
   initial_interval: {{initial_interval}}
   token_url: {{token_url}}
@@ -40,6 +42,8 @@ Endpoints:
   POST https://auth.greenhouse.io/token
     - HTTP Basic auth with client_id:client_secret
     - Body: grant_type=client_credentials[&sub=<user_id>]
+    - Note: V3 docs show grant_type as a query param, but the API
+      rejects it there with 400 — it must be in the form body.
     - Response: {access_token, expires_at (ISO-8601), token_type}
     - Note: expires_at is non-standard (RFC 6749 uses expires_in),
       so auth.oauth2 cannot manage token refresh — it is done here.
@@ -50,6 +54,10 @@ Endpoints:
       Pit-Id + Search-After (for page 2+)
     - Response: {paging: {pit_id, next_search_after}, results: [...]}
     - next_search_after is null on the last page.
+    - Rate limits: 50 req/10s general, 3 req/30s pagination.
+      resource.rate_limit paces requests to 1/10s. On 200, pagination
+      pauses when X-RateLimit-Remaining reaches 0; cursor state is
+      preserved so the next interval resumes where it left off.
 
 State:
   auth_token — shallow-replaced object holding token and expires.
@@ -61,8 +69,9 @@ Cursor:
   max_event_time — newest event_time seen anywhere in the current window.
     Absent between windows; preserved when an expired PIT forces a retry.
   pit_id, search_after — pagination state; absent between windows.
-  Fields use genuine absence (omitted from the cursor map) rather than
-  empty-string sentinels.
+  Fields use genuine absence (omitted from the cursor map) but also
+  consider empty-string sentinels where they may appear in existing
+  cursor data.
 --}}
 program: |-
   state.with(
@@ -142,11 +151,13 @@ program: |-
             {
               "Authorization": ["Bearer " + auth.auth_token.token],
               "Size": [string(int(state.batch_size))],
-              ?"Pit-Id": state.?cursor.pit_id.optMap(v, [v]),
-              ?"Search-After": state.?cursor.search_after.optMap(v, [v]),
+              // TODO: Remove empty-string guard after legacy cursor state expires.
+              ?"Pit-Id": state.?cursor.pit_id.optMap(v, v != "" ? [v] : []),
+              ?"Search-After": state.?cursor.search_after.optMap(v, v != "" ? [v] : []),
             }.as(headers,
               request("GET", url).with({"Header": headers}).do_request().as(resp,
                 (resp.StatusCode == 200) ?
+                  ("X-Ratelimit-Remaining" in resp.Header ? int(resp.Header["X-Ratelimit-Remaining"][0]) : -1).as(remaining,
                   resp.Body.decode_json().as(body,
                     !body.?results[0].hasValue() ?
                       // Empty last page signals end of window. Emit a
@@ -179,12 +190,12 @@ program: |-
                                 ?"pit_id": has_more ? optional.of(string(body.paging.pit_id)) : optional.none(),
                                 ?"search_after": has_more ? optional.of(string(body.paging.next_search_after)) : optional.none(),
                               },
-                              "want_more": has_more,
+                              "want_more": has_more && (remaining != 0),
                             }
                           )
                         )
                       )
-                  )
+                  ))
                 : (resp.StatusCode == 401) ?
                   {
                     "auth_token": {},
