@@ -1,0 +1,158 @@
+---
+description: Pipeline for parsing FortiAuthenticator authentication event messages.
+processors:
+  # Grok on the trailing plain-text message (set by main pipeline after KV stripping).
+  # Patterns ordered from most to least specific.
+  - grok:
+      tag: grok_auth_message
+      field: message
+      patterns:
+        # Windows AD / Local admin auth: "... from IP (proto) with method failed/successful: reason (0xHEX)"
+        - '^(?:Windows AD user|Local administrator) authentication from %{IP:_tmp.grok_source_ip}\s*(?:\(%{WORD:network.protocol}\))?\s+with\s+(?<fortinet.fortiauthenticator.log.mfa_method>.+?)\s+(?<_tmp.auth_outcome>failed|successful)(?::\s+(?<fortinet.fortiauthenticator.log.reason>.+?)\s*\((?<error.code>0x[0-9A-Fa-f]+)\))?$'
+        # Windows AD partially done: "... (proto) partially done, expecting method"
+        - '^Windows AD user authentication\(%{WORD:network.protocol}\)\s+partially done,?\s*expecting\s+%{GREEDYDATA:fortinet.fortiauthenticator.log.mfa_method}$'
+        # EAP-xxx login: "EAP-GTC login successful by user from IP"
+        - '^(?<network.protocol>[A-Za-z0-9-]+)\s+login\s+(?<_tmp.auth_outcome>successful|failed)\s+by\s+%{USERNAME:_tmp.grok_user}\s+from\s+%{IP:_tmp.grok_source_ip}'
+        # EAP session: "EAP session start from IP"
+        - '^EAP session\s+(?<_tmp.eap_event>start|end|stopped|close)\s+from\s+%{IP:_tmp.grok_source_ip}$'
+        # 802.1x: "802.1x authentication (proto) partially successful/successful/failed"
+        - '^802\.1x authentication\s+\(%{DATA:network.protocol}\)\s+(?<_tmp.dot1x_outcome>partially successful|successful|failed)'
+        # Generic success/failure opener: "Successful ...", "Failed ..."
+        - '^(?<_tmp.generic_outcome>Successful|Failed)\b(?<fortinet.fortiauthenticator.log.reason>.*)'
+        # Fallback: capture entire message as reason
+        - '%{GREEDYDATA:fortinet.fortiauthenticator.log.reason}'
+      ignore_failure: true
+  - trim:
+      tag: trim_reason
+      field: fortinet.fortiauthenticator.log.reason
+      if: ctx.fortinet?.fortiauthenticator?.log?.reason != null
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      tag: set_source_ip_from_grok
+      field: source.ip
+      copy_from: _tmp.grok_source_ip
+      override: false
+      ignore_empty_value: true
+      if: ctx._tmp?.grok_source_ip != null
+      ignore_failure: true
+  - set:
+      tag: set_user_name_from_grok
+      field: user.name
+      copy_from: _tmp.grok_user
+      override: false
+      ignore_empty_value: true
+      if: ctx._tmp?.grok_user != null
+      ignore_failure: true
+  - lowercase:
+      tag: lowercase_network_protocol
+      field: network.protocol
+      if: ctx.network?.protocol != null
+      ignore_failure: true
+  - script:
+      tag: script_set_outcome_from_auth_outcome
+      lang: painless
+      description: "Sets event.outcome from parsed authentication outcome"
+      source: |-
+        def outcome = ctx._tmp?.auth_outcome;
+        if (outcome == null) return;
+        outcome = outcome.toLowerCase();
+        if (['successful', 'success', 'allowed'].contains(outcome)) {
+          if (ctx.event?.outcome == null) {
+            ctx.event.outcome = 'success';
+          }
+        } else if (['failed', 'denied'].contains(outcome)) {
+          if (ctx.event?.outcome == null) {
+            ctx.event.outcome = 'failure';
+          }
+        }
+  - script:
+      tag: script_set_outcome_from_generic
+      lang: painless
+      description: "Sets event.outcome from generic outcome word (Successful/Failed)"
+      source: |-
+        def outcome = ctx._tmp?.generic_outcome;
+        if (outcome == null) return;
+        outcome = outcome.toLowerCase();
+        if (outcome == 'successful') {
+          if (ctx.event?.outcome == null) { ctx.event.outcome = 'success'; }
+        } else if (outcome == 'failed') {
+          if (ctx.event?.outcome == null) { ctx.event.outcome = 'failure'; }
+        }
+  - script:
+      tag: script_set_outcome_from_error_code
+      lang: painless
+      description: "If error.code is set, outcome is failure"
+      source: |-
+        if (ctx.error?.code != null && ctx.error.code != '') {
+          ctx.event.outcome = 'failure';
+        }
+      ignore_failure: true
+  - append:
+      tag: append_type_start_eap_session
+      field: event.type
+      allow_duplicates: false
+      value: start
+      if: ctx._tmp?.eap_event == 'start'
+      ignore_failure: true
+  - append:
+      tag: append_type_end_eap_session
+      field: event.type
+      allow_duplicates: false
+      value: end
+      if: >-
+        ctx._tmp?.eap_event != null &&
+        ['end', 'stopped', 'close'].contains(ctx._tmp.eap_event)
+      ignore_failure: true
+  - set:
+      tag: set_outcome_dot1x_success
+      field: event.outcome
+      value: success
+      if: ctx._tmp?.dot1x_outcome == 'successful' && ctx.event?.outcome == null
+      ignore_failure: true
+  - set:
+      tag: set_outcome_dot1x_failure
+      field: event.outcome
+      value: failure
+      if: ctx._tmp?.dot1x_outcome == 'failed' && ctx.event?.outcome == null
+      ignore_failure: true
+  - append:
+      tag: append_related_ip_grok
+      field: related.ip
+      allow_duplicates: false
+      value: '{{{_tmp.grok_source_ip}}}'
+      if: ctx._tmp?.grok_source_ip != null
+      ignore_failure: true
+  - append:
+      tag: append_related_user_grok
+      field: related.user
+      allow_duplicates: false
+      value: '{{{_tmp.grok_user}}}'
+      if: ctx._tmp?.grok_user != null
+      ignore_failure: true
+  - remove:
+      tag: remove_auth_tmp_fields
+      field:
+        - _tmp.grok_source_ip
+        - _tmp.grok_user
+        - _tmp.auth_outcome
+        - _tmp.eap_event
+        - _tmp.dot1x_outcome
+        - _tmp.generic_outcome
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

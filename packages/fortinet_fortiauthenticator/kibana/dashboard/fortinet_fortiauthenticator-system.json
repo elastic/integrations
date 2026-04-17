@@ -1,0 +1,1098 @@
+{
+    "attributes": {
+        "title": "[Logs FortiAuthenticator] System and HA",
+        "description": "System operations, admin GUI login activity, and high availability cluster events from FortiAuthenticator.",
+        "panelsJSON": [
+            {
+                "panelIndex": "b901510e-4e89-757d-3ffc-2ddd1d265e5a",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 3,
+                    "i": "b901510e-4e89-757d-3ffc-2ddd1d265e5a"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "85cbe962-a65c-5a52-ac29-31c83f2ee37e",
+                                "order": 1,
+                                "label": "Authentication",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_85cbe962-a65c-5a52-ac29-31c83f2ee37e_dashboard"
+                            },
+                            {
+                                "id": "f8015227-17d1-b054-2b9c-b33d24cec76d",
+                                "order": 2,
+                                "label": "Admin Configuration Audit",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_f8015227-17d1-b054-2b9c-b33d24cec76d_dashboard"
+                            },
+                            {
+                                "id": "72ea9ac7-2987-7cf7-6e6c-311078031348",
+                                "order": 3,
+                                "label": "System and HA",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_72ea9ac7-2987-7cf7-6e6c-311078031348_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "31c34a78-aa8e-1c17-b3f8-c69f0505c69e",
+                "gridData": {
+                    "x": 0,
+                    "y": 3,
+                    "w": 16,
+                    "h": 10,
+                    "i": "31c34a78-aa8e-1c17-b3f8-c69f0505c69e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Distribution of Events by Subcategory",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "e611be52-e88c-4b96-b594-167b7c898dce",
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "primaryGroups": [
+                                            "27a1a6b9-b42c-508d-6a0e-d5e68466543d"
+                                        ],
+                                        "metrics": [
+                                            "0cb3e3d7-c9da-1181-40f5-5b94be7f1201"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "default",
+                                        "legendPosition": "right",
+                                        "nestedLegend": false,
+                                        "emptySizeRatio": 0.3
+                                    }
+                                ],
+                                "shape": "donut"
+                            },
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"fortinet_fortiauthenticator.log\"\n| WHERE fortinet.fortiauthenticator.log.subcategory IN (\"System\", \"High Availability\")\n  OR event.action LIKE \"*admin-gui*\"\n| EVAL area = CASE(\n    event.action LIKE \"*admin-gui*\", \"Admin GUI\",\n    fortinet.fortiauthenticator.log.subcategory\n  )\n| STATS count = COUNT(*) BY area\n| SORT count DESC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e611be52-e88c-4b96-b594-167b7c898dce": {
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"fortinet_fortiauthenticator.log\"\n| WHERE fortinet.fortiauthenticator.log.subcategory IN (\"System\", \"High Availability\")\n  OR event.action LIKE \"*admin-gui*\"\n| EVAL area = CASE(\n    event.action LIKE \"*admin-gui*\", \"Admin GUI\",\n    fortinet.fortiauthenticator.log.subcategory\n  )\n| STATS count = COUNT(*) BY area\n| SORT count DESC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "0cb3e3d7-c9da-1181-40f5-5b94be7f1201",
+                                                    "label": "Events",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "area",
+                                                    "columnId": "27a1a6b9-b42c-508d-6a0e-d5e68466543d",
+                                                    "label": "area",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "0cb3e3d7-c9da-1181-40f5-5b94be7f1201",
+                                                    "label": "Events",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "area",
+                                                    "columnId": "27a1a6b9-b42c-508d-6a0e-d5e68466543d",
+                                                    "label": "area",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f1e85087-e1b7-3e39-2732-fae38cf79a7c",
+                "gridData": {
+                    "x": 16,
+                    "y": 3,
+                    "w": 16,
+                    "h": 10,
+                    "i": "f1e85087-e1b7-3e39-2732-fae38cf79a7c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Distribution of Events by Log Level",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "825fae43-f47c-f3ce-ae0c-96a9824bd7db",
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "primaryGroups": [
+                                            "963c7779-0642-ff95-05d1-7f32e63a6aad"
+                                        ],
+                                        "metrics": [
+                                            "0cb3e3d7-c9da-1181-40f5-5b94be7f1201"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "default",
+                                        "legendPosition": "right",
+                                        "nestedLegend": false,
+                                        "emptySizeRatio": 0.3
+                                    }
+                                ],
+                                "shape": "donut"
+                            },
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"fortinet_fortiauthenticator.log\"\n| WHERE fortinet.fortiauthenticator.log.subcategory IN (\"System\", \"High Availability\")\n  OR event.action LIKE \"*admin-gui*\"\n| STATS count = COUNT(*) BY log.level\n| SORT count DESC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "825fae43-f47c-f3ce-ae0c-96a9824bd7db": {
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"fortinet_fortiauthenticator.log\"\n| WHERE fortinet.fortiauthenticator.log.subcategory IN (\"System\", \"High Availability\")\n  OR event.action LIKE \"*admin-gui*\"\n| STATS count = COUNT(*) BY log.level\n| SORT count DESC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "0cb3e3d7-c9da-1181-40f5-5b94be7f1201",
+                                                    "label": "Events",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "log.level",
+                                                    "columnId": "963c7779-0642-ff95-05d1-7f32e63a6aad",
+                                                    "label": "log.level",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "0cb3e3d7-c9da-1181-40f5-5b94be7f1201",
+                                                    "label": "Events",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "log.level",
+                                                    "columnId": "963c7779-0642-ff95-05d1-7f32e63a6aad",
+                                                    "label": "log.level",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6f34782d-ac54-7d8f-767e-a263df64b47c",
+                "gridData": {
+                    "x": 32,
+                    "y": 3,
+                    "w": 16,
+                    "h": 10,
+                    "i": "6f34782d-ac54-7d8f-767e-a263df64b47c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Distribution of Admin GUI Login Outcomes",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "2a07eb47-1e9e-5075-bd9a-f1d7fd9a848e",
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "primaryGroups": [
+                                            "6ebe5def-fb69-74b6-9df8-7ab4a0952f39"
+                                        ],
+                                        "metrics": [
+                                            "a116fd01-e663-c301-d202-57aef5ebc827"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "default",
+                                        "legendPosition": "right",
+                                        "nestedLegend": false,
+                                        "emptySizeRatio": 0.3
+                                    }
+                                ],
+                                "shape": "donut"
+                            },
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"fortinet_fortiauthenticator.log\"\n| WHERE event.action LIKE \"*admin-gui*\"\n| STATS count = COUNT(*) BY event.outcome\n| SORT count DESC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "2a07eb47-1e9e-5075-bd9a-f1d7fd9a848e": {
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"fortinet_fortiauthenticator.log\"\n| WHERE event.action LIKE \"*admin-gui*\"\n| STATS count = COUNT(*) BY event.outcome\n| SORT count DESC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "a116fd01-e663-c301-d202-57aef5ebc827",
+                                                    "label": "Logins",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "event.outcome",
+                                                    "columnId": "6ebe5def-fb69-74b6-9df8-7ab4a0952f39",
+                                                    "label": "event.outcome",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "a116fd01-e663-c301-d202-57aef5ebc827",
+                                                    "label": "Logins",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "event.outcome",
+                                                    "columnId": "6ebe5def-fb69-74b6-9df8-7ab4a0952f39",
+                                                    "label": "event.outcome",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6188811c-b451-c4d9-6ea4-ac31ffe7bce2",
+                "gridData": {
+                    "x": 0,
+                    "y": 13,
+                    "w": 24,
+                    "h": 12,
+                    "i": "6188811c-b451-c4d9-6ea4-ac31ffe7bce2"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top 10 Admin GUI Login Source IPs",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8ce8447c-a2ef-524e-ca99-a424d2980e75"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "d6769a7f-38c3-232c-02f5-f529185ff287",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "2643bd1b-75d2-6801-f9a0-6e856200de86",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "9689941a-1ce9-5e92-679e-4ca58b5299be",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "8ce8447c-a2ef-524e-ca99-a424d2980e75",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "query": "data_stream.dataset:fortinet_fortiauthenticator.log AND event.action:*admin-gui* AND source.ip:*",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8ce8447c-a2ef-524e-ca99-a424d2980e75": {
+                                            "columns": {
+                                                "d6769a7f-38c3-232c-02f5-f529185ff287": {
+                                                    "label": "Source IP",
+                                                    "dataType": "string",
+                                                    "customLabel": true,
+                                                    "operationType": "terms",
+                                                    "isBucketed": true,
+                                                    "scale": "ordinal",
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "9689941a-1ce9-5e92-679e-4ca58b5299be"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false
+                                                    },
+                                                    "sourceField": "source.ip"
+                                                },
+                                                "2643bd1b-75d2-6801-f9a0-6e856200de86": {
+                                                    "label": "Admin",
+                                                    "dataType": "string",
+                                                    "customLabel": true,
+                                                    "operationType": "terms",
+                                                    "isBucketed": true,
+                                                    "scale": "ordinal",
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "9689941a-1ce9-5e92-679e-4ca58b5299be"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false
+                                                    },
+                                                    "sourceField": "user.name"
+                                                },
+                                                "9689941a-1ce9-5e92-679e-4ca58b5299be": {
+                                                    "label": "Logins",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "d6769a7f-38c3-232c-02f5-f529185ff287",
+                                                "2643bd1b-75d2-6801-f9a0-6e856200de86",
+                                                "9689941a-1ce9-5e92-679e-4ca58b5299be"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "dc1b2288-1313-dc90-9c2f-7f30c0dbc83d",
+                "gridData": {
+                    "x": 24,
+                    "y": 13,
+                    "w": 24,
+                    "h": 12,
+                    "i": "dc1b2288-1313-dc90-9c2f-7f30c0dbc83d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top 10 System Event Actions",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-34b4bc7f-16bb-57c0-884d-8a56dff48c8b"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "33b1df72-cf0e-f95c-21c1-9447de46a9d0",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "78906381-9268-4fda-8e10-7b28774532d5",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "34b4bc7f-16bb-57c0-884d-8a56dff48c8b",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "query": "data_stream.dataset:fortinet_fortiauthenticator.log AND fortinet.fortiauthenticator.log.subcategory:(System OR \"High Availability\") AND event.action:*",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "34b4bc7f-16bb-57c0-884d-8a56dff48c8b": {
+                                            "columns": {
+                                                "33b1df72-cf0e-f95c-21c1-9447de46a9d0": {
+                                                    "label": "Event Action",
+                                                    "dataType": "string",
+                                                    "customLabel": true,
+                                                    "operationType": "terms",
+                                                    "isBucketed": true,
+                                                    "scale": "ordinal",
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "78906381-9268-4fda-8e10-7b28774532d5"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false
+                                                    },
+                                                    "sourceField": "event.action"
+                                                },
+                                                "78906381-9268-4fda-8e10-7b28774532d5": {
+                                                    "label": "Events",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "33b1df72-cf0e-f95c-21c1-9447de46a9d0",
+                                                "78906381-9268-4fda-8e10-7b28774532d5"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e9aa5c0e-991f-573b-9225-89527ea34020",
+                "gridData": {
+                    "x": 0,
+                    "y": 25,
+                    "w": 48,
+                    "h": 12,
+                    "i": "e9aa5c0e-991f-573b-9225-89527ea34020"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "System and HA Events",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1d3495d5-80eb-8d84-b9e2-5eb1e3f58e39"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "71ab2d01-359e-822f-7cf8-b86f095ff6c2",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "a4935eb6-3cb8-27b0-0cf3-c0a07b7dad3d",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "20de9c16-3529-2046-e3f7-015522dff4a0",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "e293e1d8-19e0-ece8-e7f3-a0b190c5d64e",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "1d3495d5-80eb-8d84-b9e2-5eb1e3f58e39",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "query": "data_stream.dataset:fortinet_fortiauthenticator.log AND fortinet.fortiauthenticator.log.subcategory:(System OR \"High Availability\")",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "1d3495d5-80eb-8d84-b9e2-5eb1e3f58e39": {
+                                            "columns": {
+                                                "71ab2d01-359e-822f-7cf8-b86f095ff6c2": {
+                                                    "label": "Event Action",
+                                                    "dataType": "string",
+                                                    "customLabel": true,
+                                                    "operationType": "terms",
+                                                    "isBucketed": true,
+                                                    "scale": "ordinal",
+                                                    "params": {
+                                                        "size": 30,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "e293e1d8-19e0-ece8-e7f3-a0b190c5d64e"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false
+                                                    },
+                                                    "sourceField": "event.action"
+                                                },
+                                                "a4935eb6-3cb8-27b0-0cf3-c0a07b7dad3d": {
+                                                    "label": "Subcategory",
+                                                    "dataType": "string",
+                                                    "customLabel": true,
+                                                    "operationType": "terms",
+                                                    "isBucketed": true,
+                                                    "scale": "ordinal",
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "e293e1d8-19e0-ece8-e7f3-a0b190c5d64e"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false
+                                                    },
+                                                    "sourceField": "fortinet.fortiauthenticator.log.subcategory"
+                                                },
+                                                "20de9c16-3529-2046-e3f7-015522dff4a0": {
+                                                    "label": "Log Level",
+                                                    "dataType": "string",
+                                                    "customLabel": true,
+                                                    "operationType": "terms",
+                                                    "isBucketed": true,
+                                                    "scale": "ordinal",
+                                                    "params": {
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "e293e1d8-19e0-ece8-e7f3-a0b190c5d64e"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false
+                                                    },
+                                                    "sourceField": "log.level"
+                                                },
+                                                "e293e1d8-19e0-ece8-e7f3-a0b190c5d64e": {
+                                                    "label": "Count",
+                                                    "dataType": "number",
+                                                    "customLabel": true,
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "71ab2d01-359e-822f-7cf8-b86f095ff6c2",
+                                                "a4935eb6-3cb8-27b0-0cf3-c0a07b7dad3d",
+                                                "20de9c16-3529-2046-e3f7-015522dff4a0",
+                                                "e293e1d8-19e0-ece8-e7f3-a0b190c5d64e"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "a89869d9-659f-675d-3525-5f9de12f93aa",
+                "gridData": {
+                    "x": 0,
+                    "y": 37,
+                    "w": 48,
+                    "h": 15,
+                    "i": "a89869d9-659f-675d-3525-5f9de12f93aa"
+                },
+                "type": "search",
+                "panelRefName": "a89869d9-659f-675d-3525-5f9de12f93aa:panel_a89869d9-659f-675d-3525-5f9de12f93aa",
+                "embeddableConfig": {
+                    "title": "Log Stream",
+                    "enhancements": {},
+                    "savedObjectId": "fortinet_fortiauthenticator-system-events"
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "fortinet_fortiauthenticator.log"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "fortinet_fortiauthenticator.log"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "b54aeb5f-7271-c33f-2cce-9209b49cd246": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "b54aeb5f-7271-c33f-2cce-9209b49cd246",
+                        "dataViewId": "logs-*",
+                        "fieldName": "fortinet.fortiauthenticator.log.subcategory",
+                        "title": "Subcategory",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "061a5d5c-4fd1-2af9-c58b-e956b0295f84": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "061a5d5c-4fd1-2af9-c58b-e956b0295f84",
+                        "dataViewId": "logs-*",
+                        "fieldName": "log.level",
+                        "title": "Log Level",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "0cdfdf58-1970-368e-3e5f-023bd0f92321": {
+                    "grow": false,
+                    "order": 2,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "0cdfdf58-1970-368e-3e5f-023bd0f92321",
+                        "dataViewId": "logs-*",
+                        "fieldName": "event.action",
+                        "title": "Event Action",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "fortinet_fortiauthenticator-system",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "fortinet_fortiauthenticator-overview",
+            "name": "b901510e-4e89-757d-3ffc-2ddd1d265e5a:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "fortinet_fortiauthenticator-authentication",
+            "name": "b901510e-4e89-757d-3ffc-2ddd1d265e5a:link_85cbe962-a65c-5a52-ac29-31c83f2ee37e_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "fortinet_fortiauthenticator-admin-audit",
+            "name": "b901510e-4e89-757d-3ffc-2ddd1d265e5a:link_f8015227-17d1-b054-2b9c-b33d24cec76d_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "fortinet_fortiauthenticator-system",
+            "name": "b901510e-4e89-757d-3ffc-2ddd1d265e5a:link_72ea9ac7-2987-7cf7-6e6c-311078031348_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "6188811c-b451-c4d9-6ea4-ac31ffe7bce2:indexpattern-datasource-layer-8ce8447c-a2ef-524e-ca99-a424d2980e75"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "dc1b2288-1313-dc90-9c2f-7f30c0dbc83d:indexpattern-datasource-layer-34b4bc7f-16bb-57c0-884d-8a56dff48c8b"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "e9aa5c0e-991f-573b-9225-89527ea34020:indexpattern-datasource-layer-1d3495d5-80eb-8d84-b9e2-5eb1e3f58e39"
+        },
+        {
+            "type": "search",
+            "id": "fortinet_fortiauthenticator-system-events",
+            "name": "a89869d9-659f-675d-3525-5f9de12f93aa:panel_a89869d9-659f-675d-3525-5f9de12f93aa"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "controlGroup_b54aeb5f-7271-c33f-2cce-9209b49cd246:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "controlGroup_061a5d5c-4fd1-2af9-c58b-e956b0295f84:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "controlGroup_0cdfdf58-1970-368e-3e5f-023bd0f92321:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

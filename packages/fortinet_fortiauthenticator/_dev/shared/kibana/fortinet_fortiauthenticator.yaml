@@ -1,0 +1,738 @@
+dashboards:
+  # ── Overview (Hub) ────────────────────────────────────────────────────
+  - id: fortinet_fortiauthenticator-overview
+    name: "[Logs FortiAuthenticator] Overview"
+    description: >-
+      Hub dashboard for Fortinet FortiAuthenticator. Use the links below to
+      navigate to category-specific dashboards.
+    minimum_kibana_version: "8.14.0"
+
+    settings:
+      margins: true
+
+    filters:
+      - field: data_stream.dataset
+        equals: fortinet_fortiauthenticator.log
+
+    controls:
+      - type: options
+        label: Subcategory
+        data_view: logs-*
+        field: fortinet.fortiauthenticator.log.subcategory
+      - type: options
+        label: Log Level
+        data_view: logs-*
+        field: log.level
+      - type: options
+        label: User
+        data_view: logs-*
+        field: user.name
+      - type: options
+        label: Source IP
+        data_view: logs-*
+        field: source.ip
+
+    panels:
+      - size: {w: whole, h: 3}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: fortinet_fortiauthenticator-overview
+            - label: Authentication
+              dashboard: fortinet_fortiauthenticator-authentication
+            - label: Admin Configuration Audit
+              dashboard: fortinet_fortiauthenticator-admin-audit
+            - label: System and HA
+              dashboard: fortinet_fortiauthenticator-system
+
+      # KPI row
+      - hide_title: true
+        size: {w: quarter, h: 4}
+        esql:
+          type: metric
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | STATS total = COUNT(*)
+          primary:
+            field: total
+            label: Total Events
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: quarter, h: 4}
+        esql:
+          type: metric
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+              AND user.name IS NOT NULL
+            | STATS users = COUNT_DISTINCT(user.name)
+          primary:
+            field: users
+            label: Unique Users
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: quarter, h: 4}
+        esql:
+          type: metric
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+              AND source.ip IS NOT NULL
+            | STATS ips = COUNT_DISTINCT(source.ip)
+          primary:
+            field: ips
+            label: Unique Source IPs
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: quarter, h: 4}
+        esql:
+          type: metric
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+              AND event.outcome IS NOT NULL
+            | STATS total = COUNT(*), failed = COUNT(CASE(event.outcome == "failure", 1))
+            | EVAL failure_rate = ROUND(failed * 100.0 / total, 1)
+          primary:
+            field: failure_rate
+            label: Failure Rate (%)
+            format:
+              type: number
+              decimals: 1
+
+      # Focal chart + category split
+      - title: Events Over Time
+        size: {w: 32, h: 10}
+        esql:
+          type: bar
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | STATS count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), subcategory = fortinet.fortiauthenticator.log.subcategory
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: count
+          breakdown:
+            field: subcategory
+          legend:
+            visible: show
+            position: right
+
+      - title: Distribution of Events by Subcategory
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | STATS count = COUNT(*) BY fortinet.fortiauthenticator.log.subcategory
+            | SORT count DESC
+            | LIMIT 7
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: fortinet.fortiauthenticator.log.subcategory
+          appearance:
+            donut: small
+
+      - title: Log Stream
+        size: {w: whole, h: 15}
+        search:
+          saved_search_id: fortinet_fortiauthenticator-all-user-events
+
+  # ── Authentication ────────────────────────────────────────────────────
+  - id: fortinet_fortiauthenticator-authentication
+    name: "[Logs FortiAuthenticator] Authentication"
+    description: >-
+      Authentication events from FortiAuthenticator. Shows only final
+      RADIUS/TACACS+ authentication results — intermediate EAP handshake steps
+      are excluded for accurate logon counts.
+    minimum_kibana_version: "8.14.0"
+
+    settings:
+      margins: true
+
+    filters:
+      - field: data_stream.dataset
+        equals: fortinet_fortiauthenticator.log
+
+    controls:
+      - type: options
+        label: Protocol
+        data_view: logs-*
+        field: network.protocol
+      - type: options
+        label: Outcome
+        data_view: logs-*
+        field: event.outcome
+      - type: options
+        label: User
+        data_view: logs-*
+        field: user.name
+      - type: options
+        label: Source IP
+        data_view: logs-*
+        field: source.ip
+
+    panels:
+      - size: {w: whole, h: 3}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: fortinet_fortiauthenticator-overview
+            - label: Authentication
+              dashboard: fortinet_fortiauthenticator-authentication
+            - label: Admin Configuration Audit
+              dashboard: fortinet_fortiauthenticator-admin-audit
+            - label: System and HA
+              dashboard: fortinet_fortiauthenticator-system
+
+      # Row 1: Distribution donuts
+      - title: Distribution of Events by Outcome
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory == "Authentication"
+              AND NOT event.action LIKE "*admin-gui*"
+              AND NOT event.code IN ("20430", "20431", "20300", "20299", "20422", "20005")
+            | STATS count = COUNT(*) BY event.outcome
+            | SORT count DESC
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: event.outcome
+          appearance:
+            donut: small
+
+      - title: Distribution of Events by Protocol
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory == "Authentication"
+              AND NOT event.action LIKE "*admin-gui*"
+              AND NOT event.code IN ("20430", "20431", "20300", "20299", "20422", "20005")
+              AND network.protocol IS NOT NULL
+            | STATS count = COUNT(*) BY network.protocol
+            | SORT count DESC
+            | LIMIT 7
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: network.protocol
+          appearance:
+            donut: small
+
+      - title: Distribution of Events by Log Level
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory == "Authentication"
+              AND NOT event.action LIKE "*admin-gui*"
+              AND NOT event.code IN ("20430", "20431", "20300", "20299", "20422", "20005")
+            | STATS count = COUNT(*) BY log.level
+            | SORT count DESC
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: log.level
+          appearance:
+            donut: small
+
+      # Row 2: Top-N tables
+      - title: Top 10 Users
+        size: {w: third, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:Authentication
+              AND NOT event.action:*admin-gui*
+              AND NOT event.code:(20430 OR 20431 OR 20300 OR 20299 OR 20422 OR 20005)
+              AND user.name:*
+          metrics:
+            - aggregation: count
+              label: Events
+          breakdowns:
+            - type: values
+              field: user.name
+              label: User
+              size: 10
+
+      - title: Top 10 Source IPs
+        size: {w: third, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:Authentication
+              AND NOT event.action:*admin-gui*
+              AND NOT event.code:(20430 OR 20431 OR 20300 OR 20299 OR 20422 OR 20005)
+              AND source.ip:*
+          metrics:
+            - aggregation: count
+              label: Events
+          breakdowns:
+            - type: values
+              field: source.ip
+              label: Source IP
+              size: 10
+
+      - title: Top 10 NAS Devices
+        size: {w: third, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:Authentication
+              AND NOT event.action:*admin-gui*
+              AND NOT event.code:(20430 OR 20431 OR 20300 OR 20299 OR 20422 OR 20005)
+              AND fortinet.fortiauthenticator.log.nas:*
+          metrics:
+            - aggregation: count
+              label: Events
+          breakdowns:
+            - type: values
+              field: fortinet.fortiauthenticator.log.nas
+              label: NAS
+              size: 10
+
+      # Row 3: Failure breakdown
+      - title: Top 10 Users by Failed Logons
+        size: {w: half, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:Authentication
+              AND NOT event.action:*admin-gui*
+              AND NOT event.code:(20430 OR 20431 OR 20300 OR 20299 OR 20422 OR 20005)
+              AND event.outcome:failure
+              AND user.name:*
+          metrics:
+            - aggregation: count
+              label: Failures
+          breakdowns:
+            - type: values
+              field: user.name
+              label: User
+              size: 10
+
+      - title: Top 10 Source IPs by Failed Logons
+        size: {w: half, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:Authentication
+              AND NOT event.action:*admin-gui*
+              AND NOT event.code:(20430 OR 20431 OR 20300 OR 20299 OR 20422 OR 20005)
+              AND event.outcome:failure
+              AND source.ip:*
+          metrics:
+            - aggregation: count
+              label: Failures
+          breakdowns:
+            - type: values
+              field: source.ip
+              label: Source IP
+              size: 10
+
+      # Log stream
+      - title: Log Stream
+        size: {w: whole, h: 15}
+        search:
+          saved_search_id: fortinet_fortiauthenticator-authentication-events
+
+  # ── Admin Configuration Audit ────────────────────────────────────────
+  - id: fortinet_fortiauthenticator-admin-audit
+    name: "[Logs FortiAuthenticator] Admin Configuration Audit"
+    description: >-
+      Administrative changes on FortiAuthenticator: user account creation,
+      modification, deletion, and token assignments.
+    minimum_kibana_version: "8.14.0"
+
+    settings:
+      margins: true
+
+    filters:
+      - field: data_stream.dataset
+        equals: fortinet_fortiauthenticator.log
+
+    controls:
+      - type: options
+        label: Event Action
+        data_view: logs-*
+        field: event.action
+      - type: options
+        label: Event Type
+        data_view: logs-*
+        field: event.type
+      - type: options
+        label: Admin
+        data_view: logs-*
+        field: user.name
+
+    panels:
+      - size: {w: whole, h: 3}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: fortinet_fortiauthenticator-overview
+            - label: Authentication
+              dashboard: fortinet_fortiauthenticator-authentication
+            - label: Admin Configuration Audit
+              dashboard: fortinet_fortiauthenticator-admin-audit
+            - label: System and HA
+              dashboard: fortinet_fortiauthenticator-system
+
+      # Row 1: Distribution donuts
+      - title: Distribution of Events by Action
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory == "Admin Configuration"
+              AND fortinet.fortiauthenticator.log.action IS NOT NULL
+              AND fortinet.fortiauthenticator.log.action != ""
+            | STATS count = COUNT(*) BY fortinet.fortiauthenticator.log.action
+            | SORT count DESC
+            | LIMIT 7
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: fortinet.fortiauthenticator.log.action
+          appearance:
+            donut: small
+
+      - title: Distribution of Events by Type
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory == "Admin Configuration"
+            | MV_EXPAND event.type
+            | STATS count = COUNT(*) BY event.type
+            | SORT count DESC
+            | LIMIT 7
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: event.type
+          appearance:
+            donut: small
+
+      - title: Distribution of Changed Fields
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory == "Admin Configuration"
+              AND fortinet.fortiauthenticator.log.changes IS NOT NULL
+            | MV_EXPAND fortinet.fortiauthenticator.log.changes
+            | STATS count = COUNT(*) BY fortinet.fortiauthenticator.log.changes
+            | SORT count DESC
+            | LIMIT 7
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: fortinet.fortiauthenticator.log.changes
+          appearance:
+            donut: small
+
+      # Row 2: Top-N tables
+      - title: Top 10 Admins Performing Changes
+        size: {w: half, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:"Admin Configuration"
+              AND user.name:*
+          metrics:
+            - aggregation: count
+              label: Changes
+          breakdowns:
+            - type: values
+              field: user.name
+              label: Admin
+              size: 10
+
+      - title: Top 10 Target Accounts
+        size: {w: half, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:"Admin Configuration"
+              AND user.target.name:*
+          metrics:
+            - aggregation: count
+              label: Changes
+          breakdowns:
+            - type: values
+              field: user.target.name
+              label: Target
+              size: 10
+
+      # Detail table + log stream
+      - title: Account Change Details
+        size: {w: whole, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:"Admin Configuration"
+          metrics:
+            - aggregation: count
+              label: Count
+          breakdowns:
+            - type: values
+              field: event.action
+              label: Event Action
+              size: 20
+            - type: values
+              field: user.name
+              label: Admin
+              size: 20
+            - type: values
+              field: user.target.name
+              label: Target Account
+              size: 20
+
+      - title: Log Stream
+        size: {w: whole, h: 15}
+        search:
+          saved_search_id: fortinet_fortiauthenticator-admin-config-events
+
+  # ── System and HA ──────────────────────────────────────────────────────
+  - id: fortinet_fortiauthenticator-system
+    name: "[Logs FortiAuthenticator] System and HA"
+    description: >-
+      System operations, admin GUI login activity, and high availability
+      cluster events from FortiAuthenticator.
+    minimum_kibana_version: "8.14.0"
+
+    settings:
+      margins: true
+
+    filters:
+      - field: data_stream.dataset
+        equals: fortinet_fortiauthenticator.log
+
+    controls:
+      - type: options
+        label: Subcategory
+        data_view: logs-*
+        field: fortinet.fortiauthenticator.log.subcategory
+      - type: options
+        label: Log Level
+        data_view: logs-*
+        field: log.level
+      - type: options
+        label: Event Action
+        data_view: logs-*
+        field: event.action
+
+    panels:
+      - size: {w: whole, h: 3}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: fortinet_fortiauthenticator-overview
+            - label: Authentication
+              dashboard: fortinet_fortiauthenticator-authentication
+            - label: Admin Configuration Audit
+              dashboard: fortinet_fortiauthenticator-admin-audit
+            - label: System and HA
+              dashboard: fortinet_fortiauthenticator-system
+
+      # Row 1: Distribution donuts
+      - title: Distribution of Events by Subcategory
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory IN ("System", "High Availability")
+              OR event.action LIKE "*admin-gui*"
+            | EVAL area = CASE(
+                event.action LIKE "*admin-gui*", "Admin GUI",
+                fortinet.fortiauthenticator.log.subcategory
+              )
+            | STATS count = COUNT(*) BY area
+            | SORT count DESC
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: area
+          appearance:
+            donut: small
+
+      - title: Distribution of Events by Log Level
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE fortinet.fortiauthenticator.log.subcategory IN ("System", "High Availability")
+              OR event.action LIKE "*admin-gui*"
+            | STATS count = COUNT(*) BY log.level
+            | SORT count DESC
+          metrics:
+            - field: count
+              label: Events
+          breakdowns:
+            - field: log.level
+          appearance:
+            donut: small
+
+      - title: Distribution of Admin GUI Login Outcomes
+        size: {w: third, h: 10}
+        esql:
+          type: pie
+          query: |
+            FROM logs-*
+            | WHERE data_stream.dataset == "fortinet_fortiauthenticator.log"
+            | WHERE event.action LIKE "*admin-gui*"
+            | STATS count = COUNT(*) BY event.outcome
+            | SORT count DESC
+          metrics:
+            - field: count
+              label: Logins
+          breakdowns:
+            - field: event.outcome
+          appearance:
+            donut: small
+
+      # Row 2: Top-N tables
+      - title: Top 10 Admin GUI Login Source IPs
+        size: {w: half, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND event.action:*admin-gui*
+              AND source.ip:*
+          metrics:
+            - aggregation: count
+              label: Logins
+          breakdowns:
+            - type: values
+              field: source.ip
+              label: Source IP
+              size: 10
+            - type: values
+              field: user.name
+              label: Admin
+              size: 10
+
+      - title: Top 10 System Event Actions
+        size: {w: half, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:(System OR "High Availability")
+              AND event.action:*
+          metrics:
+            - aggregation: count
+              label: Events
+          breakdowns:
+            - type: values
+              field: event.action
+              label: Event Action
+              size: 10
+
+      # Detail table + log stream
+      - title: System and HA Events
+        size: {w: whole, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: >-
+              data_stream.dataset:fortinet_fortiauthenticator.log
+              AND fortinet.fortiauthenticator.log.subcategory:(System OR "High Availability")
+          metrics:
+            - aggregation: count
+              label: Count
+          breakdowns:
+            - type: values
+              field: event.action
+              label: Event Action
+              size: 30
+            - type: values
+              field: fortinet.fortiauthenticator.log.subcategory
+              label: Subcategory
+              size: 10
+            - type: values
+              field: log.level
+              label: Log Level
+              size: 5
+
+      - title: Log Stream
+        size: {w: whole, h: 15}
+        search:
+          saved_search_id: fortinet_fortiauthenticator-system-events
