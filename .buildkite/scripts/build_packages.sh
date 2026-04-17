@@ -48,21 +48,21 @@ report_build_failure() {
 }
 
 build_packages() {
-    pushd packages > /dev/null || exit 1
+    local packages=""
+    local version=""
+    local name=""
+    local package_zip=""
+    local package_path=""
 
-    for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
-        local package
-        local version
-        local name
-        package=$(basename "${it}")
-        echo "Package ${package}: check"
+    packages=$(list_all_directories)
+    for package_path in ${packages}; do
+        pushd "${package_path}" > /dev/null || exit 1
+        echo "Package \"${package_path}\": check"
 
-        pushd "${package}" > /dev/null || exit 1
+        version=$(yq .version manifest.yml)
+        name=$(yq .name manifest.yml)
 
-        version=$(cat manifest.yml | yq .version)
-        name=$(cat manifest.yml | yq .name)
-
-        local package_zip="${name}-${version}.zip"
+        package_zip="${name}-${version}.zip"
 
         if is_already_published "${package_zip}" ; then
             echo "Skipping. ${package_zip} already published"
@@ -70,15 +70,14 @@ build_packages() {
             continue
         fi
 
-        echo "Build package as zip: ${package}"
-        if check_and_build_package "${package}" ; then
+        echo "Build package as zip: ${package_path}"
+        if check_and_build_package "${package_path}" ; then
             unpublished="true"
         else
-            report_build_failure "${package}"
+            report_build_failure "${package_path}"
         fi
         popd > /dev/null || exit 1
     done
-    popd > /dev/null || exit 1
 }
 
 if [ "${SKIP_PUBLISHING}" == "true" ] ; then
