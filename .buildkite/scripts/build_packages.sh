@@ -93,7 +93,7 @@ fi
 add_bin_path
 
 with_yq
-with_go
+with_mage
 use_elastic_package
 
 echo "--- Build packages"
