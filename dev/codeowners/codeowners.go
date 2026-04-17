@@ -201,6 +201,13 @@ func (codeowners *githubOwners) checkManifest(path string) error {
 }
 
 func (codeowners *githubOwners) findOwnerForFile(path string) ([]string, bool) {
+	// Usually paths are related to the root of the repository. Examples:
+	// - "packages/package-name/manifest.yml"
+	// - "packages/technology/package-name/manifest.yml"
+	// Just in case, if an absolute path is provided, we remove the leading separator.
+	if filepath.IsAbs(path) {
+		path = strings.TrimPrefix(path, string(filepath.Separator))
+	}
 	ownerDir := filepath.Dir(path)
 	for {
 		owners, found := codeowners.owners["/"+filepath.ToSlash(ownerDir)]
@@ -209,7 +216,7 @@ func (codeowners *githubOwners) findOwnerForFile(path string) ([]string, bool) {
 		}
 
 		ownerDir = filepath.Dir(ownerDir)
-		if ownerDir == "." || ownerDir == "/" {
+		if ownerDir == "." {
 			break
 		}
 	}
