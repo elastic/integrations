@@ -87,7 +87,7 @@ fi
 
 if skipPublishing ; then
     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    exit 0
+    # exit 0
 fi
 
 add_bin_path
@@ -116,7 +116,7 @@ cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"/
 
 if [ "${DRY_RUN}" == "true" ]; then
     echo "DRY_RUN enabled. Publish packages steps skipped."
-    exit 0
+    # exit 0
 fi
 
 # triggering dynamically the steps for signing and publishing
@@ -147,7 +147,7 @@ steps:
         env:
           SIGNING_STEP_KEY: "sign-service"
           ARTIFACTS_FOLDER: "packageArtifacts"
-          DRY_RUN: "${DRY_RUN}"
+          DRY_RUN: "true"
         agents:
           image: "${LINUX_AGENT_IMAGE}"
           cpu: "8"
@@ -157,4 +157,5 @@ steps:
             allow_failure: false
 EOF
 
-buildkite-agent pipeline upload "${PIPELINE_FILE}"
+cat "${PIPELINE_FILE}"
+# buildkite-agent pipeline upload "${PIPELINE_FILE}"
