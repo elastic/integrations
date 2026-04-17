@@ -79,25 +79,8 @@ any_package_failing=0
 PACKAGE_LIST=$(list_all_directories)
 for package_path in ${PACKAGE_LIST}; do
     echo "--- [$package_path] check if it is required to be tested"
-    pushd "${package_path}" > /dev/null
-    skip_package=false
-    failure=false
-    if ! reason=$(is_pr_affected "${package_path}" "${from}" "${to}") ; then
-        skip_package=true
-        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
-            failure=true
-        fi
-    fi
-    popd > /dev/null
-    if [[ "${failure}" == "true" ]]; then
-        echo "Unexpected failure checking ${package_path}"
-        exit 1
-    fi
-
-    echo "${reason}"
-
-    if [[ "${skip_package}" == "true" ]]; then
-        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
+        echo "- ${package_path}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
         continue
     fi
 

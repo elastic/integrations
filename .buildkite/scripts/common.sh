@@ -788,6 +788,34 @@ is_pr_affected() {
     return 1
 }
 
+# should_test_package checks if a package is affected by the current PR.
+# Prints the reason to stderr. Returns 0 if the package should be tested,
+# 1 if it should be skipped. Exits on fatal error.
+should_test_package() {
+    local package_path="${1}"
+    local from="${2}"
+    local to="${3}"
+
+    local reason=""
+    local skip="false"
+
+    pushd "${package_path}" > /dev/null
+    if ! reason=$(is_pr_affected "${package_path}" "${from}" "${to}"); then
+        skip="true"
+        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
+            echo "Unexpected failure checking ${package_path}" >&2
+            exit 1
+        fi
+    fi
+    popd > /dev/null
+
+    echoerr "${reason}"
+    if [[ "${skip}" == "true" ]]; then
+        return 1
+    fi
+    return 0
+}
+
 is_pr() {
     if [[ "${BUILDKITE_PULL_REQUEST}" == "false" && "${BUILDKITE_TAG}" == "" ]]; then
         return 1

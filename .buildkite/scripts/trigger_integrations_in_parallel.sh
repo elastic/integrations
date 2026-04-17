@@ -53,24 +53,7 @@ packages_to_test=0
 for package_path in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
     echo "--- [$package_path] check if it is required to be tested"
-    skip_package="false"
-    failure="false"
-
-    pushd "${package_path}" > /dev/null
-    if ! reason=$(is_pr_affected "${package_path}" "${from}" "${to}") ; then
-        skip_package="true"
-        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
-            failure=true
-        fi
-    fi
-    popd > /dev/null
-    if [[ "${failure}" == "true" ]]; then
-        echo "Unexpected failure checking ${package}"
-        exit 1
-    fi
-
-    echoerr "${reason}"
-    if [[ "${skip_package}" == "true" ]] ; then
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
         continue
     fi
 
