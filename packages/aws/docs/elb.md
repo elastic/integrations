@@ -44,6 +44,8 @@ Agentless integrations allow you to collect data without having to manage Elasti
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
+> **Note:** Agentless deployment is currently supported for ELB metrics only. Log collection is not available via agentless and requires a traditional Elastic Agent deployment.
+
 ## Setup
 
 Use this integration if you only need to collect data from the Amazon ELB service.
