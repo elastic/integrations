@@ -69,7 +69,7 @@ func validatePackages(codeowners *githubOwners, packagesDir string) error {
 		return fmt.Errorf("error listing packages in %s: %w", packagesDir, err)
 	}
 	for _, path := range paths {
-		err = codeowners.checkManifest(filepath.Join(path, "manifest.yml"))
+		err = codeowners.checkManifest(filepath.Join(path, citools.ManifestFileName))
 		if err != nil {
 			return fmt.Errorf("error checking manifest '%s': %w", path, err)
 		}

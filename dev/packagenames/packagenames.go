@@ -13,10 +13,7 @@ import (
 	"github.com/elastic/integrations/dev/citools"
 )
 
-const (
-	packagesDir      = "packages"
-	manifestFileName = "manifest.yml"
-)
+const packagesDir = "packages"
 
 // Check validates that no two packages share the same name under the default packages directory.
 func Check() error {
@@ -37,7 +34,7 @@ func checkPackageNames(dir string) error {
 func checkDuplicateNames(paths []string) error {
 	seen := make(map[string][]string)
 	for _, path := range paths {
-		manifest, err := citools.ReadPackageManifest(filepath.Join(path, manifestFileName))
+		manifest, err := citools.ReadPackageManifest(filepath.Join(path, citools.ManifestFileName))
 		if err != nil {
 			return fmt.Errorf("error reading manifest in %s: %w", path, err)
 		}

@@ -13,7 +13,7 @@ import (
 	"slices"
 )
 
-const manifestFileName = "manifest.yml"
+const ManifestFileName = "manifest.yml"
 
 // ListPackages returns the sorted paths of all packages found under dir.
 func ListPackages(dir string) ([]string, error) {
@@ -25,7 +25,7 @@ func ListPackages(dir string) ([]string, error) {
 		if !d.IsDir() {
 			return nil
 		}
-		manifestPath := filepath.Join(path, manifestFileName)
+		manifestPath := filepath.Join(path, ManifestFileName)
 		_, statErr := os.Stat(manifestPath)
 		if errors.Is(statErr, os.ErrNotExist) {
 			return nil
