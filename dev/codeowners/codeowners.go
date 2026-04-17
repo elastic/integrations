@@ -209,7 +209,7 @@ func (codeowners *githubOwners) findOwnerForFile(path string) ([]string, bool) {
 		}
 
 		ownerDir = filepath.Dir(ownerDir)
-		if ownerDir == "." {
+		if ownerDir == "." || ownerDir == "/" {
 			break
 		}
 	}
