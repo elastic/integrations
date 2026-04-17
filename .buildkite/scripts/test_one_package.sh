@@ -6,7 +6,6 @@ set -euo pipefail
 
 # package path
 package_path="$1"
-parent_path="$(dirname "${package_path}")"
 package_name="$(basename "${package_path}")"
 
 if [ ! -d packages ]; then
@@ -42,6 +41,6 @@ fi
 custom_package_checker_script_path="${SCRIPTS_BUILDKITE_PATH}/${package_path}.sh"
 
 if [ -x "$custom_package_checker_script_path" ]; then
-  echo "--- [${package}] Run individual package checker"
+  echo "--- [${package_name}] Run individual package checker"
   "$custom_package_checker_script_path"
 fi
