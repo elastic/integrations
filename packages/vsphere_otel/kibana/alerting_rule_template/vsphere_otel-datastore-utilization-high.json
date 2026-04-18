@@ -1,0 +1,43 @@
+{
+    "id": "vsphere_otel-datastore-utilization-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[vSphere OTel] Datastore utilization high",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vsphere",
+            "vcenter",
+            "storage"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-vcenterreceiver.otel-*\n// Datastore disk utilization (%): healthy <80%; critical >90% approaching full\n// Adjust threshold (e.g. 80 or 90) based on provisioning lead time\n| WHERE vcenter.datastore.disk.utilization IS NOT NULL AND vcenter.datastore.disk.utilization > 80\n| STATS utilization_pct = MAX(vcenter.datastore.disk.utilization) BY vcenter.datacenter.name, vcenter.datastore.name\n| SORT utilization_pct DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vcenter.datastore.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

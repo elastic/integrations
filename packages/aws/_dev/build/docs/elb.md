@@ -30,6 +30,22 @@ Before using any AWS integration you will need:
 
 For more details about these requirements, refer to the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from AWS and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Agentless deployment
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+> **Note:** Agentless deployment is currently supported for ELB metrics only. Log collection is not available via agentless and requires a traditional Elastic Agent deployment.
+
 ## Setup
 
 Use this integration if you only need to collect data from the Amazon ELB service.
@@ -62,7 +78,9 @@ The CloudWatch integration offers the `latency` setting to address this scenario
 
 If you are collecting log events from multiple log groups using `log_group_name_prefix`, you should review the value of the `number_of_workers`.
 
-The `number_of_workers` setting defines the number of workers assigned to reading from log groups. Each log group matching the `log_group_name_prefix` requires a worker to keep log ingestion as close to real-time as possible. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
+The `number_of_workers` setting defines the number of workers assigned to reading from log groups. **Do not set `number_of_workers` higher than the AWS API rate limit.** The CloudWatch Logs APIs (DescribeLogGroups, FilterLogEvents) are limited to 5 transactions per second (TPS) per AWS account and per region; this limit is shared across all API callers in that account and region. If you run multiple integrations or data streams that collect CloudWatch logs from the same account and region, their workers share the same 5 TPS—so even 5 workers per data stream can cause throttling when combined. Exceeding the limit causes `ThrottlingException: Rate exceeded` errors and may report DEGRADED status in Fleet.
+
+**Recommendation:** Set `number_of_workers` to **5 or less** and `scan_frequency` to **5m or more**, regardless of how many log groups match `log_group_name_prefix`. Workers will iterate through the matching log groups within each scan interval. The default value is `1`.
 
 ## Logs reference
 

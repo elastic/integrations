@@ -42,7 +42,7 @@ func packageKibanaConstraint(path string) (*semver.Constraints, error) {
 func IsLogsDBSupportedInPackage(path string) (bool, error) {
 	constraint, err := packageKibanaConstraint(path)
 	if err != nil {
-		return false, fmt.Errorf("failed to read kibana.constraint fro mmanifest: %w", err)
+		return false, fmt.Errorf("failed to read kibana.constraint from manifest: %w", err)
 	}
 
 	if constraint == nil {

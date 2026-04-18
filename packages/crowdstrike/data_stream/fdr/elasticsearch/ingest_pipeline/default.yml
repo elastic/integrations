@@ -627,11 +627,11 @@ processors:
       copy_from: crowdstrike.event_simpleName
       override: false
       ignore_empty_value: true
-  - rename:
-      tag: rename_crowdstrike_event_simpleName_to_event_action_0069f759
-      field: crowdstrike.event_simpleName
-      target_field: event.action
-      ignore_missing: true
+  - set:
+      tag: set_event_action_from_event_simpleName_0069f759
+      field: event.action
+      copy_from: crowdstrike.event_simpleName
+      ignore_empty_value: true
   - rename:
       tag: rename_crowdstrike_SuspiciousHandleOpenReason_to_event_reason_d2830844
       field: crowdstrike.SuspiciousHandleOpenReason
@@ -2091,6 +2091,28 @@ processors:
       ignore_missing: true
 
   # File fields.
+  # Handle crowdstrike.File when it arrives as a nested object (e.g., DataEgressEnriched events)
+  # instead of the expected keyword value. Extracts sub-fields to ECS and crowdstrike.FileType.Type.
+  - script:
+      tag: handle_crowdstrike_File_as_object
+      if: ctx.crowdstrike?.File instanceof Map
+      source: |-
+        def fileMap = ctx.crowdstrike.File;
+        ctx.file = ctx.file ?: [:];
+        if (ctx.file.name == null && fileMap.Name != null) ctx.file.name = fileMap.Name;
+        if (ctx.file.extension == null && fileMap.Extension != null) ctx.file.extension = fileMap.Extension;
+        if (ctx.file.path == null) ctx.file.path = fileMap.NormalizedAbsolutePath ?: fileMap.AbsolutePath;
+        def fileType = [:];
+        if (fileMap.FileTypeID != null) fileType.ID = fileMap.FileTypeID;
+        if (fileMap.FileTypeName != null) fileType.Name = fileMap.FileTypeName;
+        if (fileMap.FileTypeDescription != null) fileType.Description = fileMap.FileTypeDescription;
+        if (fileMap.FileTypeCategoryID != null) fileType.CategoryID = fileMap.FileTypeCategoryID;
+        if (fileMap.FileTypeCategoryName != null) fileType.CategoryName = fileMap.FileTypeCategoryName;
+        if (!fileType.isEmpty()) {
+          ctx.crowdstrike.FileType = ctx.crowdstrike.FileType ?: [:];
+          ctx.crowdstrike.FileType.Type = fileType;
+        }
+        ctx.crowdstrike.remove('File');
   - set:
       tag: set_file_pe_original_file_name_18b6c509
       if: ctx._temp?.isFile == true && ctx.host?.os?.type == 'windows'

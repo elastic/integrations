@@ -1,0 +1,2056 @@
+{
+    "attributes": {
+        "title": "[SQL Server OTel] Database I/O",
+        "description": "Per-database file I/O bytes, latency, and operations by direction and file type.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "1a228797-5800-1bc8-f10b-fbef18d7359c",
+                                "order": 1,
+                                "label": "Memory & saturation",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_1a228797-5800-1bc8-f10b-fbef18d7359c_dashboard"
+                            },
+                            {
+                                "id": "52529824-e986-8cf7-c16a-69660cfcebf9",
+                                "order": 2,
+                                "label": "Concurrency & errors",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_52529824-e986-8cf7-c16a-69660cfcebf9_dashboard"
+                            },
+                            {
+                                "id": "62009570-8e83-3914-6ea1-d1fdae0a592a",
+                                "order": 3,
+                                "label": "Database I/O",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_62009570-8e83-3914-6ea1-d1fdae0a592a_dashboard"
+                            },
+                            {
+                                "id": "c067561f-af5d-373d-447a-c32c762cf751",
+                                "order": 4,
+                                "label": "Query performance",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_c067561f-af5d-373d-447a-c32c762cf751_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [SQL Server OTel] Database I/O\n\nThis dashboard tracks per-database file I/O:\n- I/O bytes and operations by direction (read/write) and file type (ROWS/LOG)\n- I/O latency (wait time) per file\n- Database and log file I/O trends\n- Replication throughput (replica data rate)\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "20adb083-0551-6bae-3002-6fcee5a532c7",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "20adb083-0551-6bae-3002-6fcee5a532c7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total I/O rate (bytes/s)",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "4c177b85-019a-b77b-84b1-aa06d47f18e1",
+                                "layerType": "data",
+                                "metricAccessor": "b076643d-7df3-5880-6fca-fefa7ab5b1f0",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4c177b85-019a-b77b-84b1-aa06d47f18e1": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "b076643d-7df3-5880-6fca-fefa7ab5b1f0",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "b076643d-7df3-5880-6fca-fefa7ab5b1f0",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "89fc608c-a849-38a4-9c14-5b15664e3689",
+                "gridData": {
+                    "x": 22,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "89fc608c-a849-38a4-9c14-5b15664e3689"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Avg I/O latency per operation",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "17062f6b-5bfd-7043-9c4e-5ae6cc0a5456",
+                                "layerType": "data",
+                                "metricAccessor": "e31695bb-8559-0ba7-efd0-8a965728720f",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.latency IS NOT NULL\n| STATS total_latency = SUM(RATE(metrics.sqlserver.database.latency)), total_ops = SUM(RATE(metrics.sqlserver.database.operations))\n| EVAL avg_latency_ms = CASE(total_ops > 0, (total_latency / total_ops) * 1000, 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "17062f6b-5bfd-7043-9c4e-5ae6cc0a5456": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.latency IS NOT NULL\n| STATS total_latency = SUM(RATE(metrics.sqlserver.database.latency)), total_ops = SUM(RATE(metrics.sqlserver.database.operations))\n| EVAL avg_latency_ms = CASE(total_ops > 0, (total_latency / total_ops) * 1000, 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "avg_latency_ms",
+                                                    "columnId": "e31695bb-8559-0ba7-efd0-8a965728720f",
+                                                    "label": "Avg latency (ms/op)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "avg_latency_ms",
+                                                    "columnId": "e31695bb-8559-0ba7-efd0-8a965728720f",
+                                                    "label": "Avg latency (ms/op)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "4ae1c9f6-ab1d-ed30-0f08-52aa78a48c23",
+                "gridData": {
+                    "x": 27,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "4ae1c9f6-ab1d-ed30-0f08-52aa78a48c23"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "I/O ops rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "40ef5faa-fe9b-3a26-c972-f63bcdb2c52a",
+                                "layerType": "data",
+                                "metricAccessor": "dc133ba9-26ac-914f-380a-a5bb57a2341f",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.operations IS NOT NULL\n| STATS ops_rate = SUM(RATE(metrics.sqlserver.database.operations))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "40ef5faa-fe9b-3a26-c972-f63bcdb2c52a": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.operations IS NOT NULL\n| STATS ops_rate = SUM(RATE(metrics.sqlserver.database.operations))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "ops_rate",
+                                                    "columnId": "dc133ba9-26ac-914f-380a-a5bb57a2341f",
+                                                    "label": "Ops/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "ops_rate",
+                                                    "columnId": "dc133ba9-26ac-914f-380a-a5bb57a2341f",
+                                                    "label": "Ops/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "0e058677-06dc-bd35-e57d-e2d1f8a4ab29",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "0e058677-06dc-bd35-e57d-e2d1f8a4ab29"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Replica data rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "4f42b2d6-132c-fa6c-652f-f3613225f5dd",
+                                "layerType": "data",
+                                "metricAccessor": "33993025-bcda-5d5d-3946-2cbb25fc01ce",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.replica.data.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.replica.data.rate)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4f42b2d6-132c-fa6c-652f-f3613225f5dd": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.replica.data.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.replica.data.rate)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "33993025-bcda-5d5d-3946-2cbb25fc01ce",
+                                                    "label": "Replica B/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "33993025-bcda-5d5d-3946-2cbb25fc01ce",
+                                                    "label": "Replica B/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b9c72b13-fc05-3571-be6d-79463e9f70e4",
+                "gridData": {
+                    "x": 38,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "b9c72b13-fc05-3571-be6d-79463e9f70e4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Transaction delay",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "748ad3d7-6f77-892f-996f-9c23df249352",
+                                "layerType": "data",
+                                "metricAccessor": "981798e4-f5f1-a112-0db4-50be28a3c146",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.transaction.delay IS NOT NULL\n| STATS delay = AVG(metrics.sqlserver.transaction.delay)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "748ad3d7-6f77-892f-996f-9c23df249352": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.transaction.delay IS NOT NULL\n| STATS delay = AVG(metrics.sqlserver.transaction.delay)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "delay",
+                                                    "columnId": "981798e4-f5f1-a112-0db4-50be28a3c146",
+                                                    "label": "Txn delay (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "delay",
+                                                    "columnId": "981798e4-f5f1-a112-0db4-50be28a3c146",
+                                                    "label": "Txn delay (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "53d2d3ce-ed5b-11af-3401-c1c668ef7cdf",
+                "gridData": {
+                    "x": 43,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "53d2d3ce-ed5b-11af-3401-c1c668ef7cdf"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Backup/restore throughput",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "2fe2b684-6f9c-1ba4-97e8-93d48c24c1ae",
+                                "layerType": "data",
+                                "metricAccessor": "ef1eadab-4a57-4997-278c-c46a55b5a2f9",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.backup_or_restore.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.database.backup_or_restore.rate)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "2fe2b684-6f9c-1ba4-97e8-93d48c24c1ae": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.backup_or_restore.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.database.backup_or_restore.rate)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "ef1eadab-4a57-4997-278c-c46a55b5a2f9",
+                                                    "label": "Backup/restore throughput",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "ef1eadab-4a57-4997-278c-c46a55b5a2f9",
+                                                    "label": "Backup/restore throughput",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f4c5ab01-8616-8bbd-6edc-1b2a6130f9a2",
+                "gridData": {
+                    "x": 16,
+                    "y": 6,
+                    "w": 32,
+                    "h": 8,
+                    "i": "f4c5ab01-8616-8bbd-6edc-1b2a6130f9a2"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "I/O bytes rate by database and direction",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "59801676-c0b5-427f-e417-70e099ce1f85",
+                                        "accessors": [
+                                            "31d7da50-0401-15b5-a112-64f8feb1d94f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "27d99bf9-79c8-79dc-3220-98d7e13711c3",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\"), direction = COALESCE(attributes.direction, direction, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "59801676-c0b5-427f-e417-70e099ce1f85": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\"), direction = COALESCE(attributes.direction, direction, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "27d99bf9-79c8-79dc-3220-98d7e13711c3",
+                                                    "label": "db",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "27d99bf9-79c8-79dc-3220-98d7e13711c3",
+                                                    "label": "db",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3ad69f05-f14a-b013-7b69-6d1574679429",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "3ad69f05-f14a-b013-7b69-6d1574679429"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "I/O latency rate by database and file type",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "8aa74dfb-f5fb-2454-a62c-c94485b63421",
+                                        "accessors": [
+                                            "548343ce-6a0c-3586-cb92-d1705d6dcbf9"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "27d99bf9-79c8-79dc-3220-98d7e13711c3",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.latency IS NOT NULL\n| STATS latency_rate = SUM(RATE(metrics.sqlserver.database.latency)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\"), file_type = COALESCE(attributes.file_type, file_type, \"unknown\")\n| EVAL latency_rate_ms = latency_rate * 1000\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8aa74dfb-f5fb-2454-a62c-c94485b63421": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.latency IS NOT NULL\n| STATS latency_rate = SUM(RATE(metrics.sqlserver.database.latency)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\"), file_type = COALESCE(attributes.file_type, file_type, \"unknown\")\n| EVAL latency_rate_ms = latency_rate * 1000\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "latency_rate_ms",
+                                                    "columnId": "548343ce-6a0c-3586-cb92-d1705d6dcbf9",
+                                                    "label": "Latency (ms/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "27d99bf9-79c8-79dc-3220-98d7e13711c3",
+                                                    "label": "db",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "latency_rate_ms",
+                                                    "columnId": "548343ce-6a0c-3586-cb92-d1705d6dcbf9",
+                                                    "label": "Latency (ms/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "27d99bf9-79c8-79dc-3220-98d7e13711c3",
+                                                    "label": "db",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "2d991b7c-1ee0-28ce-9c28-caac020c73de",
+                "gridData": {
+                    "x": 24,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "2d991b7c-1ee0-28ce-9c28-caac020c73de"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "I/O bytes rate by file type (ROWS vs LOG)",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "cdf4f8cc-d921-9d3c-9d87-f050e0b49672",
+                                        "accessors": [
+                                            "31d7da50-0401-15b5-a112-64f8feb1d94f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "7d98b494-b6a7-1be9-0857-039666c88928",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), file_type = COALESCE(attributes.file_type, file_type, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "cdf4f8cc-d921-9d3c-9d87-f050e0b49672": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), file_type = COALESCE(attributes.file_type, file_type, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "file_type",
+                                                    "columnId": "7d98b494-b6a7-1be9-0857-039666c88928",
+                                                    "label": "file_type",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "file_type",
+                                                    "columnId": "7d98b494-b6a7-1be9-0857-039666c88928",
+                                                    "label": "file_type",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c8c2b534-538d-2eea-6d6d-2da2d993487a",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "c8c2b534-538d-2eea-6d6d-2da2d993487a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "I/O bytes rate by direction (read vs write)",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ed57eb75-d01e-5f1f-3a11-db65d5a1a3f0",
+                                        "accessors": [
+                                            "31d7da50-0401-15b5-a112-64f8feb1d94f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "88f5408f-7ebe-0133-f6d1-973da575e082",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), direction = COALESCE(attributes.direction, direction, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ed57eb75-d01e-5f1f-3a11-db65d5a1a3f0": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), direction = COALESCE(attributes.direction, direction, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "direction",
+                                                    "columnId": "88f5408f-7ebe-0133-f6d1-973da575e082",
+                                                    "label": "direction",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "direction",
+                                                    "columnId": "88f5408f-7ebe-0133-f6d1-973da575e082",
+                                                    "label": "direction",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "bb033396-ed10-cd06-6aae-89d6e9a2254c",
+                "gridData": {
+                    "x": 24,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "bb033396-ed10-cd06-6aae-89d6e9a2254c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top databases by I/O rate",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "63c1fb24-298c-c28a-05c1-b71a0893646f",
+                                        "accessors": [
+                                            "31d7da50-0401-15b5-a112-64f8feb1d94f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_unstacked",
+                                        "xAccessor": "2fd11717-d3ad-980d-37ae-32782204ebf5",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_unstacked",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\")\n| SORT io_rate DESC\n| LIMIT 10"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "63c1fb24-298c-c28a-05c1-b71a0893646f": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\")\n| SORT io_rate DESC\n| LIMIT 10"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "2fd11717-d3ad-980d-37ae-32782204ebf5",
+                                                    "label": "db",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "31d7da50-0401-15b5-a112-64f8feb1d94f",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "2fd11717-d3ad-980d-37ae-32782204ebf5",
+                                                    "label": "db",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d4cd3849-41ee-45ec-7e5c-f11c5a696413",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 48,
+                    "h": 12,
+                    "i": "d4cd3849-41ee-45ec-7e5c-f11c5a696413"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Replica data rate by direction",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "b3b03e25-09f3-f78a-a75d-a0ff9540b5fb",
+                                        "accessors": [
+                                            "2b9e58ce-5484-d2fd-9fc7-133f36d71f26"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "88f5408f-7ebe-0133-f6d1-973da575e082",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.replica.data.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.replica.data.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), direction = COALESCE(attributes.replica.direction, replica.direction, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b3b03e25-09f3-f78a-a75d-a0ff9540b5fb": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.replica.data.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.replica.data.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), direction = COALESCE(attributes.replica.direction, replica.direction, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "2b9e58ce-5484-d2fd-9fc7-133f36d71f26",
+                                                    "label": "Replica B/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "direction",
+                                                    "columnId": "88f5408f-7ebe-0133-f6d1-973da575e082",
+                                                    "label": "direction",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "2b9e58ce-5484-d2fd-9fc7-133f36d71f26",
+                                                    "label": "Replica B/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "direction",
+                                                    "columnId": "88f5408f-7ebe-0133-f6d1-973da575e082",
+                                                    "label": "direction",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "03d979ec-f27a-d7b8-62fe-073e61136e54",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 48,
+                    "h": 15,
+                    "i": "03d979ec-f27a-d7b8-62fe-073e61136e54"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top databases by I/O latency rate",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "b51eddee-db80-2bc0-d503-9df860ccf59f",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "3b4e60db-4fce-9d86-36cb-42fcd12d597c",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "583f325c-b73d-13dc-4254-f1835064de82",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "82a751a9-8a78-9acd-72fc-444ab43c3c15",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "40705e9e-53b7-3d95-0cb3-cea3471bf083",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "3029354a-0749-bcf4-0061-f5c2f283c79d",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "cc8c88ba-d954-7bfd-5314-60122c47981c",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL OR metrics.sqlserver.database.latency IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)), latency_rate = SUM(RATE(metrics.sqlserver.database.latency)), ops_rate = SUM(RATE(metrics.sqlserver.database.operations)) BY db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\"), file_type = COALESCE(attributes.file_type, file_type, \"unknown\"), direction = COALESCE(attributes.direction, direction, \"unknown\")\n| EVAL io_rate = COALESCE(io_rate, 0.0), latency_rate = COALESCE(latency_rate, 0.0), ops_rate = COALESCE(ops_rate, 0.0)\n| EVAL latency_rate_ms = latency_rate * 1000\n| SORT latency_rate_ms DESC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "cc8c88ba-d954-7bfd-5314-60122c47981c": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.io IS NOT NULL OR metrics.sqlserver.database.latency IS NOT NULL\n| STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)), latency_rate = SUM(RATE(metrics.sqlserver.database.latency)), ops_rate = SUM(RATE(metrics.sqlserver.database.operations)) BY db = COALESCE(resource.attributes.sqlserver.database.name, \"unknown\"), file_type = COALESCE(attributes.file_type, file_type, \"unknown\"), direction = COALESCE(attributes.direction, direction, \"unknown\")\n| EVAL io_rate = COALESCE(io_rate, 0.0), latency_rate = COALESCE(latency_rate, 0.0), ops_rate = COALESCE(ops_rate, 0.0)\n| EVAL latency_rate_ms = latency_rate * 1000\n| SORT latency_rate_ms DESC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "b51eddee-db80-2bc0-d503-9df860ccf59f",
+                                                    "label": "Database",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "file_type",
+                                                    "columnId": "3b4e60db-4fce-9d86-36cb-42fcd12d597c",
+                                                    "label": "File type",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "direction",
+                                                    "columnId": "583f325c-b73d-13dc-4254-f1835064de82",
+                                                    "label": "Direction",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "82a751a9-8a78-9acd-72fc-444ab43c3c15",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "latency_rate_ms",
+                                                    "columnId": "40705e9e-53b7-3d95-0cb3-cea3471bf083",
+                                                    "label": "Latency (ms/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "ops_rate",
+                                                    "columnId": "3029354a-0749-bcf4-0061-f5c2f283c79d",
+                                                    "label": "Ops/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "db",
+                                                    "columnId": "b51eddee-db80-2bc0-d503-9df860ccf59f",
+                                                    "label": "Database",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "file_type",
+                                                    "columnId": "3b4e60db-4fce-9d86-36cb-42fcd12d597c",
+                                                    "label": "File type",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "direction",
+                                                    "columnId": "583f325c-b73d-13dc-4254-f1835064de82",
+                                                    "label": "Direction",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "io_rate",
+                                                    "columnId": "82a751a9-8a78-9acd-72fc-444ab43c3c15",
+                                                    "label": "I/O bytes/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "latency_rate_ms",
+                                                    "columnId": "40705e9e-53b7-3d95-0cb3-cea3471bf083",
+                                                    "label": "Latency (ms/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "ops_rate",
+                                                    "columnId": "3029354a-0749-bcf4-0061-f5c2f283c79d",
+                                                    "label": "Ops/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "af5489f9-0f85-2495-d87b-f9e071725d1b": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "af5489f9-0f85-2495-d87b-f9e071725d1b",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.service.instance.id",
+                        "title": "Instance",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "92ec0a05-3635-c6ca-2f0b-8d4c40fbf582": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "92ec0a05-3635-c6ca-2f0b-8d4c40fbf582",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.sqlserver.database.name",
+                        "title": "Database",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "microsoft_sqlserver_otel-database-io",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-memory-saturation",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_1a228797-5800-1bc8-f10b-fbef18d7359c_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-concurrency-errors",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_52529824-e986-8cf7-c16a-69660cfcebf9_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-database-io",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_62009570-8e83-3914-6ea1-d1fdae0a592a_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-query-performance",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_c067561f-af5d-373d-447a-c32c762cf751_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_af5489f9-0f85-2495-d87b-f9e071725d1b:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_92ec0a05-3635-c6ca-2f0b-8d4c40fbf582:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}
