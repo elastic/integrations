@@ -1,5 +1,6 @@
 ARG NGINX_SERVICE_VERSION=1.28.2
 FROM nginx:${NGINX_SERVICE_VERSION}
+ARG NGINX_SERVICE_VERSION
 RUN if [ "${NGINX_SERVICE_VERSION}" = "1.19.5" ]; then \
       sed -i 's/deb.debian/archive.debian/' /etc/apt/sources.list && \
       sed -i 's/security.debian/archive.debian/' /etc/apt/sources.list && \
