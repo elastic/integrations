@@ -172,7 +172,7 @@ The new Entity Analytics ML job IDs are:
 - `problem_child_high_sum_by_user_ea`
 - `problem_child_high_sum_by_parent_ea`
 
-After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
 
 - Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
     - `problem_child_rare_process_by_host`
