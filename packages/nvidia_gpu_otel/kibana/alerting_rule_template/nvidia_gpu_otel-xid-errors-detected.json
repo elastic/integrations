@@ -1,0 +1,40 @@
+{
+    "id": "nvidia_gpu_otel-xid-errors-detected",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[NVIDIA GPU OTel] XID errors detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "nvidia_gpu"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_XID_ERRORS IS NOT NULL\n// Non-zero XID errors indicate GPU hardware or software faults\n// err_code identifies the specific XID error type\n| WHERE DCGM_FI_DEV_XID_ERRORS > 0\n| STATS\n    max_xid = MAX(DCGM_FI_DEV_XID_ERRORS),\n    occurrences = COUNT(*)\n  BY Hostname, UUID, modelName, err_code, err_msg\n| SORT occurrences DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "UUID",
+            "termSize": 50
+        }
+    }
+}

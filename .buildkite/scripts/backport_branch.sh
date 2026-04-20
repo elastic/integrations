@@ -5,7 +5,7 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 cleanup_gh() {
-    pushd $WORKSPACE > /dev/null
+    pushd "$WORKSPACE" > /dev/null
     git config remote.origin.url "https://github.com/elastic/integrations.git"
     popd > /dev/null
 }
@@ -13,12 +13,12 @@ cleanup_gh() {
 trap cleanup_gh EXIT
 
 
-DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default ${DRY_RUN:-"true"})"
-BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default ${BASE_COMMIT:-""})"
-PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default ${PACKAGE_NAME:-""})"
-PACKAGE_FOLDER_NAME="$(buildkite-agent meta-data get PACKAGE_FOLDER_NAME --default ${PACKAGE_FOLDER_NAME:-""})"
-PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default ${PACKAGE_VERSION:-""})"
-REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default ${REMOVE_OTHER_PACKAGES:-"false"})"
+DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default "${DRY_RUN:-"true"}")"
+BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default "${BASE_COMMIT:-""}")"
+PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_NAME:-""}")"
+PACKAGE_FOLDER_NAME="$(buildkite-agent meta-data get PACKAGE_FOLDER_NAME --default "${PACKAGE_FOLDER_NAME:-""}")"
+PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
+REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"false"}")"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_FOLDER_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME**, **PACKAGE_FOLDER_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
@@ -50,7 +50,7 @@ MSG=""
 isPackagePublished() {
   local packageZip=$1
   local responseCode
-  responseCode=$(curl -s -o /dev/null -w "%{http_code}" "https://package-storage.elastic.co/artifacts/packages/${packageZip}")
+  responseCode=$(retry 5 curl -s -o /dev/null -w "%{http_code}" "https://package-storage.elastic.co/artifacts/packages/${packageZip}")
   if [[ $responseCode == "200" ]]; then
     return 0
   else
@@ -99,6 +99,7 @@ createLocalBackportBranch() {
 removeOtherPackages() {
   local sourceFolder=$1
   local currentPackage=""
+  local dir
   for dir in "$sourceFolder"/*; do
     if [[ -d "$dir" ]] && [[ "$(basename "$dir")" != "$PACKAGE_FOLDER_NAME" ]]; then
       echo "Removing directory: $dir"
@@ -126,17 +127,17 @@ updateBackportBranchContents() {
   local files_cached_num=""
 
   git checkout "$BACKPORT_BRANCH_NAME"
-  echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
+  echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
   git add $BUILDKITE_FOLDER_PATH
 
   if git ls-tree -d --name-only main:.ci >/dev/null 2>&1; then
-    echo "Copying $JENKINS_FOLDER_PATH from $SOURCE_BRANCH..."
+    echo "--- Copying $JENKINS_FOLDER_PATH from $SOURCE_BRANCH..."
     git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
     git add $JENKINS_FOLDER_PATH
   else
     if [ -d "${JENKINS_FOLDER_PATH}" ]; then
-      echo "Removing $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
+      echo "--- Removing $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
       rm -rf "$JENKINS_FOLDER_PATH"
       git add "$JENKINS_FOLDER_PATH"
     fi
@@ -147,23 +148,29 @@ updateBackportBranchContents() {
   local TESTSREPORTER_SCRIPTS_FOLDER="dev/testsreporter"
   local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
   local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
+  local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
 
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
+    echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
     echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${MAGEFILE_SCRIPTS_FOLDER}"
-    git add ${MAGEFILE_SCRIPTS_FOLDER}
+    git add "${MAGEFILE_SCRIPTS_FOLDER}"
 
     echo "Copying $TESTSREPORTER_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${TESTSREPORTER_SCRIPTS_FOLDER}"
-    git add ${TESTSREPORTER_SCRIPTS_FOLDER}
+    git add "${TESTSREPORTER_SCRIPTS_FOLDER}"
 
     echo "Copying $COVERAGE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${COVERAGE_SCRIPTS_FOLDER}"
-    git add ${COVERAGE_SCRIPTS_FOLDER}
+    git add "${COVERAGE_SCRIPTS_FOLDER}"
 
     echo "Copying $CODEOWNERS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${CODEOWNERS_SCRIPTS_FOLDER}"
-    git add ${CODEOWNERS_SCRIPTS_FOLDER}
+    git add "${CODEOWNERS_SCRIPTS_FOLDER}"
+
+    echo "Copying $PACKAGENAMES_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${PACKAGENAMES_SCRIPTS_FOLDER}"
+    git add "${PACKAGENAMES_SCRIPTS_FOLDER}"
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
@@ -172,30 +179,31 @@ updateBackportBranchContents() {
     # As this script runs in the context of the main branch (mainly go mod tidy), we need to copy
     # the .go-version file from the main branch to the backport branch. This avoids failures
     # installing dependencies in the backport Pull Request.
-    echo "Copying .go-version from $SOURCE_BRANCH..."
+    echo "--- Copying .go-version from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- ".go-version"
     git add .go-version
 
     # Restore workflows from the main branch since modifying them requires extra permissions.
     # > error: GH013: Repository rule violations found for ...
     # > refusing to allow a GitHub App to create or update workflow `.github/workflows/bump-elastic-stack-version.yml` without `workflows` permission
-    echo "Copying .github/workflows from $SOURCE_BRANCH..."
+    echo "--- Copying .github/workflows from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
 
     # Copy tools.go so we have the dev scripts dependencies required
-    echo "Copying tools.go from $SOURCE_BRANCH..."
+    echo "--- Copying tools.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "tools.go"
     git add tools.go
 
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
+    echo "--- Running go mod tidy to update dependencies related to magefile and dev scripts..."
     go mod tidy
 
     git add go.mod go.sum
   fi
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
-    echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
+    echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
     removeOtherPackages "${PACKAGES_FOLDER_PATH}"
     ls -la "${PACKAGES_FOLDER_PATH}"
 
@@ -203,25 +211,26 @@ updateBackportBranchContents() {
     git add .github/CODEOWNERS
   fi
 
+  echo "--- Current git status before commit:"
   git status
 
-  echo "Setting up git environment..."
+  echo "--- Setting up git environment..."
   update_git_config
 
   files_cached_num=$(git diff --name-only --cached | wc -l)
   if [ "${files_cached_num}" -gt 0 ]; then
-    echo "Committing changes..."
+    echo "--- Committing changes..."
     git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
   else
-    echo "Nothing to commit, skip."
+    echo "+++ Nothing to commit, skip."
   fi
 
   if [ "$DRY_RUN" == "true" ];then
-    echo "DRY_RUN mode, nothing will be pushed."
+    echo "--- DRY_RUN mode, nothing will be pushed."
     # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev, .go-version, .github/CODEOWNERS and package to be backported)
-    git --no-pager diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME .buildkite/ dev/ go.sum go.mod .go-version tools.go .github/CODEOWNERS "packages/${PACKAGE_FOLDER_NAME}"
+    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ dev/ go.sum go.mod .go-version tools.go .github/CODEOWNERS "packages/${PACKAGE_FOLDER_NAME}"
   else
-    echo "Pushing..."
+    echo "--- Pushing..."
     git push origin "$BACKPORT_BRANCH_NAME"
   fi
 
@@ -237,13 +246,13 @@ add_bin_path
 
 with_yq
 
-echo "Check if the package is published"
+echo "--- Check if the package is published"
 if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
   buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't been published yet." --style "error"
   exit 1
 fi
 
-echo "Check if the base commit exists."
+echo "--- Check if the base commit exists."
 if [ ! -z "$BASE_COMMIT" ]; then
   if ! commitExists "$BASE_COMMIT" "$SOURCE_BRANCH"; then
     buildkite-agent annotate "The entered commit hasn't found in the **${SOURCE_BRANCH}** branch" --style "error"
@@ -251,7 +260,7 @@ if [ ! -z "$BASE_COMMIT" ]; then
   fi
 fi
 
-echo "Check if the backport-branch exists"
+echo "---Check if the backport-branch exists"
 if branchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** is already created. Not updating contents of the branch."
   buildkite-agent annotate "$MSG" --style "warning"
@@ -260,23 +269,23 @@ fi
 
 # backport branch does not exist, running checks and create branch
 version="$(git show "${BASE_COMMIT}":"packages/${PACKAGE_FOLDER_NAME}/manifest.yml" | yq -r .version)"
-echo "Check if version from ${BASE_COMMIT} (${version}) matches with version from input step ${PACKAGE_VERSION}"
+echo "--- Check if version from ${BASE_COMMIT} (${version}) matches with version from input step ${PACKAGE_VERSION}"
 if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
   buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_FOLDER_NAME}/manifest.yml" --style "error"
   exit 1
 fi
 
-echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
+echo "---Check that this changeset is the one creating the version $PACKAGE_NAME"
 if ! git show -p "${BASE_COMMIT}" "packages/${PACKAGE_FOLDER_NAME}/manifest.yml" | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
   buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
   exit 1
 fi
 
-echo "Creating the branch: $BACKPORT_BRANCH_NAME from the commit: $BASE_COMMIT"
+echo "--- Creating the branch: $BACKPORT_BRANCH_NAME from the commit: $BASE_COMMIT"
 createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
 MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
 
-echo "Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
+echo "+++ Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
 updateBackportBranchContents
 
 if [ "${DRY_RUN}" == "true" ]; then

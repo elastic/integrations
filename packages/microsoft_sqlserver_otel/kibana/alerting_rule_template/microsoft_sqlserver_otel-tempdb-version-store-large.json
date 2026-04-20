@@ -1,0 +1,39 @@
+{
+  "id": "microsoft_sqlserver_otel-tempdb-version-store-large",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[SQL Server OTel] TempDB version store large",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "sqlserver"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Version store growth can exhaust TempDB; affects snapshot isolation, sorts, spills\n| WHERE metrics.sqlserver.database.tempdb.version_store.size IS NOT NULL\n| STATS max_version_store_kb = MAX(metrics.sqlserver.database.tempdb.version_store.size),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// Alert when version store exceeds 1GB (1048576 KB); adjust for your TempDB capacity\n| WHERE max_version_store_kb > 1048576\n| KEEP instance_id, max_version_store_kb"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "instance_id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

@@ -54,57 +54,59 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-12T09:39:58.489Z",
+    "@timestamp": "2026-02-03T06:17:57.260Z",
     "agent": {
-        "ephemeral_id": "33939e93-54ef-4184-b92b-bc8f02e179a6",
-        "id": "f98f4444-6fca-4500-83b6-a8c5e8f32bf1",
-        "name": "elastic-agent-49577",
+        "ephemeral_id": "23a29ca3-cffa-4f55-9ef4-536308f22c95",
+        "id": "6bcec12d-6281-4434-99e0-eb2f7c014fbf",
+        "name": "elastic-agent-84667",
         "type": "filebeat",
-        "version": "8.15.2"
+        "version": "8.19.10"
     },
     "blacklens": {
         "alert": {
             "activities": [
                 {
                     "category": "threat",
-                    "created_date": "2025-12-30T16:11:40.195989Z",
+                    "created_date": "2026-02-03T06:17:57.260Z",
                     "description": "A Critical severity external vulnerability 'Blind SQL Injection via HTTP Header' has been detected on asset 'demo.example.com'",
-                    "id": "73dcaa88-09e1-4c58-9fa5-5495f8dac2a4",
-                    "trace_id": "40eda190-83fd-4a1b-8155-3a1c7434b319",
-                    "type": "ExternalVulnerabilityCreated"
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa5",
+                    "trace_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "type": "ExternalVulnerabilityCreated",
+                    "updated_date": "2026-02-03T06:17:57.260Z"
                 }
             ],
-            "analysis": "completed",
+            "analysis": "ongoing",
             "category": "vulnerability",
-            "id": "7ea10c5d-559a-4c55-8608-2e060956de68",
-            "name": "External Vulnerability Detected",
-            "severity": "high",
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "name": "External Vulnerability",
+            "severity": "medium",
             "status": "new",
-            "updated_date": "2025-12-31T16:10:56.155Z"
+            "updated_date": "2026-02-03T06:17:57.260Z"
         }
     },
     "data_stream": {
         "dataset": "blacklens.alerts",
-        "namespace": "41265",
+        "namespace": "43517",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f98f4444-6fca-4500-83b6-a8c5e8f32bf1",
+        "id": "6bcec12d-6281-4434-99e0-eb2f7c014fbf",
         "snapshot": false,
-        "version": "8.15.2"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2025-12-09T05:45:05.855Z",
+        "created": "2026-03-31T08:58:43.557Z",
         "dataset": "blacklens.alerts",
-        "id": "7ea10c5d-559a-4c55-8608-2e060956de68",
-        "ingested": "2025-12-09T05:45:08Z",
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "ingested": "2026-03-31T08:58:46Z",
+        "kind": "alert",
         "type": [
             "indicator"
         ]
@@ -143,7 +145,7 @@ An example event for `alerts` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind |  | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | observer.product |  | constant_keyword |
