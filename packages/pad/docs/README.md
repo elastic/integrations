@@ -190,7 +190,7 @@ The new Entity Analytics transforms are:
 - `pad.pivot_transform_okta_sessions_ea` → destination index: `ml_okta_multiple_user_sessions_pad_ea-2.0.0`, alias: `ml_okta_multiple_user_sessions_pad_ea.latest`, `ml_okta_multiple_user_sessions_pad_ea.all`
 - `pad.pivot_transform_win_privilege_list_ea` → destination index: `ml_windows_privilege_type_pad_ea-2.0.0`, alias: `ml_windows_privilege_type_pad_ea.latest`, `ml_windows_privilege_type_pad_ea.all`
 
-After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
 
 - Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
     - `pad_windows_high_count_special_logon_events`
