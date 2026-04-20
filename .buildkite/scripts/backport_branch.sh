@@ -264,7 +264,7 @@ with_yq
 with_mage
 
 echo "--- Resolve package path from PACKAGE_NAME"
-PACKAGE_PATH="$(get_package_path "${PACKAGE_NAME}")"
+PACKAGE_PATH="$(get_package_path "${PACKAGE_NAME}" || true)"
 if [[ -z "${PACKAGE_PATH}" ]]; then
   buildkite-agent annotate "Package **${PACKAGE_NAME}** not found" --style "error"
   exit 1
