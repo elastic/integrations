@@ -170,15 +170,6 @@ updateBackportBranchContents() {
   local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
   local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
 
-  if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
-    echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
-    removeOtherPackages "${PACKAGE_PATH}"
-    ls -la "${PACKAGES_FOLDER_PATH}"
-
-    git add "${PACKAGES_FOLDER_PATH}/"
-    git add .github/CODEOWNERS
-  fi
-
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
     echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
@@ -229,6 +220,15 @@ updateBackportBranchContents() {
     go mod tidy
 
     git add go.mod go.sum
+  fi
+
+  if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
+    echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
+    removeOtherPackages "${PACKAGE_PATH}"
+    ls -la "${PACKAGES_FOLDER_PATH}"
+
+    git add "${PACKAGES_FOLDER_PATH}/"
+    git add .github/CODEOWNERS
   fi
 
   echo "--- Current git status before commit:"
