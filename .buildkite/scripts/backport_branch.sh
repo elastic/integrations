@@ -42,7 +42,8 @@ FULL_ZIP_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}.zip"
 TRIMMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
 SOURCE_BRANCH="main"
 # To be removed
-SOURCE_BRANCH="${BUILDKITE_COMMIT}"
+SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+echo "--- SOURCE_BRANCH: ${SOURCE_BRANCH}"
 BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
 PACKAGES_FOLDER_PATH="packages"
 MSG=""
@@ -168,6 +169,15 @@ updateBackportBranchContents() {
   local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
   local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
 
+  if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
+    echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
+    removeOtherPackages "${PACKAGE_PATH}"
+    ls -la "${PACKAGES_FOLDER_PATH}"
+
+    git add "${PACKAGES_FOLDER_PATH}/"
+    git add .github/CODEOWNERS
+  fi
+
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
     echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
@@ -218,15 +228,6 @@ updateBackportBranchContents() {
     go mod tidy
 
     git add go.mod go.sum
-  fi
-
-  if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
-    echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
-    removeOtherPackages "${PACKAGE_PATH}"
-    ls -la "${PACKAGES_FOLDER_PATH}"
-
-    git add "${PACKAGES_FOLDER_PATH}/"
-    git add .github/CODEOWNERS
   fi
 
   echo "--- Current git status before commit:"
