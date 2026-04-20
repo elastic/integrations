@@ -114,7 +114,6 @@ createLocalBackportBranch() {
 
 removeOtherPackages() {
   local package_path_to_keep="${1}"
-  local current_package=""
   local package_path
   local package_paths=""
   package_paths=$(list_all_directories)
@@ -123,10 +122,9 @@ removeOtherPackages() {
       echo "Removing directory: ${package_path}"
       rm -rf "$package_path"
 
-      current_package=$(basename "${package_path}")
-      echo "Removing ${current_package} from .github/CODEOWNERS"
-      sed -i "/^\/packages\/${current_package}\//d" .github/CODEOWNERS
-      sed -i "/^\/packages\/${current_package} /d" .github/CODEOWNERS
+      echo "Removing ${package_path} from .github/CODEOWNERS"
+      sed -i "\|^/${package_path}/|d" .github/CODEOWNERS
+      sed -i "\|^/${package_path} |d" .github/CODEOWNERS
     fi
   done
 }
