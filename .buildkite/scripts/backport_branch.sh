@@ -98,7 +98,7 @@ get_package_path() {
       echo "${package_path}"
       return 0
     fi
-  done < <(mage -d "${WORKSPACE}" listPackages)
+  done < <(list_all_directories)
 
   return 1
 }
