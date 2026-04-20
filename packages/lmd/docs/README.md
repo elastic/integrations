@@ -203,7 +203,7 @@ The new Entity Analytics ML job IDs are:
 The new Entity Analytics transforms are:
 - `lmd.pivot_transform_ea` → destination index: `ml-rdp-lmd_ea`
 
-After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack v9.4+):
 
 - Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
     - `lmd_high_count_remote_file_transfer`
