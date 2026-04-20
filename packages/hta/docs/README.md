@@ -29,7 +29,7 @@ The new Entity Analytics ML job IDs for this dashboard are:
 - `high_count_events_for_a_host_name_ea`
 - `low_count_events_for_a_host_name_ea`
 
-After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
 
 - Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
     - `high_count_events_for_a_host_name`
