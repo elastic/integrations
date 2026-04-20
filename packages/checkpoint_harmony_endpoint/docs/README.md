@@ -1241,7 +1241,7 @@ An example event for `zerophishing` looks as following:
 | checkpoint_harmony_endpoint.zerophishing.confidence_level | Can be Low/Medim/High/N-A | keyword |
 | checkpoint_harmony_endpoint.zerophishing.description | Details of the event | text |
 | checkpoint_harmony_endpoint.zerophishing.event_type | Name of the event | keyword |
-| checkpoint_harmony_endpoint.zerophishing.extension_version | Browser Extention version | keyword |
+| checkpoint_harmony_endpoint.zerophishing.extension_version | Browser Extension version | keyword |
 | checkpoint_harmony_endpoint.zerophishing.installed_products | List of installed Endpoint Software Blades | keyword |
 | checkpoint_harmony_endpoint.zerophishing.malware.action | Additional information about detection, for example "User reused corporate credentials" | keyword |
 | checkpoint_harmony_endpoint.zerophishing.orig |  | ip |
