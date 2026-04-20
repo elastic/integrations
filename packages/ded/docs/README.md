@@ -121,7 +121,7 @@ The new Entity Analytics ML job IDs are:
 The new Entity Analytics transforms are:
 - `ded.pivot_transform_ea` → destination index: `ml_network_ded_ea-3.0.0`, alias: `ml_network_ded_ea.latest`, `ml_network_ded_ea.all`
 
-After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
 
 - Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
     - `ded_high_sent_bytes_destination_geo_country_iso_code`
