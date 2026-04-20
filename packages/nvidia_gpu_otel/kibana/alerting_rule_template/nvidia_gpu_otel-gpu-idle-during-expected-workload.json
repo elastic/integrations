@@ -1,40 +1,51 @@
 {
-    "id": "nvidia_gpu_otel-gpu-idle-during-expected-workload",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[NVIDIA GPU OTel] GPU idle during expected workload",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "nvidia_gpu"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 6
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_GPU_UTIL IS NOT NULL\n| STATS\n    avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),\n    max_util = MAX(DCGM_FI_DEV_GPU_UTIL)\n  BY Hostname, UUID, modelName\n// Detects GPUs that are completely idle — may indicate a stuck job,\n// misconfigured workload, or wasted resources\n// Adjust threshold and alertDelay based on expected idle periods\n| WHERE max_util < 1\n| SORT Hostname ASC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 30,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "UUID",
-            "termSize": 50
+  "id": "nvidia_gpu_otel-gpu-idle-during-expected-workload",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a GPU sees zero utilization (`max_util < 1`) over 30 minutes. An idle expensive resource often indicates a stuck or misconfigured workload.",
+    "name": "[NVIDIA GPU OTel] GPU idle during expected workload",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "nvidia_gpu"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 6
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nvidia_gpu_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## NVIDIA GPU idle during expected workload\n\n### What fired\n`MAX(DCGM_FI_DEV_GPU_UTIL) < 1` over a 30-minute window.\n\n### Why it matters\nLong idle periods on a GPU that should be busy waste expensive infrastructure. Common causes: stuck training jobs waiting on data, application crashes that left the process running but not driving the GPU, scheduler misconfiguration.\n\n### Triage\n1. Identify which GPU and host.\n2. Check the running CUDA processes (`nvidia-smi`).\n3. Inspect the workload scheduler / orchestrator (Kubernetes / Slurm) for the pod / job state.\n4. Look at the input data pipeline \u2014 is the loader the bottleneck?\n\n### Remediation\n- Restart the stuck job.\n- Free the GPU for other workloads.\n- Tune data loading to keep the GPU fed.\n\n### Tuning\n- Filter on production hours / job state to avoid alerting on intentionally idle nodes.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_GPU_UTIL IS NOT NULL\n| STATS\n    avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),\n    max_util = MAX(DCGM_FI_DEV_GPU_UTIL)\n  BY Hostname, UUID, modelName\n// Detects GPUs that are completely idle \u2014 may indicate a stuck job,\n// misconfigured workload, or wasted resources\n// Adjust threshold and alertDelay based on expected idle periods\n| WHERE max_util < 1\n| SORT Hostname ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 30,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "UUID",
+      "termSize": 50
     }
+  }
 }

@@ -3,9 +3,13 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the request queue depth (`iis.request.queue.count`) exceeds 10 on a pool. Sustained queueing precedes request rejections and timeouts.",
     "name": "[IIS OTel] Request queue depth elevated",
     "ruleTypeId": ".es-query",
-    "tags": ["observability", "iis"],
+    "tags": [
+      "observability",
+      "iis"
+    ],
     "schedule": {
       "interval": "5m"
     },
@@ -17,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "iis_otel-sites"
+        },
+        {
+          "id": "iis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## IIS request queue depth elevated\n\n### What fired\n`iis.request.queue.count > 10` on a pool during the window.\n\n### Why it matters\nQueue depth grows when worker threads cannot service requests as fast as they arrive. Sustained queueing causes user-visible latency and, once the configured `requestQueueLimit` is hit, IIS will start rejecting new requests with HTTP 503.\n\n### Triage\n1. Identify the affected pool.\n2. Correlate with request queue age and rejection counters on the same pool.\n3. Inspect CPU and memory of the `w3wp.exe` processes.\n4. Look at downstream dependency latency.\n\n### Remediation\n- Add worker processes (`maxProcesses`).\n- Raise concurrency settings (`maxConcurrentRequestsPerCPU`).\n- Fix slow downstreams.\n\n### Tuning\n- 10 queue depth threshold; tune to baseline traffic.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE iis.request.queue.count IS NOT NULL\n| STATS max_queue = MAX(iis.request.queue.count) BY iis.application_pool, host.name\n| WHERE max_queue > 10\n| SORT max_queue DESC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,
