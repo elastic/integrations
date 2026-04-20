@@ -1,12 +1,12 @@
 
 dest:
-  index: ml_network_ded-2.4.2
+  index: ml_network_ded_ea-3.0.0
   aliases:
-    - alias: ml_network_ded.latest
+    - alias: ml_network_ded_ea.latest
       move_on_creation: true
-    - alias: ml_network_ded.all
+    - alias: ml_network_ded_ea.all
       move_on_creation: false
-  pipeline: 2.4.2-ml_ded_ingest_pipeline
+  pipeline: 3.0.0-ml_ded_ingest_pipeline
 description: This transform runs every 30 minutes and collects network logs to detect data exfiltration in your environment for the past month up to the runtime.
 frequency: 30m
 pivot:
@@ -21,9 +21,18 @@ pivot:
     'host.name':
       terms:
         field: host.name
+    host.id:
+      terms:
+        field: host.id
     'user.name':
       terms:
         field: user.name
+    user.id:
+      terms:
+        field: user.id
+    event.module:
+      terms:
+        field: event.module
     'network.direction':
       terms:
         field: network.direction
@@ -94,5 +103,5 @@ sync:
     delay: 120s
     field: "@timestamp"
 _meta:
-  fleet_transform_version: 2.4.2
+  fleet_transform_version: 3.0.0
   run_as_kibana_system: false

@@ -20,11 +20,11 @@ source:
         - terms:
             '_tier': [ "data_cold", "data_frozen" ]
 dest:
-  index: ml_windows_privilege_type_pad-1.1.2
+  index: ml_windows_privilege_type_pad_ea-2.0.0
   aliases:
-    - alias: ml_windows_privilege_type_pad.latest
+    - alias: ml_windows_privilege_type_pad_ea.latest
       move_on_creation: true
-    - alias: ml_windows_privilege_type_pad.all
+    - alias: ml_windows_privilege_type_pad_ea.all
       move_on_creation: false
 description: This transform runs hourly and collects special privileges assigned to a user in the Windows events for the Privileged Access Detection package.
 frequency: 1h
@@ -37,9 +37,18 @@ pivot:
     'host.name':
       terms:
         field: host.name
+    host.id:
+      terms:
+        field: host.id
     'user.name':
       terms:
         field: user.name
+    user.id:
+      terms:
+        field: user.id
+    event.module:
+      terms:
+        field: event.module
     'privilege_type':
       terms:
         field: winlog.event_data.PrivilegeList
@@ -61,5 +70,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 1.1.2
+  fleet_transform_version: 2.0.0
   run_as_kibana_system: false

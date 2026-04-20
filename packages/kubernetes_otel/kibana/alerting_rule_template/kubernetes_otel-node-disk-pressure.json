@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-node-disk-pressure",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when any Kubernetes node reports the DiskPressure condition. This is a warning signal that the node is running low on disk space and may begin evicting pods.",
+        "name": "[K8s OTel] Node disk pressure",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Node Disk Pressure\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard filtered to the affected node to see filesystem usage trends.\n3. Check what is consuming disk space: `df -h` on the affected node.\n4. Look for container log accumulation, unused images, or large ephemeral volumes.\n5. Check for pods using large ephemeral storage without limits.\n\n### Common Causes\n- Container log accumulation without rotation\n- Large container images or unused image layers\n- Ephemeral storage abuse by workloads\n- kubelet garbage collection unable to keep up\n\n### Escalation\nIf disk pressure persists, the node will begin evicting pods. Consider cleaning up unused images (`crictl rmi --prune`), rotating logs, or expanding disk capacity."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_disk_pressure IS NOT NULL\n| STATS any_pressure = MAX(k8s.node.condition_disk_pressure)\n    BY k8s.node.name\n// Alert when disk pressure is active (1 = pressure detected)\n| WHERE any_pressure == 1\n| EVAL status = \"DiskPressure\""
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "top",
+            "termField": "k8s.node.name",
+            "termSize": 20
+        }
+    }
+}

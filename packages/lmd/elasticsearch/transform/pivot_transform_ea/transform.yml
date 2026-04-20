@@ -29,7 +29,7 @@ source:
           script:
             source: "if (doc['host.ip'].size() != 0){emit(doc['host.ip'][0]);}"
 dest:
-  index: "ml-rdp-lmd"
+  index: "ml-rdp-lmd_ea"
 description: This transform runs hourly and collects windows RDP session information for Lateral Movement Detection package.
 frequency: 1h
 pivot:
@@ -56,12 +56,21 @@ pivot:
     'host.name':
       terms:
         field: host.name
+    host.id:
+      terms:
+        field: host.id
     'destination.ip':
       terms:
         field: destination.ip
     'user.name':
       terms:
         field: user.name
+    user.id:
+      terms:
+        field: user.id
+    event.module:
+      terms:
+        field: event.module
     'source.ip':
       terms:
         field: process.Ext.session_info.client_address
@@ -77,5 +86,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 2.6.3
+  fleet_transform_version: 3.0.0
   run_as_kibana_system: false
