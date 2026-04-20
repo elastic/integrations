@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-container-memory-near-limit",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when containers are using more than 90% of their memory limit. Containers approaching their memory limit will be OOMKilled, causing restarts and service disruption.",
+        "name": "[K8s OTel] Container memory near limit",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Container Memory Near Limit\n\n### Triage Steps\n1. Identify the affected container(s) from the alert results.\n2. Open the Pod & Container Detail dashboard to see memory usage vs limits over time.\n3. Determine if memory is steadily climbing (leak) or spiking (load-related).\n4. Check current memory usage: `kubectl top pods -n <namespace> --containers`.\n5. Review the container's memory limit — is it set appropriately for the workload?\n\n### Common Causes\n- Memory limit too low for actual workload requirements\n- Memory leak in the application\n- Increased traffic causing higher memory consumption\n- In-memory caching growing without eviction\n- JVM heap sized too close to the container memory limit\n\n### Tuning\n- The default threshold is 90% of the memory limit.\n- Lower to 80% for early warning; raise to 95% to reduce noise.\n- Exclude known memory-intensive containers that run close to their limits by design.\n\n### Escalation\nContainers above 90% memory utilisation are at imminent risk of OOMKill. Increase memory limits as a short-term mitigation and investigate the root cause."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.container.memory_limit_utilization IS NOT NULL\n| STATS\n    avg_util = AVG(k8s.container.memory_limit_utilization)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.name\n// Alert when average memory usage exceeds 90% of the container's limit.\n// Adjust the 0.9 threshold to tune sensitivity:\n//   0.80 = early warning (more alerts)\n//   0.95 = imminent OOMKill risk (fewer alerts)\n| WHERE avg_util > 0.9\n| EVAL util_pct = ROUND(avg_util * 100, 1)\n| SORT util_pct DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, k8s.node.name, util_pct\n| LIMIT 50"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "top",
+            "termField": "k8s.pod.name",
+            "termSize": 50
+        }
+    }
+}
