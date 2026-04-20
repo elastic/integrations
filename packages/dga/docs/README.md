@@ -118,7 +118,7 @@ v3.0.0 of this package requires Elastic Stack version 9.4 or later. It introduce
 The new Entity Analytics ML job IDs are:
 - `dga_high_sum_probability_ea`
 
-After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions:
+After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
 
 - Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
     - `dga_high_sum_probability`
