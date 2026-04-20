@@ -863,7 +863,7 @@ teardown_test_package() {
 
 # list all directories that are packages from the root of the repository
 list_all_directories() {
-    mage -d "${WORKSPACE}" listPackages | grep -E '^packages/(elastic_package_registry|nginx|rapid7_insightvm|sql_input)$'
+    mage -d "${WORKSPACE}" listPackages | grep -E '^packages/(elastic_package_registry|nginx|rapid7_insightvm|sql_input|nginx/nginx|nginx/nginx_otel)$'
 }
 
 check_package() {
