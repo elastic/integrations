@@ -29,9 +29,13 @@ processors:
 - date:
     field: gitlab.api.time
     target_field: '@timestamp'
+    tag: date_parse_api_time
     formats:
-    - ISO8601
-    ignore_failure: true
+      - ISO8601
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
     field: gitlab.api.severity
     target_field: log.level
@@ -43,9 +47,34 @@ processors:
         ctx.event.duration = ctx.gitlab.api.duration_s * 1000000;
       }
     ignore_failure: true
+- convert:
+    field: gitlab.api.db
+    type: double
+    tag: convert_gitlab_api_db_to_double
+    ignore_missing: true
+    on_failure:
+        - remove:
+            field: gitlab.api.db
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.view
+    type: double
+    tag: convert_gitlab_api_view_to_double
+    ignore_missing: true
+    on_failure:
+        - remove:
+            field: gitlab.api.view
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - script:
     tag: kv_params
     lang: painless
+    if: ctx.gitlab?.api?.params != null
     source: |
       def keyValuePairs = [];
       for (item in ctx.gitlab.api.params) {
@@ -82,6 +111,14 @@ processors:
     field: meta.feature_category
 - dot_expander:
     path: gitlab.api
+    tag: dot_expander_meta_gl_user_id
+    field: meta.gl_user_id
+- dot_expander:
+    path: gitlab.api
+    tag: dot_expander_meta_gl_organization_id
+    field: meta.organization_id
+- dot_expander:
+    path: gitlab.api
     field: meta.remote_ip
 - convert:
     field: gitlab.api.meta.remote_ip
@@ -93,7 +130,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - dot_expander:
     path: gitlab.api
     field: meta.user
@@ -116,17 +153,27 @@ processors:
     ignore_failure: true
     processor:
       convert:
-        field: _ingest._value.name
+        field: _ingest._value
         type: ip
-        target_field: _ingest._value.name_ips
         ignore_missing: true
         on_failure:
           - remove:
-              field: _ingest._value.ip
+              field: _ingest._value
               ignore_missing: true
 - remove:
     field: gitlab.api.remote_ip
     ignore_missing: true
+- foreach:
+    field: source.ip
+    if: ctx.source?.ip instanceof List
+    tag: foreach_source_ip
+    ignore_failure: true
+    processor:
+      append:
+        field: related.ip
+        tag: append_source_ip_into_related_ip
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
 - rename:
     field: gitlab.api.ua
     target_field: user_agent.original
@@ -193,11 +240,9 @@ processors:
     - error
     allow_duplicates: false
     if: ctx.http?.response?.status_code != null && (ctx.http.response.status_code < 200 || ctx.http.response.status_code >= 400)
-- append:
+- set:
     field: event.kind
-    value:
-    - pipeline_error
-    allow_duplicates: false
+    value: pipeline_error
     if: ctx.error?.message != null
 - script:
     description: Drops null/empty values recursively.
@@ -216,14 +261,531 @@ processors:
         return false;
       }
       dropEmptyFields(ctx);
+- convert:
+    field: gitlab.api.content_length
+    tag: convert_content_length_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.content_length
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_ci_replica_txn_max_duration_s
+    tag: convert_db_ci_replica_txn_max_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_ci_replica_txn_max_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_ci_replica_write_count
+    tag: convert_db_ci_replica_write_count_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_ci_replica_write_count
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_ci_txn_max_duration_s
+    tag: convert_db_ci_txn_max_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_ci_txn_max_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_ci_write_count
+    tag: convert_db_ci_write_count_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_ci_write_count
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_main_replica_txn_max_duration_s
+    tag: convert_db_main_replica_txn_max_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_main_replica_txn_max_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_main_replica_write_count
+    tag: convert_db_main_replica_write_count_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_main_replica_write_count
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_main_txn_max_duration_s
+    tag: convert_db_main_txn_max_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_main_txn_max_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_main_write_count
+    tag: convert_db_main_write_count_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_main_write_count
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_primary_txn_max_duration_s
+    tag: convert_db_primary_txn_max_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_primary_txn_max_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_primary_write_count
+    tag: convert_db_primary_write_count_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_primary_write_count
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_replica_txn_max_duration_s
+    tag: convert_db_replica_txn_max_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_replica_txn_max_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.db_replica_write_count
+    tag: convert_db_replica_write_count_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.db_replica_write_count
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.exclusive_lock_hold_duration_s
+    tag: convert_exclusive_lock_hold_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.exclusive_lock_hold_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.exclusive_lock_requested_count
+    tag: convert_exclusive_lock_requested_count_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.exclusive_lock_requested_count
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.exclusive_lock_wait_duration_s
+    tag: convert_exclusive_lock_wait_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.exclusive_lock_wait_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.gitaly_duration_s
+    tag: convert_gitaly_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.gitaly_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- set:
+    field: host.name
+    tag: set_host_name_from_api_host
+    copy_from: url.domain
+    ignore_empty_value: true
+- append:
+    field: related.hosts
+    tag: append_api_host_into_related_hosts
+    value: '{{{url.domain}}}'
+    allow_duplicates: false
+    if: ctx.url?.domain != null
+- convert:
+    field: gitlab.api.meta.gl_user_id
+    tag: convert_gl_user_id_to_keyword
+    type: string
+    ignore_missing: true
+- append:
+    field: related.user
+    tag: append_api_meta_gl_user_id_into_related_user
+    value: '{{{gitlab.api.meta.gl_user_id}}}'
+    allow_duplicates: false
+    if: ctx.gitlab?.api?.meta?.gl_user_id != null
+- convert:
+    field: gitlab.api.meta.organization_id
+    tag: convert_organization_id_to_keyword
+    type: string
+    ignore_missing: true
+- set:
+    field: organization.id
+    tag: set_organization_id_from_api_meta_organization_id
+    copy_from: gitlab.api.meta.organization_id
+    ignore_empty_value: true
+- convert:
+    field: gitlab.api.redis_queues_calls
+    tag: convert_redis_queues_calls_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_calls
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_queues_duration_s
+    tag: convert_redis_queues_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_queues_metadata_calls
+    tag: convert_redis_queues_metadata_calls_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_metadata_calls
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_queues_metadata_duration_s
+    tag: convert_redis_queues_metadata_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_metadata_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.path_traversal_check_duration_s
+    tag: convert_path_traversal_check_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.path_traversal_check_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_queues_metadata_read_bytes
+    tag: convert_redis_queues_metadata_read_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_metadata_read_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_queues_metadata_write_bytes
+    tag: convert_redis_queues_metadata_write_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_metadata_write_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_queues_read_bytes
+    tag: convert_redis_queues_read_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_read_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_queues_write_bytes
+    tag: convert_redis_queues_write_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_queues_write_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_rate_limiting_calls
+    tag: convert_redis_rate_limiting_calls_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_rate_limiting_calls
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_rate_limiting_duration_s
+    tag: convert_redis_rate_limiting_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_rate_limiting_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_rate_limiting_read_bytes
+    tag: convert_redis_rate_limiting_read_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_rate_limiting_read_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_rate_limiting_write_bytes
+    tag: convert_redis_rate_limiting_write_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_rate_limiting_write_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_repository_cache_allowed_cross_slot_calls
+    tag: convert_redis_repository_cache_allowed_cross_slot_calls_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_repository_cache_allowed_cross_slot_calls
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_repository_cache_calls
+    tag: convert_redis_repository_cache_calls_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_repository_cache_calls
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_repository_cache_duration_s
+    tag: convert_redis_repository_cache_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_repository_cache_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_repository_cache_read_bytes
+    tag: convert_redis_repository_cache_read_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_repository_cache_read_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_repository_cache_write_bytes
+    tag: convert_redis_repository_cache_write_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_repository_cache_write_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_shared_state_calls
+    tag: convert_redis_shared_state_calls_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_shared_state_calls
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_shared_state_duration_s
+    tag: convert_redis_shared_state_duration_s_to_double
+    type: double
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_shared_state_duration_s
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_shared_state_read_bytes
+    tag: convert_redis_shared_state_read_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_shared_state_read_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: gitlab.api.redis_shared_state_write_bytes
+    tag: convert_redis_shared_state_write_bytes_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: gitlab.api.redis_shared_state_write_bytes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- set:
+    field: event.severity
+    tag: set_event_severity_from_api_severity
+    copy_from: gitlab.api.severity
+    ignore_empty_value: true
+- append:
+    field: related.user
+    tag: append_api_user_id_into_related_user
+    value: '{{{gitlab.api.user_id}}}'
+    allow_duplicates: false
+    if: ctx.gitlab?.api?.user_id != null
+- append:
+    field: related.user
+    tag: append_api_username_into_related_user
+    value: '{{{gitlab.api.username}}}'
+    allow_duplicates: false
+    if: ctx.gitlab?.api?.username != null
 on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
 - append:
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
       in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-- set:
-    field: event.kind
-    value: pipeline_error
 - append:
     field: tags
     value: preserve_original_event
