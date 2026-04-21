@@ -2,7 +2,7 @@
 
 Azure Activity Logs provide a platform-level audit trail for Azure Resource Manager control plane operations, including resource creation, modification, deletion, and service health events.
 
-This content pack provides dashboards, alert rules, and SLO templates for Azure Activity Logs collected via OpenTelemetry. It covers administrative operations, platform health signals, security-sensitive actions, and policy compliance.
+This content pack provides dashboards, alert rules, and SLO templates for Azure Activity Logs collected via OpenTelemetry. It covers administrative operations, platform health signals, and security-sensitive actions.
 
 ## Compatibility
 
@@ -36,7 +36,7 @@ Refer to the [azureactivitylogs encoding extension](https://github.com/open-tele
 |-----------|-------------|
 | **[Azure Activity Logs OTel] Overview** | Platform-level audit logs for Azure Resource Manager control plane operations. Monitor operation volume, verb-level breakdown, failure rates, resource provider activity, top callers by identity, and sensitive operations. |
 | **[Azure Activity Logs OTel] Administrative Operations** | Administrative Activity Log events: control plane CRUD operations, failures, operation duration, and mutation rates. Identify failed deployments and permission issues. |
-| **[Azure Activity Logs OTel] Platform Health** | Azure platform health signals: ServiceHealth incidents, ResourceHealth status, Policy compliance, and Advisor recommendations. Monitor external reliability factors. |
+| **[Azure Activity Logs OTel] Platform Health** | Azure platform health signals: ServiceHealth incidents, ResourceHealth status, and Advisor recommendations. Monitor external reliability factors. |
 
 ## Alert rules
 
@@ -44,7 +44,6 @@ Refer to the [azureactivitylogs encoding extension](https://github.com/open-tele
 |-------|---------|----------|
 | **[Azure Activity OTel] Change storm (high mutation rate)** | Spike in WRITE/DELETE/ACTION operations indicating a deployment storm or runaway automation | Warning |
 | **[Azure Activity OTel] Failed administrative operations** | Administrative operations failing above normal threshold | Warning |
-| **[Azure Activity OTel] Policy non-compliance** | Azure Policy evaluations returning non-compliant results | Warning |
 | **[Azure Activity OTel] Resource health degradation** | Resources transitioning to Unavailable or Degraded state | Warning |
 | **[Azure Activity OTel] Role assignment write (privilege escalation)** | Role assignment changes detected, indicating potential privilege escalation | Warning |
 | **[Azure Activity OTel] Security events** | Security-category events detected in the activity log | Warning |

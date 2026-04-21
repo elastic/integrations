@@ -1,8 +1,8 @@
 dashboards:
 - name: '[Azure Activity Logs OTel] Platform Health'
   id: azure_activity_otel-platform-health
-  description: 'Azure platform health signals: ServiceHealth incidents, ResourceHealth status, Policy compliance, and Advisor recommendations.
-    Monitor external reliability factors.'
+  description: 'Azure platform health signals: ServiceHealth incidents, ResourceHealth status, and Advisor recommendations. Monitor external
+    reliability factors.'
   time_range:
     from: now-7d
     to: now
@@ -44,7 +44,6 @@ dashboards:
         This dashboard monitors Azure platform health signals:
         - Service health incidents and maintenance events
         - Resource health status and state transitions
-        - Policy compliance vs violations
         - Active recommendations with impact and affected resources
         - Active alerts and monitoring signals
         - Detailed event logs for incident investigation
@@ -53,7 +52,7 @@ dashboards:
   - id: 8c4705cc-4b84-c3f1-de94-802b227ac7c6
     title: ''
     hide_title: true
-    size: {w: 8, h: 4}
+    size: {w: 11, h: 4}
     position: {x: 16, y: 2}
     esql:
       type: metric
@@ -73,8 +72,8 @@ dashboards:
   - id: 177665d4-eb40-6709-839a-ae2a5a4d50f2
     title: ''
     hide_title: true
-    size: {w: 8, h: 4}
-    position: {x: 24, y: 2}
+    size: {w: 11, h: 4}
+    position: {x: 27, y: 2}
     esql:
       type: metric
       query: |
@@ -90,31 +89,11 @@ dashboards:
           type: number
           decimals: 0
           compact: true
-  - id: 54067929-7aec-af02-db98-73e736390eed
-    title: ''
-    hide_title: true
-    size: {w: 8, h: 4}
-    position: {x: 32, y: 2}
-    esql:
-      type: metric
-      query: |
-        FROM logs-azure.activity.otel-*
-        | WHERE azure.category == "Policy"
-        | WHERE azure.policy.compliance_check == false
-        | STATS violations = COUNT(*)
-      time_field: '@timestamp'
-      primary:
-        field: violations
-        label: Policy Violations
-        format:
-          type: number
-          decimals: 0
-          compact: true
   - id: ad224525-35e1-053f-2fbd-09fbdde31172
     title: ''
     hide_title: true
-    size: {w: 8, h: 4}
-    position: {x: 40, y: 2}
+    size: {w: 10, h: 4}
+    position: {x: 38, y: 2}
     esql:
       type: metric
       query: |
@@ -195,7 +174,7 @@ dashboards:
         field: azure.servicehealth.incident.type
   - id: dc2b8102-a139-35f3-6d4c-f007fd28ec79
     title: ResourceHealth by State
-    size: {w: 16, h: 12}
+    size: {w: 24, h: 12}
     position: {x: 0, y: 22}
     esql:
       type: pie
@@ -232,8 +211,8 @@ dashboards:
           color: '#D6BF57'
   - id: 96d0e535-280d-7c9e-f62e-501cde590da9
     title: Top Impacted Services
-    size: {w: 16, h: 12}
-    position: {x: 16, y: 22}
+    size: {w: 24, h: 12}
+    position: {x: 24, y: 22}
     esql:
       type: pie
       query: |
@@ -255,36 +234,6 @@ dashboards:
         donut: medium
         values:
           format: percent
-  - id: 590fc952-67a9-85ef-5d51-b24544830aff
-    title: Policy Compliance vs Violations
-    size: {w: 16, h: 12}
-    position: {x: 32, y: 22}
-    esql:
-      type: pie
-      query: |
-        FROM logs-azure.activity.otel-*
-        | WHERE azure.category == "Policy"
-        | EVAL compliance = CASE(azure.policy.compliance_check == true, "Compliant", "NonCompliant")
-        | STATS count = COUNT(*) BY compliance
-        | SORT count DESC
-      time_field: '@timestamp'
-      legend:
-        visible: show
-      metrics:
-      - field: count
-      breakdowns:
-      - field: compliance
-        label: Compliance
-      appearance:
-        donut: medium
-        values:
-          format: percent
-      color:
-        assignments:
-        - value: Compliant
-          color: '#54B399'
-        - value: NonCompliant
-          color: '#BD271E'
   - id: 0e925cbb-bede-2581-c3d5-4b03d5ee9fc0
     title: Active Recommendations
     size: {w: 24, h: 12}
