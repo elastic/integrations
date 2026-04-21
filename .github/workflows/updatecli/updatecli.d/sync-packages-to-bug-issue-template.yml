@@ -33,8 +33,7 @@ targets:
 
         pkgs=$(mage listPackages | while IFS= read -r package_path; do
           title=$(yq .title "${package_path}/manifest.yml")
-          pkg=$(basename "${package_path}")
-          echo "- $title [$pkg]"
+          echo "- $title [$package_path]"
         done | LC_ALL=C sort -s -f | yq -o json .)
         
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_bug.yml'
