@@ -1,0 +1,63 @@
+{
+  "attributes": {
+    "name": "[Airflow OTel] Task success rate 99.5% rolling 30 days",
+    "description": "Tracks the proportion of task instances that complete successfully versus those that fail. Ensures 99.5% of completed tasks succeed over a rolling 30-day period. Task failures directly impact DAG run outcomes and downstream data pipelines.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"airflow.otel\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "airflow.ti_successes"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "airflow.ti_successes"
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "airflow.ti_failures"
+            }
+          ],
+          "equation": "A + B"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "airflow",
+      "otel"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-overview"
+        },
+        {
+          "id": "airflow_otel-tasks"
+        }
+      ]
+    }
+  },
+  "id": "airflow_otel-task-success-rate-99.5-Rolling30Days",
+  "type": "slo_template"
+}

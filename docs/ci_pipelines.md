@@ -95,7 +95,7 @@ More details about this CI pipeline:
 
 ## Publish packages
 
-**Note**: Just available for Employees at Elastic.
+**Note**: Available only to Elastic employees.
 
 For every Pull Request merged onto the `main` branch or any `backport-*` branches,
 this pipeline is triggered automatically https://buildkite.com/elastic/integrations-publish to publish new versions
@@ -113,7 +113,7 @@ These environment variables can be defined:
 
 ## Serverless Pipeline
 
-**Note**: Just available for Employees at Elastic.
+**Note**: Available only to Elastic employees.
 
 Pipeline in charge of testing all packages with an Elastic Serverless project (https://buildkite.com/elastic/integrations-serverless). 
 
@@ -144,7 +144,7 @@ This environment variable can be defined at:
 
 ## Daily job
 
-**Note**: Just available for Employees at Elastic.
+**Note**: Available only to Elastic employees.
 
 Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily/
 
@@ -195,7 +195,7 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 
 ## Weekly job
 
-**Note**: Just available for Employees at Elastic.
+**Note**: Available only to Elastic employees.
 
 Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly/
 
@@ -217,9 +217,9 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 
 ## Backport branches pipeline
 
-**Note**: Just available for Employees at Elastic.
+**Note**: Available only to Elastic employees.
 
-Releasing hotfixes from older versions of packages requires creating `backport-*` branches from specific commits in the `main` branch.
+Releasing hotfixes from earlier versions of packages requires creating `backport-*` branches from specific commits in the `main` branch.
 In order to help with this task of creating these branches, there exists a pipeline that just can be triggered
 from the UI: https://buildkite.com/elastic/integrations-backport/
 
