@@ -6,13 +6,10 @@ package citools
 
 import (
 	"fmt"
-	"slices"
 
 	"github.com/elastic/go-ucfg"
 	"github.com/elastic/go-ucfg/yaml"
 )
-
-var validTypes = []string{"integration", "input", "content"}
 
 // kibanaConditions defines conditions for Kibana (e.g. required version).
 type kibanaConditions struct {
@@ -40,10 +37,7 @@ type packageManifest struct {
 }
 
 func (m *packageManifest) IsValid() bool {
-	if m.FormatVersion == "" || m.Name == "" || m.Type == "" || m.Version == "" {
-		return false
-	}
-	return slices.Contains(validTypes, m.Type)
+	return m.FormatVersion != "" && m.Name != "" && m.Type != "" && m.Version != ""
 }
 
 func ReadPackageManifest(path string) (*packageManifest, error) {
