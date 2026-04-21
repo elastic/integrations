@@ -124,3 +124,11 @@ Amazon MQ for RabbitMQ offers a variety of broker and queue metrics to monitor s
 
 {{event "rabbitmq_metrics"}}
 {{fields "rabbitmq_metrics"}}
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.

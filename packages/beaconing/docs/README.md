@@ -7,7 +7,7 @@ This package leverages event logs on Linux, macOS, and Windows. Prior to using t
 
 **Note**: This package filters out data from cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
-For more detailed information refer to the following blog:
+The following blog provides additional context. For the most current installation instructions, always follow the steps in this guide.
 - [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
 
 ## Installation
@@ -32,9 +32,9 @@ For more detailed information refer to the following blog:
 
 To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
 
-| Transform name            | Purpose                                      | Source index | Destination index       | Alias            | Supported Platforms   |
-|---------------------------|----------------------------------------------|--------------|-------------------------|------------------|-----------------------|
-| beaconing.pivot_transform | Flags beaconing activity in your environment | logs-*       | ml_beaconing-[version]  | ml_beaconing.all | Linux, macOS, Windows |
+| Transform name            | Purpose                                      | Source index | Destination index      | Alias            | Supported Platform    | Event Category |
+|---------------------------|----------------------------------------------|--------------|------------------------|------------------|-----------------------|----------------|
+| beaconing.pivot_transform | Flags beaconing activity in your environment | logs-*       | ml_beaconing-[version] | ml_beaconing.all | Linux, macOS, Windows | network        |
 
 When querying the destination index to enquire about beaconing activities, we advise using the alias for the destination index (`ml_beaconing.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings.
 

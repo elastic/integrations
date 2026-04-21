@@ -44,6 +44,21 @@ redact:
     - session_token
 program: |
   (
+    // Credential validation: access_key_id and secret_access_key are required
+    // for hand-rolled SigV4 signing. Role ARN, IAM instance profiles, and
+    // other SDK-based credential methods are not supported.
+    state.?secret_key.orValue("") == "" || state.?access_key.orValue("") == "" ?
+      {
+        "events": {
+          "error": {
+            "code": "configuration_error",
+            "id": "missing_credentials",
+            "message": "AWS Config requires access_key_id and secret_access_key. Role ARN, IAM instance profiles, and other credential methods are not supported for this data stream.",
+          },
+        },
+        "want_more": false,
+      }
+    :
     // Stage 1: Check if we have existing config rules to process
     // If we have worklist with ConfigRules, we already fetched rules and now need to get compliance details
     has(state.?worklist.ConfigRules) && size(state.worklist.ConfigRules) > 0 ?

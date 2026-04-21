@@ -205,6 +205,38 @@ processors:
         - append:
             tag: append_error_message_29c72742
             field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.IsExternalThread
+      tag: convert_IsExternalThread_to_boolean
+      target_field: m365_defender.event.is_external_thread
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_37565413
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.IsOwnedThread
+      tag: convert_IsOwnedThread_to_boolean
+      target_field: m365_defender.event.is_owned_thread
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_14694887
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      tag: dissect_json_properties_SenderEmailAddress_70aca97e
+      field: json.properties.SenderEmailAddress
+      ignore_missing: true
+      pattern: '%{user.name}@%{user.domain}'
+      on_failure:
+        - append:
+            tag: append_error_message_63e6cf2c
+            field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Rename Processors
@@ -418,6 +450,86 @@ processors:
       target_field: m365_defender.event.workload
       tag: rename_workload
       ignore_missing: true
+  - rename:
+      field: json.properties.GroupId
+      tag: rename_GroupId
+      target_field: m365_defender.event.group_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.GroupName
+      tag: rename_GroupName
+      target_field: m365_defender.event.group_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.LastEditedTime
+      tag: rename_LastEditedTime
+      target_field: m365_defender.event.last_edited_time
+      ignore_missing: true
+  - rename:
+      field: json.properties.MessageFormatSubtype
+      tag: rename_MessageFormatSubtype
+      target_field: m365_defender.event.message_format_subtype
+      ignore_missing: true
+  - rename:
+      field: json.properties.MessageFormatType
+      tag: rename_MessageFormatType
+      target_field: m365_defender.event.message_format_type
+      ignore_missing: true
+  - rename:
+      field: json.properties.MessageId
+      tag: rename_MessageId
+      target_field: m365_defender.event.message_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.MessageSubject
+      tag: rename_MessageSubject
+      target_field: m365_defender.event.message_subject
+      ignore_missing: true
+  - rename:
+      field: json.properties.MessageVersion
+      tag: rename_MessageVersion
+      target_field: m365_defender.event.message_version
+      ignore_missing: true
+  - rename:
+      field: json.properties.ParentMessageId
+      tag: rename_ParentMessageId
+      target_field: m365_defender.event.parent_message_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.SenderType
+      tag: rename_SenderType
+      target_field: m365_defender.event.sender_type
+      ignore_missing: true
+  - rename:
+      field: json.properties.TeamsMessageId
+      tag: rename_TeamsMessageId
+      target_field: m365_defender.event.teams_message_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ThreadId
+      tag: rename_ThreadId
+      target_field: m365_defender.event.thread_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ThreadSubtype
+      tag: rename_ThreadSubtype
+      target_field: m365_defender.event.thread_subtype
+      ignore_missing: true
+  - rename:
+      field: json.properties.SenderEmailAddress
+      tag: rename_SenderEmailAddress
+      target_field: m365_defender.event.sender_email_address
+      ignore_missing: true
+  - rename:
+      field: json.properties.LatestDeliveryLocation
+      tag: rename_LatestDeliveryLocation
+      target_field: m365_defender.event.latest_delivery_location
+      ignore_missing: true
+  - rename:
+      field: json.properties.SafetyTip
+      tag: rename_SafetyTip
+      target_field: m365_defender.event.safety_tip
+      ignore_missing: true
 
   # File mappings
   - set:
@@ -491,6 +603,22 @@ processors:
       copy_from: m365_defender.event.internet_message_id
       tag: set_email_local_id
       ignore_empty_value: true
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_from_event_message_id
+      copy_from: m365_defender.event.message_id
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_event_message_subject
+      copy_from: m365_defender.event.message_subject
+      ignore_empty_value: true
+  - append:
+      field: email.from.address
+      tag: append_m365_defender_event_sender_email_address_into_email_from_address
+      value: '{{{m365_defender.event.sender_email_address}}}'
+      allow_duplicates: false
+      if: ctx.m365_defender?.event?.sender_email_address != null
 
   # Source mappings
   - append:
@@ -524,6 +652,23 @@ processors:
           field: url.original
           copy_from: m365_defender.event.url
           ignore_empty_value: true
+
+  # User mapping
+  - set:
+      field: user.group.name
+      tag: set_user_group_name_from_event_group_name
+      copy_from: m365_defender.event.group_name
+      ignore_empty_value: true
+  - set:
+      field: user.group.id
+      tag: set_user_group_id_from_event_group_id
+      copy_from: m365_defender.event.group_id
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_event_sender_email_address
+      copy_from: m365_defender.event.sender_email_address
+      ignore_empty_value: true
 
   # Related mappings
   - append:
@@ -580,6 +725,12 @@ processors:
       tag: append_related_hosts_b757a958
       if: ctx.m365_defender?.event?.url_domain != null
       allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_sender_email_address_into_related_user
+      value: '{{{m365_defender.event.sender_email_address}}}'
+      allow_duplicates: false
+      if: ctx.m365_defender?.event?.sender_email_address != null
 
   # Duplicate Custom fields are disabled by default and will therefore remove these fields.
   # Can be enabled in the UI when configuring the integration.
@@ -601,6 +752,11 @@ processors:
         - m365_defender.event.sender.ipv6
         - m365_defender.event.ip_address
         - m365_defender.event.action.type
+        - m365_defender.event.group_id
+        - m365_defender.event.group_name
+        - m365_defender.event.message_id
+        - m365_defender.event.message_subject
+        - m365_defender.event.sender_email_address
       ignore_missing: true
 on_failure:
   - append:

@@ -1,0 +1,39 @@
+{
+    "id": "mysql_otel-high-row-lock-contention",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[MySQL OTel] High row lock contention",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "mysql"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-mysqlreceiver.otel-*\n// Row lock waits are a monotonic counter; use INCREASE for delta over the time window\n| WHERE metrics.mysql.row_locks IS NOT NULL\n    AND attributes.kind == \"waits\"\n| STATS increase = SUM(INCREASE(metrics.mysql.row_locks))\n  BY resource.attributes.mysql.instance.endpoint\n// Alert when more than 100 lock waits in the window; tune based on workload\n| WHERE increase > 100\n| SORT increase DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.mysql.instance.endpoint",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

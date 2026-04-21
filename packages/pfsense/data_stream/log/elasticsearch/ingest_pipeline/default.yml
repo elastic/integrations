@@ -87,7 +87,7 @@ processors:
   - pipeline:
       tag: pipeline_ad56bbca
       name: '{{ IngestPipeline "dhcp" }}'
-      if: '["dhcpd", "dhclient", "dhcp6c"].contains(ctx.event.provider)'
+      if: '["dhcpd", "dhclient", "dhcp6c", "dnsmasq-dhcp"].contains(ctx.event.provider)'
   - pipeline:
       tag: pipeline_dd85553d
       name: '{{ IngestPipeline "unbound" }}'
@@ -110,7 +110,7 @@ processors:
       if: ctx.event.provider == 'snort'
   - drop:
       tag: drop_9d7c46f8
-      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort"].contains(ctx.event?.provider)'
+      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dnsmasq-dhcp", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort"].contains(ctx.event?.provider)'
   - append:
       tag: append_event_category_4780a983
       field: event.category

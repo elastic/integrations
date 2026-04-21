@@ -1,0 +1,24 @@
+input: aws-s3
+vars:
+  collect_s3_logs: true
+  bucket_arn: arn:aws:s3:::cloudflare-logpush-test
+  access_key_id: AKIAIOSFODNN7EXAMPLE
+  secret_access_key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  session_token: FwoGZXIvYXdJIG5Vq7QFbJr...
+data_stream:
+  vars:
+    bucket_list_prefix: spectrum_event
+    interval: 2m
+    number_of_workers: 5
+    ignore_older: 48h
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+    processors: |
+      - decode_json_fields:
+          fields: ["message"]
+          process_array: true
+          max_depth: 10
+          target: ""
+          overwrite_keys: true
+    tags: 
+      - forwarded
