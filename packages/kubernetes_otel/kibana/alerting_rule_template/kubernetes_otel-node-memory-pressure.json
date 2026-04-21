@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-node-memory-pressure",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when any Kubernetes node reports the MemoryPressure condition. This is a warning signal that the node is running low on memory and may begin evicting pods.",
+        "name": "[K8s OTel] Node memory pressure",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Node Memory Pressure\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard filtered to the affected node to see memory usage trends.\n3. Navigate to Pod & Container Detail filtered by node name to find the top memory consumers.\n4. Check for pods without memory limits or with very high limits.\n5. Run `kubectl top pods --sort-by=memory -A` to see current memory consumption.\n\n### Common Causes\n- Memory-intensive workloads without proper limits\n- Memory leaks in application containers\n- Too many pods scheduled on the node\n- Insufficient node memory capacity for the workload mix\n\n### Escalation\nIf memory pressure persists, the node will begin evicting pods. Consider cordoning the node and migrating workloads."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_memory_pressure IS NOT NULL\n| STATS any_pressure = MAX(k8s.node.condition_memory_pressure)\n    BY k8s.node.name\n// Alert when memory pressure is active (1 = pressure detected)\n| WHERE any_pressure == 1\n| EVAL status = \"MemoryPressure\""
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "top",
+            "termField": "k8s.node.name",
+            "termSize": 20
+        }
+    }
+}
