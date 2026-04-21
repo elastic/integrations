@@ -68,7 +68,7 @@
                         "params": {
                             "fontSize": 12,
                             "openLinksInNewTab": false,
-                            "markdown": "## [Azure Activity Logs OTel] Administrative Operations\n\nThis dashboard monitors Azure Resource Manager administrative operations:\n- Administrative event volume and failure rates\n- Operation duration and ARM latency (p95)\n- Mutation vs read operation patterns\n- Top failed operations and error details\n- Top actors by individual identity and failure count\n- Recent failed operations drill-down\n"
+                            "markdown": "## [Azure Activity Logs OTel] Administrative Operations\n\nThis dashboard monitors Azure Resource Manager administrative operations:\n- Administrative event volume and failure rates\n- Operation duration and ARM latency (p95)\n- Mutation vs read operation patterns\n- Top failed operations and error details\n- Top callers by individual identity and failure count\n- Recent failed operations drill-down\n"
                         },
                         "uiState": {},
                         "data": {
@@ -1196,7 +1196,7 @@
                         }
                     },
                     "attributes": {
-                        "title": "Top Actors by Operation Count",
+                        "title": "Top Callers by Operation Count",
                         "visualizationType": "lnsDatatable",
                         "type": "lens",
                         "references": [],
@@ -1204,12 +1204,12 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "26570f22-74a8-5ac8-1a40-058fbee7c6dc",
+                                        "columnId": "90560102-7107-7174-2dea-a57a3a44c079",
                                         "isTransposed": false,
                                         "isMetric": false
                                     },
                                     {
-                                        "columnId": "9f6509b2-978b-e75c-b273-e27618f6b110",
+                                        "columnId": "9d9b6eec-40a3-ab12-a860-0368e4868ba8",
                                         "isTransposed": false,
                                         "isMetric": false
                                     },
@@ -1224,7 +1224,7 @@
                                         "isMetric": false
                                     }
                                 ],
-                                "layerId": "84610bac-793d-652b-6b71-7e25f84eda91",
+                                "layerId": "d9cc7c77-a599-aa3e-4e04-df8dbfc8cd3a",
                                 "layerType": "data",
                                 "paging": {
                                     "size": 10,
@@ -1232,27 +1232,27 @@
                                 }
                             },
                             "query": {
-                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL actor = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY actor, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY caller, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "84610bac-793d-652b-6b71-7e25f84eda91": {
+                                        "d9cc7c77-a599-aa3e-4e04-df8dbfc8cd3a": {
                                             "query": {
-                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL actor = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY actor, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Administrative\"\n| WHERE azure.correlation_id IS NOT NULL\n| EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN (\"Failure\", \"Failed\") BY caller, azure.identity.authorization.evidence.principal.type\n| SORT op_count DESC\n| LIMIT 20\n"
                                             },
                                             "columns": [
                                                 {
-                                                    "fieldName": "actor",
-                                                    "columnId": "26570f22-74a8-5ac8-1a40-058fbee7c6dc",
-                                                    "label": "Actor",
+                                                    "fieldName": "caller",
+                                                    "columnId": "90560102-7107-7174-2dea-a57a3a44c079",
+                                                    "label": "Caller",
                                                     "customLabel": true
                                                 },
                                                 {
                                                     "fieldName": "azure.identity.authorization.evidence.principal.type",
-                                                    "columnId": "9f6509b2-978b-e75c-b273-e27618f6b110",
-                                                    "label": "Type",
+                                                    "columnId": "9d9b6eec-40a3-ab12-a860-0368e4868ba8",
+                                                    "label": "Principal Type",
                                                     "customLabel": true
                                                 },
                                                 {
@@ -1270,15 +1270,15 @@
                                             ],
                                             "allColumns": [
                                                 {
-                                                    "fieldName": "actor",
-                                                    "columnId": "26570f22-74a8-5ac8-1a40-058fbee7c6dc",
-                                                    "label": "Actor",
+                                                    "fieldName": "caller",
+                                                    "columnId": "90560102-7107-7174-2dea-a57a3a44c079",
+                                                    "label": "Caller",
                                                     "customLabel": true
                                                 },
                                                 {
                                                     "fieldName": "azure.identity.authorization.evidence.principal.type",
-                                                    "columnId": "9f6509b2-978b-e75c-b273-e27618f6b110",
-                                                    "label": "Type",
+                                                    "columnId": "9d9b6eec-40a3-ab12-a860-0368e4868ba8",
+                                                    "label": "Principal Type",
                                                     "customLabel": true
                                                 },
                                                 {
@@ -1620,7 +1620,29 @@
         },
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "azure.activity.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.activity.otel"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "query": "",
                     "language": "kuery"

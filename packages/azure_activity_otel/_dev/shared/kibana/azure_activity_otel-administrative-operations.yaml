@@ -12,6 +12,9 @@ dashboards:
       colors: false
   query:
     kql: ''
+  filters:
+    - field: data_stream.dataset
+      equals: "azure.activity.otel"
   panels:
   - id: 91144e9b-fac7-b44d-0b1d-8339201b83cb
     title: ''
@@ -43,7 +46,7 @@ dashboards:
         - Operation duration and ARM latency (p95)
         - Mutation vs read operation patterns
         - Top failed operations and error details
-        - Top actors by individual identity and failure count
+        - Top callers by individual identity and failure count
         - Recent failed operations drill-down
       font_size: 12
       links_in_new_tab: false
@@ -246,7 +249,7 @@ dashboards:
         values:
           format: percent
   - id: fbffa433-332e-35bd-db11-8555b50ec401
-    title: Top Actors by Operation Count
+    title: Top Callers by Operation Count
     size: {w: 24, h: 12}
     position: {x: 0, y: 34}
     esql:
@@ -255,16 +258,16 @@ dashboards:
         FROM logs-azure.activity.otel-*
         | WHERE azure.category == "Administrative"
         | WHERE azure.correlation_id IS NOT NULL
-        | EVAL actor = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, "unknown")
-        | STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN ("Failure", "Failed") BY actor, azure.identity.authorization.evidence.principal.type
+        | EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, "unknown")
+        | STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN ("Failure", "Failed") BY caller, azure.identity.authorization.evidence.principal.type
         | SORT op_count DESC
         | LIMIT 20
       time_field: '@timestamp'
       breakdowns:
-      - field: actor
-        label: Actor
+      - field: caller
+        label: Caller
       - field: azure.identity.authorization.evidence.principal.type
-        label: Type
+        label: Principal Type
       - field: op_count
         label: Operations
       - field: failures

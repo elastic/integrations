@@ -2009,7 +2009,7 @@
                         }
                     },
                     "attributes": {
-                        "title": "Top Callers by Identity",
+                        "title": "Top Callers by Operation Count",
                         "visualizationType": "lnsDatatable",
                         "type": "lens",
                         "references": [],
@@ -2624,7 +2624,29 @@
         },
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "azure.activity.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.activity.otel"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "query": "",
                     "language": "kuery"
