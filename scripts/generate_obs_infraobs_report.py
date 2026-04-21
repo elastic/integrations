@@ -216,11 +216,15 @@ def render_markdown(rows: list[dict]) -> str:
 
 def render_text_table(rows: list[dict]) -> str:
     """Render a simple fixed-width ASCII table for terminal output."""
+    def _col_width(header: str, key: str) -> int:
+        values = [len(r[key]) for r in rows]
+        return max([len(header)] + values) if values else len(header)
+
     col_widths = {
-        "package": max(len("Package"), max((len(r["package"]) for r in rows), default=0)),
-        "data_stream": max(len("Data Stream"), max((len(r["data_stream"]) for r in rows), default=0)),
-        "input_type": max(len("Input Type"), max((len(r["input_type"]) for r in rows), default=0)),
-        "evidence": max(len("Evidence"), max((len(r["evidence"]) for r in rows), default=0)),
+        "package": _col_width("Package", "package"),
+        "data_stream": _col_width("Data Stream", "data_stream"),
+        "input_type": _col_width("Input Type", "input_type"),
+        "evidence": _col_width("Evidence", "evidence"),
     }
 
     def row_str(pkg, ds, inp, ev):
