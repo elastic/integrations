@@ -157,8 +157,8 @@ program: |-
               "last_created": state.cursor.last_created,
             },
           ]
-        : (has(state.cursor) && state.end_point_type == "/rest/orgs/") ?
-          // ... a multi-org cursor, ...
+        : (has(state.cursor) && state.end_point_type in ["/rest/orgs/", "/rest/groups/"]) ?
+          // ... an id-keyed cursor, ...
           state.cursor.map(audit_id, state.cursor[audit_id].with({"id": audit_id}))
         :
           // ... or a new collection.
