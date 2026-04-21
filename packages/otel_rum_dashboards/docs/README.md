@@ -31,7 +31,7 @@ This package will show metrics only if you are monitoring web applications with 
 
 If you do not see data in the dashboard make sure that:
 
-- Elastic search has recevied the documents from Opentelemetry JS SDK. You can search for the in discover with the filter `telemetry.sdk.language : "webjs"`
+- Elastic search has recevied the documents from Opentelemetry JS SDK. You can search for them in discover with the filter `telemetry.sdk.language : "webjs"`
 - You can run more detailed searches to ensure the data is available for specific sections of the dashboard:
   - use the filter `scope.name : "@opentelemetry/instrumentation-document-load"` to check if the data for page load metrics is present.
   - use the filter `scope.name : "@opentelemetry/instrumentation-web-exception"` to check if the data for error metrics is present.
