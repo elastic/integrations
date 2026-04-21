@@ -1,0 +1,47 @@
+{
+    "id": "kubernetes_otel-container-cpu-throttling",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes":
+        {
+            "description": "Alerts when containers are using more than 90% of their CPU limit. Throttled containers experience increased latency without triggering crashes or OOMKills, making them hard to detect without explicit monitoring.",
+            "name": "[K8s OTel] Container CPU throttling",
+            "ruleTypeId": ".es-query",
+            "tags": [
+                "Kubernetes"
+            ],
+            "schedule": {
+                "interval": "5m"
+            },
+            "alertDelay": {
+                "active": 3
+            },
+            "flapping": {
+                "enabled": true,
+                "lookBackWindow": 10,
+                "statusChangeThreshold": 4
+            },
+            "artifacts": {
+                "investigation_guide": {
+                    "blob": "## Container CPU Throttling\n\n### Triage Steps\n1. Identify the affected container(s) from the alert results.\n2. Open the Pod & Container Detail dashboard to see CPU usage vs limits over time.\n3. Determine if CPU usage is sustained (undersized limit) or spiking (bursty workload).\n4. Check current CPU usage: `kubectl top pods -n <namespace> --containers`.\n5. Review the container's CPU limit — is it set appropriately for the workload?\n\n### Common Causes\n- CPU limit too low for actual workload requirements\n- Bursty workloads that periodically exceed their limit\n- Increased traffic or processing load\n- Inefficient code or unoptimised queries\n\n### Tuning\n- The default threshold is 90% of the CPU limit.\n- Lower to 80% for early warning; raise to 95% to reduce noise.\n- Exclude known CPU-intensive containers that run close to their limits by design.\n\n### Escalation\nThrottled containers cause latency degradation without visible errors. Increase CPU limits or optimise the workload."
+                }
+            },
+            "params": {
+                "searchType": "esqlQuery",
+                "esqlQuery": {
+                    "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.container.cpu_limit_utilization IS NOT NULL\n| STATS\n    avg_util = AVG(k8s.container.cpu_limit_utilization)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.name\n// Alert when average CPU usage exceeds 90% of the container's limit.\n// Adjust the 0.9 threshold to tune sensitivity:\n//   0.80 = early warning (more alerts)\n//   0.95 = heavy throttling (fewer alerts)\n| WHERE avg_util > 0.9\n| EVAL util_pct = ROUND(avg_util * 100, 1)\n| SORT util_pct DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, k8s.node.name, util_pct\n| LIMIT 50"
+                },
+                "size": 0,
+                "threshold": [
+                    0
+                ],
+                "thresholdComparator": ">",
+                "timeField": "@timestamp",
+                "timeWindowSize": 15,
+                "timeWindowUnit": "m",
+                "groupBy": "top",
+                "termField": "k8s.pod.name",
+                "termSize": 50
+            }
+        }
+    }
