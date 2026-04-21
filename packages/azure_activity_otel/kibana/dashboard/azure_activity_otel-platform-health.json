@@ -1377,7 +1377,7 @@
                                         "isMetric": false
                                     }
                                 ],
-                                "layerId": "675a5215-7814-a31a-c85c-6da54995009a",
+                                "layerId": "bd5137af-3c6a-6494-e1c4-645358340b31",
                                 "layerType": "data",
                                 "paging": {
                                     "size": 10,
@@ -1385,15 +1385,15 @@
                                 }
                             },
                             "query": {
-                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.name IS NOT NULL\n| STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact\n| SORT azure.recommendation.impact ASC, affected_resources DESC\n| LIMIT 50\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.name IS NOT NULL\n| STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact\n| EVAL impact_rank = CASE(azure.recommendation.impact == \"High\", 1, azure.recommendation.impact == \"Medium\", 2, azure.recommendation.impact == \"Low\", 3, 4)\n| SORT impact_rank ASC, affected_resources DESC\n| DROP impact_rank\n| LIMIT 50\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "675a5215-7814-a31a-c85c-6da54995009a": {
+                                        "bd5137af-3c6a-6494-e1c4-645358340b31": {
                                             "query": {
-                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.name IS NOT NULL\n| STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact\n| SORT azure.recommendation.impact ASC, affected_resources DESC\n| LIMIT 50\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category == \"Recommendation\"\n| WHERE azure.recommendation.name IS NOT NULL\n| STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact\n| EVAL impact_rank = CASE(azure.recommendation.impact == \"High\", 1, azure.recommendation.impact == \"Medium\", 2, azure.recommendation.impact == \"Low\", 3, 4)\n| SORT impact_rank ASC, affected_resources DESC\n| DROP impact_rank\n| LIMIT 50\n"
                                             },
                                             "columns": [
                                                 {

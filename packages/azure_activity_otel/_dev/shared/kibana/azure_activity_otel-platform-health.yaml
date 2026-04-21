@@ -296,7 +296,9 @@ dashboards:
         | WHERE azure.category == "Recommendation"
         | WHERE azure.recommendation.name IS NOT NULL
         | STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact
-        | SORT azure.recommendation.impact ASC, affected_resources DESC
+        | EVAL impact_rank = CASE(azure.recommendation.impact == "High", 1, azure.recommendation.impact == "Medium", 2, azure.recommendation.impact == "Low", 3, 4)
+        | SORT impact_rank ASC, affected_resources DESC
+        | DROP impact_rank
         | LIMIT 50
       time_field: '@timestamp'
       breakdowns:
