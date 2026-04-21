@@ -6,7 +6,7 @@ This content pack provides dashboards, alert rules, and SLO templates for Azure 
 
 ## Compatibility
 
-The Azure Activity Logs OpenTelemetry assets work with Azure Activity Log data forwarded through the EDOT Cloud Forwarder (ECF) for Azure using the `azureactivitylogs` encoding extension.
+The Azure Activity Logs OpenTelemetry assets work with Azure Activity Log data forwarded through the [EDOT Cloud Forwarder (ECF) for Azure](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/azure) using the `azureactivitylogs` encoding extension.
 
 ## Requirements
 
