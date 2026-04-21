@@ -31,11 +31,13 @@ targets:
         #!/usr/bin/env bash
         set -eu
 
-        pkgs=$(for i in $(LC_ALL=C ls packages); do
-          title=$(yq .title packages/$i/manifest.yml)
-          pkg=$i
+        # NOTE: `mage listPackages` could be used here for more accurate package discovery,
+        # but it is avoided to not introduce Go/mage as dependencies in this workflow.
+        pkgs=$(find packages -mindepth 2 -maxdepth 3 -name "manifest.yml" | while IFS= read -r manifest; do
+          title=$(yq .title "$manifest")
+          pkg=$(yq .name "$manifest")
           echo "- $title [$pkg]"
-        done | sort -s -f | yq -o json .)
+        done | LC_ALL=C sort -s -f | yq -o json .)
         
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_bug.yml'
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_feature_request.yml'
