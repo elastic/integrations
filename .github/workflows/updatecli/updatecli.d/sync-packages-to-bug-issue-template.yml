@@ -29,9 +29,11 @@ targets:
       # if any changes occurred.
       command: |
         #!/usr/bin/env bash
-        set -euo pipefail
+        set -eu
 
-        pkgs=$(mage listPackages | while IFS= read -r package_path; do
+        package_paths=$(mage listPackages)
+
+        pkgs=$(echo "$package_paths" | while IFS= read -r package_path; do
           title=$(yq .title "${package_path}/manifest.yml")
           pkg=$(basename "${package_path}")
           echo "- $title [$pkg]"
