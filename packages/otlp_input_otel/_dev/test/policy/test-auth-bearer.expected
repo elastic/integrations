@@ -1,4 +1,5 @@
 connectors:
+    elasticapm/componentid-0: {}
     forward: {}
 exporters:
     elasticsearch/componentid-0:
@@ -8,7 +9,7 @@ extensions:
     bearertokenauth/componentid-0:
         header: Authorization
         scheme: Bearer
-        token: my-secret-token
+        token: ${SECRET_0}
 inputs: []
 output_permissions:
     default:
@@ -35,6 +36,7 @@ output_permissions:
                     - auto_configure
                     - create_doc
 processors:
+    elasticapm/componentid-0: {}
     resourcedetection/componentid-0:
         detectors:
             - system
@@ -43,23 +45,29 @@ processors:
             - context: log
               statements:
                 - set(attributes["data_stream.type"], "logs")
-                - set(attributes["data_stream.dataset"], "otlpreceiver")
+                - set(attributes["data_stream.dataset"], "generic")
                 - set(attributes["data_stream.namespace"], "ep")
         metric_statements:
             - context: datapoint
               statements:
                 - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "otlpreceiver")
+                - set(attributes["data_stream.dataset"], "generic")
                 - set(attributes["data_stream.namespace"], "ep")
         trace_statements:
             - context: span
               statements:
                 - set(attributes["data_stream.type"], "traces")
-                - set(attributes["data_stream.dataset"], "otlpreceiver")
+                - set(attributes["data_stream.dataset"], "generic")
                 - set(attributes["data_stream.namespace"], "ep")
             - context: spanevent
               statements:
                 - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "generic")
+                - set(attributes["data_stream.namespace"], "ep")
+    transform/componentid-2:
+        metric_statements:
+            - context: datapoint
+              statements:
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     otlp/componentid-0:
@@ -72,7 +80,8 @@ receivers:
                 auth:
                     authenticator: bearertokenauth
                 endpoint: localhost:4318
-secret_references: []
+secret_references:
+    - {}
 service:
     extensions:
         - bearertokenauth
@@ -82,7 +91,7 @@ service:
                 - elasticsearch/componentid-0
             receivers:
                 - forward
-        logs/componentid-0:
+        logs/componentid-1:
             exporters:
                 - forward
             processors:
@@ -95,7 +104,7 @@ service:
                 - elasticsearch/componentid-0
             receivers:
                 - forward
-        metrics/componentid-1:
+        metrics/componentid-2:
             exporters:
                 - forward
             processors:
@@ -103,16 +112,25 @@ service:
                 - transform/componentid-1
             receivers:
                 - otlp/componentid-0
+        metrics/componentid-3:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-2
+            receivers:
+                - elasticapm/componentid-0
         traces:
             exporters:
                 - elasticsearch/componentid-0
             receivers:
                 - forward
-        traces/componentid-2:
+        traces/componentid-0:
             exporters:
+                - elasticapm/componentid-0
                 - forward
             processors:
                 - resourcedetection/componentid-0
+                - elasticapm/componentid-0
                 - transform/componentid-1
             receivers:
                 - otlp/componentid-0

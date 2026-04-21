@@ -65,14 +65,13 @@ policy_templates:
         description: Enable acceptance of trace data via OTLP.
         default: true
         show_user: true
-      # - name: enable_profiles
-      # type: bool
-      # required: false
-      # title: Accept Profiles
-      # description: Enable acceptance of profiling data via OTLP.
-      # TODO: Change to true once profiles are generally available
-      # default: false
-      # show_user: false
+      - name: enable_profiles
+        type: bool
+        required: false
+        title: Accept Profiles
+        description: Enable acceptance of profiling data via OTLP.
+        default: true
+        show_user: false
       # Authentication (per OpenTelemetry configauth: basicauthextension, bearertokenauthextension, oidcauthextension)
       - name: enable_basic_auth
         type: bool
@@ -107,16 +106,14 @@ policy_templates:
         required: false
         title: Bearer Token
         description: The bearer token to validate against incoming requests. Required when Bearer Token auth is enabled.
-        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
-        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
-        secret: false
+        secret: true
         show_user: true
       - name: bearer_token_filename
         type: text
         required: false
         title: Bearer Token File
         description: Path to file containing bearer token(s). Alternative to bearer_token.
-        secret: false
+        secret: true
         show_user: false
       - name: bearer_token_header
         type: text
@@ -198,6 +195,13 @@ policy_templates:
         title: TLS CA File
         description: Path to the TLS CA certificate file for client verification (mTLS).
         show_user: false
+      - name: data_stream.dataset
+        type: text
+        required: false
+        title: Data Stream Dataset
+        description: Dataset to use for the data stream.
+        show_user: false
+        default: generic
 owner:
   github: elastic/ecosystem
   type: elastic
