@@ -1,0 +1,52 @@
+config_version: 2
+interval: 1s
+resource.url: "https://epr.elastic.co"
+state:
+  mode: "{{mode}}"
+  events_per_second: {{events_per_second}}
+  spike_events: {{spike_events}}
+  spike_every_seconds: {{spike_every_seconds}}
+  max_events_per_second: 200
+  cursor:
+    counter: 0
+    interval_count: 0
+program: |
+  // Clamp configured values to max_events_per_second.
+  (int(state.events_per_second) > int(state.max_events_per_second) ?
+    int(state.max_events_per_second) : int(state.events_per_second)
+  ).as(clamped_events,
+  (int(state.spike_events) > int(state.max_events_per_second) ?
+    int(state.max_events_per_second) : int(state.spike_events)
+  ).as(clamped_spike,
+  state.with(
+    (has(state.batch_remaining) && state.batch_remaining > 0).as(is_continuation,
+      int(is_continuation ?
+        state.batch_remaining
+      :
+        (state.mode == "spike" && int(state.spike_every_seconds) > 0 && int(state.cursor.interval_count) % int(state.spike_every_seconds) == 0 ?
+          clamped_spike
+        :
+          clamped_events
+        )
+      ).as(remaining, {
+        "events": remaining > 0 ?
+          [{"counter": {"value": int(state.cursor.counter)}}]
+        :
+          [],
+        "cursor": {
+          "counter": remaining > 0 ?
+            int(state.cursor.counter) + 1
+          :
+            int(state.cursor.counter),
+          "interval_count": !is_continuation ?
+            int(state.cursor.interval_count) + 1
+          :
+            int(state.cursor.interval_count)
+        },
+        "batch_remaining": remaining > 0 ? remaining - 1 : 0,
+        "want_more": remaining > 1
+      })
+    )
+  )))
+tags:
+  - agentless-hello-world
