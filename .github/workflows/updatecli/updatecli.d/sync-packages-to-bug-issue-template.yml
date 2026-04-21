@@ -35,7 +35,8 @@ targets:
         # but it is avoided to not introduce Go/mage as dependencies in this workflow.
         pkgs=$(find packages -mindepth 2 -maxdepth 3 -name "manifest.yml" | while IFS= read -r manifest; do
           title=$(yq .title "$manifest")
-          pkg=$(yq .name "$manifest")
+          folder=$(dirname "$manifest")
+          pkg=$(basename "$folder")
           echo "- $title [$pkg]"
         done | LC_ALL=C sort -s -f | yq -o json .)
         
