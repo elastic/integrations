@@ -362,6 +362,8 @@ dashboards:
         label: State
       - field: azure.servicehealth.service
         label: Service
+      - field: azure.servicehealth.region
+        label: Region
       paging:
         enabled: true
         page_size: 10
@@ -374,7 +376,7 @@ dashboards:
       query: |
         FROM logs-azure.activity.otel-*
         | WHERE azure.category == "ResourceHealth"
-        | KEEP @timestamp, azure.resourcehealth.state, azure.resourcehealth.previous_state, azure.resourcehealth.title, azure.resourcehealth.type, azure.resourcehealth.cause, cloud.resource_id
+        | KEEP @timestamp, azure.resourcehealth.state, azure.resourcehealth.previous_state, azure.resourcehealth.title, azure.resourcehealth.cause, cloud.resource_id
         | SORT @timestamp DESC
         | LIMIT 50
       time_field: '@timestamp'
@@ -389,6 +391,8 @@ dashboards:
         label: Title
       - field: azure.resourcehealth.cause
         label: Cause
+      - field: cloud.resource_id
+        label: Resource
       paging:
         enabled: true
         page_size: 10
