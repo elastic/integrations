@@ -1,0 +1,76 @@
+{
+    "attributes": {
+        "created_at": "2026-03-30T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Amcache Driver Enriched: Full driver forensics view joining driver binaries with PnP device history from the Windows Amcache.hve registry hive. Combines InventoryDriverBinary with InventoryDevicePnp via service name to show which physical devices use each driver. Results sorted with unsigned and kernel-mode drivers first for rapid forensic triage. Useful for detecting rootkits, BYOVD attacks, and correlating driver installations with device connections.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["driver"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.amcache_driver_enriched"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "driver_name"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "driver_company"
+                }
+            },
+            {
+                "key": "file.code_signature.signed",
+                "value": {
+                    "field": "is_signed"
+                }
+            },
+            {
+                "key": "package.name",
+                "value": {
+                    "field": "product"
+                }
+            },
+            {
+                "key": "package.version",
+                "value": {
+                    "field": "product_version"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "amcache", "forensics", "driver_analysis", "device_inventory", "combined", "windows"]
+                }
+            }
+        ],
+        "id": "amcache_driver_enriched_windows_elastic",
+        "interval": "7200",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Amcache Driver Enriched: Driver binaries + PnP device history\n-- Source: elastic_amcache_driver_binary + elastic_amcache_device_pnp\n-- Join: service name (runtime binding between driver and device)\n-- Forensic value: Which physical devices use each driver binary\n-- Note: device columns prefixed with device_ to avoid collisions with driver columns\n\nSELECT\n  db.*,\n  dp.timestamp AS device_timestamp,\n  dp.date_time AS device_date_time,\n  dp.model AS device_model,\n  dp.manufacturer AS device_manufacturer,\n  dp.description AS device_description,\n  dp.driver_name AS device_driver_name,\n  dp.class AS device_class,\n  dp.class_guid AS device_class_guid,\n  dp.enumerator AS device_enumerator,\n  dp.service AS device_service,\n  dp.install_state AS device_install_state,\n  dp.device_state,\n  dp.inf AS device_inf,\n  dp.driver_ver_date,\n  dp.install_date AS device_install_date,\n  dp.first_install_date AS device_first_install_date,\n  dp.driver_package_strong_name AS device_driver_package,\n  dp.driver_ver_version AS device_driver_version,\n  dp.container_id AS device_container_id,\n  dp.problem_code AS device_problem_code,\n  dp.provider AS device_provider,\n  dp.driver_id AS device_driver_id,\n  dp.bus_reported_description AS device_bus_description,\n  dp.hw_id AS device_hw_id,\n  dp.extended_infs AS device_extended_infs,\n  dp.compid AS device_compid,\n  dp.stack_id AS device_stack_id,\n  dp.upper_class_filters AS device_upper_class_filters,\n  dp.lower_class_filters AS device_lower_class_filters,\n  dp.upper_filters AS device_upper_filters,\n  dp.lower_filters AS device_lower_filters,\n  dp.device_interface_classes,\n  dp.location_paths AS device_location_paths,\n  dp.parent_id AS device_parent_id,\n  dp.matching_id AS device_matching_id,\n  datetime(db.timestamp, 'unixepoch') AS record_time,\n  CASE WHEN db.driver_signed = '1' THEN 'true' ELSE 'false' END AS is_signed\nFROM elastic_amcache_driver_binary AS db\nLEFT JOIN elastic_amcache_device_pnp AS dp\n  ON db.service = dp.service\n  AND dp.service != ''\nORDER BY\n  CASE WHEN db.driver_signed != '1' THEN 0 ELSE 1 END,\n  CASE WHEN db.driver_is_kernel_mode = '1' THEN 0 ELSE 1 END,\n  CASE WHEN db.driver_in_box != '1' THEN 0 ELSE 1 END,\n  db.timestamp DESC;",
+        "updated_at": "2026-03-30T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.4.0",
+    "id": "osquery_manager-743c6727-2a18-46cc-9e23-215ca38b3373",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-03-30T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

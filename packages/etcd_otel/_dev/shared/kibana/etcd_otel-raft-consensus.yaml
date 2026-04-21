@@ -1,0 +1,321 @@
+dashboards:
+  - id: etcd_otel-raft-consensus
+    name: '[etcd OTel] Raft Consensus'
+    description: >-
+      Raft consensus metrics: leader status, proposals committed/applied, pending backlog, failures, heartbeats, and leader changes.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    filters:
+      - field: data_stream.dataset
+        equals: etcd.otel
+    controls:
+      - type: options
+        label: Instance
+        data_view: metrics-*
+        field: resource.attributes.service.instance.id
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+      - size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: etcd_otel-overview
+            - label: Raft Consensus
+              dashboard: etcd_otel-raft-consensus
+            - label: Storage & MVCC
+              dashboard: etcd_otel-storage
+            - label: gRPC Traffic
+              dashboard: etcd_otel-grpc
+
+      # ─── Dashboard Overview Panel ───────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [etcd OTel] Raft Consensus
+
+            Deep dive into Raft consensus health:
+            - Leader status and role (leader/follower/learner)
+            - Proposals committed vs applied
+            - Pending proposal backlog
+            - Proposal failures and heartbeat send failures
+            - Leader election changes
+
+      # ─── KPI Metric Row (top) ───────────────────────────────────────────
+      - title: Has Leader
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_has_leader IS NOT NULL
+            - STATS with_leader = COUNT(etcd_server_has_leader) WHERE etcd_server_has_leader == 1, total = COUNT(etcd_server_has_leader)
+            - EVAL pct = CASE(total > 0, with_leader * 1.0 / total, 0.0)
+          primary:
+            field: pct
+            label: With Leader %
+            format:
+              type: percent
+              decimals: 0
+
+      - title: Is Leader (count)
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_is_leader IS NOT NULL
+            - STATS leaders = SUM(LAST_OVER_TIME(etcd_server_is_leader))
+          primary:
+            field: leaders
+            label: Leaders
+            format:
+              type: number
+              decimals: 0
+
+      - title: Proposals Pending
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_pending IS NOT NULL
+            - STATS pending = MAX(LAST_OVER_TIME(etcd_server_proposals_pending))
+          primary:
+            field: pending
+            label: Pending
+            format:
+              type: number
+              decimals: 0
+
+      - title: Proposal Failures Rate
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_failed_total IS NOT NULL
+            - STATS failed_rate = SUM(RATE(etcd_server_proposals_failed_total))
+          primary:
+            field: failed_rate
+            label: Failed/sec
+            format:
+              type: number
+              decimals: 2
+
+      # ─── KPI Metric Row (bottom) ────────────────────────────────────────
+      - title: Heartbeat Failures Rate
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_heartbeat_send_failures_total IS NOT NULL
+            - STATS hb_fail_rate = SUM(RATE(etcd_server_heartbeat_send_failures_total))
+          primary:
+            field: hb_fail_rate
+            label: HB Fail/sec
+            format:
+              type: number
+              decimals: 2
+
+      - title: Slow Apply Rate
+        hide_title: true
+        size: {w: eighth, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_slow_apply_total IS NOT NULL
+            - STATS slow_rate = SUM(RATE(etcd_server_slow_apply_total))
+          primary:
+            field: slow_rate
+            label: Slow/sec
+            format:
+              type: number
+              decimals: 2
+
+      # ─── Proposals Committed vs Applied ─────────────────────────────────
+      - title: Proposals Committed vs Applied
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-etcd.otel-*
+            - |
+              WHERE data_stream.dataset == "etcd.otel"
+              | FORK ( WHERE etcd_server_proposals_committed_total IS NOT NULL | STATS value = SUM(DELTA(etcd_server_proposals_committed_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL metric = "committed" ) ( WHERE etcd_server_proposals_applied_total IS NOT NULL | STATS value = SUM(DELTA(etcd_server_proposals_applied_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL metric = "applied" )
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: value
+              label: Proposals
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: metric
+
+      # ─── Detail Charts ─────────────────────────────────────────────────
+      - title: Proposals Pending by Instance
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_pending IS NOT NULL
+            - STATS pending = MAX(LAST_OVER_TIME(etcd_server_proposals_pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: pending
+              label: Pending
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: instance
+
+      - title: Proposal Failures Rate by Instance
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_failed_total IS NOT NULL
+            - STATS failed_rate = SUM(RATE(etcd_server_proposals_failed_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failed_rate
+              label: Failed/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: instance
+          appearance:
+            y_left_axis:
+              extent:
+                mode: custom
+                min: 0
+                max: 1
+
+      - title: Heartbeat Send Failures Rate by Instance
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_heartbeat_send_failures_total IS NOT NULL
+            - STATS hb_fail_rate = SUM(RATE(etcd_server_heartbeat_send_failures_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: hb_fail_rate
+              label: Failures/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: instance
+          appearance:
+            y_left_axis:
+              extent:
+                mode: custom
+                min: 0
+                max: 1
+
+      - title: Slow Apply Rate by Instance
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_slow_apply_total IS NOT NULL
+            - STATS slow_rate = SUM(RATE(etcd_server_slow_apply_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: slow_rate
+              label: Slow/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: instance
+          appearance:
+            y_left_axis:
+              extent:
+                mode: custom
+                min: 0
+                max: 1
+
+      - title: Leader Changes Rate by Instance
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_leader_changes_seen_total IS NOT NULL
+            - STATS changes_rate = SUM(RATE(etcd_server_leader_changes_seen_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: changes_rate
+              label: Changes/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: instance
+          appearance:
+            y_left_axis:
+              extent:
+                mode: custom
+                min: 0
+                max: 1
+
+      - title: Read Index Failures Rate
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-etcd.otel-*
+            - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_read_indexes_failed_total IS NOT NULL
+            - STATS fail_rate = SUM(RATE(etcd_server_read_indexes_failed_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: fail_rate
+              label: Failed/sec
+              format:
+                type: number
+                decimals: 1
+          appearance:
+            y_left_axis:
+              extent:
+                mode: custom
+                min: 0
+                max: 1
