@@ -44,7 +44,7 @@ SOURCE_BRANCH="main"
 ## In order to test other branches probably it is required to copy the dev files or magefile from the PR branch, and for that it would require these changes
 # git checkout -b test_main
 # SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-echo "--- SOURCE_BRANCH: ${SOURCE_BRANCH}"
+# echo "--- SOURCE_BRANCH: ${SOURCE_BRANCH}"
 BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
 PACKAGES_FOLDER_PATH="packages"
 MSG=""
