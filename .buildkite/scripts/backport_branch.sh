@@ -41,9 +41,9 @@ echo "Parameters: ${PARAMETERS[*]}" | sed 's/ /\n- /g' | buildkite-agent annotat
 FULL_ZIP_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}.zip"
 TRIMMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
 SOURCE_BRANCH="main"
-# To be removed
-git checkout -b test_main
-SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+## In order to test other branches probably it is required to copy the dev files or magefile from the PR branch, and for that it would require these changes
+# git checkout -b test_main
+# SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 echo "--- SOURCE_BRANCH: ${SOURCE_BRANCH}"
 BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
 PACKAGES_FOLDER_PATH="packages"
