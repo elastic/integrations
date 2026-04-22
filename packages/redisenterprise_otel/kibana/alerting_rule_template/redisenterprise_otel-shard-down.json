@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-shard-down",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Shard down",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_up IS NOT NULL\n| STATS min_up = MIN(redis_up) BY redis, bdb, node, role, cluster\n// Alert when any shard reports as down (redis_up < 1)\n// A primary shard going down triggers automatic failover to its replica\n// A replica going down reduces redundancy — the database continues but is less resilient\n| WHERE min_up < 1"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "redis",
+            "termSize": 100
+        }
+    }
+}
