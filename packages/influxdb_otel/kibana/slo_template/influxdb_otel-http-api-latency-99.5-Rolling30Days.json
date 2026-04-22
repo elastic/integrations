@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[InfluxDB OTel] HTTP API request latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the proportion of HTTP API requests that complete within 200 milliseconds, ensuring 99.5% of requests meet this latency target over a rolling 30-day period. Covers writes, queries, and all API endpoints.",
+    "indicator": {
+      "type": "sli.histogram.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"influxdb.otel\"",
+        "timestampField": "@timestamp",
+        "good": {
+          "field": "http_api_request_duration_seconds",
+          "aggregation": "range",
+          "from": 0,
+          "to": 0.2
+        },
+        "total": {
+          "field": "http_api_request_duration_seconds",
+          "aggregation": "value_count"
+        }
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "influxdb",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "influxdb_otel-http-storage"
+        },
+        {
+          "id": "influxdb_otel-overview"
+        }
+      ]
+    }
+  },
+  "id": "influxdb_otel-http-api-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

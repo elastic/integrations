@@ -8,9 +8,16 @@ processors:
 
   - fingerprint:
       fields:
-        - tenable_ot_security.assets
+        - tenable_ot_security.assets.id
+        - tenable_ot_security.assets.firstSeen
+        - tenable_ot_security.assets.lastSeen
+        - tenable_ot_security.assets.lastHit
+        - tenable_ot_security.assets.lastSnapshot
+        - tenable_ot_security.assets.lastUpdate
+        - tenable_ot_security.assets.runStatusTime
       tag: fingerprinting
       target_field: "_id"
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -100,6 +107,18 @@ processors:
         if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("assets")) {
           ctx.tenable_ot_security.assets = normalize(ctx.tenable_ot_security.assets);
         }
+
+  - convert:
+      tag: convert_total_risk_to_double
+      field: tenable_ot_security.assets.risk.total_risk
+      type: double
+      if: ctx.tenable_ot_security?.assets?.risk?.total_risk != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: tenable_ot_security.assets.risk.total_risk
 
   ##################### ECS Fields #####################
 

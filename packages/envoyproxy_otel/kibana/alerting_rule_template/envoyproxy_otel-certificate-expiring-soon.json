@@ -1,0 +1,36 @@
+{
+  "id": "envoyproxy_otel-certificate-expiring-soon",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Envoy OTel] Certificate expiring soon",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "envoy",
+      "tls"
+    ],
+    "schedule": {
+      "interval": "1d"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 3,
+      "statusChangeThreshold": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL\n// Days until first TLS cert expires — alert when below threshold\n| STATS min_days = MIN(envoy.server.days_until_first_cert_expiring)\n// Adjust threshold (7 days) based on your cert renewal lead time\n| WHERE min_days < 7"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 1,
+      "timeWindowUnit": "d"
+    }
+  }
+}

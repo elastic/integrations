@@ -1,0 +1,38 @@
+{
+    "id": "traefik_otel-high-memory-usage",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Traefik OTel] High memory usage",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "traefik",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 8,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-traefik.otel-*\n// Limit to process resident memory gauge (RSS)\n| WHERE process_resident_memory_bytes IS NOT NULL\n// Take max RSS in window\n| STATS memory_bytes = MAX(process_resident_memory_bytes)\n// Convert to GB; alert when > 2GB (tune based on expected workload)\n| EVAL memory_gb = ROUND(memory_bytes / 1073741824.0, 2)\n| WHERE memory_gb > 2.0"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "all",
+            "excludeHitsFromPreviousRun": false
+        }
+    }
+}

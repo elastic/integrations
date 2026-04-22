@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-high-session-count",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] High session count",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.session.count IS NOT NULL\n// Current active session count (gauge)\n| STATS sessions = MAX(LAST_OVER_TIME(metrics.mongodb.session.count)) BY resource.attributes.server.address\n// Alert when session count exceeds threshold (possible pool misconfiguration; adjust 500 for your setup)\n| WHERE sessions > 500\n| SORT sessions DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

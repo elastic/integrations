@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-node-filesystem-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a node's filesystem usage exceeds 85% of capacity. Disk pressure triggers pod evictions and can destabilise the node.",
+        "name": "[K8s OTel] Node filesystem saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Node Filesystem Saturation\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Storage & Volumes dashboard to see filesystem and volume usage trends.\n3. Check what is consuming disk space: container images, logs, ephemeral storage, or emptyDir volumes.\n4. Run `df -h` on the affected node to confirm disk usage.\n5. Check for pods using large ephemeral storage without limits.\n\n### Common Causes\n- Container log accumulation without rotation\n- Large container images or unused image layers\n- Ephemeral storage abuse by workloads\n- Persistent volume data growth\n\n### Tuning\n- Adjust the 85% usage threshold based on your operational tolerance.\n- For nodes with smaller disks, consider a lower threshold (e.g. 80%).\n\n### Escalation\nDisk pressure causes pod evictions. Clean up unused images (`crictl rmi --prune`), rotate logs, or expand node disk capacity."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.filesystem.usage IS NOT NULL\n    AND k8s.node.filesystem.capacity IS NOT NULL\n    AND k8s.node.filesystem.capacity > 0\n| STATS\n    avg_usage = AVG(k8s.node.filesystem.usage),\n    avg_capacity = AVG(k8s.node.filesystem.capacity)\n    BY k8s.node.name\n| EVAL usage_pct = ROUND(avg_usage / avg_capacity * 100, 1)\n// Alert when filesystem usage exceeds 85% of capacity\n// Adjust this threshold based on your operational requirements\n| WHERE usage_pct > 85\n| KEEP k8s.node.name, usage_pct"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "top",
+            "termField": "k8s.node.name",
+            "termSize": 20
+        }
+    }
+}

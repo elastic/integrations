@@ -1,0 +1,536 @@
+dashboards:
+- id: redisenterprise_otel-node-health
+  name: '[Redis Enterprise OTel] Node Health'
+  description: Detailed node-level monitoring covering CPU, memory, storage, network, and certificate expiration across all nodes in the Redis Enterprise cluster.
+  time_range:
+    from: now-15m
+    to: now
+  minimum_kibana_version: 8.14.0
+  filters:
+  - field: data_stream.dataset
+    equals: redisenterprise.otel
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  controls:
+  - type: options
+    label: Cluster
+    data_view: metrics-*
+    field: cluster
+  - type: options
+    label: Node
+    data_view: metrics-*
+    field: node
+  panels:
+  - title: Navigation
+    size:
+      w: 48
+      h: 2
+    links:
+      layout: horizontal
+      items:
+      - label: Cluster Overview
+        dashboard: redisenterprise_otel-overview
+      - label: Node Health
+        dashboard: redisenterprise_otel-node-health
+      - label: Database Performance
+        dashboard: redisenterprise_otel-database-performance
+      - label: Proxy & Listener
+        dashboard: redisenterprise_otel-proxy-listener
+      - label: Shard Diagnostics
+        dashboard: redisenterprise_otel-shard-diagnostics
+  - hide_title: true
+    size:
+      w: 16
+      h: 12
+    markdown:
+      content: '## [Redis Enterprise OTel] Node Health
+
+
+        Infrastructure health for each node in the cluster:
+
+        - Node availability and CPU utilisation breakdown
+
+        - Memory availability and provisioning headroom
+
+        - Ephemeral and persistent storage capacity
+
+        - Network throughput per node
+
+        - TLS certificate expiration tracking
+
+        '
+  - title: Nodes Up
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_up IS NOT NULL
+      - STATS node_status = MAX(node_up) BY node
+      - STATS nodes_up = SUM(node_status), total_nodes = COUNT(*)
+      primary:
+        field: nodes_up
+        label: Nodes Up
+        format:
+          type: number
+          decimals: 0
+  - title: Avg CPU Utilisation
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_cpu_user IS NOT NULL
+      - EVAL cpu_used = node_cpu_user + node_cpu_system
+      - EVAL cpu_total = cpu_used + node_cpu_idle + node_cpu_iowait
+      - STATS avg_pct = AVG((cpu_used / cpu_total) * 100)
+      primary:
+        field: avg_pct
+        label: Avg CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+  - title: Total Free Memory
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_free_memory IS NOT NULL
+      - STATS free_mem = AVG(node_free_memory) BY node
+      - STATS total_free = SUM(free_mem)
+      primary:
+        field: total_free
+        label: Total Free Memory
+        format:
+          type: bytes
+  - title: Min Cert Expiry
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_cert_expiration_seconds IS NOT NULL
+      - STATS min_expiry_secs = MIN(node_cert_expiration_seconds)
+      - EVAL min_expiry_days = ROUND(min_expiry_secs / 86400, 0)
+      primary:
+        field: min_expiry_days
+        label: Min Cert Expiry
+        format:
+          type: number
+          decimals: 0
+          suffix: ' days'
+  - title: Ephemeral Storage Available
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_ephemeral_storage_avail IS NOT NULL
+      - STATS es_avail = AVG(node_ephemeral_storage_avail) BY node
+      - STATS total_ephemeral = SUM(es_avail)
+      primary:
+        field: total_ephemeral
+        label: Ephemeral Storage
+        format:
+          type: bytes
+  - title: Persistent Storage Available
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_persistent_storage_avail IS NOT NULL
+      - STATS ps_avail = AVG(node_persistent_storage_avail) BY node
+      - STATS total_persistent = SUM(ps_avail)
+      primary:
+        field: total_persistent
+        label: Persistent Storage
+        format:
+          type: bytes
+  - title: Avg Network Ingress
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_ingress_bytes IS NOT NULL
+      - STATS avg_ingress = AVG(node_ingress_bytes) BY node
+      - STATS total_ingress = SUM(avg_ingress)
+      primary:
+        field: total_ingress
+        label: Network Ingress
+        format:
+          type: bytes
+          suffix: /s
+  - title: Avg Network Egress
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_egress_bytes IS NOT NULL
+      - STATS avg_egress = AVG(node_egress_bytes) BY node
+      - STATS total_egress = SUM(avg_egress)
+      primary:
+        field: total_egress
+        label: Network Egress
+        format:
+          type: bytes
+          suffix: /s
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## CPU Utilisation'
+  - title: CPU User Time by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_cpu_user IS NOT NULL
+      - STATS cpu_user = AVG(node_cpu_user) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu_user
+        label: CPU User (cores)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: CPU User (cores)
+  - title: CPU System Time by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_cpu_system IS NOT NULL
+      - STATS cpu_system = AVG(node_cpu_system) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu_system
+        label: CPU System (cores)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: CPU System (cores)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Memory & Storage'
+  - title: Free Memory by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_free_memory IS NOT NULL
+      - STATS free_memory = AVG(node_free_memory) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: free_memory
+        label: Free Memory
+        format:
+          type: bytes
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Free Memory (bytes)
+  - title: Available Memory by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_available_memory IS NOT NULL
+      - STATS available = AVG(node_available_memory) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: available
+        label: Available Memory
+        format:
+          type: bytes
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Available Memory (bytes)
+  - title: Ephemeral Storage Available by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_ephemeral_storage_avail IS NOT NULL
+      - STATS ephemeral = AVG(node_ephemeral_storage_avail) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: ephemeral
+        label: Ephemeral Storage
+        format:
+          type: bytes
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Ephemeral Storage (bytes)
+  - title: Persistent Storage Available by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_persistent_storage_avail IS NOT NULL
+      - STATS persistent = AVG(node_persistent_storage_avail) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: persistent
+        label: Persistent Storage
+        format:
+          type: bytes
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Persistent Storage (bytes)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Network & Certificates'
+  - title: Network Ingress by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_ingress_bytes IS NOT NULL
+      - STATS ingress = AVG(node_ingress_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: ingress
+        label: Ingress
+        format:
+          type: bytes
+          suffix: /s
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Ingress (bytes/s)
+  - title: Network Egress by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_egress_bytes IS NOT NULL
+      - STATS egress = AVG(node_egress_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: egress
+        label: Egress
+        format:
+          type: bytes
+          suffix: /s
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Egress (bytes/s)
+  - title: Certificate Expiration
+    size:
+      w: 48
+      h: 15
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_cert_expiration_seconds IS NOT NULL
+      - STATS expiry_secs = MIN(node_cert_expiration_seconds) BY node, path
+      - EVAL expiry_secs = COALESCE(expiry_secs, 0)
+      - EVAL expiry_days = ROUND(expiry_secs / 86400, 0)
+      - SORT expiry_days ASC
+      - LIMIT 100
+      breakdowns:
+      - field: node
+        label: Node
+      - field: path
+        label: Certificate Path
+      metrics:
+      - field: expiry_secs
+        label: Expiry (seconds)
+        format:
+          type: number
+          decimals: 0
+      - field: expiry_days
+        label: Expiry (days)
+        format:
+          type: number
+          decimals: 0
+  - title: Node Detail
+    size:
+      w: 48
+      h: 15
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE node_up IS NOT NULL
+      - EVAL cpu_used = COALESCE(node_cpu_user, 0.0) + COALESCE(node_cpu_system, 0.0)
+      - STATS Status = MAX(node_up), `CPU Used` = AVG(cpu_used), `CPU I/O Wait` = AVG(node_cpu_iowait), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), `Ingress` = AVG(node_ingress_bytes), `Egress` = AVG(node_egress_bytes), `AOF Rewrites` = AVG(node_cur_aof_rewrites) BY node
+      - EVAL Status = COALESCE(Status, 0), `CPU Used` = COALESCE(`CPU Used`, 0.0), `CPU I/O Wait` = COALESCE(`CPU I/O Wait`, 0.0), `Free Memory` = COALESCE(`Free Memory`, 0), `Available Memory` = COALESCE(`Available Memory`, 0), `Ephemeral Storage` = COALESCE(`Ephemeral Storage`, 0), `Persistent Storage` = COALESCE(`Persistent Storage`, 0), `Ingress` = COALESCE(`Ingress`, 0), `Egress` = COALESCE(`Egress`, 0), `AOF Rewrites` = COALESCE(`AOF Rewrites`, 0)
+      - SORT node ASC
+      - LIMIT 100
+      breakdowns:
+      - field: node
+        label: Node
+      metrics:
+      - field: Status
+        label: Up
+        format:
+          type: number
+          decimals: 0
+      - field: CPU Used
+        label: CPU Used
+        format:
+          type: number
+          decimals: 2
+      - field: CPU I/O Wait
+        label: CPU I/O Wait
+        format:
+          type: number
+          decimals: 3
+      - field: Free Memory
+        label: Free Memory
+        format:
+          type: bytes
+      - field: Ephemeral Storage
+        label: Ephemeral
+        format:
+          type: bytes
+      - field: Persistent Storage
+        label: Persistent
+        format:
+          type: bytes
+      - field: Ingress
+        label: Ingress
+        format:
+          type: bytes
+          suffix: /s
+      - field: Egress
+        label: Egress
+        format:
+          type: bytes
+          suffix: /s
