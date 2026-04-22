@@ -1668,7 +1668,7 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | tychon.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | tychon.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
 | tychon.x509.subject.state_or_province | List of state or province names (ST, S, or P). | keyword |
-| tychon.x509.subject_key_identifier | Subject Key identifer | keyword |
+| tychon.x509.subject_key_identifier | Subject Key identifier | keyword |
 | tychon.x509.version_number | Version of x509 format. | keyword |
 
 

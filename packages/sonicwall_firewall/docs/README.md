@@ -382,7 +382,7 @@ The `log` data stream provides events from SonicWall Firewall devices of the fol
 | sonicwall.firewall.appid | Application ID. | keyword |
 | sonicwall.firewall.auditId |  | keyword |
 | sonicwall.firewall.code | CFS blocking code. | keyword |
-| sonicwall.firewall.dpi | Indicates wether a flow underwent Deep Packet Inspection. | boolean |
+| sonicwall.firewall.dpi | Indicates whether a flow underwent Deep Packet Inspection. | boolean |
 | sonicwall.firewall.event_group_category | Event group category. | keyword |
 | sonicwall.firewall.gcat | Event group category (numeric identifier). | keyword |
 | sonicwall.firewall.ipscat | IPS category. | keyword |

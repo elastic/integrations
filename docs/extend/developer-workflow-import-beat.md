@@ -155,7 +155,7 @@ The order of action items on the checklist is advised to prevent the contributor
     * **title** - human readable variable name
     * **description** - variable description (may contain some details)
     * **type** - field type (according to the reference: text, password, bool, integer)
-    * **multi** - the field has mutliple values.
+    * **multi** - the field has multiple values.
 
 10. Review stream configuration.
 

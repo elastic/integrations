@@ -605,7 +605,7 @@ This is the `event` dataset.
 | m365_defender.event.account.assigned_roles | The Microsoft Entra roles assigned to the account. | keyword |
 | m365_defender.event.account.blast_radius | The potential impact of the user account in the org. | keyword |
 | m365_defender.event.account.city | City where the account user is located. | keyword |
-| m365_defender.event.account.cloud_sid | The Microsoft Entra security identifer for the account. | keyword |
+| m365_defender.event.account.cloud_sid | The Microsoft Entra security identifier for the account. | keyword |
 | m365_defender.event.account.company_name | The company to which the account belongs. | keyword |
 | m365_defender.event.account.country | Country/Region where the account user is located. | keyword |
 | m365_defender.event.account.created | Date and time when the account user was created. | date |
