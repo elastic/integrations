@@ -12,7 +12,7 @@ The following blogs provide additional context. For the most current installatio
 
 This package leverages event logs. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information. The transform only supports Linux and Windows. The **Anomaly Detection Jobs** section outlines platform support for each job.
 
-If you are running version 8.18+, the Defend integration only collects a [subset of host information by default](https://www.elastic.co/docs/solutions/security/configure-elastic-defend/configure-data-volume-for-elastic-endpoint#host-fields).  To ensure the transform runs properly, the `[linux|mac|windows].advanced.set_extended_host_information` settings need to be set to `true.
+If you are running version 8.18+, the Defend integration only collects a [subset of host information by default](https://www.elastic.co/docs/solutions/security/configure-elastic-defend/configure-data-volume-for-elastic-endpoint#host-fields).  To ensure the transform runs properly, the `[linux|mac|windows].advanced.set_extended_host_information` settings need to be set to `true`.
 
 ## Installation
 
@@ -145,6 +145,8 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 ## Anomaly Detection Jobs
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
+
+Before starting the these jobs, ensure you have ML nodes with enough free memory. The exact amount of memory needed can vary, but a minimum of 8GB of non-heap ML memory is the minimum required to start all the jobs.
 
 | Job                                                      | Description                                                                                     | Supported Platform    | Filter Field                |
 |----------------------------------------------------------|-------------------------------------------------------------------------------------------------|-----------------------|-----------------------------|
