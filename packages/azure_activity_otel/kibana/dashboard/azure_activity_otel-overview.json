@@ -2209,6 +2209,11 @@
                                         "isMetric": false
                                     },
                                     {
+                                        "columnId": "2135af81-b735-d263-086f-80f469285ef2",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
                                         "columnId": "07c8bbbb-526d-d018-3a2c-c45ac8cd91d5",
                                         "isTransposed": false,
                                         "isMetric": false
@@ -2224,7 +2229,7 @@
                                         "isMetric": false
                                     }
                                 ],
-                                "layerId": "1b54085c-ff6d-f1f9-235b-a3fd1cfd7cb3",
+                                "layerId": "e23e2c4f-2a65-42cd-31cd-cf33c503a230",
                                 "layerType": "data",
                                 "paging": {
                                     "size": 10,
@@ -2232,15 +2237,15 @@
                                 }
                             },
                             "query": {
-                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.email, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, result_status, cloud.resource_id\n| SORT count DESC\n| LIMIT 100\n"
+                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, user.email, result_status, cloud.resource_id\n| SORT count DESC\n| LIMIT 100\n"
                             },
                             "filters": [],
                             "datasourceStates": {
                                 "textBased": {
                                     "layers": {
-                                        "1b54085c-ff6d-f1f9-235b-a3fd1cfd7cb3": {
+                                        "e23e2c4f-2a65-42cd-31cd-cf33c503a230": {
                                             "query": {
-                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.email, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, result_status, cloud.resource_id\n| SORT count DESC\n| LIMIT 100\n"
+                                                "esql": "FROM logs-azure.activity.otel-*\n| WHERE azure.category IS NOT NULL\n| WHERE azure.operation.name LIKE \"*LISTKEYS*\" OR azure.operation.name LIKE \"*ROLEASSIGNMENT*\" OR azure.operation.name LIKE \"*DENYASSIGNMENT*\"\n| EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, \"unknown\")\n| EVAL result_status = CASE(azure.result.type IN (\"Failure\", \"Failed\"), \"Failed\", azure.result.type IN (\"Success\", \"Succeeded\", \"Accept\", \"Activated\", \"Resolved\", \"Updated\", \"Active\"), \"Success\", \"Other\")\n| STATS count = COUNT(*) BY azure.operation.name, caller, user.email, result_status, cloud.resource_id\n| SORT count DESC\n| LIMIT 100\n"
                                             },
                                             "columns": [
                                                 {
@@ -2253,6 +2258,12 @@
                                                     "fieldName": "caller",
                                                     "columnId": "90560102-7107-7174-2dea-a57a3a44c079",
                                                     "label": "Caller",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "user.email",
+                                                    "columnId": "2135af81-b735-d263-086f-80f469285ef2",
+                                                    "label": "Email",
                                                     "customLabel": true
                                                 },
                                                 {
@@ -2285,6 +2296,12 @@
                                                     "fieldName": "caller",
                                                     "columnId": "90560102-7107-7174-2dea-a57a3a44c079",
                                                     "label": "Caller",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "user.email",
+                                                    "columnId": "2135af81-b735-d263-086f-80f469285ef2",
+                                                    "label": "Email",
                                                     "customLabel": true
                                                 },
                                                 {
