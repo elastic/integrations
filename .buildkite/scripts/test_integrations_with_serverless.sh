@@ -76,6 +76,7 @@ echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
+echo "--- List all directories"
 PACKAGE_LIST=$(list_all_directories)
 for package_path in ${PACKAGE_LIST}; do
     echo "--- [$package_path] check if it is required to be tested"
