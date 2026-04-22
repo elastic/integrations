@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-node-not-ready",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when any Kubernetes node has condition_ready == 0, indicating the node is not ready to accept workloads. Pods on NotReady nodes are eventually evicted. Common causes: kubelet crashes, network partitions, resource exhaustion.",
+        "name": "[K8s OTel] Node not ready",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Node Not Ready\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Check the Node Performance dashboard filtered to the affected node for CPU, memory, disk pressure, or network issues.\n3. Verify kubelet status: `kubectl get nodes` and `kubectl describe node <node_name>`.\n4. Check for node conditions: memory pressure, disk pressure, PID pressure.\n5. Review kubelet logs on the affected node.\n\n### Common Causes\n- Kubelet process crashed or became unresponsive\n- Network partition between node and control plane\n- Node resource exhaustion (disk, memory, PIDs)\n- Underlying VM/hardware failure\n\n### Escalation\nIf a node remains NotReady for more than 5 minutes, workloads will be evicted. Page the on-call infrastructure engineer."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_ready IS NOT NULL\n| STATS all_ready = MIN(k8s.node.condition_ready)\n    BY k8s.node.name\n// Alert on any node where condition_ready is 0 (NotReady)\n| WHERE all_ready == 0\n| EVAL status = \"NotReady\""
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "top",
+            "termField": "k8s.node.name",
+            "termSize": 20
+        }
+    }
+}

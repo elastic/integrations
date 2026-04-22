@@ -1,0 +1,83 @@
+{
+  "attributes": {
+    "name": "[IBM MQ OTel] Message put availability 99.5% rolling 30 days",
+    "description": "Tracks the success rate of MQPUT and MQPUT1 operations on the IBM MQ queue manager, ensuring that 99.5% of 1-minute time intervals maintain at least 99.5% put success rate over a rolling 30-day period. Failed put operations indicate that applications cannot deliver messages, typically caused by queue full conditions, authorization failures, or channel outages.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"ibmmq.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "ibmmq_qmgr_mqput_mqput1_total",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "ibmmq_qmgr_mqput_mqput1_total",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "ibmmq_qmgr_failed_mqput_total",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "ibmmq_qmgr_failed_mqput_total",
+              "filter": ""
+            },
+            {
+              "name": "E",
+              "aggregation": "max",
+              "field": "ibmmq_qmgr_failed_mqput1_total",
+              "filter": ""
+            },
+            {
+              "name": "F",
+              "aggregation": "min",
+              "field": "ibmmq_qmgr_failed_mqput1_total",
+              "filter": ""
+            }
+          ],
+          "equation": "(A-B) / ((A-B) + (C-D) + (E-F))",
+          "comparator": "GTE",
+          "threshold": 0.995
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "ibmmq",
+      "otel"
+    ],
+    "groupBy": [
+      "attributes.qmgr"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "ibmmq_otel-error-analysis" },
+      { "id": "ibmmq_otel-message-traffic" },
+      { "id": "ibmmq_otel-overview" }
+    ]
+  },
+  "id": "ibmmq_otel-message-put-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

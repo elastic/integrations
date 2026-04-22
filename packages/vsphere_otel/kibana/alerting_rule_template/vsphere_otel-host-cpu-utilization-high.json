@@ -1,0 +1,43 @@
+{
+    "id": "vsphere_otel-host-cpu-utilization-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[vSphere OTel] Host CPU utilization high",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vsphere",
+            "vcenter",
+            "cpu"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-vcenterreceiver.otel-*\n// Host CPU utilization: healthy <80%; unhealthy >90%\n// Adjust threshold (e.g. 80 or 90) to suit environment\n| WHERE vcenter.host.cpu.utilization IS NOT NULL AND vcenter.host.cpu.utilization > 80\n| STATS utilization_pct = MAX(vcenter.host.cpu.utilization) BY vcenter.datacenter.name, vcenter.cluster.name, vcenter.host.name\n| SORT utilization_pct DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vcenter.host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

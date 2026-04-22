@@ -45,9 +45,9 @@ processors:
       patterns:
       - 'Detection type: %{DATA:json.threat_name} Detection name: %{DATA:json.threat_name}
         Computer name: %{HOSTNAME:json.hostname} Logged user: %{DATA:user.domain}\\%{DATA:json.user}
-        Time of occurrence: %{ESET_TIMESTAMP:json.occured_plaintext} Scanner: %{DATA:json.scanner_id}
+        Time of occurrence: %{ESET_TIMESTAMP:json.occurred_plaintext} Scanner: %{DATA:json.scanner_id}
         Action performed: %{DATA:json.action_taken}$'
-      - '^%{DATA:message}\s+%{HOSTNAME:json.hostname} %{ESET_TIMESTAMP:json.occured_plaintext} %{DATA:eset_protect.event.threat_type} %{NOTSPACE:threat.indicator.name} %{ESET_THREAT_INDICATOR_TYPE:json.object_type} %{GREEDYDATA:json.object_uri}$'
+      - '^%{DATA:message}\s+%{HOSTNAME:json.hostname} %{ESET_TIMESTAMP:json.occurred_plaintext} %{DATA:eset_protect.event.threat_type} %{NOTSPACE:threat.indicator.name} %{ESET_THREAT_INDICATOR_TYPE:json.object_type} %{GREEDYDATA:json.object_uri}$'
       pattern_definitions:
         ESET_TIMESTAMP: "%{MONTHNUM}/%{MONTHDAY}/%{YEAR}, %{HOUR}:%{MINUTE}:%{SECOND} (?:AM|PM) UTC\\+%{INT}"
         ESET_THREAT_INDICATOR_TYPE: File
@@ -199,28 +199,35 @@ processors:
       value: "{{{eset_protect.event.ipv6}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv6 != null
+  - rename:
+      field: json.occured
+      tag: rename_occured_to_occurred
+      target_field: json.occurred
+      ignore_missing: true
+      description: Fallback for legacy events with the misspelled "occured" field. Renamed to correct spelling "occurred".
+      if: ctx.json?.occurred == null
   - gsub:
-      field: json.occured_plaintext
+      field: json.occurred_plaintext
       pattern: UTC([+-])([0-9])$
       replacement: UTC$10$2:00
-      target_field: json.occured
-      if: ctx.json?.occured_plaintext != null && ctx.json.occured_plaintext != ''
+      target_field: json.occurred
+      if: ctx.json?.occurred_plaintext != null && ctx.json.occurred_plaintext != ''
   - date:
-      field: json.occured
-      tag: date_occured
-      target_field: eset_protect.event.occured
+      field: json.occurred
+      tag: date_occurred
+      target_field: eset_protect.event.occurred
       formats:
         - dd-MMM-yyyy HH:mm:ss
         - M/d/yy, h:m:s a z
-      if: ctx.json?.occured != null && ctx.json.occured != ''
+      if: ctx.json?.occurred != null && ctx.json.occurred != ''
       on_failure:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: "@timestamp"
-      tag: set_@timestamp_from_event_occured
-      copy_from: eset_protect.event.occured
+      tag: set_@timestamp_from_event_occurred
+      copy_from: eset_protect.event.occurred
       ignore_empty_value: true
   - rename:
       field: json.os_name
@@ -553,19 +560,82 @@ processors:
       tag: rename_object_uri
       target_field: eset_protect.event.object_uri
       ignore_missing: true
+  - script:
+      tag: script_parse_mailto_uri
+      lang: painless
+      description: Parse mailto URI fields into ECS email fields.
+      if: "ctx.eset_protect?.event?.object_uri != null && ctx.eset_protect.event.object_uri instanceof String && ctx.eset_protect.event.object_uri.toLowerCase().startsWith('mailto:')"
+      source: |-
+        String uri = ctx.eset_protect.event.object_uri;
+
+        // Match query parameters from the mailto: URI
+        // Assumption: the from= value contains plain-text addresses in angle brackets.
+        // If ESET starts URL-encoding these addresses in the future, decode before applying this matcher.
+        java.util.regex.Matcher fromMatch = /(?:\?|&)from=([^&]+)/.matcher(uri);
+        java.util.regex.Matcher subjectMatch = /(?:\?|&)subject=([^&]+)/.matcher(uri);
+        java.util.regex.Matcher attachmentMatch = /(?:\?|&)attachment=([^&]+)/.matcher(uri);
+
+        // Extract RFC 5321 addresses enclosed in angle brackets from the from= value with best effort.
+        List fromAddresses = new ArrayList();
+        if (fromMatch.find()) {
+            java.util.regex.Matcher addressMatch = /<\s*([A-Za-z0-9.!#$%&'*+\/?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\s*>/.matcher(fromMatch.group(1));
+            while (addressMatch.find()) {
+                fromAddresses.add(addressMatch.group(1));
+            }
+        }
+
+        String subject = subjectMatch.find() ? subjectMatch.group(1) : null;
+        String attachment = attachmentMatch.find() ? attachmentMatch.group(1) : null;
+
+        // Nothing actionable found – skip field population
+        if (fromAddresses.isEmpty() && subject == null && attachment == null) {
+            return;
+        }
+
+        // Ensure the top-level email map exists before writing into it
+        if (!(ctx.email instanceof Map)) {
+            ctx.email = new HashMap();
+        }
+
+        // Populate ECS email.* fields
+        if (!fromAddresses.isEmpty()) {
+            Map from = ctx.email['from'] instanceof Map ? (Map) ctx.email['from'] : new HashMap();
+            from['address'] = fromAddresses;
+            ctx.email['from'] = from;
+        }
+        if (subject != null) {
+            ctx.email['subject'] = subject;
+        }
+        if (attachment != null) {
+            Map attachments = new HashMap();
+            Map file = new HashMap();
+            file['name'] = attachment;
+            attachments['file'] = file;
+            List attachmentList = new ArrayList();
+            attachmentList.add(attachments);
+            ctx.email['attachments'] = attachmentList;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: "object_uri for mails could not be parsed: {{{eset_protect.event.object_uri}}}"
+        - append:
+            field: event.kind
+            value: pipeline_error
+            allow_duplicates: false
   - set:
       field: file.path
       if: "ctx.eset_protect?.event?.object_uri != null && ctx.eset_protect?.event?.object_type?.toLowerCase() == 'file'"
       copy_from: eset_protect.event.object_uri
-  - grok: 
+  - grok:
       field: file.path
       tag: grok_file_path
-      patterns: 
+      patterns:
         - '^(file:///)?%{FILEPATH:file.path}$'
         - '.*/(?<file.name>.+\.(?<file.extension>.+))$'
       pattern_definitions:
         FILEPATH: '(?<file.drive_letter>\w):(?<file.directory>/.*/|/)?(?<file.name>.+(\.(?<file.extension>.+))?)?'
-      if: ctx.file?.path != null && ctx.file?.path != 'script'
+      if: ctx.file?.path != null && ctx.file?.path != 'script' && !(ctx.file.path instanceof String && ctx.file.path.toLowerCase().startsWith('mailto:'))
   - rename:
       field: json.operation
       tag: rename_operation
@@ -888,7 +958,7 @@ processors:
         - eset_protect.event.hostname
         - eset_protect.event.ipv4
         - eset_protect.event.ipv6
-        - eset_protect.event.occured
+        - eset_protect.event.occurred
         - eset_protect.event.os_name
         - eset_protect.event.source_uuid
         - eset_protect.event.aggregate_count
