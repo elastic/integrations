@@ -1,0 +1,40 @@
+type: metrics
+title: HAProxy Prometheus metrics
+streams:
+  - input: prometheus/metrics
+    vars:
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: true
+        show_user: true
+        default: /metrics
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default: []
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+    template_path: stream.yml.hbs
+    title: HAProxy Prometheus metrics
+    description: Collect HAProxy metrics via the Prometheus /metrics endpoint.
+elasticsearch:
+  index_mode: "time_series"
+
