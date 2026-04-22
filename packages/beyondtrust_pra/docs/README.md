@@ -70,7 +70,7 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.destination.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
 | beyondtrust_pra.access_session.destination.hostname | The hostname of the user's computer. | keyword |
 | beyondtrust_pra.access_session.destination.id | Unique ID assigned to the user. | keyword |
-| beyondtrust_pra.access_session.destination.invited | Integer value (1) present only if the user is an invited user. | boolean |
+| beyondtrust_pra.access_session.destination.invited | True when the user is an invited user. | boolean |
 | beyondtrust_pra.access_session.destination.os | The operating system of the user's computer. | keyword |
 | beyondtrust_pra.access_session.destination.private_ip | The user's private IP address. | ip |
 | beyondtrust_pra.access_session.destination.private_port | The user's private port. | long |
@@ -90,7 +90,7 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.performed_by.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
 | beyondtrust_pra.access_session.performed_by.hostname | The hostname of the user's computer. | keyword |
 | beyondtrust_pra.access_session.performed_by.id | Unique ID assigned to the user. | keyword |
-| beyondtrust_pra.access_session.performed_by.invited | Integer value (1) present only if the user is an invited user. | boolean |
+| beyondtrust_pra.access_session.performed_by.invited | True when the user is an invited user. | boolean |
 | beyondtrust_pra.access_session.performed_by.os | The operating system of the user's computer. | keyword |
 | beyondtrust_pra.access_session.performed_by.private_ip | The user's private IP address. | ip |
 | beyondtrust_pra.access_session.performed_by.private_port | The user's private port. | long |
@@ -109,6 +109,7 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.session.duration | Session length in HH:MM:SS format. | keyword |
 | beyondtrust_pra.access_session.session.end_time.text | The date and time the session was ended. | date |
 | beyondtrust_pra.access_session.session.end_time.timestamp | Displays the end time in UNIX timestamp (UTC). | date |
+| beyondtrust_pra.access_session.session.file_delete_count | The number of files deleted via the File Transfer interface during the session. | long |
 | beyondtrust_pra.access_session.session.file_move_count | The number of files renamed via the File Transfer interface during the session. | long |
 | beyondtrust_pra.access_session.session.file_transfer_count | The number of file transfers which occurred during the session. | long |
 | beyondtrust_pra.access_session.session.jump_group.id | This is the Jump Group's unique ID for its type. Jump Groups of different types can have the same ID. . | keyword |
@@ -120,8 +121,8 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.session.lsid | A string which uniquely identifies this session. | keyword |
 | beyondtrust_pra.access_session.session.primary_customer.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
 | beyondtrust_pra.access_session.session.primary_customer.text | The name of the remote endpoint accessed by the user. | keyword |
-| beyondtrust_pra.access_session.session.primary_rep.gsnumber | The name of the user who owned the session. | keyword |
-| beyondtrust_pra.access_session.session.primary_rep.id |  | keyword |
+| beyondtrust_pra.access_session.session.primary_rep.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
+| beyondtrust_pra.access_session.session.primary_rep.id | Unique ID assigned to the user. | keyword |
 | beyondtrust_pra.access_session.session.primary_rep.text |  | keyword |
 | beyondtrust_pra.access_session.session.session_chat_download_url | The URL at which this session's chat transcript can be downloaded. This element is displayed only for sessions that have successfully ended. | keyword |
 | beyondtrust_pra.access_session.session.session_chat_view_url | The URL at which this session's chat transcript can be viewed in a web browser. This element is displayed only for sessions that have successfully ended. | keyword |
@@ -142,7 +143,6 @@ This is the `Access Session` dataset.
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 
 
 An example event for `access_session` looks as following:
@@ -226,6 +226,7 @@ An example event for `access_session` looks as following:
                 },
                 "file_move_count": 1,
                 "file_transfer_count": 3,
+                "file_delete_count": 0,
                 "jump_group": {
                     "id": "56789",
                     "text": "Support Team",
