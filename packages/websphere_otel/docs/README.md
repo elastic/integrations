@@ -15,7 +15,7 @@ WebSphere Application Server tested against:
 
 - WebSphere Application Server Traditional 9.0.5.x
 
-The metrics are exposed by the WebSphere Performance Monitoring Infrastructure (PMI) via the bundled `metrics.ear` application at the `/metrics` endpoint.
+The metrics are exposed by the WebSphere Performance Monitoring Infrastructure (PMI) using the bundled `metrics.ear` application at the `/metrics` endpoint.
 
 ## Requirements
 
@@ -41,11 +41,11 @@ You can use the [OpenTelemetry Collector](https://opentelemetry.io/docs/collecto
 
 Replace the following placeholders in the configuration below:
 
-- `<WAS_HOST>` — The hostname or IP address of the WebSphere Application Server instance (e.g. `websphere.example.com`)
-- `<WAS_PORT>` — The port on which the `/metrics` endpoint is exposed (e.g. `9080`)
-- `<SCRAPE_INTERVAL>` — How frequently to scrape metrics (e.g. `10s`)
-- `<ES_ENDPOINT>` — Your Elasticsearch endpoint URL (e.g. `https://my-deployment.es.us-east-1.aws.elastic.cloud:443`)
-- `${env:ES_API_KEY}` — An Elasticsearch API key with write permissions, provided via the `ES_API_KEY` environment variable
+- `<WAS_HOST>` — The hostname or IP address of the WebSphere Application Server instance (for example, `websphere.example.com`)
+- `<WAS_PORT>` — The port on which the `/metrics` endpoint is exposed (for example, `9080`)
+- `<SCRAPE_INTERVAL>` — How frequently to scrape metrics (for example, `10s`)
+- `<ES_ENDPOINT>` — Your Elasticsearch endpoint URL (for example, `https://my-deployment.es.us-east-1.aws.elastic.cloud:443`)
+- `${env:ES_API_KEY}` — An Elasticsearch API key with write permissions, provided using the `ES_API_KEY` environment variable
 
 ```yaml
 receivers:
