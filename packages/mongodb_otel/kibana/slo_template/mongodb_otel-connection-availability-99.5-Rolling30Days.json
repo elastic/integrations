@@ -1,0 +1,43 @@
+{
+  "attributes": {
+    "name": "[MongoDB OTel] Connection availability 99.5% rolling 30 days",
+    "description": "This SLO tracks MongoDB connection availability via OTel metrics, ensuring that 99.5% of 1-minute time intervals maintain at least 10% of connections available (available / (available + current)) over a rolling period of 30 days. When available connections drop toward zero, new clients are rejected and the service becomes unavailable.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"mongodbreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "sum", "field": "metrics.mongodb.connection.count", "filter": "attributes.type: \"available\""},
+            {"name": "B", "aggregation": "sum", "field": "metrics.mongodb.connection.count", "filter": "attributes.type: \"current\""}
+          ],
+          "equation": "A/(A+B)",
+          "comparator": "GT",
+          "threshold": 0.1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["mongodb", "otel"],
+    "groupBy": ["resource.attributes.server.address"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "mongodb_otel-overview"},
+        {"id": "mongodb_otel-capacity"}
+      ]
+    }
+  },
+  "id": "mongodb_otel-connection-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

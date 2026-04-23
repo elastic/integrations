@@ -1,0 +1,43 @@
+{
+  "attributes": {
+    "name": "[Oracle OTel] Process utilisation 99.5% rolling 30 days",
+    "description": "This SLO tracks process utilisation (usage/limit) of the Oracle Database instance via OTel metrics. Process exhaustion prevents new connections (ORA-00020). The SLO ensures 99.5% of 1-minute intervals maintain utilisation below 85% over a rolling 30-day period, giving headroom before connection refusal.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"oracledbreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "oracledb.processes.usage"},
+            {"name": "B", "aggregation": "max", "field": "oracledb.processes.limit"}
+          ],
+          "equation": "A/B",
+          "comparator": "LT",
+          "threshold": 0.85
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["oracle", "otel"],
+    "groupBy": ["oracledb.instance.name"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "oracle_otel-overview"},
+        {"id": "oracle_otel-resource-capacity"}
+      ]
+    }
+  },
+  "id": "oracle_otel-process-utilisation-99.5-Rolling30Days",
+  "type": "slo_template"
+}
