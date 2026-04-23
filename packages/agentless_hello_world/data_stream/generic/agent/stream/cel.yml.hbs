@@ -4,6 +4,9 @@ resource.timeout: 15s
 resource.url: "{{url}}"
 state:
   url: "{{url}}"
+  cursor:
+    request_count: 0
+    last_collected: "1970-01-01T00:00:00Z"
 program: |
   request("GET", state.url)
     .do_request()
@@ -12,9 +15,17 @@ program: |
             "http": {
               "response": {
                 "status_code": resp.StatusCode
+              }
+            },
+            "cursor": {
+              "request_count": int(state.cursor.request_count) + 1,
+              "last_collected": now
             }
-          }
-        }]
+        }],
+        "cursor": {
+          "request_count": int(state.cursor.request_count) + 1,
+          "last_collected": now
+        }
     })
 tags:
   - agentless-hello-world
