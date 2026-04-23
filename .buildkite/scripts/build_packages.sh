@@ -95,12 +95,12 @@ build_packages() {
 
 if [ "${SKIP_PUBLISHING}" == "true" ] ; then
     echo "packageStoragePublish: skipping because SKIP_PUBLISHING environment variable is ${SKIP_PUBLISHING}"
-    exit 0
+    # exit 0
 fi
 
 if skipPublishing ; then
     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    exit 0
+    # exit 0
 fi
 
 add_bin_path
@@ -127,6 +127,7 @@ cd "${WORKSPACE}" || exit 1
 mkdir -p "${ARTIFACTS_FOLDER}"
 cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"/
 
+DRY_RUN=true
 if [ "${DRY_RUN}" == "true" ]; then
     echo "DRY_RUN enabled. Publish packages steps skipped."
     exit 0
