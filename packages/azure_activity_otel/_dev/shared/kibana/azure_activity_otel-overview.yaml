@@ -1,0 +1,493 @@
+dashboards:
+- name: '[Azure Activity Logs OTel] Overview'
+  id: azure_activity_otel-overview
+  description: Platform-level audit logs for Azure Resource Manager control plane operations. Monitor operation volume, verb-level breakdown
+    (WRITE/DELETE/READ/ACTION), failure rates, resource provider activity, top callers by identity, and sensitive operations.
+  time_range:
+    from: now-24h
+    to: now
+  settings:
+    sync:
+      tooltips: false
+      colors: false
+  query:
+    kql: ''
+  filters:
+    - field: data_stream.dataset
+      equals: "azure.activity.otel"
+  panels:
+  - id: 91144e9b-fac7-b44d-0b1d-8339201b83cb
+    title: ''
+    size: {w: 48, h: 2}
+    position: {x: 0, y: 0}
+    links:
+      layout: horizontal
+      items:
+      - id: 3af4ba12-6f83-488a-bdc9-0c7216a22d73
+        label: Overview
+        dashboard: azure_activity_otel-overview
+      - id: 8e076427-fd85-ffef-d2a9-2d8549802ca6
+        label: Administrative Operations
+        dashboard: azure_activity_otel-administrative-operations
+      - id: d85a6f5e-c243-4bbe-6823-cd1559ff70d1
+        label: Platform Health
+        dashboard: azure_activity_otel-platform-health
+  - id: fc69666b-014e-4167-d063-22478c958b29
+    title: ''
+    hide_title: true
+    size: {w: 16, h: 12}
+    position: {x: 0, y: 2}
+    markdown:
+      content: |
+        ## [Azure Activity Logs OTel] Overview
+
+        This dashboard provides an overview of Azure Activity Log control plane operations:
+        - Verb-level breakdown (WRITE/DELETE/READ/ACTION) over time
+        - Category, operation, and resource provider distribution (by unique operations)
+        - Top callers by individual identity
+        - Failed and DELETE operations over time
+        - Sensitive operations (listKeys, role assignments, deny assignments)
+      font_size: 12
+      links_in_new_tab: false
+  - id: a6139eb5-45f7-5a61-5468-13f58b465f93
+    title: ''
+    hide_title: true
+    size: {w: 11, h: 6}
+    position: {x: 16, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | STATS total = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: total
+        label: Total Events
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: ddeb77a8-5f33-1fb1-4600-d51518ee7260
+    title: ''
+    hide_title: true
+    size: {w: 11, h: 6}
+    position: {x: 27, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.result.type IN ("Failure", "Failed")
+        | STATS failed = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: failed
+        label: Failed
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 132da25a-a0f2-8521-0516-b71a6fcc4e7f
+    title: ''
+    hide_title: true
+    size: {w: 10, h: 6}
+    position: {x: 38, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.result.type NOT IN ("Start", "Started")
+        | STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN ("Failure", "Failed")
+        | EVAL failure_rate = CASE(total > 0, TO_DOUBLE(failed) / total, 0.0)
+      time_field: '@timestamp'
+      primary:
+        field: failure_rate
+        label: Failure Rate
+        format:
+          type: percent
+          decimals: 1
+  - id: bb4c6ba4-e4d1-6682-4385-24e86106818a
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 16, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ResourceHealth"
+        | WHERE azure.resourcehealth.state IN ("Unavailable", "Degraded")
+        | STATS unhealthy = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: unhealthy
+        label: Unavailable
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 98846696-790a-d686-1a58-8a2e53219729
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 24, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ServiceHealth"
+        | WHERE azure.servicehealth.incident.type == "Incident"
+        | WHERE azure.servicehealth.state IN ("Active", "Resolved")
+        | STATS incidents = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: incidents
+        label: Service Incidents
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: cb4b2e68-1250-4b3a-4c88-e2962d0c0780
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 32, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.operation.name LIKE "*DELETE*"
+        | STATS deletes = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: deletes
+        label: Deletes
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: f818660d-ee9c-ac8d-edda-c5eeda687bf1
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 40, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.operation.name LIKE "*LISTKEYS*" OR azure.operation.name LIKE "*ROLEASSIGNMENT*" OR azure.operation.name LIKE "*DENYASSIGNMENT*"
+        | STATS sensitive = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: sensitive
+        label: Sensitive
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: f4b0dcb1-4a03-6d02-20b9-9d20e226292f
+    title: Operations by Verb (WRITE/DELETE/READ/ACTION) Over Time
+    size: {w: 48, h: 12}
+    position: {x: 0, y: 14}
+    esql:
+      type: area
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.operation.name IS NOT NULL
+        | EVAL verb = CASE(azure.operation.name LIKE "*DELETE*", "DELETE", azure.operation.name LIKE "*WRITE*", "WRITE", azure.operation.name LIKE "*ACTION*", "ACTION", azure.operation.name LIKE "*READ*", "READ", "OTHER")
+        | STATS op_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), verb
+        | SORT time_bucket ASC
+      time_field: '@timestamp'
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: op_count
+        label: Operations
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: verb
+      color:
+        assignments:
+        - value: DELETE
+          color: '#BD271E'
+        - value: WRITE
+          color: '#E7664C'
+        - value: ACTION
+          color: '#F5A700'
+        - value: READ
+          color: '#54B399'
+        - value: OTHER
+          color: '#9170B8'
+  - id: 3eb6f610-b987-41bc-d8ad-8783c07dac47
+    title: Events Over Time by Category
+    size: {w: 48, h: 12}
+    position: {x: 0, y: 26}
+    esql:
+      type: area
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.category
+        | SORT time_bucket ASC
+      time_field: '@timestamp'
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: event_count
+        label: Events
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: azure.category
+  - id: 9677a29b-a70f-548b-32a5-0707519b1f7e
+    title: Category Distribution
+    size: {w: 16, h: 12}
+    position: {x: 0, y: 38}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.correlation_id IS NOT NULL
+        | STATS count = COUNT_DISTINCT(azure.correlation_id) BY azure.category
+        | SORT count DESC
+        | LIMIT 10
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: count
+      breakdowns:
+      - field: azure.category
+        label: Category
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: 20ef22ab-4ea9-56dd-0189-e7a310e41baf
+    title: Top Operations by Volume
+    size: {w: 16, h: 12}
+    position: {x: 16, y: 38}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.operation.name IS NOT NULL
+        | WHERE azure.correlation_id IS NOT NULL
+        | STATS op_count = COUNT_DISTINCT(azure.correlation_id) BY azure.operation.name
+        | SORT op_count DESC
+        | LIMIT 10
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: op_count
+      breakdowns:
+      - field: azure.operation.name
+        label: Operation
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: 1efef8b5-e416-245a-8b75-52cabdd4e3a4
+    title: Operations by Principal Type
+    size: {w: 16, h: 12}
+    position: {x: 32, y: 38}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.identity.authorization.evidence.principal.type IS NOT NULL
+        | WHERE azure.correlation_id IS NOT NULL
+        | STATS count = COUNT_DISTINCT(azure.correlation_id) BY azure.identity.authorization.evidence.principal.type
+        | SORT count DESC
+        | LIMIT 5
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: count
+      breakdowns:
+      - field: azure.identity.authorization.evidence.principal.type
+        label: Principal Type
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: ed38434b-25f4-1168-dd1d-d9ef2991bf90
+    title: Failed Operations Over Time
+    size: {w: 24, h: 12}
+    position: {x: 0, y: 62}
+    esql:
+      type: line
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.result.type IN ("Failure", "Failed")
+        | STATS failed_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+        | SORT time_bucket ASC
+      time_field: '@timestamp'
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: failed_count
+        label: Failed Operations
+        format:
+          type: number
+          decimals: 0
+      color:
+        assignments:
+        - value: failed_count
+          color: '#BD271E'
+  - id: 867fb683-3879-c854-f6c3-3f0a508db666
+    title: Top Resource Providers
+    size: {w: 24, h: 12}
+    position: {x: 24, y: 50}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.operation.name IS NOT NULL
+        | WHERE azure.correlation_id IS NOT NULL
+        | EVAL provider = SPLIT(azure.operation.name, "/")
+        | EVAL provider_name = MV_FIRST(provider)
+        | STATS op_count = COUNT_DISTINCT(azure.correlation_id) BY provider_name
+        | SORT op_count DESC
+        | LIMIT 10
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: op_count
+      breakdowns:
+      - field: provider_name
+        label: Provider
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: 2d04b8fc-9db1-fb1f-1766-1e39b1c6e44a
+    title: Top Callers by Operation Count
+    size: {w: 24, h: 12}
+    position: {x: 0, y: 50}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, "unknown")
+        | STATS op_count = COUNT(*), failures = COUNT(*) WHERE azure.result.type IN ("Failure", "Failed") BY caller, azure.identity.authorization.evidence.principal.type
+        | SORT op_count DESC
+        | LIMIT 20
+      time_field: '@timestamp'
+      breakdowns:
+      - field: caller
+        label: Caller
+      - field: azure.identity.authorization.evidence.principal.type
+        label: Principal Type
+      - field: op_count
+        label: Operations
+      - field: failures
+        label: Failures
+      paging:
+        enabled: true
+        page_size: 10
+  - id: 074e2bfe-820d-4aee-a836-553ba53e249e
+    title: DELETE Operations Over Time
+    size: {w: 24, h: 12}
+    position: {x: 24, y: 62}
+    esql:
+      type: line
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.operation.name LIKE "*DELETE*"
+        | STATS delete_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+        | SORT time_bucket ASC
+      time_field: '@timestamp'
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: delete_count
+        label: DELETE Operations
+        format:
+          type: number
+          decimals: 0
+  - id: aed4f113-a50d-725a-3894-696d5b2d56b1
+    title: Sensitive Operations (listKeys, Role Assignments, Deny Assignments)
+    size: {w: 48, h: 14}
+    position: {x: 0, y: 74}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | WHERE azure.operation.name LIKE "*LISTKEYS*" OR azure.operation.name LIKE "*ROLEASSIGNMENT*" OR azure.operation.name LIKE "*DENYASSIGNMENT*"
+        | EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, "unknown")
+        | EVAL result_status = CASE(azure.result.type IN ("Failure", "Failed"), "Failed", azure.result.type IN ("Success", "Succeeded", "Accept", "Activated", "Resolved", "Updated", "Active"), "Success", "Other")
+        | STATS count = COUNT(*) BY azure.operation.name, caller, user.email, result_status, cloud.resource_id
+        | SORT count DESC
+        | LIMIT 100
+      time_field: '@timestamp'
+      breakdowns:
+      - field: azure.operation.name
+        label: Operation
+      - field: caller
+        label: Caller
+      - field: user.email
+        label: Email
+      - field: result_status
+        label: Result
+      - field: cloud.resource_id
+        label: Resource
+      - field: count
+        label: Count
+      paging:
+        enabled: true
+        page_size: 10
+  - id: 3d13e9e5-41d7-492f-cce0-7857f7a762c4
+    title: Recent Activity Log Events
+    size: {w: 48, h: 15}
+    position: {x: 0, y: 88}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category IS NOT NULL
+        | KEEP @timestamp, azure.category, azure.operation.name, azure.result.type, azure.identity.authorization.evidence.principal.type, user.id, network.peer.address
+        | SORT @timestamp DESC
+        | LIMIT 100
+      time_field: '@timestamp'
+      breakdowns:
+      - field: '@timestamp'
+        label: Time
+      - field: azure.category
+        label: Category
+      - field: azure.operation.name
+        label: Operation
+      - field: azure.result.type
+        label: Result
+      - field: azure.identity.authorization.evidence.principal.type
+        label: Principal Type
+      - field: user.id
+        label: Caller
+      - field: network.peer.address
+        label: IP
+      paging:
+        enabled: true
+        page_size: 10

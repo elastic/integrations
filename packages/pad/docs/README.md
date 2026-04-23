@@ -7,6 +7,7 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
 
 ## Installation
 
+1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Privileged Access Detection**. Configure the integration name and agent policy. Click **Save and Continue**.
 1. **Configure the pipeline**: To configure the pipeline you can use one of the following steps:
     - If using Elastic Defend, add a custom pipeline to the data stream. Go to **Stack Management > Ingest Pipelines**, and check if the pipeline `logs-endpoint.events.process@custom` exists. 
@@ -62,12 +63,12 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
     ```
     POST INDEX_NAME/_rollover
     ```
-1. **Check the health of the transforms**: The transforms are scheduled to run every hour. These transforms create two indices: `ml_windows_privilege_type_pad.all` and `ml_okta_multiple_user_sessions_pad.all`. To check the health of the transforms go to **Management > Stack Management > Data > Transforms** under `logs-pad.pivot_transform_okta_multiple_sessions-default-<FLEET-TRANSFORM-VERSION>` and `logs-pad.pivot_transform_windows_privilege_list-default-<FLEET-TRANSFORM-VERSION>`.
-1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on three indices. One index contains logs for Windows, Linux, and Okta (logs-*), while the second and third indices store Okta user session information and details about special Windows privileges assigned to a user, respectively, collected through two transforms (`ml_okta_multiple_user_sessions_pad.all` and `ml_windows_privilege_type_pad.all`). Before enabling the anomaly detection jobs, create a data view with both index patterns.
+1. **Check the health of the transforms**: The transforms are scheduled to run every hour. These transforms create two indices: `ml_windows_privilege_type_pad_ea.all` and `ml_okta_multiple_user_sessions_pad_ea.all`. To check the health of the transforms go to **Management > Stack Management > Data > Transforms** under `logs-pad.pivot_transform_okta_sessions_ea-default-<FLEET-TRANSFORM-VERSION>` and `logs-pad.pivot_transform_win_privilege_list_ea-default-<FLEET-TRANSFORM-VERSION>`.
+1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on three indices. One index contains logs for Windows, Linux, and Okta (logs-*), while the second and third indices store Okta user session information and details about special Windows privileges assigned to a user, respectively, collected through two transforms (`ml_okta_multiple_user_sessions_pad_ea.all` and `ml_windows_privilege_type_pad_ea.all`). Before enabling the anomaly detection jobs, create a data view with both index patterns.
     1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
-    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml_okta_multiple_user_sessions_pad.all, ml_windows_privilege_type_pad.all`, and copy the same in the **Name** field.
+    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml_okta_multiple_user_sessions_pad_ea.all, ml_windows_privilege_type_pad_ea.all`, and copy the same in the **Name** field.
     1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
-    1. Use the new data view (`logs-*, ml_okta_multiple_user_sessions_pad.all, ml_windows_privilege_type_pad.all`) to create anomaly detection jobs for this package.
+    1. Use the new data view (`logs-*, ml_okta_multiple_user_sessions_pad_ea.all, ml_windows_privilege_type_pad_ea.all`) to create anomaly detection jobs for this package.
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see **Privileged Access Detection**. When you select the card, you will see pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. 
 **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [pad-ml file](https://github.com/elastic/integrations/blob/main/packages/pad/kibana/ml_module/pad-ml.json#L10). Additionally, we recommend backdating the datafeed for these anomaly detection jobs to a specific timeframe, as some datafeed queries are resource-intensive and may lead to query delays. We advise you to start the datafeed with 2-3 months' worth of data.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana.
@@ -87,19 +88,19 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
 
 To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
 
-| Transform name                             | Purpose                                                            | Source index  | Destination index                              | Alias                                  | Supported Platform |
-|--------------------------------------------|--------------------------------------------------------------------|---------------|------------------------------------------------|--------------------------------------- | ------------------ |
-| pad.pivot_transform_okta_multiple_sessions | 	Collects user session information for Okta events                 | logs-*        | 	ml_okta_multiple_user_sessions_pad-[version] | ml_okta_multiple_user_sessions_pad.all | Okta               |
-| pad.pivot_transform_windows_privilege_type | 	Collects special privileges assigned to a user for Windows events | logs-*        | 	ml_windows_privilege_type_pad-[version]      | ml_windows_privilege_type_pad.all      | Windows            |
+| Transform name                            | Purpose                                                           | Source index | Destination index                               | Alias                                     | Supported Platform |
+|-------------------------------------------|-------------------------------------------------------------------|--------------|-------------------------------------------------|-------------------------------------------|--------------------|
+| pad.pivot_transform_okta_sessions_ea      | Collects user session information for Okta events                 | logs-*       | ml_okta_multiple_user_sessions_pad_ea-[version] | ml_okta_multiple_user_sessions_pad_ea.all | Okta               |
+| pad.pivot_transform_win_privilege_list_ea | Collects special privileges assigned to a user for Windows events | logs-*       | ml_windows_privilege_type_pad_ea-[version]      | ml_windows_privilege_type_pad_ea.all      | Windows            |
 
-When querying the destination indices for Okta and Windows logs, we advise using the alias for the destination index (`ml_okta_multiple_user_sessions_pad.all` and `ml_windows_privilege_type_pad.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
+When querying the destination indices for Okta and Windows logs, we advise using the alias for the destination index (`ml_okta_multiple_user_sessions_pad_ea.all` and `ml_windows_privilege_type_pad_ea.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 
 ## Customize Privileged Access Detection Transform
 
 To customize filters in the Privileged Access Detection transform, follow the below steps. You can use these instructions to update basic settings or to update filters for fields such as `process.name`, `@timestamp` and others.
 1. To update settings such as retention policy, frequency, or destination configuration, stop the transform, click **Edit** from the **Actions** bar, make the required changes, and start the transform again.
 ![Privileged Access Detection transform](../img/pad_transform_update.png)
-1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-pad.pivot_transform_windows_privilege_list-default-<FLEET-TRANSFORM-VERSION>`**.
+1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-pad.pivot_transform_win_privilege_list_ea-default-<FLEET-TRANSFORM-VERSION>`**.
 1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
 ![Privileged Access Detection transform](../img/pad_transform_1.png)
 1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
@@ -111,29 +112,29 @@ To customize filters in the Privileged Access Detection transform, follow the be
 
 ### Anomaly Detection Jobs
 
-| Job                                                        | Description                                                                                    | Supported Platform   |
-|------------------------------------------------------------|------------------------------------------------------------------------------------------------|----------------------|
-| pad_windows_high_count_special_logon_events                | Detects unusually high special logon events initiated by a user.                               | Windows              |
-| pad_windows_high_count_special_privilege_use_events        | Detects unusually high special privilege use events initiated by a user.                       | Windows              |
-| pad_windows_high_count_group_management_events             | Detects unusually high security group management events initiated by a user.                   | Windows              |
-| pad_windows_high_count_user_account_management_events      | Detects unusually high security user account management events initiated by a user.            | Windows              |
-| pad_windows_rare_privilege_assigned_to_user                | Detects an unusual privilege type assigned to a user.                                          | Windows              |
-| pad_windows_rare_group_name_by_user                        | Detects an unusual group name accessed by a user.                                              | Windows              |
-| pad_windows_rare_device_by_user                            | Detects an unusual device accessed by a user.                                                  | Windows              |
-| pad_windows_rare_source_ip_by_user                         | Detects an unusual source IP address accessed by a user.                                       | Windows              |
-| pad_windows_rare_region_name_by_user                       | Detects an unusual region name for a user.                                                     | Windows              |
-| pad_linux_high_count_privileged_process_events_by_user     | Detects a spike in privileged commands executed by a user.                                     | Linux                |
-| pad_linux_rare_process_executed_by_user                    | Detects a rare process executed by a user.                                                     | Linux                |
-| pad_linux_high_median_process_command_line_entropy_by_user | Detects process command lines executed by a user with an abnormally high median entropy value. | Okta Integration     |
-| pad_okta_spike_in_group_membership_changes                 | Detects spike in group membership change events by a user.                                     | Okta Integration     |
-| pad_okta_spike_in_user_lifecycle_management_changes        | Detects spike in user lifecycle management change events by a user.                            | Okta Integration     |
-| pad_okta_spike_in_group_privilege_changes                  | Detects spike in group privilege change events by a user.                                      | Okta Integration     |
-| pad_okta_spike_in_group_application_assignment_change      | Detects spike in group application assignment change events by a user.                         | Okta Integration     |
-| pad_okta_spike_in_group_lifecycle_changes                  | Detects spike in group lifecycle change events by a user.                                      | Okta Integration     |
-| pad_okta_high_sum_concurrent_sessions_by_user              | Detects an unusual sum of active sessions started by a user.                                   | Okta Integration     |
-| pad_okta_rare_source_ip_by_user                            | Detects an unusual source IP address accessed by a user.                                       | Okta Integration     |
-| pad_okta_rare_region_name_by_user                          | Detects an unusual region name for a user.                                                     | Okta Integration     |
-| pad_okta_rare_host_name_by_user                            | Detects an unusual host name for a user.                                                       | Okta Integration     |
+| Job                                                           | Description                                                                                    | Supported Platform | Filter Field                        |
+|---------------------------------------------------------------|------------------------------------------------------------------------------------------------|--------------------|-------------------------------------|
+| pad_windows_high_count_special_logon_events_ea                | Detects unusually high special logon events initiated by a user.                               | Windows            | `host.os.type: windows`               |
+| pad_windows_high_count_special_privilege_use_events_ea        | Detects unusually high special privilege use events initiated by a user.                       | Windows            | `host.os.type: windows`               |
+| pad_windows_high_count_group_management_events_ea             | Detects unusually high security group management events initiated by a user.                   | Windows            | `host.os.type: windows`               |
+| pad_windows_high_count_user_account_management_events_ea      | Detects unusually high security user account management events initiated by a user.            | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_privilege_assigned_to_user_ea                | Detects an unusual privilege type assigned to a user.                                          | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_group_name_by_user_ea                        | Detects an unusual group name accessed by a user.                                              | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_device_by_user_ea                            | Detects an unusual device accessed by a user.                                                  | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_source_ip_by_user_ea                         | Detects an unusual source IP address accessed by a user.                                       | Windows            | `host.os.type: windows`               |
+| pad_windows_rare_region_name_by_user_ea                       | Detects an unusual region name for a user.                                                     | Windows            | `host.os.type: windows`               |
+| pad_linux_high_count_privileged_process_events_by_user_ea     | Detects a spike in privileged commands executed by a user.                                     | Linux              | `host.os.type: linux`                 |
+| pad_linux_rare_process_executed_by_user_ea                    | Detects a rare process executed by a user.                                                     | Linux              | `host.os.type: linux`                 |
+| pad_linux_high_median_process_command_line_entropy_by_user_ea | Detects process command lines executed by a user with an abnormally high median entropy value. | Linux              | `host.os.type: linux`                 |
+| pad_okta_spike_in_group_membership_changes_ea                 | Detects spike in group membership change events by a user.                                     | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_user_lifecycle_management_changes_ea        | Detects spike in user lifecycle management change events by a user.                            | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_group_privilege_changes_ea                  | Detects spike in group privilege change events by a user.                                      | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_group_application_assignment_changes_ea     | Detects spike in group application assignment change events by a user.                         | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_spike_in_group_lifecycle_changes_ea                  | Detects spike in group lifecycle change events by a user.                                      | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_high_sum_concurrent_sessions_by_user_ea              | Detects an unusual sum of active sessions started by a user.                                   | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_rare_source_ip_by_user_ea                            | Detects an unusual source IP address accessed by a user.                                       | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_rare_region_name_by_user_ea                          | Detects an unusual region name for a user.                                                     | Okta Integration   | `data_stream.dataset: okta.system`    |
+| pad_okta_rare_host_name_by_user_ea                            | Detects an unusual host name for a user.                                                       | Okta Integration   | `data_stream.dataset: okta.system`    |
 
 ## Customize ML jobs for Privileged Access Detection
 
@@ -151,6 +152,71 @@ To customize the datafeed query and other settings such as model memory limit, f
 1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
 ![Privileged Access Detection jobs](../img/pad_ml_job_6.png)
 1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
+## v2.0.0 and beyond
+
+v2.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
+
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
+- Previously installed ML jobs, transforms, and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
+- **Important**: We recommend installing the new ML jobs and transforms and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
+- The new Entity Analytics transforms write to separate destination indices postfixed with `_ea`. Create a new data view for the Entity Analytics anomaly detection jobs using the new destination indices/aliases listed below. Do not mix old and new transform destination indices in the same data view.
+- New dashboards are available in this version with the suffix "(Entity Analytics)" in the title. If you are still running jobs or transforms from before this version, the original dashboards without the suffix remain available.
+
+The new Entity Analytics ML job IDs are:
+- `pad_windows_high_count_special_logon_events_ea`
+- `pad_windows_high_count_special_privilege_use_events_ea`
+- `pad_windows_high_count_group_management_events_ea`
+- `pad_windows_high_count_user_account_management_events_ea`
+- `pad_windows_rare_privilege_assigned_to_user_ea`
+- `pad_windows_rare_group_name_by_user_ea`
+- `pad_windows_rare_device_by_user_ea`
+- `pad_windows_rare_source_ip_by_user_ea`
+- `pad_windows_rare_region_name_by_user_ea`
+- `pad_linux_high_count_privileged_process_events_by_user_ea`
+- `pad_linux_rare_process_executed_by_user_ea`
+- `pad_linux_high_median_process_command_line_entropy_by_user_ea`
+- `pad_okta_spike_in_group_membership_changes_ea`
+- `pad_okta_spike_in_user_lifecycle_management_changes_ea`
+- `pad_okta_spike_in_group_privilege_changes_ea`
+- `pad_okta_spike_in_group_application_assignment_changes_ea`
+- `pad_okta_spike_in_group_lifecycle_changes_ea`
+- `pad_okta_high_sum_concurrent_sessions_by_user_ea`
+- `pad_okta_rare_source_ip_by_user_ea`
+- `pad_okta_rare_region_name_by_user_ea`
+- `pad_okta_rare_host_name_by_user_ea`
+
+The new Entity Analytics transforms are:
+- `pad.pivot_transform_okta_sessions_ea` → destination index: `ml_okta_multiple_user_sessions_pad_ea-2.0.0`, alias: `ml_okta_multiple_user_sessions_pad_ea.latest`, `ml_okta_multiple_user_sessions_pad_ea.all`
+- `pad.pivot_transform_win_privilege_list_ea` → destination index: `ml_windows_privilege_type_pad_ea-2.0.0`, alias: `ml_windows_privilege_type_pad_ea.latest`, `ml_windows_privilege_type_pad_ea.all`
+
+After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `pad_windows_high_count_special_logon_events`
+    - `pad_windows_high_count_special_privilege_use_events`
+    - `pad_windows_high_count_group_management_events`
+    - `pad_windows_high_count_user_account_management_events`
+    - `pad_windows_rare_privilege_assigned_to_user`
+    - `pad_windows_rare_group_name_by_user`
+    - `pad_windows_rare_device_by_user`
+    - `pad_windows_rare_source_ip_by_user`
+    - `pad_windows_rare_region_name_by_user`
+    - `pad_linux_high_count_privileged_process_events_by_user`
+    - `pad_linux_rare_process_executed_by_user`
+    - `pad_linux_high_median_process_command_line_entropy_by_user`
+    - `pad_okta_spike_in_group_membership_changes`
+    - `pad_okta_spike_in_user_lifecycle_management_changes`
+    - `pad_okta_spike_in_group_privilege_changes`
+    - `pad_okta_spike_in_group_application_assignment_changes`
+    - `pad_okta_spike_in_group_lifecycle_changes`
+    - `pad_okta_high_sum_concurrent_sessions_by_user`
+    - `pad_okta_rare_source_ip_by_user`
+    - `pad_okta_rare_region_name_by_user`
+    - `pad_okta_rare_host_name_by_user`
+- Delete old transforms: Navigate to **Stack Management -> Data -> Transforms** and delete:
+    - `pad.pivot_transform_okta_multiple_sessions`
+    - `pad.pivot_transform_windows_privilege_list`
 
 ## Licensing
 
