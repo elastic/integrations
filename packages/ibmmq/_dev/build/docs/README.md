@@ -61,7 +61,7 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ### Queue Manager performance metrics
 
-The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=operator-metrics-published-by-mq-container) like messages, topics, subscriptions and calls.
+The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=operator-metrics-published-by-mq-container) like messages, topics, subscriptions, and calls.
 
 {{event "qmgr"}}
 
