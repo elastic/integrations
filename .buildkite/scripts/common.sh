@@ -172,8 +172,8 @@ with_docker_compose_plugin() {
     local DOCKER_CONFIG="$HOME/.docker/cli-plugins"
     mkdir -p "$DOCKER_CONFIG"
 
-    retry 5 curl -SL -o ${DOCKER_CONFIG}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x ${DOCKER_CONFIG}/docker-compose
+    retry 5 curl -SL -o "${DOCKER_CONFIG}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x "${DOCKER_CONFIG}/docker-compose"
     docker compose version
 }
 
