@@ -212,7 +212,7 @@ responses:
 | --------- | ----------- |
 | `log`  | Sends events to the `logs-cloud_defend.file-*` data stream for `file` responses, and the `logs-cloud_defend.process-*` data stream for `process` responses. |
 | `alert` | Writes events (file or process) to the `logs-cloud_defend.alerts-*` data stream. |
-| `block` | Prevents the system operation from proceeding. This blocking action happens *prior* to the execution of the event. It is required that the `alert` action be set if `block` is enabled. |
+| `block` | Prevents the system operation from proceeding. This blocking action happens *before* the execution of the event. It is required that the `alert` action be set if `block` is enabled. |
 
 ## Example
 
