@@ -28,9 +28,18 @@ type versionConfig struct {
 	Version string `yaml:"version"`
 }
 
+type beatsConfig struct {
+	// Tag is an exact git ref (e.g. v9.4.2). Takes precedence over Branch and Version.
+	Tag string `yaml:"tag"`
+	// Branch is a git branch name (e.g. main). Used when Tag is empty.
+	Branch string `yaml:"branch"`
+	// Version is a semver or major.minor prefix; used to resolve a tag when Tag and Branch are empty.
+	Version string `yaml:"version"`
+}
+
 type config struct {
 	Osquery versionConfig `yaml:"osquery"`
-	Beats   versionConfig `yaml:"beats"`
+	Beats   beatsConfig   `yaml:"beats"`
 }
 
 type packageBuildYAML struct {
@@ -70,13 +79,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("resolve osquery version: %v", err)
 	}
-	beatsTag, err := resolveLatestPatch("elastic/beats", cfg.Beats.Version)
+	beatsRef, err := resolveBeatsGitRef(cfg.Beats)
 	if err != nil {
-		log.Fatalf("resolve beats version: %v", err)
-	}
-	beatsRef, err := resolveBeatsSpecsRef(cfg.Beats.Version, beatsTag)
-	if err != nil {
-		log.Fatalf("resolve beats specs ref: %v", err)
+		log.Fatalf("resolve beats git ref: %v", err)
 	}
 	ecsVersionSpec, err := loadECSVersionSpecFromBuildYAML(outputRoot)
 	if err != nil {
@@ -106,8 +111,8 @@ func loadConfig(path string) (config, error) {
 	if strings.TrimSpace(cfg.Osquery.Version) == "" {
 		return cfg, fmt.Errorf("osquery.version is required")
 	}
-	if strings.TrimSpace(cfg.Beats.Version) == "" {
-		return cfg, fmt.Errorf("beats.version is required")
+	if strings.TrimSpace(cfg.Beats.Tag) == "" && strings.TrimSpace(cfg.Beats.Branch) == "" && strings.TrimSpace(cfg.Beats.Version) == "" {
+		return cfg, fmt.Errorf("beats: at least one of tag, branch, or version is required")
 	}
 	return cfg, nil
 }
@@ -262,6 +267,39 @@ func (s semver) GreaterThan(other semver) bool {
 
 func (s semver) String() string {
 	return fmt.Sprintf("%d.%d.%d", s.Major, s.Minor, s.Patch)
+}
+
+// resolveBeatsGitRef picks the elastic/beats ref for extension specs: tag > branch > semver version resolution.
+func resolveBeatsGitRef(cfg beatsConfig) (string, error) {
+	if ref := strings.TrimSpace(cfg.Tag); ref != "" {
+		ok, err := refHasBeatsSpecs(ref)
+		if err != nil {
+			return "", fmt.Errorf("beats tag %q: %w", ref, err)
+		}
+		if !ok {
+			return "", fmt.Errorf("beats tag %q: no osquery extension specs at that ref", ref)
+		}
+		return ref, nil
+	}
+	if ref := strings.TrimSpace(cfg.Branch); ref != "" {
+		ok, err := refHasBeatsSpecs(ref)
+		if err != nil {
+			return "", fmt.Errorf("beats branch %q: %w", ref, err)
+		}
+		if !ok {
+			return "", fmt.Errorf("beats branch %q: no osquery extension specs at that ref", ref)
+		}
+		return ref, nil
+	}
+	versionSpec := strings.TrimSpace(cfg.Version)
+	if versionSpec == "" {
+		return "", fmt.Errorf("beats version is required when tag and branch are empty")
+	}
+	beatsTag, err := resolveLatestPatch("elastic/beats", versionSpec)
+	if err != nil {
+		return "", err
+	}
+	return resolveBeatsSpecsRef(versionSpec, beatsTag)
 }
 
 func resolveBeatsSpecsRef(versionSpec, resolvedPatch string) (string, error) {
