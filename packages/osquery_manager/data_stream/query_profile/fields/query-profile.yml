@@ -1,0 +1,89 @@
+- name: type
+  type: keyword
+  ignore_above: 1024
+  description: Event discriminator; osquerybeat sets this to osquery_profile for profile documents.
+- name: query
+  title: Query reference
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: Scheduled query name when profiling scheduled queries.
+- name: action_id
+  type: keyword
+  ignore_above: 1024
+  description: Originating action identifier for live query profiles when applicable.
+- name: response_id
+  type: keyword
+  ignore_above: 1024
+  description: Response identifier for correlating with result or action response documents.
+- name: action_data
+  title: Osquery original action data
+  type: group
+  description: Original action payload for live queries when included by the agent.
+  fields:
+    - name: ecs_mapping
+      type: object
+      enabled: false
+    - name: id
+      type: keyword
+      ignore_above: 1024
+    - name: platform
+      type: keyword
+      ignore_above: 1024
+    - name: query
+      type: keyword
+      ignore_above: 1024
+    - name: saved_query_id
+      type: keyword
+      ignore_above: 1024
+    - name: version
+      type: keyword
+      ignore_above: 1024
+- name: osquery_profile
+  title: Osquery query profile metrics
+  type: group
+  description: Performance metrics from osquery_schedule (scheduled) or process snapshots around a live query (live).
+  fields:
+    - name: source
+      type: keyword
+      ignore_above: 1024
+      description: Profile origin; scheduled (osquery_schedule) or live (process deltas around execution).
+    - name: query_name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the scheduled query in osquery_schedule.
+    - name: query
+      type: text
+      description: SQL text of the query when provided by the agent.
+    - name: utilization
+      type: float
+      description: CPU utilization as a percentage (cpu_time / wall time).
+    - name: duration
+      type: long
+      description: Wall-clock duration in milliseconds.
+    - name: memory
+      type: long
+      description: Resident memory bytes (live) or last_memory from osquery_schedule (scheduled).
+    - name: user_time
+      type: long
+      description: User CPU time in milliseconds.
+    - name: system_time
+      type: long
+      description: System CPU time in milliseconds.
+    - name: cpu_time
+      type: long
+      description: Total CPU time in milliseconds (user_time + system_time).
+    - name: output_size_cumulative
+      type: long
+      description: Cumulative output size from osquery_schedule for scheduled queries.
+    - name: executions
+      type: long
+      description: Number of executions recorded in osquery_schedule for scheduled queries.
+    - name: exit
+      type: long
+      description: Exit status for live query profiles (0 success, 1 error).
+- name: host.os.build
+  type: keyword
+  description: OS build information.
