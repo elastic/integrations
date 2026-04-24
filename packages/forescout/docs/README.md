@@ -1,7 +1,7 @@
 # Forescout Integration for Elastic
 
 ## Overview
-[Forescout](https://www.forescout.com) is a leading device visibility and control platform that enables organizations to continuously identify, classify, and enforce security policies across all connected devices. It provides real-time visibility into IT, IoT, OT, and unmanaged devices across enterprise networks.
+The [Forescout](https://www.forescout.com) is a leading device visibility and control platform that enables organizations to continuously identify, classify, and enforce security policies across all connected devices. It provides real-time visibility into IT, IoT, OT, and unmanaged devices across enterprise networks.
 
 The Forescout integration for Elastic enables you to ingest host data from the Forescout eyeExtend Connect app and event data using TCP and UDP, then visualize it in Kibana.
 
@@ -34,7 +34,7 @@ For **Host Data**, the dashboard provides detailed breakdowns by compliance stat
 
 For **Events**, the dashboard presents key metrics with breakdowns by `Severity`, `Facility`, `Priority`, `Hosts`, and `Applications`, helping analysts quickly triage security events and assess risk levels.
 
-Time-based visualizations such as `Events over Time by Priority` reveal trends and abnormal spikes in access or security activity, supporting proactive threat detection and continuous monitoring.
+Time-based visualizations such as `Events over Time by Priority` reveal trends and atypical spikes in access or security activity, supporting proactive threat detection and continuous monitoring.
 
 Interactive filtering controls allow analysts to drill down across hosts and events, supporting streamlined investigation, threat hunting, and accelerated incident response within a unified Elastic environment.
 
@@ -54,7 +54,7 @@ Interactive filtering controls allow analysts to drill down across hosts and eve
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 This integration does not include a data collector for host data. Host data is sent directly by the Forescout eyeExtend Connect app to Elastic. The integration provides the necessary ingest pipelines and Kibana dashboards for processing and visualizing both host and event data.
 
@@ -65,7 +65,7 @@ This integration does not include a data collector for host data. Host data is s
 4. Select **Add Forescout** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To **Collect Forescout events via syslog**, you'll need to:
+    * To **Collect Forescout events using syslog**, you'll need to:
 
         - Configure **Listen Address**, **Listen Port**.
         - Additionally, **Timezone**, **Custom TCP/UDP options** and **tags** can be provided.
