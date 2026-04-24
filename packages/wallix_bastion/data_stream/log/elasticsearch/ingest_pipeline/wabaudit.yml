@@ -1,0 +1,79 @@
+---
+description: Parse Wallix Bastion audit events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^\[wabaudit\] %{GREEDYDATA:_tmp.kv}$'
+      ignore_failure: true
+  - kv:
+      field: _tmp.kv
+      field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)(?=[A-Za-z_][A-Za-z0-9_]*=)'
+      value_split: '='
+      target_field: wallix_bastion
+      trim_value: '"'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: wallix_bastion.user
+      if: ctx.wallix_bastion?.user != null && ctx.user?.name == null
+  - set:
+      field: source.address
+      copy_from: wallix_bastion.client_ip
+      if: ctx.wallix_bastion?.client_ip != null && ctx.source?.address == null
+  - grok:
+      field: source.address
+      patterns:
+        - '^%{IP:source.ip}$'
+      ignore_failure: true
+      if: ctx.source?.address != null
+  - append:
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+  - set:
+      field: event.action
+      copy_from: wallix_bastion.action
+      if: ctx.wallix_bastion?.action != null && ctx.event?.action == null
+  - append:
+      field: event.type
+      value: creation
+      allow_duplicates: false
+      if: ctx.wallix_bastion?.action == 'add'
+  - append:
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: >-
+        ctx.wallix_bastion?.action == 'edit' ||
+        ctx.wallix_bastion?.action == 'backup' ||
+        ctx.wallix_bastion?.action == 'restore'
+  - append:
+      field: event.type
+      value: deletion
+      allow_duplicates: false
+      if: ctx.wallix_bastion?.action == 'delete'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.wallix_bastion?.action == 'list' || ctx.wallix_bastion?.action == 'download'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null
+  - set:
+      field: event.reason
+      copy_from: wallix_bastion.infos
+      if: >-
+        ctx.wallix_bastion?.infos != null &&
+        ctx.wallix_bastion.infos != '' &&
+        ctx.event?.reason == null
+  - remove:
+      field:
+        - _tmp
+        - wallix_bastion.action
+        - wallix_bastion.client_ip
+        - wallix_bastion.user
+      ignore_missing: true

@@ -1,0 +1,90 @@
+---
+description: Parse Wallix Bastion session integrity events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^\[sessionintegrity\] %{GREEDYDATA:_tmp.kv}$'
+      ignore_failure: true
+  - kv:
+      field: _tmp.kv
+      field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)(?=[A-Za-z_][A-Za-z0-9_]*=)'
+      value_split: '='
+      target_field: wallix_bastion
+      trim_value: '"'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: wallix_bastion.user
+      if: ctx.wallix_bastion?.user != null && ctx.user?.name == null
+  - grok:
+      field: wallix_bastion.target
+      patterns:
+        - '^(?:[^@]+@){1,2}(?<destination.address>[^:]+):%{GREEDYDATA:_tmp.target_service}$'
+      ignore_failure: true
+      if: ctx.wallix_bastion?.target instanceof String
+  - grok:
+      field: destination.address
+      patterns:
+        - '^%{IP:destination.ip}$'
+      ignore_failure: true
+      if: ctx.destination?.address != null
+  - date:
+      field: wallix_bastion.begin
+      target_field: event.start
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      ignore_failure: true
+      if: ctx.wallix_bastion?.begin != null
+  - date:
+      field: wallix_bastion.end
+      target_field: event.end
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      ignore_failure: true
+      if: ctx.wallix_bastion?.end != null
+  - script:
+      lang: painless
+      if: ctx.event?.start != null && ctx.event?.end != null
+      source: |
+        long start = ZonedDateTime.parse(ctx.event.start).toInstant().toEpochMilli();
+        long end = ZonedDateTime.parse(ctx.event.end).toInstant().toEpochMilli();
+        ctx.event.duration = Math.max(end - start, 0L) * 1000000L;
+  - append:
+      field: event.category
+      value: session
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+  - set:
+      field: event.action
+      value: session-integrity
+      if: ctx.event?.action == null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.wallix_bastion?.status == 'OK'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.wallix_bastion?.status == 'failed'
+  - set:
+      field: network.protocol
+      value: ssh
+      if: ctx.wallix_bastion?.type instanceof String && ctx.wallix_bastion.type.contains('SSH')
+  - set:
+      field: network.protocol
+      value: rdp
+      if: ctx.wallix_bastion?.type == 'RDP'
+  - set:
+      field: service.type
+      copy_from: network.protocol
+      if: ctx.network?.protocol != null && ctx.service?.type == null
+  - remove:
+      field:
+        - _tmp
+        - wallix_bastion.user
+      ignore_missing: true

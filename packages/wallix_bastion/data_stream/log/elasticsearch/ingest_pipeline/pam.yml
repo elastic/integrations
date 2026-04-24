@@ -1,0 +1,66 @@
+---
+description: Parse Wallix Bastion PAM events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^pam_%{WORD:wallix_bastion.module}\(%{DATA:wallix_bastion.service}:session\): session %{WORD:wallix_bastion.pam_state} for user %{DATA:wallix_bastion.user}(?:\(uid=%{INT:wallix_bastion.uid}\))?(?: by \(uid=%{INT:wallix_bastion.by_uid}\))?$'
+        - '^pam_%{WORD:wallix_bastion.module}\(%{DATA:wallix_bastion.service}:session\): %{GREEDYDATA:wallix_bastion.infos}$'
+      ignore_failure: true
+  - set:
+      field: process.name
+      copy_from: wallix_bastion.service
+      if: ctx.wallix_bastion?.service != null && ctx.process?.name == null
+  - set:
+      field: user.name
+      copy_from: wallix_bastion.user
+      if: ctx.wallix_bastion?.user != null && ctx.user?.name == null
+  - set:
+      field: user.id
+      copy_from: wallix_bastion.uid
+      if: ctx.wallix_bastion?.uid != null && ctx.user?.id == null
+  - set:
+      field: user.effective.id
+      copy_from: wallix_bastion.by_uid
+      if: ctx.wallix_bastion?.by_uid != null && ctx.user?.effective?.id == null
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+  - set:
+      field: event.action
+      value: session-opened
+      if: ctx.wallix_bastion?.pam_state == 'opened' && ctx.event?.action == null
+  - set:
+      field: event.action
+      value: session-closed
+      if: ctx.wallix_bastion?.pam_state == 'closed' && ctx.event?.action == null
+  - append:
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.wallix_bastion?.pam_state == 'opened'
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.wallix_bastion?.pam_state == 'closed'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.wallix_bastion?.pam_state == null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null
+  - set:
+      field: event.reason
+      copy_from: wallix_bastion.infos
+      if: ctx.wallix_bastion?.infos != null && ctx.event?.reason == null
+  - remove:
+      field:
+        - wallix_bastion.by_uid
+        - wallix_bastion.uid
+        - wallix_bastion.user
+      ignore_missing: true

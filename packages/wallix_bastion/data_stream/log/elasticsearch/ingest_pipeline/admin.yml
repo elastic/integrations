@@ -1,0 +1,36 @@
+---
+description: Parse Wallix Bastion administrative syslog events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^Accepted %{WORD:wallix_bastion.method} for %{DATA:user.name} from %{IP:source.ip} port %{POSINT:source.port:long} %{GREEDYDATA:wallix_bastion.infos}$'
+        - '^(?<user.name>[^: ]+) ?: (?:TTY=%{DATA:wallix_bastion.tty} ; )?PWD=%{DATA:process.working_directory} ; USER=%{DATA:user.target.name} ; COMMAND=%{GREEDYDATA:process.command_line}$'
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx.log?.syslog?.appname == 'sshd'
+  - append:
+      field: event.category
+      value: process
+      allow_duplicates: false
+      if: ctx.process?.command_line != null
+  - set:
+      field: event.action
+      value: ssh-publickey-accept
+      if: ctx.log?.syslog?.appname == 'sshd' && ctx.event?.action == null
+  - set:
+      field: event.action
+      value: sudo-command
+      if: ctx.process?.command_line != null && ctx.event?.action == null
+  - append:
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.log?.syslog?.appname == 'sshd' || ctx.process?.command_line != null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null
