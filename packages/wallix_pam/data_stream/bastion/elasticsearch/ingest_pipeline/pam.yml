@@ -1,0 +1,66 @@
+---
+description: Parse Wallix PAM PAM events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^pam_%{WORD:wallix_pam.module}\(%{DATA:wallix_pam.service}:session\): session %{WORD:wallix_pam.pam_state} for user %{DATA:wallix_pam.user}(?:\(uid=%{INT:wallix_pam.uid}\))?(?: by \(uid=%{INT:wallix_pam.by_uid}\))?$'
+        - '^pam_%{WORD:wallix_pam.module}\(%{DATA:wallix_pam.service}:session\): %{GREEDYDATA:wallix_pam.infos}$'
+      ignore_failure: true
+  - set:
+      field: process.name
+      copy_from: wallix_pam.service
+      if: ctx.wallix_pam?.service != null && ctx.process?.name == null
+  - set:
+      field: user.name
+      copy_from: wallix_pam.user
+      if: ctx.wallix_pam?.user != null && ctx.user?.name == null
+  - set:
+      field: user.id
+      copy_from: wallix_pam.uid
+      if: ctx.wallix_pam?.uid != null && ctx.user?.id == null
+  - set:
+      field: user.effective.id
+      copy_from: wallix_pam.by_uid
+      if: ctx.wallix_pam?.by_uid != null && ctx.user?.effective?.id == null
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+  - set:
+      field: event.action
+      value: session-opened
+      if: ctx.wallix_pam?.pam_state == 'opened' && ctx.event?.action == null
+  - set:
+      field: event.action
+      value: session-closed
+      if: ctx.wallix_pam?.pam_state == 'closed' && ctx.event?.action == null
+  - append:
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.wallix_pam?.pam_state == 'opened'
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.wallix_pam?.pam_state == 'closed'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.wallix_pam?.pam_state == null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null
+  - set:
+      field: event.reason
+      copy_from: wallix_pam.infos
+      if: ctx.wallix_pam?.infos != null && ctx.event?.reason == null
+  - remove:
+      field:
+        - wallix_pam.by_uid
+        - wallix_pam.uid
+        - wallix_pam.user
+      ignore_missing: true

@@ -1,0 +1,170 @@
+---
+description: Pipeline for parsing Wallix PAM logs
+processors:
+  - set:
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - set:
+      field: observer.vendor
+      value: Wallix
+  - set:
+      field: observer.product
+      value: Bastion
+  - set:
+      field: observer.type
+      value: bastion
+  - grok:
+      field: event.original
+      ignore_failure: true
+      patterns:
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:observer.hostname} %{DATA:log.syslog.appname} %{POSINT:log.syslog.procid} - - %{GREEDYDATA:_tmp.message}$'
+        - '^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:observer.hostname} %{DATA:log.syslog.appname} %{POSINT:log.syslog.procid} - - %{GREEDYDATA:_tmp.message}$'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:observer.hostname} %{DATA:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?:? %{GREEDYDATA:_tmp.message}$'
+        - '^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:observer.hostname} %{DATA:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?:? %{GREEDYDATA:_tmp.message}$'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NOTSPACE:observer.hostname} %{DATA:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?:? %{GREEDYDATA:_tmp.message}$'
+        - '^%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NOTSPACE:observer.hostname} %{DATA:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?:? %{GREEDYDATA:_tmp.message}$'
+        - '^(?<log.syslog.appname>[A-Za-z0-9_.-]+(?:\([^)]+\))?): %{GREEDYDATA:_tmp.message}$'
+        - '^%{GREEDYDATA:_tmp.message}$'
+  - set:
+      field: message
+      copy_from: _tmp.message
+      if: ctx._tmp?.message != null
+  - drop:
+      if: >-
+        ctx.message instanceof String &&
+        ctx.message.trim().length() == 0
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats:
+        - strict_date_optional_time_nanos
+        - strict_date_optional_time
+        - MMM d HH:mm:ss
+      locale: ENGLISH
+      ignore_failure: true
+      if: ctx._tmp?.timestamp != null
+  - grok:
+      field: log.syslog.appname
+      ignore_failure: true
+      patterns:
+        - '^%{DATA:_tmp.syslog_appname}\(%{DATA:wallix_pam.subcomponent}\)$'
+        - '^%{DATA:_tmp.syslog_appname}$'
+      if: ctx.log?.syslog?.appname != null
+  - set:
+      field: log.syslog.appname
+      copy_from: _tmp.syslog_appname
+      if: ctx._tmp?.syslog_appname != null
+  - set:
+      field: event.kind
+      value: event
+      if: ctx.event?.kind == null
+  - set:
+      field: wallix_pam.family
+      value: wabauth
+      if: ctx.message instanceof String && ctx.message.startsWith('[wabauth]')
+  - set:
+      field: wallix_pam.family
+      value: wabaudit
+      if: ctx.message instanceof String && ctx.message.startsWith('[wabaudit]')
+  - set:
+      field: wallix_pam.family
+      value: vault
+      if: ctx.message instanceof String && ctx.message.startsWith('[Vault Activity]')
+  - set:
+      field: wallix_pam.family
+      value: sessionintegrity
+      if: ctx.message instanceof String && ctx.message.startsWith('[sessionintegrity]')
+  - set:
+      field: wallix_pam.family
+      value: sshproxy
+      if: >-
+        ctx.message instanceof String &&
+        (ctx.message.startsWith('[SSH Session]') || ctx.message.startsWith('[sshproxy]'))
+  - set:
+      field: wallix_pam.family
+      value: rdpproxy
+      if: >-
+        ctx.message instanceof String &&
+        (ctx.message.startsWith('[RDP Session]') || ctx.message.startsWith('[rdpproxy]'))
+  - set:
+      field: wallix_pam.family
+      value: pam
+      if: ctx.message instanceof String && ctx.message.startsWith('pam_')
+  - set:
+      field: wallix_pam.family
+      value: admin
+      if: >-
+        ctx.wallix_pam?.family == null &&
+        ((ctx.log?.syslog?.appname != null && ctx.log.syslog.appname == 'sshd') ||
+        (ctx.message instanceof String && ctx.message.contains('PWD=') && ctx.message.contains('COMMAND=')))
+  - pipeline:
+      name: '{{ IngestPipeline "wabauth" }}'
+      if: ctx.wallix_pam?.family == 'wabauth'
+  - pipeline:
+      name: '{{ IngestPipeline "wabaudit" }}'
+      if: ctx.wallix_pam?.family == 'wabaudit'
+  - pipeline:
+      name: '{{ IngestPipeline "vault" }}'
+      if: ctx.wallix_pam?.family == 'vault'
+  - pipeline:
+      name: '{{ IngestPipeline "sessionintegrity" }}'
+      if: ctx.wallix_pam?.family == 'sessionintegrity'
+  - pipeline:
+      name: '{{ IngestPipeline "sshproxy" }}'
+      if: ctx.wallix_pam?.family == 'sshproxy'
+  - pipeline:
+      name: '{{ IngestPipeline "rdpproxy" }}'
+      if: ctx.wallix_pam?.family == 'rdpproxy'
+  - pipeline:
+      name: '{{ IngestPipeline "pam" }}'
+      if: ctx.wallix_pam?.family == 'pam'
+  - pipeline:
+      name: '{{ IngestPipeline "admin" }}'
+      if: ctx.wallix_pam?.family == 'admin'
+  - script:
+      lang: painless
+      if: ctx.event?.action instanceof String
+      source: |
+        ctx.event.action = ctx.event.action.toLowerCase().replace('_', '-').replace(' ', '-');
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      value: '{{{user.target.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - remove:
+      field:
+        - _tmp
+        - wallix_pam.family
+        - message
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
