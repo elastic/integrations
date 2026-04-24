@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-node-low-memory",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Node free memory low",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_free_memory IS NOT NULL\n| STATS avg_free = AVG(node_free_memory) BY node, cluster\n| EVAL free_gb = ROUND(avg_free / 1073741824, 2)\n// Alert when free memory drops below 1 GB\n// Low node memory can cause OOM kills, swap thrashing, and fork failures\n// Adjust threshold based on your node's total RAM and provisioning model\n// Nodes with overbooking enabled may legitimately run with lower free memory\n| WHERE free_gb < 1\n| SORT free_gb ASC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "node",
+            "termSize": 100
+        }
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-go-goroutine-leak",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] Go goroutine leak suspected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "runtime"
+        ],
+        "schedule": {
+            "interval": "10m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// Go runtime goroutine count (gauge)\n| WHERE COALESCE(metrics.go_goroutines, go_goroutines) IS NOT NULL\n// Get max goroutine count per host over the window\n| STATS max_goroutines = MAX(COALESCE(metrics.go_goroutines, go_goroutines))\n  BY host.name\n// Alert when goroutines exceed threshold (e.g. 10000)\n// High count may indicate leak; adjust for your baseline\n| WHERE max_goroutines > 10000"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

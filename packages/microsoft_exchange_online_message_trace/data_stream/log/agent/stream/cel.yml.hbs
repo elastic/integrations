@@ -38,8 +38,38 @@ program: |-
   (
     (state.?cursor.next_link.orValue(null) != null) ?
       // There is a next link to follow for the current range.
+      // Work around Microsoft Graph beta API defect where
+      // skiptoken values are double-JSON-encoded, causing
+      // 400 errors on the next page request. Fixing on read
+      // also repairs cursors poisoned before this fix.
       {
-        "url": state.cursor.next_link,
+        "url": state.cursor.next_link.parse_url().as(u,
+          u.RawQuery.parse_query().as(q,
+            q[?"$skiptoken"].orValue([""]).as(tokens,
+              (tokens.size() > 0 && tokens[0] != "") ?
+                // base64_decode requires padding but the API
+                // sometimes omits it; strip and use raw decode.
+                tokens[0].trim_right("=").base64_raw_decode().decode_json().as(token,
+                  is_error(token) ? state.cursor.next_link :
+                  u.with_replace({
+                    "RawQuery": q.with_replace({
+                      "$skiptoken": [bytes(
+                        token.transformMapEntry(k, v,
+                          {
+                            k: (v.has_prefix('"') && v.has_suffix('"')) ?
+                              v.decode_json().as(dv, is_error(dv) ? v : dv)
+                            :
+                              v
+                          }
+                        ).encode_json()
+                      ).base64()],
+                    }).format_query(),
+                  }).format_url()
+                )
+              : state.cursor.next_link
+            )
+          )
+        ),
         "end": state.cursor.end,
       }
     :
