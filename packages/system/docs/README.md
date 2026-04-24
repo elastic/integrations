@@ -62,6 +62,54 @@ Docker image, run the following command:
 docker run --rm -it --entrypoint journalctl docker.elastic.co/elastic-agent/elastic-agent-complete:<VERSION>  --version
 ```
 
+### Default log source selector matrix
+
+By default, the System integration enables both `logfile` and `journald` inputs
+and uses input-level `condition` expressions so only one path is active per host.
+
+| Host selector | Default log source |
+|---|---|
+| `${host.platform} == "windows"` | Neither (`winlog` is used for Windows logs) |
+| `${host.os_version} == "12 (bookworm)"` or `${host.os_version} == "13 (trixie)"` | `journald` |
+| `${host.os_platform} == "amzn"` and `${host.os_version} == "2023"` | `journald` |
+| `${host.os_platform} == "sles"` and `${host.os_version}` in `15 SP1`..`15 SP7` | `journald` |
+| Other non-Windows hosts | `logfile` |
+
+Implementation example from `packages/system/manifest.yml`:
+
+```yaml
+# logfile input default condition
+(${host.platform} != "windows") and (
+  ${host.os_version} != "12 (bookworm)" and
+  ${host.os_version} != "13 (trixie)" and
+  (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and
+  (${host.os_platform} != "sles" and
+    ${host.os_version} != "15 SP1" and
+    ${host.os_version} != "15 SP2" and
+    ${host.os_version} != "15 SP3" and
+    ${host.os_version} != "15 SP4" and
+    ${host.os_version} != "15 SP5" and
+    ${host.os_version} != "15 SP6" and
+    ${host.os_version} != "15 SP7")
+)
+
+# journald input default condition
+(${host.platform} != "windows") and (
+  ${host.os_version} == "12 (bookworm)" or
+  ${host.os_version} == "13 (trixie)" or
+  (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or
+  (${host.os_platform} == "sles" and (
+    ${host.os_version} == "15 SP1" or
+    ${host.os_version} == "15 SP2" or
+    ${host.os_version} == "15 SP3" or
+    ${host.os_version} == "15 SP4" or
+    ${host.os_version} == "15 SP5" or
+    ${host.os_version} == "15 SP6" or
+    ${host.os_version} == "15 SP7"
+  ))
+)
+```
+
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
@@ -1958,6 +2006,5 @@ The following alert rule templates are available:
 
 
 **[System] Memory Utilization**
-
 
 
