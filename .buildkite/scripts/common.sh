@@ -772,7 +772,6 @@ is_pr_affected() {
         '\.buildkite/scripts/packages/.+\.sh'
         '\.buildkite/scripts/backport_branch\.sh'
         '\.buildkite/scripts/build_packages\.sh'
-        '\.buildkite/scripts/common\.sh'
     )
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
