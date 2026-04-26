@@ -165,6 +165,7 @@ For more information on architectures that can be used for scaling this integrat
 | cato_networks.event.http_request_method | HTTP request method. | keyword |
 | cato_networks.event.http_response_code | HTTP response status code. | long |
 | cato_networks.event.internal_id | Internal identifier. | keyword |
+| cato_networks.event.internalid | Internal identifier. | keyword |
 | cato_networks.event.ip_protocol | IP protocol used. | keyword |
 | cato_networks.event.is_sanctioned_app | Indicates whether the application is sanctioned. | boolean |
 | cato_networks.event.is_sinkhole | Indicates whether the destination is a sinkhole. | boolean |
@@ -235,11 +236,11 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-03-02T10:43:11.000Z",
+    "@timestamp": "2026-03-02T10:43:11.573Z",
     "agent": {
-        "ephemeral_id": "01d8d1ab-cdb0-4c0e-adba-3896d54e8858",
-        "id": "f35e64ad-550b-4019-ad32-f4b1bf673373",
-        "name": "elastic-agent-54394",
+        "ephemeral_id": "c5d4140a-5100-46fa-ae7d-9e2ebde40644",
+        "id": "7fd19da5-7176-48b9-a040-a5b7a87b9c32",
+        "name": "elastic-agent-80058",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -264,7 +265,7 @@ An example event for `event` looks as following:
             "connection_origin": "Cato Client",
             "dest_country": "United States",
             "dest_country_code": "US",
-            "dest_ip": "81.2.69.142",
+            "dest_ip": "89.160.20.128",
             "dest_port": 443,
             "device_categories": "PC",
             "device_id": "699b0f1b352cc37b4a5e4d4d",
@@ -272,18 +273,19 @@ An example event for `event` looks as following:
             "device_os_type": "Windows Workstation",
             "device_posture_profile": "Windows managed",
             "device_type": "Workstation",
-            "domain_name": "betnow.eu",
+            "domain_name": "ahjlighting.com",
             "egress_pop_name": "Bucharest",
             "event_count": 1,
-            "event_id": "250b9bf09f51c0fe",
+            "event_id": "250b9bf09f51bff2",
             "event_sub_type": "Internet Firewall",
             "event_type": "Security",
-            "flow_id": "657139225934734848",
-            "full_path_url": "https://betnow.eu/",
+            "flow_id": "362862917479975360",
+            "full_path_url": "https://ahjlighting.com/",
             "host_ip": "1.128.0.0",
             "host_mac": "7a:1e:52:8f:4f:96",
             "http_request_method": "GET",
-            "internal_id": "250b9bf09f51c0fe",
+            "internal_id": "250b9bf09f51bff2",
+            "internalid": "250b9bf09f51bff2",
             "ip_protocol": "TCP",
             "isp_name": "Cato Networks Inc.",
             "network_rule": "Akira Impossible Travel",
@@ -295,28 +297,28 @@ An example event for `event` looks as following:
             "request_size": 0,
             "rule_id": "8512269566766760473",
             "rule_name": "Prompt for Risky Categories",
-            "server_ip": "81.2.69.142",
+            "server_ip": "89.160.20.128",
             "src_country": "United States",
             "src_country_code": "US",
             "src_ip": "1.128.0.0",
             "src_is_site_or_vpn": "SDP User",
             "src_isp_ip": "89.160.20.112",
-            "src_port": 59930,
+            "src_port": 59929,
             "src_site_id": "1000033",
-            "src_site_name": "James Smith",
+            "src_site_name": "Jane Smith",
             "static_host": false,
             "tcp_acceleration": true,
-            "time": "2026-03-02T10:43:11.810Z",
+            "time": "2026-03-02T10:43:11.573Z",
             "time_str": "2026-03-02T10:43:11.000Z",
             "tls_inspection": true,
             "traffic_direction": "OUTBOUND",
-            "url": "https://betnow.eu/",
+            "url": "https://ahjlighting.com/",
             "user_agent": "Python-urllib/3.10",
             "user_id": "1000033",
-            "user_name": "James Smith",
-            "user_reference_id": "3970644524",
+            "user_name": "Jane Smith",
+            "user_reference_id": "2770852121",
             "visible_device_id": "7a-1e-52-8f-4f-96",
-            "vpn_user_email": "james.smith@test.example.com"
+            "vpn_user_email": "jane.smith@test.example.com"
         }
     },
     "client": {
@@ -324,23 +326,23 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "cato_networks.event",
-        "namespace": "62113",
+        "namespace": "74442",
         "type": "logs"
     },
     "destination": {
-        "address": "81.2.69.142",
+        "address": "89.160.20.128",
         "geo": {
             "country_iso_code": "US",
             "country_name": "United States"
         },
-        "ip": "81.2.69.142",
+        "ip": "89.160.20.128",
         "port": 443
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "f35e64ad-550b-4019-ad32-f4b1bf673373",
+        "id": "7fd19da5-7176-48b9-a040-a5b7a87b9c32",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -348,10 +350,10 @@ An example event for `event` looks as following:
         "action": "prompt",
         "agent_id_status": "verified",
         "dataset": "cato_networks.event",
-        "id": "250b9bf09f51c0fe",
-        "ingested": "2026-04-03T07:14:06Z",
+        "id": "250b9bf09f51bff2",
+        "ingested": "2026-04-22T04:47:54Z",
         "kind": "event",
-        "original": "{\"ISP_name\":\"Cato Networks Inc.\",\"account_id\":\"12345\",\"account_name\":\"Demo-Mode\",\"action\":\"Prompt\",\"ad_name\":\"James Smith\",\"app_stack\":\"TCP, TLS, HTTP(S)\",\"application_id\":\"http\",\"application_name\":\"HTTP(S)\",\"application_risk\":\"2\",\"application_type\":\"System\",\"categories\":\"Gambling\",\"cato_app\":\"http\",\"client_class\":\"unclassified tls\",\"client_ip\":\"1.128.0.0\",\"client_version\":\"5.21.5.8548\",\"configured_host_name\":\"VTL-US02-Win11\",\"congestion_algorithm\":\"BBR\",\"connection_origin\":\"Cato Client\",\"dest_country\":\"United States\",\"dest_country_code\":\"US\",\"dest_ip\":\"81.2.69.142\",\"dest_port\":\"443\",\"device_categories\":\"PC\",\"device_id\":\"699b0f1b352cc37b4a5e4d4d\",\"device_name\":\"VTL-US02-Win11\",\"device_os_type\":\"Windows Workstation\",\"device_posture_profile\":\"Windows managed\",\"device_type\":\"Workstation\",\"domain_name\":\"betnow.eu\",\"egress_pop_name\":\"Bucharest\",\"event_count\":\"1\",\"event_id\":\"250b9bf09f51c0fe\",\"event_sub_type\":\"Internet Firewall\",\"event_type\":\"Security\",\"flow_id\":\"657139225934734848\",\"full_path_url\":\"https://betnow.eu/\",\"host_ip\":\"1.128.0.0\",\"host_mac\":\"7a:1e:52:8f:4f:96\",\"http_request_method\":\"GET\",\"internalId\":\"250b9bf09f51c0fe\",\"internal_id\":\"250b9bk09f51c0fe\",\"ip_protocol\":\"TCP\",\"network_rule\":\"Akira Impossible Travel\",\"os_type\":\"OS_WINDOWS\",\"os_version\":\"11\",\"pop_name\":\"Miami\",\"prompt_action\":\"\",\"public_ip\":\"81.2.69.144\",\"qos_priority\":\"10\",\"request_size\":\"0\",\"rule_id\":\"8512269566766760473\",\"rule_name\":\"Prompt for Risky Categories\",\"server_ip\":\"81.2.69.142\",\"src_country\":\"United States\",\"src_country_code\":\"US\",\"src_ip\":\"1.128.0.0\",\"src_is_site_or_vpn\":\"SDP User\",\"src_isp_ip\":\"89.160.20.112\",\"src_port\":\"59930\",\"src_site_id\":\"1000033\",\"src_site_name\":\"James Smith\",\"static_host\":\"false\",\"tcp_acceleration\":\"true\",\"time\":\"1772448191810\",\"time_str\":\"2026-03-02T10:43:11Z\",\"tls_inspection\":\"true\",\"traffic_direction\":\"OUTBOUND\",\"url\":\"https://betnow.eu/\",\"user_agent\":\"Python-urllib/3.10\",\"user_id\":\"1000033\",\"user_name\":\"James Smith\",\"user_reference_id\":\"3970644524\",\"visible_device_id\":\"7a-1e-52-8f-4f-96\",\"vpn_user_email\":\"james.smith@test.example.com\"}",
+        "original": "{\"ISP_name\":\"Cato Networks Inc.\",\"account_id\":\"12345\",\"account_name\":\"Demo-Mode\",\"action\":\"Prompt\",\"ad_name\":\"James Smith\",\"app_stack\":\"TCP, TLS, HTTP(S)\",\"application_id\":\"http\",\"application_name\":\"HTTP(S)\",\"application_risk\":\"2\",\"application_type\":\"System\",\"categories\":\"Gambling\",\"cato_app\":\"http\",\"client_class\":\"unclassified tls\",\"client_ip\":\"1.128.0.0\",\"client_version\":\"5.21.5.8548\",\"configured_host_name\":\"VTL-US02-Win11\",\"congestion_algorithm\":\"BBR\",\"connection_origin\":\"Cato Client\",\"dest_country\":\"United States\",\"dest_country_code\":\"US\",\"dest_ip\":\"89.160.20.128\",\"dest_port\":\"443\",\"device_categories\":\"PC\",\"device_id\":\"699b0f1b352cc37b4a5e4d4d\",\"device_name\":\"VTL-US02-Win11\",\"device_os_type\":\"Windows Workstation\",\"device_posture_profile\":\"Windows managed\",\"device_type\":\"Workstation\",\"domain_name\":\"ahjlighting.com\",\"egress_pop_name\":\"Bucharest\",\"event_count\":\"1\",\"event_id\":\"250b9bf09f51bff2\",\"event_sub_type\":\"Internet Firewall\",\"event_type\":\"Security\",\"flow_id\":\"362862917479975360\",\"full_path_url\":\"https://ahjlighting.com/\",\"host_ip\":\"1.128.0.0\",\"host_mac\":\"7a:1e:52:8f:4f:96\",\"http_request_method\":\"GET\",\"internalId\":\"250b9bf09f51bff2\",\"internal_id\":\"250b9bf09f51bff2\",\"ip_protocol\":\"TCP\",\"network_rule\":\"Akira Impossible Travel\",\"os_type\":\"OS_WINDOWS\",\"os_version\":\"11\",\"pop_name\":\"Miami\",\"prompt_action\":\"\",\"public_ip\":\"81.2.69.144\",\"qos_priority\":\"10\",\"request_size\":\"0\",\"rule_id\":\"8512269566766760473\",\"rule_name\":\"Prompt for Risky Categories\",\"server_ip\":\"89.160.20.128\",\"src_country\":\"United States\",\"src_country_code\":\"US\",\"src_ip\":\"1.128.0.0\",\"src_is_site_or_vpn\":\"SDP User\",\"src_isp_ip\":\"89.160.20.112\",\"src_port\":\"59929\",\"src_site_id\":\"1000033\",\"src_site_name\":\"Jane Smith\",\"static_host\":\"false\",\"tcp_acceleration\":\"true\",\"time\":\"1772448191573\",\"time_str\":\"2026-03-02T10:43:11Z\",\"tls_inspection\":\"true\",\"traffic_direction\":\"OUTBOUND\",\"url\":\"https://ahjlighting.com/\",\"user_agent\":\"Python-urllib/3.10\",\"user_id\":\"1000033\",\"user_name\":\"Jane Smith\",\"user_reference_id\":\"2770852121\",\"visible_device_id\":\"7a-1e-52-8f-4f-96\",\"vpn_user_email\":\"jane.smith@test.example.com\"}",
         "type": [
             "info"
         ]
@@ -382,18 +384,20 @@ An example event for `event` looks as following:
     },
     "related": {
         "hosts": [
-            "VTL-US02-Win11"
+            "VTL-US02-Win11",
+            "vtl-us02-win11"
         ],
         "ip": [
             "1.128.0.0",
-            "81.2.69.142",
+            "89.160.20.128",
             "81.2.69.144",
             "89.160.20.112"
         ],
         "user": [
             "James Smith",
             "1000033",
-            "james.smith@test.example.com"
+            "Jane Smith",
+            "jane.smith@test.example.com"
         ]
     },
     "rule": {
@@ -401,7 +405,7 @@ An example event for `event` looks as following:
         "name": "Prompt for Risky Categories"
     },
     "server": {
-        "ip": "81.2.69.142"
+        "ip": "89.160.20.128"
     },
     "service": {
         "name": "HTTP(S)"
@@ -413,7 +417,7 @@ An example event for `event` looks as following:
             "country_name": "United States"
         },
         "ip": "1.128.0.0",
-        "port": 59930
+        "port": 59929
     },
     "tags": [
         "preserve_original_event",
@@ -422,13 +426,13 @@ An example event for `event` looks as following:
         "cato_networks-event"
     ],
     "url": {
-        "domain": "betnow.eu",
-        "full": "https://betnow.eu/"
+        "domain": "ahjlighting.com",
+        "full": "https://ahjlighting.com/"
     },
     "user": {
-        "email": "james.smith@test.example.com",
+        "email": "jane.smith@test.example.com",
         "id": "1000033",
-        "name": "James Smith"
+        "name": "Jane Smith"
     },
     "user_agent": {
         "device": {
