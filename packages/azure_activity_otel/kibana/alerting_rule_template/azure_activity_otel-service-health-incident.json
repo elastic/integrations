@@ -1,0 +1,36 @@
+{
+  "id": "azure_activity_otel-service-health-incident",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Azure Activity OTel] Service health incident",
+    "ruleTypeId": ".es-query",
+    "tags": ["observability", "azure", "activity-logs", "platform-health"],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-azure.activity.otel-*\n// Restrict to Azure Activity Logs (ServiceHealth category)\n| WHERE azure.category IS NOT NULL\n| WHERE azure.category == \"ServiceHealth\"\n// Incident type indicates active Azure platform outage (vs Maintenance, Informational)\n| WHERE azure.servicehealth.incident.type == \"Incident\"\n// Active state — incident in progress; optionally include Resolved for awareness\n| WHERE azure.servicehealth.state == \"Active\"\n// Exclude synthetic test events if present\n| WHERE COALESCE(azure.servicehealth.is_synthetic, false) == false\n| STATS event_count = COUNT(*), services = VALUES(azure.servicehealth.service), regions = VALUES(azure.servicehealth.region) BY azure.servicehealth.tracking.id, azure.servicehealth.title\n| SORT event_count DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "azure.servicehealth.tracking.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
