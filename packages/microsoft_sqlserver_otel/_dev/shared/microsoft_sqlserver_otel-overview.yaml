@@ -1,0 +1,296 @@
+# SQL Server OTel Overview — golden signals, health snapshot
+# SRE flow: Is the instance healthy? Traffic, memory, concurrency, errors.
+
+dashboards:
+- id: microsoft_sqlserver_otel-overview
+  name: '[SQL Server OTel] Overview'
+  description: High-level SQL Server health — batch throughput, connections, memory, concurrency, and errors.
+
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Instance
+    data_view: metrics-*
+    field: resource.attributes.service.instance.id
+
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: microsoft_sqlserver_otel-overview
+      - label: Memory & saturation
+        dashboard: microsoft_sqlserver_otel-memory-saturation
+      - label: Concurrency & errors
+        dashboard: microsoft_sqlserver_otel-concurrency-errors
+      - label: Database I/O
+        dashboard: microsoft_sqlserver_otel-database-io
+      - label: Query performance
+        dashboard: microsoft_sqlserver_otel-query-performance
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [SQL Server OTel] Overview
+
+        This dashboard provides an overview of SQL Server health and performance:
+        - Batch request throughput and user connections
+        - Buffer pool health (page life expectancy, cache hit ratio)
+        - Concurrency (deadlocks, blocked processes, lock waits)
+        - Memory grants pending and execution errors
+
+  - title: Batch requests/s
+    hide_title: true
+    size: {w: 7, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.batch.request.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.batch.request.rate)
+      primary:
+        field: rate
+        label: Batch req/s
+        format:
+          type: number
+          decimals: 0
+
+  - title: User connections
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.user.connection.count IS NOT NULL
+      - STATS conn = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.user.connection.count)))
+      primary:
+        field: conn
+        label: Connections
+        format:
+          type: number
+          decimals: 0
+
+  - title: Buffer cache hit ratio
+    hide_title: true
+    size: {w: 7, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.buffer_cache.hit_ratio IS NOT NULL
+      - STATS hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio)
+      primary:
+        field: hit_ratio
+        label: Cache hit %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+
+  - title: Deadlocks/s
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.deadlock.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.deadlock.rate)
+      primary:
+        field: rate
+        label: Deadlocks/s
+        format:
+          type: number
+          decimals: 0
+
+  - title: Blocked processes
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.processes.blocked IS NOT NULL
+      - STATS blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked)))
+      primary:
+        field: blocked
+        label: Blocked processes
+        format:
+          type: number
+          decimals: 0
+
+  - title: Batch requests over time
+    size: {w: 32, h: 8}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.batch.request.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.batch.request.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Batch req/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: User connections over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.user.connection.count IS NOT NULL
+      - STATS conn = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.user.connection.count))) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart,
+        ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: conn
+        label: Connections
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Deadlocks and blocked processes over time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: unstacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.deadlock.rate IS NOT NULL OR metrics.sqlserver.processes.blocked IS NOT NULL
+      - STATS deadlocks = AVG(metrics.sqlserver.deadlock.rate), blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked))) 
+        BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - EVAL deadlocks = COALESCE(deadlocks, 0.0), blocked = COALESCE(blocked, 0)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: deadlocks
+        label: Deadlocks/s
+        format:
+          type: number
+          decimals: 0
+      - field: blocked
+        label: Blocked processes
+        format:
+          type: number
+          decimals: 0
+      appearance:
+        y_left_axis:
+          title: Count
+      legend:
+        visible: show
+        position: right
+
+  - title: Login vs logout rate over time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.login.rate IS NOT NULL OR metrics.sqlserver.logout.rate IS NOT NULL
+      - STATS login_rate = AVG(metrics.sqlserver.login.rate), logout_rate = AVG(metrics.sqlserver.logout.rate) BY time_bucket = 
+        BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - EVAL login_rate = COALESCE(login_rate, 0.0), logout_rate = COALESCE(logout_rate, 0.0)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: login_rate
+        label: Logins/s
+        format:
+          type: number
+          decimals: 0
+      - field: logout_rate
+        label: Logouts/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      appearance:
+        y_left_axis:
+          title: Sessions/s
+      legend:
+        visible: show
+        position: right
+
+  - title: Top instances by batch request rate
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - STATS batch_rate = AVG(metrics.sqlserver.batch.request.rate), conn = 
+        MAX(metrics.sqlserver.user.connection.count), ple = 
+        MAX(metrics.sqlserver.page.life_expectancy), hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio)
+        BY instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT batch_rate DESC
+      - LIMIT 20
+      breakdowns:
+      - field: instance
+        label: Instance
+      metrics:
+      - field: batch_rate
+        label: Batch req/s
+        format:
+          type: number
+          decimals: 0
+      - field: conn
+        label: Connections
+        format:
+          type: number
+          decimals: 0
+      - field: ple
+        label: PLE (s)
+        format:
+          type: number
+          decimals: 0
+      - field: hit_ratio
+        label: Cache hit %
+        format:
+          type: number
+          decimals: 0
+          suffix: '%'
