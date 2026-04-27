@@ -4,7 +4,7 @@
 
 [BeyondTrust Endpoint Privilege Management (EPM)](https://www.beyondtrust.com/products/endpoint-privilege-management) is a security solution that enforces least-privilege policies across endpoints, controls application usage, and audits privileged activity. It helps organizations reduce their attack surface by managing and monitoring privilege escalation, application control, and configuration changes across users and devices.
 
-The BeyondTrust EPM integration for Elastic collects audit logs via the **BeyondTrust EPM Management API** or through **AWS S3/SQS** cloud storage, and visualizes them in Kibana.
+The BeyondTrust EPM integration for Elastic collects audit logs using the **BeyondTrust EPM Management API** or through **AWS S3/SQS** cloud storage, and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -42,7 +42,7 @@ For more information on configuring API registration in BeyondTrust EPM, refer t
 
 ### From BeyondTrust EPM (AWS S3 collection)
 
-To collect data via AWS S3, configure BeyondTrust EPM to export logs to an S3 bucket, then point Elastic at that bucket.
+To collect data using AWS S3, configure BeyondTrust EPM to export logs to an S3 bucket, then point Elastic at that bucket.
 
 #### Step 1: Set up AWS infrastructure:
 
@@ -88,13 +88,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 4. Select **Add BeyondTrust EPM** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To **Collect logs via BeyondTrust EPM API (CEL)**:
+    * To **Collect logs using BeyondTrust EPM API (CEL)**:
 
         - Set the **URL** to the base URL of your BeyondTrust EPM instance (e.g., `https://app.beyondtrust.io`).
         - Set the **Client ID** and **Client Secret** obtained from API Registration.
         - Optionally adjust **Initial Interval**, **Interval**, **Page Size**, and **HTTP Client Timeout**.
 
-    * To **Collect logs via AWS S3**:
+    * To **Collect logs using AWS S3**:
 
         - Set the **Bucket ARN** of the S3 bucket configured in BeyondTrust EPM SIEM Settings.
         - Set **AWS Access Key ID** and **Secret Access Key** for an IAM user with read access to the bucket.
