@@ -28,12 +28,19 @@ type conditions struct {
 }
 
 type packageManifest struct {
-	Name       string     `config:"name" json:"name" yaml:"name"`
-	License    string     `config:"license" json:"license" yaml:"license"`
-	Conditions conditions `config:"conditions" json:"conditions" yaml:"conditions"`
+	FormatVersion string     `config:"format_version" json:"format_version" yaml:"format_version"`
+	Name          string     `config:"name" json:"name" yaml:"name"`
+	Type          string     `config:"type" json:"type" yaml:"type"`
+	Version       string     `config:"version" json:"version" yaml:"version"`
+	License       string     `config:"license" json:"license" yaml:"license"`
+	Conditions    conditions `config:"conditions" json:"conditions" yaml:"conditions"`
 }
 
-func readPackageManifest(path string) (*packageManifest, error) {
+func (m *packageManifest) IsValid() bool {
+	return m.FormatVersion != "" && m.Name != "" && m.Type != "" && m.Version != ""
+}
+
+func ReadPackageManifest(path string) (*packageManifest, error) {
 	cfg, err := yaml.NewConfigWithFile(path, ucfg.PathSep("."))
 	if err != nil {
 		return nil, fmt.Errorf("reading file failed (path: %s): %w", path, err)

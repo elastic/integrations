@@ -5,9 +5,12 @@
     - name: cluster_id
       type: keyword
       description: The ID of the cluster which handled this request.
-    - name: colo.code
-      type: keyword
-      description: IATA airport code of data center that received the request.
+    - name: colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: IATA airport code of data center that received the request.
     - name: edns
       type: group
       fields:
@@ -41,21 +44,24 @@
     - name: response
       type: group
       fields:
-        - name: reason
-          type: keyword
-          description: Short descriptions with more context around the final DNS Firewall response. See [Cloudflare docs](https://developers.cloudflare.com/dns/dns-firewall/analytics/) for details.
-        - name: code
-          type: keyword
-          description: DNS response code.
         - name: cached
           type: boolean
           description: Whether the response was cached or not.
         - name: cached_stale
           type: boolean
           description: Whether the response was cached stale. In other words, the TTL had expired and the upstream nameserver was not reachable.
-    - name: source.ip
-      type: ip
-      description: The source IP address of the request.
+        - name: code
+          type: keyword
+          description: DNS response code.
+        - name: reason
+          type: keyword
+          description: Short descriptions with more context around the final DNS Firewall response. See [Cloudflare docs](https://developers.cloudflare.com/dns/dns-firewall/analytics/) for details.
+    - name: source
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The source IP address of the request.
     - name: timestamp
       type: date
       description: Timestamp at which the query occurred.

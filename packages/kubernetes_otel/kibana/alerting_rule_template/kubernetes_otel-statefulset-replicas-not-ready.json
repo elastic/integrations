@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-statefulset-replicas-not-ready",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a StatefulSet has fewer ready pods than desired. StatefulSets manage stateful applications with stable identities, so missing replicas can cause data availability issues.",
+        "name": "[K8s OTel] StatefulSet replicas not ready",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## StatefulSet Replicas Not Ready\n\n### Triage Steps\n1. Identify the affected StatefulSet(s) from the alert results.\n2. Check the Workload Health dashboard for StatefulSet status.\n3. Run `kubectl describe statefulset <name> -n <namespace>` for events.\n4. Check individual pod status: `kubectl get pods -l app=<statefulset> -n <namespace>`.\n5. Verify PVC bindings — StatefulSet pods require their PVCs to be bound before starting.\n\n### Common Causes\n- PersistentVolumeClaim binding failures (no matching PV available)\n- Pod crash loops in stateful workloads\n- Ordered startup blocked by earlier pod failures (StatefulSets start sequentially)\n- Resource constraints preventing pod scheduling\n\n### Tuning\n- The rule filters out StatefulSets scaled to zero (`desired > 0`).\n- StatefulSets roll out pods sequentially, so transient gaps during updates are normal. The `alertDelay` of 3 runs helps avoid false positives.\n\n### Escalation\nStatefulSet failures often affect databases and message queues. Prioritise investigation to prevent data loss."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.desired_pods IS NOT NULL\n    AND k8s.statefulset.ready_pods IS NOT NULL\n| STATS\n    desired = LAST(k8s.statefulset.desired_pods, @timestamp),\n    ready = LAST(k8s.statefulset.ready_pods, @timestamp)\n    BY k8s.statefulset.name, k8s.namespace.name\n// Exclude StatefulSets scaled to zero\n| WHERE desired > 0\n// Alert when ready pods are fewer than desired\n| WHERE ready < desired\n| EVAL not_ready = desired - ready\n| KEEP k8s.namespace.name, k8s.statefulset.name, desired, ready, not_ready\n| SORT not_ready DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.statefulset.name",
+            "termSize": 20
+        }
+    }
+}

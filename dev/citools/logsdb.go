@@ -21,7 +21,7 @@ func IsVersionLessThanLogsDBGA(version *semver.Version) bool {
 }
 
 func packageKibanaConstraint(path string) (*semver.Constraints, error) {
-	manifest, err := readPackageManifest(path)
+	manifest, err := ReadPackageManifest(path)
 	if err != nil {
 		return nil, err
 	}

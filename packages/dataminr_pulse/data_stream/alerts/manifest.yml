@@ -1,0 +1,92 @@
+title: Dataminr Pulse Alerts
+type: logs
+streams:
+  - input: cel
+    title: Dataminr Pulse Alerts
+    description: Collect alerts from Dataminr Pulse API
+    template_path: stream.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: API URL
+        description: The base URL for the Dataminr Pulse API alerts endpoint.
+        default: https://api.dataminr.com/pulse/v1/alerts
+        required: true
+        show_user: true
+      - name: base_url
+        type: text
+        title: Base URL
+        description: The base URL without the endpoint path.
+        default: https://api.dataminr.com/pulse
+        required: true
+        show_user: false
+      - name: auth_url
+        type: text
+        title: Authentication URL
+        description: The OAuth token endpoint URL.
+        default: https://userauth.dataminr.com/auth/2/token
+        required: true
+        show_user: false
+      - name: token_expiry_buffer
+        type: text
+        title: Token Expiry Buffer
+        description: How long before the token expires to refresh it (e.g. 5m, 30m).
+        default: 5m
+        required: true
+        show_user: false
+        secret: false
+      - name: client_id
+        type: text
+        title: Client ID
+        description: Client ID from Dataminr for token generation.
+        required: true
+        show_user: true
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: Client secret from Dataminr for token generation.
+        required: true
+        show_user: true
+        secret: true
+      - name: interval
+        type: text
+        title: Interval
+        description: How often to poll for new alerts (e.g. 1m, 5m, 15m, 30m).
+        default: 15m
+        required: true
+        show_user: true
+      - name: page_size
+        type: text
+        title: Page Size
+        description: Maximum number of alerts per request (1-100).
+        default: "40"
+        required: true
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        required: false
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        default: false
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+          - dataminr-pulse-alerts
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
