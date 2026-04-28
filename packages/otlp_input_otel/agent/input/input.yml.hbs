@@ -11,7 +11,10 @@ extensions:
 {{/if}}
 {{/if}}
 {{#if enable_bearer_auth}}
+{{#if enable_basic_auth}}
+{{else}}
 extensions:
+{{/if}}
   bearertokenauth:
 {{#if bearer_token}}
     token: {{bearer_token}}
@@ -27,10 +30,20 @@ extensions:
 {{/if}}
 {{/if}}
 {{#if enable_oidc_auth}}
+{{#if enable_basic_auth}}
+{{else}}
+{{#if enable_bearer_auth}}
+{{else}}
 extensions:
+{{/if}}
+{{/if}}
   oidc:
+{{#if oidc_issuer_url}}
     issuer_url: {{oidc_issuer_url}}
+{{/if}}
+{{#if oidc_audience}}
     audience: {{oidc_audience}}
+{{/if}}
 {{#if oidc_ignore_audience}}
     ignore_audience: {{oidc_ignore_audience}}
 {{/if}}
@@ -52,7 +65,9 @@ receivers:
 {{#if tls_cert_file}}
         tls:
           cert_file: {{tls_cert_file}}
+{{#if tls_key_file}}
           key_file: {{tls_key_file}}
+{{/if}}
 {{#if tls_ca_file}}
           client_ca_file: {{tls_ca_file}}
 {{/if}}
@@ -60,12 +75,10 @@ receivers:
 {{#if enable_basic_auth}}
         auth:
           authenticator: basicauth
-{{/if}}
-{{#if enable_bearer_auth}}
+{{else if enable_bearer_auth}}
         auth:
           authenticator: bearertokenauth
-{{/if}}
-{{#if enable_oidc_auth}}
+{{else if enable_oidc_auth}}
         auth:
           authenticator: oidc
 {{/if}}
@@ -74,7 +87,9 @@ receivers:
 {{#if tls_cert_file}}
         tls:
           cert_file: {{tls_cert_file}}
+{{#if tls_key_file}}
           key_file: {{tls_key_file}}
+{{/if}}
 {{#if tls_ca_file}}
           client_ca_file: {{tls_ca_file}}
 {{/if}}
@@ -82,12 +97,10 @@ receivers:
 {{#if enable_basic_auth}}
         auth:
           authenticator: basicauth
-{{/if}}
-{{#if enable_bearer_auth}}
+{{else if enable_bearer_auth}}
         auth:
           authenticator: bearertokenauth
-{{/if}}
-{{#if enable_oidc_auth}}
+{{else if enable_oidc_auth}}
         auth:
           authenticator: oidc
 {{/if}}
@@ -96,13 +109,31 @@ processors:
     detectors: ["system"]
 service:
 {{#if enable_basic_auth}}
+{{#if enable_bearer_auth}}
+{{#if enable_oidc_auth}}
+  extensions: [basicauth, bearertokenauth, oidc]
+{{else}}
+  extensions: [basicauth, bearertokenauth]
+{{/if}}
+{{else}}
+{{#if enable_oidc_auth}}
+  extensions: [basicauth, oidc]
+{{else}}
   extensions: [basicauth]
 {{/if}}
+{{/if}}
+{{else}}
 {{#if enable_bearer_auth}}
+{{#if enable_oidc_auth}}
+  extensions: [bearertokenauth, oidc]
+{{else}}
   extensions: [bearertokenauth]
 {{/if}}
+{{else}}
 {{#if enable_oidc_auth}}
   extensions: [oidc]
+{{/if}}
+{{/if}}
 {{/if}}
   pipelines:
 {{#if enable_logs}}
@@ -120,9 +151,3 @@ service:
       receivers: [otlp]
       processors: [resourcedetection/system]
 {{/if}}
-{{!-- {{#if enable_profiles}}
-    profiles:
-      receivers: [otlp]
-      processors: [resourcedetection/system]
-{{/if}} --}}
-

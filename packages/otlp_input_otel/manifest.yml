@@ -4,7 +4,7 @@ title: "OTLP Receiver OpenTelemetry Input Package"
 version: "0.1.0"
 source:
   license: "Elastic-2.0"
-description: "Receive logs, metrics, traces, and profiles via OTLP (OpenTelemetry Protocol) over gRPC and HTTP"
+description: "Receive logs, metrics, and traces via OTLP (OpenTelemetry Protocol) over gRPC and HTTP"
 type: input
 categories:
   - observability
@@ -22,7 +22,7 @@ icons:
 policy_templates:
   - name: otlpreceiver
     title: OTLP Receiver (OpenTelemetry)
-    description: Receive logs, metrics, traces, and profiles via OTLP over gRPC and HTTP
+    description: Receive logs, metrics, and traces via OTLP over gRPC and HTTP
     input: otelcol
     template_path: input.yml.hbs
     dynamic_signal_types: true
@@ -64,19 +64,12 @@ policy_templates:
         description: Enable acceptance of trace data via OTLP.
         default: true
         show_user: true
-      - name: enable_profiles
-        type: bool
-        required: false
-        title: Accept Profiles
-        description: Enable acceptance of profiling data via OTLP.
-        default: true
-        show_user: false
       # Authentication (per OpenTelemetry configauth: basicauthextension, bearertokenauthextension, oidcauthextension)
       - name: enable_basic_auth
         type: bool
         required: false
         title: Enable Basic Auth
-        description: Require Basic Auth (username/password via htpasswd) for incoming OTLP requests. Uses basicauthextension.
+        description: Require Basic Auth (username/password via htpasswd) for incoming OTLP requests. Uses basicauthextension. Only one authentication method can be active at a time; enabling multiple defaults to Basic Auth.
         default: false
         show_user: true
       # Basic Auth (basicauthextension) - requires htpasswd file or inline
@@ -180,13 +173,13 @@ policy_templates:
         required: false
         title: TLS Certificate File
         description: Path to the TLS certificate file for the server.
-        show_user: false
+        show_user: true
       - name: tls_key_file
         type: text
         required: false
         title: TLS Key File
         description: Path to the TLS private key file for the server.
-        show_user: false
+        show_user: true
       - name: tls_ca_file
         type: text
         required: false
