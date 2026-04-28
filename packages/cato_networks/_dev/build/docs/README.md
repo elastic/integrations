@@ -4,7 +4,7 @@
 
 [Cato Networks](https://www.catonetworks.com/) is a cloud-native, global SD-WAN provider that delivers a secure, optimized, and agile global network for businesses of all sizes. Cato's cloud-based platform converges multiple network and security functions into a unified solution that includes SD-WAN, network security, cloud security, and secure access service edge (SASE) capabilities.
 
-The Cato Networks integration for Elastic collects `Audit Feed` from the **API** and visualizes them in Kibana.
+The Cato Networks integration for Elastic collects `Events Feed` and `Audit Feed` from the **API** and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -18,15 +18,20 @@ This integration periodically queries the Cato Networks GraphQL API to retrieve 
 
 This integration collects log messages of the following type:
 
+- `Events Feed`: Collects [Events Feed](https://api.catonetworks.com/documentation/#query-eventsFeed) logs from the Cato Networks API (endpoint: `/api/v1/graphql2`).
+
 - `Audit Feed`: Collects [Audit Feed](https://api.catonetworks.com/documentation/#query-auditFeed) logs from the Cato Networks API (endpoint: `/api/v1/graphql2`).
+
 
 ### Supported use cases
 
-Integrating Cato Networks with Elastic SIEM provides centralized visibility into administrative activities and configuration changes through the **Audit** data stream, enabling efficient monitoring and compliance tracking within Kibana dashboards.
+Integrating Cato Networks with Elastic SIEM provides centralized visibility into both administrative activities and security events through the **Audit** and **Event** data streams, enabling efficient monitoring, investigation, and compliance tracking within Kibana dashboards.
 
-For **Audit**, the dashboard presents insights such as **Audit by Event Type over Time** and **Top Admins**, helping administrators quickly identify configuration changes, track administrative actions, and monitor policy modifications across the network.
+The **Audit** data stream delivers insights into configuration changes, administrative actions, and policy modifications. Dashboards highlight metrics such as **Audit by Event Type over Time** and **Top Admins**, helping administrators monitor operational changes, track privileged activity, and support governance requirements.
 
-Interactive filtering controls allow administrators to drill down across event types, affected models, and geographic locations, supporting streamlined compliance auditing and security oversight workflows within a unified administrative activity view.
+The **Event** data stream focuses on security monitoring and threat investigation. Dashboards provide views such as **Top Hosts** and **Events over Time**, enabling analysts to detect activity spikes, identify suspicious behavior, and monitor evolving threat patterns across the environment.
+
+Interactive filtering controls allow users to drill down across dimensions such as event type, affected models, geographic location, traffic direction, threat type, and authentication type. This supports streamlined compliance auditing, faster investigations, and a unified operational view across administrative and security data.
 
 ## What do I need to use this integration?
 
@@ -70,7 +75,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect Cato Networks logs via API**, you'll need to:
 
         - Configure **URL**.
-        - Configure **Account ID**.
+        - Configure **Account IDs**.
         - Configure **API Key**.
         - Adjust the integration configuration parameters if required, including the **Interval**, **Preserve original event** etc. to enable data collection.
 
@@ -90,11 +95,18 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Rate Limiting
 
+- The Cato Networks EventsFeed API enforces rate limiting of **100 requests per minute** (approximately 1.66 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
+
 - The Cato Networks AuditFeed API enforces rate limiting of **5 requests per minute** (approximately 0.083 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
 
 - If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
 
 ## Limitation:
+
+- The EventsFeed API operates with a time-based data retrieval mechanism. On the initial API call, no data will be returned as it establishes a baseline marker. Subsequent requests will retrieve events that occurred between the current request and the previous one. Due to this behavior, data ingestion begins only after the first interval has elapsed, so it is expected to have a delay equal to the configured interval before seeing the first events in Elasticsearch.
+
+- The Cato Networks EventsFeed API uses a marker-based pagination with a **3-day expiration period**. If the Elastic Agent or Elasticsearch instance experiences downtime exceeding 3 days, the marker becomes invalid and any events generated during this outage will be permanently lost and cannot be recovered.
+
 - The Cato Networks API rate limit quota is shared across all integration instances that use the same API credentials, which may impact data collection when running multiple instances simultaneously.
 
 - The Cato Networks AuditFeed API contains certain fields with inconsistent data types across different events. These type conflicts can cause indexing failures in Elasticsearch, resulting in discrepancies between the document count stored in Elasticsearch and the total number of events returned by the API. Users may observe that not all events from the API response are successfully indexed due to these type mapping conflicts.
@@ -117,6 +129,16 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "audit"}}
 
+#### Event
+
+{{fields "event"}}
+
+### Example event
+
+#### Event
+
+{{event "event"}}
+
 ### Inputs used
 
 These input is used in the integration:
@@ -127,4 +149,5 @@ These input is used in the integration:
 
 This integration uses the following Cato Networks API:
 
-* **Audit Feed**: [Cato Networks Audit Feed API documentation](https://api.catonetworks.com/documentation/#query-auditFeed).
+**Events Feed**: [Cato Networks Events Feed API documentation](https://api.catonetworks.com/documentation/#query-eventsFeed).
+**Audit Feed**: [Cato Networks Audit Feed API documentation](https://api.catonetworks.com/documentation/#query-auditFeed).

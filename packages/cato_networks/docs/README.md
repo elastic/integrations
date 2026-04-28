@@ -4,7 +4,7 @@
 
 [Cato Networks](https://www.catonetworks.com/) is a cloud-native, global SD-WAN provider that delivers a secure, optimized, and agile global network for businesses of all sizes. Cato's cloud-based platform converges multiple network and security functions into a unified solution that includes SD-WAN, network security, cloud security, and secure access service edge (SASE) capabilities.
 
-The Cato Networks integration for Elastic collects `Audit Feed` from the **API** and visualizes them in Kibana.
+The Cato Networks integration for Elastic collects `Events Feed` and `Audit Feed` from the **API** and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -18,15 +18,20 @@ This integration periodically queries the Cato Networks GraphQL API to retrieve 
 
 This integration collects log messages of the following type:
 
+- `Events Feed`: Collects [Events Feed](https://api.catonetworks.com/documentation/#query-eventsFeed) logs from the Cato Networks API (endpoint: `/api/v1/graphql2`).
+
 - `Audit Feed`: Collects [Audit Feed](https://api.catonetworks.com/documentation/#query-auditFeed) logs from the Cato Networks API (endpoint: `/api/v1/graphql2`).
+
 
 ### Supported use cases
 
-Integrating Cato Networks with Elastic SIEM provides centralized visibility into administrative activities and configuration changes through the **Audit** data stream, enabling efficient monitoring and compliance tracking within Kibana dashboards.
+Integrating Cato Networks with Elastic SIEM provides centralized visibility into both administrative activities and security events through the **Audit** and **Event** data streams, enabling efficient monitoring, investigation, and compliance tracking within Kibana dashboards.
 
-For **Audit**, the dashboard presents insights such as **Audit by Event Type over Time** and **Top Admins**, helping administrators quickly identify configuration changes, track administrative actions, and monitor policy modifications across the network.
+The **Audit** data stream delivers insights into configuration changes, administrative actions, and policy modifications. Dashboards highlight metrics such as **Audit by Event Type over Time** and **Top Admins**, helping administrators monitor operational changes, track privileged activity, and support governance requirements.
 
-Interactive filtering controls allow administrators to drill down across event types, affected models, and geographic locations, supporting streamlined compliance auditing and security oversight workflows within a unified administrative activity view.
+The **Event** data stream focuses on security monitoring and threat investigation. Dashboards provide views such as **Top Hosts** and **Events over Time**, enabling analysts to detect activity spikes, identify suspicious behavior, and monitor evolving threat patterns across the environment.
+
+Interactive filtering controls allow users to drill down across dimensions such as event type, affected models, geographic location, traffic direction, threat type, and authentication type. This supports streamlined compliance auditing, faster investigations, and a unified operational view across administrative and security data.
 
 ## What do I need to use this integration?
 
@@ -70,7 +75,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect Cato Networks logs via API**, you'll need to:
 
         - Configure **URL**.
-        - Configure **Account ID**.
+        - Configure **Account IDs**.
         - Configure **API Key**.
         - Adjust the integration configuration parameters if required, including the **Interval**, **Preserve original event** etc. to enable data collection.
 
@@ -90,11 +95,18 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Rate Limiting
 
-The Cato Networks AuditFeed API enforces rate limiting of **5 requests per minute** (approximately 0.083 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
+- The Cato Networks EventsFeed API enforces rate limiting of **100 requests per minute** (approximately 1.66 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
 
-If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
+- The Cato Networks AuditFeed API enforces rate limiting of **5 requests per minute** (approximately 0.083 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
+
+- If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
 
 ## Limitation:
+
+- The EventsFeed API operates with a time-based data retrieval mechanism. On the initial API call, no data will be returned as it establishes a baseline marker. Subsequent requests will retrieve events that occurred between the current request and the previous one. Due to this behavior, data ingestion begins only after the first interval has elapsed, so it is expected to have a delay equal to the configured interval before seeing the first events in Elasticsearch.
+
+- The Cato Networks EventsFeed API uses a marker-based pagination with a **3-day expiration period**. If the Elastic Agent or Elasticsearch instance experiences downtime exceeding 3 days, the marker becomes invalid and any events generated during this outage will be permanently lost and cannot be recovered.
+
 - The Cato Networks API rate limit quota is shared across all integration instances that use the same API credentials, which may impact data collection when running multiple instances simultaneously.
 
 - The Cato Networks AuditFeed API contains certain fields with inconsistent data types across different events. These type conflicts can cause indexing failures in Elasticsearch, resulting in discrepancies between the document count stored in Elasticsearch and the total number of events returned by the API. Users may observe that not all events from the API response are successfully indexed due to these type mapping conflicts.
@@ -117,6 +129,7 @@ For more information on architectures that can be used for scaling this integrat
 | cato_networks.audit.account_id |  | keyword |
 | cato_networks.audit.admin |  | keyword |
 | cato_networks.audit.admin_id |  | keyword |
+| cato_networks.audit.change.after.action |  | keyword |
 | cato_networks.audit.change.after.address |  | keyword |
 | cato_networks.audit.change.after.admin_creation_type |  | keyword |
 | cato_networks.audit.change.after.admin_roles.creation_date_milliseconds |  | date |
@@ -164,6 +177,7 @@ For more information on architectures that can be used for scaling this integrat
 | cato_networks.audit.change.after.disable_acl_for_sip |  | boolean |
 | cato_networks.audit.change.after.downstream_bandwidth |  | double |
 | cato_networks.audit.change.after.downstream_bandwidth_mbps_precision |  | double |
+| cato_networks.audit.change.after.enabled |  | keyword |
 | cato_networks.audit.change.after.exceeded_thresholds_duration_enabled |  | boolean |
 | cato_networks.audit.change.after.expire_in_days_alert |  | double |
 | cato_networks.audit.change.after.force_selected_locations |  | boolean |
@@ -228,6 +242,7 @@ For more information on architectures that can be used for scaling this integrat
 | cato_networks.audit.change.after.role.type |  | keyword |
 | cato_networks.audit.change.after.role.visible |  | boolean |
 | cato_networks.audit.change.after.role_keyword |  | keyword |
+| cato_networks.audit.change.after.rule_type |  | keyword |
 | cato_networks.audit.change.after.rules_migration_state |  | keyword |
 | cato_networks.audit.change.after.s2s_enabled |  | boolean |
 | cato_networks.audit.change.after.sec_pwk |  | double |
@@ -469,6 +484,7 @@ For more information on architectures that can be used for scaling this integrat
 | cato_networks.audit.change.after.sockets_settings.primary.upgrades_paused |  | boolean |
 | cato_networks.audit.change.after.start_date |  | date |
 | cato_networks.audit.change.after.state_raw |  | keyword |
+| cato_networks.audit.change.after.suspicious_action |  | keyword |
 | cato_networks.audit.change.after.timezone |  | keyword |
 | cato_networks.audit.change.after.trial_bandwidth |  | double |
 | cato_networks.audit.change.after.upstream_bandwidth |  | double |
@@ -816,6 +832,342 @@ An example event for `audit` looks as following:
 }
 ```
 
+#### Event
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cato_networks.event.account_id | Unique identifier for the account. | keyword |
+| cato_networks.event.account_name | Name of the account. | keyword |
+| cato_networks.event.action | Action taken or performed. | keyword |
+| cato_networks.event.ad_name | Active Directory name. | keyword |
+| cato_networks.event.api_name | Name of the API. | keyword |
+| cato_networks.event.api_type | Type of the API. | keyword |
+| cato_networks.event.app_stack | Application stack information. | keyword |
+| cato_networks.event.application_id | Unique identifier for the application. | keyword |
+| cato_networks.event.application_name | Name of the application. | keyword |
+| cato_networks.event.application_risk | Risk level associated with the application. | long |
+| cato_networks.event.application_type | Type of the application. | keyword |
+| cato_networks.event.authentication_type | Type of authentication used. | keyword |
+| cato_networks.event.categories | Categories associated with the event. | keyword |
+| cato_networks.event.cato_app | Cato application identifier. | keyword |
+| cato_networks.event.client_class | Classification of the client. | keyword |
+| cato_networks.event.client_ip | IP address of the client. | ip |
+| cato_networks.event.client_version | Version of the client software. | keyword |
+| cato_networks.event.configured_host_name | Configured hostname. | keyword |
+| cato_networks.event.congestion_algorithm | Congestion control algorithm used. | keyword |
+| cato_networks.event.connection_origin | Origin of the connection. | keyword |
+| cato_networks.event.custom_category_id | Unique identifier for the custom category. | keyword |
+| cato_networks.event.custom_category_name | Name of the custom category. | keyword |
+| cato_networks.event.dest_country | Destination country. | keyword |
+| cato_networks.event.dest_country_code | Destination country code. | keyword |
+| cato_networks.event.dest_ip | Destination IP address. | ip |
+| cato_networks.event.dest_port | Destination port number. | long |
+| cato_networks.event.device_categories | Categories associated with the device. | keyword |
+| cato_networks.event.device_id | Unique identifier for the device. | keyword |
+| cato_networks.event.device_name | Name of the device. | keyword |
+| cato_networks.event.device_os_type | Operating system type of the device. | keyword |
+| cato_networks.event.device_posture_profile | Security posture profile of the device. | keyword |
+| cato_networks.event.device_type | Type of the device. | keyword |
+| cato_networks.event.dns_protection_category | DNS protection category. | keyword |
+| cato_networks.event.dns_query | DNS query string. | keyword |
+| cato_networks.event.dns_record_type | Type of DNS record. | keyword |
+| cato_networks.event.domain_name | Domain name. | keyword |
+| cato_networks.event.egress_pop_name | Name of the egress point of presence. | keyword |
+| cato_networks.event.event_count | Count of events. | long |
+| cato_networks.event.event_id | Unique identifier for the event. | keyword |
+| cato_networks.event.event_message | Event message content. | match_only_text |
+| cato_networks.event.event_sub_type | Sub-type of the event. | keyword |
+| cato_networks.event.event_type | Type of the event. | keyword |
+| cato_networks.event.flow_id | Unique identifier for the network flow. | keyword |
+| cato_networks.event.full_path_url | Full path URL. | wildcard |
+| cato_networks.event.host_ip | IP address of the host. | ip |
+| cato_networks.event.host_mac | MAC address of the host. | keyword |
+| cato_networks.event.http_request_method | HTTP request method. | keyword |
+| cato_networks.event.http_response_code | HTTP response status code. | long |
+| cato_networks.event.internal_id | Internal identifier. | keyword |
+| cato_networks.event.internalid | Internal identifier. | keyword |
+| cato_networks.event.ip_protocol | IP protocol used. | keyword |
+| cato_networks.event.is_sanctioned_app | Indicates whether the application is sanctioned. | boolean |
+| cato_networks.event.is_sinkhole | Indicates whether the destination is a sinkhole. | boolean |
+| cato_networks.event.isp_name | Name of the Internet Service Provider. | keyword |
+| cato_networks.event.key_name | Name of the key. | keyword |
+| cato_networks.event.login_type | Type of login. | keyword |
+| cato_networks.event.mitre_attack_subtechniques | MITRE ATT&CK sub-techniques. | keyword |
+| cato_networks.event.mitre_attack_tactics | MITRE ATT&CK tactics. | keyword |
+| cato_networks.event.mitre_attack_techniques | MITRE ATT&CK techniques. | keyword |
+| cato_networks.event.network_rule | Network rule applied. | keyword |
+| cato_networks.event.os_type | Operating system type. | keyword |
+| cato_networks.event.os_version | Operating system version. | keyword |
+| cato_networks.event.pop_name | Name of the point of presence. | keyword |
+| cato_networks.event.prompt_action | Action prompted to the user. | keyword |
+| cato_networks.event.public_ip | Public IP address. | ip |
+| cato_networks.event.qos_priority | Quality of Service priority level. | long |
+| cato_networks.event.request_size | Size of the request in bytes. | long |
+| cato_networks.event.response_size | Size of the response in bytes. | long |
+| cato_networks.event.risk_level | Risk level assessment. | keyword |
+| cato_networks.event.rule_id | Unique identifier for the rule. | keyword |
+| cato_networks.event.rule_name | Name of the rule. | keyword |
+| cato_networks.event.server_ip | IP address of the server. | ip |
+| cato_networks.event.signature_id | Unique identifier for the signature. | keyword |
+| cato_networks.event.socket_version | Version of the socket. | keyword |
+| cato_networks.event.src_country | Source country. | keyword |
+| cato_networks.event.src_country_code | Source country code. | keyword |
+| cato_networks.event.src_ip | Source IP address. | ip |
+| cato_networks.event.src_is_site_or_vpn | Indicates whether the source is a site or VPN. | keyword |
+| cato_networks.event.src_isp_ip | Source ISP IP address. | ip |
+| cato_networks.event.src_port | Source port number. | long |
+| cato_networks.event.src_site_id | Unique identifier for the source site. | keyword |
+| cato_networks.event.src_site_name | Name of the source site. | keyword |
+| cato_networks.event.static_host | Indicates whether the host is static. | boolean |
+| cato_networks.event.subnet_name | Name of the subnet. | keyword |
+| cato_networks.event.tcp_acceleration | Indicates whether TCP acceleration is enabled. | boolean |
+| cato_networks.event.threat_name | Name of the threat. | keyword |
+| cato_networks.event.threat_reference | Reference identifier for the threat. | keyword |
+| cato_networks.event.threat_type | Type of threat. | keyword |
+| cato_networks.event.time | Timestamp of the event. | date |
+| cato_networks.event.time_str | Timestamp of the event as a string. | date |
+| cato_networks.event.tls_inspection | Indicates whether TLS inspection is enabled. | boolean |
+| cato_networks.event.traffic_direction | Direction of the traffic. | keyword |
+| cato_networks.event.transaction_size | Size of the transaction in bytes. | long |
+| cato_networks.event.url | URL accessed. | wildcard |
+| cato_networks.event.user_agent | User agent string. | keyword |
+| cato_networks.event.user_id | Unique identifier for the user. | keyword |
+| cato_networks.event.user_name | Name of the user. | keyword |
+| cato_networks.event.user_reference_id | Reference identifier for the user. | keyword |
+| cato_networks.event.visible_device_id | Visible identifier for the device. | keyword |
+| cato_networks.event.vpn_user_email | Email address of the VPN user. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+
+
+### Example event
+
+#### Event
+
+An example event for `event` looks as following:
+
+```json
+{
+    "@timestamp": "2026-03-02T10:43:11.573Z",
+    "agent": {
+        "ephemeral_id": "ff1475bf-432e-4487-afa3-02d7d74ef6f7",
+        "id": "9406fab2-e986-4545-8c18-81099041d6c3",
+        "name": "elastic-agent-89186",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "cato_networks": {
+        "event": {
+            "account_id": "12345",
+            "account_name": "Demo-Mode",
+            "action": "Prompt",
+            "ad_name": "James Smith",
+            "app_stack": "TCP, TLS, HTTP(S)",
+            "application_id": "http",
+            "application_name": "HTTP(S)",
+            "application_risk": 2,
+            "application_type": "System",
+            "categories": "Gambling",
+            "cato_app": "http",
+            "client_class": "unclassified tls",
+            "client_ip": "1.128.0.0",
+            "client_version": "5.21.5.8548",
+            "configured_host_name": "VTL-US02-Win11",
+            "congestion_algorithm": "BBR",
+            "connection_origin": "Cato Client",
+            "dest_country": "United States",
+            "dest_country_code": "US",
+            "dest_ip": "89.160.20.128",
+            "dest_port": 443,
+            "device_categories": "PC",
+            "device_id": "699b0f1b352cc37b4a5e4d4d",
+            "device_name": "VTL-US02-Win11",
+            "device_os_type": "Windows Workstation",
+            "device_posture_profile": "Windows managed",
+            "device_type": "Workstation",
+            "domain_name": "ahjlighting.com",
+            "egress_pop_name": "Bucharest",
+            "event_count": 1,
+            "event_id": "250b9bf09f51bff2",
+            "event_sub_type": "Internet Firewall",
+            "event_type": "Security",
+            "flow_id": "362862917479975360",
+            "full_path_url": "https://ahjlighting.com/",
+            "host_ip": "1.128.0.0",
+            "host_mac": "7a:1e:52:8f:4f:96",
+            "http_request_method": "GET",
+            "internal_id": "250b9bf09f51bff2",
+            "internalid": "250b9bf09f51bff2",
+            "ip_protocol": "TCP",
+            "isp_name": "Cato Networks Inc.",
+            "network_rule": "Akira Impossible Travel",
+            "os_type": "OS_WINDOWS",
+            "os_version": "11",
+            "pop_name": "Miami",
+            "public_ip": "81.2.69.144",
+            "qos_priority": 10,
+            "request_size": 0,
+            "rule_id": "8512269566766760473",
+            "rule_name": "Prompt for Risky Categories",
+            "server_ip": "89.160.20.128",
+            "src_country": "United States",
+            "src_country_code": "US",
+            "src_ip": "1.128.0.0",
+            "src_is_site_or_vpn": "SDP User",
+            "src_isp_ip": "89.160.20.112",
+            "src_port": 59929,
+            "src_site_id": "1000033",
+            "src_site_name": "Jane Smith",
+            "static_host": false,
+            "tcp_acceleration": true,
+            "time": "2026-03-02T10:43:11.573Z",
+            "time_str": "2026-03-02T10:43:11.000Z",
+            "tls_inspection": true,
+            "traffic_direction": "OUTBOUND",
+            "url": "https://ahjlighting.com/",
+            "user_agent": "Python-urllib/3.10",
+            "user_id": "1000033",
+            "user_name": "Jane Smith",
+            "user_reference_id": "2770852121",
+            "visible_device_id": "7a-1e-52-8f-4f-96",
+            "vpn_user_email": "jane.smith@test.example.com"
+        }
+    },
+    "client": {
+        "ip": "1.128.0.0"
+    },
+    "data_stream": {
+        "dataset": "cato_networks.event",
+        "namespace": "86647",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "89.160.20.128",
+        "geo": {
+            "country_iso_code": "US",
+            "country_name": "United States"
+        },
+        "ip": "89.160.20.128",
+        "port": 443
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "9406fab2-e986-4545-8c18-81099041d6c3",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "prompt",
+        "agent_id_status": "verified",
+        "dataset": "cato_networks.event",
+        "id": "250b9bf09f51bff2",
+        "ingested": "2026-04-28T08:46:14Z",
+        "kind": "event",
+        "original": "{\"ISP_name\":\"Cato Networks Inc.\",\"account_id\":\"12345\",\"account_name\":\"Demo-Mode\",\"action\":\"Prompt\",\"ad_name\":\"James Smith\",\"app_stack\":\"TCP, TLS, HTTP(S)\",\"application_id\":\"http\",\"application_name\":\"HTTP(S)\",\"application_risk\":\"2\",\"application_type\":\"System\",\"categories\":\"Gambling\",\"cato_app\":\"http\",\"client_class\":\"unclassified tls\",\"client_ip\":\"1.128.0.0\",\"client_version\":\"5.21.5.8548\",\"configured_host_name\":\"VTL-US02-Win11\",\"congestion_algorithm\":\"BBR\",\"connection_origin\":\"Cato Client\",\"dest_country\":\"United States\",\"dest_country_code\":\"US\",\"dest_ip\":\"89.160.20.128\",\"dest_port\":\"443\",\"device_categories\":\"PC\",\"device_id\":\"699b0f1b352cc37b4a5e4d4d\",\"device_name\":\"VTL-US02-Win11\",\"device_os_type\":\"Windows Workstation\",\"device_posture_profile\":\"Windows managed\",\"device_type\":\"Workstation\",\"domain_name\":\"ahjlighting.com\",\"egress_pop_name\":\"Bucharest\",\"event_count\":\"1\",\"event_id\":\"250b9bf09f51bff2\",\"event_sub_type\":\"Internet Firewall\",\"event_type\":\"Security\",\"flow_id\":\"362862917479975360\",\"full_path_url\":\"https://ahjlighting.com/\",\"host_ip\":\"1.128.0.0\",\"host_mac\":\"7a:1e:52:8f:4f:96\",\"http_request_method\":\"GET\",\"internalId\":\"250b9bf09f51bff2\",\"internal_id\":\"250b9bf09f51bff2\",\"ip_protocol\":\"TCP\",\"network_rule\":\"Akira Impossible Travel\",\"os_type\":\"OS_WINDOWS\",\"os_version\":\"11\",\"pop_name\":\"Miami\",\"prompt_action\":\"\",\"public_ip\":\"81.2.69.144\",\"qos_priority\":\"10\",\"request_size\":\"0\",\"rule_id\":\"8512269566766760473\",\"rule_name\":\"Prompt for Risky Categories\",\"server_ip\":\"89.160.20.128\",\"src_country\":\"United States\",\"src_country_code\":\"US\",\"src_ip\":\"1.128.0.0\",\"src_is_site_or_vpn\":\"SDP User\",\"src_isp_ip\":\"89.160.20.112\",\"src_port\":\"59929\",\"src_site_id\":\"1000033\",\"src_site_name\":\"Jane Smith\",\"static_host\":\"false\",\"tcp_acceleration\":\"true\",\"time\":\"1772448191573\",\"time_str\":\"2026-03-02T10:43:11Z\",\"tls_inspection\":\"true\",\"traffic_direction\":\"OUTBOUND\",\"url\":\"https://ahjlighting.com/\",\"user_agent\":\"Python-urllib/3.10\",\"user_id\":\"1000033\",\"user_name\":\"Jane Smith\",\"user_reference_id\":\"2770852121\",\"visible_device_id\":\"7a-1e-52-8f-4f-96\",\"vpn_user_email\":\"jane.smith@test.example.com\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "ip": [
+            "1.128.0.0"
+        ],
+        "mac": [
+            "7A-1E-52-8F-4F-96"
+        ],
+        "name": "vtl-us02-win11",
+        "os": {
+            "type": "windows",
+            "version": "11"
+        }
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "network": {
+        "protocol": "tcp"
+    },
+    "related": {
+        "hosts": [
+            "VTL-US02-Win11",
+            "vtl-us02-win11"
+        ],
+        "ip": [
+            "1.128.0.0",
+            "89.160.20.128",
+            "81.2.69.144",
+            "89.160.20.112"
+        ],
+        "user": [
+            "James Smith",
+            "1000033",
+            "Jane Smith",
+            "jane.smith@test.example.com"
+        ]
+    },
+    "rule": {
+        "id": "8512269566766760473",
+        "name": "Prompt for Risky Categories"
+    },
+    "server": {
+        "ip": "89.160.20.128"
+    },
+    "service": {
+        "name": "HTTP(S)"
+    },
+    "source": {
+        "address": "1.128.0.0",
+        "geo": {
+            "country_iso_code": "US",
+            "country_name": "United States"
+        },
+        "ip": "1.128.0.0",
+        "port": 59929
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "cato_networks-event"
+    ],
+    "url": {
+        "domain": "ahjlighting.com",
+        "full": "https://ahjlighting.com/"
+    },
+    "user": {
+        "email": "jane.smith@test.example.com",
+        "id": "1000033",
+        "name": "Jane Smith"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Spider"
+        },
+        "name": "Python-urllib",
+        "original": "Python-urllib/3.10",
+        "version": "3.10"
+    }
+}
+```
+
 ### Inputs used
 
 These input is used in the integration:
@@ -826,4 +1178,5 @@ These input is used in the integration:
 
 This integration uses the following Cato Networks API:
 
-* **Audit Feed**: [Cato Networks Audit Feed API documentation](https://api.catonetworks.com/documentation/#query-auditFeed).
+**Events Feed**: [Cato Networks Events Feed API documentation](https://api.catonetworks.com/documentation/#query-eventsFeed).
+**Audit Feed**: [Cato Networks Audit Feed API documentation](https://api.catonetworks.com/documentation/#query-auditFeed).

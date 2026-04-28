@@ -8,6 +8,10 @@ The [Microsoft Defender XDR](https://learn.microsoft.com/en-us/defender-xdr/) in
 
 The integration works by collecting data from the Microsoft Azure Event Hub, Microsoft Graph Security REST API, and the Microsoft Defender Endpoint API.
 
+For a demo, refer to the following video (click to view).
+
+[![Microsoft Defender XDR integration video](https://play.vidyard.com/fSxgBbf7QArpgX345x28v5.jpg)](https://videos.elastic.co/watch/fSxgBbf7QArpgX345x28v5)
+
 ### Compatibility
 
 This integration supports below API versions to collect data.
