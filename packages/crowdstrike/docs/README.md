@@ -3641,11 +3641,11 @@ An example event for `identity_protection_assessment` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-03-30T06:26:15.399Z",
+    "@timestamp": "2026-04-28T09:12:05.227Z",
     "agent": {
-        "ephemeral_id": "5d66de3b-d6cc-4820-bf5f-633c10546bda",
-        "id": "92640700-ed00-4e12-abee-59bca816dc74",
-        "name": "elastic-agent-75330",
+        "ephemeral_id": "2ba93db5-c6bc-40b4-915e-50a3a7a360bb",
+        "id": "082b680b-0cd4-4b8f-8619-06fe0131b2d7",
+        "name": "elastic-agent-73974",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -3667,14 +3667,14 @@ An example event for `identity_protection_assessment` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.identity_protection_assessment",
-        "namespace": "94692",
+        "namespace": "53975",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "92640700-ed00-4e12-abee-59bca816dc74",
+        "id": "082b680b-0cd4-4b8f-8619-06fe0131b2d7",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -3682,11 +3682,11 @@ An example event for `identity_protection_assessment` looks as following:
         "action": "identity_protection_assessment",
         "agent_id_status": "verified",
         "category": [
-            "vulnerability"
+            "configuration"
         ],
         "dataset": "crowdstrike.identity_protection_assessment",
-        "ingested": "2026-03-30T06:26:18Z",
-        "kind": "event",
+        "ingested": "2026-04-28T09:12:08Z",
+        "kind": "state",
         "original": "{\"domain\":\"DOMAIN_A\",\"security_assessment\":{\"assessmentFactors\":[{\"likelihood\":\"LOW\",\"riskFactorType\":\"STALE_ACCOUNT\",\"severity\":\"LOW\"}],\"overallScore\":0.25,\"overallScoreLevel\":\"LOW\"}}",
         "risk_score": 0.25,
         "risk_score_norm": 25,
