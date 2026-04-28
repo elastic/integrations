@@ -3723,6 +3723,9 @@ An example event for `identity_protection_assessment` looks as following:
 | crowdstrike.idp.security_assessment.assessment_factors.likelihood |  | keyword |
 | crowdstrike.idp.security_assessment.assessment_factors.risk_factor_type |  | keyword |
 | crowdstrike.idp.security_assessment.assessment_factors.severity |  | keyword |
+| crowdstrike.idp.security_assessment.assessment_factors_nested.likelihood |  | keyword |
+| crowdstrike.idp.security_assessment.assessment_factors_nested.risk_factor_type |  | keyword |
+| crowdstrike.idp.security_assessment.assessment_factors_nested.severity |  | keyword |
 | crowdstrike.idp.security_assessment.overall_score | Falcon Identity Protection overall score (0-1). | double |
 | crowdstrike.idp.security_assessment.overall_score_level | Qualitative level (e.g. LOW, MEDIUM, HIGH). | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |

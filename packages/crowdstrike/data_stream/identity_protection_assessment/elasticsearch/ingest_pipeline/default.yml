@@ -222,6 +222,24 @@ processors:
         }
         handleMap(ctx);
   - set:
+      field: crowdstrike.idp.security_assessment.assessment_factors_nested
+      tag: set_assessment_factors_nested_from_assessment_factors
+      copy_from: crowdstrike.idp.security_assessment.assessment_factors
+      ignore_empty_value: true
+      if: ctx._conf?.enable_nested_assessment_factors == true && ctx.crowdstrike?.idp?.security_assessment?.assessment_factors != null
+      description: Duplicates assessment factors into a nested field to enable correlated queries on risk_factor_type, likelihood, and severity.
+  - remove:
+      field: _conf
+      tag: remove_conf
+      ignore_missing: true
+  - remove:
+      field:
+        - crowdstrike.idp.domain
+        - crowdstrike.idp.security_assessment.overall_score
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
