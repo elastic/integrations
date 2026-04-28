@@ -156,3 +156,12 @@ processors:
     field: vsphere.log.api.invocations
     type: long
     if: ctx.vsphere?.log?.api?.invocations != null
+- set:
+    field: source.ip
+    copy_from: client.ip
+    if: ctx.client?.ip != null
+- append:
+    field: related.ip
+    value: "{{client.ip}}"
+    allow_duplicates: false
+    if: ctx.client?.ip != null
