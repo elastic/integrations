@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-pods-pending-phase",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when pods are stuck in Pending phase (phase == 1). Pending pods cannot be scheduled — typically due to insufficient node resources, node affinity/taint mismatches, or missing PVCs. Sustained Pending pods are a proxy for scheduling latency.",
+        "name": "[K8s OTel] Pods stuck in Pending phase",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 5
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Pods Stuck in Pending Phase\n\n### Triage Steps\n1. Identify the affected pod(s) from the alert results.\n2. Run `kubectl describe pod <pod_name> -n <namespace>` — the Events section shows why scheduling failed.\n3. Check the Cluster Overview dashboard for node resource availability.\n4. Verify node resources: `kubectl describe nodes | grep -A 5 'Allocated resources'`.\n5. Check for PVC binding issues: `kubectl get pvc -n <namespace>`.\n\n### Common Causes\n- Insufficient CPU or memory on available nodes\n- Node affinity, anti-affinity, or taint/toleration mismatches\n- PersistentVolumeClaim not bound (no available PV)\n- Pod topology spread constraints cannot be satisfied\n- Resource quotas exceeded in the namespace\n\n### Tuning\n- The `alertDelay` of 5 runs (5 minutes at 1m interval) allows for normal scheduling delays.\n- Increase `alertDelay` for clusters with slow autoscaling (e.g. cloud node provisioning).\n- Add namespace filters to exclude namespaces where Pending pods are expected (e.g. batch workloads waiting for resources).\n\n### Escalation\nSustained Pending pods indicate the cluster cannot meet workload demand. Consider scaling up the node pool or reviewing resource requests."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS max_phase = MAX(k8s.pod.phase)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name\n// Phase 1 = Pending — alert only if the pod never progressed beyond Pending\n// in the window. If it reached Running (2) or beyond, MAX > 1 and it drops out.\n| WHERE max_phase == 1\n| EVAL status = \"Pending\"\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, status\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.pod.name",
+            "termSize": 50
+        }
+    }
+}

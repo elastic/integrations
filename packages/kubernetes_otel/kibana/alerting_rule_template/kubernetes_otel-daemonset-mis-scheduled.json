@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-daemonset-mis-scheduled",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a DaemonSet has misscheduled nodes (pods running where they shouldn't) or is not fully scheduled (current < desired). Indicates node selector, taint/toleration, or scheduling issues.",
+        "name": "[K8s OTel] DaemonSet mis-scheduled or not ready",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## DaemonSet Mis-scheduled or Not Ready\n\n### Triage Steps\n1. Identify the affected DaemonSet(s) from the alert results.\n2. Check the Workload Health dashboard for DaemonSet status.\n3. Run `kubectl describe daemonset <name> -n <namespace>` for events and scheduling details.\n4. Check node taints and DaemonSet tolerations: `kubectl get nodes -o json | jq '.items[].spec.taints'`.\n5. For misscheduled pods, check if node selectors or affinity rules changed.\n\n### Common Causes\n- Node taints changed without updating DaemonSet tolerations\n- Node selectors no longer match available nodes\n- New nodes added without expected labels\n- Resource constraints preventing pod scheduling on some nodes\n\n### Tuning\n- This rule alerts on both misscheduled (pods on wrong nodes) and not-ready (fewer ready than desired).\n- If your DaemonSet intentionally runs on a subset of nodes, verify the desired count is correct.\n\n### Escalation\nDaemonSet issues affect cluster-wide services (logging, monitoring, networking). Investigate promptly."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n| STATS\n    desired = LAST(k8s.daemonset.desired_scheduled_nodes, @timestamp),\n    current = LAST(k8s.daemonset.current_scheduled_nodes, @timestamp),\n    ready = LAST(k8s.daemonset.ready_nodes, @timestamp),\n    misscheduled = LAST(k8s.daemonset.misscheduled_nodes, @timestamp)\n    BY k8s.daemonset.name, k8s.namespace.name\n// Alert when pods are misscheduled OR not all desired nodes are ready\n| WHERE misscheduled > 0\n    OR ready < desired\n| EVAL not_ready = desired - ready\n| KEEP k8s.namespace.name, k8s.daemonset.name, desired, ready, not_ready, misscheduled"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.daemonset.name",
+            "termSize": 20
+        }
+    }
+}

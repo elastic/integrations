@@ -5,18 +5,15 @@
 package packagenames
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/elastic/integrations/dev/citools"
 )
 
-const (
-	packagesDir      = "packages"
-	manifestFileName = "manifest.yml"
-)
+const packagesDir = "packages"
 
 // Check validates that no two packages share the same name under the default packages directory.
 func Check() error {
@@ -27,43 +24,17 @@ func Check() error {
 }
 
 func checkPackageNames(dir string) error {
-	paths, err := walkPackagePaths(dir)
+	paths, err := citools.ListPackages(dir)
 	if err != nil {
 		return fmt.Errorf("error finding packages: %w", err)
 	}
 	return checkDuplicateNames(paths)
 }
 
-func walkPackagePaths(dir string) ([]string, error) {
-	var paths []string
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			return nil
-		}
-		manifestPath := filepath.Join(path, manifestFileName)
-		manifest, err := readManifest(manifestPath)
-		if errors.Is(err, fs.ErrNotExist) {
-			return nil
-		} else if err != nil {
-			return fmt.Errorf("error reading manifest %s: %w", manifestPath, err)
-		}
-		if !manifest.isValid() {
-			return nil
-		}
-		paths = append(paths, path)
-		// No need to look deeper, we already found a package.
-		return filepath.SkipDir
-	})
-	return paths, err
-}
-
 func checkDuplicateNames(paths []string) error {
 	seen := make(map[string][]string)
 	for _, path := range paths {
-		manifest, err := readManifest(filepath.Join(path, manifestFileName))
+		manifest, err := citools.ReadPackageManifest(filepath.Join(path, citools.ManifestFileName))
 		if err != nil {
 			return fmt.Errorf("error reading manifest in %s: %w", path, err)
 		}

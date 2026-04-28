@@ -218,6 +218,19 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	return testsreporter.Check(ctx, testResultsFolder, options)
 }
 
+// ListPackages lists all packages found under the packages directory.
+func ListPackages() error {
+	const packagesDir = "packages"
+	packages, err := citools.ListPackages(packagesDir)
+	if err != nil {
+		return fmt.Errorf("failed to list packages: %w", err)
+	}
+	for _, p := range packages {
+		fmt.Println(p)
+	}
+	return nil
+}
+
 // IsSubscriptionCompatible checks whether or not the package in the current directory allows to run with the given subscription (ELASTIC_SUBSCRIPTION env var).
 func IsSubscriptionCompatible() error {
 	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
