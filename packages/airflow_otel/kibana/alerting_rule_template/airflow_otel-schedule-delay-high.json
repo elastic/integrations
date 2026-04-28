@@ -1,0 +1,37 @@
+{
+  "id": "airflow_otel-schedule-delay-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Airflow OTel] DAG run schedule delay high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "airflow",
+      "scheduling",
+      "latency"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dagrun.schedule_delay IS NOT NULL\n// Timer values are in SECONDS (OTel statsd receiver convention)\n// Threshold 300 = 5 minutes delay; adjust for your SLA\n| STATS max_delay_sec = MAX(airflow.dagrun.schedule_delay)\n| WHERE max_delay_sec > 300"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

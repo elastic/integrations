@@ -1,0 +1,37 @@
+{
+    "id": "apache_tomcat_otel-high-jvm-process-cpu",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Tomcat OTel] High JVM process CPU usage",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "tomcat"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_OperatingSystem_ProcessCpuLoad IS NOT NULL\n| STATS avg_cpu = AVG(java_lang_OperatingSystem_ProcessCpuLoad)\n  BY host.name\n| EVAL cpu_pct = ROUND(avg_cpu * 100.0, 2)\n// JVM process CPU threshold \u2014 sustained high CPU often correlates with\n// GC pressure, thread contention, or compute-heavy request processing\n// Adjust based on expected workload and available CPU cores\n| WHERE cpu_pct > 90.0\n| SORT cpu_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
