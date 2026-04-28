@@ -172,8 +172,8 @@ with_docker_compose_plugin() {
     local DOCKER_CONFIG="$HOME/.docker/cli-plugins"
     mkdir -p "$DOCKER_CONFIG"
 
-    retry 5 curl -SL -o ${DOCKER_CONFIG}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x ${DOCKER_CONFIG}/docker-compose
+    retry 5 curl -SL -o "${DOCKER_CONFIG}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x "${DOCKER_CONFIG}/docker-compose"
     docker compose version
 }
 
@@ -757,7 +757,25 @@ is_pr_affected() {
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|CODE_OF_CONDUCT\.md|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml|scripts/packages/.+\.sh|scripts/backport_branch\.sh))' > /dev/null; then
+    local non_package_patterns=(
+        'packages/'
+        '\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)'
+        'CODE_OF_CONDUCT\.md'
+        'README\.md'
+        'docs/'
+        'catalog-info\.yaml'
+        '\.buildkite/pull-requests\.json'
+        '\.buildkite/pipeline\.schedule-daily\.yml'
+        '\.buildkite/pipeline\.schedule-weekly\.yml'
+        '\.buildkite/pipeline\.backport\.yml'
+        '\.buildkite/pipeline\.publish\.yml'
+        '\.buildkite/scripts/packages/.+\.sh'
+        '\.buildkite/scripts/backport_branch\.sh'
+        '\.buildkite/scripts/build_packages\.sh'
+    )
+    local non_package_regex
+    non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v "${non_package_regex}" > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi

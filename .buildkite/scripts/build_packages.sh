@@ -5,9 +5,15 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
+# Comma-separated list of package zip filenames to skip (e.g. "foo-1.0.0.zip,bar-2.0.0.zip")
+SKIP_PACKAGES=${SKIP_PACKAGES:-""}
 ARTIFACTS_FOLDER=${ARTIFACTS_FOLDER:-"packageArtifacts"}
 BUILD_PACKAGES_FOLDER="build/packages"
 DRY_RUN=${DRY_RUN:-"true"}
+
+is_skipped_package() {
+    [[ ",${SKIP_PACKAGES}," == *",${1},"* ]]
+}
 
 skipPublishing() {
     if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
@@ -63,6 +69,12 @@ build_packages() {
         name=$(cat manifest.yml | yq .name)
 
         local package_zip="${name}-${version}.zip"
+
+        if is_skipped_package "${package_zip}" ; then
+            echo "Skipping. ${package_zip} is in the skip list"
+            popd > /dev/null
+            continue
+        fi
 
         if is_already_published "${package_zip}" ; then
             echo "Skipping. ${package_zip} already published"
