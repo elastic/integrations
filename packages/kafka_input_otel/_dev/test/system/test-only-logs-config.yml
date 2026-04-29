@@ -1,0 +1,15 @@
+service: kafka_service
+vars:
+  brokers:
+    - "{{Hostname}}:9092"
+  initial_offset: earliest
+  logs_encoding: otlp_proto
+  logs_topics:
+    - otlp_logs
+assert:
+  min_count: 4
+
+# It requires more time to detect all data streams (specially logs)
+wait_for_dynamic_streams_stable: 90s
+signal_types:
+  - logs
