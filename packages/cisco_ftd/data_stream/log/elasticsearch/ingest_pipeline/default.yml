@@ -1991,8 +1991,15 @@ processors:
         for (entry in params.entrySet()) {
           def srcField = entry.getKey();
           def param = entry.getValue();
-          String oldVal = getField(ctx, srcField.splitOnToken('.'));
-          if (oldVal == null) continue;
+          def rawVal = getField(ctx, srcField.splitOnToken('.'));
+          if (rawVal == null) continue;
+          String oldVal;
+          if (rawVal instanceof AbstractList) {
+            if (rawVal.size() == 0) continue;
+            oldVal = rawVal[0].toString();
+          } else {
+            oldVal = rawVal.toString();
+          }
           def newVal = param.map?.getOrDefault(oldVal.toLowerCase(), null);
           if (newVal != null) {
             def dstField = param.getOrDefault('target', srcField);
