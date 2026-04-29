@@ -1,0 +1,130 @@
+rules:
+  - path: /oauth2/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer","refresh_token":"yyyy"}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/GetTimelineEvents.*"after":"page2-end"/'
+    responses:
+      - status_code: 200
+        headers: 
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "timeline": {
+                "nodes": [
+                  {
+                    "eventId": "evt-page4-1",
+                    "eventType": "SERVICE_ACCESS",
+                    "eventLabel": "Service ticket",
+                    "eventSeverity": "LOW",
+                    "timestamp": "2024-06-01T12:00:00Z",
+                    "startTime": "2024-06-01T12:00:00Z",
+                    "endTime": "2024-06-01T12:00:05Z",
+                    "userEntity": { "primaryDisplayName": "svc_account" },
+                    "endpointEntity": { "primaryDisplayName": "APP01" }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "startCursor": "page3-start",
+                  "endCursor": "page3-end"
+                }
+              }
+            }
+          }
+          `}}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/GetTimelineEvents.*"after":"page1-end"/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "timeline": {
+                "nodes": [
+                  {
+                    "eventId": "evt-page3-1",
+                    "eventType": "SERVICE_ACCESS",
+                    "eventLabel": "Service ticket",
+                    "eventSeverity": "LOW",
+                    "timestamp": "2024-06-01T12:00:00Z",
+                    "startTime": "2024-06-01T12:00:00Z",
+                    "endTime": "2024-06-01T12:00:05Z",
+                    "userEntity": { "primaryDisplayName": "svc_account" },
+                    "endpointEntity": { "primaryDisplayName": "APP01" }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "startCursor": "page2-start",
+                  "endCursor": "page2-end"
+                }
+              }
+            }
+          }
+          `}}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/GetTimelineEvents/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "timeline": {
+                "nodes": [
+                  {
+                    "eventId": "evt-page2-1",
+                    "eventType": "SERVICE_ACCESS",
+                    "eventLabel": "Service ticket",
+                    "eventSeverity": "LOW",
+                    "timestamp": "2024-06-01T12:00:00Z",
+                    "startTime": "2024-06-01T12:00:00Z",
+                    "endTime": "2024-06-01T12:00:05Z",
+                    "userEntity": { "primaryDisplayName": "svc_account" },
+                    "endpointEntity": { "primaryDisplayName": "APP01" }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "startCursor": "page1-start",
+                  "endCursor": "page1-end"
+                }
+              }
+            }
+          }
+          `}}
