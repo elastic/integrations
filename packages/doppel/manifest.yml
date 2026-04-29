@@ -1,0 +1,51 @@
+format_version: 3.5.7
+name: doppel
+title: "Doppel"
+version: 1.0.0
+description: "This package collects Doppel alerts from the Doppel server and sends it to Elastic Server"
+type: integration
+source:
+  license: "Elastic-2.0" 
+
+icons:
+  - src: /img/doppel-logo.png
+    title: Doppel
+    size: 32x32
+    type: image/svg+xml
+
+screenshots:
+  - src: /img/doppel-screenshot-dashboard.png
+    title: Doppel Alerts - Security Overview
+    size: 1918x875
+    type: image/png
+
+categories:
+  - security
+
+conditions:
+  kibana:
+    version: "^8.12.0"
+  elastic:
+    subscription: "basic"
+
+policy_templates:
+  - name: doppel_alerts
+    title: Doppel Alerts
+    description: Collect alerts directly from the Doppel API.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        # is_default: true          # default agentless mode for directly test as agentless 
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: httpjson
+        title: Doppel API Poller
+        description: Periodically polls the Doppel API for new alerts.
+
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
