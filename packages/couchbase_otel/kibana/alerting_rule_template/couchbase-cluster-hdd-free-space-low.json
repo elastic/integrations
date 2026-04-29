@@ -1,0 +1,36 @@
+{
+  "id": "couchbase-cluster-hdd-free-space-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Cluster HDD free space low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "10m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-couchbase.cluster-default\n// Minimum free space observed across samples in the window\n| STATS min_hdd_free_bytes = MIN(couchbase.cluster.hdd.free.bytes)\n| WHERE min_hdd_free_bytes < 10737418240"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 30,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

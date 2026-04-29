@@ -1,0 +1,38 @@
+{
+  "id": "couchbase-bucket-disk-fetches-detected",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Bucket disk fetches (working set pressure)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-couchbase.bucket-default\n// couchbase.bucket.disk.fetches is a gauge-style count in integration metrics\n| STATS peak_disk_fetches = MAX(couchbase.bucket.disk.fetches)\n  BY couchbase.bucket.name\n| WHERE peak_disk_fetches > 100\n| SORT peak_disk_fetches DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "couchbase.bucket.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

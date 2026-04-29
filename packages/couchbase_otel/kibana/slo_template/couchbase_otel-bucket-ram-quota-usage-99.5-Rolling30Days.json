@@ -1,0 +1,56 @@
+{
+  "attributes": {
+    "name": "[Couchbase OTel] Bucket RAM quota usage 99.5% rolling 30 days",
+    "description": "Ensures 99.5% compliance over 30 rolling days that 95% of 1-minute windows show bucket RAM quota usage (couchbase.bucket.ram.quota.used.pct) below 85% per bucket, reducing risk of item ejection, disk fetches, and KV latency from memory pressure.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"couchbase.bucket\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "couchbase.bucket.ram.quota.used.pct",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 85
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "couchbase",
+      "otel"
+    ],
+    "groupBy": [
+      "couchbase.bucket.name"
+    ]
+  },
+  "id": "couchbase_otel-bucket-ram-quota-usage-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "couchbase_otel-capacity-planning"
+      },
+      {
+        "id": "couchbase_otel-cluster-overview"
+      }
+    ]
+  }
+}

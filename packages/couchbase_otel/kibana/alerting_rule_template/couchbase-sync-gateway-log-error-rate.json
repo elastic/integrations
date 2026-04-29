@@ -1,0 +1,37 @@
+{
+  "id": "couchbase-sync-gateway-log-error-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Sync Gateway error and warning rate high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "sync-gateway",
+      "errors"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-couchbase.resource-default\n| STATS err_rate = SUM(RATE(couchbase.resource.error.count)),\n    warn_rate = SUM(RATE(couchbase.resource.warn.count))\n| EVAL combined_rate = err_rate + warn_rate\n| WHERE combined_rate > 0.1"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
