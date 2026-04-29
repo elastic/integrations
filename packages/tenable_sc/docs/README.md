@@ -430,22 +430,22 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2026-01-25T01:57:15.000Z",
     "agent": {
-        "ephemeral_id": "885eea14-6562-40bd-a318-f72c3df34a26",
-        "id": "2d0c4ae7-7169-413d-99c6-6538b00c5193",
-        "name": "elastic-agent-68239",
+        "ephemeral_id": "2979cdbb-8413-43ce-a22a-59ea2f219485",
+        "id": "fad3bc55-e747-4871-b235-66cb7e420f26",
+        "name": "elastic-agent-96925",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "tenable_sc.vulnerability",
-        "namespace": "53335",
+        "namespace": "48530",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2d0c4ae7-7169-413d-99c6-6538b00c5193",
+        "id": "fad3bc55-e747-4871-b235-66cb7e420f26",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -455,9 +455,9 @@ An example event for `vulnerability` looks as following:
             "threat",
             "vulnerability"
         ],
-        "created": "2026-01-29T10:09:25.738Z",
+        "created": "2026-04-08T09:39:30.457Z",
         "dataset": "tenable_sc.vulnerability",
-        "ingested": "2026-01-29T10:09:26Z",
+        "ingested": "2026-04-08T09:39:31Z",
         "kind": "event",
         "original": "{\"acceptRisk\":\"0\",\"baseScore\":\"0.0\",\"bid\":\"\",\"checkType\":\"remote\",\"cpe\":\"\",\"cve\":\"CVE-1999-0524\",\"cvssV3BaseScore\":\"0.0\",\"cvssV3TemporalScore\":\"\",\"cvssV3Vector\":\"AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N\",\"cvssVector\":\"AV:L/AC:L/Au:N/C:N/I:N/A:N\",\"description\":\"The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\\n\\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.\",\"dnsName\":\"_gateway.lxd\",\"exploitAvailable\":\"No\",\"exploitEase\":\"\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"30\",\"name\":\"General\",\"type\":\"active\"},\"firstSeen\":\"1551284872\",\"hasBeenMitigated\":\"0\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"10.238.64.3\",\"ips\":\"10.238.64.3\",\"lastSeen\":\"1769306235\",\"macAddress\":\"00:16:3e:a1:12:f7\",\"netbiosName\":\"\",\"operatingSystem\":\"Linux Kernel 2.6\",\"patchPubDate\":\"-1\",\"pluginID\":\"10114\",\"pluginInfo\":\"10114 (0/1) ICMP Timestamp Request Remote Date Disclosure\",\"pluginModDate\":\"1570190400\",\"pluginName\":\"ICMP Timestamp Request Remote Date Disclosure\",\"pluginPubDate\":\"933508800\",\"pluginText\":\"\\u003cplugin_output\\u003eThe remote clock is synchronized with the local clock.\\n\\u003c/plugin_output\\u003e\",\"port\":\"0\",\"protocol\":\"ICMP\",\"recastRisk\":\"0\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"1\",\"name\":\"Live\",\"sciID\":\"1\"},\"riskFactor\":\"None\",\"seeAlso\":\"\",\"severity\":{\"description\":\"Informative\",\"id\":\"0\",\"name\":\"Info\"},\"solution\":\"Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).\",\"stigSeverity\":\"\",\"synopsis\":\"It is possible to determine the exact time set on the remote host.\",\"temporalScore\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"\",\"version\":\"1.48\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":0},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very High\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"0.8\",\"vulnPubDate\":\"788961600\",\"xref\":\"CWE #200\"}",
         "type": [
@@ -505,6 +505,7 @@ An example event for `vulnerability` looks as following:
             "base_score": "0.0",
             "check_type": "remote",
             "custom_hash": "C+l0P7ZLuUAwlJ+6GEEFY/Es/7J78bpwTeG04ycaOG4=",
+            "cvss_v3_base_score": 0,
             "cvss_v3_vector": "AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
             "cvss_vector": "AV:L/AC:L/Au:N/C:N/I:N/A:N",
             "dns": {
@@ -523,6 +524,7 @@ An example event for `vulnerability` looks as following:
             "host_uniqueness": "repositoryID,ip,dnsName",
             "id": "1_10.238.64.3__gateway.lxd",
             "ip": "10.238.64.3",
+            "ips": "10.238.64.3",
             "is_vulnerability_published": true,
             "last_seen": "2026-01-25T01:57:15.000Z",
             "mac": "00-16-3E-A1-12-F7",
@@ -662,15 +664,27 @@ An example event for `vulnerability` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | tenable_sc.vulnerability.accept_risk | N/A. | keyword |
+| tenable_sc.vulnerability.accept_risk_rule_comment |  | keyword |
+| tenable_sc.vulnerability.acr_score |  | double |
 | tenable_sc.vulnerability.age | The time in days between the first and last time the vulnerability was seen. | long |
+| tenable_sc.vulnerability.asset_exposure_score |  | long |
 | tenable_sc.vulnerability.base_score | Intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments. | keyword |
 | tenable_sc.vulnerability.bid | The Bugtraq ID. | keyword |
+| tenable_sc.vulnerability.cgi_scan_enabled |  | keyword |
 | tenable_sc.vulnerability.check_type | The type of the compliance check that detected the vulnerability. | keyword |
 | tenable_sc.vulnerability.cpe | The Common Platform Enumeration (CPE) number for the plugin. | keyword |
 | tenable_sc.vulnerability.custom_hash | Hash of fields plugin_id, port, protocol, tenable_sc.vulnerability.id for uniqueidentifier of an vulnerability. | keyword |
-| tenable_sc.vulnerability.cvss_v3_vector | Additional CVSSv3 metrics for the vulnerability. | keyword |
+| tenable_sc.vulnerability.cvss_v3_base_score |  | double |
+| tenable_sc.vulnerability.cvss_v3_temporal_score |  | double |
+| tenable_sc.vulnerability.cvss_v3_vector |  | keyword |
+| tenable_sc.vulnerability.cvss_v4_base_score |  | double |
+| tenable_sc.vulnerability.cvss_v4_supplemental |  | keyword |
+| tenable_sc.vulnerability.cvss_v4_threat_score |  | double |
+| tenable_sc.vulnerability.cvss_v4_threat_vector |  | keyword |
+| tenable_sc.vulnerability.cvss_v4_vector |  | keyword |
 | tenable_sc.vulnerability.cvss_vector | Additional CVSSv2 metrics for the vulnerability. | keyword |
 | tenable_sc.vulnerability.dns.name | DNS name. | keyword |
+| tenable_sc.vulnerability.epss_score |  | double |
 | tenable_sc.vulnerability.exploit.ease | Description of how easy it is to exploit the vulnerability. | keyword |
 | tenable_sc.vulnerability.exploit.frameworks | Framework used by exploit. | keyword |
 | tenable_sc.vulnerability.exploit.is_available | A value specifying whether a public exploit exists for the vulnerability. | boolean |
@@ -680,13 +694,17 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.first_seen | The time and date when a scan first identified the vulnerability. | date |
 | tenable_sc.vulnerability.has_been_mitigated | Indicates whether the vulnerability has been mitigated. | boolean |
 | tenable_sc.vulnerability.host_uniqueness | Name of the fields used to determine the uniqueness of the host. | keyword |
+| tenable_sc.vulnerability.host_uuid |  | keyword |
 | tenable_sc.vulnerability.id | String containing the values of the field names mentioned in uniqueness concatenated with '_'. | keyword |
 | tenable_sc.vulnerability.ip | The ip address of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.ips |  | ip |
 | tenable_sc.vulnerability.is_vulnerability_published | Flag for if vulnerablity is published. | boolean |
+| tenable_sc.vulnerability.key_drivers |  | flattened |
 | tenable_sc.vulnerability.last_seen | The time and date when a scan most recently identified the vulnerability. | date |
 | tenable_sc.vulnerability.mac | The MAC address of the asset where a scan found the vulnerability. | keyword |
 | tenable_sc.vulnerability.netbios.name | NetBIOS name of the asset where a scan found the vulnerability. | keyword |
 | tenable_sc.vulnerability.operating_system | The operating system of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.paranoid_scan_enabled |  | keyword |
 | tenable_sc.vulnerability.patch.is_published | Flag for if vulnerablity is patched. | boolean |
 | tenable_sc.vulnerability.patch.pub_date | The date on which the patch for the vulnerability was published. | date |
 | tenable_sc.vulnerability.plugin.id | The ID of the plugin. | keyword |
@@ -700,22 +718,27 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.port | The port the scanner used to communicate with the asset. | keyword |
 | tenable_sc.vulnerability.protocol | The protocol the scanner used to communicate with the asset. | keyword |
 | tenable_sc.vulnerability.recast_risk | Modified the severity risk measure of vulnerabilities using recast rules. | keyword |
+| tenable_sc.vulnerability.recast_risk_rule_comment |  | keyword |
 | tenable_sc.vulnerability.repository.data_format | The data format of the repository. | keyword |
 | tenable_sc.vulnerability.repository.description | The description of the repository. | keyword |
 | tenable_sc.vulnerability.repository.id | The ID of the repository. | keyword |
 | tenable_sc.vulnerability.repository.name | The name of the repository. | keyword |
 | tenable_sc.vulnerability.repository.sci_id | N/A. | keyword |
 | tenable_sc.vulnerability.risk_factor | The risk factor associated with the vulnerability. | keyword |
+| tenable_sc.vulnerability.seol_date |  | date |
 | tenable_sc.vulnerability.severity.description | The description of the severity. | keyword |
 | tenable_sc.vulnerability.severity.id | The code for the severity assigned when a user recasts the risk associated with the vulnerability. | keyword |
 | tenable_sc.vulnerability.solution | Remediation information for the vulnerability. | keyword |
 | tenable_sc.vulnerability.stig_severity | Security Technical Implementation Guide (STIG) severity code for the vulnerability. | keyword |
 | tenable_sc.vulnerability.synopsis | Brief description of the vulnerability. | keyword |
 | tenable_sc.vulnerability.temporal_score | Characteristics of a vulnerability that change over time but not among user environments. | keyword |
+| tenable_sc.vulnerability.thorough_scan_enabled |  | keyword |
 | tenable_sc.vulnerability.uniqueness | Name of the fields used to determine the uniqueness of the vulnerability. | keyword |
 | tenable_sc.vulnerability.uuid | N/A. | keyword |
 | tenable_sc.vulnerability.version | The version of the vulnerability. | keyword |
 | tenable_sc.vulnerability.vpr.context | The matrix of Vulnerability Priority Rating (VPR) for the vulnerability. | flattened |
 | tenable_sc.vulnerability.vpr.score | The Vulnerability Priority Rating (VPR) score for the vulnerability. | double |
 | tenable_sc.vulnerability.vuln_pub_date | The date on which the vulnerability was published. | date |
+| tenable_sc.vulnerability.vuln_uniqueness |  | keyword |
+| tenable_sc.vulnerability.vuln_uuid |  | keyword |
 | tenable_sc.vulnerability.xref | References to third-party information about the vulnerability, exploit, or update associated with the plugin. | keyword |

@@ -1,0 +1,37 @@
+{
+  "id": "airflow_otel-executor-slots-exhausted",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Airflow OTel] Executor open slots exhausted",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "airflow",
+      "capacity",
+      "executor"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.executor.open_slots IS NOT NULL\n// Gauge: use min to detect any point where slots hit zero\n| STATS min_slots = MIN(airflow.executor.open_slots)\n| WHERE min_slots <= 0"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

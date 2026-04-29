@@ -1,0 +1,36 @@
+{
+    "id": "ibmmq_otel-high-log-write-latency",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[IBM MQ OTel] High log write latency",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "ibmmq"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-ibmmq.otel-*\n| STATS log_latency_s = MAX(AVG_OVER_TIME(ibmmq_qmgr_log_write_latency_seconds))\n    BY attributes.qmgr\n// Alert when average log write latency exceeds 5ms (0.005s)\n// Sub-millisecond is healthy; > 1ms is warning; > 10ms is critical\n// Persistent messages require synchronous log writes, so latency\n// directly governs end-to-end message throughput\n// Adjust threshold based on your performance requirements\n| WHERE log_latency_s IS NOT NULL AND log_latency_s > 0.005"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.qmgr",
+            "termSize": 10
+        }
+    }
+}

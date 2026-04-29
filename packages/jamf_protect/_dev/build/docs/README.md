@@ -96,6 +96,7 @@ For more information on configuring Jamf Protect, see
   - Permissions for the above AWS S3 bucket and SQS queues should be configured according to the [Filebeat S3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2)
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+  - When collecting data from non-AWS S3-compatible storage, the `Bucket Region` parameter is required for Elastic Agent version 8.19.12 or later.
 
 
 **Copyright (c) 2024, Jamf Software, LLC.  All rights reserved.**

@@ -1,0 +1,38 @@
+{
+  "id": "oracle_otel-hard-parse-ratio-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Oracle OTel] Hard parse ratio high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "oracle"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-oracledbreceiver.otel-*\n// hard_parses and parse_calls are co-located in Parses TSDB group; INCREASE for counter deltas\n| WHERE oracledb.parse_calls IS NOT NULL\n        AND oracledb.hard_parses IS NOT NULL\n| STATS delta_hard = SUM(INCREASE(oracledb.hard_parses)),\n        delta_total = SUM(INCREASE(oracledb.parse_calls))\n        BY oracledb.instance.name, host.name\n| WHERE delta_total > 0\n// Ratio > 10% indicates shared pool pressure, ad-hoc SQL, or missing bind variables\n// Adjust threshold (e.g. 0.05 for 5%) for stricter monitoring\n| EVAL hard_parse_ratio_pct = ROUND(delta_hard / delta_total * 100.0, 1)\n| WHERE hard_parse_ratio_pct > 10\n| SORT hard_parse_ratio_pct DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "oracledb.instance.name",
+      "termSize": 50
+    }
+  }
+}
