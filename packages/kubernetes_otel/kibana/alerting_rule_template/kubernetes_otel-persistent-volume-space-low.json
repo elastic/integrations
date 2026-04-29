@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-persistent-volume-space-low",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when PersistentVolumes have less than 20% space remaining. Running out of volume space causes application write failures and potential data loss.",
+        "name": "[K8s OTel] Persistent volume space low",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Persistent Volume Space Low\n\n### Triage Steps\n1. Identify the affected volume(s) from the alert results.\n2. Open the Storage & Volumes dashboard to view volume usage trends.\n3. Check which pod is using the volume and what data it stores.\n4. Determine if the data growth rate requires immediate action or can be planned.\n5. Run `kubectl exec <pod> -- df -h` to confirm volume usage from inside the pod.\n\n### Common Causes\n- Application logs written to the persistent volume without rotation\n- Database data growth exceeding provisioned capacity\n- Temporary files or caches accumulating without cleanup\n- Backup data stored on the volume\n\n### Tuning\n- The default threshold is 20% remaining space (`available_pct < 20`).\n- Increase for critical databases; decrease for less important storage.\n\n### Remediation\n- Expand the PVC if the storage class supports volume expansion\n- Clean up unnecessary data from the volume\n- Add log rotation or data retention policies\n- Migrate to a larger volume\n\n### Escalation\nVolumes below 10% remaining space are at critical risk of write failures. Immediate action required."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.volume.available IS NOT NULL\n    AND k8s.volume.capacity IS NOT NULL\n    AND k8s.volume.capacity > 0\n| STATS\n    avg_available = AVG(k8s.volume.available),\n    avg_capacity = AVG(k8s.volume.capacity)\n    BY k8s.volume.name, k8s.pod.name, k8s.namespace.name\n| EVAL available_pct = ROUND(avg_available / avg_capacity * 100, 1)\n// Alert when less than 20% space remains.\n// Adjust this threshold based on volume criticality:\n//   10% = critical volumes only\n//   20% = standard warning (default)\n//   30% = early warning for slow-growing volumes\n| WHERE available_pct < 20\n| EVAL used_pct = ROUND(100 - available_pct, 1)\n| SORT available_pct ASC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.volume.name, used_pct, available_pct\n| LIMIT 50"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.volume.name",
+            "termSize": 50
+        }
+    }
+}
