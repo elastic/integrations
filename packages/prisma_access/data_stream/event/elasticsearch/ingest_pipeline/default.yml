@@ -6,16 +6,23 @@ processors:
       tag: script_to_drop_null_values_fields
       lang: painless
       source: |-
-        boolean drop(Object o) {
-          if (o == "null" || o == "Null" || o == "NULL") {
-            return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
+        boolean drop(def object) {
+          if (object == null) return true;
+
+          if (object instanceof String) {
+            return object.equalsIgnoreCase("null");
           }
+
+          if (object instanceof Map) {
+            object.values().removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
+          if (object instanceof List) {
+            object.removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
           return false;
         }
         drop(ctx);
@@ -5396,16 +5403,23 @@ processors:
       tag: script_to_drop_null_values
       lang: painless
       source: |-
-        boolean drop(Object o) {
-          if (o == null || o == '') {
-            return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
+        boolean drop(def object) {
+          if (object == null) return true;
+
+          if (object instanceof String) {
+            return object.equalsIgnoreCase("");
           }
+
+          if (object instanceof Map) {
+            object.values().removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
+          if (object instanceof List) {
+            object.removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
           return false;
         }
         drop(ctx);
