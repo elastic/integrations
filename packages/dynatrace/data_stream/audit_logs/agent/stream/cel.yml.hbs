@@ -40,7 +40,7 @@ program: |-
       },
     }.as(auth_header,
       (
-        has(state.?cursor.next_page_key) && state.cursor.next_page_key != "" ?
+        has(state.cursor) && has(state.cursor.next_page_key) && state.cursor.next_page_key != "" ?
           state.url.trim_right("/") + "/api/v2/auditlogs?" + {
             "nextPageKey": [state.cursor.next_page_key],
           }.format_query()
@@ -66,14 +66,14 @@ program: |-
             resp.Body.decode_json().as(body, {
               "events": body.?auditLogs.orValue([]).map(e, {"message": e.encode_json()}),
               "cursor": {
-                ?"next_page_key": (has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
+                ?"next_page_key": (has(body.nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
                   optional.of(string(body.nextPageKey)) : optional.none(),
-                "from": (has(body.?auditLogs) && size(body.auditLogs) > 0) ?
-                  string(int(body.auditLogs.map(e, e.?timestamp.orValue(0)).max()) + 1)
+                "from": (has(body.auditLogs) && size(body.auditLogs) > 0) ?
+                  string((int(body.auditLogs.map(e, e.?timestamp.orValue(0)).max()) + 1))
                   :
                   state.?cursor.from.orValue(state.?initial_interval.orValue("now-1d")),
               },
-              "want_more": has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
+              "want_more": has(body.nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
             })
           : (resp.StatusCode == 429) ?
             { "events": [], "want_more": false }

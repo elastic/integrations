@@ -59,24 +59,31 @@ program: |-
         // STAGE 1 — Resolve the work_list (one entry per tenant we will hit this cycle).
         // We refresh the tenant list once per cycle (when there is no work_list left).
         (
-          (has(state.?work_list) && size(state.work_list) > 0) ?
+          (has(state.work_list) && size(state.work_list) > 0) ?
             // Resume work-list from previous run.
             { "work_list": state.work_list, "errors": [] }
           :
             // Fetch tenants from the cluster.
             get_request(
-              state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
-                "pageSize": [string(state.env_page_size)],
-                ?"filter": has(state.env_filter) ? optional.of([state.env_filter]) : optional.none(),
-              }.format_query()
+              (
+                has(state.env_filter) && string(state.env_filter) != "" ?
+                  state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
+                    "pageSize": [string(state.env_page_size)],
+                    "filter":   [string(state.env_filter)],
+                  }.format_query()
+                :
+                  state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
+                    "pageSize": [string(state.env_page_size)],
+                  }.format_query()
+              )
             ).with(cluster_auth).do_request().as(env_resp,
               (env_resp.StatusCode == 200) ?
                 env_resp.Body.decode_json().as(env_body, {
                   "work_list": env_body.?environments.orValue([]).map(e, {
-                    "id": e.id,
+                    "id": e.?id.orValue(""),
                     "name": e.?name.orValue(""),
-                    "from": state.?cursor[e.id].from.orValue(state.?initial_interval.orValue("now-1d")),
-                    ?"next_page_key": state.?cursor[e.id].?next_page_key,
+                    "from": state.?cursor[e.?id.orValue("")].from.orValue(state.?initial_interval.orValue("now-1d")),
+                    ?"next_page_key": state.?cursor[e.?id.orValue("")].?next_page_key,
                   }),
                   "errors": [],
                 })
@@ -97,24 +104,33 @@ program: |-
         ).as(stage1,
           // STAGE 2 — Apply max_tenants_per_cycle cap, processing the head of the work-list.
           (state.max_tenants_per_cycle > 0 && size(stage1.work_list) > state.max_tenants_per_cycle ?
-            stage1.work_list[0:state.max_tenants_per_cycle]
+            front(stage1.work_list, state.max_tenants_per_cycle)
           :
             stage1.work_list
           ).as(batch,
             // STAGE 3 — For each tenant in the batch, fetch a page of problems.
             batch.map(t,
               (
-                has(t.?next_page_key) && t.next_page_key != "" ?
+                has(t.next_page_key) && t.next_page_key != "" ?
                   state.url.trim_right("/") + "/e/" + t.id + "/api/v2/problems?" + {
                     "nextPageKey": [t.next_page_key],
                   }.format_query()
                 :
-                  state.url.trim_right("/") + "/e/" + t.id + "/api/v2/problems?" + {
-                    "pageSize": [string(state.page_size)],
-                    "from":     [t.from],
-                    ?"problemSelector": has(state.problem_selector) ? optional.of([state.problem_selector]) : optional.none(),
-                    "fields": ["+evidenceDetails,+impactedEntities"],
-                  }.format_query()
+                  (
+                    has(state.problem_selector) && string(state.problem_selector) != "" ?
+                      state.url.trim_right("/") + "/e/" + t.id + "/api/v2/problems?" + {
+                        "pageSize":        [string(state.page_size)],
+                        "from":            [t.from],
+                        "problemSelector": [string(state.problem_selector)],
+                        "fields":          ["+evidenceDetails,+impactedEntities"],
+                      }.format_query()
+                    :
+                      state.url.trim_right("/") + "/e/" + t.id + "/api/v2/problems?" + {
+                        "pageSize": [string(state.page_size)],
+                        "from":     [t.from],
+                        "fields":   ["+evidenceDetails,+impactedEntities"],
+                      }.format_query()
+                  )
               ).as(req_url,
                 get_request(req_url).with(tenant_auth).do_request().as(resp,
                   (resp.StatusCode == 200) ?
@@ -123,13 +139,13 @@ program: |-
                       "events": body.?problems.orValue([]).map(p, {
                         "message": p.with({"_environmentId": t.id, "_environmentName": t.name}).encode_json(),
                       }),
-                      "next_page_key": (has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
+                      "next_page_key": (has(body.nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
                         string(body.nextPageKey) : "",
-                      "from": (has(body.?problems) && size(body.problems) > 0) ?
-                        string(int(body.problems.map(p, p.?startTime.orValue(0)).max()) + 1)
+                      "from": (has(body.problems) && size(body.problems) > 0) ?
+                        string((int(body.problems.map(p, p.?startTime.orValue(0)).max()) + 1))
                         :
                         t.from,
-                      "want_more": has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
+                      "want_more": has(body.nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
                     })
                   : (resp.StatusCode == 429) ?
                     { "id": t.id, "events": [], "next_page_key": t.?next_page_key.orValue(""), "from": t.from, "want_more": false }
@@ -165,7 +181,7 @@ program: |-
                 "work_list": (
                   // Tail of work-list not yet processed in this cycle.
                   (state.max_tenants_per_cycle > 0 && size(stage1.work_list) > state.max_tenants_per_cycle ?
-                    stage1.work_list[state.max_tenants_per_cycle:size(stage1.work_list)]
+                    tail(stage1.work_list, state.max_tenants_per_cycle)
                   :
                     []
                   ) +

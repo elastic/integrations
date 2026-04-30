@@ -39,28 +39,33 @@ program: |-
       },
     }.as(auth_header,
       (
-        has(state.?cursor.next_page_key) && state.cursor.next_page_key != "" ?
+        has(state.cursor) && has(state.cursor.next_page_key) && state.cursor.next_page_key != "" ?
           // When using nextPageKey other params must be omitted (Dynatrace requirement).
           state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
             "nextPageKey": [state.cursor.next_page_key],
           }.format_query()
         :
-          state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
-            "pageSize": [string(state.page_size)],
-            ?"filter": has(state.filter) ? optional.of([state.filter]) : optional.none(),
-            "includeConsumptionInfo": [string(state.include_consumption_info)],
-            "includeStorageInfo":     [string(state.include_storage_info)],
-          }.format_query()
+          (
+            has(state.filter) && string(state.filter) != "" ?
+              state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
+                "pageSize": [string(state.page_size)],
+                "filter":   [string(state.filter)],
+              }.format_query()
+            :
+              state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
+                "pageSize": [string(state.page_size)],
+              }.format_query()
+          )
       ).as(req_url,
         get_request(req_url).with(auth_header).do_request().as(resp,
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body, {
               "events": body.?environments.orValue([]).map(e, {"message": e.encode_json()}),
               "cursor": {
-                ?"next_page_key": (has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
+                ?"next_page_key": (has(body.nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
                   optional.of(string(body.nextPageKey)) : optional.none(),
               },
-              "want_more": has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
+              "want_more": has(body.nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
             })
           : (resp.StatusCode == 429) ?
             { "events": [], "want_more": false }
