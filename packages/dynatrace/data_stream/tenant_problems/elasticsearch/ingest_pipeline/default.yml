@@ -1,0 +1,90 @@
+---
+description: Pipeline for Dynatrace Managed per-tenant problems
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json._environmentId
+        - json.problemId
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.startTime
+      formats:
+        - UNIX_MS
+      ignore_failure: true
+      if: ctx.json?.startTime != null
+  - script:
+      lang: painless
+      tag: nest_tenant_problem_fields
+      source: |
+        if (ctx.json == null) { return; }
+        if (!(ctx.json instanceof Map)) { return; }
+        Map src = ctx.json;
+        ctx.dynatrace = ctx.dynatrace ?: [:];
+        Map tp = new HashMap();
+        tp.put('tenant_id', src.get('_environmentId'));
+        tp.put('tenant_name', src.get('_environmentName'));
+        tp.put('problem_id', src.get('problemId'));
+        tp.put('display_id', src.get('displayId'));
+        tp.put('title', src.get('title'));
+        tp.put('status', src.get('status'));
+        tp.put('severity_level', src.get('severityLevel'));
+        tp.put('impact_level', src.get('impactLevel'));
+        tp.put('start_time', src.get('startTime'));
+        tp.put('end_time', src.get('endTime'));
+        tp.put('management_zones', src.get('managementZones'));
+        tp.put('affected_entities', src.get('affectedEntities'));
+        tp.put('impacted_entities', src.get('impactedEntities'));
+        tp.put('root_cause_entity', src.get('rootCauseEntity'));
+        tp.entrySet().removeIf(e -> e.getValue() == null);
+        ctx.dynatrace.tenant_problems = tp;
+        def tid = src.get('_environmentId');
+        if (tid != null) {
+          ctx.organization = ctx.organization ?: [:];
+          ctx.organization.id = tid;
+          def tname = src.get('_environmentName');
+          if (tname != null && tname.toString() != '') {
+            ctx.organization.name = tname;
+          }
+        }
+  - set:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.id
+      copy_from: dynatrace.tenant_problems.problem_id
+      ignore_empty_value: true
+  - append:
+      field: event.type
+      value: ['info']
+      allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed: {{ _ingest.on_failure_message }}
+  - set:
+      field: event.kind
+      value: pipeline_error

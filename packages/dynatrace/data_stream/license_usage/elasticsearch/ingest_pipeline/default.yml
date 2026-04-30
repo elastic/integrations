@@ -1,0 +1,99 @@
+---
+description: Pipeline for Dynatrace cluster license usage
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+  - script:
+      lang: painless
+      tag: nest_license_fields
+      source: |
+        if (ctx.json == null) { return; }
+        if (!(ctx.json instanceof Map)) { return; }
+        Map src = ctx.json;
+        ctx.dynatrace = ctx.dynatrace ?: [:];
+        Map lic = new HashMap();
+        lic.put('account_name', src.get('accountName'));
+        lic.put('cluster_id', src.get('clusterId'));
+        lic.put('contact_email', src.get('contactEmailAddress'));
+        lic.put('license_name', src.get('licenseName'));
+        lic.put('license_type', src.get('licenseType'));
+        lic.put('license_status', src.get('licenseStatus'));
+        lic.put('license_key', src.get('licenseKey'));
+        lic.put('license_expiration_time', src.get('licenseExpirationTime'));
+        lic.put('last_billing_time', src.get('lastBillingTime'));
+        lic.put('product_version', src.get('productVersion'));
+        def u1 = src.get('usageOfDduUnits');
+        if (u1 instanceof Map) {
+          Map u = (Map) u1;
+          Map out = new HashMap();
+          out.put('usage', u.get('usage'));
+          out.put('usage_percent', u.get('usagePercent'));
+          out.put('quota', u.get('quota'));
+          out.put('remaining', u.get('remaining'));
+          out.put('remaining_percent', u.get('remainingPercent'));
+          out.put('status', u.get('usageStatus'));
+          out.put('overage', u.get('overageUsage'));
+          out.entrySet().removeIf(e -> e.getValue() == null);
+          if (!out.isEmpty()) { lic.put('ddu', out); }
+        }
+        def u2 = src.get('usageOfDemUnits');
+        if (u2 instanceof Map) {
+          Map u = (Map) u2;
+          Map out = new HashMap();
+          out.put('usage', u.get('usage'));
+          out.put('usage_percent', u.get('usagePercent'));
+          out.put('quota', u.get('quota'));
+          out.put('remaining', u.get('remaining'));
+          out.put('remaining_percent', u.get('remainingPercent'));
+          out.put('status', u.get('usageStatus'));
+          out.put('overage', u.get('overageUsage'));
+          out.entrySet().removeIf(e -> e.getValue() == null);
+          if (!out.isEmpty()) { lic.put('dem', out); }
+        }
+        def u3 = src.get('usageOfHostUnits');
+        if (u3 instanceof Map) {
+          Map u = (Map) u3;
+          Map out = new HashMap();
+          out.put('usage', u.get('usage'));
+          out.put('usage_percent', u.get('usagePercent'));
+          out.put('quota', u.get('quota'));
+          out.put('remaining', u.get('remaining'));
+          out.put('remaining_percent', u.get('remainingPercent'));
+          out.put('status', u.get('usageStatus'));
+          out.put('overage', u.get('overageUsage'));
+          out.entrySet().removeIf(e -> e.getValue() == null);
+          if (!out.isEmpty()) { lic.put('host_units', out); }
+        }
+        lic.entrySet().removeIf(e -> e.getValue() == null);
+        ctx.dynatrace.license_usage = lic;
+  - set:
+      field: event.kind
+      value: metric
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed: {{ _ingest.on_failure_message }}
+  - set:
+      field: event.kind
+      value: pipeline_error

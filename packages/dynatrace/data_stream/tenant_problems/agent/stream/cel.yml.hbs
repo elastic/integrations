@@ -1,0 +1,202 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl:
+  {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{cluster_url}}
+state:
+  cluster_api_token: {{cluster_api_token}}
+{{#if tenant_api_token}}
+  tenant_api_token: {{tenant_api_token}}
+{{/if}}
+  page_size: {{page_size}}
+  env_page_size: {{env_page_size}}
+  max_tenants_per_cycle: {{max_tenants_per_cycle}}
+{{#if initial_interval}}
+  initial_interval: {{initial_interval}}
+{{/if}}
+{{#if env_filter}}
+  env_filter: {{env_filter}}
+{{/if}}
+{{#if problem_selector}}
+  problem_selector: {{problem_selector}}
+{{/if}}
+  want_more: false
+redact:
+  fields:
+    - cluster_api_token
+    - tenant_api_token
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+program: |-
+  // Build cluster auth header for environments listing.
+  state.with(
+    {
+      "Header": {
+        "Authorization": ["Api-Token " + state.cluster_api_token],
+        "Accept":        ["application/json"],
+      },
+    }.as(cluster_auth,
+      // Build tenant auth header (falls back to cluster token if no tenant token configured).
+      {
+        "Header": {
+          "Authorization": ["Api-Token " + state.?tenant_api_token.orValue(state.cluster_api_token)],
+          "Accept":        ["application/json"],
+        },
+      }.as(tenant_auth,
+        // STAGE 1 — Resolve the work_list (one entry per tenant we will hit this cycle).
+        // We refresh the tenant list once per cycle (when there is no work_list left).
+        (
+          (has(state.?work_list) && size(state.work_list) > 0) ?
+            // Resume work-list from previous run.
+            { "work_list": state.work_list, "errors": [] }
+          :
+            // Fetch tenants from the cluster.
+            get_request(
+              state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
+                "pageSize": [string(state.env_page_size)],
+                ?"filter": has(state.env_filter) ? optional.of([state.env_filter]) : optional.none(),
+              }.format_query()
+            ).with(cluster_auth).do_request().as(env_resp,
+              (env_resp.StatusCode == 200) ?
+                env_resp.Body.decode_json().as(env_body, {
+                  "work_list": env_body.?environments.orValue([]).map(e, {
+                    "id": e.id,
+                    "name": e.?name.orValue(""),
+                    "from": state.?cursor[e.id].from.orValue(state.?initial_interval.orValue("now-1d")),
+                    ?"next_page_key": state.?cursor[e.id].?next_page_key,
+                  }),
+                  "errors": [],
+                })
+              :
+                {
+                  "work_list": [],
+                  "errors": [{
+                    "error": {
+                      "code":    string(env_resp.StatusCode),
+                      "id":      string(env_resp.Status),
+                      "message": "GET /api/cluster/v2/environments: " + (
+                        (size(env_resp.Body) != 0) ? string(env_resp.Body) : string(env_resp.Status)
+                      ),
+                    },
+                  }],
+                }
+            )
+        ).as(stage1,
+          // STAGE 2 — Apply max_tenants_per_cycle cap, processing the head of the work-list.
+          (state.max_tenants_per_cycle > 0 && size(stage1.work_list) > state.max_tenants_per_cycle ?
+            stage1.work_list[0:state.max_tenants_per_cycle]
+          :
+            stage1.work_list
+          ).as(batch,
+            // STAGE 3 — For each tenant in the batch, fetch a page of problems.
+            batch.map(t,
+              (
+                has(t.?next_page_key) && t.next_page_key != "" ?
+                  state.url.trim_right("/") + "/e/" + t.id + "/api/v2/problems?" + {
+                    "nextPageKey": [t.next_page_key],
+                  }.format_query()
+                :
+                  state.url.trim_right("/") + "/e/" + t.id + "/api/v2/problems?" + {
+                    "pageSize": [string(state.page_size)],
+                    "from":     [t.from],
+                    ?"problemSelector": has(state.problem_selector) ? optional.of([state.problem_selector]) : optional.none(),
+                    "fields": ["+evidenceDetails,+impactedEntities"],
+                  }.format_query()
+              ).as(req_url,
+                get_request(req_url).with(tenant_auth).do_request().as(resp,
+                  (resp.StatusCode == 200) ?
+                    resp.Body.decode_json().as(body, {
+                      "id": t.id,
+                      "events": body.?problems.orValue([]).map(p, {
+                        "message": p.with({"_environmentId": t.id, "_environmentName": t.name}).encode_json(),
+                      }),
+                      "next_page_key": (has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
+                        string(body.nextPageKey) : "",
+                      "from": (has(body.?problems) && size(body.problems) > 0) ?
+                        string(int(body.problems.map(p, p.?startTime.orValue(0)).max()) + 1)
+                        :
+                        t.from,
+                      "want_more": has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
+                    })
+                  : (resp.StatusCode == 429) ?
+                    { "id": t.id, "events": [], "next_page_key": t.?next_page_key.orValue(""), "from": t.from, "want_more": false }
+                  :
+                    {
+                      "id": t.id,
+                      "events": [{
+                        "error": {
+                          "code":    string(resp.StatusCode),
+                          "id":      string(resp.Status),
+                          "message": "GET /e/" + t.id + "/api/v2/problems: " + (
+                            (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
+                          ),
+                        },
+                      }],
+                      "next_page_key": "",
+                      "from": t.from,
+                      "want_more": false,
+                    }
+                )
+              )
+            ).as(results,
+              {
+                // Persist per-tenant cursor (from + nextPageKey if any).
+                "cursor": zip(
+                  results.map(r, r.id),
+                  results.map(r, {
+                    "from": r.from,
+                    ?"next_page_key": (r.next_page_key != "") ? optional.of(r.next_page_key) : optional.none(),
+                  })
+                ),
+                // Carry leftover tenants (not in this batch) + tenants still paginating.
+                "work_list": (
+                  // Tail of work-list not yet processed in this cycle.
+                  (state.max_tenants_per_cycle > 0 && size(stage1.work_list) > state.max_tenants_per_cycle ?
+                    stage1.work_list[state.max_tenants_per_cycle:size(stage1.work_list)]
+                  :
+                    []
+                  ) +
+                  // Tenants in this batch with more pages to fetch.
+                  results.filter(r, r.want_more).map(r, {
+                    "id": r.id,
+                    "name": batch.filter(b, b.id == r.id).map(b, b.name)[0],
+                    "from": r.from,
+                    "next_page_key": r.next_page_key,
+                  })
+                ),
+                "events": results.map(r, r.events).flatten() + stage1.errors,
+                "want_more": results.exists(r, r.want_more),
+              }
+            )
+          )
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

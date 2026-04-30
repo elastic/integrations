@@ -1,0 +1,88 @@
+---
+description: Pipeline for Dynatrace problems
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: false
+  - fingerprint:
+      fields:
+        - json.problemId
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.startTime
+      formats:
+        - UNIX_MS
+      ignore_failure: true
+      if: ctx.json?.startTime != null
+  - script:
+      lang: painless
+      tag: nest_problem_fields
+      source: |
+        if (ctx.json == null) { return; }
+        if (!(ctx.json instanceof Map)) { return; }
+        Map src = ctx.json;
+        ctx.dynatrace = ctx.dynatrace ?: [:];
+        Map problems = new HashMap();
+        problems.put('problem_id', src.get('problemId'));
+        problems.put('display_id', src.get('displayId'));
+        problems.put('title', src.get('title'));
+        problems.put('status', src.get('status'));
+        problems.put('severity_level', src.get('severityLevel'));
+        problems.put('impact_level', src.get('impactLevel'));
+        problems.put('start_time', src.get('startTime'));
+        problems.put('end_time', src.get('endTime'));
+        problems.put('management_zones', src.get('managementZones'));
+        problems.put('affected_entities', src.get('affectedEntities'));
+        problems.put('impacted_entities', src.get('impactedEntities'));
+        problems.put('root_cause_entity', src.get('rootCauseEntity'));
+        problems.put('entity_tags', src.get('entityTags'));
+        problems.put('linked_problem_info', src.get('linkedProblemInfo'));
+        problems.put('recent_comments', src.get('recentComments'));
+        problems.put('evidence_details', src.get('evidenceDetails'));
+        problems.entrySet().removeIf(e -> e.getValue() == null);
+        ctx.dynatrace.problems = problems;
+  - set:
+      field: event.kind
+      value: alert
+  - append:
+      field: event.category
+      value: ['network','host']
+      allow_duplicates: false
+      if: ctx.dynatrace?.problems?.impact_level == 'INFRASTRUCTURE'
+  - append:
+      field: event.type
+      value: ['info']
+      allow_duplicates: false
+  - set:
+      field: event.id
+      copy_from: dynatrace.problems.problem_id
+      ignore_empty_value: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed: {{ _ingest.on_failure_message }}
+  - set:
+      field: event.kind
+      value: pipeline_error

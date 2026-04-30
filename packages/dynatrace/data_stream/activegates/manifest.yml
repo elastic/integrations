@@ -1,0 +1,59 @@
+title: Collect Dynatrace ActiveGates
+type: logs
+release: experimental
+streams:
+  - input: cel
+    title: Dynatrace ActiveGates
+    description: Collect cluster-wide ActiveGate inventory and details from `/api/cluster/v2/activeGates`.
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval at which to query the cluster API. Go duration syntax (e.g. `15m`).
+        multi: false
+        required: true
+        show_user: true
+        default: 15m
+      - name: filter_type
+        type: select
+        title: ActiveGate Type Filter
+        description: Filter by ActiveGate type. Leave empty for all.
+        options:
+          - text: All
+            value: ""
+          - text: Environment
+            value: ENVIRONMENT
+          - text: Environment multi
+            value: ENVIRONMENT_MULTI
+          - text: Cluster
+            value: CLUSTER
+        default: ""
+        multi: false
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - dynatrace-activegates
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event in the field `event.original`.
+        type: bool
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

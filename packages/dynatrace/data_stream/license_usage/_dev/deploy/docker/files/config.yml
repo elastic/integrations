@@ -1,0 +1,135 @@
+rules:
+  - path: /api/v1/config/clusterversion
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {"version":"1.247.0.20220707-181710"}
+          `}}
+  - path: /api/cluster/v2/clusterLicense
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "accountName":"Acme",
+            "clusterId":"cluster-mock",
+            "contactEmailAddress":"ops@example.com",
+            "licenseName":"Enterprise",
+            "licenseStatus":"ACTIVE",
+            "licenseType":"classic",
+            "productVersion":"1.247.0",
+            "usageOfDduUnits":{"quota":100000,"remaining":75000,"remainingPercent":75,"usage":25000,"usagePercent":25,"usageStatus":"USING_QUOTA"},
+            "usageOfHostUnits":{"quota":100,"remaining":30,"remainingPercent":30,"usage":70,"usagePercent":70,"usageStatus":"USING_QUOTA"}
+          }
+          `}}
+  - path: /api/cluster/v2/activeGates
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "activeGates":[
+              {"id":"0x1","hostname":"ag-1","networkAddresses":["10.0.0.1"],"loadBalancerAddresses":[],"osType":"LINUX","osArchitecture":"X86","osBitness":"64","autoUpdateStatus":"UP2DATE","offlineSince":null,"version":"1.247.0","type":"CLUSTER","mainEnvironment":null,"environments":[],"autoUpdateSettings":{"setting":"ENABLED","effectiveSetting":"ENABLED"},"networkZone":"z","group":"default","modules":[],"containerized":false,"connectedHosts":{"number":2},"activeGateTokens":[]},
+              {"id":"0x2","hostname":"ag-2","networkAddresses":["10.0.0.2"],"loadBalancerAddresses":[],"osType":"LINUX","osArchitecture":"X86","osBitness":"64","autoUpdateStatus":"OUTDATED","offlineSince":null,"version":"1.246.0","type":"ENVIRONMENT","mainEnvironment":null,"environments":["tenant-a"],"autoUpdateSettings":{"setting":"INHERITED","effectiveSetting":"DISABLED"},"networkZone":"z","group":"default","modules":[],"containerized":false,"connectedHosts":{"number":0},"activeGateTokens":[]}
+            ]
+          }
+          `}}
+  - path: /api/cluster/v2/environments
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "environments":[
+              {"id":"tenant-a","name":"Tenant A","state":"ENABLED","trial":false,"tags":[],"creationDate":"2021-02-09T11:03:17.732Z"},
+              {"id":"tenant-b","name":"Tenant B","state":"ENABLED","trial":false,"tags":["prod"],"creationDate":"2021-02-07T08:49:45.091Z"}
+            ],
+            "nextPageKey":null,
+            "pageSize":1000,
+            "totalCount":2
+          }
+          `}}
+  - path: /e/tenant-a/api/v2/problems
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "problems":[
+              {"problemId":"tenant-a-problem-1","displayId":"P-TA-1","title":"Tenant A CPU","impactLevel":"INFRASTRUCTURE","severityLevel":"ERROR","status":"OPEN","startTime":1712430000000,"endTime":-1}
+            ],
+            "nextPageKey":null
+          }
+          `}}
+  - path: /e/tenant-b/api/v2/problems
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "problems":[
+              {"problemId":"tenant-b-problem-1","displayId":"P-TB-1","title":"Tenant B latency","impactLevel":"SERVICE","severityLevel":"PERFORMANCE","status":"OPEN","startTime":1712430050000,"endTime":-1}
+            ],
+            "nextPageKey":null
+          }
+          `}}
+  - path: /api/v2/problems
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "problems":[
+              {"problemId":"saas-problem-1","displayId":"P-S-1","title":"SaaS system test","impactLevel":"SERVICE","severityLevel":"ERROR","status":"OPEN","startTime":1712430000000,"endTime":-1}
+            ],
+            "nextPageKey":null
+          }
+          `}}
+  - path: /api/v2/auditlogs
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "auditLogs":[
+              {"logId":"sys-audit-1","eventType":"LOGIN","category":"WEB_UI","entityId":"203.0.113.1","environmentId":"saas-env","success":true,"timestamp":1576073415531,"user":"user1@example.com","userType":"USER_NAME","userOrigin":"webui"},
+              {"logId":"sys-audit-2","eventType":"UPDATE","category":"CONFIG","entityId":"cfg-1","environmentId":"saas-env","success":true,"timestamp":1576073416000,"user":"user2@example.com","userType":"USER_NAME","userOrigin":"api"}
+            ],
+            "nextPageKey":null,
+            "pageSize":1000,
+            "totalCount":2
+          }
+          `}}

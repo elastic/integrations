@@ -1,0 +1,54 @@
+- name: dynatrace.audit_logs
+  type: group
+  description: |
+    Dynatrace audit log entries.
+  fields:
+    - name: log_id
+      type: keyword
+      description: ID of the audit log entry.
+    - name: event_type
+      type: keyword
+      description: Type of the recorded operation (`CREATE`, `UPDATE`, `DELETE`, `LOGIN`, `LOGOUT`, etc.).
+    - name: category
+      type: keyword
+      description: Category of the recorded operation (`CONFIG`, `WEB_UI`, `TOKEN`, `ACTIVEGATE_TOKEN`, etc.).
+    - name: entity_id
+      type: keyword
+      description: ID of an entity from the operation's category (e.g. config ID, token ID).
+    - name: environment_id
+      type: keyword
+      description: Dynatrace environment where the operation occurred.
+    - name: success
+      type: boolean
+      description: Whether the recorded operation was successful.
+    - name: user_origin
+      type: keyword
+      description: Origin and IP address of the user who performed the operation.
+    - name: user_type
+      type: keyword
+      description: Authentication type of the user (`USER_NAME`, `TOKEN_HASH`, `SERVICE_NAME`, `PUBLIC_TOKEN_IDENTIFIER`).
+    - name: patch
+      type: flattened
+      description: JSON patch describing the change (RFC 6902-like, with `oldValue`).
+    - name: settings
+      type: group
+      description: Settings metadata when the entry is in the `CONFIG` category.
+      fields:
+        - name: schema_id
+          type: keyword
+          description: The schema ID for entries of category `CONFIG`.
+        - name: scope_id
+          type: keyword
+          description: The persistence scope for `CONFIG` entries.
+        - name: scope_name
+          type: keyword
+          description: Display name of the scope for `CONFIG` entries.
+        - name: object_id
+          type: keyword
+          description: ID of the affected object.
+        - name: object_summary
+          type: text
+          description: Human-readable summary of the change.
+        - name: key
+          type: keyword
+          description: Key of the affected setting object.

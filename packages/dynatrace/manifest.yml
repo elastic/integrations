@@ -1,0 +1,176 @@
+format_version: "3.3.2"
+name: dynatrace
+title: Dynatrace
+version: "0.0.1"
+description: Technical preview. Community-supported integration to collect logs and events from Dynatrace SaaS and Dynatrace Managed with Elastic Agent.
+type: integration
+categories:
+  - observability
+  - monitoring
+  - security
+conditions:
+  kibana:
+    version: "^9.3.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/dynatrace-logo.svg
+    title: Dynatrace
+    size: 256x256
+    type: image/svg+xml
+policy_templates:
+  - name: dynatrace_saas
+    title: Dynatrace SaaS
+    description: Collect data from a Dynatrace SaaS environment (single tenant).
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    data_streams:
+      - problems
+      - audit_logs
+      - cluster_version
+    inputs:
+      - type: cel
+        title: Collect data from a Dynatrace SaaS tenant
+        description: Collect problems, audit logs, and cluster version data from a Dynatrace SaaS environment.
+        vars:
+          - name: url
+            type: text
+            title: Environment URL
+            description: |
+              Base URL of the Dynatrace SaaS tenant, for example `https://abc12345.live.dynatrace.com`.
+              Do not include a trailing path.
+            multi: false
+            required: true
+            show_user: true
+          - name: api_token
+            type: password
+            title: API Token
+            description: |
+              Dynatrace access token. Required scopes: `problems.read`, `auditLogs.read`, and `DataExport`.
+              See [Dynatrace tokens and authentication](https://docs.dynatrace.com/docs/dynatrace-api/basics/dynatrace-api-authentication).
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are `ns`, `us`, `ms`, `s`, `m`, `h`. Defaults to `60s`.
+            multi: false
+            required: false
+            show_user: false
+            default: 60s
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            description: Logs requests and responses to the agent's local file-system. Only enable for debugging.
+            multi: false
+            required: false
+            show_user: false
+            default: false
+  - name: dynatrace_managed
+    title: Dynatrace Managed
+    description: Collect cluster-level data and per-tenant problems from a Dynatrace Managed cluster.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    data_streams:
+      - activegates
+      - license_usage
+      - environments
+      - tenant_problems
+    inputs:
+      - type: cel
+        title: Collect data from a Dynatrace Managed cluster
+        description: Collect ActiveGates, license usage, environments, and per-tenant problems from a Dynatrace Managed cluster.
+        vars:
+          - name: cluster_url
+            type: text
+            title: Cluster URL
+            description: |
+              Base URL of the Dynatrace Managed cluster, for example `https://my-managed.example.com`.
+              Cluster API endpoints are available at `<cluster_url>/api/cluster/v2/*`.
+              Per-tenant endpoints are available at `<cluster_url>/e/<environmentId>/api/v2/*`.
+            multi: false
+            required: true
+            show_user: true
+          - name: cluster_api_token
+            type: password
+            title: Cluster API Token
+            description: |
+              Service Provider API token used for cluster-level requests (ActiveGates, environments, license).
+              Required scopes / permissions: **Service Provider API** (`ServiceProviderAPI`).
+              See [Cluster API tokens](https://docs.dynatrace.com/managed/dynatrace-api/cluster-api/cluster-api-v2/tokens-and-authentication).
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: tenant_api_token
+            type: password
+            title: Tenant API Token (optional)
+            description: |
+              Optional tenant access token used for the per-tenant **Problems** data stream. If not set,
+              the cluster API token is used (it must have `problems.read` and `DataExport` permissions across tenants).
+              Use a tenant-scoped token when fetching problems for a single environment instead.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are `ns`, `us`, `ms`, `s`, `m`, `h`. Defaults to `60s`.
+            multi: false
+            required: false
+            show_user: false
+            default: 60s
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            description: Logs requests and responses to the agent's local file-system. Only enable for debugging.
+            multi: false
+            required: false
+            show_user: false
+            default: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: community

@@ -1,0 +1,95 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl:
+  {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{cluster_url}}
+state:
+  api_token: {{cluster_api_token}}
+  page_size: {{page_size}}
+  include_consumption_info: {{include_consumption_info}}
+  include_storage_info: {{include_storage_info}}
+{{#if filter}}
+  filter: {{filter}}
+{{/if}}
+  want_more: false
+redact:
+  fields:
+    - api_token
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+program: |-
+  state.with(
+    {
+      "Header": {
+        "Authorization": ["Api-Token " + state.api_token],
+        "Accept":        ["application/json"],
+      },
+    }.as(auth_header,
+      (
+        has(state.?cursor.next_page_key) && state.cursor.next_page_key != "" ?
+          // When using nextPageKey other params must be omitted (Dynatrace requirement).
+          state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
+            "nextPageKey": [state.cursor.next_page_key],
+          }.format_query()
+        :
+          state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
+            "pageSize": [string(state.page_size)],
+            ?"filter": has(state.filter) ? optional.of([state.filter]) : optional.none(),
+            "includeConsumptionInfo": [string(state.include_consumption_info)],
+            "includeStorageInfo":     [string(state.include_storage_info)],
+          }.format_query()
+      ).as(req_url,
+        get_request(req_url).with(auth_header).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body, {
+              "events": body.?environments.orValue([]).map(e, {"message": e.encode_json()}),
+              "cursor": {
+                ?"next_page_key": (has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
+                  optional.of(string(body.nextPageKey)) : optional.none(),
+              },
+              "want_more": has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
+            })
+          : (resp.StatusCode == 429) ?
+            { "events": [], "want_more": false }
+          :
+            {
+              "events": [{
+                "error": {
+                  "code":    string(resp.StatusCode),
+                  "id":      string(resp.Status),
+                  "message": (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status),
+                },
+              }],
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

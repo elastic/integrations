@@ -1,0 +1,109 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl:
+  {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  page_size: {{page_size}}
+{{#if initial_interval}}
+  initial_interval: {{initial_interval}}
+{{/if}}
+{{#if problem_selector}}
+  problem_selector: {{problem_selector}}
+{{/if}}
+{{#if entity_selector}}
+  entity_selector: {{entity_selector}}
+{{/if}}
+  want_more: false
+redact:
+  fields:
+    - api_token
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+program: |-
+  state.with(
+    {
+      "Header": {
+        "Authorization": ["Api-Token " + state.api_token],
+        "Accept":        ["application/json"],
+      },
+    }.as(auth_header,
+      // Build the request URL: continue with nextPageKey if we have one,
+      // otherwise start a new query window using the cursor `from` (or initial_interval on first run).
+      (
+        has(state.?cursor.next_page_key) && state.cursor.next_page_key != "" ?
+          state.url.trim_right("/") + "/api/v2/problems?" + {
+            "nextPageKey": [state.cursor.next_page_key],
+          }.format_query()
+        :
+          state.url.trim_right("/") + "/api/v2/problems?" + {
+            "pageSize": [string(state.page_size)],
+            "from": [state.?cursor.from.orValue(state.?initial_interval.orValue("now-1d"))],
+            ?"problemSelector": has(state.problem_selector) ? optional.of([state.problem_selector]) : optional.none(),
+            ?"entitySelector":  has(state.entity_selector)  ? optional.of([state.entity_selector])  : optional.none(),
+            "fields": ["+evidenceDetails,+impactedEntities,+linkedProblemInfo,+recentComments"],
+          }.format_query()
+      ).as(req_url,
+        get_request(req_url).with(auth_header).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body, {
+              "events": body.?problems.orValue([]).map(p, {"message": p.encode_json()}),
+              "cursor": {
+                ?"next_page_key": (has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "") ?
+                  optional.of(string(body.nextPageKey)) : optional.none(),
+                "from": (has(body.?problems) && size(body.problems) > 0) ?
+                  // Watermark: max startTime of received problems + 1ms.
+                  // startTime is epoch milliseconds.
+                  string(int(body.problems.map(p, p.?startTime.orValue(0)).max()) + 1)
+                  :
+                  // No new data; advance watermark conservatively to avoid replaying the whole window.
+                  state.?cursor.from.orValue(state.?initial_interval.orValue("now-1d")),
+              },
+              "want_more": has(body.?nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
+            })
+          : (resp.StatusCode == 429) ?
+            // Rate limited: stop this interval; cursor is preserved.
+            { "events": [], "want_more": false }
+          :
+            {
+              "events": [{
+                "error": {
+                  "code":    string(resp.StatusCode),
+                  "id":      string(resp.Status),
+                  "message": (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status),
+                },
+              }],
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
