@@ -76,7 +76,7 @@ packages/<name>_input_otel/
 ├── agent/
 │   └── input/
 │       └── input.yml.hbs     # OTel Collector template
-├── sample_event.json         # Optional: Example event (generated via tests)
+├── sample_event.json         # Optional: Example event (generated using tests)
 └── _dev/
     ├── deploy/
     │   └── docker/           # Service deployment for tests
@@ -148,7 +148,7 @@ The minimum required Kibana version depends on the signal types your package col
 | Traces | `^9.4.0` |
 | Multi-signal (`dynamic_signal_types: true`) | `^9.4.0` |
 
-Packages that collect traces, or that support multiple signal types via `dynamic_signal_types: true`, must set `conditions.kibana.version: "^9.4.0"` in their `manifest.yml`.
+Packages that collect traces, or that support multiple signal types using `dynamic_signal_types: true`, must set `conditions.kibana.version: "^9.4.0"` in their `manifest.yml`.
 
 ### Multi-Signal Packages [multi-signal]
 
@@ -361,7 +361,7 @@ There is currently a known [bug](https://github.com/elastic/elastic-package/issu
 
 ## Documentation [documentation]
 
-Create a `docs/README.md` following the [Documentation guidelines](./documentation-guidelines.md). You can either write it directly or use a `_dev/build/docs/README.md` template that is rendered to `docs/README.md` when you run `elastic-package build` — the template approach is only necessary if you need to inject dynamic content (e.g. fields tables). For OTel Input Packages, include:
+Create a `docs/README.md` following the [Documentation guidelines](./documentation-guidelines.md). You can either write it directly or use a `_dev/build/docs/README.md` template that is rendered to `docs/README.md` when you run `elastic-package build` — the template approach is only necessary if you need to inject dynamic content (for example, fields tables). For OTel Input Packages, include:
 
 1. **Overview** - What the package does and which OTel receiver it uses
 2. **How it works** - Data flow explanation
@@ -410,7 +410,7 @@ Before submitting your OTel Input Package:
 - [ ] Policy tests exist and pass (`_dev/test/policy/`)
 - [ ] System tests exist and pass (`_dev/test/system/`)
 - [ ] `sample_event.json` is generated from system tests (use `elastic-package test system --generate`)
-- [ ] `docs/README.md` exists (written directly or rendered from `_dev/build/docs/README.md` via `elastic-package build`)
+- [ ] `docs/README.md` exists (written directly or rendered from `_dev/build/docs/README.md` using `elastic-package build`)
 - [ ] `changelog.yml` has an entry for the initial version
 - [ ] Package icon exists in `img/`
 - [ ] `CODEOWNERS` file includes your team for the package path
