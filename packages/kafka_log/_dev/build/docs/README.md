@@ -99,7 +99,7 @@ For architectures used to scale ingest, refer to [Ingest Architectures](https://
 
 ## Reference
 
-Please refer to the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for ECS fields.
+Refer to the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for ECS fields.
 
 Additional documentation:
 
