@@ -58,6 +58,32 @@ processors:
         problems.put('evidence_details', src.get('evidenceDetails'));
         problems.entrySet().removeIf(e -> e.getValue() == null);
         ctx.dynatrace.problems = problems;
+  - script:
+      lang: painless
+      tag: map_dynatrace_severity_to_ecs
+      if: ctx.dynatrace?.problems?.severity_level != null
+      source: |
+        def s = ctx.dynatrace.problems.severity_level.toString();
+        ctx.log = ctx.log ?: new HashMap();
+        ctx.event = ctx.event ?: new HashMap();
+        long sev = 2L;
+        if (s.equals('ERROR') || s.equals('AVAILABILITY')) {
+          ctx.log.level = 'error';
+          sev = 4L;
+        } else if (s.equals('PERFORMANCE') || s.equals('RESOURCE_CONTENTION')) {
+          ctx.log.level = 'warn';
+          sev = 3L;
+        } else if (s.equals('INFO') || s.equals('MONITORING')) {
+          ctx.log.level = 'info';
+          sev = 2L;
+        } else if (s.equals('CUSTOM_ALERT')) {
+          ctx.log.level = 'notice';
+          sev = 3L;
+        } else {
+          ctx.log.level = s.toLowerCase();
+          sev = 2L;
+        }
+        ctx.event.severity = sev;
   - set:
       field: event.kind
       value: alert
