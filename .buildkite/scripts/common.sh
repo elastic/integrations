@@ -380,16 +380,14 @@ package_name_manifest() {
 }
 
 is_package_excluded_in_config() {
-    local package=$1
-    local config_file_path=$2
+    local package_name="$1"
+    local config_file_path="$2"
     local excluded_packages=""
 
     excluded_packages=$(packages_excluded "${config_file_path}")
     if [[ "${excluded_packages}" == "null" ]]; then
         return 1
     fi
-    local package_name=""
-    package_name=$(package_name_manifest)
 
     # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
     # https://tldp.org/LDP/lpg/node20.html
@@ -688,10 +686,17 @@ is_logsdb_compatible() {
     return 0
 }
 
+# is_pr_affected accepts a package path and returns true if the package is affected by the PR
+# it expects that the working directory is the package path to be checked
+# Example:
+# is_pr_affected "packages/elastic_package_registry" "origin/main" "origin/main"
 is_pr_affected() {
-    local package="${1}"
+    local package_path="${1}"
     local from="${2}"
     local to="${3}"
+
+    local package_name=""
+    package_name=$(package_name_manifest)
 
     local stack_supported=""
     if ! stack_supported=$(is_supported_stack) ; then
@@ -699,7 +704,7 @@ is_pr_affected() {
         return 1
     fi
     if [[ "${stack_supported}" == "false" ]]; then
-        echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
+        echo "[${package_name}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
     fi
 
@@ -711,28 +716,28 @@ is_pr_affected() {
             return 1
         fi
         if [[ "${logsdb_compatible}" == "false" ]]; then
-            echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
+            echo "[${package_name}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
             return 1
         fi
     fi
 
     if is_serverless; then
-        if is_package_excluded_in_config "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
-            echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
+        if is_package_excluded_in_config "${package_name}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+            echo "[${package_name}] PR is not affected: package ${package_name} excluded in Kibana config for ${SERVERLESS_PROJECT}"
             return 1
         fi
         if ! is_supported_capability ; then
-            echo "[${package}] PR is not affected: capabilities not matched with the project (${SERVERLESS_PROJECT})"
+            echo "[${package_name}] PR is not affected: capabilities not matched with the project (${SERVERLESS_PROJECT})"
             return 1
         fi
-        if [[ "${package}" == "fleet_server" ]]; then
+        if [[ "${package_name}" == "fleet_server" ]]; then
             echoerr "fleet_server not supported. Skipped"
-            echo "[${package}] not supported"
+            echo "[${package_name}] not supported"
             return 1
         fi
         if ! is_spec_3_0_0 ; then
             echoerr "Not v3 spec version. Skipped"
-            echo "[${package}] spec <3.0.0"
+            echo "[${package_name}] spec <3.0.0"
             return 1
         fi
     fi
@@ -742,17 +747,17 @@ is_pr_affected() {
         return 1
     fi
     if [[ "${compatible}" == "false" ]]; then
-        echo "[${package}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
+        echo "[${package_name}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
         return 1
     fi
 
     if [[ "${FORCE_CHECK_ALL}" == "true" ]];then
-        echo "[${package}] PR is affected: \"force_check_all\" parameter enabled"
+        echo "[${package_name}] PR is affected: \"force_check_all\" parameter enabled"
         return 0
     fi
 
     commit_merge=$(git merge-base "${from}" "${to}")
-    echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
+    echoerr "[${package_name}] git-diff: check non-package files (${commit_merge}..${to})"
     # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
@@ -776,29 +781,57 @@ is_pr_affected() {
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
     if git diff --name-only "${commit_merge}" "${to}" | grep -E -v "${non_package_regex}" > /dev/null; then
-        echo "[${package}] PR is affected: found non-package files"
+        echo "[${package_name}] PR is affected: found non-package files"
         return 0
     fi
-    echoerr "[${package}] git-diff: check custom package checker script file (${commit_merge}..${to})"
+    echoerr "[${package_name}] git-diff: check custom package checker script file (${commit_merge}..${to})"
     # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^\.buildkite/scripts/packages/${package}.sh" > /dev/null; then
-        echo "[${package}] PR is affected: found package checker script changes"
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^\.buildkite/scripts/${package_path}.sh" > /dev/null; then
+        echo "[${package_name}] PR is affected: found package checker script changes"
         return 0
     fi
-    echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
+    echoerr "[${package_name}] git-diff: check package files (${commit_merge}..${to})"
     # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
-        echo "[${package}] PR is affected: found package files"
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^${package_path}/" > /dev/null ; then
+        echo "[${package_name}] PR is affected: found package files"
         return 0
     fi
-    echo "[${package}] PR is not affected"
+    echo "[${package_name}] PR is not affected"
     return 1
+}
+
+# should_test_package checks if a package is affected by the current PR.
+# Prints the reason to stderr. Returns 0 if the package should be tested,
+# 1 if it should be skipped. Exits on fatal error.
+should_test_package() {
+    local package_path="${1}"
+    local from="${2}"
+    local to="${3}"
+
+    local reason=""
+    local skip="false"
+
+    pushd "${package_path}" > /dev/null
+    if ! reason=$(is_pr_affected "${package_path}" "${from}" "${to}"); then
+        skip="true"
+        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
+            echo "Unexpected failure checking ${package_path}" >&2
+            exit 1
+        fi
+    fi
+    popd > /dev/null
+
+    echoerr "${reason}"
+    if [[ "${skip}" == "true" ]]; then
+        return 1
+    fi
+    return 0
 }
 
 is_pr() {
@@ -817,20 +850,20 @@ kubernetes_service_deployer_used() {
 }
 
 teardown_serverless_test_package() {
-    local package=$1
+    local package_name="$1"
     local build_directory="${WORKSPACE}/build"
-    local dump_directory="${build_directory}/elastic-stack-dump/${package}"
+    local dump_directory="${build_directory}/elastic-stack-dump/${package_name}"
 
     echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
-    upload_safe_logs_from_package "${package}" "${build_directory}"
+    upload_safe_logs_from_package "${package_name}" "${build_directory}"
 }
 
 teardown_test_package() {
-    local package=$1
+    local package_name="$1"
     local build_directory="${WORKSPACE}/build"
-    local dump_directory="${build_directory}/elastic-stack-dump/${package}"
+    local dump_directory="${build_directory}/elastic-stack-dump/${package_name}"
 
     if ! is_stack_created; then
         echo "No stack running. Skip dump logs and run stack down process."
@@ -840,19 +873,20 @@ teardown_test_package() {
     echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
-    upload_safe_logs_from_package "${package}" "${build_directory}"
+    upload_safe_logs_from_package "${package_name}" "${build_directory}"
 
     echo "--- Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
 }
 
+# list all directories that are packages from the root of the repository
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+    mage -d "${WORKSPACE}" listPackages
 }
 
 check_package() {
-    local package=$1
-    echo "Check package: ${package}"
+    local package_name="$1"
+    echo "Check package: ${package_name}"
     if ! ${ELASTIC_PACKAGE_BIN} check -v ; then
         return 1
     fi
@@ -861,8 +895,8 @@ check_package() {
 }
 
 build_zip_package() {
-    local package=$1
-    echo "Build zip package: ${package}"
+    local package_name="$1"
+    echo "Build zip package: ${package_name}"
     if ! ${ELASTIC_PACKAGE_BIN} build --zip ; then
         return 1
     fi
@@ -871,12 +905,12 @@ build_zip_package() {
 }
 
 skip_installation_step() {
-    local package=$1
+    local package_name="$1"
     if ! is_serverless ; then
         return 1
     fi
 
-    if [[ "$package" == "security_detection_engine" ]]; then
+    if [[ "$package_name" == "security_detection_engine" ]]; then
         return 0
     fi
 
@@ -884,8 +918,8 @@ skip_installation_step() {
 }
 
 install_package() {
-    local package=$1
-    echo "Install package: ${package}"
+    local package_name="$1"
+    echo "Install package: ${package_name}"
     if ! ${ELASTIC_PACKAGE_BIN} install "${ELASTIC_PACKAGE_VERBOSITY}" ; then
         return 1
     fi
@@ -894,10 +928,10 @@ install_package() {
 }
 
 test_package_in_local_stack() {
-    local package=$1
+    local package_name="$1"
     TEST_OPTIONS="--report-format xUnit --report-output file"
 
-    echo "Test package: ${package}"
+    echo "Test package: ${package_name}"
     # Run all test suites
     ${ELASTIC_PACKAGE_BIN} test "${ELASTIC_PACKAGE_VERBOSITY}" ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
@@ -909,10 +943,10 @@ test_package_in_local_stack() {
 # too much time, since all packages are run in the same step one by one.
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
-    local package=$1
+    local package_name="$1"
     TEST_OPTIONS="${ELASTIC_PACKAGE_VERBOSITY} --report-format xUnit --report-output file"
 
-    echo "Test package: ${package}"
+    echo "Test package: ${package_name}"
     if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
@@ -932,9 +966,9 @@ test_package_in_serverless() {
 }
 
 run_tests_package() {
-    local package=$1
-    echo "--- [${package}] format and lint"
-    if ! check_package "${package}" ; then
+    local package_name="$1"
+    echo "--- [${package_name}] format and lint"
+    if ! check_package "${package_name}" ; then
         return 1
     fi
 
@@ -945,26 +979,26 @@ run_tests_package() {
         fi
     fi
 
-    if ! skip_installation_step "${package}" ; then
-        echo "--- [${package}] test installation"
-        if ! install_package "${package}" ; then
-            if [[ "${package}" == "elastic_connectors" ]]; then
+    if ! skip_installation_step "${package_name}" ; then
+        echo "--- [${package_name}] test installation"
+        if ! install_package "${package_name}" ; then
+            if [[ "${package_name}" == "elastic_connectors" ]]; then
                 # TODO: Remove this skip once elastic_connectors can be installed again
                 # For reference: https://github.com/elastic/kibana/pull/211419
-                echo "[${package}]: Known issue when package is installed - skipped all tests"
+                echo "[${package_name}]: Known issue when package is installed - skipped all tests"
                 return 0
             fi
             return 1
         fi
     fi
 
-    echo "--- [${package}] run test suites"
+    echo "--- [${package_name}] run test suites"
     if is_serverless; then
-        if ! test_package_in_serverless "${package}" ; then
+        if ! test_package_in_serverless "${package_name}" ; then
             return 1
         fi
     else
-        if ! test_package_in_local_stack "${package}" ; then
+        if ! test_package_in_local_stack "${package_name}" ; then
             return 1
         fi
     fi
@@ -1014,10 +1048,10 @@ upload_safe_logs_from_package() {
         return
     fi
 
-    local package=$1
+    local package_name="$1"
     local retry_count="${BUILDKITE_RETRY_COUNT:-"0"}"
     if [[ "${retry_count}" -ne 0 ]]; then
-        package="${package}_retry_${retry_count}"
+        package_name="${package_name}_retry_${retry_count}"
     fi
     local build_directory=$2
 
@@ -1027,29 +1061,32 @@ upload_safe_logs_from_package() {
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
-        "${build_directory}/elastic-stack-dump/${package}/logs/elastic-agent-internal/*.*" \
-        "${parent_folder}/${package}/elastic-agent-logs/"
+        "${build_directory}/elastic-stack-dump/${package_name}/logs/elastic-agent-internal/*.*" \
+        "${parent_folder}/${package_name}/elastic-agent-logs/"
 
     # required for <8.6.0
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
-        "${build_directory}/elastic-stack-dump/${package}/logs/elastic-agent-internal/default/*" \
-        "${parent_folder}/${package}/elastic-agent-logs/default/"
+        "${build_directory}/elastic-stack-dump/${package_name}/logs/elastic-agent-internal/default/*" \
+        "${parent_folder}/${package_name}/elastic-agent-logs/default/"
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
         "${build_directory}/container-logs/*.log" \
-        "${parent_folder}/${package}/container-logs/"
+        "${parent_folder}/${package_name}/container-logs/"
 }
 
 # Helper to run all tests and checks for a package
 process_package() {
-    local package="${1}"
+    local package_path="${1}"
     local failed_packages_file="${2:-""}"
     local exit_code=0
+    local package_name=""
 
-    echo "--- Package ${package}: check"
-    pushd "${package}" > /dev/null
+    pushd "${package_path}" > /dev/null
+
+    package_name="$(package_name_manifest)"
+    echo "--- Package ${package_name}: check"
 
     clean_safe_logs
 
@@ -1067,13 +1104,13 @@ process_package() {
         fi
     fi
 
-    if ! run_tests_package "${package}" ; then
+    if ! run_tests_package "${package_name}" ; then
         exit_code=1
         # Ensure that the group where the failure happened is opened.
         echo "^^^ +++"
-        echo "[${package}] run_tests_package failed"
+        echo "[${package_name}] run_tests_package failed"
         if [[ "${failed_packages_file}" != "" ]]; then
-            echo "- ${package}" >> "${failed_packages_file}"
+            echo "- ${package_name}" >> "${failed_packages_file}"
         fi
     fi
 
@@ -1088,13 +1125,13 @@ process_package() {
     fi
 
     if is_serverless ; then
-        teardown_serverless_test_package "${package}"
+        teardown_serverless_test_package "${package_name}"
     else
-        if ! teardown_test_package "${package}" ; then
+        if ! teardown_test_package "${package_name}" ; then
             exit_code=1
             # Ensure that the group where the failure happened is opened.
             echo "^^^ +++"
-            echo "[${package}] teardown_test_package failed"
+            echo "[${package_name}] teardown_test_package failed"
         fi
     fi
 
