@@ -1,0 +1,67 @@
+format_version: 3.3.5
+name: opentext_service_manager
+title: OpenText Service Manager
+version: 0.1.0
+source:
+  license: Elastic-2.0
+description: Collect incident records from OpenText Service Manager (formerly Micro Focus / HP Service Manager) using the REST API with Elastic Agent.
+type: integration
+categories:
+  - security
+  - observability
+conditions:
+  kibana:
+    version: "^8.17.4 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/opentext-service-manager-logo.svg
+    title: OpenText logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: opentext_service_manager
+    title: OpenText Service Manager incidents
+    description: Poll the Service Manager REST incidents collection.
+    inputs:
+      - type: cel
+        title: Service Manager REST API
+        description: Collect incidents via GET with native SM queries, pagination, and incremental cursor state.
+        vars:
+          - name: username
+            type: text
+            title: Operator name
+            description: Service Manager operator account used for HTTP Basic authentication (ASCII username).
+            multi: false
+            required: true
+            show_user: true
+          - name: password
+            type: password
+            title: Operator password
+            secret: true
+            description: Password for the operator account.
+            multi: false
+            required: true
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
