@@ -30,7 +30,7 @@ Map upstream configuration to [manifest variables](#variable-types):
 | Upstream Go Type | Package Variable Type |
 |------------------|----------------------|
 | `string` | `text` |
-| `string` (secret) | `password` (with `secret: true`) |
+| `string` (secret) | `password` (with `secret: true`; see [version note](#variable-types)) |
 | `bool` | `bool` |
 | `time.Duration` | `duration` |
 | `[]string` | `text` with `multi: true` |
