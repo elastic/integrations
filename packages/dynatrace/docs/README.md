@@ -47,7 +47,7 @@ API references:
 | --------| ----------- |
 | `activegates` | ActiveGate rows from `/api/cluster/v2/activeGates`. |
 | `license_usage` | Cluster license and usage from `/api/cluster/v2/clusterLicense` (**metrics** data stream). |
-| `environments` | Tenant list from `/api/cluster/v2/environments` using `pageSize`, optional `filter`, and `nextPageKey` pagination. |
+| `environments` | Tenant list from `/api/cluster/v2/environments` using `pageSize`, optional `filter`, `includeConsumptionInfo` / `includeStorageInfo` (when not paginating with `nextPageKey`), and `nextPageKey` pagination. |
 | `tenant_problems` | Problems per tenant from `/e/<environmentId>/api/v2/problems`. |
 
 ## Requirements
@@ -588,22 +588,22 @@ An example event for `license_usage` looks as following:
 | dynatrace.license_usage.ddu.status | Current license usage status. | keyword |  |
 | dynatrace.license_usage.ddu.usage | Current usage of quota. | double | gauge |
 | dynatrace.license_usage.ddu.usage_percent | Current usage of quota as percentage. | double | gauge |
-| dynatrace.license_usage.dem.overage |  | flattened |  |
-| dynatrace.license_usage.dem.quota |  | long |  |
-| dynatrace.license_usage.dem.remaining |  | double | gauge |
-| dynatrace.license_usage.dem.remaining_percent |  | double | gauge |
-| dynatrace.license_usage.dem.status |  | keyword |  |
-| dynatrace.license_usage.dem.usage |  | double | gauge |
-| dynatrace.license_usage.dem.usage_percent |  | double | gauge |
-| dynatrace.license_usage.host_units.overage |  | flattened |  |
-| dynatrace.license_usage.host_units.quota |  | long |  |
-| dynatrace.license_usage.host_units.remaining |  | double | gauge |
-| dynatrace.license_usage.host_units.remaining_percent |  | double | gauge |
-| dynatrace.license_usage.host_units.status |  | keyword |  |
-| dynatrace.license_usage.host_units.usage |  | double | gauge |
-| dynatrace.license_usage.host_units.usage_percent |  | double | gauge |
-| dynatrace.license_usage.last_billing_time | Last time billing data was refreshed. | keyword |  |
-| dynatrace.license_usage.license_expiration_time | License expiration date. | keyword |  |
+| dynatrace.license_usage.dem.overage | Overage usage details. | flattened |  |
+| dynatrace.license_usage.dem.quota | License quota. | long |  |
+| dynatrace.license_usage.dem.remaining | Remaining usage of quota. | double | gauge |
+| dynatrace.license_usage.dem.remaining_percent | Remaining usage of quota as percentage. | double | gauge |
+| dynatrace.license_usage.dem.status | Current license usage status. | keyword |  |
+| dynatrace.license_usage.dem.usage | Current usage of quota. | double | gauge |
+| dynatrace.license_usage.dem.usage_percent | Current usage of quota as percentage. | double | gauge |
+| dynatrace.license_usage.host_units.overage | Overage usage details. | flattened |  |
+| dynatrace.license_usage.host_units.quota | License quota. | long |  |
+| dynatrace.license_usage.host_units.remaining | Remaining usage of quota. | double | gauge |
+| dynatrace.license_usage.host_units.remaining_percent | Remaining usage of quota as percentage. | double | gauge |
+| dynatrace.license_usage.host_units.status | Current license usage status. | keyword |  |
+| dynatrace.license_usage.host_units.usage | Current usage of quota. | double | gauge |
+| dynatrace.license_usage.host_units.usage_percent | Current usage of quota as percentage. | double | gauge |
+| dynatrace.license_usage.last_billing_time | Last time billing data was refreshed (parsed for time-range queries). | date |  |
+| dynatrace.license_usage.license_expiration_time | License expiration time from the Dynatrace API (parsed for time-range queries). | date |  |
 | dynatrace.license_usage.license_key | License key. | keyword |  |
 | dynatrace.license_usage.license_name | License name. | keyword |  |
 | dynatrace.license_usage.license_status | License status. | keyword |  |

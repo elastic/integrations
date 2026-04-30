@@ -48,12 +48,16 @@ program: |-
           (
             has(state.filter) && string(state.filter) != "" ?
               state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
-                "pageSize": [string(state.page_size)],
-                "filter":   [string(state.filter)],
+                "pageSize":               [string(state.page_size)],
+                "filter":                 [string(state.filter)],
+                "includeConsumptionInfo": [string(state.include_consumption_info)],
+                "includeStorageInfo":     [string(state.include_storage_info)],
               }.format_query()
             :
               state.url.trim_right("/") + "/api/cluster/v2/environments?" + {
-                "pageSize": [string(state.page_size)],
+                "pageSize":               [string(state.page_size)],
+                "includeConsumptionInfo": [string(state.include_consumption_info)],
+                "includeStorageInfo":     [string(state.include_storage_info)],
               }.format_query()
           )
       ).as(req_url,
@@ -68,7 +72,16 @@ program: |-
               "want_more": has(body.nextPageKey) && body.nextPageKey != null && body.nextPageKey != "",
             })
           : (resp.StatusCode == 429) ?
-            { "events": [], "want_more": false }
+            {
+              "events": [{
+                "error": {
+                  "code":    "429",
+                  "id":      string(resp.Status),
+                  "message": "Rate limited on GET /api/cluster/v2/environments; retry next interval.",
+                },
+              }],
+              "want_more": false,
+            }
           :
             {
               "events": [{

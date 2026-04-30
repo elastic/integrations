@@ -79,6 +79,24 @@ processors:
         }
         lic.entrySet().removeIf(e -> e.getValue() == null);
         ctx.dynatrace.license_usage = lic;
+  - date:
+      field: dynatrace.license_usage.license_expiration_time
+      target_field: dynatrace.license_usage.license_expiration_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - UNIX
+      ignore_failure: true
+      if: ctx.dynatrace?.license_usage?.license_expiration_time != null
+  - date:
+      field: dynatrace.license_usage.last_billing_time
+      target_field: dynatrace.license_usage.last_billing_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - UNIX
+      ignore_failure: true
+      if: ctx.dynatrace?.license_usage?.last_billing_time != null
   - set:
       field: event.kind
       value: metric

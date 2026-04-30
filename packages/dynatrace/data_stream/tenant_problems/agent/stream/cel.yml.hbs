@@ -169,13 +169,15 @@ program: |-
               )
             ).as(results,
               {
-                // Persist per-tenant cursor (from + nextPageKey if any).
-                "cursor": zip(
-                  results.map(r, r.id),
-                  results.map(r, {
-                    "from": r.from,
-                    ?"next_page_key": (r.next_page_key != "") ? optional.of(r.next_page_key) : optional.none(),
-                  })
+                // Persist per-tenant cursor: merge batch updates into existing map so tenants not processed this interval keep their cursors.
+                "cursor": state.?cursor.orValue({}).with(
+                  zip(
+                    results.map(r, r.id),
+                    results.map(r, {
+                      "from": r.from,
+                      ?"next_page_key": (r.next_page_key != "") ? optional.of(r.next_page_key) : optional.none(),
+                    })
+                  )
                 ),
                 // Carry leftover tenants (not in this batch) + tenants still paginating.
                 "work_list": (

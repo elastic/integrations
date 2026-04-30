@@ -47,7 +47,7 @@ API references:
 | --------| ----------- |
 | `activegates` | ActiveGate rows from `/api/cluster/v2/activeGates`. |
 | `license_usage` | Cluster license and usage from `/api/cluster/v2/clusterLicense` (**metrics** data stream). |
-| `environments` | Tenant list from `/api/cluster/v2/environments` using `pageSize`, optional `filter`, and `nextPageKey` pagination. |
+| `environments` | Tenant list from `/api/cluster/v2/environments` using `pageSize`, optional `filter`, `includeConsumptionInfo` / `includeStorageInfo` (when not paginating with `nextPageKey`), and `nextPageKey` pagination. |
 | `tenant_problems` | Problems per tenant from `/e/<environmentId>/api/v2/problems`. |
 
 ## Requirements
