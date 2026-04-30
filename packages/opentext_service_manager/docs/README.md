@@ -98,6 +98,7 @@ An example event for `incident` looks as following:
         "dataset": "opentext_service_manager.incident",
         "ingested": "2025-04-30T12:00:00.000000000Z",
         "kind": "event",
+        "original": "{\"Category\":\"incident\",\"Priority\":\"2\",\"Status\":\"Open\",\"brief.description\":\"Example incident from Service Manager REST\",\"last.update.time\":\"2024-06-10T15:30:00Z\",\"number\":\"IM10001\",\"open.time\":\"2024-06-10T14:00:00Z\"}",
         "type": [
             "info"
         ]
