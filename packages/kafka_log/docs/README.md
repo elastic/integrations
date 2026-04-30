@@ -38,7 +38,7 @@ The default **dataset** is `kafka_log.generic`. Changing the **Dataset name** in
 
 ### Elastic prerequisites
 
-- A stack version that satisfies the integration’s **Kibana** requirement (see the integration manifest in Kibana or this package’s `manifest.yml`).
+- A stack version that satisfies the integration’s **Kibana** requirement (refer to the integration manifest in Kibana or this package’s `manifest.yml`).
 
 ## How do I deploy this integration?
 
@@ -77,7 +77,7 @@ Elastic Agent runs the Kafka input and forwards events to Elasticsearch. Install
 
 ## Troubleshooting
 
-For help with Elastic ingest tools, see [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+For help with Elastic ingest tools, refer to [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
 ### Common configuration issues
 
@@ -90,7 +90,7 @@ For help with Elastic ingest tools, see [Common problems](https://www.elastic.co
 
 ## Performance and scaling
 
-For architectures used to scale ingest, see [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures).
+For architectures used to scale ingest, refer to [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures).
 
 - **Throughput**: Kafka throughput scales with **partitions** and consumer parallelism, multiple agents with the **same** `group_id` share partitions (one consumer per partition per group).
 - **Fetch settings**: Tune **fetch** sizes and **max_wait_time** in advanced options if you need higher batching or lower latency—balance broker load and agent memory.
