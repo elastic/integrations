@@ -26,9 +26,10 @@ import (
 )
 
 const (
-	endpoint  = "otelcol:4317"
-	healthURL = "http://otelcol:13133"
-	count     = 1000
+	endpoint       = "otelcol:4317"
+	healthURL      = "http://otelcol:13133"
+	count          = 1000
+	metricInterval = 100 * time.Millisecond
 )
 
 func main() {
@@ -44,40 +45,20 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(3)
-
-	go func() {
-		defer wg.Done()
-		log.Printf("sending %d traces to %s", count, endpoint)
-		if err := sendTraces(ctx, res); err != nil {
-			log.Printf("traces error: %v", err)
-			return
-		}
-		log.Println("traces sent successfully")
-	}()
-
-	go func() {
-		defer wg.Done()
-		log.Printf("sending %d metrics to %s", count, endpoint)
-		if err := sendMetrics(ctx, res); err != nil {
-			log.Printf("metrics error: %v", err)
-			return
-		}
-		log.Println("metrics sent successfully")
-	}()
-
-	go func() {
-		defer wg.Done()
-		log.Printf("sending %d logs to %s", count, endpoint)
-		if err := sendLogs(ctx, res); err != nil {
-			log.Printf("logs error: %v", err)
-			return
-		}
-		log.Println("logs sent successfully")
-	}()
-
+	wg.Go(func() { sendSignal("traces", func() error { return sendTraces(ctx, res) }) })
+	wg.Go(func() { sendSignal("metrics", func() error { return sendMetrics(ctx, res) }) })
+	wg.Go(func() { sendSignal("logs", func() error { return sendLogs(ctx, res) }) })
 	wg.Wait()
 	log.Println("all signals sent, exiting")
+}
+
+func sendSignal(name string, send func() error) {
+	log.Printf("sending %d %s to %s", count, name, endpoint)
+	if err := send(); err != nil {
+		log.Printf("%s error: %v", name, err)
+		return
+	}
+	log.Printf("%s sent successfully", name)
 }
 
 func waitForOtelcol() {
@@ -136,7 +117,7 @@ func sendMetrics(ctx context.Context, res *resource.Resource) error {
 	}
 
 	mp := sdkmetric.NewMeterProvider(
-		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(100*time.Millisecond))),
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(metricInterval))),
 		sdkmetric.WithResource(res),
 	)
 	defer mp.Shutdown(ctx)
