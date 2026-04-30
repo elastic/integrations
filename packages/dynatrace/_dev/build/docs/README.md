@@ -2,9 +2,7 @@
 
 The [Dynatrace](https://www.dynatrace.com/) integration collects observability and audit-related data from **Dynatrace SaaS** and **Dynatrace Managed** into Elasticsearch using the Elastic Agent [CEL input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html). Use it to centralize problems (alerts), audit actions, cluster inventory, license usage, and related signals alongside the rest of your Elastic data.
 
-:::{note}
 This package is **community-supported** and ships as a **technical preview**: each data stream sets `release: experimental`, which surfaces as the technical preview badge in the Elastic Integrations UI. It is not authored or endorsed by Dynatrace as an official Elastic integration. The icon uses Dynatrace brand artwork for recognition.
-:::
 
 ## Overview
 
