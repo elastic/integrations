@@ -1,0 +1,134 @@
+- name: juniper.junos.route_engine
+  type: group
+  fields:
+    - name: slot
+      type: keyword
+      dimension: true
+      description: Route engine slot identifier. Used as a TSDB dimension.
+    - name: status
+      type: keyword
+      description: Operational status of the route engine (for example OK, Testing, Failed).
+    - name: model
+      type: keyword
+      description: Route engine hardware model string.
+    - name: serial_number
+      type: keyword
+      description: Hardware serial number of the route engine.
+    - name: mastership_state
+      type: keyword
+      description: Redundancy role of the route engine, either master or backup.
+    - name: temperature.routing_engine
+      type: float
+      metric_type: gauge
+      description: Current route engine board temperature in degrees Celsius.
+    - name: temperature.cpu
+      type: float
+      metric_type: gauge
+      description: Current CPU die temperature in degrees Celsius.
+    - name: cpu.user
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Percentage of CPU time spent executing user-space processes.
+    - name: cpu.background
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Percentage of CPU time spent on background (nice) processes.
+    - name: cpu.kernel
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Percentage of CPU time spent in kernel space.
+    - name: cpu.interrupt
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Percentage of CPU time spent servicing hardware interrupts.
+    - name: cpu.idle
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Percentage of CPU time spent idle with no pending work.
+    - name: cpu_cores
+      type: group
+      description: Per-core CPU utilization breakdown.
+      fields:
+        - name: id
+          type: integer
+          description: CPU core ID.
+        - name: user
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: Per-core user CPU utilization.
+        - name: kernel
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: Per-core kernel CPU utilization.
+        - name: background
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: Per-core background CPU utilization.
+        - name: interrupt
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: Per-core interrupt CPU utilization.
+        - name: idle
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: Per-core idle CPU percentage.
+    - name: memory.total
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Total installed memory available to the route engine in bytes.
+    - name: memory.buffer_utilization
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Percentage of route engine memory currently in use by buffers and caches.
+    - name: memory.installed
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Total installed memory in bytes (from memory-installed-size).
+    - name: load_average.one_minute
+      type: float
+      metric_type: gauge
+      description: System load average over the last 1 minute.
+    - name: load_average.five_minute
+      type: float
+      metric_type: gauge
+      description: System load average over the last 5 minutes.
+    - name: load_average.fifteen_minute
+      type: float
+      metric_type: gauge
+      description: System load average over the last 15 minutes.
+    - name: uptime
+      type: long
+      metric_type: gauge
+      unit: s
+      description: Route engine uptime in seconds, measured from the most recent start.
+    - name: uptime_days
+      type: float
+      metric_type: gauge
+      description: Route engine uptime in days, measured from the most recent start. Pre-computed from uptime seconds for dashboard display.
+    - name: last_reboot_reason
+      type: keyword
+      description: Reported reason for the most recent route engine reboot.
+    - name: start_time
+      type: date
+      description: Timestamp when the route engine was last started.
+- name: system.cpu.utilization
+  type: float
+  metric_type: gauge
+  description: CPU utilization as a fraction from 0 to 1, derived from (1 - cpu.idle / 100).
+- name: system.memory.utilization
+  type: float
+  metric_type: gauge
+  description: Memory utilization as a fraction from 0 to 1, derived from memory.buffer_utilization / 100.
