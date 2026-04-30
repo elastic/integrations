@@ -150,6 +150,40 @@ The minimum required Kibana version depends on the signal types your package col
 
 Packages that collect traces, or that support multiple signal types via `dynamic_signal_types: true`, must set `conditions.kibana.version: "^9.4.0"` in their `manifest.yml`.
 
+### Multi-Signal Packages [multi-signal]
+
+Some OTel receivers can emit more than one signal type simultaneously. Instead of a fixed `type: metrics/logs/traces` field, use `dynamic_signal_types: true` in the policy template:
+
+```yaml
+policy_templates:
+  - name: kafkareceiver
+    dynamic_signal_types: true   # replaces "type: metrics/logs/traces"
+    title: Kafka OpenTelemetry Input
+    description: ...
+    input: otelcol
+    template_path: input.yml.hbs
+```
+
+With `dynamic_signal_types: true`, Fleet activates only the pipelines for which the user has configured data. The template's `service.pipelines` section should include all supported signal types:
+
+```handlebars
+service:
+  pipelines:
+    logs:
+      receivers: [<receiver-name>]
+      processors: [resourcedetection/system]
+    metrics:
+      receivers: [<receiver-name>]
+      processors: [resourcedetection/system]
+    traces:
+      receivers: [<receiver-name>]
+      processors: [resourcedetection/system]
+```
+
+::::{note}
+`dynamic_signal_types: true` requires Kibana **9.4.0+**. See [Kibana Version Requirements](#kibana-version-requirements).
+::::
+
 ### Variable Types [variable-types]
 
 OTel Input Packages support these variable types:
@@ -390,7 +424,7 @@ Reference these existing packages as examples, or search for packages containing
 |---------|------------|------------------|
 | [statsd_input_otel](https://github.com/elastic/integrations/tree/main/packages/statsd_input_otel) | Basic | Minimal configuration, good starting point |
 | [prometheus_input_otel](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel) | Medium | TLS config, authentication, multi-value fields |
-| [kafka_input_otel](https://github.com/elastic/integrations/tree/main/packages/kafka_input_otel) | Medium | Kafka receiver; system tests use telemetrygen + OTel Collector to produce OTLP into Kafka |
+| [kafka_input_otel](https://github.com/elastic/integrations/tree/main/packages/kafka_input_otel) | Medium | Kafka receiver; multi-signal (`dynamic_signal_types: true`) |
 | [hostmetrics_input_otel](https://github.com/elastic/integrations/tree/main/packages/hostmetrics_input_otel) | Complex | Conditional scrapers, YAML configuration |
 
 ## Additional Resources [resources]
