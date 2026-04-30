@@ -14,7 +14,7 @@ Elastic Agent connects to your cluster using the **bootstrap hosts** you configu
 
 ## What data does this integration collect?
 
-The integration collects **log events** derived from Kafka messages:
+The integration collects **events** derived from Kafka messages:
 
 - **Message payload**: Typically stored in the `message` field (format depends on your producers—plain text, JSON, syslog, and so on).
 - **Kafka metadata**: Fields such as `kafka.topic`, `kafka.partition`, `kafka.offset`, `kafka.key`, and `kafka.headers` where applicable.
