@@ -352,7 +352,9 @@ pivot:
         field: source.ip
     'process.executable':
       terms:
-        field: process.executable
+        script:
+          source: "return doc.containsKey('process.executable') && !doc['process.executable'].isEmpty() ? doc['process.executable'].value : ' '"
+          lang: painless
     'process.parent.name':
       terms:
         script:
