@@ -5,10 +5,10 @@ This package is an **input** type integration: it exposes the Filebeat Kafka inp
 Configure bootstrap **hosts**, **topics**, and a consumer **group_id** (and optional SASL, TLS, parsers, and related settings) in the policy.
 
 ## Compatibility
-This package works with Kafka versions in between 0.11 and 2.8.0. Older versions might work as well, but are not supported.
+This package works with Kafka versions between 0.11 and 2.8.0. Earlier versions might work as well, but are not supported.
 
 ## Ingest Pipelines
-Custom ingest pipelines may be added by setting the pipeline option; you can create pipelines via the API or the [Ingest Node Pipeline UI](/app/management/ingest/ingest_pipelines/).
+Custom ingest pipelines can be added by setting the pipeline option, you can create pipelines using the API or the [Ingest Node Pipeline UI](/app/management/ingest/ingest_pipelines/).
 
 **ECS Field Reference**
 
