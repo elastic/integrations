@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.17.0
+  - set:
+      field: event.ingested
+      tag: set_event_ingested
+      copy_from: _ingest.timestamp
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -15,8 +19,8 @@ processors:
       value: event
   - append:
       field: event.category
-      tag: set_event_category_issue
-      value: issue
+      tag: set_event_category_configuration
+      value: configuration
       allow_duplicates: false
   - append:
       field: event.type
@@ -42,6 +46,27 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: stage_last_update_time_for_timestamp
+      lang: painless
+      if: >-
+        ctx.opentext_service_manager?.incident != null
+        && ctx.opentext_service_manager.incident.containsKey('last.update.time')
+        && ctx.opentext_service_manager.incident['last.update.time'] != null
+      source: >-
+        ctx._tmp = ctx._tmp ?: [:];
+        ctx._tmp.opentext_last_update_time = ctx.opentext_service_manager.incident['last.update.time'];
+  - date:
+      field: _tmp.opentext_last_update_time
+      tag: date_last_update_time_to_timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx._tmp?.opentext_last_update_time != null
+      ignore_failure: true
+  - remove:
+      field: _tmp
+      ignore_missing: true
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind

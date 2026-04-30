@@ -1,0 +1,19 @@
+input: cel
+service: opentext_service_manager
+wait_for_data_timeout: 60s
+vars:
+  username: operator
+  password: secret
+  ssl: |
+    verification_mode: none
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}/incidents
+    interval: 10s
+    batch_size: 100
+    initial_interval: 876000h
+    native_query: 'Category="incident"'
+    preserve_original_event: true
+    enable_request_tracer: false
+assert:
+  hit_count: 2

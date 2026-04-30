@@ -57,23 +57,22 @@ program: |
       :
         "(" + state.cursor_time_field + " < '" + req_ctx.poll_end + "') and ((" + state.cursor_time_field + " > '" + req_ctx.committed_ts + "') or (" + state.cursor_time_field + " == '" + req_ctx.committed_ts + "' and " + state.cursor_tiebreaker_field + " > '" + req_ctx.committed_num + "'))"
     ).as(time_clause,
-      "(" + state.native_query + ") and " + time_clause
-    ).as(full_query,
-      request(
-        "GET",
-        state.url.trim_right("/") + "?" + {
-          "query": [full_query],
-          "sort": [state.sort],
-          "view": ["expand"],
-          "count": [string(state.batch_size)],
-          "start": [string(req_ctx.page_start)],
-        }.format_query()
-      ).with({
-        "Header": {
-          "Authorization": ["Basic " + base64(state.username + ":" + state.password)],
-          "Accept": ["application/json"],
-        },
-      }).do_request().as(resp,
+      ("(" + state.native_query + ") and " + time_clause).as(full_query,
+        request(
+          "GET",
+          state.url.trim_right("/") + "?" + {
+            "query": [full_query],
+            "sort": [state.sort],
+            "view": ["expand"],
+            "count": [string(state.batch_size)],
+            "start": [string(req_ctx.page_start)],
+          }.format_query()
+        ).with({
+          "Header": {
+            "Authorization": ["Basic " + base64(state.username + ":" + state.password)],
+            "Accept": ["application/json"],
+          },
+        }).do_request().as(resp,
         (
           resp.StatusCode != 200
           ?
