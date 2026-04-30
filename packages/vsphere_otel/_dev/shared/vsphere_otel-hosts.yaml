@@ -1,0 +1,510 @@
+dashboards:
+- id: vsphere_otel-hosts
+  name: '[vSphere OTel] Hosts'
+  description: >-
+    ESXi host performance: CPU, memory, disk I/O latency, and network throughput
+    per host from the OTel vcenterreceiver.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Datacenter
+    data_view: metrics-*
+    field: vcenter.datacenter.name
+  - type: options
+    label: Cluster
+    data_view: metrics-*
+    field: vcenter.cluster.name
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: vcenter.host.name
+
+
+  panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: vsphere_otel-overview
+      - label: Hosts
+        dashboard: vsphere_otel-hosts
+      - label: Virtual Machines
+        dashboard: vsphere_otel-vms
+      - label: Storage
+        dashboard: vsphere_otel-storage
+
+      # ─── Dashboard Overview ─────────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [vSphere OTel] Hosts
+
+        This dashboard provides host-level performance monitoring:
+        - CPU utilization and usage trends per host
+        - Memory utilization and usage per host
+        - Disk I/O latency (max) per host
+        - Network throughput and packet rates
+        - Top hosts by resource consumption
+
+      # ─── KPI Row 1 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: Avg CPU Utilization
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.utilization IS NOT NULL
+      - STATS cpu = AVG(LAST_OVER_TIME(vcenter.host.cpu.utilization))
+      primary:
+        field: cpu
+        label: Avg CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: Avg Memory Utilization
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.memory.utilization IS NOT NULL
+      - STATS mem = AVG(LAST_OVER_TIME(vcenter.host.memory.utilization))
+      primary:
+        field: mem
+        label: Avg Memory %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: Max Disk Latency
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.disk.latency.max IS NOT NULL
+      - STATS lat = MAX(LAST_OVER_TIME(vcenter.host.disk.latency.max))
+      primary:
+        field: lat
+        label: Max Disk Latency
+        format:
+          type: number
+          decimals: 1
+          suffix: " ms"
+
+  - title: Host Count
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.utilization IS NOT NULL
+      - STATS hosts = COUNT_DISTINCT(vcenter.host.name)
+      primary:
+        field: hosts
+        label: Hosts
+        format:
+          type: number
+          decimals: 0
+
+      # ─── KPI Row 2 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: Total CPU Capacity
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.capacity IS NOT NULL
+      - STATS capacity = SUM(LAST_OVER_TIME(vcenter.host.cpu.capacity))
+      primary:
+        field: capacity
+        label: CPU Capacity
+        format:
+          type: number
+          compact: true
+          suffix: " MHz"
+
+  - title: Total CPU Usage
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.usage IS NOT NULL
+      - STATS usage = SUM(LAST_OVER_TIME(vcenter.host.cpu.usage))
+      primary:
+        field: usage
+        label: CPU Usage
+        format:
+          type: number
+          compact: true
+          suffix: " MHz"
+
+  - title: Total Memory Usage
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.memory.usage IS NOT NULL
+      - STATS mem = SUM(LAST_OVER_TIME(vcenter.host.memory.usage))
+      primary:
+        field: mem
+        label: Memory Usage
+        format:
+          type: number
+          compact: true
+          suffix: " MiBy"
+
+  - title: Avg Network Throughput
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.network.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = AVG(LAST_OVER_TIME(vcenter.host.network.throughput))
+      primary:
+        field: throughput
+        label: Avg Net Throughput
+        format:
+          type: number
+          decimals: 1
+          suffix: " KiBy/s"
+
+      # ─── Hosts Overview Table ──────────────────────────────────────
+  - title: Hosts
+    size: {w: 48, h: 12}
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.utilization IS NOT NULL
+      - STATS cpu = AVG(vcenter.host.cpu.utilization), mem = AVG(vcenter.host.memory.utilization) BY vcenter.host.name, 
+        vcenter.datacenter.name, vcenter.cluster.name
+      - SORT cpu DESC
+      - LIMIT 100
+      metrics:
+      - field: cpu
+        label: CPU Utilization
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      - field: mem
+        label: Memory Utilization
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+      # ─── Compute Section ───────────────────────────────────────────
+  - title: Host CPU Utilization Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.utilization IS NOT NULL
+      - STATS cpu = MAX(AVG_OVER_TIME(vcenter.host.cpu.utilization)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.host.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu
+        label: CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      breakdown:
+        field: vcenter.host.name
+      legend:
+        visible: show
+        position: right
+
+  - title: Host Memory Utilization Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.memory.utilization IS NOT NULL
+      - STATS mem = MAX(AVG_OVER_TIME(vcenter.host.memory.utilization)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.host.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: mem
+        label: Memory %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      breakdown:
+        field: vcenter.host.name
+      legend:
+        visible: show
+        position: right
+
+  - title: Host CPU Usage (MHz) Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.usage IS NOT NULL
+      - STATS usage = MAX(AVG_OVER_TIME(vcenter.host.cpu.usage)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.host.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: usage
+        label: CPU MHz
+        format:
+          type: number
+          suffix: " MHz"
+      breakdown:
+        field: vcenter.host.name
+      legend:
+        visible: show
+        position: right
+
+  - title: Host Memory Usage (MiBy) Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.memory.usage IS NOT NULL
+      - STATS usage = MAX(AVG_OVER_TIME(vcenter.host.memory.usage)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.host.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: usage
+        label: Memory MiBy
+        format:
+          type: number
+          suffix: " MiBy"
+      breakdown:
+        field: vcenter.host.name
+      legend:
+        visible: show
+        position: right
+
+      # ─── Disk I/O Section ──────────────────────────────────────────
+  - title: Host Max Disk Latency Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.disk.latency.max IS NOT NULL
+      - STATS lat = MAX(MAX_OVER_TIME(vcenter.host.disk.latency.max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.host.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: lat
+        label: Max Latency
+        format:
+          type: number
+          decimals: 1
+          suffix: " ms"
+      breakdown:
+        field: vcenter.host.name
+      legend:
+        visible: show
+        position: right
+
+  - title: Host Disk Throughput Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.disk.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = AVG(AVG_OVER_TIME(vcenter.host.disk.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: throughput
+        label: Throughput
+        format:
+          type: number
+          suffix: " KiBy/s"
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "read"
+          color: '#6092C0'
+        - value: "write"
+          color: '#D36086'
+      legend:
+        visible: show
+        position: right
+
+      # ─── Network Section ───────────────────────────────────────────
+  - title: Host Network Throughput Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.network.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = AVG(AVG_OVER_TIME(vcenter.host.network.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: throughput
+        label: Throughput
+        format:
+          type: number
+          suffix: " KiBy/s"
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "received"
+          color: '#54B399'
+        - value: "transmitted"
+          color: '#6092C0'
+      legend:
+        visible: show
+        position: right
+
+  - title: Host Network Packet Rate Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.network.packet.rate IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS pps = AVG(AVG_OVER_TIME(vcenter.host.network.packet.rate)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: pps
+        label: Packets/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "received"
+          color: '#54B399'
+        - value: "transmitted"
+          color: '#6092C0'
+      legend:
+        visible: show
+        position: right
+
+      # ─── Detail Tables Section ─────────────────────────────────────
+  - title: Top Hosts by CPU Utilization
+    size: {w: 24, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.utilization IS NOT NULL
+      - STATS cpu = MAX(LAST_OVER_TIME(vcenter.host.cpu.utilization)), cpu_usage = MAX(LAST_OVER_TIME(vcenter.host.cpu.usage)), cpu_capacity
+        = MAX(LAST_OVER_TIME(vcenter.host.cpu.capacity)) BY vcenter.host.name, vcenter.cluster.name
+      - SORT cpu DESC
+      - LIMIT 20
+      metrics:
+      - field: cpu
+        label: CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      - field: cpu_usage
+        label: Usage (MHz)
+        format:
+          type: number
+          decimals: 0
+      - field: cpu_capacity
+        label: Capacity (MHz)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Top Hosts by Memory Utilization
+    size: {w: 24, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.memory.utilization IS NOT NULL
+      - STATS mem = MAX(LAST_OVER_TIME(vcenter.host.memory.utilization)), mem_usage = MAX(LAST_OVER_TIME(vcenter.host.memory.usage)) BY 
+        vcenter.host.name, vcenter.cluster.name
+      - SORT mem DESC
+      - LIMIT 20
+      metrics:
+      - field: mem
+        label: Memory %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      - field: mem_usage
+        label: Usage (MiBy)
+        format:
+          type: number
+          decimals: 0

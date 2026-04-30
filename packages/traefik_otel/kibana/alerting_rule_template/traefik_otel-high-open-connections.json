@@ -1,0 +1,38 @@
+{
+    "id": "traefik_otel-high-open-connections",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Traefik OTel] High open connections",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "traefik",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 8,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-traefik.otel-*\n// Limit to open connections gauge (per entrypoint, protocol)\n| WHERE traefik_open_connections IS NOT NULL\n// Take latest value per entrypoint/protocol (gauge - last value in window)\n| STATS conns = MAX(traefik_open_connections) BY attributes.entrypoint, attributes.protocol\n// Sum across entrypoints for total, or alert per entrypoint\n| STATS total_conns = SUM(conns)\n// Alert when connections exceed threshold; tune based on expected capacity\n| WHERE total_conns > 1000"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "all",
+            "excludeHitsFromPreviousRun": false
+        }
+    }
+}

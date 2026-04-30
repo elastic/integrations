@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-oomkilled-containers",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when containers have been OOMKilled — terminated by the kernel OOM killer for exceeding their memory limit. Indicates the container's memory limit is too low or it has a memory leak.",
+        "name": "[K8s OTel] OOMKilled containers",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## OOMKilled Containers\n\n### Triage Steps\n1. Identify the affected container(s) from the alert results.\n2. Open the Pod & Container Detail dashboard to see memory usage vs limits for the container.\n3. Check the container's memory limit vs actual usage: is the limit too low, or is the application using too much?\n4. Review application memory profiling if available.\n5. Check if the OOMKill is a one-off (startup spike) or recurring (memory leak).\n\n### Common Causes\n- Memory limit set too low for the workload's actual requirements\n- Memory leak in the application\n- Sudden traffic spike causing increased memory usage\n- JVM heap not aligned with container memory limit\n- In-memory caching growing unbounded\n\n### Tuning\n- This rule triggers on any container with `last_terminated_reason == OOMKilled`.\n- If certain containers are expected to occasionally OOM (e.g. batch jobs), exclude them by adding a namespace or pod name filter.\n\n### Escalation\nRecurring OOMKills indicate either insufficient memory limits or an application memory leak. Increase limits as a short-term fix and investigate root cause."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.container.status.last_terminated_reason == \"OOMKilled\"\n| STATS\n    restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name,\n       container.image.name\n| SORT restarts DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, container.image.name, restarts\n| LIMIT 50"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.pod.name",
+            "termSize": 50
+        }
+    }
+}

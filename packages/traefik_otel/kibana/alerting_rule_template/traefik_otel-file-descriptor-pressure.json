@@ -1,0 +1,38 @@
+{
+    "id": "traefik_otel-file-descriptor-pressure",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Traefik OTel] File descriptor pressure",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "traefik",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 8,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-traefik.otel-*\n// Limit to process FD metrics\n| WHERE process_open_fds IS NOT NULL AND process_max_fds IS NOT NULL\n// Take latest values (gauges)\n| STATS open_fds = MAX(process_open_fds), max_fds = MAX(process_max_fds)\n// Compute utilisation; alert when > 80% (tune as needed)\n| EVAL fd_pct = ROUND(open_fds / max_fds * 100.0, 2)\n| WHERE fd_pct > 80.0"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "all",
+            "excludeHitsFromPreviousRun": false
+        }
+    }
+}

@@ -72,6 +72,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
+| gcp.audit.service_data.policy_delta.binding_deltas.action | The action that was performed on a Binding. Allowed values are `ADD`, `REMOVE` and `ACTION_UNSPECIFIED` | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.description | Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI. | text |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.expression | Textual representation of an expression in Common Expression Language syntax. | text |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.location | Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.title | Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.member | A single identity requesting access for a Google Cloud resource. Follows the same format of Binding.members. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.role | Role that is assigned to members. For example, roles/viewer, roles/editor, or roles/owner. | keyword |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
 | gcp.audit.source_log_ids.insert_id |  | keyword |
 | gcp.audit.source_log_ids.log_time |  | date |

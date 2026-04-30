@@ -1,0 +1,259 @@
+# Traefik OTel — TLS & Configuration
+# TLS certificate health, TLS traffic, and configuration reload stability.
+
+dashboards:
+  - id: traefik_otel-tls-config
+    name: '[Traefik OTel] TLS & Config'
+    description: TLS certificate expiry, TLS traffic distribution, and configuration reload health.
+
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: traefik.otel
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: traefik_otel-overview
+            - label: Services
+              dashboard: traefik_otel-services
+            - label: TLS & Config
+              dashboard: traefik_otel-tls-config
+            - label: Process
+              dashboard: traefik_otel-process
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Traefik OTel] TLS & Config
+
+            This dashboard monitors TLS and configuration health:
+            - TLS certificate expiry (certificates expiring soon)
+            - TLS traffic by version and cipher
+            - Configuration reload success and failure tracking
+            - TLS request volume over time
+
+      # ─── KPI Metric Row ──────────────────────────────────────────────
+      - title: TLS Certs Near Expiry
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_tls_certs_not_after IS NOT NULL
+            - EVAL now_epoch = TO_DOUBLE(NOW()) / 1000
+            - EVAL days_until_expiry = (traefik_tls_certs_not_after - now_epoch) / 86400
+            - WHERE days_until_expiry <= 30
+            - STATS certs_near_expiry = COUNT(*)
+          primary:
+            field: certs_near_expiry
+            label: Certs < 30d
+            format:
+              type: number
+              decimals: 0
+
+      - title: TLS Request Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_requests_tls_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL tls_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP tls_rate
+          primary:
+            field: tls_rate
+            label: TLS Req/sec
+            format:
+              type: number
+              decimals: 1
+              suffix: "/sec"
+
+      - title: Config Reloads
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_config_reloads_total IS NOT NULL
+            - STATS reloads = MAX(traefik_config_reloads_total)
+          primary:
+            field: reloads
+            label: Total Reloads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Last Reload Success
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_config_last_reload_success IS NOT NULL
+            - STATS last_success = MAX(traefik_config_last_reload_success)
+            - EVAL now_sec = TO_DOUBLE(NOW()) / 1000
+            - EVAL age_seconds = now_sec - last_success
+          primary:
+            field: age_seconds
+            label: Ago
+            format:
+              type: duration
+
+      # ─── TLS Requests Over Time ──────────────────────────────────────
+      - title: TLS Request Rate Over Time
+        size: {w: 48, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_requests_tls_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+                attributes.tls_version
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL tls_rate = total / bucket_secs
+            - KEEP time_bucket, attributes.tls_version, tls_rate
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: tls_rate
+              label: TLS Req/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.tls_version
+          legend:
+            visible: show
+            position: right
+
+      # ─── TLS Version Distribution ───────────────────────────────────
+      - title: TLS Traffic by Version
+        size: {w: 16, h: 10}
+        esql:
+          type: pie
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
+            - STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total)
+              BY attributes.tls_version
+            - SORT tls_requests DESC
+            - LIMIT 10
+          metrics:
+            - field: tls_requests
+          breakdowns:
+            - field: attributes.tls_version
+              label: TLS Version
+          appearance:
+            donut: medium
+
+      # ─── Certificate Expiry Table ─────────────────────────────────────
+      - title: Certificate Expiry (Days Remaining)
+        size: {w: 32, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_tls_certs_not_after IS NOT NULL
+            - EVAL now_epoch = TO_DOUBLE(NOW()) / 1000
+            - EVAL days_remaining = (traefik_tls_certs_not_after - now_epoch) / 86400
+            - STATS days_remaining = AVG(days_remaining) BY attributes.cn, attributes.serial
+            - SORT days_remaining ASC
+            - LIMIT 50
+          breakdowns:
+            - field: attributes.cn
+              label: Common Name
+            - field: attributes.serial
+              label: Serial
+          metrics:
+            - field: days_remaining
+              label: Days Left
+              format:
+                type: number
+                decimals: 1
+
+      # ─── Config Reload Rate ───────────────────────────────────────────
+      - title: Config Reload Rate Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_config_reloads_total IS NOT NULL
+            - STATS total = SUM(traefik_config_reloads_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL reload_rate = total / bucket_secs
+            - KEEP time_bucket, reload_rate
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: reload_rate
+              label: Reloads/sec
+              format:
+                type: number
+                decimals: 3
+
+      # ─── TLS Cipher Distribution ──────────────────────────────────────
+      - title: Top TLS Ciphers
+        size: {w: 24, h: 10}
+        esql:
+          type: pie
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
+            - STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total)
+              BY attributes.tls_cipher
+            - SORT tls_requests DESC
+            - LIMIT 10
+          metrics:
+            - field: tls_requests
+          breakdowns:
+            - field: attributes.tls_cipher
+              label: TLS Cipher
+          appearance:
+            donut: medium
