@@ -1,4 +1,4 @@
-# Custom Kafka Logs Integration for Elastic
+# Custom Kafka Event Integration
 
 ## Overview
 
