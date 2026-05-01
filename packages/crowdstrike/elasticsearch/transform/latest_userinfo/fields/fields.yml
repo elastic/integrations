@@ -1,0 +1,80 @@
+- name: host_user_key
+  type: keyword
+  description: >
+    Synthetic composite join key for LOOKUP JOIN, constructed as
+    CONCAT(host.id, "::", user.id). Used by ES|QL queries to attach
+    user metadata at query time.
+- name: crowdstrike
+  type: group
+  fields:
+    - name: info
+      type: group
+      fields:
+        - name: user
+          type: group
+          description: User metadata from UserIdentity and UserLogon sensor events.
+          fields:
+            - name: name
+              type: keyword
+              description: The username.
+            - name: domain
+              type: keyword
+              description: The UPN domain suffix from UserPrincipal.
+            - name: roles
+              type: keyword
+              description: User roles derived from UserIsAdmin.
+            - name: principal
+              type: keyword
+              description: The user principal name (UPN).
+            - name: canonical
+              type: keyword
+              description: The canonical user name (Windows only).
+            - name: logon_domain
+              type: keyword
+              description: The logon domain from LogonDomain or MachineDomain.
+            - name: logon_type
+              type: keyword
+              description: The logon type (numeric code).
+            - name: logon_time
+              type: date
+              description: The time of the logon event.
+            - name: logon_server
+              type: keyword
+              description: The server that authenticated the logon.
+            - name: authentication_package
+              type: keyword
+              description: The authentication package used for logon.
+            - name: remote_account
+              type: keyword
+              description: Whether the account is a remote account.
+            - name: password_last_set
+              type: keyword
+              description: >
+                When the password was last set. Raw CrowdStrike format
+                (e.g. "1702546155.197"); not parsed as a date.
+            - name: flags
+              type: keyword
+              description: User flags bitmask.
+            - name: logon_flags
+              type: keyword
+              description: User logon flags bitmask.
+            - name: privileges_bitmask
+              type: keyword
+              description: Privileges bitmask (Windows only).
+            - name: groups_bitmask
+              type: keyword
+              description: User groups bitmask.
+            - name: enabled_privileges_bitmask
+              type: keyword
+              description: Enabled privileges bitmask (Windows only).
+            - name: client_computer_name
+              type: keyword
+              description: The client computer name for remote logons (Windows only).
+            - name: gid
+              type: keyword
+              description: The primary group ID (Linux only).
+            - name: _last_seen
+              type: date
+              description: >
+                Timestamp of the most recent source event, used by the
+                transform retention policy to age out stale entries.
