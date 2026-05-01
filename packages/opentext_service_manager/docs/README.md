@@ -47,7 +47,7 @@ Use **Discover** with `logs-*` (or the integration data stream) to inspect docum
 3. Provide **operator** credentials and tune **native query**, **initial lookback**, **page size (count)**, and **interval** for your environment. Narrow `native_query` in large deployments.
 4. Validate in Discover: new documents should appear with `data_stream.dataset` `opentext_service_manager.incident`.
 
-For generic Fleet steps, see the Elastic Agent [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html).
+For generic Fleet steps, refer to the Elastic Agent [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html).
 
 ## Troubleshooting
 
