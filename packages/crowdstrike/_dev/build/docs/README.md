@@ -336,6 +336,47 @@ FROM logs-crowdstrike.fdr-*
 
 **Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern. Disabling **Enrich Host and User Metadata** automatically makes **Keep Original Host and User Metadata** option (`keep_metadata`) ineffective and the metadata events are retained.
 
+### Query-time user metadata enrichment (LOOKUP JOIN)
+
+A second transform maintains the latest user metadata per host-user pair from `UserIdentity` and `UserLogon` sensor events in a lookup index. Unlike `userinfo` directory data (which requires [Falcon Discover](https://www.crowdstrike.com/platform/exposure-management/falcon-discover/) and covers only Windows), sensor events are available to all FDR customers on all platforms (Windows, macOS, Linux, ChromeOS). You can enrich FDR events with user metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join).
+
+**Lookup index:** `logs-crowdstrike_lookup.userinfo` — stable alias for the user lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host_user_key` and `crowdstrike.info.*`; user fields are stored under `crowdstrike.info.user.*` (e.g. `crowdstrike.info.user.name`, `crowdstrike.info.user.domain`, `crowdstrike.info.user.logon_type`).
+
+**Composite join key:** Because Unix UIDs are local to each host (the same numeric UID can refer to different users on different machines), the user lookup uses a composite key combining both `host.id` and `user.id`. Queries must construct this key with `EVAL` before joining:
+
+<!-- If you change the lookup alias, composite key construction, or
+     crowdstrike.info.user.* field namespace, update the ES|QL query in
+     data_stream/fdr/_dev/test/scripts/userinfo_lookup_join.txt too. -->
+
+```sql
+FROM logs-crowdstrike.fdr-*
+| WHERE aws.s3.object.key LIKE "*/data/*" OR log.file.path LIKE "*/data/*"
+| EVAL host_user_key = CONCAT(host.id, "::", user.id)
+| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key
+| KEEP @timestamp, event.action, host.id, user.id,
+       crowdstrike.info.user.name, crowdstrike.info.user.domain
+| LIMIT 20
+```
+
+**Combined host and user enrichment:** Both lookups can be chained in a single query. The aidmaster join does not need to come first — `host.id` comes from the source index, so the `EVAL` does not depend on it:
+
+```sql
+FROM logs-crowdstrike.fdr-*
+| WHERE aws.s3.object.key LIKE "*/data/*" OR log.file.path LIKE "*/data/*"
+| LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id
+| EVAL host_user_key = CONCAT(host.id, "::", user.id)
+| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key
+| KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname,
+       user.id, crowdstrike.info.user.name, crowdstrike.info.user.domain
+| LIMIT 20
+```
+
+**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `logs-crowdstrike_lookup.userinfo` as in the examples above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest userinfo transform, and use the **destination_index** name shown there (that name can change with the integration version). If you use both host and user lookups on releases before 8.19, you will need two concrete destination index names — one for aidmaster and one for userinfo — both obtainable from **Stack Management** → **Transforms**.
+
+**Using enriched fields:** Enrichment from the user lookup is under the `crowdstrike.info.user.*` namespace (e.g. `crowdstrike.info.user.name` for username, `crowdstrike.info.user.domain` for UPN domain, `crowdstrike.info.user.logon_type` for logon type). Use these fields in dashboards and ES|QL detection rules when building on query-time enrichment. Note that detection rules using EQL, threshold, or KQL operate on stored documents and cannot use `LOOKUP JOIN` — those rule types continue to rely on ingest-time cache enrichment for user metadata.
+
+**Ingest-time versus query-time:** The same **Enrich Host and User Metadata** option (`enrich_metadata`) that controls ingest-time host enrichment also controls ingest-time user enrichment from `userinfo` directory data. Query-time user enrichment via the transform is additive — it works regardless of whether ingest-time enrichment is enabled. If you rely on query-time enrichment only, set **Enrich Host and User Metadata** to **Off** so metadata is not applied twice. If both are active, user metadata may appear under `crowdstrike.info.user.*` from both the ingest-time cache and the query-time lookup; the values should be consistent but the ingest-time cache is populated from `userinfo` while the query-time lookup uses sensor events, so field availability may differ.
+
 ## Logs
 
 ### Alert
