@@ -13,7 +13,7 @@ Two Fleet policy templates are available:
 
 ### How it works
 
-On each interval the CEL program issues HTTPS GET requests to Dynatrace REST endpoints with `Authorization: Api-Token <token>`. Paginated endpoints use Dynatrace `nextPageKey` cursors; state is persisted per data stream so later runs advance from the last watermark. For **tenant problems**, the collector refreshes the environments list, caps optional batching with **Max tenants per cycle**, and maintains separate cursors per tenant.
+On each interval the CEL program issues HTTPS GET requests to Dynatrace REST endpoints with `Authorization: Api-Token <token>`. Paginated endpoints use Dynatrace `nextPageKey` cursors, the state is persisted per data stream so later runs advance from the last watermark. For **tenant problems**, the collector refreshes the environments list, caps optional batching with **Max tenants per cycle**, and maintains separate cursors per tenant.
 
 ### Compatibility
 
@@ -50,17 +50,17 @@ API references:
 
 ## Requirements
 
-- Elastic Agent enrolled in Fleet (or agentless where supported). See the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+- Elastic Agent enrolled in Fleet (or agentless where supported). Refer to the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 - Network path from the agent (or agentless runner) to your Dynatrace SaaS URL or Managed cluster URL.
 - **SaaS API token** — scopes such as `problems.read`, `auditLogs.read`, and `DataExport` as documented in the integration UI.
 - **Managed cluster API token** — Cluster API access with **Service Provider API** (`ServiceProviderAPI`) for cluster endpoints.
-- **Managed tenant problems (optional)** — A separate tenant token with `problems.read` and `DataExport` may be used; otherwise the cluster token is reused and must allow tenant problem reads.
+- **Managed tenant problems (optional)** — A separate tenant token with `problems.read` and `DataExport` can be used. Otherwise the cluster token is reused and must allow tenant problem reads.
 
 ## Agentless-enabled integration
 
 Agentless integrations collect data without managing Elastic Agent on your hosts where the platform supports it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Beta or preview limitations may apply; see Elastic documentation for current support.
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Beta or preview limitations can apply. Refer to Elastic documentation for current support.
 
 ## Setup
 
@@ -86,24 +86,24 @@ Use `data_stream.dataset` filters, for example:
 - `dynatrace.problems`, `dynatrace.audit_logs`, `dynatrace.cluster_version`
 - `dynatrace.activegates`, `dynatrace.license_usage`, `dynatrace.environments`, `dynatrace.tenant_problems`
 
-License usage indexes follow the metrics naming pattern `metrics-dynatrace.license_usage-*`; other datasets use `logs-dynatrace.*-*`.
+License usage indexes follow the metrics naming pattern `metrics-dynatrace.license_usage-*`, and other datasets use `logs-dynatrace.*-*`.
 
 ## Troubleshooting
 
-For Fleet and agent issues see [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+For Fleet and agent issues refer to [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
 - **401 / 403** — Token missing required scopes (`problems.read`, `auditLogs.read`, `DataExport`, or `ServiceProviderAPI` for cluster calls).
 - **No tenant problems** — Verify cluster URL, cluster token permissions, and that environments list requests succeed (`dynatrace.environments`).
-- **429 Too Many Requests** — Reduce page sizes or increase the collection interval; the CEL programs stop advancing for that interval on HTTP 429 and retry later.
-- **Resetting cursors** — Removing and re-adding the integration (or policy) resets persisted CEL state; use when you intentionally need a full replay.
+- **429 Too Many Requests** — Reduce page sizes or increase the collection interval. The CEL input stops advancing for that interval on HTTP 429 and retry later.
+- **Resetting cursors** — Removing and re-adding the integration (or policy) resets persisted CEL state. Use when you intentionally need a full replay.
 
 ## Performance and scaling
 
-See [Ingest architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) for Elastic-side guidance.
+Refer to [Ingest architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) for Elastic-side guidance.
 
 - Pagination is drained up to **Maximum pages per interval** per data stream where configured.
 - Larger **Page size** improves throughput until Dynatrace rate limits apply.
-- **Tenant problems** uses an internal work list; **Max tenants per cycle** spreads large tenant counts across intervals.
+- **Tenant problems** uses an internal work list, **Max tenants per cycle** spreads large tenant counts across intervals.
 
 ## Logs and metrics reference
 
