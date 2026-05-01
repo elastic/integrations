@@ -311,8 +311,8 @@ program: |
         // Response Processing: Successfully got compliance details
         bytes(resp.Body).decode_json().as(body,
           {
-            "events": (has(body.EvaluationResults) && size(body.EvaluationResults) > 0) ?
-              body.EvaluationResults.orValue([]).map(evt,
+            "events": (size(body.?EvaluationResults.orValue([])) > 0) ?
+              body.EvaluationResults.map(evt,
                 {
                   "message": evt.with(
                     {
