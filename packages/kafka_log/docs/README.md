@@ -1,4 +1,4 @@
-# Custom Kafka Event Integration
+# Custom Kafka Integration
 
 ## Overview
 
