@@ -23,7 +23,7 @@ Use the `conditions.agent.version` field in `manifest.yml` to require a minimum 
 
 ```yaml
 conditions:
-  kibana
+  kibana:
     version: '^9.4.0'
   agent:
     version: "^9.3.0"
@@ -43,10 +43,14 @@ Use the `{{#semverSatisfies}}` Handlebars helper in `.hbs` stream templates to c
 The helper uses `_meta.agent.version` as the version variable and accepts a [semver](https://semver.org/) range as the constraint:
 
 ```handlebars
-{{#semverSatisfies _meta.agent.version "^9.3.0"}}
 program: |
-  ...CEL program using features available in agent 9.3.0+...
-{{/semverSatisfies}}
+  {{#semverSatisfies _meta.agent.version "^9.3.0"}}
+  // program using features available in agent 9.3.0+
+  ...
+  {{else}}
+  // fallback program for agents older than 9.3.0
+  ...
+  {{/semverSatisfies}}
 ```
 
 Use this approach when only **some** inputs or configuration blocks require a newer agent, so that older agents continue to work with the rest of the package.
@@ -57,8 +61,9 @@ Use this approach when only **some** inputs or configuration blocks require a ne
 redact:
   fields:
     - client_secret
-{{#semverSatisfies _meta.agent.version "^9.3.0"}}
 program: |
+  {{#semverSatisfies _meta.agent.version "^9.3.0"}}
+  // Uses post() built-in available in agent 9.3.0+
   state.with(
     post(state.url + "/oauth/token", "application/json", {
       "client_id": state.client_id,
@@ -66,10 +71,21 @@ program: |
       ...
     })
   )
-{{/semverSatisfies}}
+  {{else}}
+  // Fallback for agents older than 9.3.0
+  state.with(
+    request("POST", state.url + "/oauth/token").with({
+      "body": {
+        "client_id": state.client_id,
+        "client_secret": state.client_secret,
+        ...
+      }
+    }).do_request()
+  )
+  {{/semverSatisfies}}
 ```
 
-Here the `program:` block is only included in the rendered config when the agent version is `^9.3.0`. Agents on earlier versions receive the configuration without the `program:` key.
+The `{{else}}` branch ensures that agents on earlier versions still receive a complete, runnable `program:` block. Every branch of a `{{#semverSatisfies}}` condition should produce a valid configuration.
 
 
 ## How Fleet handles agent version conditions [how-fleet-handles-agent-version-conditions]
@@ -81,12 +97,24 @@ The policy assigned to the earlier version of agents will not include the incomp
 
 ### Input template-level conditions
 
-Fleet renders `.hbs` templates for each enrolled agent, passing the agent's version as `_meta.agent.version`. The `{{#semverSatisfies}}` helper evaluates the semver constraint at render time:
+Fleet renders `.hbs` templates for each enrolled agent, passing the agent's version as `_meta.agent.version`. Fleet re-renders the policy when an agent reports a new version on check-in, producing a new per-agent policy revision. The `{{#semverSatisfies}}` helper evaluates the semver constraint at render time:
 
 - If the agent version **satisfies** the constraint, the block is included in the rendered configuration sent to that agent.
 - If the agent version **does not satisfy** the constraint, the block is omitted from the rendered configuration.
 
 This means agents at different versions within the same policy each receive a configuration tailored to their capabilities, without requiring separate packages or policy templates.
+
+
+## Upgrade and downgrade considerations [upgrade-downgrade-considerations]
+
+When an agent binary is upgraded or downgraded, the new binary starts with a cached copy of the previously rendered policy. The agent runs this cached policy until the first successful check-in, at which point Fleet re-renders the template against the new version and returns a fresh policy revision.
+
+For most forward upgrades within a major version this is harmless: newer agents accept older rendered configs while they wait for the first check-in. The risky cases are:
+
+- **Downgrades**: the cached policy was rendered for a newer agent and may reference inputs, processors, or built-ins not available in the older binary.
+- **Major-version upgrades** that remove an input option or processor the cached rendering depends on.
+
+If a version-conditional feature is critical to the integration's correctness—for example, the integration produces no useful data or fails to start without it—prefer the package-level `conditions.agent.version` mechanism instead. Fleet will exclude the integration entirely from incompatible agents rather than ship a configuration that might fail during the brief window before the first check-in completes.
 
 
 ## When to use each approach [when-to-use]

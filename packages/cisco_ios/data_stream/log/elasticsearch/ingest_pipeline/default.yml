@@ -22,10 +22,7 @@ processors:
       tag: set_observer_product_b4ddab2e
       field: observer.product
       value: IOS
-  - set:
-      tag: set_observer_type_5dddf3ba
-      field: observer.type
-      value: firewall
+  # observer.type is assigned later using precedence-based logic
   - set:
       tag: set_event_type_ec95f7f2
       field: event.type
@@ -310,6 +307,28 @@ processors:
         - '^(?:No|Invalid) MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port})(?:(?: \(RST\))? (?:tableid - %{DATA:cisco.ios.tableid}|%{GREEDYDATA:_temp_.rst}))?$'
       ignore_missing: true
       if: ctx.event?.code == 'BADAUTH'
+  # observer.type precedence: preserve existing -> firewall (strict) -> switch -> router
+  - set:
+      tag: set_observer_type_firewall_9f7a64f1
+      field: observer.type
+      value: firewall
+      if: >-
+        ctx.observer?.type == null && (
+          ['SEC', 'FW', 'IPV6', 'IPV6_ACL'].contains(ctx.cisco?.ios?.facility) ||
+          ['IPACCESSLOGP', 'IPACCESSLOGDP', 'IPACCESSLOGNP', 'IPACCESSLOGSP', 'IPACCESSLOGRP', 'ACCESSLOGP', 'ACCESSLOGDP', 'ACCESSLOGNP', 'ACCESSLOGSP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)
+        )
+  - set:
+      tag: set_observer_type_switch_5a42cf1a
+      field: observer.type
+      value: switch
+      if: >-
+        ctx.observer?.type == null &&
+        ['LINK', 'SPANTREE', 'STP', 'PORTSECURITY', 'VTP', 'LINEPROTO'].contains(ctx.cisco?.ios?.facility)
+  - set:
+      tag: set_observer_type_router_37bdbeb8
+      field: observer.type
+      value: router
+      if: ctx.observer?.type == null
   - grok:
       field: message
       tag: grok_message_rp_join
