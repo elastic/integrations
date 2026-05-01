@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Custom Kafka Logs integration is an **input** package for Elastic Agent. It runs the Filebeat **Kafka** input so agents can **consume** records from Apache Kafka topics and ship them to Elasticsearch. Use it when applications or pipelines already publish logs or events to Kafka and you want Elastic to read from those topics without an intermediate forwarder.
+The Custom Kafka integration is an **input** package for Elastic Agent. It runs the Filebeat **Kafka** input so agents can **consume** records from Apache Kafka topics and ship them to Elasticsearch. Use it when applications or pipelines already publish logs or events to Kafka and you want Elastic to read from those topics without an intermediate forwarder.
 
 ### Compatibility
 
