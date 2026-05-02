@@ -231,7 +231,7 @@ elastic-agent diagnostics collect
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
 | threat.feed.reference | Feed reference URL. | keyword |
-| threat.indicator.as.number | Autonomous System number. | integer |
+| threat.indicator.as.number | Autonomous System number. | long |
 | threat.indicator.confidence | Indicator confidence rating. | keyword |
 | threat.indicator.description | Indicator description. | keyword |
 | threat.indicator.email.address | Indicator email address. | keyword |
