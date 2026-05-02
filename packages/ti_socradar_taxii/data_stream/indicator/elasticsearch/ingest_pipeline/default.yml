@@ -292,10 +292,15 @@ processors:
       value: domain-name
       if: ctx.stix.pattern?.startsWith('[domain-name') == true
   - set:
-      tag: set_type_email
+      tag: set_type_email_addr
       field: threat.indicator.type
       value: email-addr
-      if: ctx.stix.pattern?.startsWith('[email') == true
+      if: ctx.stix.pattern?.startsWith('[email-addr') == true
+  - set:
+      tag: set_type_email_message
+      field: threat.indicator.type
+      value: email-message
+      if: ctx.stix.pattern?.startsWith('[email-message') == true
   - set:
       tag: set_type_file
       field: threat.indicator.type
@@ -433,6 +438,8 @@ processors:
       lang: painless
       description: Unescape values recursively.
       source: >
+        String saved_original = ctx.event?.original;
+        if (ctx.event != null) ctx.event.remove('original');
         void unescape(Object obj) {
           if (obj instanceof Map) {
             for (entry in ((Map)obj).entrySet()) {
@@ -453,6 +460,7 @@ processors:
           }
         }
         unescape(ctx);
+        if (ctx.event != null && saved_original != null) ctx.event['original'] = saved_original;
 
   - script:
       tag: drop_null_empty_values

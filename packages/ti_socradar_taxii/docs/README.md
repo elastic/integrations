@@ -351,7 +351,7 @@ An example event for `indicator` looks as following:
             "name": "SOCRadar TAXII"
         },
         "indicator": {
-            "confidence": "Medium",
+            "confidence": "High",
             "description": "Malicious file hash detected by SOCRadar",
             "file": {
                 "hash": {
