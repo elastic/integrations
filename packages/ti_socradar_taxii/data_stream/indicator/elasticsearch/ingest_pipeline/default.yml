@@ -126,20 +126,23 @@ processors:
   - script:
       tag: script_normalize_confidence
       lang: painless
-      if: ctx.stix.confidence != null
-      description: Normalize confidence level.
+      description: Normalize confidence level, fallback to Low when absent.
       source: >
-        def value = ctx.stix.confidence;
-        if (value == 0) {
-          ctx.threat.indicator.confidence = "None";
-        } else if (value >= 1 && value <= 25) {
+        if (ctx.stix?.confidence == null) {
           ctx.threat.indicator.confidence = "Low";
-        } else if (value >= 26 && value <= 49) {
-          ctx.threat.indicator.confidence = "Medium";
-        } else if (value >= 50 && value <= 100) {
-          ctx.threat.indicator.confidence = "High";
         } else {
-          ctx.threat.indicator.confidence = "Not Specified";
+          def value = ctx.stix.confidence;
+          if (value == 0) {
+            ctx.threat.indicator.confidence = "None";
+          } else if (value >= 1 && value <= 25) {
+            ctx.threat.indicator.confidence = "Low";
+          } else if (value >= 26 && value <= 49) {
+            ctx.threat.indicator.confidence = "Medium";
+          } else if (value >= 50 && value <= 100) {
+            ctx.threat.indicator.confidence = "High";
+          } else {
+            ctx.threat.indicator.confidence = "Not Specified";
+          }
         }
   - foreach:
       tag: foreach_labels
