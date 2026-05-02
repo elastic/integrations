@@ -74,7 +74,7 @@ The following STIX indicator types are supported and mapped to ECS fields:
 | `type` | `threat.indicator.type` | Indicator type (ipv4-addr, domain-name, etc.) |
 | `created` | `threat.indicator.first_seen` | When the indicator was first created |
 | `modified` | `threat.indicator.modified_at` | When the indicator was last modified |
-| `valid_from` | `@timestamp` | Start of indicator validity |
+| `valid_from` | `threat.indicator.first_seen` | Start of indicator validity |
 | `valid_until` | `stix.ioc_expiration_date` | End of indicator validity |
 | `confidence` | `threat.indicator.confidence` | Confidence score (0-100) mapped to Low/Medium/High |
 | `description` | `threat.indicator.description` | Human-readable description |
@@ -88,9 +88,11 @@ STIX confidence scores (0-100) are mapped to ECS confidence levels:
 
 | STIX Confidence | ECS Confidence |
 |-----------------|----------------|
-| 0-33 | Low |
-| 34-66 | Medium |
-| 67-100 | High |
+| 0 | None |
+| 1-25 | Low |
+| 26-49 | Medium |
+| 50-100 | High |
+| absent | Low |
 
 ## IOC Expiration
 
