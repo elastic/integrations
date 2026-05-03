@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-shard-connection-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Shard connection saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_connected_clients IS NOT NULL\n    AND redis_maxclients IS NOT NULL\n    AND redis_maxclients > 0\n| STATS\n    avg_clients = AVG(redis_connected_clients),\n    avg_max = AVG(redis_maxclients)\n  BY redis, bdb, node, cluster\n| EVAL conn_util_pct = ROUND(avg_clients / avg_max * 100, 2)\n// Alert when connection utilization exceeds 80%\n// Reaching maxclients causes new connections to be rejected\n// Investigate client connection pooling or increase maxclients\n| WHERE conn_util_pct > 80\n| SORT conn_util_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "redis",
+            "termSize": 100
+        }
+    }
+}

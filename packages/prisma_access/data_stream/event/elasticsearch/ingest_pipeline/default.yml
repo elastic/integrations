@@ -3827,16 +3827,16 @@ processors:
       tag: set_file_name_from_request_url_for_wildfire
       value: "{{{prisma_access.event.request.url}}}"
       allow_duplicates: false
-      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus') && ctx.prisma_access?.event?.request?.url != null
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name)) && ctx.prisma_access?.event?.request?.url != null
   - set:
       field: threat.indicator.file.name
       tag: set_threat_indicator_file_name_for_wildfire
       copy_from: prisma_access.event.request.url
       ignore_empty_value: true
-      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus')
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name))
   - uri_parts:
       field: prisma_access.event.request.url
-      if: ctx.prisma_access?.event?.request?.url != null && ctx.prisma_access.event.request.url != '' && !(ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus'))
+      if: ctx.prisma_access?.event?.request?.url != null && ctx.prisma_access.event.request.url != '' && !(ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name)))
       tag: uri_parts_processor
       ignore_failure: true
   - set:
@@ -3844,7 +3844,7 @@ processors:
       tag: set_http_request_url_from_event_request_url
       copy_from: prisma_access.event.request.url
       ignore_empty_value: true
-      if: "!(ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus'))"
+      if: "!(ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name)))"
   - convert:
       field: cef.extensions.PanOSRootCNLength
       tag: convert_extension_PanOSRootCNLength_to_long

@@ -76,36 +76,19 @@ echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
-pushd packages > /dev/null
-for package in $(list_all_directories); do
-    echo "--- [$package] check if it is required to be tested"
-    pushd "${package}" > /dev/null
-    skip_package=false
-    failure=false
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        skip_package=true
-        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
-            failure=true
-        fi
-    fi
-    popd > /dev/null
-    if [[ "${failure}" == "true" ]]; then
-        echo "Unexpected failure checking ${package}"
-        exit 1
-    fi
-
-    echo "${reason}"
-
-    if [[ "${skip_package}" == "true" ]]; then
-        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
+echo "--- List all directories"
+PACKAGE_LIST=$(list_all_directories)
+for package_path in ${PACKAGE_LIST}; do
+    echo "--- [$package_path] check if it is required to be tested"
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
+        echo "- ${package_path}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
         continue
     fi
 
-    if ! process_package "${package}" "${FAILED_PACKAGES_FILE_PATH}" ; then
+    if ! process_package "${package_path}" "${FAILED_PACKAGES_FILE_PATH}" ; then
         any_package_failing=1
     fi
 done
-popd > /dev/null
 
 if running_on_buildkite ; then
     if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then

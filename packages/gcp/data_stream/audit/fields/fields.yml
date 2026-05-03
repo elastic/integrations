@@ -22,7 +22,7 @@
     - name: action_time
       type: date
     - name: action_type
-      type: keyword 
+      type: keyword
     - name: affected_resources
       type: keyword
     - name: type
@@ -183,6 +183,35 @@
           type: keyword
           description: |
             Current locations of the resource.
+    - name: service_data.policy_delta.binding_deltas
+      description: "One delta entry for Binding. Each individual change (only one member in each entry) to a binding will be a separate entry. See [google.iam.v1.BindingDelta](https://docs.cloud.google.com/iam/docs/reference/rpc/google.iam.v1#google.iam.v1.BindingDelta)"
+      type: nested
+      fields:
+        - name: action
+          type: keyword
+          description: "The action that was performed on a Binding. Allowed values are `ADD`, `REMOVE` and `ACTION_UNSPECIFIED`"
+        - name: condition
+          type: group
+          description: "The condition that is associated with this binding."
+          fields:
+            - name: description
+              type: text
+              description: "Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI."
+            - name: expression
+              type: text
+              description: Textual representation of an expression in Common Expression Language syntax.
+            - name: location
+              type: keyword
+              description: "Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file."
+            - name: title
+              type: keyword
+              description: "Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression."
+        - name: member
+          type: keyword
+          description: "A single identity requesting access for a Google Cloud resource. Follows the same format of Binding.members."
+        - name: role
+          type: keyword
+          description: "Role that is assigned to members. For example, roles/viewer, roles/editor, or roles/owner."
     - name: service_name
       type: keyword
       description: |

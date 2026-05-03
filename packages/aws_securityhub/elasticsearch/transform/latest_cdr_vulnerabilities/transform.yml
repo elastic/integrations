@@ -8,11 +8,18 @@ source:
             aws_securityhub.finding.class_uid: '2002' # Vulnerability finding
         - exists:
             field: package.name
+        - range:
+            "@timestamp":
+              gte: "now-90d"
       must_not:
         - match:
             aws_securityhub.finding.activity_id: '3' # Close
         - exists:
             field: error.message
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
 dest:
   index: "security_solution-aws_securityhub.vulnerability_latest-v1"
   aliases:
@@ -38,4 +45,4 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0

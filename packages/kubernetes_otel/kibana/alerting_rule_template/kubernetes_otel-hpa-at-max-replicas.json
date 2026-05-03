@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-hpa-at-max-replicas",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a HorizontalPodAutoscaler has scaled to its maximum replica count. This means demand is outpacing the autoscaler's ability to scale, and pods may start becoming resource-constrained or pending.",
+        "name": "[K8s OTel] HPA at max replicas",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 5
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## HPA at Max Replicas\n\n### Triage Steps\n1. Identify the affected HPA(s) from the alert results.\n2. Check current HPA status: `kubectl get hpa -n <namespace>`.\n3. Review the target metrics: `kubectl describe hpa <name> -n <namespace>` — are target metrics exceeded?\n4. Check if pods are pending or resource-constrained on the Workload Health dashboard.\n5. Verify cluster capacity — can additional pods be scheduled?\n\n### Common Causes\n- Traffic spike exceeding expected capacity\n- Gradual load increase that has reached the configured ceiling\n- Max replicas set too low for the workload's requirements\n- Upstream service issues causing increased per-request resource usage\n\n### Tuning\n- The alertDelay of 5 runs (5 minutes) avoids alerting on brief scaling spikes.\n- If your HPA frequently hits max during expected peak hours, consider raising maxReplicas or adding time-based exclusions.\n\n### Escalation\nHPA at max means the autoscaler cannot add more capacity. Consider raising maxReplicas, scaling the node pool, or investigating the load increase."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.hpa.desired_replicas IS NOT NULL\n    AND k8s.hpa.max_replicas IS NOT NULL\n| STATS\n    desired = LAST(k8s.hpa.desired_replicas, @timestamp),\n    max_replicas = LAST(k8s.hpa.max_replicas, @timestamp)\n    BY k8s.hpa.name, k8s.namespace.name\n// Alert when the HPA has scaled to its maximum\n| WHERE desired >= max_replicas\n    AND max_replicas > 0\n| KEEP k8s.namespace.name, k8s.hpa.name, desired, max_replicas"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.hpa.name",
+            "termSize": 20
+        }
+    }
+}
