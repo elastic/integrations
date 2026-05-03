@@ -10,7 +10,9 @@ The script:
   3. Re-IDs the object to match the integration's expected dashboard ID.
   4. Injects the adHocDataViews definition into every panel that references adhoc_wf
      but has an empty adHocDataViews block (Kibana strips these on export).
-  5. Writes the cleaned JSON to kibana/dashboard/<DASHBOARD_ID>.json.
+  5. Ensures duration format columns that use "duration" include fromUnit: milliseconds
+     (Kibana omits this on export, causing it to default to seconds).
+  6. Writes the cleaned JSON to kibana/dashboard/<DASHBOARD_ID>.json.
 """
 import json
 import sys
@@ -70,6 +72,31 @@ def inject_adhoc_dataviews(panel: dict) -> None:
         state["adHocDataViews"] = ADHOC_WF
 
 
+def fix_duration_formats(panel: dict) -> None:
+    """Ensure duration-formatted columns on the 'duration' field include fromUnit.
+
+    The underlying data stores duration in milliseconds, but Kibana's export
+    omits fromUnit, causing it to default to seconds on re-import.
+    """
+    ec = panel.get("embeddableConfig", {})
+    attrs = ec.get("attributes", {})
+    state = attrs.get("state", {})
+    layers = (
+        state.get("datasourceStates", {})
+        .get("formBased", {})
+        .get("layers", {})
+    )
+    for layer in layers.values():
+        for col in layer.get("columns", {}).values():
+            fmt = col.get("params", {}).get("format", {})
+            if (
+                fmt.get("id") == "duration"
+                and col.get("sourceField") == "duration"
+                and "fromUnit" not in fmt.get("params", {})
+            ):
+                fmt.setdefault("params", {})["fromUnit"] = "milliseconds"
+
+
 def convert(ndjson_path: str) -> None:
     with open(ndjson_path, "r") as f:
         raw = f.readline().strip()
@@ -84,6 +111,7 @@ def convert(ndjson_path: str) -> None:
     panels = json.loads(so["attributes"]["panelsJSON"])
     for panel in panels:
         inject_adhoc_dataviews(panel)
+        fix_duration_formats(panel)
     so["attributes"]["panelsJSON"] = json.dumps(panels)
 
     _DASHBOARD_JSON.parent.mkdir(parents=True, exist_ok=True)
