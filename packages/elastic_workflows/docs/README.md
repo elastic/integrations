@@ -8,22 +8,26 @@ Monitor your Elastic Workflows with out-of-the-box dashboards.
 
 Provides a high-level view of workflow execution activity:
 
-- **Executions over time** — total workflow runs bucketed by time interval
-- **Status breakdown** — proportion of completed, failed, timed out, and cancelled executions
-- **Failure rate** — percentage of executions ending in error or timeout
-- **Average duration** — mean execution time across all workflows
-- **Top workflows by execution count** — most frequently triggered workflows
-- **Top failing workflows** — workflows with the highest failure rates
+- **KPI strip** — Total Executions, Avg Duration, Slowest Workflow, Success Rate, Timed Out (with trendline), Failures (with trendline)
+- **Executions Over Time** — stacked bar chart of runs per workflow
+- **Trigger Breakdown** — treemap of execution trigger sources
+- **Failure Rate by Workflow** — failure rate trend per workflow over time
+- **Duration Distribution** — execution counts bucketed by duration (< 1s, 1s–5s, 5s–30s, > 30s)
+- **Avg Duration by Workflow** — duration trend per workflow over time
+- **Status Breakdown** — treemap of execution statuses
+- **Slowest Workflows** — table of workflows ranked by p95 duration
+- **Recent Failures** — table of failing workflows with drilldown to executions
+- **Per-Workflow Summary** — comprehensive table with executions, failures, success %, test runs, avg duration, and p95
+
+Dashboard-level controls allow filtering by **space** and **excluding test runs** (excluded by default).
 
 ## Data sources
 
-This package includes dashboards that read from the following Elasticsearch indices created by the Workflows Execution Engine:
+This package includes dashboards that read from the following Elasticsearch index created by the Workflows Execution Engine:
 
 | Index | Description |
 |-------|-------------|
 | `.workflows-executions` | Workflow-level execution records |
-| `.workflows-step-executions` | Per-step execution records |
-| `.workflows-execution-data-stream-logs` | Execution log entries |
 
 ## Requirements
 
