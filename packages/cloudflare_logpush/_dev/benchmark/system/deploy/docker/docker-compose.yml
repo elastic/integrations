@@ -90,3 +90,48 @@ services:
       - STREAM_WEBHOOK_PROBE=false
       - STREAM_ADDR=http://elastic-agent:9560/cloudflare_logpush/gateway_dns
     command: log --start-signal=SIGHUP --delay=5s /var/log/corpus-*
+  cloudflare-logpush-gateway_http:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9560/cloudflare_logpush/gateway_http
+    command: log --start-signal=SIGHUP --delay=5s /var/log/corpus-*
+  cloudflare-logpush-gateway_network:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9560/cloudflare_logpush/gateway_network
+    command: log --start-signal=SIGHUP --delay=5s /var/log/corpus-*
+  cloudflare-logpush-http_request:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9560/cloudflare_logpush/http_request
+    command: log --start-signal=SIGHUP --delay=5s /var/log/corpus-*
+  cloudflare-logpush-magic_ids:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9560/cloudflare_logpush/magic_ids
+    command: log --start-signal=SIGHUP --delay=5s /var/log/corpus-*
+  cloudflare-logpush-nel_report:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9560/cloudflare_logpush/nel_report
+    command: log --start-signal=SIGHUP --delay=5s /var/log/corpus-*
