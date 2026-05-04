@@ -35,16 +35,16 @@ receivers:
           service_account_email: "{{credentials_service_account_email}}"
 {{/if}}
     policies:
-{{#each policy_id}}
-      - policy_id: "{{this}}"
-{{#if (lookup ../policy_name @index)}}
-        policy_name: "{{lookup ../policy_name @index}}"
+      - policy_id: "{{policy_id}}"
+{{#if policy_name}}
+        policy_name: "{{policy_name}}"
 {{/if}}
         integrations:
-          - policy_template: "{{lookup ../policy_templates @index}}"
+{{#each policy_templates}}
+          - policy_template: "{{this}}"
             package_name: "{{../package_name}}"
-{{#if (lookup ../package_policy_id @index)}}
-            package_policy_id: "{{lookup ../package_policy_id @index}}"
+{{#if ../package_policy_id}}
+            package_policy_id: "{{../package_policy_id}}"
 {{/if}}
 {{#if ../package_title}}
             package_title: "{{../package_title}}"
