@@ -137,17 +137,23 @@
     - name: tags
       type: keyword
       description: Custom tags associated with the alert for categorization.
-    - name: credential_url
-      type: keyword
-      description: The URL where the leaked credentials or data were found.
-    - name: leak_name
-      type: keyword
-      description: The name of the data breach or leak source.
-    - name: cred_leaks_password
-      type: keyword
-      description: The exposed password associated with the credential leak.
+
       
     # Dynamic Entity Mappings
+    - name: darkweb
+      type: group
+      fields:
+        - name: credential_url
+          type: keyword
+          description: The URL where the leaked credentials or data were found.
+        - name: leak_name
+          type: keyword
+          description: The name of the data breach or leak source.
+        - name: cred_leaks_password
+          type: keyword
+          index: false
+          doc_values: false
+          description: The exposed password associated with the credential leak.
     - name: domain
       type: group
       fields:
@@ -172,6 +178,9 @@
         - name: profile_url
           type: keyword
           description: The URL of the malicious or impersonating social media profile.
+        - name: profile_image_url
+          type: keyword
+          description: The URL of the malicious social media profile.
         - name: num_followers
           type: long
           description: The number of followers the impersonating social media profile has.

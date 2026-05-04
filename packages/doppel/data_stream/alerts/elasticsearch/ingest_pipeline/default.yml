@@ -8,7 +8,7 @@ processors:
         - division
         - team
       ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      if: ctx.organization instanceof String || ctx.division instanceof String || ctx.team instanceof String
       tag: remove_agentless_metadata
 
   - rename:
@@ -45,7 +45,7 @@ processors:
 
 # --- SEVERITY CONVERSION ---
   - script:
-      if: "ctx.containsKey('severity') && ctx.severity != null"
+      if: "ctx.containsKey('severity') && ctx.severity != null && ctx.severity instanceof String"
       lang: painless
       ignore_failure: true
       source: >
@@ -150,6 +150,7 @@ processors:
   - set: { field: user.full_name, copy_from: entity_content.social_media_user.profile_display_name, ignore_failure: true, ignore_empty_value: true }
   - set: { field: user.id, copy_from: entity_content.social_media_user.profile_id, ignore_failure: true, ignore_empty_value: true }
   - set: { field: doppel.social.profile_url, copy_from: entity_content.social_media_user.profile_display_url, ignore_failure: true, ignore_empty_value: true }
+  - set: { field: doppel.social.profile_image_url, copy_from: entity_content.social_media_user.profile_image_url, ignore_failure: true, ignore_empty_value: true }
   - set: { field: doppel.social.num_followers, copy_from: entity_content.social_media_user.num_followers, ignore_failure: true, ignore_empty_value: true }
 
   # 4. Mobile App
@@ -166,9 +167,9 @@ processors:
 
   # 6. darkweb mapping
   - set: { field: user.email, copy_from: entity_content.cred_leaks.email, ignore_failure: true, ignore_empty_value: true }
-  - set: { field: doppel.credential_url, copy_from: entity_content.cred_leaks.credential_url, ignore_failure: true, ignore_empty_value: true }
-  - set: { field: doppel.leak_name, copy_from: entity_content.cred_leaks.leak_name, ignore_failure: true, ignore_empty_value: true }
-  - set: { field: doppel.cred_leaks_password, copy_from: entity_content.cred_leaks.password, ignore_failure: true, ignore_empty_value: true }
+  - set: { field: doppel.darkweb.credential_url, copy_from: entity_content.cred_leaks.credential_url, ignore_failure: true, ignore_empty_value: true }
+  - set: { field: doppel.darkweb.leak_name, copy_from: entity_content.cred_leaks.leak_name, ignore_failure: true, ignore_empty_value: true }
+  - set: { field: doppel.darkweb.cred_leaks_password, value: "[REDACTED]", if: "ctx?.entity_content?.cred_leaks?.password != null" }
 
   # --- Hardcoded ECS Values ---
   - set: { field: event.kind, value: alert }
@@ -187,7 +188,6 @@ processors:
       fields: ["event.id", "last_activity_timestamp"]
       target_field: _id
       method: SHA-256
-      ignore_missing: true
 
 # --- Safely preserve Doppel's real tags ---
   - set:

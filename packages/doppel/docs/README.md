@@ -63,8 +63,9 @@ The `alerts` data stream provides security events from the Doppel API.
 | doppel.app.platform | The app store platform (e.g., iOS, Android) hosting the app. | keyword |
 | doppel.app.title | The title of the rogue or impersonating application. | keyword |
 | doppel.assignee | The analyst or user currently assigned to investigate the alert. | keyword |
-| doppel.cred_leaks_password | The exposed password associated with the credential leak. | keyword |
-| doppel.credential_url | The URL where the leaked credentials or data were found. | keyword |
+| doppel.darkweb.cred_leaks_password | The exposed password associated with the credential leak. | keyword |
+| doppel.darkweb.credential_url | The URL where the leaked credentials or data were found. | keyword |
+| doppel.darkweb.leak_name | The name of the data breach or leak source. | keyword |
 | doppel.domain.hosting_provider | The hosting provider for the malicious domain infrastructure. | keyword |
 | doppel.domain.registrar | The domain registrar for the malicious or spoofed domain. | keyword |
 | doppel.ecommerce.num_units | The number of units available in the fraudulent listing. | long |
@@ -72,12 +73,12 @@ The `alerts` data stream provides security events from the Doppel API.
 | doppel.ecommerce.seller_name | The name of the seller offering the fraudulent item. | keyword |
 | doppel.ecommerce.title | The title of the fraudulent or counterfeit e-commerce listing. | keyword |
 | doppel.entity_state | The current status of the targeted entity (e.g., parked, active, offline). | keyword |
-| doppel.leak_name | The name of the data breach or leak source. | keyword |
 | doppel.notes | Internal notes, comments, or analyst observations added to the alert. | text |
 | doppel.platform | The platform where the threat was detected. | keyword |
 | doppel.product | The Doppel product category that generated the alert (e.g., domains, social). | keyword |
 | doppel.queue_state | The current workflow queue state of the alert in Doppel (e.g., review, resolved). | keyword |
 | doppel.social.num_followers | The number of followers the impersonating social media profile has. | long |
+| doppel.social.profile_image_url | The URL of the malicious social media profile. | keyword |
 | doppel.social.profile_url | The URL of the malicious or impersonating social media profile. | keyword |
 | doppel.tags | Custom tags associated with the alert for categorization. | keyword |
 | doppel.telco.country_code | The country code associated with the telecommunications threat. | keyword |
