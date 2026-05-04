@@ -65,6 +65,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Type Conflicting fields
   - rename:
       field: beyondtrust_epm.event.threat.indicator.file.owner
       tag: rename_threat_indicator_file_owner
@@ -78,13 +79,14 @@ processors:
   - rename:
       field: beyondtrust_epm.event.process.HostedFile.owner
       tag: rename_process_hosted_file_owner
-      target_field: beyondtrust_epm.event.process.hosted_file.owner_keyword
+      target_field: beyondtrust_epm.event.process.HostedFile.OwnerKeyword
       if: ctx.beyondtrust_epm?.event?.process?.HostedFile?.owner instanceof String
   - rename:
       field: beyondtrust_epm.event.file.owner
       tag: rename_file_owner
       target_field: beyondtrust_epm.event.file.owner_keyword
       if: ctx.beyondtrust_epm?.event?.file?.owner instanceof String
+
   - set:
       field: '@timestamp'
       tag: set_@timestamp_from_event_timestamp
@@ -264,11 +266,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.id
-      tag: set_event_id_from_event_EPMWinMac_Session_JITAdmin_RequestIdentifier
-      copy_from: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.RequestIdentifier
-      ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.EPMWinMac.Session.PowerUser
       tag: convert_EPMWinMac_Session_PowerUser_to_boolean
@@ -2420,12 +2417,18 @@ processors:
       if: ctx.beyondtrust_epm?.event?.event?.hash != null
       value: '{{{beyondtrust_epm.event.event.hash}}}'
       allow_duplicates: false
-  - append:
+  - set:
       field: event.id
-      tag: append_beyondtrust_epm_event_event_id_into_event_id
+      tag: set_event_id_from_event_event_id
       if: ctx.beyondtrust_epm?.event?.event?.id != null
-      value: '{{{beyondtrust_epm.event.event.id}}}'
-      allow_duplicates: false
+      copy_from: beyondtrust_epm.event.event.id
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_event_EPMWinMac_Session_JITAdmin_RequestIdentifier
+      copy_from: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.RequestIdentifier
+      ignore_empty_value: true
+      override: false
   - date:
       field: beyondtrust_epm.event.event.ingested
       tag: date_event_ingested
@@ -4089,12 +4092,12 @@ processors:
       tag: set_log_origin_function_from_event_log_origin_function
       copy_from: beyondtrust_epm.event.log.origin.function
       ignore_empty_value: true
-  - append:
+  - set:
       field: message
       tag: append_beyondtrust_epm_event_message_into_message
       if: ctx.beyondtrust_epm?.event?.message != null
-      value: '{{{beyondtrust_epm.event.message}}}'
-      allow_duplicates: false
+      copy_from: beyondtrust_epm.event.message
+      ignore_empty_value: true
   - set:
       field: network.application
       tag: set_network_application_from_event_network_application
@@ -6015,6 +6018,11 @@ processors:
       field: process.title
       tag: set_process_title_from_event_process_title
       copy_from: beyondtrust_epm.event.process.title
+      ignore_empty_value: true
+  - set:
+      field: process.tty
+      tag: set_process_tty_from_event_process_tty
+      copy_from: beyondtrust_epm.event.process.tty
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.process.uptime
@@ -11260,7 +11268,7 @@ processors:
         if (ctx.beyondtrust_epm.event != null) {
           ctx.beyondtrust_epm.event = convertToSnakeCase(ctx.beyondtrust_epm.event);
         }
-  # Type Conflicting fields
+  # rename fields to more readable format for better clarity
   - rename:
       field: beyondtrust_epm.event.epmwin_mac
       tag: rename_epmwin_mac_to_epm_win_mac
@@ -11281,6 +11289,8 @@ processors:
       tag: rename_epmwin_mac_session_default_uilanguage_to_ui_language
       target_field: beyondtrust_epm.event.epm_win_mac.session.ui_language
       ignore_missing: true
+
+  # remove preserved original non-array fields
   - remove:
       field:
         - beyondtrust_epm.event.timestamp
@@ -11295,15 +11305,8 @@ processors:
         - beyondtrust_epm.event.epm_win_mac.group_id
         - beyondtrust_epm.event.epm_win_mac.privileged_group.name
         - beyondtrust_epm.event.epm_win_mac.remote_power_shell.command
-        - beyondtrust_epm.event.epm_win_mac.serviceControl.Service.DisplayName
-        - beyondtrust_epm.event.epm_win_mac.session.jit_admin.request_identifier
+        - beyondtrust_epm.event.epm_win_mac.service_control.service.display_name
         - beyondtrust_epm.event.epm_win_mac.tenant_id
-        - beyondtrust_epm.event.agent.build.original
-        - beyondtrust_epm.event.agent.ephemeral_id
-        - beyondtrust_epm.event.agent.id
-        - beyondtrust_epm.event.agent.name
-        - beyondtrust_epm.event.agent.type
-        - beyondtrust_epm.event.agent.version
         - beyondtrust_epm.event.client.address
         - beyondtrust_epm.event.client.as.number
         - beyondtrust_epm.event.client.as.organization.name
