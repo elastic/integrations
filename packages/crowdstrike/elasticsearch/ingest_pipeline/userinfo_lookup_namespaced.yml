@@ -1,0 +1,95 @@
+---
+description: >
+  Shape user lookup documents for LOOKUP JOIN. Build the synthetic
+  composite key, copy @timestamp to a retention field, rename ECS and
+  crowdstrike user fields to crowdstrike.info.user.*, then keep only
+  host_user_key and crowdstrike.info.
+processors:
+  - set:
+      field: host_user_key
+      value: "{{{host.id}}}::{{{user.id}}}"
+  - set:
+      field: crowdstrike.info.user._last_seen
+      copy_from: "@timestamp"
+      ignore_empty_value: true
+  - rename:
+      field: user.name
+      target_field: crowdstrike.info.user.name
+      ignore_missing: true
+  - rename:
+      field: user.domain
+      target_field: crowdstrike.info.user.domain
+      ignore_missing: true
+  - rename:
+      field: user.roles
+      target_field: crowdstrike.info.user.roles
+      ignore_missing: true
+  - rename:
+      field: user.email
+      target_field: crowdstrike.info.user.principal
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.UserCanonical
+      target_field: crowdstrike.info.user.canonical
+      ignore_missing: true
+  - rename:
+      field: host.domain
+      target_field: crowdstrike.info.user.logon_domain
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.LogonType
+      target_field: crowdstrike.info.user.logon_type
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.LogonTime
+      target_field: crowdstrike.info.user.logon_time
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.LogonServer
+      target_field: crowdstrike.info.user.logon_server
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.AuthenticationPackage
+      target_field: crowdstrike.info.user.authentication_package
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.RemoteAccount
+      target_field: crowdstrike.info.user.remote_account
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.PasswordLastSet
+      target_field: crowdstrike.info.user.password_last_set
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.UserFlags
+      target_field: crowdstrike.info.user.flags
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.UserLogonFlags
+      target_field: crowdstrike.info.user.logon_flags
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.PrivilegesBitmask
+      target_field: crowdstrike.info.user.privileges_bitmask
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.UserGroupsBitmask
+      target_field: crowdstrike.info.user.groups_bitmask
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.EnabledPrivilegesBitmask
+      target_field: crowdstrike.info.user.enabled_privileges_bitmask
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.ClientComputerName
+      target_field: crowdstrike.info.user.client_computer_name
+      ignore_missing: true
+  - rename:
+      field: user.group.id
+      target_field: crowdstrike.info.user.gid
+      ignore_missing: true
+  - remove:
+      keep:
+        - host_user_key
+        - crowdstrike.info
+      ignore_missing: true
