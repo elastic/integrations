@@ -1,7 +1,7 @@
 format_version: 3.5.0
 name: verifier_otel
 title: "Permission Verifier"
-version: 0.0.1
+version: 0.0.2
 source:
   license: "Elastic-2.0"
 description: "Verify identity federation based integration permissions and report results to Elasticsearch using the Verifier receiver of the OTel Collector."
@@ -142,28 +142,28 @@ policy_templates:
       - name: policy_id
         type: text
         title: Policy ID
-        description: The agent policy ID for this set of integrations.
-        multi: false
+        description: "Agent policy IDs, positionally aligned with `policy_name`, `package_policy_id`, and `policy_templates`. Entry `i` describes the agent policy that hosts target integration `i`. Values may repeat across entries when multiple target integrations share an agent policy."
+        multi: true
         required: true
         show_user: true
       - name: policy_name
         type: text
         title: Policy Name
-        description: Human-readable name of the policy.
-        multi: false
+        description: "Human-readable agent policy names, positionally aligned with `policy_id`. Entry `i` is the name of the policy referenced by `policy_id[i]`."
+        multi: true
         required: false
         show_user: true
       - name: package_policy_id
         type: text
         title: Package Policy ID
-        description: Unique identifier for the package policy instance.
-        multi: false
+        description: "Unique identifiers for each target integration's package policy instance, positionally aligned with `policy_id`, `policy_name`, and `policy_templates`. Entry `i` is the `package_policy.id` for target integration `i`."
+        multi: true
         required: false
         show_user: true
       - name: policy_templates
         type: text
         title: Policy Templates
-        description: "Policy template names from the integration package (for example, cloudtrail, guardduty, activitylogs). Multiple templates produce one integration entry each, all under the same policy. Combined with package_name to uniquely identify each integration."
+        description: "Policy template names from the integration package (for example, cloudtrail, guardduty, activitylogs), positionally aligned with `policy_id`, `policy_name`, and `package_policy_id`. Entry `i` is the policy template for target integration `i`. Combined with `package_name` to uniquely identify each integration."
         multi: true
         required: true
         show_user: true
