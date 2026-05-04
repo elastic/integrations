@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 network_session events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: network_session
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/network_session
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-network_session
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./network_session-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./network_session-benchmark/config.yml
+    fields:
+      path: ./network_session-benchmark/fields.yml
