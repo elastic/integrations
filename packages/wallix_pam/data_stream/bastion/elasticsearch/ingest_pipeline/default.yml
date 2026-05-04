@@ -94,13 +94,20 @@ processors:
   - set:
       field: wallix_pam.family
       value: pam
-      if: ctx.message instanceof String && ctx.message.startsWith('pam_')
+      if: >-
+        (ctx.message instanceof String && ctx.message.startsWith('pam_')) ||
+        (ctx.log?.syslog?.appname instanceof String &&
+        ctx.log.syslog.appname.startsWith('pam_'))
   - set:
       field: wallix_pam.family
       value: admin
       if: >-
         ctx.wallix_pam?.family == null &&
-        ((ctx.log?.syslog?.appname != null && ctx.log.syslog.appname == 'sshd') ||
+        ((ctx.log?.syslog?.appname != null &&
+        (ctx.log.syslog.appname == 'sshd' ||
+        ctx.log.syslog.appname == 'systemd' ||
+        ctx.log.syslog.appname == 'systemd-logind' ||
+        (ctx.log.syslog.appname == 'WAB' && ctx.message instanceof String && ctx.message.startsWith('[WABWATCHDOG]')))) ||
         (ctx.message instanceof String && ctx.message.contains('PWD=') && ctx.message.contains('COMMAND=')))
   - pipeline:
       name: '{{ IngestPipeline "wabauth" }}'

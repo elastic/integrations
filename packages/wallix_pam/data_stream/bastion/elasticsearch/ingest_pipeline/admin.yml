@@ -5,7 +5,10 @@ processors:
       field: message
       patterns:
         - '^Accepted %{WORD:wallix_pam.method} for %{DATA:user.name} from %{IP:source.ip} port %{POSINT:source.port:long} %{GREEDYDATA:wallix_pam.infos}$'
-        - '^(?<user.name>[^: ]+) ?: (?:TTY=%{DATA:wallix_pam.tty} ; )?PWD=%{DATA:process.working_directory} ; USER=%{DATA:user.target.name} ; COMMAND=%{GREEDYDATA:process.command_line}$'
+        - '^\s*(?<user.name>[^: ]+) ?: (?:TTY=%{DATA:wallix_pam.tty} ; )?PWD=%{DATA:process.working_directory} ; USER=%{DATA:user.target.name} ; COMMAND=%{GREEDYDATA:process.command_line}$'
+        - '^Started %{DATA:_tmp.systemd_scope} - Session %{POSINT:wallix_pam.session_id} of User %{DATA:user.name}\.$'
+        - '^Session %{POSINT:wallix_pam.session_id} logged out\. %{GREEDYDATA:wallix_pam.infos}$'
+        - '^\[WABWATCHDOG\] %{GREEDYDATA:wallix_pam.infos}\.\.\. %{WORD:_tmp.watchdog_status}!$'
       ignore_failure: true
   - append:
       field: event.category
@@ -17,6 +20,16 @@ processors:
       value: process
       allow_duplicates: false
       if: ctx.process?.command_line != null
+  - append:
+      field: event.category
+      value: session
+      allow_duplicates: false
+      if: ctx.wallix_pam?.session_id != null
+  - append:
+      field: event.category
+      value: host
+      allow_duplicates: false
+      if: ctx._tmp?.watchdog_status != null
   - set:
       field: event.action
       value: ssh-publickey-accept
@@ -25,12 +38,43 @@ processors:
       field: event.action
       value: sudo-command
       if: ctx.process?.command_line != null && ctx.event?.action == null
+  - set:
+      field: event.action
+      value: session-started
+      if: ctx.log?.syslog?.appname == 'systemd' && ctx.wallix_pam?.session_id != null && ctx.event?.action == null
+  - set:
+      field: event.action
+      value: session-logged-out
+      if: ctx.log?.syslog?.appname == 'systemd-logind' && ctx.wallix_pam?.session_id != null && ctx.event?.action == null
+  - set:
+      field: event.action
+      value: service-status
+      if: ctx._tmp?.watchdog_status != null && ctx.event?.action == null
   - append:
       field: event.type
       value: start
       allow_duplicates: false
-      if: ctx.log?.syslog?.appname == 'sshd' || ctx.process?.command_line != null
+      if: >-
+        ctx.log?.syslog?.appname == 'sshd' ||
+        ctx.process?.command_line != null ||
+                (ctx.log?.syslog?.appname == 'systemd' && ctx.wallix_pam?.session_id != null)
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.log?.syslog?.appname == 'systemd-logind' && ctx.wallix_pam?.session_id != null
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx._tmp?.watchdog_status != null
   - set:
       field: event.outcome
       value: success
-      if: ctx.event?.outcome == null
+      if: >-
+        ctx.event?.outcome == null &&
+        (ctx._tmp?.watchdog_status == null || ctx._tmp.watchdog_status == 'OK')
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx._tmp?.watchdog_status != null && ctx._tmp.watchdog_status != 'OK'
