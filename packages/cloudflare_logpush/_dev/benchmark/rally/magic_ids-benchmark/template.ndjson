@@ -1,0 +1,44 @@
+{{- $timestamp := generate "timestamp" -}}
+{{- $action := generate "action" -}}
+{{- $colo_code := generate "colo_code" -}}
+{{- $colo_city := generate "colo_city" -}}
+{{- $destination_ip := generate "destination_ip" -}}
+{{- $destination_port := generate "destination_port" -}}
+{{- $protocol := generate "protocol" -}}
+{{- $signature_id := generate "signature_id" -}}
+{{- $signature_message := generate "signature_message" -}}
+{{- $signature_revision := generate "signature_revision" -}}
+{{- $source_ip := generate "source_ip" -}}
+{{- $source_port := generate "source_port" -}}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.magic_ids",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.19.7"
+    },
+    "message": "{\"Action\":\"{{ $action }}\",\"ColoCode\":\"{{ $colo_code }}\",\"ColoCity\":\"{{ $colo_city }}\",\"DestinationIP\":\"{{ $destination_ip }}\",\"DestinationPort\":{{ $destination_port }},\"Protocol\":\"{{ $protocol }}\",\"SignatureID\":{{ $signature_id }},\"SignatureMessage\":\"{{ $signature_message }}\",\"SignatureRevision\":{{ $signature_revision }},\"SourceIP\":\"{{ $source_ip }}\",\"SourcePort\":{{ $source_port }},\"Timestamp\":\"{{ $timestamp.Format "2006-01-02T15:04:05Z07:00" }}\"}",
+    "event": {
+        "dataset": "cloudflare_logpush.magic_ids"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-magic_ids"
+    ]
+}
