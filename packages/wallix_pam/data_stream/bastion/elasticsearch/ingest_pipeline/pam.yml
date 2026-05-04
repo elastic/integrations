@@ -4,15 +4,15 @@ processors:
   - grok:
       field: message
       patterns:
-        - '^pam_%{WORD:wallix_pam.module}\(%{DATA:wallix_pam.service}:session\): session %{WORD:wallix_pam.pam_state} for user %{DATA:wallix_pam.user}(?:\(uid=%{INT:wallix_pam.uid}\))?(?: by \(uid=%{INT:wallix_pam.by_uid}\))?$'
-        - '^pam_%{WORD:wallix_pam.module}\(%{DATA:wallix_pam.service}:session\): %{GREEDYDATA:wallix_pam.infos}$'
+        - '^pam_%{GREEDYDATA:wallix_pam.module}\(%{DATA:wallix_pam.service}:session\): session %{WORD:wallix_pam.pam_state} for user %{DATA:wallix_pam.user}(?:\(uid=%{INT:wallix_pam.uid}\))?(?: by \(uid=%{INT:wallix_pam.by_uid}\))?$'
+        - '^pam_%{GREEDYDATA:wallix_pam.module}\(%{DATA:wallix_pam.service}:session\): %{GREEDYDATA:wallix_pam.infos}$'
         - '^session %{WORD:wallix_pam.pam_state} for user %{DATA:wallix_pam.user}(?:\(uid=%{INT:wallix_pam.uid}\))?(?: by \(uid=%{INT:wallix_pam.by_uid}\))?$'
         - '^%{GREEDYDATA:wallix_pam.infos}$'
       ignore_failure: true
   - grok:
       field: log.syslog.appname
       patterns:
-        - '^pam_%{WORD:wallix_pam.module}$'
+        - '^pam_%{GREEDYDATA:wallix_pam.module}$'
       ignore_failure: true
       if: ctx.wallix_pam?.module == null && ctx.log?.syslog?.appname instanceof String
   - grok:
