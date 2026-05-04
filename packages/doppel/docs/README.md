@@ -78,7 +78,7 @@ The `alerts` data stream provides security events from the Doppel API.
 | doppel.product | The Doppel product category that generated the alert (e.g., domains, social). | keyword |
 | doppel.queue_state | The current workflow queue state of the alert in Doppel (e.g., review, resolved). | keyword |
 | doppel.social.num_followers | The number of followers the impersonating social media profile has. | long |
-| doppel.social.profile_image_url | The URL of the malicious social media profile. | keyword |
+| doppel.social.profile_image_url | The URL of the malicious social media profile image. | keyword |
 | doppel.social.profile_url | The URL of the malicious or impersonating social media profile. | keyword |
 | doppel.tags | Custom tags associated with the alert for categorization. | keyword |
 | doppel.telco.country_code | The country code associated with the telecommunications threat. | keyword |
