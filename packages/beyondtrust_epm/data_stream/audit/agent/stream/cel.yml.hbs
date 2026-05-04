@@ -34,65 +34,64 @@ program: |-
       state.start_time
     :
       state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))
-  ).as(start_time, state.with(
-    request(
-      "GET",
-      state.url.trim_suffix("/") + "/management-api/v3/ActivityAudits/Details?" + {
-        "Sorts[0].by": ["created"],
-        "Sorts[0].order": ["asc"],
-        "Pagination.PageSize": [string(state.page_size)],
-        "Pagination.PageNumber": [string(state.?next.page.orValue(1))],
-        "Filter.Created.Dates": [start_time, now.format(time_layout.RFC3339)],
-        "Filter.Created.SelectionMode": ["range"],
-      }.format_query()
-    ).do_request().as(resp,
-      resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body,
-          {
-            "events": has(body.data) ?
-              body.data.map(e, {"message": e.encode_json()})
-            :
-              [],
-            "start_time": start_time,
-            "next": {
-              ?"page": (int(body.pageNumber) < int(body.pageCount) ?
-                optional.of(int(state.?next.page.orValue(1)) + 1)
+  ).as(start_time,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_suffix("/") + "/management-api/v3/ActivityAudits/Details?" + {
+          "Sorts[0].by": ["created"],
+          "Sorts[0].order": ["asc"],
+          "Pagination.PageSize": [string(state.page_size)],
+          "Pagination.PageNumber": [string(state.?next.page.orValue(1))],
+          "Filter.Created.Dates": [start_time, now.format(time_layout.RFC3339)],
+          "Filter.Created.SelectionMode": ["range"],
+        }.format_query()
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          bytes(resp.Body).decode_json().as(body,
+            {
+              "events": has(body.data) ?
+                body.data.map(e, {"message": e.encode_json()})
               :
-                optional.none()
-              ),
-            },
-            "want_more": int(body.pageNumber) < int(body.pageCount),
-            "cursor": {
-              ?"last_timestamp": has(body.data) && size(body.data) > 0 ?
-                optional.of(
-                  body.data[size(body.data) - 1].created
-                  .parse_time("2006-01-02T15:04:05.9999999")
-                  .format(time_layout.RFC3339)
-                )
-              :
-                state.?cursor.last_timestamp
-            }
-          }
-        )
-      :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET " + state.url.trim_suffix("/") + "/management-api/v3/ActivityAudits/Details: " + (
-                size(resp.Body) != 0 ?
-                  string(resp.Body)
+                [],
+              "start_time": start_time,
+              "next": {
+                ?"page": (int(body.pageNumber) < int(body.pageCount)) ?
+                  optional.of(int(state.?next.page.orValue(1)) + 1)
                 :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
+                  optional.none(),
+              },
+              "want_more": int(body.pageNumber) < int(body.pageCount),
+              "cursor": {
+                ?"last_timestamp": (has(body.data) && size(body.data) > 0) ?
+                  optional.of(
+                    body.data[size(body.data) - 1].created.parse_time("2006-01-02T15:04:05.9999999").format(time_layout.RFC3339)
+                  )
+                :
+                  state.?cursor.last_timestamp,
+              },
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_suffix("/") + "/management-api/v3/ActivityAudits/Details: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
             },
-          },
-          "next": {},
-          "want_more": false,
-        }
+            "next": {},
+            "want_more": false,
+          }
+      )
     )
-  ))
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

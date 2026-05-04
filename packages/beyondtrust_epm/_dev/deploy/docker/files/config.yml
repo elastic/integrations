@@ -1,8 +1,14 @@
-# BeyondTrust EPM API supports query parameters that use dot notation and array-style indexing,
-# such as "Pagination.PageSize", "Sorts[0].order", and "Filter.Created.Dates".
-# However, these formats do not appear to be handled correctly by the current mock server,
-# which is running via Docker with config.yml. As a result, only basic pagination
-# (single-page response) has been implemented for now.
+# The BeyondTrust EPM API uses dot-notation query parameter keys (e.g.
+# "Pagination.PageSize", "Sorts[0].order").  The stream mock server parses its
+# config with ucfg.PathSep("."), which interprets dots as nested-path separators,
+# so these keys cannot be used in query_params matching rules.
+#
+# To exercise pagination despite this, the Details rule omits query_params and
+# instead uses response cycling: the stream server rotates through the responses
+# list on successive requests to the same path (response index = request_count %
+# len(responses)).  Page 1 returns pageCount > pageNumber, causing the CEL
+# program to set want_more=true and request the next page.  Page 2 returns
+# pageNumber == pageCount, ending pagination.
 rules:
   - path: /oauth/connect/token
     methods: ['POST']
@@ -17,13 +23,6 @@ rules:
           {"access_token":"xxxx","expires_in":600,"token_type":"Bearer", "scope":"urn:management:api"}
   - path: /management-api/v3/ActivityAudits/Details
     methods: ['GET']
-    query_params:
-      Sorts[0].by: created
-      Sorts[0].order: asc
-      Pagination.PageSize: 2
-      Pagination.PageNumber: 1
-      Filter.Created.Dates: "{Filter.Created.Dates:.*}"
-      Filter.Created.SelectionMode: range
     request_headers:
       Authorization: "Bearer xxxx"
     responses:
@@ -35,9 +34,9 @@ rules:
           {{ minify_json `
           {
             "pageNumber": 1,
-            "pageSize": 2,
-            "totalRecordCount": 6,
-            "pageCount": 1,
+            "pageSize": 1,
+            "totalRecordCount": 2,
+            "pageCount": 2,
             "data": [
               {
                 "id": 10574823,
@@ -355,7 +354,22 @@ rules:
                   "oldBiometricAuthenticationEnabled": "false",
                   "oldBadgeIcons": "hidden"
                 }
-              },
+              }
+            ]
+          }
+          `}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "pageNumber": 2,
+            "pageSize": 1,
+            "totalRecordCount": 2,
+            "pageCount": 2,
+            "data": [
               {
                 "id": 10574824,
                 "details": "User jane.smith modified group membership and role assignments for IT Operations team",
